@@ -112,7 +112,7 @@ export default function OnboardingScreen() {
                     <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
                     </View>
                     <View style={styles.serverTypeContainer}>
-                    {(['navidrome'] as const).map((type) => {
+                        {(['navidrome', 'jellyfin'] as const).map((type) => {
                             const isSelected = selectedType === type;
                             const Icon = type === 'navidrome' ? Music : Film;
 
@@ -120,8 +120,13 @@ export default function OnboardingScreen() {
                                 <TouchableOpacity
                                     key={type}
                                     onPress={() => {
+                                        // 1️⃣ update local UI immediately
                                         setSelectedType(type);
-                                        dispatch(setServerType(type));
+
+                                        // 2️⃣ defer provider swap to next frame
+                                        requestAnimationFrame(() => {
+                                            dispatch(setServerType(type));
+                                        });
                                     }}
                                     style={[
                                         styles.serverTypeButton,
@@ -141,12 +146,16 @@ export default function OnboardingScreen() {
                             {selectedType === 'navidrome'
                                 ? 'A lightweight, self-hosted music server.'
                                 : 'A full-featured media server for music, movies, and TV.'}
-                        </Text> 
+                        </Text>
                     )}
                     <Text style={styles.subtitle}>Enter your server URL (http/https)</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="https://navidrome.example.com"
+                        placeholder={
+                            selectedType === 'jellyfin'
+                                ? 'https://jellyfin.example.com'
+                                : 'https://navidrome.example.com'
+                        }
                         placeholderTextColor="#888"
                         value={localServerUrl}
                         onChangeText={(text) => setLocalServerUrl(text)}
@@ -155,8 +164,9 @@ export default function OnboardingScreen() {
                         keyboardAppearance="dark"
                         keyboardType="url"
                         returnKeyType="next"
-                        onSubmitEditing={handleNext} // 👈 hook up "Done" key
+                        onSubmitEditing={handleNext}
                     />
+
                 </ScrollView>
 
                 <View style={styles.buttonContainer}>
@@ -173,11 +183,16 @@ export default function OnboardingScreen() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.demoButton, isTesting && styles.nextButtonDisabled]}
+                        style={[
+                            styles.demoButton,
+                            (selectedType === 'jellyfin' || isTesting) && styles.nextButtonDisabled
+                        ]}
                         onPress={handleDemo}
-                        disabled={isTesting}
+                        disabled={selectedType === 'jellyfin' || isTesting}
                     >
-                        <Text style={styles.demoButtonText}>Use Navidrome demo</Text>
+                        <Text style={styles.demoButtonText}>
+                            {selectedType === 'jellyfin' ? 'Demo unavailable for Jellyfin' : 'Use Navidrome demo'}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>

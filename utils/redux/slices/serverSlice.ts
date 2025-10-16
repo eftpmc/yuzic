@@ -42,7 +42,6 @@ export const serverSlice = createSlice({
       state.username = '';
       state.password = '';
       state.isAuthenticated = false;
-      state.type = null;
     },
   },
 });

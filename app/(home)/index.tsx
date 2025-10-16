@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
     ScrollView,
     View,
@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appearance, VirtualizedList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useLibrary } from '@/contexts/LibraryContext';
-import {usePlaylists} from "@/contexts/PlaylistContext";
+import { usePlaylists } from "@/contexts/PlaylistContext";
 import { useSettings } from '@/contexts/SettingsContext';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
@@ -41,7 +41,7 @@ export default function HomeScreen() {
     const colorScheme = Appearance.getColorScheme();
     const isDarkMode = colorScheme === 'dark';
     const { albums = [], artists = [], fetchLibrary, clearLibrary } = useLibrary();
-    const {playlists} = usePlaylists();
+    const { playlists } = usePlaylists();
     const { themeColor, gridColumns } = useSettings();
     const { currentSong, playSongInCollection, pauseSong, resetQueue } = usePlaying();
 
@@ -49,7 +49,7 @@ export default function HomeScreen() {
     const [isGridView, setIsGridView] = useState(true);
     const [sortOrder, setSortOrder] = useState<'title' | 'recent' | 'userplays'>('title');
 
-    const bottomSheetRef = useRef<BottomSheet>(null); 
+    const bottomSheetRef = useRef<BottomSheet>(null);
     const accountSheetRef = useRef<BottomSheet>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
@@ -66,8 +66,13 @@ export default function HomeScreen() {
         }
     }, [isMounted, isAuthenticated]);
 
+
     useEffect(() => {
-        fetchLibrary();
+        if (isAuthenticated) {
+            fetchLibrary();
+        } else {
+            clearLibrary();
+        }
     }, [fetchLibrary]);
 
     useEffect(() => {
@@ -144,7 +149,7 @@ export default function HomeScreen() {
         { value: 'title', label: 'Alphabetical', icon: 'text-outline' },
         { value: 'recent', label: 'Most Recent', icon: 'time-outline' },
         { value: 'userplays', label: 'Most Played', icon: 'flame-outline' },
-    ];    
+    ];
 
     const currentSortLabel = sortOptions.find(option => option.value === sortOrder)?.label || 'Sort';
 
@@ -260,21 +265,21 @@ export default function HomeScreen() {
                         <Ionicons name="search" size={24} color={isDarkMode ? '#fff' : '#000'} />
                     </TouchableOpacity>
                     <TouchableOpacity
-                    style={{
-                        marginLeft: 12,
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: themeColor,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                    onPress={() => accountSheetRef.current?.show()}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        style={{
+                            marginLeft: 12,
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            backgroundColor: themeColor,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                        onPress={() => accountSheetRef.current?.show()}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-                        {username?.[0]?.toUpperCase() ?? '?'}
-                    </Text>
+                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                            {username?.[0]?.toUpperCase() ?? '?'}
+                        </Text>
                     </TouchableOpacity>
 
                 </View>
@@ -296,7 +301,7 @@ export default function HomeScreen() {
                     key={isGridView ? `grid${gridColumns}` : 'list'}
                     numColumns={isGridView ? gridColumns : 1}
                     keyExtractor={(item) => item.id}
-                    contentContainerStyle={{paddingBottom: 150}}
+                    contentContainerStyle={{ paddingBottom: 150 }}
                     ListHeaderComponent={
                         <View style={styles.listHeader}>
                             <TouchableOpacity
@@ -340,91 +345,91 @@ export default function HomeScreen() {
                 <View style={styles.sheetContainer}>
                     <Text style={[styles.sheetTitle, isDarkMode && styles.sheetTitleDark]}>Sort by</Text>
                     {sortOptions.map((option) => {
-                    const isSelected = sortOrder === option.value;
+                        const isSelected = sortOrder === option.value;
 
-                    return (
-                        <TouchableOpacity
-                            key={option.value}
-                            style={[
-                                styles.pickerItem,
-                                {
-                                    backgroundColor: isSelected ? themeColor + '22' : 'transparent',
-                                    borderRadius: 8,
-                                    paddingHorizontal: 12,
-                                },
-                            ]}
-                            onPress={() => {
-                                const value = option.value as typeof sortOrder;
-                                setSortOrder(value);
-                                AsyncStorage.setItem('librarySortOrder', value);
-                                bottomSheetRef.current?.close();
-                            }}
-                        >
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Ionicons
-                                    name={option.icon}
-                                    size={18}
-                                    color={isSelected ? themeColor : isDarkMode ? '#ccc' : '#555'}
-                                    style={{ marginRight: 10 }}
-                                />
-                                <Text
-                                    style={[
-                                        styles.pickerText,
-                                        isDarkMode && styles.pickerTextDark,
-                                        {
-                                            fontWeight: isSelected ? '600' : '400',
-                                        },
-                                    ]}
-                                >
-                                    {option.label}
-                                </Text>
-                            </View>
+                        return (
+                            <TouchableOpacity
+                                key={option.value}
+                                style={[
+                                    styles.pickerItem,
+                                    {
+                                        backgroundColor: isSelected ? themeColor + '22' : 'transparent',
+                                        borderRadius: 8,
+                                        paddingHorizontal: 12,
+                                    },
+                                ]}
+                                onPress={() => {
+                                    const value = option.value as typeof sortOrder;
+                                    setSortOrder(value);
+                                    AsyncStorage.setItem('librarySortOrder', value);
+                                    bottomSheetRef.current?.close();
+                                }}
+                            >
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Ionicons
+                                        name={option.icon}
+                                        size={18}
+                                        color={isSelected ? themeColor : isDarkMode ? '#ccc' : '#555'}
+                                        style={{ marginRight: 10 }}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.pickerText,
+                                            isDarkMode && styles.pickerTextDark,
+                                            {
+                                                fontWeight: isSelected ? '600' : '400',
+                                            },
+                                        ]}
+                                    >
+                                        {option.label}
+                                    </Text>
+                                </View>
 
-                            {isSelected && (
-                                <Ionicons
-                                    name="checkmark"
-                                    size={20}
-                                    color={themeColor}
-                                    style={styles.checkmark}
-                                />
-                            )}
-                        </TouchableOpacity>
-                    );
-                })}
-                <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => bottomSheetRef.current?.close()}
-                >
-                    <Text style={[styles.cancelText, isDarkMode && styles.cancelTextDark]}>Cancel</Text>
-                </TouchableOpacity>
+                                {isSelected && (
+                                    <Ionicons
+                                        name="checkmark"
+                                        size={20}
+                                        color={themeColor}
+                                        style={styles.checkmark}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })}
+                    <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => bottomSheetRef.current?.close()}
+                    >
+                        <Text style={[styles.cancelText, isDarkMode && styles.cancelTextDark]}>Cancel</Text>
+                    </TouchableOpacity>
 
                 </View>
             </BottomSheet>
 
             <AccountActionSheet
-            ref={accountSheetRef}
-            themeColor={themeColor}
-            onSettings={() => {
-                accountSheetRef.current?.close();
-                navigation.navigate('settings');
-            }}
-            onSignOut={async () => {
-                accountSheetRef.current?.close();
-                try {
-                    await pauseSong();
-                    await resetQueue();
-                    clearLibrary();
-                    disconnect();
-                    alert('Disconnected.');
-                } catch (e) {
-                    console.error('Failed to disconnect cleanly:', e);
-                }
-            }}
-            onScan={async () => {
-                accountSheetRef.current?.close();
-                const result = await startScan();
-                alert(result.message ?? 'Scan triggered.');
-              }}
+                ref={accountSheetRef}
+                themeColor={themeColor}
+                onSettings={() => {
+                    accountSheetRef.current?.close();
+                    navigation.navigate('settings');
+                }}
+                onSignOut={async () => {
+                    accountSheetRef.current?.close();
+                    try {
+                        await pauseSong();
+                        await resetQueue();
+                        clearLibrary();
+                        disconnect();           // safe now
+                        router.replace('/(onboarding)');
+                    } catch (e) {
+                        console.error('Failed to disconnect cleanly:', e);
+                    }
+                }}
+                onScan={async () => {
+                    accountSheetRef.current?.close();
+                    const result = await startScan();
+                    alert(result.message ?? 'Scan triggered.');
+                }}
             />
 
 

@@ -19,7 +19,7 @@ interface NavidromeContextType {
     disconnect: () => void;
     startScan: () => Promise<{ success: boolean; message?: string }>;
 }
-  
+
 
 interface NavidromeProviderProps {
     children: ReactNode;
@@ -168,11 +168,32 @@ export const NavidromeProvider: React.FC<NavidromeProviderProps> = ({ children }
         }
     };
 
-    const connectToServer = async (): Promise<{ success: boolean; message?: string }> => {
-        const success = await pingServer();
-        return success
-            ? { success: true }
-            : { success: false, message: 'Failed to connect. Check server details.' };
+    const connectToServer = async (
+        providedUsername?: string,
+        providedPassword?: string
+    ): Promise<{ success: boolean; message?: string }> => {
+        const user = providedUsername ?? username;
+        const pass = providedPassword ?? password;
+
+        if (!serverUrl || !user || !pass) {
+            return { success: false, message: 'Missing credentials or server URL.' };
+        }
+
+        const apiUrl = `${serverUrl}/rest/ping.view?u=${encodeURIComponent(user)}&p=${encodeURIComponent(pass)}&v=1.16.0&c=NavidromeApp&f=json`;
+
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            const success = data['subsonic-response']?.status === 'ok';
+
+            dispatch(setAuthenticated(success));
+            return success
+                ? { success: true }
+                : { success: false, message: 'Invalid credentials or unreachable server.' };
+        } catch (err) {
+            console.error('[Navidrome] Connection failed:', err);
+            return { success: false, message: 'Failed to reach Navidrome server.' };
+        }
     };
 
     const disconnectServer = () => dispatch(disconnect());

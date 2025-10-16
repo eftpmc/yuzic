@@ -67,7 +67,7 @@ export interface ServerContextType {
     password: string;
     isAuthenticated: boolean;
   
-    connectToServer: () => Promise<{ success: boolean; message?: string }>;
+    connectToServer: (localUsername: string, localPassword: string) => Promise<{ success: boolean; message?: string }>;
     pingServer: () => Promise<boolean>;
     testServerUrl: (url: string) => Promise<{ success: boolean; message?: string }>;
     startScan?: () => Promise<{ success: boolean; message?: string }>;

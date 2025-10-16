@@ -15,88 +15,54 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useServer } from '@/contexts/ServerContext';
 
 export default function WelcomeScreen() {
-    const router = useRouter();
-    const { pingServer, isAuthenticated } = useServer();
-    const { themeColor } = useSettings();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isMounted, setIsMounted] = useState(false);
-    const [isPressed, setIsPressed] = useState(false);
+  const router = useRouter();
+  const { themeColor } = useSettings();
+  const [isPressed, setIsPressed] = useState(false);
 
-    useEffect(() => {
-        const handleCheckAuthentication = async () => {
-            if (!isMounted) return;
+  const handlePressIn = () => setIsPressed(true);
+  const handlePressOut = () => {
+    setIsPressed(false);
+    router.push('(onboarding)/connect');
+  };
 
-            try {
-                if (isAuthenticated) {
-                    router.replace('(home)');
-                    return;
-                }
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.appIcon}
+        />
+        <Text style={styles.appName}>Yuzic</Text>
+        <Text style={styles.subtext}>
+          Your personal music library. Stream from your own server anywhere.
+        </Text>
+      </View>
 
-                const isConnected = await pingServer();
-                if (isConnected) {
-                    router.replace('(home)');
-                } else {
-                    setIsLoading(false);
-                }
-            } catch (error) {
-                console.error('Connection check failed:', error);
-                setIsLoading(false);
-            }
-        };
-
-        handleCheckAuthentication();
-    }, [isAuthenticated, isMounted]);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    const handlePressIn = () => setIsPressed(true);
-    const handlePressOut = () => {
-        setIsPressed(false);
-        router.push('(onboarding)/connect');
-    };
-
-    if (isLoading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#FFF" />
+      <View style={styles.bottomContent}>
+        <TouchableWithoutFeedback
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+        >
+          <View style={styles.buttonContainer}>
+            <View style={[styles.offsetButton, { backgroundColor: `${themeColor}AA` }]} />
+            <View
+              style={[
+                styles.button,
+                { backgroundColor: themeColor, shadowColor: themeColor },
+                isPressed && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.buttonText}>Get Started</Text>
             </View>
-        );
-    }
+          </View>
+        </TouchableWithoutFeedback>
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.content}>
-                <Image
-                    source={require('@/assets/images/logo.png')}
-                    style={styles.appIcon}
-                />
-                <Text style={styles.appName}>Yuzic</Text>
-                <Text style={styles.subtext}>
-                    Your personal music library. Stream from your own server anywhere.
-                </Text>
-            </View>
-
-            <View style={styles.bottomContent}>
-                <TouchableWithoutFeedback
-                    onPressIn={handlePressIn}
-                    onPressOut={handlePressOut}
-                >
-                    <View style={styles.buttonContainer}>
-                        <View style={[styles.offsetButton, { backgroundColor: `${themeColor}AA` }]} />
-                        <View style={[styles.button, { backgroundColor: themeColor, shadowColor: themeColor }, isPressed && styles.buttonPressed]}>
-                            <Text style={styles.buttonText}>Get Started</Text>
-                        </View>
-                    </View>
-                </TouchableWithoutFeedback>
-
-                <Text style={styles.termsText}>
-                    By continuing you confirm that you've read and accepted our Terms and Privacy Policy
-                </Text>
-            </View>
-        </SafeAreaView>
-    );
+        <Text style={styles.termsText}>
+          By continuing you confirm that you've read and accepted our Terms and Privacy Policy
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

@@ -8,8 +8,6 @@ import 'react-native-reanimated';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ServerProvider } from '@/contexts/ServerContext';
-import { JellyfinProvider } from "@/contexts/JellyfinContext";
-import { NavidromeProvider } from "@/contexts/NavidromeContext";
 import { LibraryProvider } from "@/contexts/LibraryContext";
 import { PlaylistProvider } from "@/contexts/PlaylistContext";
 import { PlayingProvider } from "@/contexts/PlayingContext";
@@ -26,6 +24,12 @@ import { Alert, Platform, Dimensions, View } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavidromeProvider } from '@/contexts/NavidromeContext';
+import { JellyfinProvider } from '@/contexts/JellyfinContext';
+
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -81,9 +85,9 @@ We will need to restart the app.
             <Provider store={store}>
                 <PersistGate loading={null} persistor={persistor}>
                     <SettingsProvider>
-                        <NavidromeProvider>
-                            <JellyfinProvider>
-                                <ServerProvider>
+                            <NavidromeProvider>
+                                <JellyfinProvider>
+                                                            <ServerProvider>
                                     <LibraryProvider>
                                         <LidarrProvider>
                                             <PlaylistProvider>
@@ -136,9 +140,9 @@ We will need to restart the app.
                                             </PlaylistProvider>
                                         </LidarrProvider>
                                     </LibraryProvider>
-                                </ServerProvider>
-                            </JellyfinProvider>
-                        </NavidromeProvider>
+                        </ServerProvider>
+                                                        </JellyfinProvider>
+                            </NavidromeProvider>
                     </SettingsProvider>
                 </PersistGate>
             </Provider>

@@ -15,17 +15,26 @@ import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useServer } from '@/contexts/ServerContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { setServerType } from '@/utils/redux/slices/serverSlice';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/utils/redux/store';
 
 export default function CredentialsScreen() {
     const [localUsername, setLocalUsername] = useState('');
     const [localPassword, setLocalPassword] = useState('');
     const passwordRef = useRef<TextInput>(null);
     const [isTesting, setIsTesting] = useState(false);
-    const { setUsername, setPassword, username, password, connectToServer } = useServer();
+
+    const {
+        setUsername,
+        setPassword,
+        username,
+        password,
+        connectToServer,
+        serverType,
+    } = useServer();
+
     const router = useRouter();
-    const dispatch = useDispatch();
+    const selectedType = useSelector((state: RootState) => state.server.type);
 
     useEffect(() => {
         if (username) setLocalUsername(username);
@@ -42,13 +51,16 @@ export default function CredentialsScreen() {
         try {
             setUsername(localUsername);
             setPassword(localPassword);
+            const result = await connectToServer(localUsername, localPassword);
+            const success = typeof result === 'boolean' ? result : result?.success;
 
-            const success = await connectToServer();
             if (success) {
-                dispatch(setServerType('navidrome'))
                 router.replace('(home)');
             } else {
-                Alert.alert('Error', 'Connection failed. Check your credentials.');
+                Alert.alert(
+                    'Error',
+                    result?.message || 'Connection failed. Check your credentials.'
+                );
             }
         } catch (error) {
             Alert.alert('Error', 'An error occurred while testing the connection.');
@@ -60,6 +72,8 @@ export default function CredentialsScreen() {
     const handleBack = () => {
         router.back();
     };
+
+    const isJellyfin = serverType === 'jellyfin';
 
     return (
         <SafeAreaView style={styles.container}>
@@ -78,7 +92,9 @@ export default function CredentialsScreen() {
                     <View style={styles.content}>
                         <Text style={styles.title}>Enter Your Credentials</Text>
                         <Text style={styles.subtitle}>
-                            Provide your Navidrome username and password to continue.
+                            {isJellyfin
+                                ? 'Provide your Jellyfin username and password to continue.'
+                                : 'Provide your Navidrome username and password to continue.'}
                         </Text>
 
                         <View style={styles.inputWrapper}>

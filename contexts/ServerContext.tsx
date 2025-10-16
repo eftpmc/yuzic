@@ -1,11 +1,13 @@
-import { useDispatch, useSelector } from 'react-redux';
+import React, { createContext, ReactNode, useContext } from 'react';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/utils/redux/store';
 import { useNavidrome } from './NavidromeContext';
 import { useJellyfin } from './JellyfinContext';
 import { ServerContextType } from '@/types';
-import { setServerType, setServerUrl, setUsername, setPassword } from '@/utils/redux/slices/serverSlice';
-import { createContext, ReactNode, useContext } from 'react';
 
+/**
+ * Shared ServerContext accessible throughout the app
+ */
 const ServerContext = createContext<ServerContextType | undefined>(undefined);
 
 export const useServer = () => {
@@ -14,36 +16,50 @@ export const useServer = () => {
   return context;
 };
 
+/**
+ * ServerProvider — provides a unified server context
+ * that switches seamlessly between Navidrome and Jellyfin
+ * without unmounting or causing UI flicker.
+ */
 export const ServerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const serverType = useSelector((state: RootState) => state.server.type);
-  const dispatch = useDispatch();
+
+  // ✅ Keep both contexts mounted at all times
   const navidrome = useNavidrome();
   const jellyfin = useJellyfin();
 
-  let contextValue: ServerContextType;
+  // ✅ Choose which context to expose based on Redux type
+  const value: ServerContextType =
+    serverType === 'jellyfin'
+      ? {
+          serverType: 'jellyfin',
+          ...jellyfin,
+        }
+      : serverType === 'navidrome'
+      ? {
+          serverType: 'navidrome',
+          ...navidrome,
+        }
+      : {
+          // 💤 Safe fallback when logged out / no server selected
+          serverType: 'none',
+          isAuthenticated: false,
+          serverUrl: '',
+          username: '',
+          password: '',
+          setServerUrl: () => {},
+          setUsername: () => {},
+          setPassword: () => {},
+          connectToServer: async () => ({ success: false, message: 'Not connected' }),
+          pingServer: async () => false,
+          testServerUrl: async () => ({ success: false, message: 'Not connected' }),
+          testNavidromeServerUrl: async () => ({ success: false, message: 'Not connected' }),
+          startScan: async () => ({ success: false, message: 'Not connected' }),
+          getLibraries: async () => [],
+          disconnect: () => {},
+        };
 
-  if (serverType === 'navidrome') {
-    contextValue = { serverType, ...navidrome };
-  } else if (serverType === 'jellyfin') {
-    contextValue = { serverType, ...jellyfin };
-  } else {
-    // fallback: allow setting base values, but disable all actions
-    contextValue = {
-      serverType: 'navidrome', // placeholder; not yet set
-      serverUrl: '',
-      username: '',
-      password: '',
-      isAuthenticated: false,
-      setServerUrl: (url) => dispatch(setServerUrl(url)),
-      setUsername: (user) => dispatch(setUsername(user)),
-      setPassword: (pass) => dispatch(setPassword(pass)),
-      connectToServer: async () => ({ success: false, message: 'No server type set' }),
-      pingServer: async () => false,
-      testServerUrl: async () => ({ success: false, message: 'No server type set' }),
-      startScan: async () => ({ success: false, message: 'No server type set' }),
-      disconnect: () => {},
-    };
-  }
-
-  return <ServerContext.Provider value={contextValue}>{children}</ServerContext.Provider>;
+  return <ServerContext.Provider value={value}>{children}</ServerContext.Provider>;
 };
+
+export { ServerContext };
