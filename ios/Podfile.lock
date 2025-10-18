@@ -1737,7 +1737,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-slider (4.5.7):
+  - react-native-slider (4.5.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1750,7 +1750,7 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-slider/common (= 4.5.7)
+    - react-native-slider/common (= 4.5.5)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1759,7 +1759,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-slider/common (4.5.7):
+  - react-native-slider/common (4.5.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2120,7 +2120,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNFlashList (1.8.3):
+  - RNFlashList (1.7.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2784,7 +2784,7 @@ SPEC CHECKSUMS:
   react-native-music-control: 3fc719c179a6562e18af1ac6e30ba9e33b397a31
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: 0dfbd139206a79364916959bc8b1a6bea3caba97
-  react-native-slider: 97414a7c01d16f8fef24d367a5640a0652952ec5
+  react-native-slider: e500e3bac6ce86f2368bfc376e260a1957f6f5d9
   react-native-track-player: 24ecd55d64da8a6471ba96484b67bc9cee6fc629
   react-native-webview: b8f9b1f9bdb081c239e46d9bf030881d2678f25d
   React-nativeconfig: 8efdb1ef1e9158c77098a93085438f7e7b463678
@@ -2817,7 +2817,7 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   RNCAsyncStorage: ac02697867ba18d2cfd761ebb144417fe65b210e
   RNCPicker: 921a904266a9bd75a3ca8cdc85371889e43192d8
-  RNFlashList: c58e217fdf8d5d833c11558f1c34ccc03c3de65c
+  RNFlashList: 11f5b15e49d5c92299682face72bb840ce97b84a
   RNGestureHandler: 3e17c0c9ceb401041b0e64c8e4c8a057da978a9d
   RNReanimated: 5ed2b66c32cb3d398e4c12591b3053594fe2fcb9
   RNScreens: 2856a2abe759a5a56946874f76372c9f033af19a
