@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://github.com/eftpmc/yuzic/blob/master/ios/yuzic/Images.xcassets/AppIcon.appiconset/40.png?raw=true" width="40" />
+  <img src="/assets/images/icon.png" width="40" />
   <br />
   Yuzic
 </h1>
