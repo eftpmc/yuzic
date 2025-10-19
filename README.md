@@ -5,7 +5,7 @@
 </h1>
 
 ## Info
-Yuzic is a cross-platform, free and open source music player for Navidrome or other [Subsonic](http://www.subsonic.org) servers. Powered by React Native.
+Yuzic is a cross-platform, free and open source music player for Navidrome or other [Subsonic](http://www.subsonic.org) servers, plus Jellyfin. Powered by React Native.
 
 ## Features
 - Offline support
