@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="/assets/images/icon.png" width="40" />
+  <img src="/assets/images/logo.png" width="40" />
   <br />
   Yuzic
 </h1>
