@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode, useEffect, useRef } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useServer } from '@/contexts/ServerContext';
 import { RootState } from '@/utils/redux/store';
@@ -36,6 +36,7 @@ interface LibraryContextType {
     starItem: (id: string) => Promise<void>;
     unstarItem: (id: string) => Promise<void>;
     libraryServiceStats: Record<string, any>;
+    isLoading: boolean;
 }
 
 interface LibraryProviderProps {
@@ -59,6 +60,7 @@ export const LibraryProvider: React.FC<LibraryProviderProps> = ({ children }) =>
     const { albums, artists, starred } = useSelector((state: RootState) => state.library);
     const { services: libraryServiceStats } = useSelector((state: RootState) => state.libraryStatus);
     const isLibraryFetchedRef = useRef(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const context = {
         serverType,
@@ -70,21 +72,24 @@ export const LibraryProvider: React.FC<LibraryProviderProps> = ({ children }) =>
     };
 
     const fetchLibrary = async (force = false) => {
-        if (!serverType || !serverUrl || !username || !password || (isLibraryFetchedRef.current && !force)) return;
+        if (!serverType || !serverUrl || !username || !password || (isLibraryFetchedRef.current && !force))
+            return;
 
+        setIsLoading(true);
         isLibraryFetchedRef.current = true;
-        console.log('Fetching library...');
 
-        await runLibraryServices([fetchAlbumsService], context);
+        try {
+            await runLibraryServices([fetchAlbumsService], context);
 
-        await runLibraryServices(
-            [fetchGenresService, fetchArtistsService, fetchStarredService],
-            context
-        );
+            await runLibraryServices(
+                [fetchGenresService, fetchArtistsService, fetchStarredService],
+                context
+            );
 
-        runLibraryServices([fetchStatsService], context);
-
-        console.log('Library fetched successfully.');
+            runLibraryServices([fetchStatsService], context);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const refreshLibrary = () => {
@@ -152,7 +157,8 @@ export const LibraryProvider: React.FC<LibraryProviderProps> = ({ children }) =>
                 clearLibrary,
                 starItem: handleStarItem,
                 unstarItem: handleUnstarItem,
-                libraryServiceStats
+                libraryServiceStats,
+                isLoading
             }}
         >
             {children}
