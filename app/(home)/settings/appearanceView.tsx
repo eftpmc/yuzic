@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     Appearance,
     StyleSheet,
+    Platform,
 } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
@@ -21,7 +22,7 @@ const AppearanceView: React.FC = () => {
     const isDarkMode = colorScheme === 'dark';
 
     return (
-        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark, Platform.OS === 'android' && { paddingTop: 24 }]}>
             <View style={styles.header}>
                 <TouchableOpacity
                     onPress={() => router.back()}

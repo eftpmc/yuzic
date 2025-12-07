@@ -9,7 +9,8 @@ import {
     Appearance,
     StyleSheet,
     Animated,
-    Easing
+    Easing,
+    Platform
 } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useLibrary } from '@/contexts/LibraryContext';
@@ -114,7 +115,7 @@ const LibraryView: React.FC = () => {
       };
 
     return (
-        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark, Platform.OS === 'android' && { paddingTop: 24 }]}>
             <View style={styles.header}>
                 <TouchableOpacity
                     onPress={() => router.back()}

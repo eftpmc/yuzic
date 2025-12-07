@@ -10,6 +10,7 @@ import {
     Appearance,
     Animated,
     Easing,
+    Platform,
 } from 'react-native';
 import { useServer } from '@/contexts/ServerContext';
 import { useLibrary } from '@/contexts/LibraryContext';
@@ -70,7 +71,7 @@ const ServerView: React.FC = () => {
     };
 
     return (
-        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark, Platform.OS === 'android' && { paddingTop: 24 }]}>
             <View style={styles.header}>
                 <TouchableOpacity
                     onPress={() => router.back()}

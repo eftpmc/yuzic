@@ -8,7 +8,8 @@ import {
     Appearance,
     TouchableOpacity,
     Animated,
-    Easing
+    Easing,
+    Platform
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -77,7 +78,7 @@ const PlayerView: React.FC = () => {
     });
 
     return (
-        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+        <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark, Platform.OS === 'android' && { paddingTop: 24 }]}>
             <View style={styles.header}>
                 <TouchableOpacity
                     onPress={() => router.back()}

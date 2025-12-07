@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useLidarr } from '@/contexts/LidarrContext';
 import { useSettings } from '@/contexts/SettingsContext';
-import { useServer } from '@/contexts/ServerContext';
+import { useServer } from '@/contexts/ServerContext'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appearance } from 'react-native';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
@@ -21,7 +21,7 @@ import { useRouter } from 'expo-router';
 export default function SettingsScreen() {
     const router = useRouter();
     const { isAuthenticated } = useLidarr();
-    const { serverType, username, serverUrl } = useServer();
+    const { serverType, username, serverUrl } = useServer()
     const { themeColor, lidarrEnabled, setLidarrEnabled } = useSettings();
     const [tempLidarrEnabled, setTempLidarrEnabled] = useState(lidarrEnabled);
     const colorScheme = Appearance.getColorScheme();
@@ -39,7 +39,7 @@ export default function SettingsScreen() {
             style={[styles.container, isDarkMode && styles.containerDark]}
         >
             <View style={styles.headerContainer}>
-                <TouchableOpacity onPress={() => router.back()}>
+                <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#000'} />
                 </TouchableOpacity>
 
@@ -94,11 +94,11 @@ export default function SettingsScreen() {
                             onValueChange={setTempLidarrEnabled}
                             disabled={!isAuthenticated}
                             trackColor={{ false: '#999', true: themeColor }}
-                            thumbColor={'#fff'}
+                            thumbColor={isDarkMode ? '#fff' : '#fff'}
+                            onStartShouldSetResponder={() => true} // Prevents row tap from interfering
                         />
                     </TouchableOpacity>
                     {renderDivider()}
-
                     <TouchableOpacity
                         style={styles.row}
                         onPress={() => router.push('/settings/openaiView')}
@@ -116,7 +116,16 @@ export default function SettingsScreen() {
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => openURL("https://pastebin.com/raw/KzGjR9aA")}
+                        onPress={async () => {
+                            const url = "https://pastebin.com/raw/KzGjR9aA"
+                            const supported = await Linking.canOpenURL(url);
+
+                            if (supported) {
+                                await Linking.openURL(url);
+                            } else {
+                                Alert.alert(`Don't know how to open this URL: ${url}`);
+                            }
+                        }}
                     >
                         <View style={styles.leftContent}>
                             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
@@ -126,10 +135,18 @@ export default function SettingsScreen() {
 
                         <MaterialIcons name="chevron-right" size={24} color={isDarkMode ? '#fff' : '#333'} />
                     </TouchableOpacity>
-
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => openURL("https://pastebin.com/raw/4QHJPtuj")}
+                        onPress={async () => {
+                            const url = "https://pastebin.com/raw/4QHJPtuj"
+                            const supported = await Linking.canOpenURL(url);
+
+                            if (supported) {
+                                await Linking.openURL(url);
+                            } else {
+                                Alert.alert(`Don't know how to open this URL: ${url}`);
+                            }
+                        }}
                     >
                         <View style={styles.leftContent}>
                             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
@@ -167,12 +184,6 @@ export default function SettingsScreen() {
     function renderDivider() {
         return <View style={styles.divider} />;
     }
-
-    async function openURL(url: string) {
-        const supported = await Linking.canOpenURL(url);
-        if (supported) Linking.openURL(url);
-        else Alert.alert(`Can't open: ${url}`);
-    }
 }
 
 const styles = StyleSheet.create({
@@ -195,6 +206,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: Platform.OS === 'ios' ? 12 : 8,
         paddingBottom: 12,
+        backgroundColor: 'transparent',
+        zIndex: 10,
     },
     headerTitle: {
         fontSize: 18,
@@ -225,6 +238,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#1C1C1E',
     },
     row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+    },
+    toggleRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -266,13 +286,14 @@ const styles = StyleSheet.create({
     },
     profileRow: {
         flexDirection: 'row',
-        alignItems: 'center',
-        height: 52,
+        alignItems: 'center', // ✅ Vertical centering
+        height: 52, // ✅ Or however tall you want the profile row
     },
     avatar: {
         width: 48,
         height: 48,
         borderRadius: 24,
+        backgroundColor: '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
