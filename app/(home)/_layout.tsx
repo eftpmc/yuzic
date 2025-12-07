@@ -8,7 +8,6 @@ export default function HomeLayout() {
         <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="search" options={{ headerShown: false, animation: "fade", animationDuration: 150 }} />
-            <Stack.Screen name="albumView" options={{ headerShown: false }} />
             <Stack.Screen name="collectionView" options={{ headerShown: false }} />
             <Stack.Screen name="artistView" options={{ headerShown: false }} />
             <Stack.Screen name="playlistView" options={{ headerShown: false }} />

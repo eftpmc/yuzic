@@ -24,8 +24,8 @@ const AlbumOptions: React.FC<{ selectedAlbumId: string | null }> = ({ selectedAl
     const handleGoToAlbum = () => {
         if (selectedAlbumId) {
             navigation.navigate('(home)', {
-                screen: "albumView",
-                params: { id: selectedAlbumId },
+                screen: "collectionView",
+                params: { type: "album", id: selectedAlbumId },
             });
         }
     };

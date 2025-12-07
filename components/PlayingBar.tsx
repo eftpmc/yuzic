@@ -147,10 +147,8 @@ const PlayingBar: React.FC = () => {
         <>
             <TouchableOpacity onPress={handleExpand} activeOpacity={inputMode ? 1 : 0.9}>
                 <View style={styles.wrapper}>
-                    <BlurView intensity={100} tint="systemChromeMaterial" style={styles.container}>
-                        {/* Both states overlap inside this container */}
+                    <BlurView intensity={100} tint={isDarkMode ? "dark" : "light"} style={styles.container}>
                         <View style={styles.topRowWrapper}>
-                            {/* Normal bar */}
                             <Animated.View style={[styles.topRow, { opacity: fadeAnim, zIndex: 0 }]}>
                                 {currentSong?.cover ? (
                                     <Image source={{ uri: currentSong.cover }} style={styles.coverArt} />
@@ -203,7 +201,7 @@ const PlayingBar: React.FC = () => {
                                 <TouchableOpacity
                                     style={[styles.fabButton, { backgroundColor: themeColor }]}
                                     onPress={inputValue.trim() ? handleSubmitInput : handleCloseInput}
-                                    disabled={isLoading} // ⛔ Disable while loading
+                                    disabled={isLoading}
                                 >
                                     {isLoading ? (
                                         <Animated.View style={{ transform: [{ rotate: spin }] }}>
@@ -216,7 +214,6 @@ const PlayingBar: React.FC = () => {
                             </Animated.View>
                         </View>
 
-                        {/* Progress Bar */}
                         <View style={styles.progressBarContainer}>
                             {currentSong && (
                                 <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: themeColor }]} />
@@ -226,7 +223,6 @@ const PlayingBar: React.FC = () => {
                 </View>
             </TouchableOpacity>
 
-            {/* Expanded player */}
             <BottomSheet
                 ref={bottomSheetRef}
                 height={screenHeight}
