@@ -5,7 +5,9 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    Dimensions
+    Dimensions,
+    Animated,
+    Easing
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +24,7 @@ import { useServer } from '@/contexts/ServerContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import AccountActionSheet from '@/components/AccountActionSheet';
+import { Loader2 } from 'lucide-react-native';
 
 const isColorLight = (color: string) => {
     const hex = color.replace('#', '');
@@ -40,7 +43,7 @@ export default function HomeScreen() {
     const { isAuthenticated, disconnect, username, startScan } = useServer();
     const colorScheme = Appearance.getColorScheme();
     const isDarkMode = colorScheme === 'dark';
-    const { albums = [], artists = [], fetchLibrary, clearLibrary } = useLibrary();
+    const { albums = [], artists = [], fetchLibrary, clearLibrary, isLoading } = useLibrary();
     const { playlists } = usePlaylists();
     const { themeColor, gridColumns } = useSettings();
     const { currentSong, playSongInCollection, pauseSong, resetQueue } = usePlaying();
@@ -83,6 +86,24 @@ export default function HomeScreen() {
         const subscription = Dimensions.addEventListener('change', onChange);
         return () => subscription?.remove?.();
     }, []);
+
+    const spinAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.loop(
+            Animated.timing(spinAnim, {
+                toValue: 1,
+                duration: 1000,
+                easing: Easing.linear,
+                useNativeDriver: true,
+            })
+        ).start();
+    }, []);
+
+    const spin = spinAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+    });
 
     const allData = useMemo(() => [
         ...albums.map((item) => ({ ...item, type: 'Album' })),
@@ -294,7 +315,23 @@ export default function HomeScreen() {
                 </ScrollView>
             </View>
 
-            {sortedFilteredData.length > 0 ? (
+            {isLoading ? (
+                <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 32 }} >
+                    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                        <Loader2 size={42} color={themeColor} />
+                    </Animated.View>
+
+                    <Text
+                        style={{
+                            marginTop: 12,
+                            color: isDarkMode ? '#aaa' : '#666',
+                            fontSize: 16,
+                        }}
+                    >
+                        Loading library…
+                    </Text>
+                </View>
+            ) : sortedFilteredData.length > 0 ? (
                 <FlashList
                     data={sortedFilteredData}
                     estimatedItemSize={302}
@@ -334,7 +371,8 @@ export default function HomeScreen() {
                         No content available.
                     </Text>
                 </View>
-            )}
+            )
+            }
 
             <BottomSheet
                 ref={bottomSheetRef}
@@ -407,7 +445,7 @@ export default function HomeScreen() {
             </BottomSheet>
 
             <AccountActionSheet ref={accountSheetRef} themeColor={themeColor} />
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 

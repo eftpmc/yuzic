@@ -30,8 +30,6 @@ const LidarrSettingsView: React.FC = () => {
     const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
     const [loadingQueue, setLoadingQueue] = useState(true);
 
-    const spinAnim = useRef(new Animated.Value(0)).current;
-
     useEffect(() => {
         startQueuePolling();
         setLoadingQueue(true);
@@ -41,6 +39,8 @@ const LidarrSettingsView: React.FC = () => {
             clearTimeout(timeout);
         };
     }, []);
+
+    const spinAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         Animated.loop(
