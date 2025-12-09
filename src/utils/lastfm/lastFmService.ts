@@ -1,12 +1,13 @@
 import { RootState } from "@/utils/redux/store";
 import { SongData } from "@/types";
+import { getLastFmTrackStats } from "@/api/lastfm/getTrackStats";
 
 export interface LastFmStats {
     songId: string;
     globalPlayCount: number | null;
 }
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 export const fetchLastFmStats = async (
     songs: SongData[],
@@ -15,53 +16,40 @@ export const fetchLastFmStats = async (
     getState?: () => RootState
 ): Promise<Record<string, LastFmStats>> => {
     const result: Record<string, LastFmStats> = {};
-
-    // 🧠 Snapshot the state once (if provided)
     const existingStats = getState?.().stats.statsMap ?? {};
 
-    // 🎯 Filter songs that actually need stats
     const songsToFetch = songs.filter(song => {
         const existing = existingStats[song.id];
-        return !existing || existing.globalPlayCount === null || existing.globalPlayCount === undefined;
+        return !existing || existing.globalPlayCount == null;
     });
 
     const total = songsToFetch.length;
     let fetched = 0;
 
     for (const song of songsToFetch) {
+        let stat: LastFmStats;
+
         try {
-            const artist = encodeURIComponent(song.artist);
-            const title = encodeURIComponent(song.title);
-            const res = await fetch(
-                `https://rawarr-server-af0092d911f6.herokuapp.com/api/lastfm/track?artist=${artist}&title=${title}`
-            );
-            const data = await res.json();
+            const data = await getLastFmTrackStats(song.artist, song.title);
 
-            if (data?.error === 29) {
-                console.warn('⏳ Rate limit reached, stopping...');
-                break;
-            }
+            if (data?.error === 29) break;
 
-            const playcount = parseInt(data?.track?.playcount || '0', 10);
-            const stat: LastFmStats = {
-                songId: song.id,
-                globalPlayCount: isNaN(playcount) ? null : playcount,
-            };
-
-            result[song.id] = stat;
-            onStatFetched?.(song.id, stat);
+            const count = parseInt(data?.track?.playcount || "0", 10);
+            stat = { songId: song.id, globalPlayCount: isNaN(count) ? null : count };
         } catch {
-            const stat: LastFmStats = { songId: song.id, globalPlayCount: null };
-            result[song.id] = stat;
-            onStatFetched?.(song.id, stat);
+            stat = { songId: song.id, globalPlayCount: null };
         }
 
-        const previouslyFetched = Object.values(existingStats).filter(
-            stat => stat.globalPlayCount !== null && stat.globalPlayCount !== undefined
-        ).length;
+        result[song.id] = stat;
+        onStatFetched?.(song.id, stat);
+
+        const alreadyFetched = Object.values(existingStats)
+            .filter(s => s.globalPlayCount != null)
+            .length;
 
         fetched++;
-        onProgress?.({ fetched: previouslyFetched + fetched, total });
+        onProgress?.({ fetched: alreadyFetched + fetched, total });
+
         await delay(250);
     }
 

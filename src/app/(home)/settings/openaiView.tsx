@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { toast } from '@backpackapp-io/react-native-toast';
+import { testConnection } from "@/api/openai/testConnection";
 
 export default function OpenAISettingsView() {
     const { openaiApiKey, setOpenaiApiKey, themeColor } = useSettings();
@@ -20,18 +21,15 @@ export default function OpenAISettingsView() {
     const colorScheme = Appearance.getColorScheme();
     const isDarkMode = colorScheme === 'dark';
 
-    const testConnection = async () => {
+    const ping = async () => {
         if (!openaiApiKey) {
             toast.error("Please enter an API key first.");
             return;
         }
 
         try {
-            const res = await fetch("https://api.openai.com/v1/models", {
-                headers: { Authorization: `Bearer ${openaiApiKey}` }
-            });
-
-            if (res.ok) toast.success("OpenAI connection successful!");
+            const ok = await testConnection(openaiApiKey);
+            if (ok) toast.success("OpenAI connection successful!");
             else toast.error("Invalid API Key or network issue.");
         } catch (err) {
             toast.error("Failed to connect.");
@@ -65,7 +63,7 @@ export default function OpenAISettingsView() {
 
                 <TouchableOpacity
                     style={[styles.button, { backgroundColor: themeColor }]}
-                    onPress={testConnection}
+                    onPress={ping}
                 >
                     <MaterialIcons name="bolt" size={20} color="#fff" />
                     <Text style={styles.buttonText}>Test Connection</Text>

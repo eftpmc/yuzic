@@ -17,7 +17,7 @@ import TrackPlayer, {
 import { PlaybackService } from '@/utils/track-player/PlaybackService';
 import { SongData } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
-import { scrobbleTrack } from '@/utils/navidrome/scrobble';
+import { scrobble } from '@/utils/navidrome/scrobble';
 import { useServer } from "@/contexts/ServerContext";
 import { incrementUserPlayCount } from '@/utils/redux/slices/userStatsSlice';
 import { useDispatch } from 'react-redux';
@@ -109,7 +109,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
             const elapsed = Date.now() - start;
             if (elapsed >= thresholdMs) {
                 try {
-                    await scrobbleTrack(currentSong.id, serverUrl, username, password, false); // nowPlaying=false
+                    await scrobble(currentSong.id, serverUrl, username, password, false); // nowPlaying=false
                     hasScrobbledRef.current = true;
                 } catch (err) {
                     console.warn('Scrobble failed:', err);
@@ -145,7 +145,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
             playbackStartTimeRef.current = Date.now();
             hasScrobbledRef.current = false;
 
-            await scrobbleTrack(next.id, serverUrl, username, password, true);
+            await scrobble(next.id, serverUrl, username, password, true);
         } catch (err) {
             console.error('[PlaybackActiveTrackChanged Error]', err);
         }

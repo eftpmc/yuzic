@@ -1,39 +1,22 @@
-import { buildCoverArtUrl, buildStreamUrl } from '@/utils/urlBuilders';
-import { PlaylistData, SongData } from '@/types';
+import { getPlaylists } from '@/api/navidrome/getPlaylists';
+import { getPlaylist } from '@/api/navidrome/getPlaylist';
+import {
+    addSongToPlaylist,
+    removeSongFromPlaylist,
+} from '@/api/navidrome/updatePlaylist';
+import { createPlaylist } from '@/api/navidrome/createPlaylist';
 
-const API_VERSION = '1.16.0';
-const CLIENT_NAME = 'NavidromeApp';
-
-/**
- * Fetch playlists with just their IDs and song IDs.
- */
 export const fetchPlaylists = async (
     serverUrl: string,
     username: string,
     password: string
-): Promise<{
-    id: string;
-    name: string;
-    entryIds: string[];
-}[]> => {
-    const response = await fetch(
-        `${serverUrl}/rest/getPlaylists.view?u=${encodeURIComponent(username)}&p=${encodeURIComponent(
-            password
-        )}&v=${API_VERSION}&c=${CLIENT_NAME}&f=json&size=500`
-    );
-
-    const data = await response.json();
-    const playlistList = data['subsonic-response']?.playlists?.playlist || [];
+): Promise<{ id: string; name: string; entryIds: string[] }[]> => {
+    const playlistList = await getPlaylists(serverUrl, username, password);
 
     const details = await Promise.all(
         playlistList.map(async (playlist: any) => {
-            const res = await fetch(
-                `${serverUrl}/rest/getPlaylist.view?u=${encodeURIComponent(username)}&p=${encodeURIComponent(
-                    password
-                )}&v=${API_VERSION}&c=${CLIENT_NAME}&f=json&id=${playlist.id}`
-            );
-            const resData = await res.json();
-            const entries = resData['subsonic-response']?.playlist?.entry || [];
+            const data = await getPlaylist(serverUrl, username, password, playlist.id);
+            const entries = data?.entry || [];
 
             return {
                 id: playlist.id,
@@ -46,67 +29,43 @@ export const fetchPlaylists = async (
     return details;
 };
 
-/**
- * Add a song to a playlist.
- */
 export const addSongToPlaylistNav = async (
     serverUrl: string,
     username: string,
     password: string,
     playlistId: string,
     songId: string
-): Promise<void> => {
-    const response = await fetch(
-        `${serverUrl}/rest/updatePlaylist.view?u=${encodeURIComponent(username)}&p=${encodeURIComponent(
-            password
-        )}&v=${API_VERSION}&c=${CLIENT_NAME}&f=json&playlistId=${playlistId}&songIdToAdd=${songId}`,
-        { method: 'POST' }
+) => {
+    return await addSongToPlaylist(
+        serverUrl,
+        username,
+        password,
+        playlistId,
+        songId
     );
-
-    if (!response.ok) {
-        throw new Error(`Failed to add song to playlist: ${response.statusText}`);
-    }
 };
 
-/**
- * Remove a song from a playlist.
- */
 export const removeSongFromPlaylistNav = async (
     serverUrl: string,
     username: string,
     password: string,
     playlistId: string,
     songIndex: string
-): Promise<void> => {
-    const response = await fetch(
-        `${serverUrl}/rest/updatePlaylist.view?u=${encodeURIComponent(username)}&p=${encodeURIComponent(
-            password
-        )}&v=${API_VERSION}&c=${CLIENT_NAME}&f=json&playlistId=${playlistId}&songIndexToRemove=${songIndex}`,
-        { method: 'POST' }
+) => {
+    return await removeSongFromPlaylist(
+        serverUrl,
+        username,
+        password,
+        playlistId,
+        songIndex
     );
-
-    if (!response.ok) {
-        throw new Error(`Failed to remove song from playlist: ${response.statusText}`);
-    }
 };
 
-/**
- * Create a new playlist.
- */
 export const createPlaylistNav = async (
     serverUrl: string,
     username: string,
     password: string,
     name: string
-): Promise<void> => {
-    const response = await fetch(
-        `${serverUrl}/rest/createPlaylist.view?u=${encodeURIComponent(username)}&p=${encodeURIComponent(
-            password
-        )}&v=${API_VERSION}&c=${CLIENT_NAME}&f=json&name=${encodeURIComponent(name)}`,
-        { method: 'POST' }
-    );
-
-    if (!response.ok) {
-        throw new Error(`Failed to create playlist: ${response.statusText}`);
-    }
+) => {
+    return await createPlaylist(serverUrl, username, password, name);
 };

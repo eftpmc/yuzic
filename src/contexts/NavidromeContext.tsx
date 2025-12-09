@@ -132,38 +132,38 @@ export const NavidromeProvider: React.FC<{ children: ReactNode }> = ({ children 
         }
     };
 
-const connectToServer = async (
-  providedUsername?: string,
-  providedPassword?: string
-): Promise<{ success: boolean; message?: string }> => {
-  const user = providedUsername ?? username;
-  const pass = providedPassword ?? password;
-  if (!serverUrl || !user || !pass) {
-    return { success: false, message: 'Missing credentials or server URL.' };
-  }
+    const connectToServer = async (
+        providedUsername?: string,
+        providedPassword?: string
+    ): Promise<{ success: boolean; message?: string }> => {
+        const user = providedUsername ?? username;
+        const pass = providedPassword ?? password;
+        if (!serverUrl || !user || !pass) {
+            return { success: false, message: 'Missing credentials or server URL.' };
+        }
 
-  const base = serverUrl.replace(/\/+$/, '');
-  const url = `${base}/rest/getMusicFolders.view?u=${encodeURIComponent(user)}&p=${encodeURIComponent(pass)}&v=1.16.0&c=Yuzic&f=json`;
+        const base = serverUrl.replace(/\/+$/, '');
+        const url = `${base}/rest/getMusicFolders.view?u=${encodeURIComponent(user)}&p=${encodeURIComponent(pass)}&v=1.16.0&c=Yuzic&f=json`;
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return { success: false, message: `Server responded with ${res.status}` };
+        try {
+            const res = await fetch(url);
+            if (!res.ok) return { success: false, message: `Server responded with ${res.status}` };
 
-    const data = await res.json().catch(() => ({} as any));
-    const status = data['subsonic-response']?.status;
-    if (status === 'ok') {
-      dispatch(setAuthenticated(true));
-      return { success: true };
-    }
+            const data = await res.json().catch(() => ({} as any));
+            const status = data['subsonic-response']?.status;
+            if (status === 'ok') {
+                dispatch(setAuthenticated(true));
+                return { success: true };
+            }
 
-    const message =
-      data['subsonic-response']?.error?.message ||
-      'Invalid credentials or unreachable server.';
-    return { success: false, message };
-  } catch {
-    return { success: false, message: 'Failed to reach Navidrome server.' };
-  }
-};
+            const message =
+                data['subsonic-response']?.error?.message ||
+                'Invalid credentials or unreachable server.';
+            return { success: false, message };
+        } catch {
+            return { success: false, message: 'Failed to reach Navidrome server.' };
+        }
+    };
 
     const disconnectServer = () => dispatch(disconnect());
 

@@ -1,71 +1,56 @@
 import { AlbumSummary, ArtistData } from '@/types';
+import { getArtistInfo } from '@/api/lastfm/getArtistInfo';
+import { getArtists } from '@/api/jellyfin/getArtists';
+import { getArtistAlbums } from '@/api/jellyfin/getArtistAlbums';
 
-/**
- * Enrich artists with Last.fm data for consistent album listings & bios.
- * Reuses Navidrome’s Last.fm proxy for cross-server consistency.
- */
 const fetchLastFmData = async (
     artistName: string,
     downloadedAlbums: AlbumSummary[] = []
 ): Promise<{ albums: AlbumSummary[]; bio: string | null }> => {
-    try {
-        const res = await fetch(
-            `https://rawarr-server-af0092d911f6.herokuapp.com/api/lastfm/artist?name=${encodeURIComponent(
-                artistName
-            )}`
-        );
-        const { albums: albumsRaw, bio } = await res.json();
+    const { albums: albumsRaw, bio } = await getArtistInfo(artistName);
 
-        const albums: AlbumSummary[] = albumsRaw
-            .filter(
-                (album: any) =>
-                    album.name &&
-                    typeof album.name === 'string' &&
-                    album.name.trim().toLowerCase() !== '' &&
-                    album.name.trim().toLowerCase() !== '(null)' &&
-                    album.name.trim().toLowerCase() !== 'undefined'
-            )
-            .map((album: any) => {
-                const title = album.name || '';
-                const id = album.mbid || title;
-                const cover =
-                    album.image?.find((img: any) => img.size === 'extralarge')?.['#text'] || '';
-                const artist = album.artist?.name || artistName;
-                const playcount = album.playcount ? parseInt(album.playcount) : undefined;
+    const albums: AlbumSummary[] = albumsRaw
+        .filter(
+            (album: any) =>
+                album.name &&
+                typeof album.name === 'string' &&
+                album.name.trim().toLowerCase() !== '' &&
+                album.name.trim().toLowerCase() !== '(null)' &&
+                album.name.trim().toLowerCase() !== 'undefined'
+        )
+        .map((album: any) => {
+            const title = album.name || '';
+            const id = album.mbid || title;
+            const cover =
+                album.image?.find((img: any) => img.size === 'extralarge')?.['#text'] || '';
+            const artist = album.artist?.name || artistName;
+            const playcount = album.playcount ? parseInt(album.playcount) : undefined;
 
-                let subtext = 'Album';
-                const lower = title.toLowerCase();
-                if (lower.includes('ep')) subtext = 'EP';
-                else if (lower.includes('single')) subtext = 'Single';
+            let subtext = 'Album';
+            const lower = title.toLowerCase();
+            if (lower.includes('ep')) subtext = 'EP';
+            else if (lower.includes('single')) subtext = 'Single';
 
-                const matchedDownload = downloadedAlbums.find(
-                    (d) =>
-                        d.title.toLowerCase() === title.toLowerCase() &&
-                        d.artist.toLowerCase() === artist.toLowerCase()
-                );
+            const matchedDownload = downloadedAlbums.find(
+                (d) =>
+                    d.title.toLowerCase() === title.toLowerCase() &&
+                    d.artist.toLowerCase() === artist.toLowerCase()
+            );
 
-                return {
-                    id: matchedDownload?.id ?? id,
-                    cover,
-                    title,
-                    subtext,
-                    artist,
-                    playcount,
-                    isDownloaded: !!matchedDownload,
-                };
-            });
+            return {
+                id: matchedDownload?.id ?? id,
+                cover,
+                title,
+                subtext,
+                artist,
+                playcount,
+                isDownloaded: !!matchedDownload,
+            };
+        });
 
-        return { albums, bio };
-    } catch (err) {
-        console.warn(`❌ [Last.fm] Failed for "${artistName}":`, err);
-        return { albums: [], bio: null };
-    }
+    return { albums, bio };
 };
 
-/**
- * Fetch full artist data from Jellyfin, merging Jellyfin metadata
- * with Last.fm enrichment for consistent album lists and bio fallback.
- */
 export const fetchArtistsFromJellyfin = async (
     serverUrl: string,
     token: string,
@@ -73,21 +58,8 @@ export const fetchArtistsFromJellyfin = async (
     existingArtists: ArtistData[] = []
 ): Promise<ArtistData[]> => {
     try {
-        console.log('[Jellyfin] Fetching all music artists...');
-
-        const response = await fetch(
-            `${serverUrl}/Items?IncludeItemTypes=MusicArtist&Recursive=true&SortBy=SortName&Fields=PrimaryImageAspectRatio,Overview,Genres,Path,DateCreated`,
-            { headers: { 'X-Emby-Token': token } }
-        );
-
-        if (!response.ok) {
-            console.error('[Jellyfin] Failed to fetch artists:', response.status);
-            return [];
-        }
-
-        const data = await response.json();
-        const artistItems = data?.Items || [];
-        console.log(`[Jellyfin] Found ${artistItems.length} artists.`);
+        const artistItems = await getArtists(serverUrl, token);
+        if (!artistItems) return [];
 
         const artists: ArtistData[] = await Promise.all(
             artistItems.map(async (artist: any) => {
@@ -97,22 +69,14 @@ export const fetchArtistsFromJellyfin = async (
                     `${serverUrl}/Items/${artistId}/Images/Primary?quality=90&X-Emby-Token=${token}` +
                     (artist.ImageTags?.Primary ? `&tag=${artist.ImageTags.Primary}` : '');
 
-                // 🧠 Reuse cached data if available
                 const cached = existingArtists.find((a) => a.id === artistId);
-                if (cached && cached.albums && cached.albums.length > 0 && cached.bio)
+                if (cached && cached.albums && cached.albums.length > 0 && cached.bio) {
                     return cached;
-
-                // Step 1: Fetch artist’s albums directly from Jellyfin
-                const albumRes = await fetch(
-                    `${serverUrl}/Items?ArtistIds=${artistId}&IncludeItemTypes=MusicAlbum&Recursive=true&SortBy=ProductionYear,SortName&Fields=PrimaryImageAspectRatio,Genres,Path,DateCreated,UserData`,
-                    { headers: { 'X-Emby-Token': token } }
-                );
+                }
 
                 let jellyfinAlbums: AlbumSummary[] = [];
-                if (albumRes.ok) {
-                    const albumData = await albumRes.json();
-                    const albumItems = albumData?.Items || [];
-
+                const albumItems = await getArtistAlbums(serverUrl, token, artistId);
+                if (albumItems) {
                     jellyfinAlbums = albumItems.map((album: any) => {
                         const id = album.Id;
                         const title = album.Name;
@@ -121,8 +85,7 @@ export const fetchArtistsFromJellyfin = async (
                             (album.ImageTags?.Primary ? `&tag=${album.ImageTags.Primary}` : '');
 
                         const isDownloaded = downloadedAlbums.some(
-                            (d) =>
-                                d.title.toLowerCase() === title.toLowerCase()
+                            (d) => d.title.toLowerCase() === title.toLowerCase()
                         );
 
                         return {
@@ -137,13 +100,11 @@ export const fetchArtistsFromJellyfin = async (
                     });
                 }
 
-                // Step 2: Enrich with Last.fm (for missing albums or better bio)
                 const { albums: lastFmAlbums, bio: lastFmBio } = await fetchLastFmData(
                     artistName,
                     downloadedAlbums
                 );
 
-                // Merge albums (prefer Jellyfin data, then Last.fm extras)
                 const mergedAlbumsMap: Record<string, AlbumSummary> = {};
                 [...jellyfinAlbums, ...lastFmAlbums].forEach((album) => {
                     mergedAlbumsMap[album.title.toLowerCase()] = album;
@@ -163,8 +124,7 @@ export const fetchArtistsFromJellyfin = async (
         );
 
         return artists.filter(Boolean);
-    } catch (err) {
-        console.error('[Jellyfin] Failed to fetch artists:', err);
+    } catch {
         return [];
     }
 };

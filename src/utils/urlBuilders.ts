@@ -22,3 +22,11 @@ export const buildStreamUrl = (
         password
     )}&v=${API_VERSION}&c=${CLIENT_NAME}&f=json`;
 };
+
+export const buildJellyfinStreamUrl = (
+    serverUrl: string,
+    token: string,
+    songId: string
+) => {
+    return `${serverUrl}/Audio/${songId}/stream.mp3?X-Emby-Token=${token}`;
+};
