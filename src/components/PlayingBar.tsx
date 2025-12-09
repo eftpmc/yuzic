@@ -181,7 +181,6 @@ const PlayingBar: React.FC = () => {
                                 </TouchableOpacity>
                             </Animated.View>
 
-                            {/* Input mode */}
                             <Animated.View style={[styles.topRow, styles.inputOverlay, { opacity: inputFadeAnim, zIndex: 1 }]}>
                                 <View style={styles.inputWrapper}>
                                     <TextInput

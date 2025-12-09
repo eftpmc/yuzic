@@ -17,8 +17,8 @@ import { useServer } from '@/contexts/ServerContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { setServerType } from '@/utils/redux/slices/serverSlice';
 import { useDispatch } from 'react-redux';
-import NavidromeIcon from '@/assets/images/navidrome.png';
-import JellyfinIcon from '@/assets/images/jellyfin.png';
+import NavidromeIcon from '@assets/images/navidrome.png';
+import JellyfinIcon from '@assets/images/jellyfin.png';
 
 
 export default function OnboardingScreen() {

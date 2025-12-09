@@ -24,8 +24,6 @@ import { Alert, Platform, Dimensions, View } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavidromeProvider } from '@/contexts/NavidromeContext';
 import { JellyfinProvider } from '@/contexts/JellyfinContext';
 
@@ -37,10 +35,10 @@ export default function RootLayout() {
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
     const [loaded] = useFonts({
-        SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+        SpaceMono: require('@assets/fonts/SpaceMono-Regular.ttf'),
     });
 
-    const jsErrorHandler = (error, isFatal) => {
+    const jsErrorHandler = (error: { name: any; message: any; }, isFatal: any) => {
         if (isFatal) {
             Alert.alert(
                 'Unexpected error occurred',
@@ -63,11 +61,10 @@ We will need to restart the app.
         }
     };
 
-    setJSExceptionHandler(jsErrorHandler, true); // `true` shows alert even in dev mode
+    setJSExceptionHandler(jsErrorHandler, true);
 
     setNativeExceptionHandler((errorString) => {
         console.log('Native crash detected:', errorString);
-        // Optionally send errorString to your backend or logging service
     }, false, true);
 
     useEffect(() => {

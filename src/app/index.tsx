@@ -17,7 +17,7 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (!isMounted || isLoading) return; // ⏳ wait until loading finishes
+    if (!isMounted || isLoading) return;
 
     if (isAuthenticated && type && serverUrl) {
       router.replace('/(home)');
