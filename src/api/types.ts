@@ -21,7 +21,11 @@ export interface ApiAdapter {
 }
 
 export interface AuthApi {
-  connect(): Promise<{ success: boolean; message?: string }>;
+  connect(
+    serverUrl: string,
+    username: string,
+    password: string
+  ): Promise<{ success: boolean; message?: string }>;
   ping(): Promise<boolean>;
   testUrl(url: string): Promise<{ success: boolean; message?: string }>;
   startScan(): Promise<{ success: boolean; message?: string }>;

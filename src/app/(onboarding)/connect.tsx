@@ -40,7 +40,7 @@ export default function OnboardingScreen() {
     const updateUsername = (u: string) => dispatch(setUsername(u));
     const updatePassword = (p: string) => dispatch(setPassword(p));
 
-    const jellyfinDisabled = true;
+    const jellyfinDisabled = false;
 
     useEffect(() => {
         const timeout = setTimeout(() => setIsLayoutMounted(true), 0);
@@ -92,7 +92,7 @@ export default function OnboardingScreen() {
             updateUsername('demo');
             updatePassword('demo');
             setTimeout(async () => {
-                const result = await api.auth.connect();
+                const result = await api.auth.connect('https://demo.navidrome.org', 'demo', 'demo');
                 if (result.success) {
                     router.replace('(home)');
                 } else {

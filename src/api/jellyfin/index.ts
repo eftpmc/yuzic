@@ -31,26 +31,24 @@ import { unstar } from "./unstar";
 import { getSongsByGenre } from "./getSongsByGenre";
 
 export const createJellyfinAdapter = (adapter: AdapterType): ApiAdapter => {
-  const { serverUrl, username, password } = adapter;
-  const token = password;
-  const userId = username;
+  const { serverUrl, username, password, token, userId } = adapter;
 
-const auth: AuthApi = {
-  connect: async () => {
-    return connect(serverUrl, username, password);
-  },
-  ping: async () => {
-    if (!password) return false;
-    return ping(serverUrl, password);
-  },
-  testUrl: async (url) => {
-    return testServerUrl(url);
-  },
-  startScan: async () => {
-    return startScan(serverUrl, password);
-  },
-  disconnect: () => {},
-};
+  const auth: AuthApi = {
+    connect: async (serverUrl, username, password) => {
+      return connect(serverUrl, username, password);
+    },
+    ping: async () => {
+      if (!password) return false;
+      return ping(serverUrl, password);
+    },
+    testUrl: async (url) => {
+      return testServerUrl(url);
+    },
+    startScan: async () => {
+      return startScan(serverUrl, password);
+    },
+    disconnect: () => { },
+  };
 
   const albums: AlbumsApi = {
     list: async () => {
@@ -118,7 +116,7 @@ const auth: AuthApi = {
   };
 
   const scrobble: ScrobbleApi = {
-    submit: async (songId: string) => {},
+    submit: async (songId: string) => { },
   };
 
   const stats: StatsApi = {

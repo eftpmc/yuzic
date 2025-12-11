@@ -9,12 +9,15 @@ export async function connect(
   username: string,
   password: string
 ): Promise<{ success: boolean; message?: string }> {
+  console.log(serverUrl, username, password)
   if (!serverUrl || !username || !password) {
     return { success: false, message: "Missing credentials or server URL." };
   }
 
+  const cleanUrl = serverUrl.replace(/\/+$/, "");
+
   const url =
-    `${serverUrl.replace(/\/+$/, "")}/rest/getMusicFolders.view` +
+    `${cleanUrl}/rest/getMusicFolders.view` +
     `?u=${encodeURIComponent(username)}` +
     `&p=${encodeURIComponent(password)}` +
     `&v=${API_VERSION}` +
@@ -23,23 +26,49 @@ export async function connect(
 
   try {
     const res = await fetch(url);
-    if (!res.ok) return { success: false, message: `Server returned ${res.status}` };
+    if (!res.ok) {
+      return {
+        success: false,
+        message: `Navidrome returned status ${res.status}`,
+      };
+    }
 
-    const data = await res.json().catch(() => ({} as any));
-    const status = data["subsonic-response"]?.status;
+    let data: any = {};
+    try {
+      data = await res.json();
+    } catch {
+      return { success: false, message: "Navidrome returned invalid JSON." };
+    }
 
-    if (status === "ok") {
+    const response = data["subsonic-response"];
+    if (!response) {
+      return { success: false, message: "Malformed Subsonic response." };
+    }
+
+    // When credentials are correct
+    if (response.status === "ok") {
       store.dispatch(setAuthenticated(true));
       return { success: true };
     }
 
+    // When credentials fail
+    if (response.error) {
+      const msg =
+        response.error.message ||
+        response.error.code === 40
+          ? "Invalid username or password."
+          : "Navidrome authentication failed.";
+      return { success: false, message: msg };
+    }
+
     return {
       success: false,
-      message:
-        data["subsonic-response"]?.error?.message ??
-        "Invalid credentials or unreachable server.",
+      message: "Unknown Navidrome error occurred.",
     };
   } catch {
-    return { success: false, message: "Failed to reach Navidrome server." };
+    return {
+      success: false,
+      message: "Failed to reach Navidrome server. Check URL or network.",
+    };
   }
 }

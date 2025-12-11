@@ -45,7 +45,7 @@ export const createNavidromeAdapter = (adapter: AdapterType): ApiAdapter => {
   const { serverUrl, username, password } = adapter;
 
   const auth: AuthApi = {
-    connect: () => connect(serverUrl, username, password),
+    connect: (serverUrl, username, password) => connect(serverUrl, username, password),
     ping: () => ping(serverUrl, username, password),
     testUrl: (url) => testServerUrl(url),
     startScan: () => startScan(serverUrl, username, password),

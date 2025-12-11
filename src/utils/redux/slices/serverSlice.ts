@@ -7,8 +7,8 @@ interface ServerState {
   serverUrl: string;
   username: string;
   password: string;
-  token: string | null;
-  userId: string | null;
+  token: string;
+  userId: string;
   isAuthenticated: boolean;
 }
 
@@ -17,8 +17,8 @@ const initialState: ServerState = {
   serverUrl: "",
   username: "",
   password: "",
-  token: null,
-  userId: null,
+  token: "",
+  userId: "",
   isAuthenticated: false
 };
 
@@ -38,10 +38,10 @@ export const serverSlice = createSlice({
     setPassword: (state, action: PayloadAction<string>) => {
       state.password = action.payload;
     },
-    setToken: (state, action: PayloadAction<string | null>) => {
+    setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
     },
-    setUserId: (state, action: PayloadAction<string | null>) => {
+    setUserId: (state, action: PayloadAction<string>) => {
       state.userId = action.payload;
     },
     setAuthenticated: (state, action: PayloadAction<boolean>) => {

@@ -61,15 +61,17 @@ export interface AlbumSummary {
 }
 
 export interface ServerContextType {
-  serverType: 'navidrome' | 'jellyfin' | 'none';
-  serverUrl: string;
-  username: string;
-  password: string;
-  token?: string | null;
+    serverType: 'navidrome' | 'jellyfin' | 'none';
+    serverUrl: string;
+    username: string;
+    password: string;
+    token?: string | null;
 }
 
 export interface AdapterType {
-  serverUrl: string;
-  username: string;
-  password: string;
+    serverUrl: string;
+    username: string;
+    password: string;
+    token: string;
+    userId: string;
 }

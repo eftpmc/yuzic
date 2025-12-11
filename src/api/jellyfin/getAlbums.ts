@@ -10,10 +10,16 @@ async function fetchGetAlbums(serverUrl: string, token: string) {
     `?IncludeItemTypes=MusicAlbum` +
     `&Recursive=true` +
     `&SortBy=SortName` +
-    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists` +
-    `&X-Emby-Token=${token}`;
+    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      "X-Emby-Token": token,
+      "X-Emby-Authorization":
+        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
+    }
+  });
+
   if (!res.ok) throw new Error(`Jellyfin getAlbums failed: ${res.status}`);
   return res.json();
 }
@@ -77,7 +83,6 @@ export async function getAlbums(
 ): Promise<GetAlbumsResult> {
   const raw = await fetchGetAlbums(serverUrl, token);
   const items = raw?.Items ?? [];
-
   const albums = await Promise.all(
     items.map((a: any) => normalizeAlbum(a, serverUrl, token))
   );

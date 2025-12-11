@@ -19,9 +19,11 @@ export async function connect(
 
     if (!res.ok) {
       let msg = `Login failed (${res.status})`;
+
       if (res.status === 401) msg = "Invalid username or password.";
       if (res.status === 403)
         msg = "User is not permitted to sign in (check remote access settings).";
+
       return { success: false, message: msg };
     }
 
@@ -29,13 +31,19 @@ export async function connect(
     const token = data?.AccessToken;
     const userId = data?.User?.Id;
 
-    if (!token || !userId)
+    if (!token || !userId) {
       return { success: false, message: "Malformed Jellyfin login response." };
+    }
 
     store.dispatch(setToken(token));
     store.dispatch(setUserId(userId));
     store.dispatch(setAuthenticated(true));
-    return { success: true };
+
+    return {
+      success: true,
+      token,
+      userId
+    };
 
   } catch {
     return { success: false, message: "Connection failed. Check URL or network." };

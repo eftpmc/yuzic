@@ -23,7 +23,7 @@ export default function CredentialsScreen() {
     const dispatch = useDispatch();
     const api = useApi();
 
-    const { type, username, password } = useSelector(
+    const { type, serverUrl, username, password } = useSelector(
         (state: RootState) => state.server
     );
 
@@ -55,7 +55,8 @@ export default function CredentialsScreen() {
             dispatch(setUsername(localUsername));
             dispatch(setPassword(localPassword));
 
-            const result = await api.auth.connect();
+            console.log(type)
+            const result = await api.auth.connect(serverUrl, localUsername, localPassword);
 
             if (result?.success) {
                 router.replace('(home)');

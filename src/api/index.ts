@@ -9,15 +9,15 @@ const empty = async () => {
 };
 
 export const useApi = (): ApiAdapter => {
-    const { type, serverUrl, username, password, isAuthenticated } =
+    const { type, serverUrl, username, password, token, userId } =
     useSelector((s: RootState) => s.server);
 
     if (type === "navidrome") {
-        return createNavidromeAdapter({serverUrl, username, password});
+        return createNavidromeAdapter({serverUrl, username, password, token, userId});
     }
 
     if (type === "jellyfin") {
-        return createJellyfinAdapter({serverUrl, username, password});
+        return createJellyfinAdapter({serverUrl, username, password, token, userId});
     }
 
     return {
