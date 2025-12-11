@@ -38,17 +38,10 @@ async function normalizeAlbum(
 
   const songItems = await getAlbumSongs(serverUrl, token, albumId, cover);
 
-  const songs: SongData[] = songItems.map((s: any) => ({
-    id: s.Id,
-    title: s.Name,
-    artist: s.artist,
-    cover,
-    duration: s.duration,
-    streamUrl: s.streamUrl,
+  const songs: SongData[] = songItems.map((s: SongData) => ({
+    ...s,
     albumId,
-    genres: s.genres,
-    globalPlayCount: s.globalPlayCount,
-    userPlayCount: s.userPlayCount,
+    cover,
   }));
 
   const artist: ArtistData = {
