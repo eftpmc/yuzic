@@ -6,12 +6,12 @@ const CLIENT_NAME = "Yuzic";
 
 export type GetPlaylistResult = PlaylistData | null;
 
-async function fetchGetPlaylist(
+export async function getPlaylist(
   serverUrl: string,
   username: string,
   password: string,
   playlistId: string
-) {
+): Promise<GetPlaylistResult> {
   const url =
     `${serverUrl}/rest/getPlaylist.view` +
     `?u=${encodeURIComponent(username)}` +
@@ -24,15 +24,7 @@ async function fetchGetPlaylist(
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Navidrome getPlaylist failed: ${res.status}`);
 
-  return res.json();
-}
-
-function normalizePlaylist(
-  raw: any,
-  serverUrl: string,
-  username: string,
-  password: string
-): PlaylistData | null {
+  const raw = await res.json();
   const playlist = raw?.["subsonic-response"]?.playlist;
   if (!playlist) return null;
 
@@ -60,14 +52,4 @@ function normalizePlaylist(
     songs,
     songCount: playlist.songcount
   };
-}
-
-export async function getPlaylist(
-  serverUrl: string,
-  username: string,
-  password: string,
-  playlistId: string
-): Promise<GetPlaylistResult> {
-  const raw = await fetchGetPlaylist(serverUrl, username, password, playlistId);
-  return normalizePlaylist(raw, serverUrl, username, password);
 }

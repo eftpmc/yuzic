@@ -39,18 +39,20 @@ function normalizeAlbum(
     (a.ImageTags?.Primary ? `&tag=${a.ImageTags.Primary}` : "");
 
   const artist: ArtistData = {
-    id: a.ArtistItems[0].Id,
-    name: a.ArtistItems[0].Name || "Unknown Artist",
+    id: a.AlbumArtists[0].Id,
+    name: a.AlbumArtists[0].Name || "Unknown Artist",
     cover: "",
     subtext: "Artist",
-    bio: ""
+    bio: "",
+    ownedIds: [],
+    externalAlbums: []
   }
 
   return {
     id: a.Id,
     cover,
     title: a.Name,
-    subtext: `Album • ${artist}`,
+    subtext: `Album • ${artist.name}`,
     artist,
     songs: [],
     songCount: 0,
@@ -73,8 +75,8 @@ export async function getAlbum(
     ...base,
     subtext:
       songs.length > 1
-        ? `Album • ${base.artist}`
-        : `Single • ${base.artist}`,
+        ? `Album • ${base.artist.name}`
+        : `Single • ${base.artist.name}`,
     songs,
   };
 }

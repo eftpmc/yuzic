@@ -8,7 +8,7 @@ import {
   ScrobbleApi,
   StatsApi,
   SearchApi,
-  AuthApi,
+  AuthApi
 } from "../types";
 
 import { AlbumData, GenreMaps, PlaylistData, AdapterType } from "@/types";
@@ -64,12 +64,10 @@ export const createNavidromeAdapter = (adapter: AdapterType): ApiAdapter => {
     }
   };
 
-
   const artists: ArtistsApi = {
     list: async () => {
       return getArtists(serverUrl, username, password);
     },
-
 
     get: async (id: string) => {
       const artist = await getArtist(serverUrl, username, password, id);
@@ -108,25 +106,13 @@ export const createNavidromeAdapter = (adapter: AdapterType): ApiAdapter => {
   };
   const playlists: PlaylistsApi = {
     list: async () => {
-      const raw = await getPlaylists(serverUrl, username, password);
+      return getPlaylists(serverUrl, username, password);
+    },
 
-      const mapped = await Promise.all(
-        raw.map(async p => {
-          const full = await getPlaylist(serverUrl, username, password, p.id);
-          if (!full) return null;
-
-          return {
-            id: full.id,
-            title: full.title,
-            subtext: full.subtext ?? "Playlist",
-            cover: full.songs[0]?.cover ?? "",
-            songs: full.songs,
-            songCount: full.songCount
-          } satisfies PlaylistData;
-        })
-      );
-
-      return mapped.filter((p): p is PlaylistData => p !== null);
+    get: async (id: string) => {
+      const playlist = await getPlaylist(serverUrl, username, password, id);
+      if (!playlist) throw new Error("Playlist not found");
+      return playlist;
     },
 
     create: async (name: string) => {

@@ -29,7 +29,7 @@ export async function getAlbum(
   const album = raw?.["subsonic-response"]?.album;
   if (!album) return null;
 
-  const artist = await getArtist(serverUrl, username, password, album.artistId);
+  const artist: ArtistData | null = await getArtist(serverUrl, username, password, album.artistId);
   if (!artist) return null;
 
   const cover = buildCoverArtUrl(album.coverArt, serverUrl, username, password);
@@ -54,8 +54,8 @@ export async function getAlbum(
     title: album.name,
     subtext:
       songs.length > 1
-        ? `Album • ${album.artist}`
-        : `Single • ${album.artist}`,
+        ? `Album • ${artist.name}`
+        : `Single • ${artist.name}`,
     artist,
     userPlayCount: 0,
     songs,

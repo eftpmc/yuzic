@@ -24,6 +24,8 @@ export interface ArtistData {
     cover: string;
     subtext: string;
     bio: string;
+    ownedIds: string[];
+    externalAlbums: AlbumData[]
 }
 
 export interface SongData {

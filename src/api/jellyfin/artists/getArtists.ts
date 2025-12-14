@@ -33,7 +33,9 @@ function normalizeBaseArtist(a: any, serverUrl: string, token: string): ArtistDa
     name: a.Name ?? "Unknown Artist",
     cover,
     subtext: "Artist",
-    bio: ""
+    bio: "",
+    ownedIds: [],
+    externalAlbums: []
   };
 }
 

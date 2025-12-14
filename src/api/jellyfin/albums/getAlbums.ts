@@ -38,18 +38,20 @@ async function normalizeAlbum(
       (a.ImageTags?.Primary ? `&tag=${a.ImageTags.Primary}` : "");
 
     const artist: ArtistData = {
-      id: a.ArtistItems[0].Id,
-      name: a.ArtistItems[0].Name || "Unknown Artist",
+      id: a.AlbumArtists[0].Id,
+      name: a.AlbumArtists[0].Name || "Unknown Artist",
       cover: "",
       subtext: "Artist",
-      bio: ""
+      bio: "",
+      ownedIds: [],
+      externalAlbums: []
     }
-    
+
     return {
       id: albumId,
       cover,
       title: a.Name ?? "Unknown Album",
-      subtext: `Album • ${artist}`,
+      subtext: `Album • ${artist.name}`,
       artist,
       songs: [],
       songCount: 0,

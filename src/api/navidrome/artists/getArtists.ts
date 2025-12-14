@@ -42,6 +42,8 @@ async function normalizeArtistEntry(
     name: a.name,
     subtext: "Artist",
     bio: "",
+    ownedIds: [],
+    externalAlbums: []
   };
 }
 

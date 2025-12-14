@@ -6,11 +6,11 @@ const CLIENT_NAME = "Yuzic";
 
 export type GetPlaylistsResult = PlaylistData[];
 
-async function fetchGetPlaylists(
+export async function getPlaylists(
   serverUrl: string,
   username: string,
   password: string
-) {
+): Promise<GetPlaylistsResult> {
   const url =
     `${serverUrl}/rest/getPlaylists.view` +
     `?u=${encodeURIComponent(username)}` +
@@ -23,15 +23,7 @@ async function fetchGetPlaylists(
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Navidrome getPlaylists failed: ${res.status}`);
 
-  return res.json();
-}
-
-function normalizePlaylists(
-  raw: any,
-  serverUrl: string,
-  username: string,
-  password: string
-): GetPlaylistsResult {
+  const raw = await res.json();
   const list = raw?.["subsonic-response"]?.playlists?.playlist || [];
 
   return list.map((pl: any) => {
@@ -46,13 +38,4 @@ function normalizePlaylists(
       songCount: pl.songCount
     };
   });
-}
-
-export async function getPlaylists(
-  serverUrl: string,
-  username: string,
-  password: string
-): Promise<GetPlaylistsResult> {
-  const raw = await fetchGetPlaylists(serverUrl, username, password);
-  return normalizePlaylists(raw, serverUrl, username, password);
 }

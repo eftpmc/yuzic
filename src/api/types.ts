@@ -48,6 +48,7 @@ export interface GenresApi {
 
 export interface PlaylistsApi {
   list(): Promise<PlaylistData[]>;
+  get(id: string): Promise<PlaylistData>;
   create(name: string): Promise<string>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
   removeSong(playlistId: string, songId: string): Promise<RemoveSongFromPlaylistResult>;

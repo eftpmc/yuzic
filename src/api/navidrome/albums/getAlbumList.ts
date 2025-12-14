@@ -40,7 +40,9 @@ function normalizeAlbumEntry(
     name: a.artist,
     cover: "",
     subtext: "Artist",
-    bio: ""
+    bio: "",
+    ownedIds: [],
+    externalAlbums: []
   }
 
   return {

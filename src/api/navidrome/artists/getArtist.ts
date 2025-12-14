@@ -7,12 +7,12 @@ const CLIENT_NAME = "Yuzic";
 
 export type GetArtistResult = ArtistData | null;
 
-async function fetchGetArtist(
+export async function getArtist(
   serverUrl: string,
   username: string,
   password: string,
   artistId: string
-) {
+): Promise<GetArtistResult> {
   const url =
     `${serverUrl}/rest/getArtist.view` +
     `?u=${encodeURIComponent(username)}` +
@@ -25,34 +25,28 @@ async function fetchGetArtist(
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Navidrome getArtist failed: ${res.status}`);
 
-  return res.json();
-}
-
-function normalizeArtist(
-  a: any,
-  serverUrl: string,
-  username: string,
-  password: string,
-): GetArtistResult {
-  const cover = buildCoverArtUrl(a.coverArt, serverUrl, username, password);
-
-  return {
-    id: a.id ?? "",
-    name: a.name ?? "Unknown Artist",
-    cover,
-    subtext: "Artist",
-    bio: "",
-  };
-}
-
-export async function getArtist(
-  serverUrl: string,
-  username: string,
-  password: string,
-  artistId: string
-): Promise<GetArtistResult> {
-  const raw = await fetchGetArtist(serverUrl, username, password, artistId);
+  const raw = await res.json();
   const artist = raw?.["subsonic-response"]?.artist;
   if (!artist) return null;
-  return normalizeArtist(artist, serverUrl, username, password);
+
+  const lastFmData = await getArtistInfo(artist.name);
+  if (!lastFmData) return null;
+
+  const ownedIds = []
+
+  for (const album of artist.album) {
+    ownedIds.push(album.id);
+  }
+
+  const cover = buildCoverArtUrl(artist.coverArt, serverUrl, username, password);
+
+  return {
+    id: artist.id ?? "",
+    name: artist.name ?? "Unknown Artist",
+    cover,
+    subtext: "Artist",
+    bio: lastFmData.bio,
+    ownedIds,
+    externalAlbums: lastFmData.albums
+  };
 }

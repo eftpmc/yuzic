@@ -30,6 +30,7 @@ import { getStarredItems } from "./starred/getStarredItems";
 import { star } from "./starred/star";
 import { unstar } from "./starred/unstar";
 import { getSongsByGenre } from "./genres/getSongsByGenre";
+import { getArtist } from "./artists/getArtist";
 
 export const createJellyfinAdapter = (adapter: AdapterType): ApiAdapter => {
   const { serverUrl, username, password, token, userId } = adapter;
@@ -67,11 +68,9 @@ export const createJellyfinAdapter = (adapter: AdapterType): ApiAdapter => {
       return getArtists(serverUrl, token);
     },
     get: async (id: string) => {
-      const base = await getArtists(serverUrl, token);
-      const artist = base.find((a) => a.id === id);
-      if (!artist) throw new Error("Artist not found");
-      const albums = await getArtistAlbums(serverUrl, token, id);
-      return { ...artist, albums };
+      const artist = await getArtist(serverUrl, token, id);
+      if (!artist) throw new Error("Album not found");
+      return artist;
     },
   };
 
@@ -113,6 +112,14 @@ export const createJellyfinAdapter = (adapter: AdapterType): ApiAdapter => {
         )
         .map(result => result.value);
     },
+
+    get: async (id: string) => {
+      const base = await playlists.list();
+      const playlist = base.find((p) => p.id === id);
+      if (!playlist) throw new Error("Artist not found");
+      return playlist;
+    },
+
     create: async (name) => {
       return createPlaylist(serverUrl, userId, token, name)
     },
