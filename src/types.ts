@@ -1,34 +1,45 @@
-export interface AlbumData {
+export interface AlbumBase {
     id: string;
     cover: string;
     title: string;
     subtext: string;
-    artist: ArtistData;
+    artist: ArtistBase;
     userPlayCount: number;
-    songs: SongData[]
-    songCount: number;
 }
 
-export interface PlaylistData {
+export interface Album extends AlbumBase {
+    songs: Song[]
+}
+
+export interface PlaylistBase {
     id: string;
     cover: string;
     title: string;
     subtext: string;
-    songs: SongData[]
-    songCount: number;
 }
 
-export interface ArtistData {
+export interface Playlist {
     id: string;
-    name: string;
     cover: string;
+    title: string;
     subtext: string;
-    bio: string;
-    ownedIds: string[];
-    externalAlbums: AlbumData[]
+    songs: Song[]
 }
 
-export interface SongData {
+export interface ArtistBase {
+    id: string;
+    cover: string;
+    name: string;
+    subtext: string;
+}
+
+export interface Artist extends ArtistBase {
+    bio: string;
+    ownedAlbums: AlbumBase[];
+    externalAlbums: AlbumBase[];
+}
+
+export interface Song {
     id: string;
     title: string;
     artist: string;

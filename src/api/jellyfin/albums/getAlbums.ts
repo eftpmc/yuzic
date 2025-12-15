@@ -1,34 +1,12 @@
-import { AlbumData, ArtistData, SongData } from "@/types";
-import { getAlbumSongs } from "./getAlbumSongs";
-import { buildJellyfinStreamUrl } from "@/utils/urlBuilders";
+import { AlbumBase, ArtistBase } from "@/types";
 
-export type GetAlbumsResult = AlbumData[];
-
-async function fetchGetAlbums(serverUrl: string, token: string) {
-  const url =
-    `${serverUrl}/Items` +
-    `?IncludeItemTypes=MusicAlbum` +
-    `&Recursive=true` +
-    `&SortBy=SortName` +
-    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists`;
-
-  const res = await fetch(url, {
-    headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
-    }
-  });
-
-  if (!res.ok) throw new Error(`Jellyfin getAlbums failed: ${res.status}`);
-  return res.json();
-}
+export type GetAlbumsResult = AlbumBase[];
 
 async function normalizeAlbum(
   a: any,
   serverUrl: string,
   token: string
-): Promise<AlbumData | null> {
+): Promise<AlbumBase | null> {
   try {
     const albumId = a.Id;
     if (!albumId) return null;
@@ -37,14 +15,11 @@ async function normalizeAlbum(
       `${serverUrl}/Items/${albumId}/Images/Primary?quality=90&X-Emby-Token=${token}` +
       (a.ImageTags?.Primary ? `&tag=${a.ImageTags.Primary}` : "");
 
-    const artist: ArtistData = {
+    const artist: ArtistBase = {
       id: a.AlbumArtists[0].Id,
       name: a.AlbumArtists[0].Name || "Unknown Artist",
       cover: "",
-      subtext: "Artist",
-      bio: "",
-      ownedIds: [],
-      externalAlbums: []
+      subtext: "Artist"
     }
 
     return {
@@ -53,8 +28,6 @@ async function normalizeAlbum(
       title: a.Name ?? "Unknown Album",
       subtext: `Album • ${artist.name}`,
       artist,
-      songs: [],
-      songCount: 0,
       userPlayCount: a.UserData.PlayCount ?? 0,
     };
   } catch (error) {
@@ -68,14 +41,31 @@ export async function getAlbums(
   token: string
 ): Promise<GetAlbumsResult> {
   try {
-    const raw = await fetchGetAlbums(serverUrl, token);
+    const url =
+      `${serverUrl}/Items` +
+      `?IncludeItemTypes=MusicAlbum` +
+      `&Recursive=true` +
+      `&SortBy=SortName` +
+      `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists`;
+
+    const res = await fetch(url, {
+      headers: {
+        "X-Emby-Token": token,
+        "X-Emby-Authorization":
+          `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
+      }
+    });
+
+    if (!res.ok) throw new Error(`Jellyfin getAlbums failed: ${res.status}`);
+
+    const raw = await res.json();
     const items = raw?.Items ?? [];
 
     const albums = await Promise.all(
       items.map((a: any) => normalizeAlbum(a, serverUrl, token))
     );
 
-    return albums.filter((a): a is AlbumData => a !== null);
+    return albums.filter((a): a is AlbumBase => a !== null);
   } catch (error) {
     console.error(`Failed to fetch albums:`, error);
     return [];

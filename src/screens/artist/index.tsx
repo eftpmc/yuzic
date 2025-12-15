@@ -8,7 +8,7 @@ import {
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ArtistData } from '@/types';
+import { Artist } from '@/types';
 import { useApi } from '@/api';
 
 import List from './components/List';
@@ -21,7 +21,7 @@ const ArtistScreen: React.FC = () => {
   const api = useApi();
   const isDarkMode = useColorScheme() === 'dark';
 
-  const [artist, setArtist] = useState<ArtistData | null>(null);
+  const [artist, setArtist] = useState<Artist | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

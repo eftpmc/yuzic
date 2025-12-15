@@ -1,13 +1,11 @@
-import { ArtistData } from "@/types";
-import { getArtist } from "./getArtist";
-import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
+import { ArtistBase } from "@/types";
 import { buildCoverArtUrl } from "@/utils/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
-export type GetArtistResult = ArtistData;
-export type GetArtistsResult = ArtistData[];
+export type GetArtistResult = ArtistBase;
+export type GetArtistsResult = ArtistBase[];
 
 async function fetchGetArtists(
   serverUrl: string,
@@ -41,9 +39,6 @@ async function normalizeArtistEntry(
     cover,
     name: a.name,
     subtext: "Artist",
-    bio: "",
-    ownedIds: [],
-    externalAlbums: []
   };
 }
 

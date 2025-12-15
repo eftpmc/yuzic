@@ -1,9 +1,11 @@
 import {
-    AlbumData,
-    ArtistData,
     PlaylistData,
-    SongData,
     GenreMaps,
+    AlbumBase,
+    Album,
+    ArtistBase,
+    Artist,
+    Song,
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
@@ -33,13 +35,13 @@ export interface AuthApi {
 }
 
 export interface AlbumsApi {
-    list(): Promise<AlbumData[]>;
-    get(id: string): Promise<AlbumData>;
+    list(): Promise<AlbumBase[]>;
+    get(id: string): Promise<Album>;
 }
 
 export interface ArtistsApi {
-    list(): Promise<ArtistData[]>;
-    get(id: string): Promise<ArtistData>;
+    list(): Promise<ArtistBase[]>;
+    get(id: string): Promise<Artist>;
 }
 
 export interface GenresApi {
@@ -74,8 +76,8 @@ export interface StatsApi {
 
 export interface SearchApi {
     all(query: string): Promise<{
-        songs: SongData[];
-        albums: AlbumData[];
-        artists: ArtistData[];
+        songs: Song[];
+        albums: AlbumBase[];
+        artists: ArtistBase[];
     }>;
 }

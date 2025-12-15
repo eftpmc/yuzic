@@ -1,12 +1,14 @@
 import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
-import { AlbumData, ArtistData } from "@/types";
+import { AlbumBase, Artist } from "@/types";
 import { getAlbums } from "../albums/getAlbums";
+
+export type GetArtistResult = Artist | null
 
 export async function getArtist(
     serverUrl: string,
     token: string,
     artistId: string
-): Promise<ArtistData | null> {
+): Promise<GetArtistResult> {
     const res = await fetch(`${serverUrl}/Artists`, {
         headers: {
             "X-Emby-Token": token,
@@ -37,11 +39,11 @@ export async function getArtist(
             ? `&tag=${artistRaw.ImageTags.Primary}`
             : "");
 
-    const albums: AlbumData[] = await getAlbums(serverUrl, token);
+    const albums: AlbumBase[] = await getAlbums(serverUrl, token);
 
-    const ownedIds = albums
+    const ownedAlbums: AlbumBase[] = albums
     .filter(album => album.artist?.id === artistRaw.Id)
-    .map(album => album.id);
+    .map(album => album);
 
     return {
         id: artistRaw.Id,
@@ -49,7 +51,7 @@ export async function getArtist(
         cover,
         subtext: "Artist",
         bio: lastFmData.bio,
-        ownedIds,
+        ownedAlbums: ownedAlbums,
         externalAlbums: lastFmData.albums,
     };
 }

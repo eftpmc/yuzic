@@ -1,10 +1,10 @@
-import { AlbumData, ArtistData, SongData } from "@/types";
+import { AlbumBase, ArtistBase } from "@/types";
 import { buildCoverArtUrl } from "@/utils/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
-export type GetAlbumListResult = AlbumData[];
+export type GetAlbumListResult = AlbumBase[];
 
 async function fetchGetAlbumList(
   serverUrl: string,
@@ -32,17 +32,14 @@ function normalizeAlbumEntry(
   serverUrl: string,
   username: string,
   password: string
-): AlbumData {
+): AlbumBase {
   const cover = buildCoverArtUrl(a.coverArt, serverUrl, username, password);
 
-  const artist: ArtistData = {
+  const artist: ArtistBase = {
     id: a.artistId,
-    name: a.artist,
     cover: "",
+    name: a.artist,
     subtext: "Artist",
-    bio: "",
-    ownedIds: [],
-    externalAlbums: []
   }
 
   return {
@@ -55,8 +52,6 @@ function normalizeAlbumEntry(
         : `Single • ${a.artist}`,
     artist,
     userPlayCount: a.playCount,
-    songs: [],
-    songCount: a.songCount
   };
 }
 

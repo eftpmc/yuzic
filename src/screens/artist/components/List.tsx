@@ -3,14 +3,14 @@ import { StyleSheet, useColorScheme } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 
-import { ArtistData, AlbumData } from '@/types';
+import { Artist, AlbumData } from '@/types';
 import { useApi } from '@/api';
 
 import AlbumRow from '@/components/AlbumRow';
 import Header from './Header';
 
 type Props = {
-  artist: ArtistData;
+  artist: Artist;
 };
 
 type CombinedAlbum = AlbumData & {

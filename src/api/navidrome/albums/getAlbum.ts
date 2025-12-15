@@ -1,11 +1,11 @@
-import { AlbumData, ArtistData, SongData } from "@/types";
+import { Album, ArtistBase, Song } from "@/types";
 import { buildCoverArtUrl } from "@/utils/urlBuilders";
 import { getArtist } from "../artists/getArtist";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
-export type GetAlbumResult = AlbumData | null;
+export type GetAlbumResult = Album | null;
 
 export async function getAlbum(
   serverUrl: string,
@@ -29,12 +29,12 @@ export async function getAlbum(
   const album = raw?.["subsonic-response"]?.album;
   if (!album) return null;
 
-  const artist: ArtistData | null = await getArtist(serverUrl, username, password, album.artistId);
+  const artist: ArtistBase | null = await getArtist(serverUrl, username, password, album.artistId);
   if (!artist) return null;
 
   const cover = buildCoverArtUrl(album.coverArt, serverUrl, username, password);
 
-  const songs: SongData[] = (album.song || []).map((s: any) => ({
+  const songs: Song[] = (album.song || []).map((s: any) => ({
     id: s.id,
     title: s.title,
     artist: s.artist,
@@ -59,6 +59,5 @@ export async function getAlbum(
     artist,
     userPlayCount: 0,
     songs,
-    songCount: album.songCount
   };
 }

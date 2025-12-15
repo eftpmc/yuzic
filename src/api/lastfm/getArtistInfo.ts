@@ -1,11 +1,11 @@
-import { AlbumData } from "@/types";
+import { AlbumBase } from "@/types";
 
 export type GetArtistInfoResult = {
-    albums: AlbumData[]
+    albums: AlbumBase[]
     bio: string
 };
 
-const normalizeLastFmAlbum = (album: any): AlbumData => {
+const normalizeLastFmAlbum = (album: any): AlbumBase => {
     return {
         id: album.name,
         title: album.name,
@@ -13,16 +13,11 @@ const normalizeLastFmAlbum = (album: any): AlbumData => {
         subtext: album.artist?.name ?? '',
         artist: {
             id: '',
-            name: album.artist.name ?? '',
             cover: '',
+            name: album.artist.name ?? '',
             subtext: 'Artist',
-            bio: '',
-            ownedIds: [],
-            externalAlbums: [],
         },
         userPlayCount: 0,
-        songs: [],
-        songCount: 0,
     };
 };
 
@@ -37,7 +32,7 @@ export const getArtistInfo = async (artistName: string): Promise<GetArtistInfoRe
 
         const data = await response.json();
 
-        const albums: AlbumData[] = Array.isArray(data.albums)
+        const albums: AlbumBase[] = Array.isArray(data.albums)
             ? data.albums.map(normalizeLastFmAlbum)
             : [];
 

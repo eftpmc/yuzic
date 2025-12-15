@@ -1,11 +1,12 @@
-import { ArtistData } from "@/types";
+import { AlbumBase, Artist, ArtistBase } from "@/types";
 import { buildCoverArtUrl } from "@/utils/urlBuilders";
 import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
+import { getAlbumList } from "../albums/getAlbumList";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
-export type GetArtistResult = ArtistData | null;
+export type GetArtistResult = Artist | null;
 
 export async function getArtist(
   serverUrl: string,
@@ -32,21 +33,41 @@ export async function getArtist(
   const lastFmData = await getArtistInfo(artist.name);
   if (!lastFmData) return null;
 
-  const ownedIds = []
+  const albums: AlbumBase[] = []
+
+  const artistCover = buildCoverArtUrl(artist.coverArt, serverUrl, username, password);
 
   for (const album of artist.album) {
-    ownedIds.push(album.id);
+    const cover = buildCoverArtUrl(album.coverArt, serverUrl, username, password);
+
+    const artistBase: ArtistBase = {
+      id: artist.id,
+      cover: artistCover,
+      name: artist.name,
+      subtext: "Artist"
+    }
+
+    const a: AlbumBase = {
+      id: album.id,
+      title: album.name,
+      cover,
+      subtext: `Album • {artist.name}`,
+      artist: artistBase,
+      userPlayCount: 0
+    }
+
+    albums.push(a);
   }
 
   const cover = buildCoverArtUrl(artist.coverArt, serverUrl, username, password);
 
   return {
-    id: artist.id ?? "",
-    name: artist.name ?? "Unknown Artist",
+    id: artist.id,
+    name: artist.name,
     cover,
     subtext: "Artist",
     bio: lastFmData.bio,
-    ownedIds,
+    ownedAlbums: albums,
     externalAlbums: lastFmData.albums
   };
 }

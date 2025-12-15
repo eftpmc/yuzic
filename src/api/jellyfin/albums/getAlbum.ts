@@ -1,9 +1,9 @@
-import { AlbumData, ArtistData, SongData } from "@/types";
+import { Album, Artist } from "@/types";
 import { getAlbumSongs } from "./getAlbumSongs";
 import { buildJellyfinStreamUrl } from "@/utils/urlBuilders";
 import { getArtist } from "../artists/getArtist";
 
-export type GetAlbumResult = AlbumData | null;
+export type GetAlbumResult = Album | null;
 
 async function fetchGetAlbum(
   serverUrl: string,
@@ -31,7 +31,7 @@ async function normalizeAlbum(
   raw: any,
   serverUrl: string,
   token: string
-): Promise<AlbumData | null> {
+): Promise<Album | null> {
   const a = raw?.Items?.[0];
   if (!a) return null;
 
@@ -39,7 +39,7 @@ async function normalizeAlbum(
     `${serverUrl}/Items/${a.Id}/Images/Primary?quality=90&X-Emby-Token=${token}` +
     (a.ImageTags?.Primary ? `&tag=${a.ImageTags.Primary}` : "");
 
-  const artist: ArtistData | null = await getArtist(serverUrl, token, a.AlbumArtists[0].Id)
+  const artist: Artist | null = await getArtist(serverUrl, token, a.AlbumArtists[0].Id)
   if (!artist) return null;
 
   return {
@@ -49,7 +49,6 @@ async function normalizeAlbum(
     subtext: `Album • ${artist.name}`,
     artist,
     songs: [],
-    songCount: 0,
     userPlayCount: a.UserData.PlayCount,
   };
 }

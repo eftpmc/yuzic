@@ -1,6 +1,6 @@
-import { ArtistData } from "@/types";
+import { ArtistBase } from "@/types";
 
-export type GetArtistsResult = ArtistData[];
+export type GetArtistsResult = ArtistBase[];
 
 export async function getArtists(
   serverUrl: string,
@@ -36,10 +36,7 @@ export async function getArtists(
         id: a.Id,
         name: a.Name ?? "Unknown Artist",
         cover,
-        subtext: "Artist",
-        bio: "",
-        ownedIds: [],
-        externalAlbums: []
+        subtext: "Artist"
       };
     });
   } catch (error) {
