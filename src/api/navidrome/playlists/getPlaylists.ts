@@ -1,10 +1,10 @@
-import { PlaylistData, SongData } from "@/types";
+import { PlaylistBase } from "@/types";
 import { buildCoverArtUrl } from "@/utils/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
-export type GetPlaylistsResult = PlaylistData[];
+export type GetPlaylistsResult = PlaylistBase[];
 
 export async function getPlaylists(
   serverUrl: string,

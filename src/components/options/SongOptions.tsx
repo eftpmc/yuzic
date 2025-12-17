@@ -10,30 +10,26 @@ import {
     Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLibrary } from '@/contexts/LibraryContext';
+import { useStarred, useStarredActions } from '@/hooks/starred';
 import TrackPlayer from 'react-native-track-player';
 import { usePlaying } from '@/contexts/PlayingContext';
 import PlaylistList from '@/components/PlaylistList';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
+import { useSelector } from "react-redux";
+import { selectStarred } from "@/utils/redux/librarySelectors";
+import { useLibrary } from "@/contexts/LibraryContext";
+
 import { Song } from '@/types';
 
 const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
     const playlistRef = useRef<BottomSheet>(null);
-    const { playlists, starred, starItem, unstarItem, addSongToPlaylist, createPlaylist } = useLibrary();
+    const starred = useSelector(selectStarred);
+    const { starItem, unstarItem } = useLibrary();
     const { currentSong } = usePlaying();
 
-    const [isStarred, setIsStarred] = useState(false);
-
-    useEffect(() => {
-        if (!selectedSong) {
-            return;
-        }
-
-        const isFavorite = starred.songs.some((starredSong) => starredSong.id === selectedSong.id);
-        setIsStarred(isFavorite);
-    }, [selectedSong, starred]);
+    const isStarred = starred.songIds.includes(selectedSong.id);
 
     const toggleFavorite = async () => {
         try {
@@ -44,7 +40,6 @@ const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
                 await starItem(selectedSong.id!);
                 Alert.alert('Added to Favorites', `${selectedSong.title} was added to favorites.`);
             }
-            setIsStarred(!isStarred);
         } catch (error) {
             console.error('Error toggling favorite:', error);
             Alert.alert('Error', 'Failed to update favorites.');
@@ -112,58 +107,35 @@ const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
         }
     };
 
-    const handleAddToPlaylist = async (playlist: { id: string; name: string }) => {
-        if (selectedSong) {
-            try {
-                await addSongToPlaylist(playlist.id, {
-                    id: selectedSong.id,
-                    title: selectedSong.title,
-                    artist: selectedSong.artist,
-                    cover: selectedSong.cover,
-                    duration: selectedSong.duration,
-                    streamUrl: selectedSong.streamUrl,
-                });
-                Alert.alert('Success', `Added "${selectedSong.title}" to "${playlist.name}".`);
-                playlistRef.current?.close();
-            } catch (error) {
-                console.error('Error adding song to playlist:', error);
-                Alert.alert('Error', 'Failed to add song to the playlist.');
-            }
-        }
-    };
-
-    const handleCreatePlaylist = async (name: string) => {
-        try {
-            await createPlaylist(name);
-            Alert.alert('Success', `Playlist "${name}" created.`);
-        } catch (error) {
-            console.error('Error creating playlist:', error);
-            Alert.alert('Error', 'Failed to create the playlist.');
-        }
-    };
-
     return (
         <>
             <MenuView
                 title={selectedSong ? selectedSong.title : 'Options'}
                 actions={[
-                    { id: 'favorite', title: isStarred ? 'Unfavorite' : 'Favorite', image: Platform.select({
+                    {
+                        id: 'favorite', title: isStarred ? 'Unfavorite' : 'Favorite', image: Platform.select({
                             ios: isStarred ? 'heart' : 'heart.fill',
                             android: 'ic_heart',
                         }), imageColor: "#fff",
                     },
-                    { id: 'play-next', title: 'Play Next', image: Platform.select({
+                    {
+                        id: 'play-next', title: 'Play Next', image: Platform.select({
                             ios: 'play.fill',
                             android: 'ic_play',
-                        }), imageColor: "#fff", },
-                    { id: 'add-to-queue', title: 'Add to Queue', image: Platform.select({
+                        }), imageColor: "#fff",
+                    },
+                    {
+                        id: 'add-to-queue', title: 'Add to Queue', image: Platform.select({
                             ios: 'plus',
                             android: 'ic_plus',
-                        }), imageColor: "#fff", },
-                    { id: 'add-to-playlist', title: 'Add to Playlist', image: Platform.select({
+                        }), imageColor: "#fff",
+                    },
+                    {
+                        id: 'add-to-playlist', title: 'Add to Playlist', image: Platform.select({
                             ios: 'plus',
                             android: 'ic_plus',
-                        }), imageColor: "#fff", },
+                        }), imageColor: "#fff",
+                    },
                 ]}
                 onPressAction={({ nativeEvent }) => {
                     switch (nativeEvent.event) {
@@ -191,17 +163,7 @@ const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
             <PlaylistList
                 ref={playlistRef}
                 selectedSong={selectedSong}
-                playlists={playlists.map((playlist) => ({
-                    id: playlist.id,
-                    name: playlist.title,
-                    songCount: playlist.songs?.length || 0,
-                    duration: playlist.songs
-                        ?.reduce((total, song) => total + Number(song.duration || 0), 0)
-                        ?.toString(),
-                }))}
-                onAddToPlaylist={handleAddToPlaylist}
                 onClose={() => playlistRef.current?.close()}
-                onCreatePlaylist={handleCreatePlaylist}
             />
         </>
     );

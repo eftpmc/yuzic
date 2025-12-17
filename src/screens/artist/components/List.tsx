@@ -1,10 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { useColorScheme } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
-import { Artist, Album } from '@/types';
-import { useApi } from '@/api';
+import { Artist, Album, AlbumBase } from '@/types';
+import { RootState } from '@/utils/redux/store';
+import { useLibrary } from '@/contexts/LibraryContext';
 
 import AlbumRow from '@/components/AlbumRow';
 import Header from './Header';
@@ -13,42 +15,27 @@ type Props = {
   artist: Artist;
 };
 
-type CombinedAlbum = AlbumData & {
+type CombinedAlbum = (Album | AlbumBase) & {
   isExternal?: boolean;
 };
 
 const ESTIMATED_ROW_HEIGHT = 80;
 
 const List: React.FC<Props> = ({ artist }) => {
-  const api = useApi();
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
+  const { getAlbum } = useLibrary();
 
-  const [ownedAlbums, setOwnedAlbums] = useState<Album[]>([]);
+  const ownedAlbums = useSelector((state: RootState) =>
+    artist.ownedAlbums
+      .map(a => state.library.albumsById[a.id])
+      .filter(Boolean)
+  );
 
   useEffect(() => {
-    let mounted = true;
-
-    const loadAlbums = async () => {
-      try {
-        const albums: Album[] = [];
-
-        for (const a of artist.ownedAlbums) {
-          const album = await api.albums.get(a.id);
-          if (album) albums.push(album);
-        }
-
-        if (mounted) setOwnedAlbums(albums);
-      } finally {
-        /* noop */
-      }
-    };
-
-    loadAlbums();
-
-    return () => {
-      mounted = false;
-    };
+    artist.ownedAlbums.forEach(a => {
+      getAlbum(a.id);
+    });
   }, [artist.id]);
 
   const mergedAlbums: CombinedAlbum[] = useMemo(() => {
@@ -56,11 +43,11 @@ const List: React.FC<Props> = ({ artist }) => {
       ownedAlbums.map(a => [
         a.title.toLowerCase(),
         { ...a, isExternal: false },
-      ]),
+      ])
     );
 
     const external = (artist.externalAlbums ?? []).filter(
-      a => !ownedMap.has(a.title.toLowerCase()),
+      a => !ownedMap.has(a.title.toLowerCase())
     );
 
     return [

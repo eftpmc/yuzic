@@ -16,7 +16,8 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import TrackPlayer, { useProgress } from 'react-native-track-player';
 import { usePlaying } from '@/contexts/PlayingContext';
 import ImageColors from 'react-native-image-colors';
-import { useLibrary } from "@/contexts/LibraryContext";
+import { useSelector } from 'react-redux';
+import { selectArtistList } from '@/utils/redux/librarySelectors';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useNavigation } from "@react-navigation/native";
 import { Image } from 'expo-image';
@@ -57,7 +58,7 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
         repeatMode,
         toggleRepeat,
     } = usePlaying();
-    const { artists } = useLibrary();
+    const artists = useSelector(selectArtistList);
     const { themeColor } = useSettings();
     const [currentGradient, setCurrentGradient] = useState(['#000', '#000']);
     const [nextGradient, setNextGradient] = useState(['#000', '#000']);
@@ -230,7 +231,7 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.optionsButton}>
-                                <SongOptions selectedSongId={currentSong.id} />
+                                <SongOptions selectedSong={currentSong} />
                             </View>
                         </View>
                         <Slider

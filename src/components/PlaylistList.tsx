@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useEffect } from 'react';
+import React, { useState, forwardRef, useMemo } from 'react';
 import {
     View,
     Text,
@@ -7,117 +7,109 @@ import {
     FlatList,
     TextInput,
     useColorScheme,
-    Dimensions
+    Dimensions,
 } from 'react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Ionicons } from '@expo/vector-icons';
-import CoverArt from "@/components/CoverArt";
+import CoverArt from '@/components/CoverArt';
+import { useSelector } from 'react-redux';
+import {
+    selectPlaylistList
+} from '@/utils/redux/librarySelectors';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { selectIsSongInPlaylist } from '@/utils/redux/selectIsSongInPlaylist';
 
 type PlaylistListProps = {
     selectedSong: any;
-    playlists: Array<{ id: string; name: string; songCount?: number; duration?: string; cover?: string }>;
-    onAddToPlaylist: (playlist: { id: string; name: string }) => void;
     onClose: () => void;
-    onCreatePlaylist: (name: string) => void;
 };
 
 const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
     ({ selectedSong, onClose }, ref) => {
         const colorScheme = useColorScheme();
-        const { themeColor } = useSettings();
         const isDarkMode = colorScheme === 'dark';
+        const { themeColor } = useSettings();
 
-        const { playlists, addSongToPlaylist, removeSongFromPlaylist, createPlaylist } = useLibrary();
+        const playlists = useSelector(selectPlaylistList);
+
+        const { createPlaylist, addSongToPlaylist, removeSongFromPlaylist } =
+            useLibrary();
 
         const [searchQuery, setSearchQuery] = useState('');
         const [newPlaylistName, setNewPlaylistName] = useState('');
-        const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
+        const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-        useEffect(() => {
-            if (selectedSong && playlists) {
-                const preSelected = playlists
-                    .filter((playlist) =>
-                        playlist.songs?.some((song) => song.id === selectedSong.id)
-                    )
-                    .map((playlist) => playlist.id);
-                setSelectedPlaylists(preSelected);
-            }
-        }, [selectedSong, playlists]);
-
-        const filteredPlaylists = playlists.filter((playlist) =>
-            playlist.title.toLowerCase().includes(searchQuery.toLowerCase())
+        const filteredPlaylists = useMemo(
+            () =>
+                playlists.filter((p) =>
+                    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+                ),
+            [playlists, searchQuery]
         );
 
-        const handleCreatePlaylist = async () => {
-            if (newPlaylistName.trim()) {
-                try {
-                    await createPlaylist(newPlaylistName.trim());
-                    alert(`Playlist "${newPlaylistName.trim()}" created successfully.`);
-                    setNewPlaylistName('');
-                } catch (error) {
-                    console.error('Error creating playlist:', error);
-                    alert('Failed to create the playlist.');
-                }
-            }
-        };
-
-        const togglePlaylistSelection = (id: string) => {
-            setSelectedPlaylists((prev) =>
-                prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+        const togglePlaylist = (id: string) => {
+            setSelectedIds((prev) =>
+                prev.includes(id)
+                    ? prev.filter((pid) => pid !== id)
+                    : [...prev, id]
             );
         };
 
+        const handleCreatePlaylist = async () => {
+            if (!newPlaylistName.trim()) return;
+            await createPlaylist(newPlaylistName.trim());
+            setNewPlaylistName('');
+            onClose();
+        };
+
         const handleDone = async () => {
-            if (selectedSong) {
-                try {
-                    for (const playlist of playlists) {
-                        if (selectedPlaylists.includes(playlist.id)) {
-                            if (!playlist.songs?.some((song) => song.id === selectedSong.id)) {
-                                await addSongToPlaylist(playlist.id, selectedSong);
-                            }
-                        } else if (playlist.songs?.some((song) => song.id === selectedSong.id)) {
-                            const songIndex = playlist.songs.findIndex(
-                                (song) => song.id === selectedSong.id
-                            );
-                            if (songIndex !== -1) {
-                                await removeSongFromPlaylist(playlist.id, songIndex);
-                            }
-                        }
-                    }
-                    alert(`Song updated in selected playlists.`);
-                    ref?.current?.close();
-                } catch (error) {
-                    console.error('Error updating playlists:', error);
-                    alert('Failed to update the playlists.');
+            if (!selectedSong) return;
+
+            for (const playlist of playlists) {
+                if (playlist.id === 'favorites') continue;
+
+                const isInPlaylist = useSelector(
+                    selectIsSongInPlaylist(playlist.id, selectedSong.id)
+                );
+
+                const isSelected = selectedIds.includes(playlist.id);
+
+                if (isSelected && !isInPlaylist) {
+                    await addSongToPlaylist(playlist.id, selectedSong.id);
                 }
-            } else {
-                alert('No song selected.');
+
+                if (!isSelected && isInPlaylist) {
+                    await removeSongFromPlaylist(playlist.id, selectedSong.id);
+                }
             }
+
+            ref?.current?.close();
         };
 
         return (
             <BottomSheet
                 ref={ref}
-                height={Dimensions.get("screen").height * .8}
+                height={Dimensions.get('screen').height * 0.8}
                 hasDraggableIcon={false}
                 sheetBackgroundColor={isDarkMode ? '#222' : '#f9f9f9'}
             >
                 <View style={styles.bottomSheetContainer(isDarkMode)}>
                     <View style={styles.headerContainer}>
                         <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-                            <Ionicons name="close" size={24} color={isDarkMode ? '#fff' : '#000'} />
+                            <Ionicons name="close" size={24} color="#fff" />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle(isDarkMode)}>Add to Playlist</Text>
+                        <Text style={styles.headerTitle(isDarkMode)}>
+                            Add to Playlist
+                        </Text>
                     </View>
 
                     <View style={styles.searchContainer}>
-                        <Ionicons name="search" size={20} color={isDarkMode ? '#fff' : '#888'} />
+                        <Ionicons name="search" size={20} color="#aaa" />
                         <TextInput
                             style={styles.searchInput(isDarkMode)}
-                            placeholder='Search in "Playlists"'
-                            placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+                            placeholder="Search playlists"
+                            placeholderTextColor="#aaa"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
@@ -127,54 +119,54 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
                         <TextInput
                             style={styles.newPlaylistInput(isDarkMode)}
                             placeholder="New playlist name"
-                            placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+                            placeholderTextColor="#aaa"
                             value={newPlaylistName}
                             onChangeText={setNewPlaylistName}
                         />
                         <TouchableOpacity onPress={handleCreatePlaylist}>
-                            <Ionicons name="add" size={26
-                            } color={isDarkMode ? '#fff' : '#888'} />
+                            <Ionicons name="add" size={26} color="#fff" />
                         </TouchableOpacity>
                     </View>
 
                     <FlatList
                         data={filteredPlaylists}
                         keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.bottomSheetOption}
-                                onPress={() => togglePlaylistSelection(item.id)}
-                            >
-                                <CoverArt
-                                    source={item.cover ?? (item.id === 'favorites' ? 'heart-icon' : null)}
-                                    size={50}
-                                />
-                                <View style={styles.playlistDetails}>
-                                    <Text style={styles.bottomSheetOptionText(isDarkMode)}>
-                                        {item.title}
-                                    </Text>
-                                    <Text style={styles.playlistMeta(isDarkMode)}>
-                                        {item.songs?.length || 0} Songs
-                                    </Text>
-                                </View>
-                                <Ionicons
-                                    name={
-                                        selectedPlaylists.includes(item.id)
-                                            ? 'checkmark-circle'
-                                            : 'ellipse-outline'
-                                    }
-                                    size={24}
-                                    color={themeColor}
-                                />
-                            </TouchableOpacity>
-                        )}
+                        renderItem={({ item }) => {
+                            const isChecked = selectedIds.includes(item.id);
+
+                            return (
+                                <TouchableOpacity
+                                    style={styles.bottomSheetOption}
+                                    onPress={() => togglePlaylist(item.id)}
+                                >
+                                    <CoverArt source={item.cover ?? null} size={50} />
+                                    <View style={styles.playlistDetails}>
+                                        <Text style={styles.bottomSheetOptionText(isDarkMode)}>
+                                            {item.title}
+                                        </Text>
+                                    </View>
+                                    <Ionicons
+                                        name={
+                                            isChecked
+                                                ? 'checkmark-circle'
+                                                : 'ellipse-outline'
+                                        }
+                                        size={24}
+                                        color={themeColor}
+                                    />
+                                </TouchableOpacity>
+                            );
+                        }}
                     />
 
                     <TouchableOpacity
-                        style={[styles.doneButton(isDarkMode), { backgroundColor: themeColor }]}
+                        style={[
+                            styles.doneButton(isDarkMode),
+                            { backgroundColor: themeColor },
+                        ]}
                         onPress={handleDone}
                     >
-                        <Text style={styles.doneButtonText(isDarkMode)}>Done</Text>
+                        <Text style={styles.doneButtonText}>Done</Text>
                     </TouchableOpacity>
                 </View>
             </BottomSheet>
@@ -238,20 +230,10 @@ const styles = StyleSheet.create({
         color: isDarkMode ? '#fff' : '#000',
         marginRight: 8,
     }),
-    createButton: (isDarkMode: boolean) => ({
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: isDarkMode ? '#fff' : '#000',
-    }),
     bottomSheetOption: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 12,
-    },
-    playlistCover: {
-        width: 50,
-        height: 50,
-        borderRadius: 8,
     },
     playlistDetails: {
         marginLeft: 12,
@@ -260,10 +242,6 @@ const styles = StyleSheet.create({
     bottomSheetOptionText: (isDarkMode: boolean) => ({
         fontSize: 16,
         color: isDarkMode ? '#fff' : '#000',
-    }),
-    playlistMeta: (isDarkMode: boolean) => ({
-        fontSize: 14,
-        color: isDarkMode ? '#aaa' : '#666',
     }),
     doneButton: (isDarkMode: boolean) => ({
         position: 'absolute',
@@ -274,9 +252,9 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         alignItems: 'center',
     }),
-    doneButtonText: (isDarkMode: boolean) => ({
+    doneButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#fff',
-    }),
+    },
 });

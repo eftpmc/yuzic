@@ -46,6 +46,7 @@ export const useApi = (): ApiAdapter => {
         },
         playlists: {
             list: async () => [],
+            get: empty,
             create: empty,
             addSong: empty,
             removeSong: empty,

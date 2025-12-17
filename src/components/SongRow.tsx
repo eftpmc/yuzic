@@ -74,7 +74,7 @@ const SongRow: React.FC<Props> = ({ song, collection, onPress }) => {
         </View>
       </TouchableOpacity>
 
-      <SongOptions selectedSongId={song.id} />
+      <SongOptions selectedSong={song} />
     </View>
   );
 };

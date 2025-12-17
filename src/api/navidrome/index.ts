@@ -11,7 +11,7 @@ import {
   AuthApi
 } from "../types";
 
-import { GenreMaps, AdapterType } from "@/types";
+import { GenreMaps, AdapterType, Song } from "@/types";
 
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
@@ -48,7 +48,7 @@ export const createNavidromeAdapter = (adapter: AdapterType): ApiAdapter => {
     ping: () => ping(serverUrl, username, password),
     testUrl: (url) => testServerUrl(url),
     startScan: () => startScan(serverUrl, username, password),
-    disconnect: () => {},
+    disconnect: () => { },
   };
 
   const albums: AlbumsApi = {
@@ -125,7 +125,21 @@ export const createNavidromeAdapter = (adapter: AdapterType): ApiAdapter => {
     },
 
     removeSong: async (playlistId, songId) => {
-      return removeSongFromPlaylist(serverUrl, username, password, playlistId, songId);
+      const playlist = await getPlaylist(serverUrl, username, password, playlistId);
+      if (!playlist) throw new Error("Playlist not found");
+
+      const index = playlist.songs.findIndex((s: Song) => s.id === songId);
+      if (index === -1) {
+        throw new Error("Song not found in playlist");
+      }
+
+      return removeSongFromPlaylist(
+        serverUrl,
+        username,
+        password,
+        playlistId,
+        index
+      );
     },
   };
 

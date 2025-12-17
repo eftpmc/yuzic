@@ -14,6 +14,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appearance, VirtualizedList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useLibrary } from '@/contexts/LibraryContext';
+import {
+    selectAlbumList,
+    selectArtistList,
+    selectPlaylistList,
+} from "@/utils/redux/librarySelectors";
 import { useSettings } from '@/contexts/SettingsContext';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
@@ -42,7 +47,10 @@ export default function HomeScreen() {
     const { isAuthenticated, username } = useSelector((s: RootState) => s.server);
     const colorScheme = Appearance.getColorScheme();
     const isDarkMode = colorScheme === 'dark';
-    const { albums = [], artists = [], playlists = [], fetchLibrary, clearLibrary, isLoading } = useLibrary();
+    const { fetchLibrary, clearLibrary, isLoading } = useLibrary();
+    const albums = useSelector(selectAlbumList);
+    const artists = useSelector(selectArtistList);
+    const playlists = useSelector(selectPlaylistList);
     const { themeColor, gridColumns } = useSettings();
     const { currentSong, playSongInCollection, pauseSong, resetQueue } = usePlaying();
 
@@ -297,7 +305,7 @@ export default function HomeScreen() {
 
             {isLoading ? (
                 <View style={{ flex: 1 }}>
-                <Loader/>
+                    <Loader />
                 </View>
             ) : sortedFilteredData.length > 0 ? (
                 <FlashList
@@ -563,7 +571,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         fontWeight: 'bold',
-         color: '#fff',
+        color: '#fff',
     },
     titleDark: {
         color: '#ccc',

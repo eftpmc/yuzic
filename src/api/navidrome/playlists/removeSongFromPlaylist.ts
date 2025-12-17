@@ -26,13 +26,6 @@ async function fetchRemoveSongFromPlaylist(
   return res.json();
 }
 
-function normalizeRemoveSongFromPlaylist(
-  raw: any
-): RemoveSongFromPlaylistResult {
-  const status = raw?.["subsonic-response"]?.status;
-  return { success: status === "ok" };
-}
-
 export async function removeSongFromPlaylist(
   serverUrl: string,
   username: string,
@@ -47,5 +40,7 @@ export async function removeSongFromPlaylist(
     playlistId,
     songIndex
   );
-  return normalizeRemoveSongFromPlaylist(raw);
+
+  const status = raw?.["subsonic-response"]?.status;
+  return { success: status === "ok" };
 }

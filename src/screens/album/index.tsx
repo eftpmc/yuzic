@@ -8,7 +8,7 @@ import {
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAlbum } from '@/hooks/useAlbum';
+import { useAlbum } from '@/hooks/albums';
 
 import List from './components/List';
 import LList from './components/loading/List';

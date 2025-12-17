@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { FlashList } from '@shopify/flash-list';
 
-import { PlaylistData, SongData } from '@/types';
+import { Playlist, Song } from '@/types';
 import SongRow from '@/components/SongRow';
 
 import Header from './Header';
 
 type Props = {
-  playlist: PlaylistData;
+  playlist: Playlist;
 };
 
 const ESTIMATED_ROW_HEIGHT = 72;
@@ -19,7 +19,7 @@ const List: React.FC<Props> = ({ playlist }) => {
     return <Header playlist={playlist} />;
   }, [playlist]);
 
-  const renderItem = ({ item }: { item: SongData }) => (
+  const renderItem = ({ item }: { item: Song }) => (
     <SongRow
       song={item}
       collection={playlist}

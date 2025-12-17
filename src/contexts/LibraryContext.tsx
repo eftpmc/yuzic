@@ -2,43 +2,36 @@ import React, {
     createContext,
     useContext,
     ReactNode,
-    useEffect,
     useRef,
     useState,
 } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/utils/redux/store";
+import { useDispatch } from "react-redux";
 import { useApi } from "@/api";
 import {
-    resetLibraryState,
-    setAlbums,
-    setArtists,
+    setAlbumList,
+    setArtistList,
+    setPlaylistList,
+    upsertAlbum,
+    upsertArtist,
+    upsertPlaylist,
     setStarred,
-    setPlaylists,
+    resetLibraryState,
 } from "@/utils/redux/slices/librarySlice";
-import { resetGenreMaps } from "@/utils/redux/slices/genreSlice";
-import { resetStatsMap } from "@/utils/redux/slices/statsSlice";
-import { AlbumData, ArtistData, PlaylistData, SongData } from "@/types";
 
 interface LibraryContextType {
-    albums: AlbumData[];
-    artists: ArtistData[];
-    playlists: PlaylistData[];
-    starred: {
-        albums: AlbumData[];
-        artists: ArtistData[];
-        songs: SongData[];
-    };
-    songs: SongData[];
-
     fetchLibrary: (force?: boolean) => Promise<void>;
-    refreshLibrary: () => void;
+
+    getAlbum: (id: string) => Promise<void>;
+    getArtist: (id: string) => Promise<void>;
+    getPlaylist: (id: string) => Promise<void>;
+
+    refreshLibrary: () => Promise<void>;
     clearLibrary: () => void;
 
     starItem: (id: string) => Promise<void>;
     unstarItem: (id: string) => Promise<void>;
 
-    addSongToPlaylist: (playlistId: string, song: SongData) => Promise<void>;
+    addSongToPlaylist: (playlistId: string, songId: string) => Promise<void>;
     removeSongFromPlaylist: (playlistId: string, songId: string) => Promise<void>;
     createPlaylist: (name: string) => Promise<void>;
 
@@ -49,25 +42,18 @@ const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
 export const useLibrary = () => {
     const ctx = useContext(LibraryContext);
-    if (!ctx) throw new Error("useLibrary must be used within LibraryProvider");
+    if (!ctx) {
+        throw new Error("useLibrary must be used within LibraryProvider");
+    }
     return ctx;
 };
 
 export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     const dispatch = useDispatch();
-
-    const serverState = useSelector(
-        (s: RootState) => s.server
-    );
-
-    const { albums, artists, starred, playlists } = useSelector(
-        (state: RootState) => state.library
-    );
+    const api = useApi();
 
     const isLibraryFetchedRef = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
-
-    const api = useApi();
 
     const fetchLibrary = async (force = false) => {
         if (isLibraryFetchedRef.current && !force) return;
@@ -76,98 +62,83 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         isLibraryFetchedRef.current = true;
 
         try {
-            const [albumList, artistList, starredList, playlistList] =
-                await Promise.all([
-                    api.albums.list(),
-                    api.artists.list(),
-                    api.starred.list(),
-                    api.playlists.list(),
-                ]);
+            const [albums, artists, playlists, starred] = await Promise.all([
+                api.albums.list(),
+                api.artists.list(),
+                api.playlists.list(),
+                api.starred.list(),
+            ]);
 
-            dispatch(setAlbums(albumList));
-            dispatch(setArtists(artistList));
-            dispatch(setStarred(starredList));
-            dispatch(setPlaylists(playlistList));
+            dispatch(setAlbumList(albums));
+            dispatch(setArtistList(artists));
+            dispatch(setPlaylistList(playlists));
+            dispatch(setStarred(starred));
         } finally {
             setIsLoading(false);
         }
     };
 
-    const refreshLibrary = () => {
+    const getAlbum = async (id: string) => {
+        const album = await api.albums.get(id);
+        dispatch(upsertAlbum(album));
+    };
+
+    const getArtist = async (id: string) => {
+        const artist = await api.artists.get(id);
+        dispatch(upsertArtist(artist));
+    };
+
+    const getPlaylist = async (id: string) => {
+        const playlist = await api.playlists.get(id);
+        dispatch(upsertPlaylist(playlist));
+    };
+
+    const refreshLibrary = async () => {
         dispatch(resetLibraryState());
-        dispatch(resetGenreMaps());
-        dispatch(resetStatsMap());
         isLibraryFetchedRef.current = false;
-        fetchLibrary();
+        await fetchLibrary(true);
     };
 
     const clearLibrary = () => {
         dispatch(resetLibraryState());
-        dispatch(resetGenreMaps());
-        dispatch(resetStatsMap());
         isLibraryFetchedRef.current = false;
     };
 
     const starItem = async (id: string) => {
         await api.starred.add(id);
         dispatch(setStarred(await api.starred.list()));
-        dispatch(setPlaylists(await api.playlists.list()));
     };
 
     const unstarItem = async (id: string) => {
         await api.starred.remove(id);
         dispatch(setStarred(await api.starred.list()));
-        dispatch(setPlaylists(await api.playlists.list()));
     };
 
-    const addSongToPlaylist = async (playlistId: string, song: SongData) => {
-        await api.playlists.addSong(playlistId, song.id);
-        dispatch(setPlaylists(await api.playlists.list()));
+    const addSongToPlaylist = async (playlistId: string, songId: string) => {
+        await api.playlists.addSong(playlistId, songId);
+        await getPlaylist(playlistId);
     };
 
     const removeSongFromPlaylist = async (playlistId: string, songId: string) => {
         await api.playlists.removeSong(playlistId, songId);
-        dispatch(setPlaylists(await api.playlists.list()));
+        await getPlaylist(playlistId);
     };
 
     const createPlaylist = async (name: string) => {
-        await api.playlists.create(name);
-        dispatch(setPlaylists(await api.playlists.list()));
-    };
-
-    const allSongs: SongData[] = albums.flatMap((a) => a.songs || []);
-
-    const safeStarred = {
-        albumIds: starred?.albumIds ?? [],
-        artistIds: starred?.artistIds ?? [],
-        songIds: starred?.songIds ?? [],
-    };
-
-    const hydratedStarred = {
-        albums: albums.filter((a) => safeStarred.albumIds.includes(a.id)),
-        artists: artists.filter((a) => safeStarred.artistIds.includes(a.id)),
-        songs: allSongs.filter((s) => safeStarred.songIds.includes(s.id)),
-    };
-
-    const favoritesPlaylist: PlaylistData = {
-        id: "favorite",
-        title: "Favorites",
-        subtext: `Playlist • ${hydratedStarred.songs.length} songs`,
-        cover: "heart-icon",
-        songs: hydratedStarred.songs,
-        songCount: hydratedStarred.songs.length
+        const id = await api.playlists.create(name);
+        await fetchLibrary(true);
+        await getPlaylist(id);
     };
 
     return (
         <LibraryContext.Provider
             value={{
-                albums,
-                artists,
-                playlists: [favoritesPlaylist, ...playlists],
-                starred: hydratedStarred,
-                songs: allSongs,
-
                 fetchLibrary,
+
+                getAlbum,
+                getArtist,
+                getPlaylist,
+
                 refreshLibrary,
                 clearLibrary,
 

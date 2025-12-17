@@ -3,7 +3,7 @@ import { Text, StyleSheet, useColorScheme } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { usePlaylist } from '@/hooks/usePlaylist';
+import { usePlaylist } from '@/hooks/playlists';
 
 import List from './components/List';
 import LList from './components/loading/List';

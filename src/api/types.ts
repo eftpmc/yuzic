@@ -6,6 +6,7 @@ import {
     ArtistBase,
     Artist,
     Song,
+    PlaylistBase,
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
@@ -49,7 +50,7 @@ export interface GenresApi {
 }
 
 export interface PlaylistsApi {
-  list(): Promise<Playlist[]>;
+  list(): Promise<PlaylistBase[]>;
   get(id: string): Promise<Playlist>;
   create(name: string): Promise<string>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;

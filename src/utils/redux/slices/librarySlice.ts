@@ -1,5 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlbumData, PlaylistData, SongData, ArtistData } from "@/types";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  Album,
+  AlbumBase,
+  Artist,
+  ArtistBase,
+  Playlist,
+  PlaylistBase,
+} from "@/types";
 
 interface StarredState {
   albumIds: string[];
@@ -8,47 +15,80 @@ interface StarredState {
 }
 
 interface LibraryState {
-    albums: AlbumData[];
-    artists: ArtistData[];
-    playlists: PlaylistData[];
-    starred: StarredState;
+  albumList: AlbumBase[];
+  artistList: ArtistBase[];
+  playlistList: PlaylistBase[];
+
+  albumsById: Record<string, Album>;
+  artistsById: Record<string, Artist>;
+  playlistsById: Record<string, Playlist>;
+
+  starred: StarredState;
 }
 
 const initialState: LibraryState = {
-    albums: [],
-    artists: [],
-    playlists: [],
-    starred: { albumIds: [], artistIds: [], songIds: [] },
+  albumList: [],
+  artistList: [],
+  playlistList: [],
+
+  albumsById: {},
+  artistsById: {},
+  playlistsById: {},
+
+  starred: {
+    albumIds: [],
+    artistIds: [],
+    songIds: [],
+  },
 };
 
 const librarySlice = createSlice({
-    name: 'library',
-    initialState,
-    reducers: {
-        setAlbums(state, action: PayloadAction<AlbumData[]>) {
-            state.albums = action.payload;
-        },
-        setArtists(state, action: PayloadAction<ArtistData[]>) {
-            state.artists = action.payload;
-        },
-        setPlaylists(state, action: PayloadAction<PlaylistData[]>) {
-            state.playlists = action.payload;
-        },
-        setStarred(state, action: PayloadAction<StarredState>) {
-            state.starred = action.payload;
-        },
-        resetLibraryState(state) {
-            return initialState;
-        },
+  name: "library",
+  initialState,
+  reducers: {
+    setAlbumList(state, action: PayloadAction<AlbumBase[]>) {
+      state.albumList = action.payload;
     },
+
+    setArtistList(state, action: PayloadAction<ArtistBase[]>) {
+      state.artistList = action.payload;
+    },
+
+    setPlaylistList(state, action: PayloadAction<PlaylistBase[]>) {
+      state.playlistList = action.payload;
+    },
+
+    upsertAlbum(state, action: PayloadAction<Album>) {
+      state.albumsById[action.payload.id] = action.payload;
+    },
+
+    upsertArtist(state, action: PayloadAction<Artist>) {
+      state.artistsById[action.payload.id] = action.payload;
+    },
+
+    upsertPlaylist(state, action: PayloadAction<Playlist>) {
+      state.playlistsById[action.payload.id] = action.payload;
+    },
+
+    setStarred(state, action: PayloadAction<StarredState>) {
+      state.starred = action.payload;
+    },
+
+    resetLibraryState() {
+      return initialState;
+    },
+  },
 });
 
 export const {
-    setAlbums,
-    setArtists,
-    setPlaylists,
-    setStarred,
-    resetLibraryState,
+  setAlbumList,
+  setArtistList,
+  setPlaylistList,
+  upsertAlbum,
+  upsertArtist,
+  upsertPlaylist,
+  setStarred,
+  resetLibraryState,
 } = librarySlice.actions;
 
 export default librarySlice.reducer;

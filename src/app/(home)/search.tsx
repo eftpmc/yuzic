@@ -182,7 +182,7 @@ const SearchPage = () => {
 
                                 {/* OPTIONS */}
                                 {result.type === 'song' ? (
-                                    <SongOptions selectedSongId={result.id} />
+                                    <SongOptions selectedSong={result} />
                                 ) : result.type === 'album' ? (
                                     result.isDownloaded ? (
                                         <AlbumOptions selectedAlbumId={result.id} />

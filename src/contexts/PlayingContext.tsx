@@ -15,12 +15,11 @@ import TrackPlayer, {
     useTrackPlayerEvents,
 } from 'react-native-track-player';
 import { PlaybackService } from '@/utils/track-player/PlaybackService';
-import { SongData } from '@/types';
+import { Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
 import { useApi } from '@/api';
 import { useSelector } from "react-redux";
 import { RootState } from "@/utils/redux/store";
-import { incrementUserPlayCount } from '@/utils/redux/slices/userStatsSlice';
 import { useDispatch } from 'react-redux';
 import { useDownload } from "@/contexts/DownloadContext";
 
@@ -31,27 +30,27 @@ interface CollectionData {
     title: string;
     artist?: any;
     cover?: string;
-    songs: SongData[];
+    songs: Song[];
     type: 'album' | 'playlist';
 }
 
 interface PlayingContextType {
-    currentSong: SongData | null;
+    currentSong: Song | null;
     isPlaying: boolean;
     pauseSong: () => Promise<void>;
     resumeSong: () => Promise<void>;
     skipTo: (index: number) => Promise<void>;
     currentIndex: number;
-    setCurrentSong: (song: SongData | null) => void;
-    playSong: (song: SongData) => Promise<void>;
+    setCurrentSong: (song: Song | null) => void;
+    playSong: (song: Song) => Promise<void>;
     playSongInCollection: (
-        selectedSong: SongData,
+        selectedSong: Song,
         collection: CollectionData,
         shuffle?: boolean
     ) => Promise<void>;
     skipToNext: () => Promise<void>;
     skipToPrevious: () => Promise<void>;
-    getQueue: () => Promise<SongData[]>;
+    getQueue: () => Promise<Song[]>;
     resetQueue: () => Promise<void>;
     toggleRepeat: () => void;
     toggleShuffle: () => Promise<void>;
@@ -132,8 +131,6 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
             if (!next) return;
 
             if (currentSong?.id === next.id) return;
-            
-            dispatch(incrementUserPlayCount(next.id));
 
             const localUri = await getSongLocalUri(next.id);
 

@@ -1,0 +1,1 @@
+export { useArtist } from './useArtist'
