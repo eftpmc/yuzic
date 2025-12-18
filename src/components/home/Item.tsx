@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -12,35 +12,35 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { usePlaying } from '@/contexts/PlayingContext';
+import { Song } from '@/types';
 
 interface ItemProps {
     item: any;
     isGridView: boolean;
     isDarkMode: boolean;
-    isCurrentlyPlaying: boolean;
     onPress: () => void;
     onPlay?: () => void;
     gridWidth?: number;
 }
 
 const Item: React.FC<ItemProps> = ({
-                                                     item,
-                                                     isGridView,
-                                                     isDarkMode,
-                                                     onPress,
-                                                     onPlay,
+    item,
+    isGridView,
+    isDarkMode,
+    onPress,
+    onPlay,
     gridWidth
-                                                 }) => {
+}) => {
     const {
-        downloadAlbum,
-        downloadPlaylist,
+        downloadAlbumById,
+        downloadPlaylistById,
         isAlbumDownloaded,
         isPlaylistDownloaded,
         isDownloadingAlbum,
         isDownloadingPlaylist
     } = useDownload();
 
-    const {songs} = useLibrary();
+    const { songs } = useLibrary();
 
     const { playSongInCollection } = usePlaying();
 
@@ -48,17 +48,17 @@ const Item: React.FC<ItemProps> = ({
 
     const isDownloaded =
         item.type === 'Album'
-            ? isAlbumDownloaded(item)
+            ? isAlbumDownloaded(item.id)
             : item.type === 'Playlist'
-                ? isPlaylistDownloaded(item)
+                ? isPlaylistDownloaded(item.id)
                 : false;
 
     const handleDownload = async () => {
         if (isDownloaded || isLoading) return;
         setIsLoading(true);
         try {
-            if (item.type === 'Album') await downloadAlbum(item);
-            if (item.type === 'Playlist') await downloadPlaylist(item);
+            if (item.type === 'Album') await downloadAlbumById(item.id);
+            if (item.type === 'Playlist') await downloadPlaylistById(item.id);
         } catch (err) {
             console.error(`Failed to download ${item.type.toLowerCase()}:`, err);
         } finally {
@@ -77,7 +77,7 @@ const Item: React.FC<ItemProps> = ({
     const content = (
         <TouchableOpacity
             onPress={onPress}
-            style={isGridView ? [styles.gridItemContainer, {width: gridWidth}] : styles.itemContainer}
+            style={isGridView ? [styles.gridItemContainer, { width: gridWidth }] : styles.itemContainer}
             activeOpacity={0.9}
         >
             {isGridView ? (
@@ -240,7 +240,7 @@ const Item: React.FC<ItemProps> = ({
                     switch (nativeEvent.actionKey) {
                         case 'shuffle':
                             if (item.type === 'Artist') {
-                                const artistSongs = songs.filter((s) => s.artist?.toLowerCase() === item.name.toLowerCase());
+                                const artistSongs = songs.filter((s: Song) => s.artist?.toLowerCase() === item.name.toLowerCase());
                                 if (artistSongs.length > 0) {
                                     playSongInCollection(artistSongs[0], {
                                         id: item.id,
@@ -248,7 +248,7 @@ const Item: React.FC<ItemProps> = ({
                                         artist: item.name,
                                         cover: item.cover,
                                         songs: artistSongs,
-                                        type: 'playlist', // or 'album' – just needs to match your context shape
+                                        type: 'playlist',
                                     }, true);
                                 }
                             } else if (item.songs?.length > 0) {
@@ -258,7 +258,7 @@ const Item: React.FC<ItemProps> = ({
 
                         case 'play':
                             if (item.type === 'Artist') {
-                                const artistSongs = songs.filter((s) => s.artist?.toLowerCase() === item.name.toLowerCase());
+                                const artistSongs = songs.filter((s: Song) => s.artist?.toLowerCase() === item.name.toLowerCase());
                                 if (artistSongs.length > 0) {
                                     playSongInCollection(artistSongs[0], {
                                         id: item.id,

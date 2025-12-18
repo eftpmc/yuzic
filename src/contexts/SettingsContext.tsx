@@ -1,22 +1,21 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {SongData} from "@/types";
+import { Song } from "@/types";
 
 type AudioQuality = 'low' | 'medium' | 'high' | 'original';
+const AUDIO_QUALITIES: AudioQuality[] = ['low', 'medium', 'high', 'original'];
 
 type SettingsContextType = {
     themeColor: string;
     setThemeColor: (color: string) => void;
-    promptHistory: { prompt: string; queue: SongData[] }[];
-    addPromptToHistory: (entry: { prompt: string; queue: SongData[] }) => void;
+    promptHistory: { prompt: string; queue: Song[] }[];
+    addPromptToHistory: (entry: { prompt: string; queue: Song[] }) => void;
     weighting: { global: number; user: number; favorite: number };
     setWeighting: (val: { global: number; user: number; favorite: number }) => void;
     audioQuality: AudioQuality;
     setAudioQuality: (quality: AudioQuality) => void;
     gridColumns: number;
     setGridColumns: (val: number) => void;
-    lidarrEnabled: boolean;
-    setLidarrEnabled: (val: boolean) => void;
     openaiEnabled: boolean;
     setOpenaiEnabled: (val: boolean) => void;
     openaiApiKey: string;
@@ -30,17 +29,15 @@ const PROMPT_HISTORY_KEY = '@prompt_history';
 const WEIGHTING_KEY = '@ai_weighting';
 const AUDIO_QUALITY_KEY = '@audio_quality'
 const GRID_COLUMNS_KEY = '@grid_columns';
-const LIDARR_ENABLED_KEY = '@lidarr_enabled';
 const OPENAI_ENABLED_KEY = '@openai_enabled';
 const OPENAI_API_KEY = '@openai_api_key';
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [themeColor, setThemeColorState] = useState('#ff7f7f');
-    const [promptHistory, setPromptHistory] = useState<{ prompt: string; queue: SongData[] }[]>([]);
+    const [promptHistory, setPromptHistory] = useState<{ prompt: string; queue: Song[] }[]>([]);
     const [weighting, setWeightingState] = useState({ global: 1, user: 2, favorite: 1 });
     const [audioQuality, setAudioQualityState] = useState<AudioQuality>('medium');
     const [gridColumns, setGridColumnsState] = useState(3);
-    const [lidarrEnabled, setLidarrEnabledState] = useState(true);
     const [openaiEnabled, setOpenaiEnabledState] = useState(false);
     const [openaiApiKey, setOpenaiApiKeyState] = useState('');
 
@@ -84,11 +81,15 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         const loadAudioQuality = async () => {
             try {
                 const storedQuality = await AsyncStorage.getItem(AUDIO_QUALITY_KEY);
-                if (storedQuality) {
-                    setAudioQualityState(storedQuality);
+
+                if (
+                    storedQuality &&
+                    AUDIO_QUALITIES.includes(storedQuality as AudioQuality)
+                ) {
+                    setAudioQualityState(storedQuality as AudioQuality);
                 }
             } catch (error) {
-                console.error('Failed to load theme color:', error);
+                console.error('Failed to load audio quality:', error);
             }
         };
         const loadGridColumns = async () => {
@@ -97,14 +98,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
                 if (stored) setGridColumnsState(parseInt(stored));
             } catch (err) {
                 console.error('Failed to load grid column count:', err);
-            }
-        };
-        const loadLidarrEnabled = async () => {
-            try {
-                const stored = await AsyncStorage.getItem(LIDARR_ENABLED_KEY);
-                if (stored !== null) setLidarrEnabledState(stored === 'true');
-            } catch (error) {
-                console.error('Failed to load Lidarr enabled state:', error);
             }
         };
         const loadOpenAI = async () => {
@@ -124,7 +117,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         loadWeighting();
         loadAudioQuality();
         loadGridColumns();
-        loadLidarrEnabled();
         loadOpenAI();
     }, []);
 
@@ -146,7 +138,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     };
 
-    const addPromptToHistory = async (entry: { prompt: string; queue: SongData[] }) => {
+    const addPromptToHistory = async (entry: { prompt: string; queue: Song[] }) => {
         const updated = [
             entry,
             ...promptHistory.filter(p => p.prompt !== entry.prompt)
@@ -178,15 +170,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
             console.error('Failed to save grid column count:', err);
         }
     };
-    
-    const setLidarrEnabled = async (val: boolean) => {
-        try {
-            await AsyncStorage.setItem(LIDARR_ENABLED_KEY, val.toString());
-            setLidarrEnabledState(val);
-        } catch (error) {
-            console.error('Failed to save Lidarr enabled state:', error);
-        }
-    };
 
     const setOpenaiEnabled = async (val: boolean) => {
         try {
@@ -207,7 +190,8 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
 
     return (
-        <SettingsContext.Provider value={{ themeColor,
+        <SettingsContext.Provider value={{
+            themeColor,
             setThemeColor,
             promptHistory,
             addPromptToHistory,
@@ -217,8 +201,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
             setAudioQuality,
             gridColumns,
             setGridColumns,
-            lidarrEnabled,
-            setLidarrEnabled,
             openaiEnabled,
             setOpenaiEnabled,
             openaiApiKey,

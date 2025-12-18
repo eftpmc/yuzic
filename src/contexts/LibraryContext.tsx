@@ -59,7 +59,6 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         if (isLibraryFetchedRef.current && !force) return;
 
         setIsLoading(true);
-        isLibraryFetchedRef.current = true;
 
         try {
             const [albums, artists, playlists, starred] = await Promise.all([
@@ -73,6 +72,8 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
             dispatch(setArtistList(artists));
             dispatch(setPlaylistList(playlists));
             dispatch(setStarred(starred));
+
+            isLibraryFetchedRef.current = true;
         } finally {
             setIsLoading(false);
         }

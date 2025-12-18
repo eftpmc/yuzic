@@ -5,7 +5,6 @@ import { setServerUrl, setApiKey, setAuthenticated, disconnect } from '@/utils/r
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useLibrary } from "@/contexts/LibraryContext";
 import { useApi } from "@/api";
-import { useSettings } from "@/contexts/SettingsContext";
 
 interface LidarrContextType {
     serverUrl: string;
@@ -44,7 +43,6 @@ export const LidarrProvider: React.FC<LidarrProviderProps> = ({ children }) => {
     const dispatch = useDispatch();
     const api = useApi();
     const { fetchLibrary } = useLibrary();
-    const { lidarrEnabled } = useSettings();
     const { serverUrl, apiKey, isAuthenticated } = useSelector(
         (state: RootState) => state.lidarr
     );
@@ -97,8 +95,8 @@ export const LidarrProvider: React.FC<LidarrProviderProps> = ({ children }) => {
     const disconnectServer = () => dispatch(disconnect());
 
     const lookupArtist = async (term: string): Promise<any[] | null> => {
-        if (!lidarrEnabled || !serverUrl || !apiKey) {
-            console.warn('Lidarr plugin is disabled or not connected.');
+        if (!serverUrl || !apiKey) {
+            console.warn('Lidarr plugin is not connected.');
             return null;
         }        
 
@@ -178,11 +176,6 @@ export const LidarrProvider: React.FC<LidarrProviderProps> = ({ children }) => {
 
     const downloadAlbum = async (albumTitle: string, artistName: string): Promise<{ success: boolean; message?: string }> => {
         try {
-            if (!lidarrEnabled) {
-                toast.error('Lidarr plugin is disabled.');
-                return { success: false, message: 'Lidarr plugin is disabled.' };
-            }
-
             if (!serverUrl || !apiKey) {
                 toast.error('Lidarr not connected.');
                 return { success: false, message: 'Lidarr not connected.' };
@@ -302,7 +295,7 @@ export const LidarrProvider: React.FC<LidarrProviderProps> = ({ children }) => {
     };
 
     const getQueue = async () => {
-        if (!lidarrEnabled || !serverUrl || !apiKey) return;
+        if (!serverUrl || !apiKey) return;
 
         try {
             const response = await fetch(`${serverUrl}/api/v1/queue?apikey=${apiKey}`);
@@ -342,11 +335,11 @@ export const LidarrProvider: React.FC<LidarrProviderProps> = ({ children }) => {
     };
 
     const startQueuePolling = () => {
-        if (!lidarrEnabled) return;
-        if (pollingIntervalRef.current) return; // Already polling
+        if (!serverUrl  || !apiKey) return;
+        if (pollingIntervalRef.current) return;
 
         getQueue(); // Initial fetch
-        pollingIntervalRef.current = setInterval(getQueue, 5000);
+        pollingIntervalRef.current = setInterval(getQueue, 10000);
     };
 
     const stopQueuePolling = () => {

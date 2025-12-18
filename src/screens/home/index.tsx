@@ -228,7 +228,6 @@ export default function HomeScreen() {
                 item={item}
                 isGridView={isGridView}
                 isDarkMode={isDarkMode}
-                isCurrentlyPlaying={isCurrentlyPlaying()}
                 onPress={() => handleItemPress(item)}
                 onPlay={handlePlay}
                 gridWidth={screenWidth / gridColumns - 24}

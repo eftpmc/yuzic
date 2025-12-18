@@ -26,7 +26,7 @@ const Stats: React.FC<StatsProps> = ({
     const isDarkMode = colorScheme === 'dark';
 
     const { themeColor } = useSettings();
-    const { fetchLibrary, isLoading } = useLibrary();
+    const { refreshLibrary, isLoading } = useLibrary();
     const albums = useSelector(selectAlbumList);
     const artists = useSelector(selectArtistList);
     const playlists = useSelector(selectPlaylistList);
@@ -76,7 +76,7 @@ const Stats: React.FC<StatsProps> = ({
     const handleRefresh = () => {
         onConfirm(
             async () => {
-                await fetchLibrary(true);
+                await refreshLibrary();
             },
             'This will re-fetch all music data from your connected server and additional sources. Continue?'
         );
