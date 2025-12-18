@@ -12,12 +12,12 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 
-import { ArtistData, SongData } from '@/types';
+import { Artist, Song } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useSettings } from '@/contexts/SettingsContext';
 
 type Props = {
-  artist: ArtistData;
+  artist: Artist;
 };
 
 const Header: React.FC<Props> = ({ artist }) => {
@@ -27,11 +27,10 @@ const Header: React.FC<Props> = ({ artist }) => {
   const { themeColor } = useSettings();
   const { playSongInCollection } = usePlaying();
 
-  const artistSongs: SongData[] = artist.songs ?? [];
+  const artistSongs: Song[] = artist.songs ?? [];
 
   return (
     <>
-      {/* HEADER IMAGE BACKGROUND */}
       <View style={styles.fullBleedWrapper}>
         <Image
           source={{ uri: artist.cover }}

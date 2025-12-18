@@ -26,7 +26,7 @@ const Header: React.FC<Props> = ({ playlist }) => {
   const isDarkMode = useColorScheme() === 'dark';
   const { themeColor } = useSettings();
   const { playSongInCollection } = usePlaying();
-  const { isPlaylistDownloaded, isDownloadingPlaylist, downloadPlaylist } =
+  const { isPlaylistDownloaded, isDownloadingPlaylist, downloadPlaylistById } =
     useDownload();
 
   const songs = playlist.songs ?? [];
@@ -64,8 +64,8 @@ const Header: React.FC<Props> = ({ playlist }) => {
         </TouchableOpacity>
 
         <DownloadOptions
-          onDownload={() => downloadPlaylist(playlist)}
-          isDownloaded={isPlaylistDownloaded(playlist)}
+          onDownload={() => downloadPlaylistById(playlist.id)}
+          isDownloaded={isPlaylistDownloaded(playlist.id)}
           isLoading={isDownloadingPlaylist(playlist.id)}
         />
       </View>

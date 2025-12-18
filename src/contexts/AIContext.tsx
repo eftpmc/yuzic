@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { SongData } from '@/types';
+import { Song } from '@/types';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -8,9 +8,9 @@ import { toast } from '@backpackapp-io/react-native-toast';
 interface AIContextType {
     input: string;
     setInput: (val: string) => void;
-    generateQueue: (input: string) => Promise<SongData[]>;
-    generatedQueue: SongData[];
-    setGeneratedQueue: (queue: SongData[]) => void;
+    generateQueue: (input: string) => Promise<Song[]>;
+    generatedQueue: Song[];
+    setGeneratedQueue: (queue: Song[]) => void;
     isLoading: boolean;
     weighting: { global: number; user: number; favorite: number };
     setWeighting: (val: { global: number; user: number; favorite: number }) => void;
@@ -31,7 +31,7 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
     const { playSongInCollection } = usePlaying();
     const { addPromptToHistory, weighting, setWeighting, openaiApiKey } = useSettings();
     const [input, setInput] = useState('');
-    const [generatedQueue, setGeneratedQueue] = useState<SongData[]>([]);
+    const [generatedQueue, setGeneratedQueue] = useState<Song[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     const tryParseJson = (text: string): any => {
@@ -145,7 +145,7 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const getSongWeight = (song: SongData): number => {
+    const getSongWeight = (song: Song): number => {
         const global = song.globalPlayCount ?? 0;
         const user = song.userPlayCount ?? 0;
         const isFavorite = starred.songs.some(s => s.id === song.id);
@@ -154,8 +154,8 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
         return (Math.sqrt(global + 1) * weighting.global + user * weighting.user) * favoriteBoost;
     };
 
-    const weightedShuffle = (songs: SongData[], count = 100): SongData[] => {
-        const result: SongData[] = [];
+    const weightedShuffle = (songs: Song[], count = 100): Song[] => {
+        const result: Song[] = [];
         const pool = [...songs];
 
         for (let i = 0; i < count && pool.length > 0; i++) {
@@ -180,7 +180,7 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
         return result;
     };
 
-    const generateQueue = async (userPrompt: string): Promise<SongData[]> => {
+    const generateQueue = async (userPrompt: string): Promise<Song[]> => {
         setIsLoading(true);
         setInput(userPrompt);
 

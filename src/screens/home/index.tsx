@@ -30,6 +30,7 @@ import AccountActionSheet from '@/components/AccountActionSheet';
 import Loader from '@/components/Loader'
 import { RootState } from '@/utils/redux/store';
 import { useSelector } from 'react-redux';
+import { selectFavoritesPlaylist } from '@/utils/redux/selectFavoritesPlaylist';
 
 const isColorLight = (color: string) => {
     const hex = color.replace('#', '');
@@ -50,6 +51,7 @@ export default function HomeScreen() {
     const { fetchLibrary, clearLibrary, isLoading } = useLibrary();
     const albums = useSelector(selectAlbumList);
     const artists = useSelector(selectArtistList);
+    const favoritesPlaylist = useSelector(selectFavoritesPlaylist);
     const playlists = useSelector(selectPlaylistList);
     const { themeColor, gridColumns } = useSettings();
     const { currentSong, playSongInCollection, pauseSong, resetQueue } = usePlaying();
@@ -62,6 +64,11 @@ export default function HomeScreen() {
     const accountSheetRef = useRef<BottomSheet>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+
+    const playlistsWithFavorites = useMemo(() => {
+        if (!favoritesPlaylist.songs.length) return playlists;
+        return [favoritesPlaylist, ...playlists];
+    }, [favoritesPlaylist, playlists]);
 
     useEffect(() => {
         setIsMounted(true);
@@ -96,8 +103,8 @@ export default function HomeScreen() {
     const allData = useMemo(() => [
         ...albums.map((item) => ({ ...item, type: 'Album' })),
         ...artists.map((item) => ({ ...item, type: 'Artist' })),
-        ...playlists.map((item) => ({ ...item, type: 'Playlist' })),
-    ], [albums, artists, playlists]);
+        ...playlistsWithFavorites.map((item) => ({ ...item, type: 'Playlist' })),
+    ], [albums, artists, playlistsWithFavorites]);
 
     const sortedFilteredData = useMemo(() => {
         let data = [];
@@ -110,7 +117,7 @@ export default function HomeScreen() {
                 data = artists.map((item) => ({ ...item, type: 'Artist' }));
                 break;
             case 'playlists':
-                data = playlists.map((item) => ({ ...item, type: 'Playlist' }));
+                data = playlistsWithFavorites.map((item) => ({ ...item, type: 'Playlist' }));
                 break;
             default:
                 data = allData;
@@ -130,7 +137,7 @@ export default function HomeScreen() {
         }
 
         return data;
-    }, [albums, artists, playlists, activeFilter, sortOrder]);
+    }, [albums, artists, playlistsWithFavorites, activeFilter, sortOrder]);
 
     useEffect(() => {
         const loadSortOrder = async () => {
@@ -181,7 +188,7 @@ export default function HomeScreen() {
             }
 
             if (item.type === 'Playlist') {
-                return playlists.find((p) => p.id === item.id)?.songs?.some((s) => s.id === currentSong.id);
+                return playlistsWithFavorites.find((p) => p.id === item.id)?.songs?.some((s) => s.id === currentSong.id);
             }
 
             return false;
@@ -202,7 +209,7 @@ export default function HomeScreen() {
                     });
                 }
             } else if (item.type === 'Playlist') {
-                const playlist = playlists.find((p) => p.id === item.id);
+                const playlist = playlistsWithFavorites.find((p) => p.id === item.id);
                 const firstSong = playlist?.songs?.[0];
                 if (playlist && firstSong) {
                     playSongInCollection(firstSong, {

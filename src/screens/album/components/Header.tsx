@@ -27,7 +27,7 @@ const Header: React.FC<Props> = ({ album }) => {
   const isDarkMode = useColorScheme() === 'dark';
   const { themeColor } = useSettings();
   const { playSongInCollection } = usePlaying();
-  const { isAlbumDownloaded, isDownloadingAlbum, downloadAlbum } = useDownload();
+  const { isAlbumDownloaded, isDownloadingAlbum, downloadAlbumById } = useDownload();
 
   const songs = album.songs ?? [];
 
@@ -50,7 +50,7 @@ const Header: React.FC<Props> = ({ album }) => {
   };
 
   const handleDownload = async () => {
-    await downloadAlbum(album);
+    await downloadAlbumById(album.id);
   };
 
   return (
@@ -69,8 +69,8 @@ const Header: React.FC<Props> = ({ album }) => {
         </TouchableOpacity>
 
         <DownloadOptions
-          onDownload={handleDownload}
-          isDownloaded={isAlbumDownloaded(album)}
+          onDownload={() => downloadAlbumById(album.id)}
+          isDownloaded={isAlbumDownloaded(album.id)}
           isLoading={isDownloadingAlbum(album.id)}
         />
       </View>

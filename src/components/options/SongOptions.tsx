@@ -10,7 +10,6 @@ import {
     Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useStarred, useStarredActions } from '@/hooks/starred';
 import TrackPlayer from 'react-native-track-player';
 import { usePlaying } from '@/contexts/PlayingContext';
 import PlaylistList from '@/components/PlaylistList';

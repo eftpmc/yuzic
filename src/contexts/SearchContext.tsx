@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useLibrary } from '@/contexts/LibraryContext';
-import { AlbumData, ArtistData, PlaylistData, SongData } from '@/types';
+import { AlbumBase, ArtistBase, PlaylistBase } from '@/types';
+import { selectAlbumList, selectArtistList, selectPlaylistList } from '@/utils/redux/librarySelectors';
+import { useSelector } from 'react-redux';
 
 interface SearchContextType {
     searchResults: SearchResult[];
@@ -15,13 +16,13 @@ interface SearchProviderProps {
     children: ReactNode;
 }
 
-interface SearchResult {
+export interface SearchResult {
     id: string;
     title: string;
     subtext: string;
     cover: string;
-    type: 'album' | 'artist' | 'playlist' | 'song';
-    isDownloaded?: boolean;
+    type: 'album' | 'artist' | 'playlist';
+    isDownloaded: boolean;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -35,32 +36,34 @@ export const useSearch = () => {
 };
 
 export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
-    const { albums, artists, playlists, songs } = useLibrary();
+    const albums = useSelector(selectAlbumList);
+    const artists = useSelector(selectArtistList);
+    const playlists = useSelector(selectPlaylistList)
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const searchLibrary = async (query: string): Promise<SearchResult[]> => {
         const lowerQuery = query.toLowerCase();
 
-        const albumResults: SearchResult[] = albums.map((album: AlbumData) => ({
+        const albumResults: SearchResult[] = albums.map((album: AlbumBase) => ({
             id: album.id,
             title: album.title,
-            subtext: album.artist.name,
+            subtext: album.subtext,
             cover: album.cover,
             type: 'album',
             isDownloaded: true,
         }));
 
-        const artistResults: SearchResult[] = artists.map((artist: ArtistData) => ({
+        const artistResults: SearchResult[] = artists.map((artist: ArtistBase) => ({
             id: artist.id,
             title: artist.name,
-            subtext: artist.subtext || '',
+            subtext: artist.subtext,
             cover: artist.cover,
             type: 'artist',
             isDownloaded: true,
         }));
 
-        const playlistResults: SearchResult[] = playlists.map((playlist: PlaylistData) => ({
+        const playlistResults: SearchResult[] = playlists.map((playlist: PlaylistBase) => ({
             id: playlist.id,
             title: playlist.title,
             subtext: playlist.subtext,
@@ -69,20 +72,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
             isDownloaded: true,
         }));
 
-        const songResults: SearchResult[] = songs.map((song: SongData) => ({
-            id: song.id,
-            title: song.title,
-            subtext: song.artist,
-            cover: song.cover,
-            type: 'song',
-            isDownloaded: true,
-        }));
-
         const results = [
             ...albumResults,
             ...artistResults,
             ...playlistResults,
-            ...songResults,
         ].filter((item) => item.title.toLowerCase().includes(lowerQuery));
 
         return results;
@@ -126,7 +119,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
 
             const combined = [...localResults, ...externalResults];
 
-            // ✅ Deduplicate by "title + subtext"
             const uniqueMap = new Map<string, SearchResult>();
 
             for (const result of combined) {
@@ -136,7 +128,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
                 if (!existing) {
                     uniqueMap.set(key, result);
                 } else if (!existing.isDownloaded && result.isDownloaded) {
-                    // Prefer downloaded version if available
                     uniqueMap.set(key, result);
                 }
             }
@@ -144,7 +135,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
             const uniqueResults = Array.from(uniqueMap.values());
 
             uniqueResults.sort((a, b) => {
-                // 1. Downloaded first
                 if (a.isDownloaded && !b.isDownloaded) return -1;
                 if (b.isDownloaded && !a.isDownloaded) return 1;
 
@@ -161,13 +151,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
                 if (aIncludes && !bIncludes) return -1;
                 if (bIncludes && !aIncludes) return 1;
 
-                // 2. Prefer albums/artists/playlists over songs
                 const typePriority = (type: string) => {
                     switch (type) {
                         case 'album': return 1;
                         case 'artist': return 2;
                         case 'playlist': return 3;
-                        case 'song': return 4;
                         default: return 5;
                     }
                 };
@@ -179,7 +167,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
                     return aPriority - bPriority;
                 }
 
-                // 3. If all else equal, sort alphabetically
                 return aTitle.localeCompare(bTitle);
             });
 

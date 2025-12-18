@@ -1,4 +1,9 @@
-import React, { useState, forwardRef, useMemo } from 'react';
+import React, {
+    useState,
+    forwardRef,
+    useMemo,
+    useEffect,
+} from 'react';
 import {
     View,
     Text,
@@ -14,11 +19,9 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { Ionicons } from '@expo/vector-icons';
 import CoverArt from '@/components/CoverArt';
 import { useSelector } from 'react-redux';
-import {
-    selectPlaylistList
-} from '@/utils/redux/librarySelectors';
+import store from '@/utils/redux/store';
+import { selectPlaylistList } from '@/utils/redux/librarySelectors';
 import { useLibrary } from '@/contexts/LibraryContext';
-import { selectIsSongInPlaylist } from '@/utils/redux/selectIsSongInPlaylist';
 
 type PlaylistListProps = {
     selectedSong: any;
@@ -33,27 +36,67 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 
         const playlists = useSelector(selectPlaylistList);
 
-        const { createPlaylist, addSongToPlaylist, removeSongFromPlaylist } =
-            useLibrary();
+        const {
+            createPlaylist,
+            addSongToPlaylist,
+            removeSongFromPlaylist,
+            getPlaylist,
+        } = useLibrary();
 
         const [searchQuery, setSearchQuery] = useState('');
         const [newPlaylistName, setNewPlaylistName] = useState('');
-        const [selectedIds, setSelectedIds] = useState<string[]>([]);
+        const [initialIds, setInitialIds] = useState<Set<string>>(new Set());
+        const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
         const filteredPlaylists = useMemo(
             () =>
-                playlists.filter((p) =>
+                playlists.filter(p =>
                     p.title.toLowerCase().includes(searchQuery.toLowerCase())
                 ),
             [playlists, searchQuery]
         );
 
+        useEffect(() => {
+            if (!selectedSong) return;
+
+            let cancelled = false;
+
+            const load = async () => {
+                const ids = new Set<string>();
+
+                for (const playlist of playlists) {
+                    const state = store.getState();
+                    let full = state.library.playlistsById[playlist.id];
+
+                    if (!full?.songs) {
+                        await getPlaylist(playlist.id);
+                        full = store.getState().library.playlistsById[playlist.id];
+                    }
+
+                    if (full?.songs?.some(s => s.id === selectedSong.id)) {
+                        ids.add(playlist.id);
+                    }
+                }
+
+                if (!cancelled) {
+                    setInitialIds(ids);
+                    setSelectedIds(new Set(ids));
+                }
+            };
+
+            load();
+
+            return () => {
+                cancelled = true;
+            };
+        }, [selectedSong?.id, playlists]);
+
         const togglePlaylist = (id: string) => {
-            setSelectedIds((prev) =>
-                prev.includes(id)
-                    ? prev.filter((pid) => pid !== id)
-                    : [...prev, id]
-            );
+            setSelectedIds(prev => {
+                const next = new Set(prev);
+                next.has(id) ? next.delete(id) : next.add(id);
+                return next;
+            });
         };
 
         const handleCreatePlaylist = async () => {
@@ -67,19 +110,14 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
             if (!selectedSong) return;
 
             for (const playlist of playlists) {
-                if (playlist.id === 'favorites') continue;
+                const wasIn = initialIds.has(playlist.id);
+                const isIn = selectedIds.has(playlist.id);
 
-                const isInPlaylist = useSelector(
-                    selectIsSongInPlaylist(playlist.id, selectedSong.id)
-                );
-
-                const isSelected = selectedIds.includes(playlist.id);
-
-                if (isSelected && !isInPlaylist) {
+                if (isIn && !wasIn) {
                     await addSongToPlaylist(playlist.id, selectedSong.id);
                 }
 
-                if (!isSelected && isInPlaylist) {
+                if (!isIn && wasIn) {
                     await removeSongFromPlaylist(playlist.id, selectedSong.id);
                 }
             }
@@ -130,9 +168,9 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 
                     <FlatList
                         data={filteredPlaylists}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={item => item.id}
                         renderItem={({ item }) => {
-                            const isChecked = selectedIds.includes(item.id);
+                            const isChecked = selectedIds.has(item.id);
 
                             return (
                                 <TouchableOpacity

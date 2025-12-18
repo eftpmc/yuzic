@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
+import { makeSelectOwnedAlbums } from '@/utils/redux/makeSelectOwnedAlbums'
 import { useSelector } from 'react-redux';
 
 import { Artist, Album, AlbumBase } from '@/types';
@@ -25,11 +26,10 @@ const List: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
   const { getAlbum } = useLibrary();
+  const selectOwnedAlbums = useMemo(makeSelectOwnedAlbums, []);
 
   const ownedAlbums = useSelector((state: RootState) =>
-    artist.ownedAlbums
-      .map(a => state.library.albumsById[a.id])
-      .filter(Boolean)
+    selectOwnedAlbums(state, artist)
   );
 
   useEffect(() => {
