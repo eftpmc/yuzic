@@ -59,9 +59,7 @@ export interface PlaylistsApi {
 
 export interface StarredApi {
     list(): Promise<{
-        albumIds: string[];
-        artistIds: string[];
-        songIds: string[];
+        songs: Song[];
     }>;
     add(id: string): Promise<void>;
     remove(id: string): Promise<void>;

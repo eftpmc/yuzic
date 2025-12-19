@@ -66,7 +66,7 @@ export default function HomeScreen() {
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
     const playlistsWithFavorites = useMemo(() => {
-        //if (!favoritesPlaylist.songs.length) return playlists;
+        if (!favoritesPlaylist.songs.length) return playlists; 
         return [favoritesPlaylist, ...playlists];
     }, [favoritesPlaylist, playlists]);
     

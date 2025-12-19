@@ -1,10 +1,11 @@
+import { Song } from "@/types";
+import { buildJellyfinCoverArtUrl, buildJellyfinStreamUrl } from "@/utils/urlBuilders";
+
 export interface GetStarredItemsResult {
-  albumIds: string[];
-  artistIds: string[];
-  songIds: string[];
+  songs: Song[];
 }
 
-async function fetchGetStarred(
+async function fetchGetStarredSongs(
   serverUrl: string,
   userId: string,
   token: string
@@ -13,8 +14,8 @@ async function fetchGetStarred(
     `${serverUrl}/Users/${userId}/Items` +
     `?Recursive=true` +
     `&Filters=IsFavorite` +
-    `&IncludeItemTypes=Audio,MusicAlbum,MusicArtist` +
-    `&Fields=Id`;
+    `&IncludeItemTypes=Audio` +
+    `&Fields=Id,Name,Artists,AlbumId,RunTimeTicks,ImageTags`;
 
   const res = await fetch(url, {
     headers: {
@@ -24,24 +25,32 @@ async function fetchGetStarred(
     }
   });
 
-  if (!res.ok) throw new Error(`Jellyfin getStarred failed: ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`Jellyfin getStarred failed: ${res.status}`);
+  }
+
   return res.json();
 }
 
-function normalizeStarred(raw: any): GetStarredItemsResult {
+function normalizeStarred(
+  raw: any,
+  serverUrl: string,
+  token: string
+): GetStarredItemsResult {
   const items = raw?.Items ?? [];
 
-  const songIds: string[] = [];
-  const albumIds: string[] = [];
-  const artistIds: string[] = [];
+  const songs: Song[] = items.map((i: any) => ({
+    id: i.Id,
+    title: i.Name,
+    artist: i.AlbumArtists?.[0].Name ?? "Unknown Artist",
+    albumId: i.AlbumId,
+    cover: buildJellyfinCoverArtUrl(serverUrl, token, i.Id, i.ImageTags.Primary),
+    duration: Math.floor((i.RunTimeTicks ?? 0) / 10_000_000), // ticks → seconds
+    streamUrl: buildJellyfinStreamUrl(serverUrl, i.Id, token),
+    userPlayCount: i.UserData.PlayCount,
+  }));
 
-  for (const i of items) {
-    if (i.Type === "Audio") songIds.push(i.Id);
-    else if (i.Type === "MusicAlbum") albumIds.push(i.Id);
-    else if (i.Type === "MusicArtist") artistIds.push(i.Id);
-  }
-
-  return { albumIds, artistIds, songIds };
+  return { songs };
 }
 
 export async function getStarredItems(
@@ -50,15 +59,10 @@ export async function getStarredItems(
   token: string
 ): Promise<GetStarredItemsResult> {
   try {
-    const raw = await fetchGetStarred(serverUrl, userId, token);
-    return normalizeStarred(raw);
+    const raw = await fetchGetStarredSongs(serverUrl, userId, token);
+    return normalizeStarred(raw, serverUrl, token);
   } catch (error) {
-    console.error(`Failed to fetch starred items:`, error);
-    // Return empty arrays rather than failing entirely
-    return {
-      albumIds: [],
-      artistIds: [],
-      songIds: [],
-    };
+    console.error("Failed to fetch Jellyfin starred items:", error);
+    return { songs: [] };
   }
 }

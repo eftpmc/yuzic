@@ -28,7 +28,7 @@ const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
     const { starItem, unstarItem } = useLibrary();
     const { currentSong } = usePlaying();
 
-    const isStarred = starred.songIds.includes(selectedSong.id);
+    const isStarred = starred.songs.some(s => s.id === selectedSong.id);
 
     const toggleFavorite = async () => {
         try {

@@ -18,7 +18,7 @@ import {
     resetLibraryState,
 } from "@/utils/redux/slices/librarySlice";
 import store from "@/utils/redux/store";
-import { Album, Artist, Playlist } from "@/types";
+import { Album, Artist, Playlist, Song } from "@/types";
 import { selectFavoritesPlaylist } from "@/utils/redux/selectFavoritesPlaylist";
 
 interface LibraryContextType {
@@ -80,6 +80,11 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
             dispatch(setPlaylistList(playlists));
             dispatch(setStarred(starred));
 
+            const favorites = selectFavoritesPlaylist(store.getState());
+            if (favorites) {
+                dispatch(upsertPlaylist(favorites));
+            }
+
             isLibraryFetchedRef.current = true;
         } finally {
             setIsLoading(false);
@@ -127,21 +132,16 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
 
     const getPlaylist = async (id: string): Promise<Playlist | null> => {
         if (id === FAVORITES_ID) {
-            const favorites = selectFavoritesPlaylist(store.getState());
-            console.log(favorites)
-            return favorites ?? null;
+            return selectFavoritesPlaylist(store.getState());
         }
 
         const existing = store.getState().library.playlistsById[id];
-        if (existing) {
-            return existing;
-        }
+        if (existing) return existing;
 
         const playlist = await api.playlists.get(id);
         dispatch(upsertPlaylist(playlist));
         return playlist;
     };
-
 
     const refreshLibrary = async () => {
         dispatch(resetLibraryState());

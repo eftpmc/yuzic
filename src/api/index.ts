@@ -52,11 +52,7 @@ export const useApi = (): ApiAdapter => {
             removeSong: empty,
         },
         starred: {
-            list: async () => ({
-                albumIds: [],
-                artistIds: [],
-                songIds: [],
-            }),
+            list: empty,
             add: empty,
             remove: empty,
         },

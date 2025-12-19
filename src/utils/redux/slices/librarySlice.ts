@@ -6,12 +6,11 @@ import {
   ArtistBase,
   Playlist,
   PlaylistBase,
+  Song,
 } from "@/types";
 
 interface StarredState {
-  albumIds: string[];
-  artistIds: string[];
-  songIds: string[];
+  songs: Song[];
 }
 
 interface LibraryState {
@@ -36,9 +35,7 @@ const initialState: LibraryState = {
   playlistsById: {},
 
   starred: {
-    albumIds: [],
-    artistIds: [],
-    songIds: [],
+    songs: [],
   },
 };
 

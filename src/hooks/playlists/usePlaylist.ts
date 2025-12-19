@@ -22,7 +22,7 @@ export function usePlaylist(id: string): UsePlaylistResult {
 
   return {
     playlist,
-    isLoading: !playlist,
+    isLoading: !playlist && id !== "favorites",
     error: null,
   };
 }

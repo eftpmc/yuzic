@@ -146,9 +146,9 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const getSongWeight = (song: Song): number => {
-        const global = song.globalPlayCount ?? 0;
+        const global = 0;
         const user = song.userPlayCount ?? 0;
-        const isFavorite = starred.songs.some(s => s.id === song.id);
+        const isFavorite = starred.songs.some((s: Song) => s.id === song.id);
         const favoriteBoost = isFavorite ? weighting.favorite : 1;
 
         return (Math.sqrt(global + 1) * weighting.global + user * weighting.user) * favoriteBoost;
