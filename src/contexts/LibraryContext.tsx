@@ -17,11 +17,12 @@ import {
     upsertPlaylist,
     setStarred,
     resetLibraryState,
+    setGenres,
 } from "@/utils/redux/slices/librarySlice";
 import store from "@/utils/redux/store";
-import { Album, AlbumBase, Artist, ArtistBase, Playlist, PlaylistBase, Song } from "@/types";
+import { Album, AlbumBase, Artist, ArtistBase, GenreListing, Playlist, PlaylistBase, Song } from "@/types";
 import { selectFavoritesPlaylist } from "@/utils/redux/selectFavoritesPlaylist";
-import { selectAlbumList, selectArtistList, selectPlaylistList, selectStarred } from "@/utils/redux/librarySelectors";
+import { selectAlbumList, selectArtistList, selectGenres, selectPlaylistList, selectStarred } from "@/utils/redux/librarySelectors";
 
 interface LibraryContextType {
     fetchLibrary: (force?: boolean) => Promise<void>;
@@ -37,6 +38,9 @@ interface LibraryContextType {
 
     refreshLibrary: () => Promise<void>;
     clearLibrary: () => void;
+
+    genres: GenreListing[];
+    getGenre: (name: string) => GenreListing | null;
 
     starred: {
         songs: Song[]
@@ -73,6 +77,7 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     const albums = useSelector(selectAlbumList);
     const artists = useSelector(selectArtistList);
     const playlists = useSelector(selectPlaylistList);
+    const genres = useSelector(selectGenres);
     const starred = useSelector(selectStarred);
     const favorites = useSelector(selectFavoritesPlaylist);
 
@@ -82,17 +87,21 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
 
         try {
-            const [albums, artists, playlists, starred] = await Promise.all([
+            const [albums, artists, playlists, starred, genres] = await Promise.all([
                 api.albums.list(),
                 api.artists.list(),
                 api.playlists.list(),
                 api.starred.list(),
+                api.genres.list(),
             ]);
 
             dispatch(setAlbumList(albums));
             dispatch(setArtistList(artists));
             dispatch(setPlaylistList(playlists));
             dispatch(setStarred(starred));
+            dispatch(setGenres(genres));
+
+            console.log(genres);
 
             const favorites = selectFavoritesPlaylist(store.getState());
             if (favorites) {
@@ -157,6 +166,10 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         return playlist;
     };
 
+    const getGenre = (name: string) => {
+        return genres.find(g => g.name === name) ?? null;
+    };
+
     const refreshLibrary = async () => {
         dispatch(resetLibraryState());
         isLibraryFetchedRef.current = false;
@@ -195,9 +208,9 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const playlistsWithFavorites = useMemo(() => {
-            if (!favorites.songs.length) return playlists; 
-            return [favorites, ...playlists];
-        }, [favorites, playlists]);
+        if (!favorites.songs.length) return playlists;
+        return [favorites, ...playlists];
+    }, [favorites, playlists]);
 
     return (
         <LibraryContext.Provider
@@ -216,6 +229,8 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
                 refreshLibrary,
                 clearLibrary,
 
+                genres,
+                getGenre,
                 starred,
                 starItem,
                 unstarItem,

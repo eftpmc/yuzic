@@ -37,12 +37,7 @@ export const useApi = (): ApiAdapter => {
             get: empty,
         },
         genres: {
-            list: async () => ({
-                songGenresMap: {},
-                albumGenresMap: {},
-                albumKeyGenresMap: {},
-                fetchedGenres: [],
-            }),
+            list: empty
         },
         playlists: {
             list: async () => [],

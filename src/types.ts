@@ -49,12 +49,11 @@ export interface Song {
     albumId: string;
     userPlayCount: number;
 }
-export interface GenreMaps {
-    songGenresMap: Record<string, string[]>;
-    albumGenresMap: Record<string, string[]>;
-    albumKeyGenresMap: Record<string, string[]>;
-    fetchedGenres: string[];
-}
+
+export type GenreListing = {
+  name: string;
+  songs: Song[];
+};
 
 export interface ServerContextType {
     serverType: 'navidrome' | 'jellyfin' | 'none';

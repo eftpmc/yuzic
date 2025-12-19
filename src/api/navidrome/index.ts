@@ -11,7 +11,7 @@ import {
   AuthApi
 } from "../types";
 
-import { GenreMaps, AdapterType, Song } from "@/types";
+import { GenreListing, AdapterType, Song } from "@/types";
 
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
@@ -79,30 +79,27 @@ export const createNavidromeAdapter = (adapter: AdapterType): ApiAdapter => {
     list: async () => {
       const names = await getGenres(serverUrl, username, password);
 
-      const maps: GenreMaps = {
-        songGenresMap: {},
-        albumGenresMap: {},
-        albumKeyGenresMap: {},
-        fetchedGenres: names,
-      };
+      const results = await Promise.all(
+        names.map(async (name) => {
+          const songs = await getSongsByGenre(
+            serverUrl,
+            username,
+            password,
+            name,
+            500
+          );
 
-      for (const genre of names) {
-        const songs = await getSongsByGenre(serverUrl, username, password, genre);
+          return {
+            name,
+            songs,
+          };
+        })
+      );
 
-        for (const s of songs) {
-          if (!maps.songGenresMap[s.id]) maps.songGenresMap[s.id] = [];
-          maps.songGenresMap[s.id].push(genre);
-
-          if (s.albumId) {
-            if (!maps.albumGenresMap[s.albumId]) maps.albumGenresMap[s.albumId] = [];
-            maps.albumGenresMap[s.albumId].push(genre);
-          }
-        }
-      }
-
-      return maps;
+      return results.filter(g => g.songs.length > 0);
     },
   };
+
   const playlists: PlaylistsApi = {
     list: async () => {
       return getPlaylists(serverUrl, username, password);

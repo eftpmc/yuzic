@@ -1,9 +1,10 @@
-import { SongData } from "@/types";
+import { Song } from "@/types";
+import { buildCoverArtUrl } from "@/utils/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
-export type GetSongsByGenreResult = SongData[];
+export type GetSongsByGenreResult = Song[];
 
 async function fetchGetSongsByGenre(
   serverUrl: string,
@@ -38,13 +39,8 @@ function normalizeSongsByGenre(
   const list = raw?.["subsonic-response"]?.songsByGenre?.song || [];
 
   return list.map((s: any) => {
-    const cover = s.coverArt
-      ? `${serverUrl}/rest/getCoverArt.view?id=${s.coverArt}&u=${encodeURIComponent(
-          username
-        )}&p=${encodeURIComponent(
-          password
-        )}&v=${API_VERSION}&c=${CLIENT_NAME}`
-      : "";
+
+    const cover = buildCoverArtUrl(s.coverArt, serverUrl, username, password);
 
     return {
       id: s.id,
@@ -53,8 +49,6 @@ function normalizeSongsByGenre(
       duration: s.duration,
       cover,
       albumId: s.albumId,
-      genres: [],
-      globalPlayCount: 0,
       userPlayCount: 0,
       streamUrl:
         `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
@@ -62,7 +56,7 @@ function normalizeSongsByGenre(
         )}&p=${encodeURIComponent(
           password
         )}&v=${API_VERSION}&c=${CLIENT_NAME}`,
-    } as SongData;
+    };
   });
 }
 

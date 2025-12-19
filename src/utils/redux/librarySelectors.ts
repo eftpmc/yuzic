@@ -11,18 +11,26 @@ export const selectPlaylistList = (state: RootState) =>
 
 export const selectAlbumById =
   (id: string) =>
-  (state: RootState) =>
-    state.library.albumsById[id] ?? null;
+    (state: RootState) =>
+      state.library.albumsById[id] ?? null;
 
 export const selectArtistById =
   (id: string) =>
-  (state: RootState) =>
-    state.library.artistsById[id] ?? null;
+    (state: RootState) =>
+      state.library.artistsById[id] ?? null;
 
 export const selectPlaylistById =
   (id: string) =>
-  (state: RootState) =>
-    state.library.playlistsById[id] ?? null;
+    (state: RootState) =>
+      state.library.playlistsById[id] ?? null;
+
+export const selectGenres = (state: RootState) =>
+  state.library.genres;
+
+export const selectGenreByName =
+  (name: string) =>
+    (state: RootState) =>
+      state.library.genres.find(g => g.name === name) ?? null;
 
 export const selectStarred = (state: RootState) =>
   state.library.starred;
