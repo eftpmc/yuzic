@@ -1,109 +1,181 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     Platform,
-    Dimensions
 } from 'react-native';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import ReorderableList, {
+    reorderItems,
+    useReorderableDrag,
+} from 'react-native-reorderable-list';
+import { Gesture } from 'react-native-gesture-handler';
 import { GripVertical } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
-import { useSettings } from '@/contexts/SettingsContext';
-import { useLibrary } from "@/contexts/LibraryContext";
+import { useLibrary } from '@/contexts/LibraryContext';
 import { Image } from 'expo-image';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-const Queue: React.FC<{ onBack: () => void, width: number }> = ({ onBack, width }) => {
-    const { getQueue, currentSong, skipTo, moveTrack, isPlaying, pauseSong, resumeSong, skipToNext } = usePlaying();
-    const { themeColor } = useSettings();
+type QueueItemProps = {
+    item: any;
+    index: number;
+    isCurrent: boolean;
+    onPress: (index: number) => void;
+};
+
+const QueueItem = memo(({ item, index, isCurrent, onPress }: QueueItemProps) => {
+    const drag = useReorderableDrag();
+
+    return (
+        <TouchableOpacity
+            onPress={() => onPress(index)}
+            onLongPress={drag}
+            style={[
+                styles.queueItem,
+                isCurrent && styles.activeQueueItem,
+            ]}
+        >
+            <Image
+                source={{ uri: item.cover || item.artwork }}
+                style={styles.artwork}
+            />
+
+            <View style={styles.metadata}>
+                <Text
+                    style={[
+                        styles.title,
+                        isCurrent && { fontWeight: 'bold' },
+                    ]}
+                    numberOfLines={1}
+                >
+                    {item.title}
+                </Text>
+                <Text style={styles.artist} numberOfLines={1}>
+                    {item.artist}
+                </Text>
+            </View>
+
+            <GripVertical color="#888" />
+        </TouchableOpacity>
+    );
+});
+
+const Queue: React.FC<{ onBack: () => void; width: number }> = ({
+    onBack,
+    width,
+}) => {
+    const {
+        getQueue,
+        currentSong,
+        skipTo,
+        moveTrack,
+        isPlaying,
+        pauseSong,
+        resumeSong,
+        skipToNext,
+        queueVersion,
+    } = usePlaying();
+
     const { albums } = useLibrary();
+
     const [queue, setQueue] = useState<any[]>([]);
-    const currentIndex = queue.findIndex((song) => song.id === currentSong?.id);
 
     useFocusEffect(
-        React.useCallback(() => {
-            getQueue().then(q => setQueue(q));
-        }, [currentSong?.id])
+        useCallback(() => {
+            setQueue(getQueue());
+        }, [queueVersion])
     );
 
-    const currentAlbum = albums.find(album =>
-        album.songs?.some(song => song.id === currentSong?.id)
+    const currentAlbum = albums.find(
+        album => album.id === currentSong?.albumId
     );
 
-    const handleSongClick = async (index: number) => {
-        await skipTo(index);
-    };
+    const handleSongClick = useCallback((index: number) => {
+        skipTo(index);
+    }, []);
 
+    const handleReorder = useCallback(
+        ({ from, to }: { from: number; to: number }) => {
+            setQueue(prev => reorderItems(prev, from, to));
+            moveTrack(from, to);
+        },
+        []
+    );
 
-    const renderQueueItem = useCallback(({ item, drag, isActive, getIndex }: RenderItemParams<any>) => {
-        const index = getIndex?.() ?? 0;
-        return (
-            <TouchableOpacity
-                onPress={() => handleSongClick(index)}
-                onLongPress={drag}
-                disabled={isActive}
-                style={[
-                    styles.queueItem,
-                    item.id === currentSong?.id && styles.activeQueueItem,
-                ]}
-            >
-                <Image source={{ uri: item.cover || item.artwork }} style={styles.artwork} />
-                <View style={styles.metadata}>
-                    <Text style={[styles.title, item.id === currentSong?.id && { fontWeight: "bold" }]}>
-                        {item.title}
-                    </Text>
-                    <Text style={styles.artist}>{item.artist}</Text>
-                </View>
-                <GripVertical color="#888" />
-            </TouchableOpacity>
-        );
-    }, [currentIndex, currentSong?.id, themeColor]);
+    const panGesture = useMemo(
+        () => Gesture.Pan().activateAfterLongPress(520),
+        []
+    );
 
     return (
         <View style={[styles.container, { width }]}>
             <View style={styles.header}>
-                <Image source={{ uri: currentSong?.cover }} style={styles.headerImage} />
+                <Image
+                    source={{ uri: currentSong?.cover }}
+                    style={styles.headerImage}
+                />
                 <View style={styles.headerTextContainer}>
-                    <Text style={styles.nowPlayingTitle} numberOfLines={1}>{currentSong?.title}</Text>
-                    <Text style={styles.nowPlayingArtist} numberOfLines={1}>{currentSong?.artist}</Text>
+                    <Text
+                        style={styles.nowPlayingTitle}
+                        numberOfLines={1}
+                    >
+                        {currentSong?.title}
+                    </Text>
+                    <Text
+                        style={styles.nowPlayingArtist}
+                        numberOfLines={1}
+                    >
+                        {currentSong?.artist}
+                    </Text>
                 </View>
                 <View style={styles.playControls}>
-                    <TouchableOpacity onPress={isPlaying ? pauseSong : resumeSong} style={styles.controlButton}>
-                        <Ionicons name={isPlaying ? 'pause' : 'play'} size={20} color="#fff" />
+                    <TouchableOpacity
+                        onPress={isPlaying ? pauseSong : resumeSong}
+                        style={styles.controlButton}
+                    >
+                        <Ionicons
+                            name={isPlaying ? 'pause' : 'play'}
+                            size={20}
+                            color="#fff"
+                        />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={skipToNext} style={styles.controlButton}>
-                        <Ionicons name="play-skip-forward" size={20} color="#fff" />
+                    <TouchableOpacity
+                        onPress={skipToNext}
+                        style={styles.controlButton}
+                    >
+                        <Ionicons
+                            name="play-skip-forward"
+                            size={20}
+                            color="#fff"
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
 
             <Text style={styles.sectionLabel}>Queue</Text>
             <Text style={styles.subLabel}>
-                {currentAlbum ? `Playing from ${currentAlbum.title}` : 'Playing from Queue'}
+                {currentAlbum
+                    ? `Playing from ${currentAlbum.title}`
+                    : 'Playing from Queue'}
             </Text>
 
             <View style={styles.scrollWrapper}>
-                <DraggableFlatList
+                <ReorderableList
                     data={queue}
                     keyExtractor={item => item.id}
-                    renderItem={renderQueueItem}
-                    onDragEnd={async ({ from, to, data }) => {
-                        setQueue(data);
-                        await moveTrack(from, to);
-                    }}
+                    onReorder={handleReorder}
+                    panGesture={panGesture}
                     showsVerticalScrollIndicator={false}
-                    initialNumToRender={15}
-                    maxToRenderPerBatch={20}
-                    windowSize={10}
-                    removeClippedSubviews={true}
-                    getItemLayout={(_, index) => ({
-                        length: 70,
-                        offset: 70 * index,
-                        index,
-                    })}
+                    renderItem={({ item, index }) => (
+                        <QueueItem
+                            item={item}
+                            index={index}
+                            isCurrent={item.id === currentSong?.id}
+                            onPress={handleSongClick}
+                        />
+                    )}
                 />
             </View>
         </View>
@@ -130,7 +202,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 12,
     },
-
     controlButton: {
         padding: 6,
         marginLeft: 6,
@@ -155,10 +226,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#aaa',
     },
-    activeQueueItem: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 10,
-    },
     sectionLabel: {
         fontSize: 16,
         fontWeight: '600',
@@ -174,8 +241,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
-        paddingHorizontal: 12, // Use padding instead of margin
+        paddingHorizontal: 12,
         borderRadius: 10,
+    },
+    activeQueueItem: {
+        backgroundColor: 'rgba(255,255,255,0.05)',
     },
     artwork: {
         width: 50,
@@ -193,9 +263,6 @@ const styles = StyleSheet.create({
     artist: {
         fontSize: 14,
         color: '#aaa',
-    },
-    flatListContent: {
-        paddingBottom: 100, // for utility buttons spacing
     },
 });
 

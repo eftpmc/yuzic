@@ -10,30 +10,26 @@ import {
     Appearance,
     Platform,
 } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/utils/redux/store';
-import { disconnect as reduxDisconnect } from '@/utils/redux/slices/serversSlice';
+import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
-import { useLibrary } from '@/contexts/LibraryContext';
-import { usePlaying } from '@/contexts/PlayingContext';
-import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
 import Loader from '@/components/Loader';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 
 const ServerSettings: React.FC = () => {
-    const dispatch = useDispatch();
-    const api = useApi();
-    const { clearLibrary } = useLibrary();
-    const { pauseSong, resetQueue } = usePlaying();
-    const router = useRouter();
-
-    const { serverUrl, username, isAuthenticated } = useSelector(
-        (s: RootState) => s.server
-    );
-
     const isDarkMode = Appearance.getColorScheme() === 'dark';
+    const api = useApi();
+
+    const activeServer = useSelector(selectActiveServer);
+
+    if (!activeServer){
+        return null;
+    }
+
+    const { serverUrl, username, isAuthenticated } = activeServer
+
     const [isLoading, setIsLoading] = useState(false);
 
     const handlePing = async () => {
@@ -50,16 +46,6 @@ const ServerSettings: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleDisconnect = async () => {
-        try {
-            await pauseSong();
-            await resetQueue();
-            clearLibrary();
-            dispatch(reduxDisconnect());
-            router.replace('/(onboarding)');
-        } catch {}
     };
 
     return (
@@ -114,24 +100,6 @@ const ServerSettings: React.FC = () => {
                         )}
                     </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                    style={[
-                        styles.disconnectButton,
-                        isDarkMode && styles.disconnectButtonDark,
-                    ]}
-                    onPress={handleDisconnect}
-                >
-                    <MaterialIcons
-                        name="logout"
-                        size={20}
-                        color="#fff"
-                        style={{ marginRight: 8 }}
-                    />
-                    <Text style={styles.disconnectButtonText}>
-                        Disconnect
-                    </Text>
-                </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
     );
@@ -183,19 +151,4 @@ const styles = StyleSheet.create({
     },
     rowText: { fontSize: 16, color: '#000' },
     rowTextDark: { color: '#fff' },
-    disconnectButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#FF3B30',
-        paddingVertical: 10,
-        borderRadius: 8,
-        marginTop: 16,
-    },
-    disconnectButtonDark: { backgroundColor: '#FF453A' },
-    disconnectButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
 });

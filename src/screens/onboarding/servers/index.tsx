@@ -7,6 +7,7 @@ import {
     Platform,
     FlatList,
     Alert,
+    Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +19,10 @@ import {
 } from '@/utils/redux/slices/serversSlice';
 import { useSettings } from '@/contexts/SettingsContext';
 import { AntDesign } from '@expo/vector-icons';
+import { MenuView } from '@react-native-menu/menu';
+
+import NavidromeIcon from '@assets/images/navidrome.png';
+import JellyfinIcon from '@assets/images/jellyfin.png';
 
 export default function Servers() {
     const router = useRouter();
@@ -38,7 +43,7 @@ export default function Servers() {
         router.push('/(onboarding)/connect');
     };
 
-    const handleDeleteServer = (id: string, serverUrl: string) => {
+    const confirmDelete = (id: string, serverUrl: string) => {
         Alert.alert(
             'Delete Server',
             `Remove ${serverUrl.replace(/^https?:\/\//, '')}?`,
@@ -47,9 +52,7 @@ export default function Servers() {
                 {
                     text: 'Delete',
                     style: 'destructive',
-                    onPress: () => {
-                        dispatch(removeServer(id));
-                    },
+                    onPress: () => dispatch(removeServer(id)),
                 },
             ]
         );
@@ -57,32 +60,65 @@ export default function Servers() {
 
     const renderServer = ({ item }: any) => {
         const isActive = item.id === activeServerId;
+        const icon = item.type === 'jellyfin' ? JellyfinIcon : NavidromeIcon;
 
         return (
-            <View style={styles.serverRow}>
+            <View style={styles.serverCard}>
                 <TouchableOpacity
                     style={styles.serverInfo}
                     onPress={() => handleSelectServer(item.id)}
+                    activeOpacity={0.75}
                 >
-                    <Text style={styles.serverName}>
-                        {item.serverUrl.replace(/^https?:\/\//, '')}
-                    </Text>
-                    <Text style={styles.serverSubtext}>
-                        {item.type === 'jellyfin'
-                            ? 'Jellyfin Server'
-                            : 'Navidrome Server'}
-                        {isActive ? ' • Active' : ''}
-                    </Text>
+                    <Image
+                        source={icon}
+                        style={styles.serverIcon}
+                        resizeMode="contain"
+                    />
+
+                    <View style={styles.textContainer}>
+                        <Text style={styles.serverName}>
+                            {item.serverUrl.replace(/^https?:\/\//, '')}
+                        </Text>
+
+                        <View style={styles.subRow}>
+                            <Text style={styles.serverSubtext}>
+                                {item.username}
+                            </Text>
+
+                            {isActive && (
+                                <View style={styles.activeBadge}>
+                                    <Text style={styles.activeBadgeText}>
+                                        ACTIVE
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={() =>
-                        handleDeleteServer(item.id, item.serverUrl)
-                    }
-                    hitSlop={10}
+                <MenuView
+                    onPressAction={({ nativeEvent }) => {
+                        if (nativeEvent.event === 'delete') {
+                            confirmDelete(item.id, item.serverUrl);
+                        }
+                    }}
+                    actions={[
+                        {
+                            id: 'delete',
+                            title: 'Delete',
+                            attributes: {
+                                destructive: true,
+                            },
+                        },
+                    ]}
                 >
-                    <AntDesign name="delete" size={18} color="#cc4444" />
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.menuButton}
+                        hitSlop={10}
+                    >
+                        <AntDesign name="ellipsis1" size={18} color="#888" />
+                    </TouchableOpacity>
+                </MenuView>
             </View>
         );
     };
@@ -104,31 +140,23 @@ export default function Servers() {
                             No servers added yet.
                         </Text>
                     }
-                    contentContainerStyle={{ paddingTop: 20 }}
+                    contentContainerStyle={{
+                        paddingTop: 20,
+                        paddingBottom: 20,
+                    }}
                 />
             </View>
 
             <View style={styles.bottomContent}>
-                <TouchableOpacity onPress={handleAddServer}>
-                    <View style={styles.buttonContainer}>
-                        <View
-                            style={[
-                                styles.offsetButton,
-                                { backgroundColor: `${themeColor}AA` },
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.button,
-                                {
-                                    backgroundColor: themeColor,
-                                    shadowColor: themeColor,
-                                },
-                            ]}
-                        >
-                            <Text style={styles.buttonText}>Add Server</Text>
-                        </View>
-                    </View>
+                <TouchableOpacity
+                    style={[
+                        styles.addButton,
+                        { backgroundColor: themeColor },
+                    ]}
+                    activeOpacity={0.85}
+                    onPress={handleAddServer}
+                >
+                    <Text style={styles.addButtonText}>Add Server</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -156,63 +184,92 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#aaa',
     },
-    serverRow: {
+
+    serverCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#222',
+        backgroundColor: '#111',
+        borderRadius: 14,
+        paddingHorizontal: 14,
+        paddingVertical: 14,
+        marginBottom: 10,
     },
+
     serverInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
         flex: 1,
         paddingRight: 12,
     },
+
+    serverIcon: {
+        width: 36,
+        height: 36,
+        marginRight: 12,
+    },
+
+    textContainer: {
+        flex: 1,
+    },
+
     serverName: {
         fontSize: 16,
         color: '#fff',
-        marginBottom: 2,
+        marginBottom: 4,
     },
+
+    subRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+
     serverSubtext: {
         fontSize: 13,
         color: '#888',
     },
+
+    activeBadge: {
+        backgroundColor: '#1f6feb',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 999,
+    },
+
+    activeBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: '#fff',
+    },
+
+    menuButton: {
+        padding: 6,
+        borderRadius: 8,
+    },
+
     emptyText: {
         textAlign: 'center',
         color: '#777',
         marginTop: 40,
         fontSize: 14,
     },
+
     bottomContent: {
         marginBottom: Platform.OS === 'ios' ? 40 : 20,
-        alignItems: 'center',
     },
-    buttonContainer: {
-        width: '90%',
-        alignItems: 'center',
-    },
-    offsetButton: {
-        position: 'absolute',
-        top: 6,
+
+    addButton: {
         width: '100%',
-        height: 48,
-        borderRadius: 8,
-        zIndex: -1,
-    },
-    button: {
-        width: '100%',
-        paddingVertical: 15,
-        borderRadius: 8,
+        paddingVertical: 14,
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 5,
     },
-    buttonText: {
+
+    addButtonText: {
         color: '#fff',
-        fontWeight: '600',
         fontSize: 16,
+        fontWeight: '600',
     },
 });

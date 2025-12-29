@@ -15,16 +15,21 @@ import { Appearance } from 'react-native';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/utils/redux/store';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 
 export default function Settings() {
     const router = useRouter();
-    const { type: serverType, username, serverUrl } =
-        useSelector((s: RootState) => s.server);
+    const activeServer = useSelector(selectActiveServer);
+
     const { themeColor } = useSettings();
     const colorScheme = Appearance.getColorScheme();
     const isDarkMode = colorScheme === 'dark';
 
+    if (!activeServer){
+        return null;
+    }
+
+    const { type: serverType, username, serverUrl } = activeServer;
     const avatarLetter = username?.[0]?.toUpperCase() || 'U';
 
     return (

@@ -4,27 +4,27 @@ import {
     TouchableOpacity,
     StyleSheet,
     useColorScheme,
-    Alert,
     Platform,
-    View,
-    Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import TrackPlayer from 'react-native-track-player';
 import { usePlaying } from '@/contexts/PlayingContext';
 import PlaylistList from '@/components/PlaylistList';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
-import { useLibrary } from "@/contexts/LibraryContext";
+import { useLibrary } from '@/contexts/LibraryContext';
 
 import { Song } from '@/types';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const isDarkMode = useColorScheme() === 'dark';
     const playlistRef = useRef<BottomSheet>(null);
+
     const { starred, starItem, unstarItem } = useLibrary();
-    const { currentSong } = usePlaying();
+    const {
+        currentSong,
+        addToQueue,
+        playNext,
+    } = usePlaying();
 
     const isStarred = starred.songs.some(s => s.id === selectedSong.id);
 
@@ -32,106 +32,87 @@ const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
         try {
             if (isStarred) {
                 await unstarItem(selectedSong.id!);
-                toast.success(`${selectedSong.title} was removed from favorites.`);
+                toast.success(`${selectedSong.title} removed from favorites.`);
             } else {
                 await starItem(selectedSong.id!);
-                toast.success(`${selectedSong.title} was added to favorites.`);
+                toast.success(`${selectedSong.title} added to favorites.`);
             }
-        } catch (error) {
-            console.error('Error toggling favorite:', error);
+        } catch (err) {
+            console.error('toggleFavorite error:', err);
             toast.error('Failed to update favorites.');
         }
     };
 
     const handleAddToQueue = async () => {
-        if (selectedSong) {
-            try {
-                await TrackPlayer.add({
-                    id: selectedSong.id,
-                    title: selectedSong.title,
-                    artist: selectedSong.artist,
-                    artwork: selectedSong.cover,
-                    url: selectedSong.streamUrl,
-                    duration: parseFloat(selectedSong.duration),
-                });
-                toast.success(`${selectedSong.title} has been added to the queue.`);
-            } catch (error) {
-                console.error('Add to queue error:', error);
-                toast.error('Failed to add to queue.');
-            }
+        try {
+            await addToQueue(selectedSong);
+            toast.success(`${selectedSong.title} added to queue.`);
+        } catch (err) {
+            console.error('addToQueue error:', err);
+            toast.error('Failed to add to queue.');
         }
     };
 
     const handlePlayNext = async () => {
-        if (selectedSong && currentSong) {
-            try {
-                if (selectedSong.id === currentSong.id) {
-                    toast.error(`${selectedSong.title} is currently playing.`);
-                    return;
-                }
+        if (!currentSong) {
+            toast.error('Nothing is currently playing.');
+            return;
+        }
 
-                const currentIndex = await TrackPlayer.getCurrentTrack();
-                const queue = await TrackPlayer.getQueue();
+        if (selectedSong.id === currentSong.id) {
+            toast.error(`${selectedSong.title} is already playing.`);
+            return;
+        }
 
-                // Remove any existing occurrence of the song
-                const existingIndex = queue.findIndex((track) => track.id === selectedSong.id);
-                if (existingIndex !== -1) {
-                    await TrackPlayer.remove([existingIndex]);
-
-                    // Adjust index if needed
-                    if (existingIndex <= currentIndex && currentIndex > 0) {
-                        await TrackPlayer.skip(currentIndex - 1);
-                    }
-                }
-
-                // Insert after current track
-                const insertIndex = currentIndex !== null ? currentIndex + 1 : queue.length;
-
-                await TrackPlayer.add({
-                    id: selectedSong.id,
-                    title: selectedSong.title,
-                    artist: selectedSong.artist,
-                    artwork: selectedSong.cover,
-                    url: selectedSong.streamUrl,
-                    duration: parseFloat(selectedSong.duration),
-                }, insertIndex);
-
-                toast.success(`${selectedSong.title} will play next.`);
-            } catch (error) {
-                console.error('Play next error:', error);
-                toast.error('Failed to queue song next.');
-            }
+        try {
+            await playNext(selectedSong);
+            toast.success(`${selectedSong.title} will play next.`);
+        } catch (err) {
+            console.error('playNext error:', err);
+            toast.error('Failed to queue song next.');
         }
     };
 
     return (
         <>
             <MenuView
-                title={selectedSong ? selectedSong.title : 'Options'}
+                title={selectedSong.title}
                 actions={[
                     {
-                        id: 'favorite', title: isStarred ? 'Unfavorite' : 'Favorite', image: Platform.select({
-                            ios: isStarred ? 'heart' : 'heart.fill',
+                        id: 'favorite',
+                        title: isStarred ? 'Unfavorite' : 'Favorite',
+                        image: Platform.select({
+                            ios: isStarred ? 'heart.slash' : 'heart',
                             android: 'ic_heart',
-                        }), imageColor: "#fff",
+                        }),
+                        imageColor: '#fff',
                     },
                     {
-                        id: 'play-next', title: 'Play Next', image: Platform.select({
+                        id: 'play-next',
+                        title: 'Play Next',
+                        image: Platform.select({
                             ios: 'play.fill',
                             android: 'ic_play',
-                        }), imageColor: "#fff",
+                        }),
+                        imageColor: '#fff',
                     },
                     {
-                        id: 'add-to-queue', title: 'Add to Queue', image: Platform.select({
+                        id: 'add-to-queue',
+                        title: 'Add to Queue',
+                        image: Platform.select({
                             ios: 'plus',
                             android: 'ic_plus',
-                        }), imageColor: "#fff",
+                        }),
+                        imageColor: '#fff',
                     },
                     {
-                        id: 'add-to-playlist', title: 'Add to Playlist', image: Platform.select({
-                            ios: 'plus',
-                            android: 'ic_plus',
-                        }), imageColor: "#fff",
+                        id: 'add-to-playlist',
+                        title: 'Add to Playlist',
+                        image: Platform.select({
+                            ios: 'text.badge.plus',
+                            android: 'ic_playlist_add',
+                        }),
+                        imageColor: '#fff',
                     },
                 ]}
                 onPressAction={({ nativeEvent }) => {
@@ -154,9 +135,14 @@ const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
                 }}
             >
                 <TouchableOpacity style={styles.moreButton}>
-                    <Ionicons name="ellipsis-horizontal" size={24} color={isDarkMode ? '#fff' : '#000'} />
+                    <Ionicons
+                        name="ellipsis-horizontal"
+                        size={22}
+                        color={isDarkMode ? '#fff' : '#000'}
+                    />
                 </TouchableOpacity>
             </MenuView>
+
             <PlaylistList
                 ref={playlistRef}
                 selectedSong={selectedSong}
