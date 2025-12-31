@@ -320,8 +320,8 @@ export default function HomeScreen() {
                                 style={styles.sortButton}
                                 onPress={() => sortSheetRef.current?.show()}
                             >
-                                <Ionicons name="swap-vertical-outline" size={20} color="#fff" />
-                                <Text style={styles.sortButtonText}>{currentSortLabel}</Text>
+                                <Ionicons name="swap-vertical-outline" size={20} color={isDarkMode ? "#fff" : '#000'} />
+                                <Text style={[styles.sortButtonText, isDarkMode && styles.sortButtonTextDark]}>{currentSortLabel}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -403,16 +403,16 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 10,
-        backgroundColor: 'transparent', // Matches the `sheetBackgroundColor`
+        backgroundColor: 'transparent',
     },
     sheetTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333', // Light mode title color
+        color: '#333',
         marginBottom: 10,
     },
     sheetTitleDark: {
-        color: '#fff', // Dark mode title color
+        color: '#fff',
     },
     pickerItem: {
         flexDirection: 'row',
@@ -447,9 +447,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
     },
     filterButton: {
+        marginHorizontal: 2,
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#555'
     },
     activeFilterButton: {
         backgroundColor: '#007AFF',
@@ -469,7 +472,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: 8,
     },
     sortButton: {
         flexDirection: 'row',
@@ -479,8 +481,11 @@ const styles = StyleSheet.create({
     },
     sortButtonText: {
         marginLeft: 8,
-        color: '#fff',
+        color: '#000',
         fontSize: 14,
+    },
+    sortButtonTextDark: {
+        color: '#fff'
     },
     viewToggleButton: {
         padding: 8,

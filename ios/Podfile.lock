@@ -2108,6 +2108,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNDeviceInfo (15.0.1):
+    - React-Core
   - RNFlashList (1.7.3):
     - DoubleConversion
     - glog
@@ -2445,6 +2447,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -2679,6 +2682,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-exception-handler"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNFlashList:
     :path: "../node_modules/@shopify/flash-list"
   RNGestureHandler:
@@ -2805,6 +2810,7 @@ SPEC CHECKSUMS:
   ReactCommon: bfd3600989d79bc3acbe7704161b171a1480b9fd
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   RNCAsyncStorage: ac02697867ba18d2cfd761ebb144417fe65b210e
+  RNDeviceInfo: 53f9c84e28e854a308d3e548e25ef120b4615531
   RNFlashList: 11f5b15e49d5c92299682face72bb840ce97b84a
   RNGestureHandler: 3e17c0c9ceb401041b0e64c8e4c8a057da978a9d
   RNReanimated: 5ed2b66c32cb3d398e4c12591b3053594fe2fcb9

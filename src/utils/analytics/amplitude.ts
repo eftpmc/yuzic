@@ -1,22 +1,33 @@
 import * as amplitude from '@amplitude/analytics-react-native';
 
 let initialized = false;
+let initializing = false;
 let enabled = false;
 
 export async function initAnalytics() {
-  if (initialized || !enabled) return;
+  if (!enabled || initialized || initializing) return;
 
-  initialized = true;
+  initializing = true;
 
-  await amplitude
-    .init(
-      '483138e19d670240cdc04411ad13aec9',
-      undefined,
-      {
-        disableCookies: true,
-      }
-    )
-    .promise;
+  try {
+    await amplitude
+      .init(
+        '483138e19d670240cdc04411ad13aec9',
+        undefined,
+        {
+          disableCookies: true,
+        }
+      )
+      .promise;
+
+    initialized = true;
+  } catch (err) {
+    // Init failed (offline, native error, etc.)
+    // Allow retry later
+    initialized = false;
+  } finally {
+    initializing = false;
+  }
 }
 
 export async function enableAnalytics() {
@@ -26,13 +37,15 @@ export async function enableAnalytics() {
 }
 
 export function disableAnalytics() {
-  if (!enabled) return;
-
   enabled = false;
   initialized = false;
+  initializing = false;
 
-  amplitude.setUserId(undefined);
-  amplitude.reset();
+  try {
+    amplitude.setUserId(undefined);
+    amplitude.reset();
+  } catch {
+  }
 }
 
 export function track(
@@ -40,7 +53,11 @@ export function track(
   properties?: Record<string, any>
 ) {
   if (!enabled || !initialized) return;
-  amplitude.track(eventName, properties);
+
+  try {
+    amplitude.track(eventName, properties);
+  } catch {
+  }
 }
 
 export { amplitude };
