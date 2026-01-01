@@ -11,13 +11,9 @@ import { useRouter } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/utils/redux/store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Storage } from '@/utils/storage';
 import Loader from '@/components/Loader';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { track } from '@/utils/analytics/amplitude';
-
-const HAS_SEEN_GET_STARTED = 'hasSeenGetStarted';
 
 export default function Home() {
     const router = useRouter();
@@ -29,23 +25,19 @@ export default function Home() {
     const isAuthenticated = activeServer?.isAuthenticated;
 
     useEffect(() => {
-        const bootstrap = async () => {
-            if (isAuthenticated) {
-                router.replace('/(home)');
-                return;
-            }
+        if (isAuthenticated) {
+            router.replace('/(home)');
+            return;
+        }
 
-            const hasSeen = await AsyncStorage.getItem(HAS_SEEN_GET_STARTED);
+        const hasSeen = Storage.get('hasSeenGetStarted');
 
-            if (hasSeen === 'true') {
-                router.replace('/(onboarding)/servers');
-                return;
-            }
+        if (hasSeen) {
+            router.replace('/(onboarding)/servers');
+            return;
+        }
 
-            setReady(true);
-        };
-
-        bootstrap();
+        setReady(true);
     }, [isAuthenticated]);
 
     const handlePressIn = () => setIsPressed(true);
@@ -53,8 +45,7 @@ export default function Home() {
     const handlePressOut = async () => {
         setIsPressed(false);
 
-        track("got started")
-        await AsyncStorage.setItem(HAS_SEEN_GET_STARTED, 'true');
+        Storage.set('hasSeenGetStarted', true);
         router.push('/(onboarding)/servers');
     };
 

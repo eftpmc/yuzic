@@ -1,4 +1,5 @@
 import * as amplitude from '@amplitude/analytics-react-native';
+import { getUniqueId } from 'react-native-device-info'
 
 let initialized = false;
 let initializing = false;
@@ -10,10 +11,11 @@ export async function initAnalytics() {
   initializing = true;
 
   try {
+    const uniqID = await getUniqueId();
     await amplitude
       .init(
         '483138e19d670240cdc04411ad13aec9',
-        undefined,
+        uniqID,
         {
           disableCookies: true,
         }

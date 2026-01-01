@@ -14,9 +14,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet from 'react-native-gesture-bottom-sheet';
+import { Storage } from '@/utils/storage';
 import AlbumItem from "./components/AlbumItem";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import AccountActionSheet from '@/components/AccountActionSheet';
 import Loader from '@/components/Loader'
@@ -25,6 +24,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import PlaylistItem from './components/PlaylistItem';
 import ArtistItem from './components/ArtistItem';
 import SortBottomSheet from './components/SortBottomSheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 const isColorLight = (color: string) => {
     const hex = color.replace('#', '');
@@ -48,8 +48,12 @@ export default function HomeScreen() {
     const { themeColor, gridColumns } = useSettings();
 
     const [activeFilter, setActiveFilter] = useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
-    const [isGridView, setIsGridView] = useState(true);
-    const [sortOrder, setSortOrder] = useState<'title' | 'recent' | 'userplays'>('title');
+    const [isGridView, setIsGridView] = useState(
+        Storage.get('isGridView')
+    );
+    const [sortOrder, setSortOrder] = useState(
+        Storage.get('librarySortOrder')
+    );
 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const accountSheetRef = useRef<BottomSheet>(null);
@@ -60,7 +64,7 @@ export default function HomeScreen() {
 
     const GRID_MARGIN = 8 * 2;
     const gridWidth =
-  screenWidth / gridColumns - GRID_MARGIN;
+        screenWidth / gridColumns - GRID_MARGIN;
 
 
     useEffect(() => {
@@ -153,21 +157,6 @@ export default function HomeScreen() {
 
         return data;
     }, [filteredData, sortOrder]);
-
-    useEffect(() => {
-        const loadSortOrder = async () => {
-            try {
-                const storedSort = await AsyncStorage.getItem('librarySortOrder');
-                if (storedSort === 'title' || storedSort === 'recent' || storedSort === 'userplays') {
-                    setSortOrder(storedSort);
-                }
-            } catch (err) {
-                console.warn('Failed to load sortOrder:', err);
-            }
-        };
-
-        loadSortOrder();
-    }, []);
 
     const filters = [
         { label: 'All', value: 'all' },
@@ -326,7 +315,12 @@ export default function HomeScreen() {
 
                             <TouchableOpacity
                                 style={styles.viewToggleButton}
-                                onPress={() => setIsGridView(!isGridView)}
+                                onPress={() => {
+                                    const next = !isGridView;
+                                    setIsGridView(next);
+                                    Storage.set('isGridView', next);
+                                }}
+
                             >
                                 <Ionicons
                                     name={isGridView ? 'list-outline' : 'grid-outline'}
@@ -354,7 +348,7 @@ export default function HomeScreen() {
                 sortOrder={sortOrder}
                 onSelect={(value) => {
                     setSortOrder(value);
-                    AsyncStorage.setItem('librarySortOrder', value);
+                    Storage.set('librarySortOrder', value);
                     sortSheetRef.current?.close();
                 }}
             />

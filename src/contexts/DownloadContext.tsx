@@ -8,12 +8,10 @@ import React, {
 } from 'react';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSelector } from 'react-redux';
 import store from '@/utils/redux/store';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { useSettings } from '@/contexts/SettingsContext';
-import { selectAlbumList, selectPlaylistList } from '@/utils/redux/selectors/librarySelectors';
-import { Album, Playlist, Song } from '@/types';
+import { Song } from '@/types';
 
 type DownloadContextType = {
     downloadAlbumById: (albumId: string) => Promise<void>;

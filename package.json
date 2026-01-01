@@ -61,6 +61,8 @@
     "react-native-ios-context-menu": "^3.2.1",
     "react-native-ios-utilities": "^5.2.0",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-mmkv": "^4.1.0",
+    "react-native-nitro-modules": "^0.32.0",
     "react-native-reanimated": "~3.16.1",
     "react-native-reorderable-list": "^0.17.0",
     "react-native-restart": "^0.0.27",
