@@ -54,6 +54,7 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
     "react-native-device-info": "^15.0.1",
+    "react-native-dialog": "^9.3.0",
     "react-native-exception-handler": "^2.10.10",
     "react-native-gesture-bottom-sheet": "^1.1.0",
     "react-native-gesture-handler": "~2.20.2",

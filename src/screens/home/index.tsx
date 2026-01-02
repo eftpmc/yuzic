@@ -359,6 +359,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     loaderContainer: {
+        flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
         paddingTop: 12,
