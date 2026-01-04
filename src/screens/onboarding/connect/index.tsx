@@ -13,10 +13,16 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useApi } from '@/api';
+import { testServerUrl as testNavidromeUrl } from '@/api/navidrome/auth/testServerUrl';
+import { testServerUrl as testJellyfinUrl } from '@/api/jellyfin/auth/testServerUrl'
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 import { toast } from '@backpackapp-io/react-native-toast';
+import { nanoid } from '@reduxjs/toolkit';
+import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
+import { track } from '@/utils/analytics/amplitude';
+import { useDispatch } from 'react-redux';
+import { connect } from '@/api/navidrome/auth/connect';
 
 type ServerType = 'navidrome' | 'jellyfin';
 
@@ -27,7 +33,7 @@ export default function Connect() {
     const [isTesting, setIsTesting] = useState(false);
 
     const router = useRouter();
-    const api = useApi();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const t = setTimeout(() => setIsLayoutMounted(true), 0);
@@ -47,7 +53,11 @@ export default function Connect() {
 
         setIsTesting(true);
         try {
-            const result = await api.auth.testUrl(localServerUrl);
+            const result =
+                selectedType === "navidrome"
+                    ? await testNavidromeUrl(localServerUrl)
+                    : await testJellyfinUrl(localServerUrl);
+
             if (!result.success) {
                 toast.error(result.message ?? 'Server could not be reached.');
                 return;
@@ -60,7 +70,8 @@ export default function Connect() {
                     serverUrl: localServerUrl,
                 },
             });
-        } catch {
+        } catch (e) {
+            console.log(e);
             toast.error('Failed to connect.');
         } finally {
             setIsTesting(false);
@@ -70,14 +81,32 @@ export default function Connect() {
     const handleDemo = async () => {
         setIsTesting(true);
         try {
-            router.push({
-                pathname: '(onboarding)/credentials',
-                params: {
+            const serverUrl = "https://demo.navidrome.org"
+            const result = await connect(serverUrl, "demo", "demo");
+
+            if (!result.success) {
+                toast.error(result.message || 'Connection failed.');
+                return;
+            }
+
+            const id = nanoid();
+
+            dispatch(
+                addServer({
+                    id,
                     type: 'navidrome',
-                    serverUrl: 'https://demo.navidrome.org',
-                    demo: 'true',
-                },
-            });
+                    serverUrl: "https://demo.navidrome.org",
+                    username: "demo",
+                    password: "demo",
+                    isAuthenticated: true,
+                })
+            );
+
+            track("connected new server", { type: "navidrome demo" })
+            dispatch(setActiveServer(id));
+            router.replace('/(home)');
+        } catch (e) {
+            toast.error('An error occurred while connecting.');
         } finally {
             setIsTesting(false);
         }
@@ -180,7 +209,7 @@ export default function Connect() {
                         style={[
                             styles.demoButton,
                             (selectedType === 'jellyfin' || isTesting) &&
-                                styles.nextButtonDisabled,
+                            styles.nextButtonDisabled,
                         ]}
                         onPress={handleDemo}
                         disabled={selectedType === 'jellyfin' || isTesting}

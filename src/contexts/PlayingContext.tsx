@@ -18,6 +18,7 @@ import { PlaybackService } from '@/utils/track-player/PlaybackService';
 import { Album, Playlist, Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
 import { useDownload } from '@/contexts/DownloadContext';
+import { useApi } from '@/api';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -70,6 +71,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const playbackState = usePlaybackState();
     const isPlaying = playbackState.state === State.Playing;
 
+    const api = useApi();
     const { getSongLocalUri } = useDownload();
 
     const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -81,6 +83,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     const queueRef = useRef<Song[]>([]);
     const originalQueueRef = useRef<Song[] | null>(null);
+
+    const lastScrobbledIdRef = useRef<string | null>(null);
 
     const bumpQueue = () => setQueueVersion(v => v + 1);
 
@@ -98,7 +102,19 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         );
     }, []);
 
+    const scrobbleIfNeeded = async (song: Song | null) => {
+        if (!song) return;
+        if (lastScrobbledIdRef.current === song.id) return;
+        try {
+            await api.scrobble.submit(song.id);
+            lastScrobbledIdRef.current = song.id;
+        } catch (e) {
+            console.warn('Scrobble failed', e);
+        }
+    };
+
     const loadAndPlay = async (song: Song) => {
+        lastScrobbledIdRef.current = null;
         await TrackPlayer.reset();
 
         const url = (await getSongLocalUri(song.id)) ?? song.streamUrl;
@@ -117,6 +133,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     useTrackPlayerEvents([Event.PlaybackQueueEnded], async () => {
+        await scrobbleIfNeeded(currentSong);
         await skipToNext();
     });
 
@@ -169,6 +186,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     const skipToNext = async () => {
+        await scrobbleIfNeeded(currentSong);
+
         const nextIndex = currentIndex + 1;
 
         if (nextIndex >= queueRef.current.length) {
@@ -186,6 +205,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     const skipToPrevious = async () => {
+        await scrobbleIfNeeded(currentSong);
+
         const prev = currentIndex - 1;
         if (prev < 0) return;
 

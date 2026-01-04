@@ -106,8 +106,9 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
                 dispatch(upsertPlaylist(favorites));
             }
         } catch (e) {
+
+            console.warn('fetchLibrary failed, using cached redux data');
             isLibraryFetchedRef.current = false;
-            throw e;
         } finally {
             setIsLoading(false);
         }

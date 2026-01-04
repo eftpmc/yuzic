@@ -29,13 +29,12 @@ export default function Credentials() {
     const params = useLocalSearchParams<{
         type: ServerType;
         serverUrl: string;
-        demo?: string;
     }>();
 
-    const { type, serverUrl, demo } = params;
+    const { type, serverUrl } = params;
 
-    const [localUsername, setLocalUsername] = useState(demo ? 'demo' : '');
-    const [localPassword, setLocalPassword] = useState(demo ? 'demo' : '');
+    const [localUsername, setLocalUsername] = useState('');
+    const [localPassword, setLocalPassword] = useState('');
     const [isTesting, setIsTesting] = useState(false);
 
     const passwordRef = useRef<TextInput>(null);
@@ -58,7 +57,6 @@ export default function Credentials() {
                     ? await connectNavidrome(serverUrl, localUsername, localPassword)
                     : await connectJellyfin(serverUrl, localUsername, localPassword);
 
-            console.log(result)
             if (!result.success) {
                 toast.error(result.message || 'Connection failed.');
                 return;

@@ -153,7 +153,6 @@ export default function Servers() {
                 <TouchableOpacity
                     style={[
                         styles.addButton,
-                        { backgroundColor: themeColor },
                     ]}
                     activeOpacity={0.85}
                     onPress={handleAddServer}
@@ -262,15 +261,16 @@ const styles = StyleSheet.create({
     },
 
     addButton: {
-        width: '100%',
-        paddingVertical: 14,
-        borderRadius: 12,
+        backgroundColor: '#fff',
+        paddingVertical: 15,
+        borderRadius: 999,
         alignItems: 'center',
-        justifyContent: 'center',
+        width: '100%',
+        marginBottom: 12,
     },
 
     addButtonText: {
-        color: '#fff',
+        color: '#000',
         fontSize: 16,
         fontWeight: '600',
     },
