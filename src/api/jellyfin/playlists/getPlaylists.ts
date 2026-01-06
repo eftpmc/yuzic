@@ -1,5 +1,4 @@
-import { Playlist } from "@/types";
-import { buildJellyfinCoverArtUrl } from "@/utils/urlBuilders";
+import { CoverSource, Playlist } from "@/types";
 
 export type GetPlaylistsResult = Playlist[];
 
@@ -34,7 +33,9 @@ function normalizePlaylistEntry(
 ): Playlist {
   const id = p.Id;
 
-  const cover = buildJellyfinCoverArtUrl(serverUrl, token, id, p.ImageTags.Primary);
+  const cover: CoverSource = id
+        ? { kind: "jellyfin", itemId: id }
+        : { kind: "none" };
 
   return {
     id,

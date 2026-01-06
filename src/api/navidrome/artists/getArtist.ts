@@ -1,7 +1,5 @@
-import { AlbumBase, Artist, ArtistBase } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
+import { AlbumBase, Artist, ArtistBase, CoverSource } from "@/types";
 import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
-import { getAlbumList } from "../albums/getAlbumList";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -35,10 +33,14 @@ export async function getArtist(
 
   const albums: AlbumBase[] = []
 
-  const artistCover = buildCoverArtUrl(artist.coverArt, serverUrl, username, password);
+  const artistCover: CoverSource = artist.coverArt
+    ? { kind: "navidrome", coverArtId: artist.coverArt }
+    : { kind: "none" };
 
   for (const album of artist.album) {
-    const cover = buildCoverArtUrl(album.coverArt, serverUrl, username, password);
+    const cover: CoverSource = album.coverArt
+      ? { kind: "navidrome", coverArtId: album.coverArt }
+      : { kind: "none" };
 
     const artistBase: ArtistBase = {
       id: artist.id,
@@ -59,12 +61,10 @@ export async function getArtist(
     albums.push(a);
   }
 
-  const cover = buildCoverArtUrl(artist.coverArt, serverUrl, username, password);
-
   return {
     id: artist.id,
     name: artist.name,
-    cover,
+    cover: artistCover,
     subtext: "Artist",
     bio: lastFmData.bio,
     lastfmurl: lastFmData.artistUrl,

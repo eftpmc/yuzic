@@ -10,10 +10,6 @@ async function fetchAddPlaylistItems(
     `${serverUrl}/Playlists/${playlistId}/Items` +
     `?Ids=${ids}&UserId=${userId}`;
 
-    console.log("Playlist Add URL:", url);
-console.log("UserId:", userId);
-
-
   const res = await fetch(url, {
     method: "POST",
     headers: {

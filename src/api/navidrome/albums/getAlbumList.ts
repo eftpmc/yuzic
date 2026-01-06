@@ -1,5 +1,4 @@
-import { AlbumBase, ArtistBase } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
+import { AlbumBase, ArtistBase, CoverSource } from "@/types";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -33,11 +32,14 @@ function normalizeAlbumEntry(
   username: string,
   password: string
 ): AlbumBase {
-  const cover = buildCoverArtUrl(a.coverArt, serverUrl, username, password);
+  const cover: CoverSource =
+  a.coverArt
+    ? { kind: 'navidrome', coverArtId: a.coverArt }
+    : { kind: 'none' };
 
   const artist: ArtistBase = {
     id: a.artistId,
-    cover: "",
+    cover: { kind: "none" },
     name: a.artist,
     subtext: "Artist",
   }

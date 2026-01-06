@@ -1,5 +1,4 @@
 import { Playlist, Song } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -35,7 +34,9 @@ export async function getPlaylist(
     title: s.title,
     artist: s.artist,
     duration: s.duration,
-    cover: buildCoverArtUrl(s.coverArt, serverUrl, username, password),
+    cover: s.coverArt
+      ? { kind: "navidrome", coverArtId: s.coverArt }
+      : { kind: "none" },
     albumId: s.albumId,
     userPlayCount: 0,
     streamUrl:
@@ -46,7 +47,9 @@ export async function getPlaylist(
 
   return {
     id: playlist.id,
-    cover: buildCoverArtUrl(playlist.coverArt, serverUrl, username, password),
+    cover: playlist.coverArt
+      ? { kind: "navidrome", coverArtId: playlist.coverArt }
+      : { kind: "none" },
     title: playlist.name ?? "Playlist",
     subtext: `Playlist • ${songs.length} songs`,
     songs

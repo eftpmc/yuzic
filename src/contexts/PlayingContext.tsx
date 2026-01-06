@@ -19,6 +19,7 @@ import { Album, Playlist, Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useApi } from '@/api';
+import { buildCover } from '@/utils/builders/buildCover';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -123,7 +124,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
             id: song.id,
             title: song.title,
             artist: song.artist,
-            artwork: song.cover,
+            artwork:  undefined,
             url,
             duration: parseFloat(song.duration || '0'),
         });

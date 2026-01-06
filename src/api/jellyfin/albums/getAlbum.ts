@@ -1,6 +1,5 @@
-import { Album, Artist } from "@/types";
+import { Album, Artist, CoverSource } from "@/types";
 import { getAlbumSongs } from "./getAlbumSongs";
-import { buildJellyfinCoverArtUrl, buildJellyfinStreamUrl } from "@/utils/urlBuilders";
 import { getArtist } from "../artists/getArtist";
 
 export type GetAlbumResult = Album | null;
@@ -35,7 +34,9 @@ async function normalizeAlbum(
   const a = raw?.Items?.[0];
   if (!a) return null;
 
-  const cover = buildJellyfinCoverArtUrl(serverUrl, token, a.Id, a.ImageTags.Primary);
+    const cover: CoverSource = a.Id
+      ? { kind: "jellyfin", itemId: a.Id }
+      : { kind: "none" };
 
   const artist: Artist | null = await getArtist(serverUrl, token, a.AlbumArtists[0].Id)
   if (!artist) return null;
@@ -60,7 +61,7 @@ export async function getAlbum(
   const base = await normalizeAlbum(raw, serverUrl, token);
   if (!base) return null;
 
-  const songs = await getAlbumSongs(serverUrl, token, albumId);
+  const songs = await getAlbumSongs(serverUrl, token, base);
 
   return {
     ...base,

@@ -1,4 +1,4 @@
-import { ArtistBase } from "@/types";
+import { ArtistBase, CoverSource } from "@/types";
 
 export type GetArtistsResult = ArtistBase[];
 
@@ -28,9 +28,9 @@ export async function getArtists(
     const items = raw?.Items ?? [];
 
     return items.map((a: any) => {
-      const cover =
-        `${serverUrl}/Items/${a.Id}/Images/Primary?quality=90&X-Emby-Token=${token}` +
-        (a.ImageTags?.Primary ? `&tag=${a.ImageTags.Primary}` : "");
+      const cover: CoverSource = a.Id
+            ? { kind: "jellyfin", itemId: a.Id }
+            : { kind: "none" };
 
       return {
         id: a.Id,

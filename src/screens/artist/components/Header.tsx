@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-
-import { Artist, Song } from '@/types';
-import { usePlaying } from '@/contexts/PlayingContext';
-import { useLibrary } from '@/contexts/LibraryContext';
-import { toast } from '@backpackapp-io/react-native-toast';
 import { useSelector } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
+import { MediaImage } from '@/components/MediaImage';
+import { Artist, Song, Album } from '@/types';
+import { usePlaying } from '@/contexts/PlayingContext';
+import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useApi } from '@/api';
+import { QueryKeys } from '@/enums/queryKeys';
+import { buildCover } from '@/utils/builders/buildCover';
 
 type Props = {
   artist: Artist;
@@ -27,12 +30,14 @@ type Props = {
 const Header: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
-  const [artistSongs, setArtistSongs] = React.useState<Song[]>([]);
-  const [loadingSongs, setLoadingSongs] = React.useState(true);
-
-  const { getAlbums } = useLibrary();
   const themeColor = useSelector(selectThemeColor);
+
+  const queryClient = useQueryClient();
+  const api = useApi();
   const { playSongInCollection } = usePlaying();
+
+  const [artistSongs, setArtistSongs] = useState<Song[]>([]);
+  const [loadingSongs, setLoadingSongs] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,14 +51,26 @@ const Header: React.FC<Props> = ({ artist }) => {
         return;
       }
 
-      const albumIds = artist.ownedAlbums.map(a => a.id);
-      const albums = await getAlbums(albumIds);
+      try {
+        const albums: Album[] = await Promise.all(
+          artist.ownedAlbums.map(a =>
+            queryClient.fetchQuery({
+              queryKey: [QueryKeys.Album, a.id],
+              queryFn: () => api.albums.get(a.id),
+              staleTime: 5 * 60 * 1000,
+            })
+          )
+        );
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      const songs = albums.flatMap(a => a.songs ?? []);
-      setArtistSongs(songs);
-      setLoadingSongs(false);
+        const songs = albums.flatMap(a => a.songs ?? []);
+        setArtistSongs(songs);
+      } catch {
+        if (!cancelled) setArtistSongs([]);
+      } finally {
+        if (!cancelled) setLoadingSongs(false);
+      }
     };
 
     loadSongs();
@@ -70,11 +87,37 @@ const Header: React.FC<Props> = ({ artist }) => {
       .trim()
     : '';
 
+  const playArtist = (shuffle = false) => {
+    if (!artistSongs.length) {
+      toast.error('One moment.');
+      return;
+    }
+
+    playSongInCollection(
+      artistSongs[0],
+      {
+        id: artist.id,
+        title: artist.name,
+        artist: {
+          id: artist.id,
+          name: artist.name,
+          cover: artist.cover,
+          subtext: 'Artist',
+        },
+        cover: artist.cover,
+        songs: artistSongs,
+        subtext: 'Playlist',
+        userPlayCount: 0,
+      },
+      shuffle
+    );
+  };
+
   return (
     <>
       <View style={styles.fullBleedWrapper}>
         <Image
-          source={{ uri: artist.cover }}
+          source={{ uri: buildCover(artist.cover, "background") }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           blurRadius={Platform.OS === 'ios' ? 20 : 10}
@@ -90,16 +133,14 @@ const Header: React.FC<Props> = ({ artist }) => {
           style={StyleSheet.absoluteFill}
         />
 
-        {/* CENTERED ARTIST IMAGE */}
         <View style={styles.centeredCoverContainer}>
-          <Image
-            source={{ uri: artist.cover }}
+          <MediaImage
+            cover={artist.cover}
+            size="detail"
             style={styles.centeredCover}
-            contentFit="cover"
           />
         </View>
 
-        {/* BACK BUTTON */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -114,7 +155,6 @@ const Header: React.FC<Props> = ({ artist }) => {
         </View>
       </View>
 
-      {/* ARTIST META */}
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
           <Text style={[styles.artistName, isDarkMode && styles.artistNameDark]}>
@@ -122,9 +162,7 @@ const Header: React.FC<Props> = ({ artist }) => {
           </Text>
 
           {artist.bio && (
-            <Text
-              style={[styles.artistBio, isDarkMode && styles.artistBioDark]}
-            >
+            <Text style={[styles.artistBio, isDarkMode && styles.artistBioDark]}>
               {cleanBio}{' '}
               {artist.lastfmurl && (
                 <Text
@@ -136,32 +174,12 @@ const Header: React.FC<Props> = ({ artist }) => {
               )}
             </Text>
           )}
-
         </View>
       </View>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity
-          onPress={() => {
-            if (artistSongs.length <= 0) {
-              toast.error("One moment.")
-            } else {
-              playSongInCollection(artistSongs[0], {
-                id: artist.id,
-                title: artist.name,
-                artist: {
-                  id: artist.id,
-                  name: artist.name,
-                  cover: artist.cover,
-                  subtext: "Artist"
-                },
-                cover: artist.cover,
-                songs: artistSongs,
-                subtext: "Playlist",
-                userPlayCount: 0,
-              })
-            }
-          }}
+          onPress={() => playArtist(false)}
           style={[styles.button, isDarkMode && styles.buttonDark]}
         >
           <Ionicons name="play" size={18} color={themeColor} />
@@ -171,26 +189,7 @@ const Header: React.FC<Props> = ({ artist }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => {
-            if (artistSongs.length <= 0) {
-              toast.error("One moment.")
-            } else {
-              playSongInCollection(artistSongs[0], {
-                id: artist.id,
-                title: artist.name,
-                artist: {
-                  id: artist.id,
-                  name: artist.name,
-                  cover: artist.cover,
-                  subtext: "Artist"
-                },
-                cover: artist.cover,
-                songs: artistSongs,
-                subtext: "Playlist",
-                userPlayCount: 0,
-              }, true)
-            }
-          }}
+          onPress={() => playArtist(true)}
           style={[styles.button, isDarkMode && styles.buttonDark]}
         >
           <Ionicons name="shuffle" size={18} color={themeColor} />
@@ -202,6 +201,8 @@ const Header: React.FC<Props> = ({ artist }) => {
     </>
   );
 };
+
+export default Header;
 
 const styles = StyleSheet.create({
   fullBleedWrapper: {
@@ -289,10 +290,6 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   buttonTextDark: {
-    marginLeft: 6,
     color: '#fff',
   },
 });
-
-
-export default Header;

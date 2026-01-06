@@ -4,7 +4,6 @@ import React, {
     ReactNode,
     useRef,
     useState,
-    useMemo,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useApi } from "@/api";
@@ -12,29 +11,23 @@ import {
     setAlbumList,
     setArtistList,
     setPlaylistList,
-    upsertAlbum,
-    upsertArtist,
-    upsertPlaylist,
     setStarred,
     resetLibraryState,
     setGenres,
 } from "@/utils/redux/slices/librarySlice";
-import store from "@/utils/redux/store";
-import { Album, AlbumBase, Artist, ArtistBase, GenreListing, Playlist, PlaylistBase, Song } from "@/types";
+import { AlbumBase, ArtistBase, GenreListing, PlaylistBase, Song } from "@/types";
 import { selectFavoritesPlaylist } from "@/utils/redux/selectors/selectFavoritesPlaylist";
 import { selectAlbumList, selectArtistList, selectGenres, selectPlaylistList, selectStarred } from "@/utils/redux/selectors/librarySelectors";
+import { useQueryClient } from "@tanstack/react-query";
+import { QueryKeys } from "@/enums/queryKeys";
+import { FAVORITES_ID } from "@/constants/favorites";
 
 interface LibraryContextType {
     fetchLibrary: (force?: boolean) => Promise<void>;
 
     albums: AlbumBase[];
-    getAlbum: (id: string) => Promise<Album | null>;
-    getAlbums: (ids: string[]) => Promise<Album[]>;
-
     artists: ArtistBase[];
-    getArtist: (id: string) => Promise<Artist | null>;
     playlists: PlaylistBase[];
-    getPlaylist: (id: string, force?: boolean) => Promise<Playlist | null>;
 
     refreshLibrary: () => Promise<void>;
     clearLibrary: () => void;
@@ -56,8 +49,6 @@ interface LibraryContextType {
     isLoading: boolean;
 }
 
-const FAVORITES_ID = "favorites";
-
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
 export const useLibrary = () => {
@@ -70,6 +61,7 @@ export const useLibrary = () => {
 
 export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     const dispatch = useDispatch();
+    const queryClient = useQueryClient();
     const api = useApi();
 
     const isLibraryFetchedRef = useRef(false);
@@ -80,7 +72,6 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     const playlists = useSelector(selectPlaylistList);
     const genres = useSelector(selectGenres);
     const starred = useSelector(selectStarred);
-    const favorites = useSelector(selectFavoritesPlaylist);
 
     const fetchLibrary = async (force = false) => {
         if (isLibraryFetchedRef.current && !force) return;
@@ -100,11 +91,6 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
             dispatch(setArtistList(artists));
             dispatch(setPlaylistList(playlists));
             dispatch(setStarred(starred));
-
-            const favorites = selectFavoritesPlaylist(store.getState());
-            if (favorites) {
-                dispatch(upsertPlaylist(favorites));
-            }
         } catch (e) {
 
             console.warn('fetchLibrary failed, using cached redux data');
@@ -116,61 +102,8 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchGenres = async () => {
         if (genres.length > 0) return;
-
         const result = await api.genres.list();
         dispatch(setGenres(result));
-    };
-
-    const getAlbum = async (id: string): Promise<Album | null> => {
-        const existing = store.getState().library.albumsById[id];
-        if (existing) {
-            return existing;
-        }
-
-        const album = await api.albums.get(id);
-        dispatch(upsertAlbum(album));
-        return album;
-    };
-
-    const getAlbums = async (ids: string[]): Promise<Album[]> => {
-        const state = store.getState().library.albumsById;
-
-        const missing = ids.filter(id => !state[id]);
-
-        if (missing.length) {
-            const fetched = await Promise.all(
-                missing.map(id => api.albums.get(id))
-            );
-            fetched.forEach(album => dispatch(upsertAlbum(album)));
-        }
-
-        return ids
-            .map(id => store.getState().library.albumsById[id])
-            .filter(Boolean);
-    };
-
-    const getArtist = async (id: string): Promise<Artist | null> => {
-        const existing = store.getState().library.artistsById[id];
-        if (existing) {
-            return existing;
-        }
-
-        const artist = await api.artists.get(id);
-        dispatch(upsertArtist(artist));
-        return artist;
-    };
-
-    const getPlaylist = async (id: string, force?: boolean): Promise<Playlist | null> => {
-        if (id === FAVORITES_ID) {
-            return selectFavoritesPlaylist(store.getState());
-        }
-
-        const existing = store.getState().library.playlistsById[id];
-        if (existing && !force) return existing;
-
-        const playlist = await api.playlists.get(id);
-        dispatch(upsertPlaylist(playlist));
-        return playlist;
     };
 
     const getGenre = (name: string) => {
@@ -190,34 +123,31 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
 
     const starItem = async (id: string) => {
         await api.starred.add(id);
-        dispatch(setStarred(await api.starred.list()));
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, FAVORITES_ID] });
     };
 
     const unstarItem = async (id: string) => {
         await api.starred.remove(id);
-        dispatch(setStarred(await api.starred.list()));
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, FAVORITES_ID] });
     };
 
     const addSongToPlaylist = async (playlistId: string, songId: string) => {
         await api.playlists.addSong(playlistId, songId);
-        await getPlaylist(playlistId, true);
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, playlistId] });
+
     };
 
     const removeSongFromPlaylist = async (playlistId: string, songId: string) => {
         await api.playlists.removeSong(playlistId, songId);
-        await getPlaylist(playlistId, true);
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, playlistId] });
+
     };
 
     const createPlaylist = async (name: string) => {
-        const id = await api.playlists.create(name);
+        const playlistId = await api.playlists.create(name);
         await fetchLibrary(true);
-        await getPlaylist(id);
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, playlistId] });
     };
-
-    const playlistsWithFavorites = useMemo(() => {
-        if (!favorites.songs.length) return playlists;
-        return [favorites, ...playlists];
-    }, [favorites, playlists]);
 
     return (
         <LibraryContext.Provider
@@ -225,13 +155,8 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
                 fetchLibrary,
 
                 albums,
-                getAlbum,
-                getAlbums,
-
                 artists,
-                getArtist,
-                playlists: playlistsWithFavorites,
-                getPlaylist,
+                playlists,
 
                 refreshLibrary,
                 clearLibrary,

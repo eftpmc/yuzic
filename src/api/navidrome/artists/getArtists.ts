@@ -1,5 +1,4 @@
-import { ArtistBase } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
+import { ArtistBase, CoverSource } from "@/types";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -32,7 +31,9 @@ async function normalizeArtistEntry(
   username: string,
   password: string
 ): Promise<GetArtistResult> {
-  const cover = buildCoverArtUrl(a.coverArt, serverUrl, username, password);
+    const cover: CoverSource = a.coverArt
+      ? { kind: "navidrome", coverArtId: a.coverArt }
+      : { kind: "none" };
 
   return {
     id: a.id,

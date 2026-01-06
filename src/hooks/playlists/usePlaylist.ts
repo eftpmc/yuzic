@@ -1,8 +1,7 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Playlist } from "@/types";
-import { useLibrary } from "@/contexts/LibraryContext";
-import { selectPlaylistById } from "@/utils/redux/selectors/librarySelectors";
+import { useQuery } from '@tanstack/react-query';
+import { QueryKeys } from '@/enums/queryKeys';
+import { Playlist } from '@/types';
+import { useApi } from '@/api';
 
 type UsePlaylistResult = {
   playlist: Playlist | null;
@@ -11,18 +10,18 @@ type UsePlaylistResult = {
 };
 
 export function usePlaylist(id: string): UsePlaylistResult {
-  const playlist = useSelector(selectPlaylistById(id));
-  const { getPlaylist } = useLibrary();
+  const api = useApi();
 
-  useEffect(() => {
-    getPlaylist(id).catch(() => {
-      /* optional error handling */
-    });
-  }, [id]);
+  const query = useQuery<Playlist, Error>({
+    queryKey: [QueryKeys.Playlist, id],
+    queryFn: () => api.playlists.get(id),
+    enabled: !!id,
+    staleTime: 2 * 60 * 1000,
+  });
 
   return {
-    playlist,
-    isLoading: !playlist && id !== "favorites",
-    error: null,
+    playlist: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error ?? null,
   };
 }

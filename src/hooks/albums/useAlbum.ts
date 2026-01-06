@@ -1,8 +1,7 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Album } from "@/types";
-import { useLibrary } from "@/contexts/LibraryContext";
-import { selectAlbumById } from "@/utils/redux/selectors/librarySelectors";
+import { useQuery } from '@tanstack/react-query';
+import { QueryKeys } from '@/enums/queryKeys';
+import { Album } from '@/types';
+import { useApi } from '@/api';
 
 type UseAlbumResult = {
   album: Album | null;
@@ -11,18 +10,18 @@ type UseAlbumResult = {
 };
 
 export function useAlbum(id: string): UseAlbumResult {
-  const album = useSelector(selectAlbumById(id));
-  const { getAlbum } = useLibrary();
+  const api = useApi();
 
-  useEffect(() => {
-    getAlbum(id).catch(() => {
-      // type shit
-    });
-  }, [id]);
+  const query = useQuery<Album, Error>({
+    queryKey: [QueryKeys.Album, id],
+    queryFn: () => api.albums.get(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return {
-    album,
-    isLoading: !album,
-    error: null,
+    album: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error ?? null,
   };
 }

@@ -1,5 +1,5 @@
 import { Song } from "@/types";
-import { buildJellyfinStreamUrl } from "@/utils/urlBuilders";
+import { buildJellyfinStreamUrl } from "@/utils/builders/urlBuilders";
 
 export type GetSongsByGenreResult = Song[];
 

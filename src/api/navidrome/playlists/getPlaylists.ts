@@ -1,5 +1,4 @@
-import { PlaylistBase } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
+import { CoverSource, PlaylistBase } from "@/types";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -27,7 +26,9 @@ export async function getPlaylists(
   const list = raw?.["subsonic-response"]?.playlists?.playlist || [];
 
   return list.map((pl: any) => {
-    const cover = buildCoverArtUrl(pl.coverArt, serverUrl, username, password);
+      const cover: CoverSource = pl.coverArt
+      ? { kind: "navidrome", coverArtId: pl.coverArt }
+      : { kind: "none" };
 
     return {
       id: pl.id,

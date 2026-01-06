@@ -7,9 +7,9 @@ import React, {
     ReactNode,
 } from 'react';
 import * as FileSystem from 'expo-file-system';
-import store, { RootState } from '@/utils/redux/store';
+import { RootState } from '@/utils/redux/store';
 import { useLibrary } from '@/contexts/LibraryContext';
-import { Song } from '@/types';
+import { Song, Playlist, Album } from '@/types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     markAlbum,
@@ -17,6 +17,9 @@ import {
     clearAllMarked,
 } from '@/utils/redux/slices/downloadsSlice';
 import { selectAudioQuality } from '@/utils/redux/selectors/settingsSelectors';
+import { useQueryClient } from '@tanstack/react-query';
+import { useApi } from '@/api';
+import { QueryKeys } from '@/enums/queryKeys';
 
 type DownloadContextType = {
     downloadAlbumById: (albumId: string) => Promise<void>;
@@ -57,10 +60,12 @@ const SONGS_DIR = `${FileSystem.documentDirectory}songs`;
 const getSongFilePath = (songId: string) => `${SONGS_DIR}/${songId}.mp3`;
 
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const audioQuality = useSelector(selectAudioQuality);
-    const { albums, playlists, getAlbum, getPlaylist } = useLibrary();
-
+    const queryClient = useQueryClient();
+    const { albums, playlists } = useLibrary();
+    const api = useApi();
     const dispatch = useDispatch();
+
+    const audioQuality = useSelector(selectAudioQuality);
 
     const markedAlbums = useSelector(
         (state: RootState) => state.downloads.markedAlbums
@@ -79,10 +84,6 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const cancelledIds = useRef<Set<string>>(new Set());
     const hasResumedRef = useRef(false);
 
-    /* ───────────────────────────────
-       Initial filesystem scan
-    ─────────────────────────────── */
-
     useEffect(() => {
         const scanFiles = async () => {
             const dirInfo = await FileSystem.getInfoAsync(SONGS_DIR);
@@ -97,7 +98,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
                 map[id] = true;
 
                 const info = await FileSystem.getInfoAsync(`${SONGS_DIR}/${file}`);
-                if (info.exists && info.size) size += info.size;
+                if (info.exists && typeof info.size === 'number') {
+                    size += info.size;
+                }
             }
 
             setDownloadedSongs(map);
@@ -106,10 +109,6 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         scanFiles().catch(console.error);
     }, []);
-
-    /* ───────────────────────────────
-       Core download logic
-    ─────────────────────────────── */
 
     const uploadAndStoreSong = async (song: Song) => {
         const tempPath = FileSystem.cacheDirectory + `${song.id}-raw.mp3`;
@@ -160,11 +159,14 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const downloadAlbumById = async (albumId: string) => {
         if (cancelledIds.current.has(albumId)) return;
 
-        const album = await getAlbum(albumId);
-        if (!album) return;
+        const album: Album = await queryClient.fetchQuery({
+            queryKey: [QueryKeys.Album, albumId],
+            queryFn: () => api.albums.get(albumId),
+            staleTime: 5 * 60 * 1000,
+        });
 
         dispatch(markAlbum(albumId));
-        setDownloadingIds((d) => [...d, albumId]);
+        setDownloadingIds(d => [...d, albumId]);
 
         try {
             await FileSystem.makeDirectoryAsync(SONGS_DIR, { intermediates: true });
@@ -174,7 +176,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
                 await uploadAndStoreSong(song);
             }
         } finally {
-            setDownloadingIds((d) => d.filter((id) => id !== albumId));
+            setDownloadingIds(d => d.filter(id => id !== albumId));
             cancelledIds.current.delete(albumId);
         }
     };
@@ -182,11 +184,14 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const downloadPlaylistById = async (playlistId: string) => {
         if (cancelledIds.current.has(playlistId)) return;
 
-        const playlist = await getPlaylist(playlistId);
-        if (!playlist) return;
+        const playlist: Playlist = await queryClient.fetchQuery({
+            queryKey: [QueryKeys.Playlist, playlistId],
+            queryFn: () => api.playlists.get(playlistId),
+            staleTime: 2 * 60 * 1000,
+        });
 
         dispatch(markPlaylist(playlistId));
-        setDownloadingIds((d) => [...d, playlistId]);
+        setDownloadingIds(d => [...d, playlistId]);
 
         try {
             await FileSystem.makeDirectoryAsync(SONGS_DIR, { intermediates: true });
@@ -196,7 +201,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
                 await uploadAndStoreSong(song);
             }
         } finally {
-            setDownloadingIds((d) => d.filter((id) => id !== playlistId));
+            setDownloadingIds(d => d.filter(id => id !== playlistId));
             cancelledIds.current.delete(playlistId);
         }
     };
@@ -208,13 +213,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const isSongDownloaded = (songId: string) => !!downloadedSongs[songId];
 
     const isAlbumDownloaded = (albumId: string) => {
-        const album = store.getState().library.albumsById[albumId];
-        return !!album?.songs?.every((s) => isSongDownloaded(s.id));
+        const album = queryClient.getQueryData<Album>(['album', albumId]);
+        return !!album?.songs.every(s => isSongDownloaded(s.id));
     };
 
     const isPlaylistDownloaded = (playlistId: string) => {
-        const playlist = store.getState().library.playlistsById[playlistId];
-        return !!playlist?.songs?.every((s) => isSongDownloaded(s.id));
+        const playlist = queryClient.getQueryData<Playlist>(['playlist', playlistId]);
+        return !!playlist?.songs.every(s => isSongDownloaded(s.id));
     };
 
     const isDownloadingAlbum = (albumId: string) =>
@@ -246,10 +251,6 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const getFormattedDownloadSize = () =>
         `${(downloadedSize / (1024 * 1024)).toFixed(2)} MB`;
-
-    /* ───────────────────────────────
-       Resume downloads from persisted intent
-    ─────────────────────────────── */
 
     useEffect(() => {
         if (hasResumedRef.current) return;

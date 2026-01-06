@@ -1,24 +1,25 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    Dimensions,
     Platform,
 } from 'react-native';
 import { ContextMenuView } from 'react-native-ios-context-menu';
-import CoverArt from '@/components/CoverArt';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
-import { useLibrary } from '@/contexts/LibraryContext';
-import { Song } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { useApi } from '@/api';
+import { Song, CoverSource } from '@/types';
+import { QueryKeys } from '@/enums/queryKeys';
+import { MediaImage } from '@/components/MediaImage';
 
 interface ItemProps {
     id: string;
     name: string;
     subtext: string;
-    cover: string;
+    cover: CoverSource;
 
     isGridView: boolean;
     isDarkMode: boolean;
@@ -32,29 +33,37 @@ const ArtistItem: React.FC<ItemProps> = ({
     cover,
     isGridView,
     isDarkMode,
-    gridWidth
+    gridWidth,
 }) => {
-
     const navigation = useNavigation();
-
-    const { getArtist, getAlbums } = useLibrary();
-
+    const queryClient = useQueryClient();
+    const api = useApi();
     const { playSongInCollection } = usePlaying();
 
     const handlePlay = useCallback(
         async (shuffle: boolean) => {
-            const artist = await getArtist(id);
+            const artist = await queryClient.fetchQuery({
+                queryKey: [QueryKeys.Artist, id],
+                queryFn: () => api.artists.get(id),
+                staleTime: 10 * 60 * 1000,
+            });
+
             if (!artist) return;
 
-            const albumIds = [
-                ...artist.ownedAlbums.map(a => a.id)
-            ];
-
+            const albumIds = artist.ownedAlbums.map(a => a.id);
             if (albumIds.length === 0) return;
 
-            const albums = await getAlbums(albumIds);
+            const albums = await Promise.all(
+                albumIds.map(albumId =>
+                    queryClient.fetchQuery({
+                        queryKey: [QueryKeys.Album, albumId],
+                        queryFn: () => api.albums.get(albumId),
+                        staleTime: 5 * 60 * 1000,
+                    })
+                )
+            );
 
-            const songs: Song[] = albums.flatMap(a => a.songs ?? []);
+            const songs: Song[] = albums.flatMap(a => a?.songs ?? []);
             if (songs.length === 0) return;
 
             playSongInCollection(
@@ -62,14 +71,9 @@ const ArtistItem: React.FC<ItemProps> = ({
                 {
                     id: artist.id,
                     title: artist.name,
-                    artist: {
-                        id: artist.id,
-                        cover: artist.cover,
-                        name: artist.name,
-                        subtext: "Artist"
-                    },
+                    artist,
                     cover: artist.cover,
-                    subtext: "Playlist",
+                    subtext: 'Artist',
                     userPlayCount: 0,
                     songs,
                 },
@@ -80,28 +84,43 @@ const ArtistItem: React.FC<ItemProps> = ({
     );
 
     const handleNavigation = () => {
-        navigation.navigate('artistView', { id: id });
-    }
+        navigation.navigate('artistView', { id });
+    };
 
-    const coverArt = (
-        <CoverArt
-            source={cover ?? null}
-            size={isGridView ? undefined : 50}
-            isGrid={isGridView}
+    const image = isGridView ? (
+        <MediaImage
+            cover={cover}
+            size="grid"
+            style={{
+                width: gridWidth,
+                aspectRatio: 1,
+                borderRadius: 8,
+            }}
+        />
+    ) : (
+        <MediaImage
+            cover={cover}
+            size="thumb"
+            style={{
+                width: 50,
+                height: 50,
+                borderRadius: 4,
+                marginRight: 12,
+            }}
         />
     );
 
     const content = (
         <TouchableOpacity
             onPress={handleNavigation}
-            style={isGridView ? [styles.gridItemContainer, { width: gridWidth }] : styles.itemContainer}
+            style={
+                isGridView
+                    ? [styles.gridItemContainer, { width: gridWidth }]
+                    : styles.itemContainer
+            }
             activeOpacity={0.9}
         >
-            {isGridView ? (
-                <View style={{ width: '100%' }}>{coverArt}</View>
-            ) : (
-                coverArt
-            )}
+            {image}
 
             <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
                 <Text
@@ -120,39 +139,6 @@ const ArtistItem: React.FC<ItemProps> = ({
         </TouchableOpacity>
     );
 
-    const getMenuItems = () => {
-        const items: any[] = [];
-
-        items.unshift(
-            {
-                actionKey: 'play',
-                actionTitle: 'Play',
-                icon: {
-                    type: 'IMAGE_SYSTEM',
-                    imageValue: { systemName: 'play.fill' },
-                },
-            },
-            {
-                actionKey: 'shuffle',
-                actionTitle: 'Shuffle',
-                icon: {
-                    type: 'IMAGE_SYSTEM',
-                    imageValue: { systemName: 'shuffle' },
-                },
-            },
-            {
-                actionKey: 'go-to',
-                actionTitle: 'Go to Playlist',
-                icon: {
-                    type: 'IMAGE_SYSTEM',
-                    imageValue: { systemName: 'music.note.list' },
-                },
-            },
-        );
-
-        return items;
-    };
-
     const menuTitle = name || 'Options';
 
     if (Platform.OS === 'ios') {
@@ -162,7 +148,32 @@ const ArtistItem: React.FC<ItemProps> = ({
                 previewConfig={{ previewType: 'none' }}
                 menuConfig={{
                     menuTitle,
-                    menuItems: getMenuItems(),
+                    menuItems: [
+                        {
+                            actionKey: 'play',
+                            actionTitle: 'Play',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: { systemName: 'play.fill' },
+                            },
+                        },
+                        {
+                            actionKey: 'shuffle',
+                            actionTitle: 'Shuffle',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: { systemName: 'shuffle' },
+                            },
+                        },
+                        {
+                            actionKey: 'go-to',
+                            actionTitle: 'Go to Artist',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: { systemName: 'music.note.list' },
+                            },
+                        },
+                    ],
                 }}
                 onPressMenuItem={({ nativeEvent }) => {
                     if (nativeEvent.actionKey === 'play') handlePlay(false);
@@ -197,12 +208,11 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 1,
-        marginLeft: 2,
     },
     title: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#000'
+        color: '#000',
     },
     titleDark: {
         color: '#ccc',

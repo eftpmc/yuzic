@@ -3,22 +3,27 @@ import {
     View,
     Text,
     StyleSheet,
-    Dimensions,
     Platform,
 } from 'react-native';
 import { ContextMenuView } from 'react-native-ios-context-menu';
-import CoverArt from '@/components/CoverArt';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useDownload } from '@/contexts/DownloadContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
-import { useLibrary } from '@/contexts/LibraryContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { useApi } from '@/api';
+import { QueryKeys } from '@/enums/queryKeys';
+import { useSelector } from 'react-redux';
+import { selectFavoritesPlaylist } from '@/utils/redux/selectors/selectFavoritesPlaylist';
+import { MediaImage } from '@/components/MediaImage';
+import { CoverSource } from '@/types';
+import { FAVORITES_ID } from '@/constants/favorites';
 
 interface ItemProps {
     id: string;
     title: string;
     subtext: string;
-    cover: string;
+    cover: CoverSource;
 
     isGridView: boolean;
     isDarkMode: boolean;
@@ -32,7 +37,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
     cover,
     isGridView,
     isDarkMode,
-    gridWidth
+    gridWidth,
 }) => {
     const {
         downloadPlaylistById,
@@ -41,11 +46,11 @@ const PlaylistItem: React.FC<ItemProps> = ({
     } = useDownload();
 
     const navigation = useNavigation();
-
-    const { getPlaylist} = useLibrary();
-
+    const queryClient = useQueryClient();
+    const api = useApi();
     const { playSongInCollection } = usePlaying();
 
+    const favorites = useSelector(selectFavoritesPlaylist);
     const [isLoading, setIsLoading] = useState(false);
 
     const isDownloaded = isPlaylistDownloaded(id);
@@ -53,12 +58,23 @@ const PlaylistItem: React.FC<ItemProps> = ({
 
     const handlePlay = useCallback(
         async (shuffle: boolean) => {
-            const playlist = await getPlaylist(id);
+            let playlist;
+
+            if (id === FAVORITES_ID) {
+                playlist = favorites;
+            } else {
+                playlist = await queryClient.fetchQuery({
+                    queryKey: [QueryKeys.Playlist, id],
+                    queryFn: () => api.playlists.get(id),
+                    staleTime: 2 * 60 * 1000,
+                });
+            }
+
             if (!playlist || playlist.songs.length === 0) return;
 
             playSongInCollection(playlist.songs[0], playlist, shuffle);
         },
-        [id]
+        [id, favorites]
     );
 
     const handleDownload = async () => {
@@ -72,28 +88,43 @@ const PlaylistItem: React.FC<ItemProps> = ({
     };
 
     const handleNavigation = () => {
-        navigation.navigate('playlistView', { id: id });
-    }
+        navigation.navigate('playlistView', { id });
+    };
 
-    const coverArt = (
-        <CoverArt
-            source={cover ?? null}
-            size={isGridView ? undefined : 50}
-            isGrid={isGridView}
+    const image = isGridView ? (
+        <MediaImage
+            cover={cover}
+            size="grid"
+            style={{
+                width: gridWidth,
+                aspectRatio: 1,
+                borderRadius: 8,
+            }}
+        />
+    ) : (
+        <MediaImage
+            cover={cover}
+            size="thumb"
+            style={{
+                width: 50,
+                height: 50,
+                borderRadius: 4,
+                marginRight: 12,
+            }}
         />
     );
 
     const content = (
         <TouchableOpacity
             onPress={handleNavigation}
-            style={isGridView ? [styles.gridItemContainer, { width: gridWidth }] : styles.itemContainer}
+            style={
+                isGridView
+                    ? [styles.gridItemContainer, { width: gridWidth }]
+                    : styles.itemContainer
+            }
             activeOpacity={0.9}
         >
-            {isGridView ? (
-                <View style={{ width: '100%' }}>{coverArt}</View>
-            ) : (
-                coverArt
-            )}
+            {image}
 
             <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
                 <Text
@@ -112,60 +143,6 @@ const PlaylistItem: React.FC<ItemProps> = ({
         </TouchableOpacity>
     );
 
-    const getMenuItems = () => {
-        const items: any[] = [];
-
-        items.push({
-            actionKey: 'download',
-            actionTitle: isDownloading
-                ? 'Downloading...'
-                : isDownloaded
-                    ? 'Downloaded'
-                    : 'Download',
-            icon: {
-                type: 'IMAGE_SYSTEM',
-                imageValue: {
-                    systemName: isDownloading
-                        ? 'hourglass'
-                        : isDownloaded
-                            ? 'checkmark.circle'
-                            : 'arrow.down.circle',
-                },
-            },
-            attributes: isDownloaded || isDownloading ? ['disabled'] : [],
-            state: isDownloading || isLoading ? 'on' : 'off',
-        });
-
-        items.unshift(
-            {
-                actionKey: 'play',
-                actionTitle: 'Play',
-                icon: {
-                    type: 'IMAGE_SYSTEM',
-                    imageValue: { systemName: 'play.fill' },
-                },
-            },
-            {
-                actionKey: 'shuffle',
-                actionTitle: 'Shuffle',
-                icon: {
-                    type: 'IMAGE_SYSTEM',
-                    imageValue: { systemName: 'shuffle' },
-                },
-            },
-            {
-                actionKey: 'go-to',
-                actionTitle: 'Go to Playlist',
-                icon: {
-                    type: 'IMAGE_SYSTEM',
-                    imageValue: { systemName: 'music.note.list' },
-                },
-            },
-        );
-
-        return items;
-    };
-
     const menuTitle = title || 'Options';
 
     if (Platform.OS === 'ios') {
@@ -175,7 +152,52 @@ const PlaylistItem: React.FC<ItemProps> = ({
                 previewConfig={{ previewType: 'none' }}
                 menuConfig={{
                     menuTitle,
-                    menuItems: getMenuItems(),
+                    menuItems: [
+                        {
+                            actionKey: 'play',
+                            actionTitle: 'Play',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: { systemName: 'play.fill' },
+                            },
+                        },
+                        {
+                            actionKey: 'shuffle',
+                            actionTitle: 'Shuffle',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: { systemName: 'shuffle' },
+                            },
+                        },
+                        {
+                            actionKey: 'go-to',
+                            actionTitle: 'Go to Playlist',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: { systemName: 'music.note.list' },
+                            },
+                        },
+                        {
+                            actionKey: 'download',
+                            actionTitle: isDownloading
+                                ? 'Downloading...'
+                                : isDownloaded
+                                ? 'Downloaded'
+                                : 'Download',
+                            icon: {
+                                type: 'IMAGE_SYSTEM',
+                                imageValue: {
+                                    systemName: isDownloading
+                                        ? 'hourglass'
+                                        : isDownloaded
+                                        ? 'checkmark.circle'
+                                        : 'arrow.down.circle',
+                                },
+                            },
+                            attributes:
+                                isDownloaded || isDownloading ? ['disabled'] : [],
+                        },
+                    ],
                 }}
                 onPressMenuItem={({ nativeEvent }) => {
                     if (nativeEvent.actionKey === 'play') handlePlay(false);
@@ -211,12 +233,11 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 1,
-        marginLeft: 2,
     },
     title: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#000'
+        color: '#000',
     },
     titleDark: {
         color: '#ccc',

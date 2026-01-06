@@ -1,5 +1,5 @@
 import { Song } from "@/types";
-import { buildJellyfinCoverArtUrl, buildJellyfinStreamUrl } from "@/utils/urlBuilders";
+import { buildJellyfinStreamUrl } from "@/utils/builders/urlBuilders";
 
 export interface GetStarredItemsResult {
   songs: Song[];
@@ -44,7 +44,9 @@ function normalizeStarred(
     title: i.Name,
     artist: i.AlbumArtists?.[0].Name ?? "Unknown Artist",
     albumId: i.AlbumId,
-    cover: buildJellyfinCoverArtUrl(serverUrl, token, i.Id, i.ImageTags.Primary),
+    cover: i.Id
+          ? { kind: "jellyfin", itemId: i.Id }
+          : { kind: "none" },
     duration: Math.floor((i.RunTimeTicks ?? 0) / 10_000_000),
     streamUrl: buildJellyfinStreamUrl(serverUrl, token, i.Id),
     userPlayCount: i.UserData.PlayCount,

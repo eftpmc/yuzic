@@ -1,11 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
-  Album,
   AlbumBase,
-  Artist,
   ArtistBase,
   GenreListing,
-  Playlist,
   PlaylistBase,
   Song,
 } from "@/types";
@@ -19,10 +16,6 @@ interface LibraryState {
   artistList: ArtistBase[];
   playlistList: PlaylistBase[];
 
-  albumsById: Record<string, Album>;
-  artistsById: Record<string, Artist>;
-  playlistsById: Record<string, Playlist>;
-
   genres: GenreListing[];
   starred: StarredState;
 }
@@ -31,10 +24,6 @@ const initialState: LibraryState = {
   albumList: [],
   artistList: [],
   playlistList: [],
-
-  albumsById: {},
-  artistsById: {},
-  playlistsById: {},
 
   genres: [],
   starred: {
@@ -58,18 +47,6 @@ const librarySlice = createSlice({
       state.playlistList = action.payload;
     },
 
-    upsertAlbum(state, action: PayloadAction<Album>) {
-      state.albumsById[action.payload.id] = action.payload;
-    },
-
-    upsertArtist(state, action: PayloadAction<Artist>) {
-      state.artistsById[action.payload.id] = action.payload;
-    },
-
-    upsertPlaylist(state, action: PayloadAction<Playlist>) {
-      state.playlistsById[action.payload.id] = action.payload;
-    },
-
     setGenres(state, action: PayloadAction<GenreListing[]>) {
       state.genres = action.payload;
     },
@@ -88,9 +65,6 @@ export const {
   setAlbumList,
   setArtistList,
   setPlaylistList,
-  upsertAlbum,
-  upsertArtist,
-  upsertPlaylist,
   setGenres,
   setStarred,
   resetLibraryState,

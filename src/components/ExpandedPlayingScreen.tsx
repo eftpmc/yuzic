@@ -47,7 +47,7 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
     const colorScheme = useColorScheme();
     const navigation = useNavigation();
     const isDarkMode = colorScheme === 'dark';
-    const { position, duration } = useProgress();
+    const { position } = useProgress();
     const {
         currentSong,
         pauseSong,
@@ -60,6 +60,7 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
         repeatOn,
         toggleRepeat,
     } = usePlaying();
+    const duration = currentSong ? Number(currentSong.duration) : 1;
     const { artists } = useLibrary();
     const themeColor = useSelector(selectThemeColor);
     const [currentGradient, setCurrentGradient] = useState(['#000', '#000']);
@@ -68,9 +69,11 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
     const [seekPosition, setSeekPosition] = useState(0);
     const [showQueue, setShowQueue] = useState(false);
 
+    const lastCoverRef = useRef<string | null>(null);
+
     const { width } = Dimensions.get('window');
     const isTablet = width >= 768;
-    const layoutWidth = width - 24; // minimal margin for tiny screens
+    const layoutWidth = width - 24;
 
     const darkenHexColor = (hex: string, amount: number = 0.2) => {
         let col = hex.replace('#', '');
@@ -90,41 +93,27 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
         return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
     };
 
-    useEffect(() => {
-        const extractColors = async () => {
-            if (!currentSong?.cover) return;
-
-            const colors = await ImageColors.getColors(currentSong.cover, {
+    const extractColors = async (uri: string) => {
+        try {
+            const colors = await ImageColors.getColors(uri, {
                 fallback: '#121212',
             });
 
-            let dominantColor = '#121212';
+            let dominant = '#121212';
 
             if (colors.platform === 'android') {
-                dominantColor = colors.darkVibrant || colors.dominant || '#121212';
+                dominant = colors.darkVibrant || colors.dominant || dominant;
             } else {
-                dominantColor = colors.primary || '#121212';
+                dominant = colors.primary || dominant;
             }
 
-            dominantColor = darkenHexColor(dominantColor, 0.3);
+            dominant = darkenHexColor(dominant, 0.3);
 
-            const newGradient = [dominantColor, '#000'];
-
-            if (newGradient.join() !== nextGradient.join()) {
-                setNextGradient(newGradient);
-            }
-        };
-
-        extractColors(); // run initially
-
-        const subscription = AppState.addEventListener('change', (state) => {
-            if (state === 'active') {
-                extractColors(); // re-run when app comes to foreground
-            }
-        });
-
-        return () => subscription.remove();
-    }, [currentSong?.id, isDarkMode]);
+            setNextGradient([dominant, '#000']);
+        } catch {
+            setNextGradient(['#121212', '#000']);
+        }
+    };
 
     const queueOpacity = useSharedValue(showQueue ? 1 : 0);
     const playerOpacity = useSharedValue(showQueue ? 0 : 1);
@@ -152,13 +141,20 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
         bottom: 0,
     }));
 
-    const handleSeek = async (value: number) => {
-        await TrackPlayer.seekTo(value);
-    };
-
     const toggleQueue = () => {
         setShowQueue((prev) => !prev);
     };
+
+    useEffect(() => {
+        if (currentSong?.cover) {
+            lastCoverRef.current = currentSong.cover;
+        }
+    }, [currentSong?.id]);
+
+    const coverUri =
+        currentSong?.cover ??
+        lastCoverRef.current ??
+        'fallback';
 
     const navigateToArtist = () => {
         onClose();
@@ -178,10 +174,6 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
                 console.error("Artist ID not found for the current song.");
             }
         }
-    };
-
-    const getHiResCover = (url: string, size = 1200): string => {
-        return url.replace(/size=\d+/, `size=${size}`);
     };
 
     return (
@@ -214,12 +206,19 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
                         <Ionicons name="chevron-down" size={28} color="#fff" />
                     </TouchableOpacity>
                     <Image
-                        source={{ uri: getHiResCover(currentSong.cover) }}
+                        source={{ uri: coverUri}}
                         style={[
                             styles.coverArt,
                             { width: isTablet ? 500 : 315, height: isTablet ? 500 : 315 },
                         ]}
+                        cachePolicy="memory-disk"
+                        priority="high"
+                        transition={300}
+                        onLoad={() => {
+                            extractColors(currentSong.cover);
+                        }}
                     />
+
                     <View style={[styles.detailsContainer, { width: isTablet ? 500 : 315 }]}>
                         <View style={styles.titleArtistContainer}>
                             <View style={styles.textContainer}>

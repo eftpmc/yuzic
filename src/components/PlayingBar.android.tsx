@@ -33,17 +33,17 @@ const PlayingBar: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const [appState, setAppState] = useState(AppState.currentState);
 
-  const playbackProgress = useProgress(500);
-  const position = appState === 'active' ? playbackProgress.position : 0;
-  const duration = appState === 'active' ? playbackProgress.duration : 1;
-  const progress = duration > 0 ? position / duration : 0;
-
   const themeColor = useSelector(selectThemeColor);
   const openaiApiKey = useSelector(selectOpenaiApiKey);
   const aiButtonEnabled = useSelector(selectAiButtonEnabled);
 
   const { currentSong, isPlaying, pauseSong, resumeSong } = usePlaying();
   const { generateQueue, isLoading } = useAI();
+
+  const playbackProgress = useProgress(500);
+  const position = appState === 'active' ? playbackProgress.position : 0;
+  const duration = currentSong ? Number(currentSong.duration) : 1;
+  const progress = duration > 0 ? position / duration : 0;
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { height: screenHeight } = useWindowDimensions();

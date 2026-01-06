@@ -1,5 +1,4 @@
-import { AlbumBase, ArtistBase } from "@/types";
-import { buildJellyfinCoverArtUrl } from "@/utils/urlBuilders";
+import { AlbumBase, ArtistBase, CoverSource } from "@/types";
 
 export type GetAlbumsResult = AlbumBase[];
 
@@ -12,12 +11,14 @@ async function normalizeAlbum(
     const albumId = a.Id;
     if (!albumId) return null;
 
-    const cover = buildJellyfinCoverArtUrl(serverUrl, token, albumId, a.ImageTags.Primary);
+    const cover: CoverSource = albumId
+          ? { kind: "jellyfin", itemId: albumId }
+          : { kind: "none" };
 
     const artist: ArtistBase = {
       id: a.AlbumArtists[0].Id,
       name: a.AlbumArtists[0].Name || "Unknown Artist",
-      cover: "",
+      cover: { kind: "none" },
       subtext: "Artist"
     }
 

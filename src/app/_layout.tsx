@@ -1,5 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -24,6 +25,16 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { initAnalytics } from '@/utils/analytics/amplitude';
 
 SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnReconnect: true,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
@@ -79,6 +90,7 @@ We will need to restart the app.
 
     return (
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <QueryClientProvider client={queryClient}>
             <Provider store={store}>
                 <PersistGate loading={null} persistor={persistor}>
                     <LibraryProvider>
@@ -129,6 +141,7 @@ We will need to restart the app.
                     </LibraryProvider>
                 </PersistGate>
             </Provider>
+            </QueryClientProvider>
         </ThemeProvider>
     );
 }

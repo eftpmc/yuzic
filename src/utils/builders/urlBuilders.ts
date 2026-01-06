@@ -34,8 +34,8 @@ export const buildJellyfinStreamUrl = (
 export const buildJellyfinCoverArtUrl = (
     serverUrl: string,
     token: string,
-    songId: string,
-    p: string
+    id: string
 ) => {
-    return `${serverUrl}/Items/${songId}/Images/Primary?quality=90&X-Emby-Token=${token}&tag=${p}`;
+    return `${serverUrl}/Items/${id}/Images/Primary?quality=90&X-Emby-Token=${token}`;
+    //return `${serverUrl}/Items/${songId}/Images/Primary?quality=90&X-Emby-Token=${token}&tag=${p}`;
 };

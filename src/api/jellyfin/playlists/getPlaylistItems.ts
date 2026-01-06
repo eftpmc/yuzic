@@ -1,5 +1,5 @@
-import { Song } from "@/types";
-import { buildJellyfinStreamUrl, buildJellyfinCoverArtUrl } from "@/utils/urlBuilders";
+import { CoverSource, Song } from "@/types";
+import { buildJellyfinStreamUrl } from "@/utils/builders/urlBuilders";
 
 export type GetPlaylistItemsResult = Song[];
 
@@ -36,7 +36,9 @@ function normalizePlaylistSongEntry(
     s.MediaSources?.[0]?.RunTimeTicks ??
     0;
 
-  const cover = buildJellyfinCoverArtUrl(serverUrl, token, s.Id, s.ImageTags.Primary);
+  const cover: CoverSource = s.AlbumId
+        ? { kind: "jellyfin", itemId: s.AlbumId }
+        : { kind: "none" };
 
   return {
     id: s.Id,

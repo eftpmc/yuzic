@@ -10,6 +10,8 @@ import {
   SearchApi,
   AuthApi
 } from "../types";
+import { FAVORITES_ID } from '@/constants/favorites';
+import { buildFavoritesPlaylist } from '@/utils/favorites/buildFavoritesPlaylist';
 
 import { Song, NavidromeServer } from "@/types";
 
@@ -101,14 +103,26 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
 
   const playlists: PlaylistsApi = {
     list: async () => {
-      return getPlaylists(serverUrl, username, password);
+      const [playlists, starred] = await Promise.all([
+        getPlaylists(serverUrl, username, password),
+        getStarredItems(serverUrl, username, password),
+      ]);
+
+      const favorites = buildFavoritesPlaylist(starred.songs ?? []);
+      return [favorites, ...playlists];
     },
 
     get: async (id: string) => {
+      if (id === FAVORITES_ID) {
+        const starred = await getStarredItems(serverUrl, username, password);
+        return buildFavoritesPlaylist(starred.songs ?? []);
+      }
+
       const playlist = await getPlaylist(serverUrl, username, password, id);
       if (!playlist) throw new Error("Playlist not found");
       return playlist;
     },
+
 
     create: async (name: string) => {
       const res = await createPlaylist(serverUrl, username, password, name);
@@ -117,17 +131,24 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
     },
 
     addSong: async (playlistId, songId) => {
+      if (playlistId === FAVORITES_ID) {
+        await star(serverUrl, username, password, songId);
+        return { success: status === "ok" };
+      }
       return addSongToPlaylist(serverUrl, username, password, playlistId, songId);
     },
 
     removeSong: async (playlistId, songId) => {
+      if (playlistId === FAVORITES_ID) {
+        await unstar(serverUrl, username, password, songId);
+        return { success: status === "ok" };
+      }
+
       const playlist = await getPlaylist(serverUrl, username, password, playlistId);
       if (!playlist) throw new Error("Playlist not found");
 
       const index = playlist.songs.findIndex((s: Song) => s.id === songId);
-      if (index === -1) {
-        throw new Error("Song not found in playlist");
-      }
+      if (index === -1) throw new Error("Song not found in playlist");
 
       return removeSongFromPlaylist(
         serverUrl,
@@ -136,7 +157,7 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
         playlistId,
         index.toString()
       );
-    },
+    }
   };
 
   const starred: StarredApi = {

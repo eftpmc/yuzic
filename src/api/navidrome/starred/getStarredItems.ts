@@ -1,5 +1,4 @@
 import { Song } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -35,7 +34,9 @@ export async function getStarredItems(
       title: s.title,
       artist: s.artist,
       albumId: s.albumId,
-      cover: buildCoverArtUrl(s.coverArt, serverUrl, username, password),
+      cover: s.coverArt
+            ? { kind: "jellyfin", itemId: s.coverArt }
+            : { kind: "none" },
       duration: s.duration,
       streamUrl:
         `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(

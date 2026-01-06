@@ -1,5 +1,4 @@
-import { Album, ArtistBase, Song } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
+import { Album, ArtistBase, CoverSource, Song } from "@/types";
 import { getArtist } from "../artists/getArtist";
 
 const API_VERSION = "1.16.0";
@@ -32,7 +31,9 @@ export async function getAlbum(
   const artist: ArtistBase | null = await getArtist(serverUrl, username, password, album.artistId);
   if (!artist) return null;
 
-  const cover = buildCoverArtUrl(album.coverArt, serverUrl, username, password);
+  const cover: CoverSource = album.coverArt
+    ? { kind: "navidrome", coverArtId: album.coverArt }
+    : { kind: "none" };
 
   const songs: Song[] = (album.song || []).map((s: any) => ({
     id: s.id,

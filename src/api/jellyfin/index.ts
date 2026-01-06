@@ -31,6 +31,8 @@ import { unstar } from "./starred/unstar";
 import { getSongsByGenre } from "./genres/getSongsByGenre";
 import { getArtist } from "./artists/getArtist";
 import { getGenres } from "./genres/getGenres";
+import { buildFavoritesPlaylist } from "@/utils/favorites/buildFavoritesPlaylist";
+import { FAVORITES_ID } from "@/constants/favorites";
 
 export const createJellyfinAdapter = (adapter: JellyfinServer): ApiAdapter => {
   const { serverUrl, username, password, token, userId } = adapter;
@@ -99,19 +101,31 @@ export const createJellyfinAdapter = (adapter: JellyfinServer): ApiAdapter => {
 
   const playlists: PlaylistsApi = {
     list: async () => {
-      const raw = await getPlaylists(serverUrl, userId, token);
+      const [raw, starred] = await Promise.all([
+        getPlaylists(serverUrl, userId, token),
+        getStarredItems(serverUrl, userId, token),
+      ]);
 
-      return raw.map(p => ({
+      const favorites = buildFavoritesPlaylist(starred.songs ?? []);
+
+      const base = raw.map((p) => ({
         id: p.id,
         cover: p.cover,
         title: p.title,
         subtext: p.subtext,
       }));
+
+      return [favorites, ...base];
     },
 
     get: async (id: string) => {
+      if (id === FAVORITES_ID) {
+        const starred = await getStarredItems(serverUrl, userId, token);
+        return buildFavoritesPlaylist(starred.songs ?? []);
+      }
+
       const basePlaylists = await getPlaylists(serverUrl, userId, token);
-      const base = basePlaylists.find(p => p.id === id);
+      const base = basePlaylists.find((p) => p.id === id);
 
       if (!base) {
         throw new Error("Playlist not found");
@@ -125,19 +139,29 @@ export const createJellyfinAdapter = (adapter: JellyfinServer): ApiAdapter => {
         title: base.title,
         subtext: `Playlist • ${songs.length} songs`,
         songs,
-      };
+      } as Playlist;
     },
 
     create: async (name: string) => {
       return createPlaylist(serverUrl, userId, token, name);
     },
 
-    addSong: async (playlistId, songId) => {
+    addSong: async (playlistId: string, songId: string) => {
+      if (playlistId === FAVORITES_ID) {
+        await star(serverUrl, userId, token, songId);
+        return { success: true };
+      }
+
       await addPlaylistItems(serverUrl, playlistId, userId, token, [songId]);
       return { success: true };
     },
 
-    removeSong: async (playlistId, songId) => {
+    removeSong: async (playlistId: string, songId: string) => {
+      if (playlistId === FAVORITES_ID) {
+        await unstar(serverUrl, userId, token, songId);
+        return { success: true };
+      }
+
       await removePlaylistItems(serverUrl, playlistId, token, [songId]);
       return { success: true };
     },

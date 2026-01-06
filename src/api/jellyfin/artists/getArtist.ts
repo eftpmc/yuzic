@@ -1,5 +1,5 @@
 import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
-import { AlbumBase, Artist } from "@/types";
+import { AlbumBase, Artist, CoverSource } from "@/types";
 import { getAlbums } from "../albums/getAlbums";
 
 export type GetArtistResult = Artist | null
@@ -33,11 +33,9 @@ export async function getArtist(
     const lastFmData = await getArtistInfo(artistRaw.Name);
     if (!lastFmData) return null;
 
-    const cover =
-        `${serverUrl}/Items/${artistId}/Images/Primary?quality=90&X-Emby-Token=${token}` +
-        (artistRaw.ImageTags?.Primary
-            ? `&tag=${artistRaw.ImageTags.Primary}`
-            : "");
+    const cover: CoverSource = artistRaw.Id
+      ? { kind: "jellyfin", itemId: artistRaw.Id }
+      : { kind: "none" };
 
     const albums: AlbumBase[] = await getAlbums(serverUrl, token);
 

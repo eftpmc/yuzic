@@ -1,5 +1,5 @@
 import { Song } from "@/types";
-import { buildCoverArtUrl } from "@/utils/urlBuilders";
+import { buildCoverArtUrl } from "@/utils/builders/urlBuilders";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";

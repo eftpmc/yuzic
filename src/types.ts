@@ -1,6 +1,6 @@
 export interface AlbumBase {
     id: string;
-    cover: string;
+    cover: CoverSource;
     title: string;
     subtext: string;
     artist: ArtistBase;
@@ -13,7 +13,7 @@ export interface Album extends AlbumBase {
 
 export interface PlaylistBase {
     id: string;
-    cover: string;
+    cover: CoverSource;
     title: string;
     subtext: string;
 }
@@ -24,7 +24,7 @@ export interface Playlist extends PlaylistBase {
 
 export interface ArtistBase {
     id: string;
-    cover: string;
+    cover: CoverSource;
     name: string;
     subtext: string;
 }
@@ -40,7 +40,7 @@ export interface Song {
     id: string;
     title: string;
     artist: string;
-    cover: string;
+    cover: CoverSource;
     duration: string;
     streamUrl: string;
     albumId: string;
@@ -82,3 +82,16 @@ export interface JellyfinServer extends BaseServer {
 }
 
 export type Server = NavidromeServer | JellyfinServer;
+
+export type CoverSource =
+  | { kind: 'special'; name: 'heart' }
+  | { kind: 'none' }
+  | { kind: 'navidrome'; coverArtId: string }
+  | { kind: 'jellyfin'; itemId: string; imageType?: 'Primary' | 'Backdrop'; tag?: string };
+
+  export const COVER_PX: Record<'thumb' | 'grid' | 'detail' | 'background', number> = {
+  thumb: 96,
+  grid: 420,
+  detail: 1200,
+  background: 1800,
+};

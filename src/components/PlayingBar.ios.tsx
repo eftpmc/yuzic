@@ -30,20 +30,22 @@ const PlayingBar: React.FC = () => {
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
     const [appState, setAppState] = useState(AppState.currentState);
-    const playbackProgress = useProgress(500);
-    const position = appState === 'active' ? playbackProgress.position : 0;
-    const duration = appState === 'active' ? playbackProgress.duration : 1;
-    const progress = duration > 0 ? position / duration : 0;
     const themeColor = useSelector(selectThemeColor);
     const openaiApiKey = useSelector(selectOpenaiApiKey);
     const aiButtonEnabled = useSelector(selectAiButtonEnabled);
     const { generateQueue, isLoading } = useAI();
     const [inputValue, setInputValue] = useState('');
     const { currentSong, isPlaying, pauseSong, resumeSong } = usePlaying();
+
+    const playbackProgress = useProgress(500);
+    const position = appState === 'active' ? playbackProgress.position : 0;
+    const duration = currentSong ? Number(currentSong.duration) : 1;
+    const progress = duration > 0 ? position / duration : 0;
+
     const inputRef = useRef<TextInput>(null);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const { height: screenHeight } = useWindowDimensions();
 
+    const { height: screenHeight } = useWindowDimensions();
     const [inputMode, setInputMode] = useState(false);
     const fadeAnim = useRef(new Animated.Value(1)).current;
     const inputFadeAnim = useRef(new Animated.Value(0)).current;

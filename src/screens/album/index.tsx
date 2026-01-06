@@ -40,8 +40,6 @@ const AlbumScreen: React.FC = () => {
     );
   }
 
-  track("album screen", { title: album.title, artist: album.artist.name })
-
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
       <List album={album} />

@@ -1,8 +1,7 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Artist } from "@/types";
-import { useLibrary } from "@/contexts/LibraryContext";
-import { selectArtistById } from "@/utils/redux/selectors/librarySelectors";
+import { useQuery } from '@tanstack/react-query';
+import { QueryKeys } from '@/enums/queryKeys';
+import { Artist } from '@/types';
+import { useApi } from '@/api';
 
 type UseArtistResult = {
   artist: Artist | null;
@@ -11,18 +10,18 @@ type UseArtistResult = {
 };
 
 export function useArtist(id: string): UseArtistResult {
-  const artist = useSelector(selectArtistById(id));
-  const { getArtist } = useLibrary();
+  const api = useApi();
 
-  useEffect(() => {
-    getArtist(id).catch(() => {
-      /* optional error handling */
-    });
-  }, [id]);
+  const query = useQuery<Artist, Error>({
+    queryKey: [QueryKeys.Artist, id],
+    queryFn: () => api.artists.get(id),
+    enabled: !!id,
+    staleTime: 10 * 60 * 1000,
+  });
 
   return {
-    artist,
-    isLoading: !artist,
-    error: null,
+    artist: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error ?? null,
   };
 }

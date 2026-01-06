@@ -7,11 +7,10 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 
 import { Album } from '@/types';
-import CoverArt from '@/components/CoverArt';
+import { MediaImage } from '@/components/MediaImage';
 import DownloadOptions from '@/components/options/DownloadOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -27,8 +26,10 @@ const Header: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
   const themeColor = useSelector(selectThemeColor);
+
   const { playSongInCollection } = usePlaying();
-  const { isAlbumDownloaded, isDownloadingAlbum, downloadAlbumById } = useDownload();
+  const { isAlbumDownloaded, isDownloadingAlbum, downloadAlbumById } =
+    useDownload();
 
   const songs = album.songs ?? [];
 
@@ -48,10 +49,6 @@ const Header: React.FC<Props> = ({ album }) => {
     }
 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const handleDownload = async () => {
-    await downloadAlbumById(album.id);
   };
 
   return (
@@ -76,22 +73,19 @@ const Header: React.FC<Props> = ({ album }) => {
         />
       </View>
 
-      {/* Cover art */}
+      {/* Album cover */}
       <View style={styles.coverWrapper}>
-        <CoverArt
-          source={album.cover ?? null}
-          size={280}
-          isGrid
+        <MediaImage
+          cover={album.cover}
+          size="detail"
+          style={styles.coverImage}
         />
       </View>
 
-      {/* Title + actions */}
+      {/* Title + artist + actions */}
       <View style={styles.titleRow}>
         <View style={styles.titleInfo}>
-          <Text
-            style={styles.title(isDarkMode)}
-            numberOfLines={1}
-          >
+          <Text style={styles.title(isDarkMode)} numberOfLines={1}>
             {album.title}
           </Text>
 
@@ -104,18 +98,11 @@ const Header: React.FC<Props> = ({ album }) => {
                 })
               }
             >
-              {album.artist.cover ? (
-                <Image
-                  source={{ uri: album.artist.cover }}
-                  style={styles.artistImage}
-                />
-              ) : (
-                <Ionicons
-                  name="person-circle-outline"
-                  size={20}
-                  color={isDarkMode ? '#fff' : '#ccc'}
-                />
-              )}
+              <MediaImage
+                cover={album.artist.cover}
+                size="thumb"
+                style={styles.artistImage}
+              />
 
               <Text
                 style={styles.artistName(isDarkMode)}
@@ -177,6 +164,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     overflow: 'hidden',
   },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -220,6 +212,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
 
 export default Header;
