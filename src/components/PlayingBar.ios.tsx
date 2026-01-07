@@ -25,6 +25,7 @@ import { Loader2 } from 'lucide-react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
 import { selectAiButtonEnabled, selectOpenaiApiKey, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useSelector } from 'react-redux';
+import { MediaImage } from './MediaImage';
 
 const PlayingBar: React.FC = () => {
     const colorScheme = useColorScheme();
@@ -156,7 +157,7 @@ const PlayingBar: React.FC = () => {
                         <View style={styles.topRowWrapper}>
                             <Animated.View style={[styles.topRow, { opacity: fadeAnim, zIndex: 0 }]}>
                                 {currentSong?.cover ? (
-                                    <Image source={{ uri: currentSong.cover }} style={styles.coverArt} />
+                                    <MediaImage cover={currentSong.cover} size='thumb' style={styles.coverArt} />
                                 ) : (
                                     <Ionicons name="musical-notes-outline" size={40} style={styles.coverArt} color={isDarkMode ? '#fff' : '#333'} />
                                 )}

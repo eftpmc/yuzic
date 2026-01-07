@@ -119,12 +119,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         await TrackPlayer.reset();
 
         const url = (await getSongLocalUri(song.id)) ?? song.streamUrl;
+        const cover = buildCover(song.cover, "grid") || undefined;
+        console.log(cover)
 
         await TrackPlayer.add({
             id: song.id,
             title: song.title,
             artist: song.artist,
-            artwork:  undefined,
+            artwork: cover,
             url,
             duration: parseFloat(song.duration || '0'),
         });

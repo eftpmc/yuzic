@@ -7,8 +7,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-
-import CoverArt from '@/components/CoverArt';
+import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -35,7 +34,11 @@ const CurrentlyPlaying: React.FC = () => {
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
       <View style={styles.row}>
-        <CoverArt source={currentSong?.cover ?? null} size={64} />
+        <MediaImage
+          cover={currentSong?.cover ?? { kind: 'none' }}
+          size="thumb"
+          style={styles.nowPlayingCover}
+        />
 
         <View style={styles.info}>
           <Text
@@ -154,6 +157,12 @@ const styles = StyleSheet.create({
   },
   subtitleDark: {
     color: '#999',
+  },
+  nowPlayingCover: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   controls: {
     marginTop: 16,

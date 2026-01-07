@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { AlbumBase, ArtistBase, PlaylistBase } from '@/types';
+import { AlbumBase, ArtistBase, CoverSource, PlaylistBase } from '@/types';
 import { selectAlbumList, selectArtistList, selectPlaylistList } from '@/utils/redux/selectors/librarySelectors';
 import { useSelector } from 'react-redux';
 import { useLibrary } from './LibraryContext';
@@ -21,7 +21,7 @@ export interface SearchResult {
     id: string;
     title: string;
     subtext: string;
-    cover: string;
+    cover: CoverSource;
     type: 'album' | 'artist' | 'playlist';
     isDownloaded: boolean;
 }

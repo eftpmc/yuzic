@@ -8,11 +8,11 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Album } from '@/types';
-import CoverArt from '@/components/CoverArt';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { MediaImage } from './MediaImage';
 
 type CombinedAlbum = Album & {
   isExternal?: boolean;
@@ -36,7 +36,11 @@ const AlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
           disabled={album.isExternal}
           onPress={() => onPress?.(album)}
         >
-          <CoverArt source={album.cover} size={64} />
+          <MediaImage
+            cover={album.cover}
+            size="thumb"
+            style={styles.cover}
+          />
 
           <View style={styles.albumTextContainer}>
             <Text
@@ -89,7 +93,11 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 16,
   },
-
+  cover: {
+    width: 64,
+    height: 64,
+    borderRadius: 6,
+  },
   albumItem: {
     flexDirection: 'row',
     alignItems: 'center',

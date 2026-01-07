@@ -30,6 +30,7 @@ import { AirplayButton } from 'react-airplay';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { buildCover } from '@/utils/builders/buildCover';
 
 interface ExpandedPlayingScreenProps {
     onClose: () => void;
@@ -152,9 +153,9 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
     }, [currentSong?.id]);
 
     const coverUri =
-        currentSong?.cover ??
-        lastCoverRef.current ??
-        'fallback';
+        buildCover(currentSong?.cover, "detail") ??
+        buildCover(lastCoverRef.current) ??
+        buildCover({kind:"none"});
 
     const navigateToArtist = () => {
         onClose();
@@ -215,7 +216,7 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
                         priority="high"
                         transition={300}
                         onLoad={() => {
-                            extractColors(currentSong.cover);
+                            extractColors(coverUri);
                         }}
                     />
 

@@ -10,13 +10,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import { Playlist } from '@/types';
-import CoverArt from '@/components/CoverArt';
 import DownloadOptions from '@/components/options/DownloadOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { MediaImage } from '@/components/MediaImage';
 
 type Props = {
   playlist: Playlist;
@@ -72,14 +72,10 @@ const Header: React.FC<Props> = ({ playlist }) => {
       </View>
 
       <View style={styles.coverWrapper}>
-        <CoverArt
-          source={
-            playlist.id === 'favorite'
-              ? 'heart-icon'
-              : playlist.cover ?? null
-          }
-          size={280}
-          isGrid
+        <MediaImage
+          cover={playlist.cover}
+          size="detail"
+          style={styles.coverImage}
         />
       </View>
 
@@ -136,6 +132,11 @@ const styles = StyleSheet.create({
     marginTop: 32,
     marginBottom: 24,
     overflow: 'hidden',
+  },
+  coverImage: {
+    width: 280,
+    height: 280,
+    borderRadius: 16,
   },
   titleRow: {
     flexDirection: 'row',

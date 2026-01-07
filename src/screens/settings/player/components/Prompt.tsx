@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
-
-import CoverArt from '@/components/CoverArt';
+import { MediaImage } from '@/components/MediaImage';
 import { useAI } from '@/contexts/AIContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useSelector } from 'react-redux';
@@ -174,7 +173,11 @@ const Prompt: React.FC = () => {
                   }
                 }}
               >
-                <CoverArt source={firstCover} size={48} />
+                <MediaImage
+                  cover={firstCover ?? { kind: 'none' }}
+                  size="thumb"
+                  style={styles.historyCover}
+                />
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text
                     style={[
@@ -238,6 +241,12 @@ const styles = StyleSheet.create({
   },
   metaDark: {
     color: '#999',
+  },
+  historyCover: {
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    overflow: 'hidden',
   },
   regenButton: {
     marginTop: 16,

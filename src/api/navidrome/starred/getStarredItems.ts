@@ -35,7 +35,7 @@ export async function getStarredItems(
       artist: s.artist,
       albumId: s.albumId,
       cover: s.coverArt
-            ? { kind: "jellyfin", itemId: s.coverArt }
+            ? { kind: "navidrome", coverArtId: s.coverArt }
             : { kind: "none" },
       duration: s.duration,
       streamUrl:

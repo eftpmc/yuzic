@@ -6,25 +6,15 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from 'react-native';
-import { Image } from 'expo-image';
 
 import { Song } from '@/types';
 import SongOptions from '@/components/options/SongOptions';
 import { usePlaying } from '@/contexts/PlayingContext';
+import { MediaImage } from '@/components/MediaImage';
 
 type Props = {
   song: Song;
-
-  /**
-   * The collection context this song belongs to.
-   * Can be album, playlist, artist, queue, etc.
-   */
   collection?: any;
-
-  /**
-   * Optional override if you want custom behavior
-   * (queue, preview, etc.)
-   */
   onPress?: () => void;
 };
 
@@ -50,7 +40,7 @@ const SongRow: React.FC<Props> = ({ song, collection, onPress }) => {
     const seconds = Math.floor(duration % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
-
+  
   return (
     <View style={styles.row}>
       <TouchableOpacity
@@ -58,8 +48,9 @@ const SongRow: React.FC<Props> = ({ song, collection, onPress }) => {
         onPress={handlePress}
         disabled={!onPress && !collection}
       >
-        <Image
-          source={{ uri: song.cover }}
+        <MediaImage
+          cover={song.cover}
+          size="thumb"
           style={styles.cover}
         />
 

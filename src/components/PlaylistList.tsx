@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import CoverArt from '@/components/CoverArt';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -25,6 +24,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/api';
 import { Song, Playlist } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
+import { MediaImage } from './MediaImage';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -189,7 +189,12 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
                   style={styles.bottomSheetOption}
                   onPress={() => togglePlaylist(item.id)}
                 >
-                  <CoverArt source={item.cover ?? null} size={50} />
+                  <MediaImage
+                    cover={item.cover ?? { kind: 'none' }}
+                    size="thumb"
+                    style={styles.playlistCover}
+                  />
+
                   <View style={styles.playlistDetails}>
                     <Text style={styles.bottomSheetOptionText(isDarkMode)}>
                       {item.title}
@@ -280,6 +285,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
+  },
+  playlistCover: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   playlistDetails: {
     marginLeft: 12,

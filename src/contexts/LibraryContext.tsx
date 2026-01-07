@@ -111,12 +111,14 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const refreshLibrary = async () => {
+        queryClient.clear();
         dispatch(resetLibraryState());
         isLibraryFetchedRef.current = false;
         await fetchLibrary(true);
     };
 
     const clearLibrary = () => {
+        queryClient.clear();
         dispatch(resetLibraryState());
         isLibraryFetchedRef.current = false;
     };

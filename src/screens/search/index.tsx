@@ -20,10 +20,10 @@ import { SearchResult, useSearch } from '@/contexts/SearchContext';
 
 import ExternalAlbumOptions from "@/components/options/ExternalAlbumOptions";
 import AlbumOptions from "@/components/options/AlbumOptions";
-import CoverArt from '@/components/CoverArt';
 import { track } from '@/utils/analytics/amplitude';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { MediaImage } from '@/components/MediaImage';
 
 const Search = () => {
     const searchInputRef = useRef(null);
@@ -146,7 +146,11 @@ const Search = () => {
                                     navigateToResult(result);
                                 }}
                             >
-                                <CoverArt source={result.cover} size={50} />
+                                <MediaImage
+                                    cover={result.cover}
+                                    size="thumb"
+                                    style={styles.resultImage}
+                                />
 
                                 <View style={styles.resultTextContainer}>
                                     <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.resultTitle, isDarkMode && styles.resultTitleDark]}>
@@ -204,7 +208,13 @@ const styles = StyleSheet.create({
     containerDark: {
         backgroundColor: '#000',
     },
-
+    resultImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 4,
+        marginRight: 16,
+        overflow: 'hidden',
+    },
     row: {
         flexDirection: 'row',
         alignItems: 'center',

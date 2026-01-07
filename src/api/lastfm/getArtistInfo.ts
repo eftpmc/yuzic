@@ -11,11 +11,11 @@ const normalizeLastFmAlbum = (album: any): AlbumBase => {
     return {
         id: album.name,
         title: album.name,
-        cover: album.image[2]["#text"],
+        cover: { kind: "lastfm", url: album.image[2]["#text"]},
         subtext: album.artist?.name ?? '',
         artist: {
             id: '',
-            cover: '',
+            cover: { kind: "none" },
             name: album.artist.name ?? '',
             subtext: 'Artist',
         },
