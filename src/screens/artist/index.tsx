@@ -10,8 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useArtist } from '@/hooks/artists';
 
-import List from './components/List';
-import LList from './components/loading/List';
+import ArtistContent from './components/Content';
+import LoadingArtistContent from './components/Content/Loading';
 import { track } from '@/utils/analytics/amplitude';
 
 const ArtistScreen: React.FC = () => {
@@ -24,7 +24,7 @@ const ArtistScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-        <LList />
+        <LoadingArtistContent />
       </SafeAreaView>
     );
   }
@@ -41,7 +41,7 @@ const ArtistScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-      <List artist={artist} />
+      <ArtistContent artist={artist} />
     </SafeAreaView>
   );
 };

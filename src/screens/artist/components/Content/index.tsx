@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Artist, Album, AlbumBase } from '@/types';
 
 import AlbumRow from '@/components/AlbumRow';
-import Header from './Header';
+import Header from '../Header';
 
 type Props = {
   artist: Artist;
@@ -18,7 +18,7 @@ type CombinedAlbum = (Album | AlbumBase) & {
 
 const ESTIMATED_ROW_HEIGHT = 80;
 
-const List: React.FC<Props> = ({ artist }) => {
+const ArtistContent: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -67,4 +67,4 @@ const List: React.FC<Props> = ({ artist }) => {
   );
 };
 
-export default List;
+export default ArtistContent;

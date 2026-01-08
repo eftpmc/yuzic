@@ -12,7 +12,7 @@ import AlbumOptions from '@/components/options/AlbumOptions';
 import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { MediaImage } from './MediaImage';
+import { MediaImage } from '@/components/MediaImage';
 
 type CombinedAlbum = Album & {
   isExternal?: boolean;

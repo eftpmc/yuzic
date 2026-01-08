@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 
-const LAlbumRow: React.FC = () => {
+const LoadingAlbumRow: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const colorMode = isDarkMode ? 'dark' : 'light';
 
@@ -69,4 +69,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LAlbumRow;
+export default LoadingAlbumRow;

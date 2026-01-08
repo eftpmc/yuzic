@@ -1,40 +1,27 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
-    ScrollView,
-    View,
-    Text,
-    TouchableOpacity,
     StyleSheet,
     Dimensions
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appearance } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useLibrary } from '@/contexts/LibraryContext';
-import { Ionicons } from '@expo/vector-icons';
-import AlbumItem from "./components/AlbumItem";
+import { useLibrary } from '@/contexts/LibraryContext';;
 import { useRouter } from 'expo-router';
-import AccountActionSheet from '@/components/AccountActionSheet';
-import Loader from '@/components/Loader'
 import { useDispatch, useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import PlaylistItem from './components/PlaylistItem';
-import ArtistItem from './components/ArtistItem';
+import AlbumItem from "./components/Items/AlbumItem";
+import PlaylistItem from './components/Items/PlaylistItem';
+import ArtistItem from './components/Items/ArtistItem';
 import SortBottomSheet from './components/SortBottomSheet';
+import AccountActionSheet from './components/AccountActionSheet';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { setIsGridView, setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
-import { selectGridColumns, selectIsGridView, selectLibrarySortOrder, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-
-const isColorLight = (color: string) => {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return luminance > 128;
-};
+import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
+import HomeHeader from './components/Header';
+import LibraryFilterBar from './components/Filters';
+import LibraryListHeader from './components/Content/Header';
+import LibraryContent from './components/Content';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
@@ -45,7 +32,6 @@ export default function HomeScreen() {
     const colorScheme = Appearance.getColorScheme();
     const isDarkMode = colorScheme === 'dark';
     const { albums, artists, playlists, fetchLibrary, clearLibrary, isLoading } = useLibrary();
-    const themeColor = useSelector(selectThemeColor);
     const gridColumns = useSelector(selectGridColumns);
 
     const [activeFilter, setActiveFilter] = useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
@@ -160,7 +146,7 @@ export default function HomeScreen() {
         { label: 'Albums', value: 'albums' },
         { label: 'Artists', value: 'artists' },
         { label: 'Playlists', value: 'playlists' },
-    ];
+    ] as const;
 
     const sortOptions = [
         { value: 'title', label: 'Alphabetical', icon: 'text-outline' },
@@ -213,129 +199,40 @@ export default function HomeScreen() {
         }
     };
 
-    const renderFilterButton = (filter) => {
-        const isLight = isColorLight(themeColor); // Check if the theme color is light
-
-        return (
-            <TouchableOpacity
-                key={filter.value}
-                style={[
-                    styles.filterButton,
-                    activeFilter === filter.value && {
-                        backgroundColor: themeColor, // Apply theme color to active filter
-                    },
-                ]}
-                onPress={() => setActiveFilter(filter.value as typeof activeFilter)}
-            >
-                <Text
-                    style={[
-                        styles.filterText,
-                        isDarkMode && styles.filterTextDark,
-                        activeFilter === filter.value && {
-                            color: isLight ? '#000' : '#FFF', // Invert text color based on background
-                            fontWeight: '600',
-                        },
-                    ]}
-                >
-                    {filter.label}
-                </Text>
-            </TouchableOpacity>
-        );
-    };
-
     return (
         <SafeAreaView
             edges={['top']}
             style={[styles.container, isDarkMode && styles.containerDark]}
         >
-            <View style={styles.headerContainer}>
-                <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
-                    yuzic
-                </Text>
+            <HomeHeader
+                title="yuzic"
+                username={username}
+                onSearch={() => navigation.navigate('search')}
+                onAccountPress={() => accountSheetRef.current?.show()}
+            />
 
-                <View style={styles.headerActions}>
-                    <TouchableOpacity onPress={() => navigation.navigate('search')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                        <Ionicons name="search" size={24} color={isDarkMode ? '#fff' : '#000'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={{
-                            marginLeft: 12,
-                            width: 32,
-                            height: 32,
-                            borderRadius: 16,
-                            backgroundColor: themeColor,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                        onPress={() => accountSheetRef.current?.show()}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-                            {username?.[0]?.toUpperCase() ?? '?'}
-                        </Text>
-                    </TouchableOpacity>
+            <LibraryFilterBar
+                value={activeFilter}
+                filters={filters}
+                onChange={setActiveFilter}
+            />
 
-                </View>
-            </View>
-            <View style={styles.filterScrollContainer}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.filterContainer}
-                >
-                    {filters.map(renderFilterButton)}
-                </ScrollView>
-            </View>
-
-            {isLoading ? (
-                <View style={styles.loaderContainer}>
-                    <Loader />
-                </View>
-
-            ) : sortedFilteredData.length > 0 ? (
-                <FlashList
-                    data={sortedFilteredData}
-                    estimatedItemSize={302}
-                    key={isGridView ? `grid${gridColumns}` : 'list'}
-                    numColumns={isGridView ? gridColumns : 1}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={{ paddingBottom: 150 }}
-                    ListHeaderComponent={
-                        <View style={styles.listHeader}>
-                            <TouchableOpacity
-                                style={styles.sortButton}
-                                onPress={() => sortSheetRef.current?.show()}
-                            >
-                                <Ionicons name="swap-vertical-outline" size={20} color={isDarkMode ? "#fff" : '#000'} />
-                                <Text style={[styles.sortButtonText, isDarkMode && styles.sortButtonTextDark]}>{currentSortLabel}</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={styles.viewToggleButton}
-                                onPress={() => {
-                                    dispatch(setIsGridView(!isGridView));
-                                }}
-                            >
-                                <Ionicons
-                                    name={isGridView ? 'list-outline' : 'grid-outline'}
-                                    size={20}
-                                    color={isDarkMode ? '#fff' : '#000'}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    }
-                    renderItem={renderItem}
-                    showsVerticalScrollIndicator={false}
-                />
-            ) : (
-                <View style={styles.emptyStateContainer}>
-                    <Ionicons name="folder-open-outline" size={80} color={isDarkMode ? '#555' : '#999'} />
-                    <Text style={[styles.emptyTitle, isDarkMode && styles.emptyTitleDark]}>
-                        No content available.
-                    </Text>
-                </View>
-            )
-            }
+            <LibraryContent
+                data={sortedFilteredData}
+                isLoading={isLoading}
+                isGridView={isGridView}
+                gridColumns={gridColumns}
+                gridItemWidth={gridWidth}
+                estimatedItemSize={302}
+                renderItem={renderItem}
+                ListHeaderComponent={
+                    <LibraryListHeader
+                        sortLabel={currentSortLabel}
+                        onSortPress={() => sortSheetRef.current?.show()}
+                        onToggleView={() => dispatch(setIsGridView(!isGridView))}
+                    />
+                }
+            />
 
             <SortBottomSheet
                 ref={sortSheetRef}

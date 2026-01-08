@@ -9,28 +9,29 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-import { Playlist } from '@/types';
+import { Album } from '@/types';
+import { MediaImage } from '@/components/MediaImage';
 import DownloadOptions from '@/components/options/DownloadOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { MediaImage } from '@/components/MediaImage';
 
 type Props = {
-  playlist: Playlist;
+  album: Album;
 };
 
-const Header: React.FC<Props> = ({ playlist }) => {
+const AlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
   const themeColor = useSelector(selectThemeColor);
+
   const { playSongInCollection } = usePlaying();
-  const { isPlaylistDownloaded, isDownloadingPlaylist, downloadPlaylistById } =
+  const { isAlbumDownloaded, isDownloadingAlbum, downloadAlbumById } =
     useDownload();
 
-  const songs = playlist.songs ?? [];
+  const songs = album.songs ?? [];
 
   const totalDuration = useMemo(() => {
     return songs.reduce((sum, song) => sum + Number(song.duration), 0);
@@ -52,6 +53,7 @@ const Header: React.FC<Props> = ({ playlist }) => {
 
   return (
     <View style={styles.container}>
+      {/* Header buttons */}
       <View style={styles.headerRow}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -65,25 +67,51 @@ const Header: React.FC<Props> = ({ playlist }) => {
         </TouchableOpacity>
 
         <DownloadOptions
-          onDownload={() => downloadPlaylistById(playlist.id)}
-          isDownloaded={isPlaylistDownloaded(playlist.id)}
-          isLoading={isDownloadingPlaylist(playlist.id)}
+          onDownload={() => downloadAlbumById(album.id)}
+          isDownloaded={isAlbumDownloaded(album.id)}
+          isLoading={isDownloadingAlbum(album.id)}
         />
       </View>
 
+      {/* Album cover */}
       <View style={styles.coverWrapper}>
         <MediaImage
-          cover={playlist.cover}
+          cover={album.cover}
           size="detail"
           style={styles.coverImage}
         />
       </View>
 
+      {/* Title + artist + actions */}
       <View style={styles.titleRow}>
         <View style={styles.titleInfo}>
           <Text style={styles.title(isDarkMode)} numberOfLines={1}>
-            {playlist.title}
+            {album.title}
           </Text>
+
+          {album.artist && (
+            <TouchableOpacity
+              style={styles.artistRow}
+              onPress={() =>
+                navigation.navigate('artistView', {
+                  id: album.artist.id,
+                })
+              }
+            >
+              <MediaImage
+                cover={album.artist.cover}
+                size="thumb"
+                style={styles.artistImage}
+              />
+
+              <Text
+                style={styles.artistName(isDarkMode)}
+                numberOfLines={1}
+              >
+                {album.artist.name}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <Text style={styles.subtext(isDarkMode)}>
             {songs.length} songs · {formatDuration(totalDuration)}
@@ -91,10 +119,13 @@ const Header: React.FC<Props> = ({ playlist }) => {
         </View>
 
         <TouchableOpacity
-          style={[styles.playButton, { backgroundColor: themeColor }]}
+          style={[
+            styles.playButton,
+            { backgroundColor: themeColor },
+          ]}
           onPress={() => {
             if (songs.length > 0) {
-              playSongInCollection(songs[0], playlist);
+              playSongInCollection(songs[0], album);
             }
           }}
         >
@@ -134,8 +165,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   coverImage: {
-    width: 280,
-    height: 280,
+    width: '100%',
+    height: '100%',
     borderRadius: 16,
   },
   titleRow: {
@@ -158,6 +189,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: isDark ? '#aaa' : '#666',
   }),
+  artistRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  artistImage: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginRight: 6,
+  },
+  artistName: (isDark: boolean) => ({
+    fontSize: 14,
+    color: isDark ? '#fff' : '#333',
+  }),
   playButton: {
     borderRadius: 24,
     width: 48,
@@ -167,4 +213,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Header;
+export default AlbumHeader;

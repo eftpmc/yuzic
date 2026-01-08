@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 
-const LSongRow: React.FC = () => {
+const LoadingSongRow: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const colorMode = isDarkMode ? 'dark' : 'light';
 
@@ -72,4 +72,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LSongRow;
+export default LoadingSongRow;

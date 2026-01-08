@@ -10,9 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAlbum } from '@/hooks/albums';
 
-import List from './components/List';
-import LList from './components/loading/List';
-import { track } from '@/utils/analytics/amplitude';
+import AlbumContent from './components/Content';
+import LoadingAlbumContent from './components/Content/Loading';
 
 const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -25,7 +24,7 @@ const AlbumScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-        <LList />
+        <LoadingAlbumContent />
       </SafeAreaView>
     );
   }
@@ -42,7 +41,7 @@ const AlbumScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-      <List album={album} />
+      <AlbumContent album={album} />
     </SafeAreaView>
   );
 };

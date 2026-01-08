@@ -4,7 +4,7 @@ import { FlashList } from '@shopify/flash-list';
 import { Playlist, Song } from '@/types';
 import SongRow from '@/components/SongRow';
 
-import Header from './Header';
+import Header from '../Header';
 
 type Props = {
   playlist: Playlist;
@@ -12,7 +12,7 @@ type Props = {
 
 const ESTIMATED_ROW_HEIGHT = 72;
 
-const List: React.FC<Props> = ({ playlist }) => {
+const PlaylistContent: React.FC<Props> = ({ playlist }) => {
   const songs = playlist.songs ?? [];
 
   const header = useMemo(() => {
@@ -39,4 +39,4 @@ const List: React.FC<Props> = ({ playlist }) => {
   );
 };
 
-export default List;
+export default PlaylistContent;

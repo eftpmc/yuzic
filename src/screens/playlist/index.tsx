@@ -5,8 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePlaylist } from '@/hooks/playlists';
 
-import List from './components/List';
-import LList from './components/loading/List';
+import PlaylistContent from './components/Content';
+import LoadingPlaylistContent from './components/Content/Loading';
 import { track } from '@/utils/analytics/amplitude';
 
 const PlaylistScreen: React.FC = () => {
@@ -19,7 +19,7 @@ const PlaylistScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-        <LList />
+        <LoadingPlaylistContent />
       </SafeAreaView>
     );
   }
@@ -36,7 +36,7 @@ const PlaylistScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-      <List playlist={playlist} />
+      <PlaylistContent playlist={playlist} />
     </SafeAreaView>
   );
 };

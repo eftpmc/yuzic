@@ -3,7 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 
 import { Album, Song } from '@/types';
 
-import AlbumHeader from './Header';
+import AlbumHeader from '../Header';
 import SongRow from '@/components/SongRow';
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 
 const ESTIMATED_ROW_HEIGHT = 72;
 
-const List: React.FC<Props> = ({ album }) => {
+const AlbumContent: React.FC<Props> = ({ album }) => {
   const songs = album.songs ?? [];
 
   /**
@@ -44,4 +44,4 @@ const List: React.FC<Props> = ({ album }) => {
   );
 };
 
-export default List;
+export default AlbumContent;

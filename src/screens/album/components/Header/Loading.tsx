@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 
-const LHeader: React.FC = () => {
+const LoadingAlbumHeader: React.FC = () => {
     const isDarkMode = useColorScheme() === 'dark';
 
     const colorMode = isDarkMode ? 'dark' : 'light';
@@ -133,4 +133,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default LHeader;
+export default LoadingAlbumHeader;

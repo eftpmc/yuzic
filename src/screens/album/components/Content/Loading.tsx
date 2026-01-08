@@ -1,30 +1,33 @@
 import React, { useMemo } from 'react';
 import { FlashList } from '@shopify/flash-list';
 
-import LHeader from './Header';
-import LSongRow from '@/components/loading/SongRow';
+import LoadingHeader from '../Header/Loading';
+import LoadingSongRow from '@/components/SongRow/Loading';
 
 const ESTIMATED_ROW_HEIGHT = 72;
 const PLACEHOLDER_ROWS = 8;
 
-const LList: React.FC = () => {
+const LoadingAlbumContent: React.FC = () => {
+  /**
+   * Static placeholder data
+   */
   const data = useMemo(
     () => Array.from({ length: PLACEHOLDER_ROWS }),
     []
   );
 
   const header = useMemo(() => {
-    return <LHeader />;
+    return <LoadingHeader />;
   }, []);
 
-  const renderItem = ({ index }: { index: number }) => (
-    <LSongRow key={index} />
-  );
+  const renderItem = ({ index }: { index: number }) => {
+    return <LoadingSongRow key={index} />;
+  };
 
   return (
     <FlashList
       data={data}
-      keyExtractor={(_, index) => `playlist-loading-${index}`}
+      keyExtractor={(_, index) => `skeleton-${index}`}
       renderItem={renderItem}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
@@ -34,4 +37,4 @@ const LList: React.FC = () => {
   );
 };
 
-export default LList;
+export default LoadingAlbumContent;

@@ -27,7 +27,7 @@ type Props = {
   artist: Artist;
 };
 
-const Header: React.FC<Props> = ({ artist }) => {
+const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
   const themeColor = useSelector(selectThemeColor);
@@ -202,7 +202,7 @@ const Header: React.FC<Props> = ({ artist }) => {
   );
 };
 
-export default Header;
+export default ArtistHeader;
 
 const styles = StyleSheet.create({
   fullBleedWrapper: {
