@@ -133,7 +133,7 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
     addSong: async (playlistId, songId) => {
       if (playlistId === FAVORITES_ID) {
         await star(serverUrl, username, password, songId);
-        return { success: status === "ok" };
+        return { success: true };
       }
       return addSongToPlaylist(serverUrl, username, password, playlistId, songId);
     },
@@ -141,7 +141,7 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
     removeSong: async (playlistId, songId) => {
       if (playlistId === FAVORITES_ID) {
         await unstar(serverUrl, username, password, songId);
-        return { success: status === "ok" };
+        return { success: true };
       }
 
       const playlist = await getPlaylist(serverUrl, username, password, playlistId);

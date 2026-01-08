@@ -23,7 +23,7 @@ import { Loader2 } from 'lucide-react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
 import {
   selectAiButtonEnabled,
-  selectOpenaiApiKey,
+  selectActiveAiApiKey,
   selectThemeColor,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { useSelector } from 'react-redux';
@@ -34,7 +34,7 @@ const PlayingBar: React.FC = () => {
   const [appState, setAppState] = useState(AppState.currentState);
 
   const themeColor = useSelector(selectThemeColor);
-  const openaiApiKey = useSelector(selectOpenaiApiKey);
+  const aiApiKey = useSelector(selectActiveAiApiKey);
   const aiButtonEnabled = useSelector(selectAiButtonEnabled);
 
   const { currentSong, isPlaying, pauseSong, resumeSong } = usePlaying();
@@ -95,8 +95,8 @@ const PlayingBar: React.FC = () => {
   });
 
   const handleAIPress = () => {
-    if (!openaiApiKey) {
-      toast.error('Please enter your OpenAI API key in Settings > Plugins.');
+    if (!aiApiKey) {
+      toast.error('Please enter your AI API key in Settings > Plugins.');
       return;
     }
     setDialogVisible(true);

@@ -1,5 +1,5 @@
 import { Song } from "@/types";
-import { buildJellyfinStreamUrl } from "@/utils/builders/urlBuilders";
+import { buildJellyfinStreamUrl } from "@/utils/builders/buildStreamUrls";
 
 export interface GetStarredItemsResult {
   songs: Song[];

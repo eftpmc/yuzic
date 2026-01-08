@@ -9,6 +9,8 @@ export interface PromptHistoryEntry {
   queue: Song[];
 }
 
+export type AIProvider = 'openai' | 'anthropic' | 'gemini';
+
 export interface SettingsState {
   /* UI */
   themeColor: string;
@@ -25,7 +27,12 @@ export interface SettingsState {
   audioQuality: AudioQuality;
 
   /* AI */
-  openaiApiKey: string;
+  aiProvider: AIProvider;
+  aiApiKeys: {
+    openai: string;
+    anthropic: string;
+    gemini: string;
+  };
   aiButtonEnabled: boolean;
   promptHistory: PromptHistoryEntry[];
 
@@ -43,7 +50,12 @@ const initialState: SettingsState = {
 
   audioQuality: 'medium',
 
-  openaiApiKey: '',
+  aiProvider: 'openai',
+  aiApiKeys: {
+    openai: '',
+    anthropic: '',
+    gemini: '',
+  },
   aiButtonEnabled: true,
   promptHistory: [],
 
@@ -81,8 +93,15 @@ const settingsSlice = createSlice({
     },
 
     /* AI */
-    setOpenaiApiKey(state, action: PayloadAction<string>) {
-      state.openaiApiKey = action.payload;
+    setAiProvider(state, action: PayloadAction<AIProvider>) {
+      state.aiProvider = action.payload;
+    },
+
+    setAiApiKey(
+      state,
+      action: PayloadAction<{ provider: AIProvider; key: string }>
+    ) {
+      state.aiApiKeys[action.payload.provider] = action.payload.key;
     },
     setAiButtonEnabled(state, action: PayloadAction<boolean>) {
       state.aiButtonEnabled = action.payload;
@@ -113,7 +132,8 @@ export const {
   setLibrarySortOrder,
   setHasSeenGetStarted,
   setAudioQuality,
-  setOpenaiApiKey,
+  setAiProvider,
+  setAiApiKey,
   setAiButtonEnabled,
   addPromptToHistory,
   setAnalyticsEnabled,

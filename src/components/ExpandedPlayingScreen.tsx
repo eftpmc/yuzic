@@ -228,11 +228,14 @@ const ExpandedPlayingScreen: React.FC<ExpandedPlayingScreenProps> = ({
                     <View style={[styles.detailsContainer, { width: isTablet ? 500 : 315 }]}>
                         <View style={styles.titleArtistContainer}>
                             <View style={styles.textContainer}>
-                                <Text style={[styles.title, { color: '#fff' }]}>
+                                <Text numberOfLines={1} style={[styles.title, { color: '#fff' }]}>
                                     {currentSong.title}
                                 </Text>
                                 <TouchableOpacity onPress={navigateToArtist}>
-                                    <Text style={[styles.artist, { color: '#ddd' }]}>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={[styles.artist, { color: '#ddd' }]}
+                                    >
                                         {currentSong.artist}
                                     </Text>
                                 </TouchableOpacity>

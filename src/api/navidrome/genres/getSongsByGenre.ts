@@ -1,5 +1,4 @@
-import { Song } from "@/types";
-import { buildCoverArtUrl } from "@/utils/builders/urlBuilders";
+import { CoverSource, Song } from "@/types";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -40,7 +39,9 @@ function normalizeSongsByGenre(
 
   return list.map((s: any) => {
 
-    const cover = buildCoverArtUrl(s.coverArt, serverUrl, username, password);
+    const cover: CoverSource = s.coverArt
+        ? { kind: "navidrome", coverArtId: s.coverArt }
+        : { kind: "none" };
 
     return {
       id: s.id,

@@ -4,7 +4,10 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectOpenaiApiKey } from '@/utils/redux/selectors/settingsSelectors';
+import {
+    selectAiProvider,
+    selectActiveAiApiKey,
+} from '@/utils/redux/selectors/settingsSelectors';
 import { addPromptToHistory } from '@/utils/redux/slices/settingsSlice';
 
 interface AIContextType {
@@ -16,155 +19,226 @@ interface AIContextType {
     isLoading: boolean;
 }
 
+type AIMessage = {
+    role: 'system' | 'user';
+    content: string;
+};
+
 const AIContext = createContext<AIContextType | undefined>(undefined);
 
 export const useAI = () => {
-    const context = useContext(AIContext);
-    if (!context) {
-        throw new Error('useAI must be used within an AIProvider');
+    const ctx = useContext(AIContext);
+    if (!ctx) {
+        throw new Error('useAI must be used within AIProvider');
     }
-    return context;
+    return ctx;
 };
 
 export const AIProvider = ({ children }: { children: ReactNode }) => {
     const dispatch = useDispatch();
+
     const { albums, genres, fetchGenres, starred } = useLibrary();
     const { playSongInCollection } = usePlaying();
-    const openaiApiKey = useSelector(selectOpenaiApiKey);
+
+    const provider = useSelector(selectAiProvider);
+    const apiKey = useSelector(selectActiveAiApiKey);
 
     const [input, setInput] = useState('');
     const [generatedQueue, setGeneratedQueue] = useState<Song[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const tryParseJson = (text: string): any => {
-        try {
-            const trimmed = text.trim();
+    const runText = async (
+        messages: AIMessage[],
+        temperature = 0.3
+    ): Promise<string> => {
+        if (!apiKey) {
+            toast.error('AI API key not set.');
+            throw new Error('Missing API key');
+        }
 
-            if (trimmed.startsWith('[') && !trimmed.endsWith(']')) {
-                const lastComma = trimmed.lastIndexOf(',');
-                const maybeFixed = trimmed.substring(0, lastComma) + ']';
-                return JSON.parse(maybeFixed);
+        switch (provider) {
+            case 'openai': {
+                const res = await fetch(
+                    'https://api.openai.com/v1/chat/completions',
+                    {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages,
+                            temperature,
+                        }),
+                    }
+                );
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(`OpenAI error: ${err}`);
+                }
+
+                const json = await res.json();
+                return json.choices?.[0]?.message?.content?.trim() ?? '';
             }
 
-            return JSON.parse(trimmed);
-        } catch (err) {
-            console.error('JSON Parse Error:', err, '\nOriginal Text:', text);
-            return null;
+            case 'anthropic': {
+                const res = await fetch(
+                    'https://api.anthropic.com/v1/messages',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-haiku-20240307',
+                            temperature,
+                            max_tokens: 1024,
+                            messages: messages.map(m => ({
+                                role: m.role === 'system' ? 'assistant' : 'user',
+                                content: m.content,
+                            })),
+                        }),
+                    }
+                );
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(`Anthropic error: ${err}`);
+                }
+
+                const json = await res.json();
+
+                return (
+                    json.content
+                        ?.map((c: any) => c.text)
+                        .join('')
+                        .trim() ?? ''
+                );
+            }
+
+            case 'gemini': {
+                const res = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            generationConfig: {
+                                temperature,
+                            },
+                            contents: [
+                                {
+                                    role: 'user',
+                                    parts: [
+                                        {
+                                            text: messages
+                                                .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+                                                .join('\n\n'),
+                                        },
+                                    ],
+                                },
+                            ],
+                        }),
+                    }
+                );
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(`Gemini error: ${err}`);
+                }
+
+                const json = await res.json();
+
+                return (
+                    json.candidates?.[0]?.content?.parts
+                        ?.map((p: any) => p.text)
+                        .join('')
+                        .trim() ?? ''
+                );
+            }
+
+            default:
+                throw new Error(`${provider} not supported`);
         }
     };
 
-    const cleanAIText = (text: string): string => {
-        return text.replace(/```json/g, '').replace(/```/g, '').trim();
-    };
-
-    type OpenAICallParams = {
-        systemPrompt: string;
-        userPrompt: string;
-        temperature?: number;
-    };
-
-    const callOpenAIString = async ({
-        systemPrompt,
-        userPrompt,
-        temperature = 0.3,
-    }: OpenAICallParams): Promise<string> => {
-        if (!openaiApiKey) {
-            toast.error('OpenAI API key not set.');
-            throw new Error('Missing OpenAI API Key');
-        }
-
-        const res = await fetch(
-            'https://rawarr-server-af0092d911f6.herokuapp.com/api/openai/string',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    systemPrompt,
-                    userPrompt,
-                    temperature,
-                    apiKey: openaiApiKey,
-                }),
-            }
-        );
-
-        const data = await res.json();
-        return (data.content || '').trim();
-    };
-
-    const callOpenAIJson = async (params: OpenAICallParams): Promise<any> => {
-        const text = await callOpenAIString(params);
-        const cleaned = cleanAIText(text);
+    const runJson = async (
+        messages: AIMessage[],
+        temperature = 0.3
+    ): Promise<any> => {
+        const text = await runText(messages, temperature);
+        const cleaned = text.replace(/```json|```/g, '').trim();
         return tryParseJson(cleaned);
     };
 
-    const classifyPromptType = async (
+    const classifyPrompt = async (
         prompt: string
     ): Promise<'genre' | 'artist'> => {
         try {
-            const result = await callOpenAIString({
-                systemPrompt:
-                    "Classify the user's prompt as either 'genre' or 'artist'. " +
-                    "If the prompt asks for a specific artist, album, or band, return 'artist'. " +
-                    "If the prompt is about a vibe, mood, genre, or activity, return 'genre'. " +
-                    "Return only the word 'genre' or 'artist'.",
-                userPrompt: prompt,
-                temperature: 0.3,
-            });
+            const result = await runText([
+                {
+                    role: 'system',
+                    content:
+                        "Classify the user's prompt as either 'genre' or 'artist'. " +
+                        "Return only the word.",
+                },
+                { role: 'user', content: prompt },
+            ]);
 
-            const lower = result.toLowerCase();
-            if (lower === 'artist' || lower === 'genre') return lower;
-            return 'genre';
+            return result.toLowerCase() === 'artist' ? 'artist' : 'genre';
         } catch {
-            toast.error('AI failed to classify prompt.');
             return 'genre';
         }
     };
 
-    const getGenresForPrompt = async (
+    const matchGenres = async (
         prompt: string,
         genreNames: string[]
     ): Promise<string[]> => {
-        const result = await callOpenAIJson({
-            systemPrompt:
-                'You are a music genre matching assistant. ' +
-                'Return a JSON array of genres from the list that best match the prompt.',
-            userPrompt: `Prompt: "${prompt}"\n\nGenres:\n${genreNames.join(', ')}`,
-            temperature: 0.4,
-        });
+        const result = await runJson([
+            {
+                role: 'system',
+                content:
+                    'Return a JSON array of genres from the list that best match the prompt.',
+            },
+            {
+                role: 'user',
+                content: `Prompt: "${prompt}"\nGenres:\n${genreNames.join(', ')}`,
+            },
+        ]);
 
         return Array.isArray(result) ? result : [];
     };
 
     const getSongWeight = (song: Song): number => {
         const isFavorite = starred.songs.some(s => s.id === song.id);
-        const favoriteBoost = isFavorite ? 2 : 1;
-
-        return Math.sqrt(1) * favoriteBoost;
+        return isFavorite ? 2 : 1;
     };
 
     const weightedShuffle = (songs: Song[], count = 100): Song[] => {
-        const result: Song[] = [];
         const pool = [...songs];
+        const result: Song[] = [];
 
-        for (let i = 0; i < count && pool.length; i++) {
-            const totalWeight = pool.reduce(
-                (sum, song) => sum + getSongWeight(song),
+        while (pool.length && result.length < count) {
+            const total = pool.reduce(
+                (sum, s) => sum + getSongWeight(s),
                 0
             );
-            const threshold = Math.random() * totalWeight;
+            let r = Math.random() * total;
 
-            let cumulative = 0;
-            let index = 0;
-
-            for (let j = 0; j < pool.length; j++) {
-                cumulative += getSongWeight(pool[j]);
-                if (cumulative >= threshold) {
-                    index = j;
+            for (let i = 0; i < pool.length; i++) {
+                r -= getSongWeight(pool[i]);
+                if (r <= 0) {
+                    result.push(pool.splice(i, 1)[0]);
                     break;
                 }
             }
-
-            result.push(...pool.splice(index, 1));
         }
 
         return result;
@@ -175,34 +249,27 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
         setInput(userPrompt);
 
         try {
-            const promptType = await classifyPromptType(userPrompt);
+            const type = await classifyPrompt(userPrompt);
 
-            if (promptType === 'genre') {
-                if (!genres.length) {
-                    await fetchGenres();
-                }
+            if (type === 'genre') {
+                if (!genres.length) await fetchGenres();
 
                 const genreNames = genres.map(g => g.name);
-                const selectedGenres = await getGenresForPrompt(
-                    userPrompt,
-                    genreNames
-                );
+                const selected = await matchGenres(userPrompt, genreNames);
 
-                const matchedSongs = genres
-                    .filter(g => selectedGenres.includes(g.name))
+                const songs = genres
+                    .filter(g => selected.includes(g.name))
                     .flatMap(g => g.songs);
 
-                if (!matchedSongs.length) return [];
-
-                const queue = weightedShuffle(matchedSongs, 100);
+                const queue = weightedShuffle(songs, 100);
                 setGeneratedQueue(queue);
 
                 if (queue.length) {
                     await playSongInCollection(queue[0], {
                         id: 'ai-generated',
                         title: `AI Queue • ${userPrompt}`,
-                        cover: '',
-                        subtext: "Playlist",
+                        cover: { kind: "none" },
+                        subtext: 'Playlist',
                         userPlayCount: 0,
                         songs: queue,
                     });
@@ -212,76 +279,10 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
                 return queue;
             }
 
-            const albumGenresMap = new Map<string, Set<string>>();
-
-            genres.forEach(g => {
-                g.songs.forEach(s => {
-                    if (!albumGenresMap.has(s.albumId)) {
-                        albumGenresMap.set(s.albumId, new Set());
-                    }
-                    albumGenresMap.get(s.albumId)!.add(g.name);
-                });
-            });
-
-            const albumText = albums
-                .map((a, i) => {
-                    const genresForAlbum = Array.from(
-                        albumGenresMap.get(a.id) ?? []
-                    );
-
-                    return `${i + 1}. "${a.title}" by ${a.artist.name}${genresForAlbum.length ? ` — ${genresForAlbum.join(', ')}` : ''
-                        } [${a.id}]`;
-                })
-                .join('\n');
-
-            const selectedAlbumIds: string[] = await callOpenAIJson({
-                systemPrompt:
-                    'Select a diverse mix of albums matching the prompt. ' +
-                    'Return only a JSON array of album IDs.',
-                userPrompt: `Prompt: "${userPrompt}"\n\nAlbums:\n${albumText}`,
-            });
-
-            const relevantSongs = genres
-                .flatMap(g => g.songs)
-                .filter(s => selectedAlbumIds?.includes(s.albumId));
-
-            if (!relevantSongs.length) return [];
-
-            const songText = relevantSongs
-                .map(
-                    (s, i) =>
-                        `${i + 1}. "${s.title}" — ${s.artist} [${s.id}]`
-                )
-                .join('\n');
-
-            const selectedSongIds: string[] = await callOpenAIJson({
-                systemPrompt:
-                    'Create a playlist of up to 100 unique songs. ' +
-                    'Return only a JSON array of song IDs.',
-                userPrompt: `Prompt: "${userPrompt}"\n\nSongs:\n${songText}`,
-            });
-
-            const queue = relevantSongs.filter(s =>
-                selectedSongIds?.includes(s.id)
-            );
-
-            setGeneratedQueue(queue);
-
-            if (queue.length) {
-                await playSongInCollection(queue[0], {
-                    id: 'ai-generated',
-                    title: `AI Queue • ${userPrompt}`,
-                    cover: '',
-                    subtext: "Playlist",
-                    userPlayCount: 0,
-                    songs: queue,
-                });
-            }
-
-            dispatch(addPromptToHistory({ prompt: userPrompt, queue }));
-            return queue;
+            toast.error('Artist mode not reimplemented yet.');
+            return [];
         } catch (err) {
-            console.error('AI error:', err);
+            console.error(err);
             toast.error('AI failed to generate a playlist.');
             return [];
         } finally {
@@ -297,10 +298,18 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
                 generateQueue,
                 generatedQueue,
                 setGeneratedQueue,
-                isLoading
+                isLoading,
             }}
         >
             {children}
         </AIContext.Provider>
     );
 };
+
+function tryParseJson(text: string) {
+    try {
+        return JSON.parse(text);
+    } catch {
+        return null;
+    }
+}

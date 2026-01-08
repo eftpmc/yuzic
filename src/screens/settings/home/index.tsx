@@ -98,7 +98,7 @@ export default function Settings() {
                     >
                         <View style={styles.leftContent}>
                             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                                OpenAI
+                                AI
                             </Text>
                         </View>
                         <MaterialIcons name="chevron-right" size={24} color={isDarkMode ? '#fff' : '#333'} />
@@ -110,7 +110,7 @@ export default function Settings() {
                     <TouchableOpacity
                         style={styles.row}
                         onPress={async () => {
-                            const url = "https://pastebin.com/raw/KzGjR9aA"
+                            const url = "https://eftpmc.github.io/yuzic-web/privacypolicy/"
                             const supported = await Linking.canOpenURL(url);
 
                             if (supported) {
@@ -131,7 +131,7 @@ export default function Settings() {
                     <TouchableOpacity
                         style={styles.row}
                         onPress={async () => {
-                            const url = "https://pastebin.com/raw/4QHJPtuj"
+                            const url = "https://eftpmc.github.io/yuzic-web/tos/"
                             const supported = await Linking.canOpenURL(url);
 
                             if (supported) {

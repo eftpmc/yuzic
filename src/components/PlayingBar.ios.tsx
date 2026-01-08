@@ -22,7 +22,7 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useAI } from '@/contexts/AIContext';
 import { Loader2 } from 'lucide-react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
-import { selectAiButtonEnabled, selectOpenaiApiKey, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectActiveAiApiKey, selectAiButtonEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useSelector } from 'react-redux';
 import { MediaImage } from './MediaImage';
 
@@ -31,7 +31,7 @@ const PlayingBar: React.FC = () => {
     const isDarkMode = colorScheme === 'dark';
     const [appState, setAppState] = useState(AppState.currentState);
     const themeColor = useSelector(selectThemeColor);
-    const openaiApiKey = useSelector(selectOpenaiApiKey);
+    const aiApiKey = useSelector(selectActiveAiApiKey);
     const aiButtonEnabled = useSelector(selectAiButtonEnabled);
     const { generateQueue, isLoading } = useAI();
     const [inputValue, setInputValue] = useState('');
@@ -98,8 +98,8 @@ const PlayingBar: React.FC = () => {
     });
 
     const handleToggleInput = () => {
-        if (!openaiApiKey) {
-            toast.error("Please enter your OpenAI API key in Settings > Plugins.");
+        if (!aiApiKey) {
+            toast.error("Please enter your AI API key in Settings > Plugins.");
             return;
         }
 

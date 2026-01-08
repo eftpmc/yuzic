@@ -1,5 +1,6 @@
 import { RootState } from '@/utils/redux/store';
 import {
+  AIProvider,
   AudioQuality,
   LibrarySortOrder,
   PromptHistoryEntry,
@@ -36,9 +37,16 @@ export const selectAudioQuality = (
 ): AudioQuality =>
   state.settings.audioQuality;
 
-/* AI */
-export const selectOpenaiApiKey = (state: RootState): string =>
-  state.settings.openaiApiKey;
+export const selectAiProvider = (state: RootState): AIProvider =>
+  state.settings.aiProvider;
+
+export const selectAiApiKeys = (state: RootState) =>
+  state.settings.aiApiKeys;
+
+export const selectActiveAiApiKey = (state: RootState): string => {
+  const provider = state.settings.aiProvider;
+  return state.settings.aiApiKeys[provider];
+};
 
 export const selectAiButtonEnabled = (
   state: RootState
