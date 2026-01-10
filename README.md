@@ -2,7 +2,9 @@
   <img alt='Yuzic' src="/assets/images/logo.png" width="40" />
 </p>
 
-[![Latest Version](https://img.shields.io/github/package-json/version/eftpmc/yuzic?label=Latest%20Version&color=orange)](https://github.com/eftpmc/yuzic/releases) [![iTunes App Store](https://img.shields.io/itunes/v/6740042497?logo=app-store&logoColor=white&label=Apple%20App%20Store&labelColor=%60&color=blue)](https://apps.apple.com/us/app/yuzic-navidrome-jellyfin/id6740042497) [![Google Play](https://img.shields.io/badge/Google%20Play-Download-red?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.arinora.rawarr)
+<p align="center">
+  [![Latest Version](https://img.shields.io/github/package-json/version/eftpmc/yuzic?label=Latest%20Version&color=orange)](https://github.com/eftpmc/yuzic/releases) [![iTunes App Store](https://img.shields.io/itunes/v/6740042497?logo=app-store&logoColor=white&label=Apple%20App%20Store&labelColor=%60&color=blue)](https://apps.apple.com/us/app/yuzic-navidrome-jellyfin/id6740042497) [![Google Play](https://img.shields.io/badge/Google%20Play-Download-red?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.arinora.rawarr)
+</p>
 
 ## Contents
 
@@ -22,7 +24,7 @@ Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic 
 
 ## Screenshots
 
-*Screenshots taken on iPhone 13*
+Screenshots taken on iPhone 13
 
 ---
 
@@ -31,6 +33,15 @@ Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic 
 <p align="center">
   <img src="screenshots/home.png" alt="Jellify Home" width="275" height="600">
   <img src="screenshots/home-list.png" alt="Jellify Home" width="275" height="600">
+</p>
+
+---
+
+### Playing
+
+<p align="center">
+  <img src="screenshots/playing.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/queue.png" alt="Jellify Home" width="275" height="600">
 </p>
 
 ---
@@ -58,6 +69,45 @@ Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic 
 </p>
 
 ---
+
+### Onboarding
+
+<p align="center">
+  <img src="screenshots/get-started.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/servers.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/connect.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/credentials.png" alt="Jellify Home" width="275" height="600">
+</p>
+
+---
+
+### Search
+
+<p align="center">
+  <img src="screenshots/search.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/search-results.png" alt="Jellify Home" width="275" height="600">
+</p>
+
+---
+
+### Settings
+
+<p align="center">
+  <img src="screenshots/settings.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/settings-server.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/settings-library.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/settings-player.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/settings-appearance.png" alt="Jellify Home" width="275" height="600">
+</p>
+
+---
+
+### Plugins
+
+<p align="center">
+<img src="screenshots/settings-lidarr.png" alt="Jellify Home" width="275" height="600">
+  <img src="screenshots/settings-ai.png" alt="Jellify Home" width="275" height="600">
+</p>
 
 ## Contribution
 Contributions are welcome! Please open an issue or submit a pull request.
