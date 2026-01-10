@@ -7,10 +7,10 @@ import {
     useColorScheme,
     Platform,
     StatusBar,
-    SafeAreaView,
     Dimensions,
     AppState,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import TrackPlayer, { useProgress } from 'react-native-track-player';
@@ -18,7 +18,7 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import ImageColors from 'react-native-image-colors';
 import { useNavigation } from "@react-navigation/native";
 import { Image } from 'expo-image';
-import SongOptions from '@/components/options/SongOptions';
+import PlayingSongOptions from './components/PlayingSongOptions';
 import Queue from './components/Queue';
 import BackgroundGradient from './components/BackgroundGradient';
 import Animated, {
@@ -49,7 +49,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const colorScheme = useColorScheme();
     const navigation = useNavigation();
     const isDarkMode = colorScheme === 'dark';
-    const { position } = useProgress();
+    const { position } = useProgress(250);
     const {
         currentSong,
         pauseSong,
@@ -190,7 +190,9 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 onFadeComplete={() => setCurrentGradient([...nextGradient])}
             />
 
-            <SafeAreaView style={[
+            <SafeAreaView 
+            edges={['top']}
+            style={[
                 styles.container
             ]}>
                 <StatusBar
@@ -238,7 +240,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.optionsButton}>
-                                <SongOptions selectedSong={currentSong} />
+                                <PlayingSongOptions selectedSong={currentSong} />
                             </View>
                         </View>
                         <Slider
@@ -250,12 +252,16 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                             maximumTrackTintColor="#888"
                             thumbTintColor="#fff"
                             onValueChange={(value) => {
-                                setIsSeeking(true);
+                                if (!isSeeking) setIsSeeking(true);
                                 setSeekPosition(value);
                             }}
                             onSlidingComplete={async (value) => {
-                                setIsSeeking(false);
+                                setSeekPosition(value);
                                 await TrackPlayer.seekTo(value);
+
+                                setTimeout(() => {
+                                    setIsSeeking(false);
+                                }, 200);
                             }}
                         />
                         <View style={[styles.timestamps, { width: isTablet ? 500 : 315 }]}>

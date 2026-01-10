@@ -109,7 +109,6 @@ const Stats: React.FC = () => {
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-      {/* Header */}
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
           Library Cache
@@ -133,7 +132,6 @@ const Stats: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Query summaries */}
       {summaries.map((stat, index) => (
         <View key={stat.label}>
           {index !== 0 && (
@@ -150,13 +148,12 @@ const Stats: React.FC = () => {
                 ? `${stat.fresh} fresh, ${stat.stale} stale`
                 : stat.fresh > 0
                 ? `${stat.fresh} fresh`
-                : 'No data'}
+                : 'Cached'}
             </Text>
           </View>
         </View>
       ))}
 
-      {/* Error list */}
       {errors.length > 0 && (
         <>
           <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
@@ -179,10 +176,6 @@ const Stats: React.FC = () => {
 };
 
 export default Stats;
-
-/* ───────────────────────────────
-   Styles
-─────────────────────────────── */
 
 const styles = StyleSheet.create({
   section: {

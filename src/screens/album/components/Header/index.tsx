@@ -118,19 +118,37 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.playButton,
-            { backgroundColor: themeColor },
-          ]}
-          onPress={() => {
-            if (songs.length > 0) {
-              playSongInCollection(songs[0], album);
-            }
-          }}
-        >
-          <Ionicons name="play" size={24} color="#fff" />
-        </TouchableOpacity>
+        {/* Action buttons */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.shuffleButton(isDarkMode)}
+            onPress={() => {
+              if (songs.length > 0) {
+                playSongInCollection(songs[0], album, true);
+              }
+            }}
+          >
+            <Ionicons
+              name="shuffle"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.playButton,
+              { backgroundColor: themeColor },
+            ]}
+            onPress={() => {
+              if (songs.length > 0) {
+                playSongInCollection(songs[0], album);
+              }
+            }}
+          >
+            <Ionicons name="play" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -204,6 +222,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: isDark ? '#fff' : '#333',
   }),
+
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  shuffleButton: (isDark: boolean) => ({
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: isDark ? '#1c1c1e' : '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+
   playButton: {
     borderRadius: 24,
     width: 48,

@@ -26,6 +26,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
   const themeColor = useSelector(selectThemeColor);
+
   const { playSongInCollection } = usePlaying();
   const { isPlaylistDownloaded, isDownloadingPlaylist, downloadPlaylistById } =
     useDownload();
@@ -52,6 +53,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
 
   return (
     <View style={styles.container}>
+      {/* Header buttons */}
       <View style={styles.headerRow}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -71,6 +73,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
         />
       </View>
 
+      {/* Playlist cover */}
       <View style={styles.coverWrapper}>
         <MediaImage
           cover={playlist.cover}
@@ -79,6 +82,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
         />
       </View>
 
+      {/* Title + actions */}
       <View style={styles.titleRow}>
         <View style={styles.titleInfo}>
           <Text style={styles.title(isDarkMode)} numberOfLines={1}>
@@ -90,16 +94,34 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.playButton, { backgroundColor: themeColor }]}
-          onPress={() => {
-            if (songs.length > 0) {
-              playSongInCollection(songs[0], playlist);
-            }
-          }}
-        >
-          <Ionicons name="play" size={24} color="#fff" />
-        </TouchableOpacity>
+        {/* Action buttons */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.shuffleButton(isDarkMode)}
+            onPress={() => {
+              if (songs.length > 0) {
+                playSongInCollection(songs[0], playlist, true);
+              }
+            }}
+          >
+            <Ionicons
+              name="shuffle"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.playButton, { backgroundColor: themeColor }]}
+            onPress={() => {
+              if (songs.length > 0) {
+                playSongInCollection(songs[0], playlist);
+              }
+            }}
+          >
+            <Ionicons name="play" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -111,6 +133,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
   },
+
   headerRow: {
     position: 'absolute',
     top: 16,
@@ -125,6 +148,7 @@ const styles = StyleSheet.create({
   headerButton: {
     padding: 6,
   },
+
   coverWrapper: {
     width: 280,
     height: 280,
@@ -138,26 +162,46 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: 16,
   },
+
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
     marginBottom: 12,
   },
+
   titleInfo: {
     flex: 1,
     paddingRight: 12,
   },
+
   title: (isDark: boolean) => ({
     fontSize: 24,
     fontWeight: 'bold',
     color: isDark ? '#fff' : '#000',
     marginBottom: 4,
   }),
+
   subtext: (isDark: boolean) => ({
     fontSize: 14,
     color: isDark ? '#aaa' : '#666',
   }),
+
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  shuffleButton: (isDark: boolean) => ({
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: isDark ? '#1c1c1e' : '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+
   playButton: {
     borderRadius: 24,
     width: 48,

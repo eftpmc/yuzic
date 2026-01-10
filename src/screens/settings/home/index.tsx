@@ -132,6 +132,8 @@ export default function Settings() {
                     About
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                    {renderLinkRow('Discord', 'https://discord.gg/NzsGEhg5Fs')}
+                    {renderDivider()}
                     {renderLinkRow('Privacy Policy', 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
                     {renderLinkRow('Terms of Use', 'https://eftpmc.github.io/yuzic-web/tos/')}
@@ -192,8 +194,6 @@ export default function Settings() {
         return <View style={[styles.divider, isDarkMode && styles.dividerDark]} />;
     }
 }
-
-/* STYLES ---------------------------------------------------------------- */
 
 const styles = StyleSheet.create({
     container: {

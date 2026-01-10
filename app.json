@@ -2,7 +2,7 @@
   "expo": {
     "name": "yuzic",
     "slug": "yuzic",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
@@ -14,14 +14,13 @@
       "bundleIdentifier": "com.arinora.rawarr",
       "infoPlist": {
         "UIBackgroundModes": [
-          "audio",
           "audio"
         ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "versionCode": 20,
+      "versionCode": 21,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
@@ -30,6 +29,7 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
+      "usesCleartextTraffic": true,
       "package": "com.arinora.rawarr"
     },
     "web": {

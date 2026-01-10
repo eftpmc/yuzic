@@ -33,8 +33,7 @@ type PlaylistListProps = {
 
 const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
-    const colorScheme = useColorScheme();
-    const isDarkMode: boolean = colorScheme === 'dark';
+    const isDarkMode = useColorScheme() === 'dark';
     const themeColor = useSelector(selectThemeColor);
 
     const {
@@ -89,9 +88,7 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
             setInitialIds(ids);
             setSelectedIds(new Set(ids));
           }
-        } catch {
-          // silently fail; sheet can still be used
-        }
+        } catch {}
       };
 
       load();
@@ -111,7 +108,6 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
-
       await createPlaylist(newPlaylistName.trim());
       setNewPlaylistName('');
       onClose();
@@ -142,22 +138,44 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
         ref={ref}
         height={Dimensions.get('screen').height * 0.8}
         hasDraggableIcon={false}
-        sheetBackgroundColor={isDarkMode ? '#222' : '#f9f9f9'}
+        sheetBackgroundColor={isDarkMode ? '#222' : '#F2F2F7'}
       >
-        <View style={styles.bottomSheetContainer(isDarkMode)}>
+        <View
+          style={[
+            styles.container,
+            isDarkMode && styles.containerDark,
+          ]}
+        >
           <View style={styles.headerContainer}>
             <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-              <Ionicons name="close" size={24} color="#fff" />
+              <Ionicons
+                name="close"
+                size={24}
+                color={isDarkMode ? '#fff' : '#000'}
+              />
             </TouchableOpacity>
-            <Text style={styles.headerTitle(isDarkMode)}>
+            <Text
+              style={[
+                styles.headerTitle,
+                isDarkMode && styles.textDark,
+              ]}
+            >
               Add to Playlist
             </Text>
           </View>
 
-          <View style={styles.searchContainer}>
+          <View
+            style={[
+              styles.searchContainer,
+              isDarkMode && styles.inputDark,
+            ]}
+          >
             <Ionicons name="search" size={20} color="#aaa" />
             <TextInput
-              style={styles.searchInput(isDarkMode)}
+              style={[
+                styles.searchInput,
+                isDarkMode && styles.textDark,
+              ]}
               placeholder="Search playlists"
               placeholderTextColor="#aaa"
               value={searchQuery}
@@ -167,14 +185,22 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 
           <View style={styles.createContainer}>
             <TextInput
-              style={styles.newPlaylistInput(isDarkMode)}
+              style={[
+                styles.newPlaylistInput,
+                isDarkMode && styles.inputDark,
+                isDarkMode && styles.textDark,
+              ]}
               placeholder="New playlist name"
               placeholderTextColor="#aaa"
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
             <TouchableOpacity onPress={handleCreatePlaylist}>
-              <Ionicons name="add" size={26} color="#fff" />
+              <Ionicons
+                name="add"
+                size={26}
+                color={isDarkMode ? '#fff' : '#000'}
+              />
             </TouchableOpacity>
           </View>
 
@@ -186,7 +212,7 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 
               return (
                 <TouchableOpacity
-                  style={styles.bottomSheetOption}
+                  style={styles.option}
                   onPress={() => togglePlaylist(item.id)}
                 >
                   <MediaImage
@@ -196,10 +222,16 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
                   />
 
                   <View style={styles.playlistDetails}>
-                    <Text style={styles.bottomSheetOptionText(isDarkMode)}>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        isDarkMode && styles.textDark,
+                      ]}
+                    >
                       {item.title}
                     </Text>
                   </View>
+
                   <Ionicons
                     name={isChecked ? 'checkmark-circle' : 'ellipse-outline'}
                     size={24}
@@ -212,7 +244,7 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 
           <TouchableOpacity
             style={[
-              styles.doneButton(isDarkMode),
+              styles.doneButton,
               { backgroundColor: themeColor },
             ]}
             onPress={handleDone}
@@ -228,13 +260,16 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 export default PlaylistList;
 
 const styles = StyleSheet.create({
-  bottomSheetContainer: (isDarkMode: boolean) => ({
+  container: {
     flex: 1,
     padding: 16,
-    backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
+    backgroundColor: '#F2F2F7',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-  }),
+  },
+  containerDark: {
+    backgroundColor: '#222',
+  },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -247,41 +282,46 @@ const styles = StyleSheet.create({
     left: 0,
     padding: 8,
   },
-  headerTitle: (isDarkMode: boolean) => ({
+  headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: isDarkMode ? '#fff' : '#000',
-    textAlign: 'center',
-  }),
+    color: '#000',
+  },
+  textDark: {
+    color: '#fff',
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#333',
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 8,
     marginBottom: 16,
   },
-  searchInput: (isDarkMode: boolean) => ({
+  inputDark: {
+    backgroundColor: '#333',
+  },
+  searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: 16,
-    color: isDarkMode ? '#fff' : '#000',
-  }),
+    color: '#000',
+  },
   createContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  newPlaylistInput: (isDarkMode: boolean) => ({
+  newPlaylistInput: {
     flex: 1,
-    backgroundColor: '#333',
     borderRadius: 8,
     padding: 8,
     fontSize: 16,
-    color: isDarkMode ? '#fff' : '#000',
+    backgroundColor: '#fff',
     marginRight: 8,
-  }),
-  bottomSheetOption: {
+    color: '#000',
+  },
+  option: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
@@ -296,11 +336,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
-  bottomSheetOptionText: (isDarkMode: boolean) => ({
+  optionText: {
     fontSize: 16,
-    color: isDarkMode ? '#fff' : '#000',
-  }),
-  doneButton: (isDarkMode: boolean) => ({
+    color: '#000',
+  },
+  doneButton: {
     position: 'absolute',
     bottom: 48,
     left: 48,
@@ -308,7 +348,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
-  }),
+  },
   doneButtonText: {
     fontSize: 16,
     fontWeight: 'bold',

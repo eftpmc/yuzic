@@ -13,7 +13,6 @@ import {
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
-import { sharedStyles } from "@/styles/sharedStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
@@ -135,7 +134,7 @@ const Search = () => {
                 </View>
             </View>
 
-            <ScrollView contentContainerStyle={sharedStyles.scrollContent}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
                 {isLoading
                     ? [...Array(8)].map((_, i) => <SkeletonItem key={i} />)
                     : searchResults.map((result) => (
@@ -200,6 +199,10 @@ const Search = () => {
 export default Search;
 
 const styles = StyleSheet.create({
+    scrollContent: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -249,8 +252,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-
-    /* RESULTS LIST -------------------------------------------------------- */
     resultItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -288,8 +289,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 8,
     },
-
-    /* NO RESULTS ---------------------------------------------------------- */
     noResults: {
         textAlign: 'center',
         marginTop: 24,
@@ -299,8 +298,6 @@ const styles = StyleSheet.create({
     noResultsDark: {
         color: '#aaa',
     },
-
-    /* SKELETON LOADING ---------------------------------------------------- */
     skeletonImage: {
         width: 50,
         height: 50,
