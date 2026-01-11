@@ -6,6 +6,7 @@
 
 - [Info](#info)
 - [Features](#features)
+- [Future](#future)
 - [Screenshots](#screenshots)
 - [Contribution](#Contribution)
 
@@ -16,11 +17,47 @@ This project started in December of 2024. The goal of this app is to encompass a
 
 Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic server to function as intended.
 
+## Download
+
+### IOS
+
+[![iTunes App Store](https://img.shields.io/itunes/v/6740042497?logo=app-store&logoColor=white&label=Apple%20App%20Store&labelColor=%60&color=blue)](https://apps.apple.com/us/app/yuzic-navidrome-jellyfin/id6740042497)
+
+[IPA](https://github.com/eftpmc/yuzic/releases)
+
+### Android
+
+[![Google Play](https://img.shields.io/badge/Google%20Play-Download-red?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.arinora.rawarr)
+
+[APK](https://github.com/eftpmc/yuzic/releases)
+
 ## Features
-- Switch seamlessly between Navidrome and Jellyfin
-- Text-to-Music button
-- Enriched data via Last.fm
-- Download albums and playlists to listen to offline
+- Unified Music Library Across Servers
+- Offline & Download Support
+- Customizable UI & Layout
+- A pretty UI
+- Search & Browsing
+- Text-to-Music
+- Privacy-First by Design
+- Fast, Reliable Playback
+- Plugins
+
+## Future
+- Crossfading
+- Carplay & Android auto
+- QuickConnect
+- Show owned only albums in artist
+- Apple TV app
+- Apple watch
+- Google casting
+- F-droid
+- Lyrics
+- Plex
+- EQ
+- Lyrion
+- UPNP or DLNA
+- Ollama
+- Theme switch
 
 ## Screenshots
 
