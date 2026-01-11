@@ -3,10 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  Platform,
   Appearance,
 } from 'react-native';
-import { ContextMenuView } from 'react-native-ios-context-menu';
+import { MenuView } from '@react-native-menu/menu';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useDownload } from '@/contexts/DownloadContext';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -22,7 +21,6 @@ interface ItemProps {
   title: string;
   subtext: string;
   cover: CoverSource;
-
   isGridView: boolean;
   gridWidth: number;
 }
@@ -51,7 +49,7 @@ const AlbumItem: React.FC<ItemProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const isDownloaded = isAlbumDownloaded(id);
-  const isDownloading = isDownloadingAlbum(id);
+  const isDownloadingNow = isDownloadingAlbum(id);
 
   const handlePlay = useCallback(
     async (shuffle: boolean) => {
@@ -68,7 +66,7 @@ const AlbumItem: React.FC<ItemProps> = ({
   );
 
   const handleDownload = async () => {
-    if (isDownloaded || isDownloading || isLoading) return;
+    if (isDownloaded || isDownloadingNow || isLoading) return;
     setIsLoading(true);
     try {
       await downloadAlbumById(id);
@@ -104,111 +102,96 @@ const AlbumItem: React.FC<ItemProps> = ({
     />
   );
 
-  const content = (
-    <TouchableOpacity
-      onPress={handleNavigation}
-      style={
-        isGridView
-          ? [styles.gridItemContainer, { width: gridWidth }]
-          : styles.itemContainer
-      }
-      activeOpacity={0.9}
-    >
-      {image}
-
-      <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
-        <Text
-          style={[styles.title, isDarkMode && styles.titleDark]}
-          numberOfLines={1}
-        >
-          {title}
-        </Text>
-        <Text
-          style={[styles.subtext, isDarkMode && styles.subtextDark]}
-          numberOfLines={1}
-        >
-          {subtext}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const getMenuItems = () => {
-    const items: any[] = [];
-
-    items.push({
-      actionKey: 'download',
-      actionTitle: isDownloading
-        ? 'Downloading...'
+  const menuActions = [
+    {
+      id: 'play',
+      title: 'Play',
+      image: 'play.fill',
+    },
+    {
+      id: 'shuffle',
+      title: 'Shuffle',
+      image: 'shuffle',
+    },
+    {
+      id: 'go-to',
+      title: 'Go to Album',
+      image: 'music.note.list',
+    },
+    {
+      id: 'download',
+      title: isDownloadingNow
+        ? 'Downloading…'
         : isDownloaded
           ? 'Downloaded'
           : 'Download',
-      icon: {
-        type: 'IMAGE_SYSTEM',
-        imageValue: {
-          systemName: isDownloading
-            ? 'hourglass'
-            : isDownloaded
-              ? 'checkmark.circle'
-              : 'arrow.down.circle',
-        },
+      image: isDownloadingNow
+        ? 'hourglass'
+        : isDownloaded
+          ? 'checkmark.circle'
+          : 'arrow.down.circle',
+      attributes: {
+        disabled: isDownloaded || isDownloadingNow,
       },
-      attributes: isDownloaded || isDownloading ? ['disabled'] : [],
-      state: isDownloading || isLoading ? 'on' : 'off',
-    });
+    },
+  ];
 
-    items.unshift(
-      {
-        actionKey: 'play',
-        actionTitle: 'Play',
-        icon: {
-          type: 'IMAGE_SYSTEM',
-          imageValue: { systemName: 'play.fill' },
-        },
-      },
-      {
-        actionKey: 'shuffle',
-        actionTitle: 'Shuffle',
-        icon: {
-          type: 'IMAGE_SYSTEM',
-          imageValue: { systemName: 'shuffle' },
-        },
-      },
-      {
-        actionKey: 'go-to',
-        actionTitle: 'Go to Album',
-        icon: {
-          type: 'IMAGE_SYSTEM',
-          imageValue: { systemName: 'music.note.list' },
-        },
-      }
-    );
-
-    return items;
+  const onMenuAction = ({ nativeEvent }: any) => {
+    switch (nativeEvent.event) {
+      case 'play':
+        handlePlay(false);
+        break;
+      case 'shuffle':
+        handlePlay(true);
+        break;
+      case 'go-to':
+        handleNavigation();
+        break;
+      case 'download':
+        handleDownload();
+        break;
+    }
   };
 
-  if (Platform.OS === 'ios') {
-    return (
-      <ContextMenuView
-        style={{ borderRadius: 8 }}
-        previewConfig={{ previewType: 'none' }}
-        menuConfig={{
-          menuTitle: title || 'Options',
-          menuItems: getMenuItems(),
-        }}
-        onPressMenuItem={({ nativeEvent }) => {
-          if (nativeEvent.actionKey === 'play') handlePlay(false);
-          if (nativeEvent.actionKey === 'shuffle') handlePlay(true);
-          if (nativeEvent.actionKey === 'go-to') handleNavigation();
-          if (nativeEvent.actionKey === 'download') handleDownload();
-        }}
+  return (
+    <MenuView
+      title={title || 'Options'}
+      actions={menuActions}
+      onPressAction={onMenuAction}
+      shouldOpenOnLongPress
+    >
+      <TouchableOpacity
+        onPress={handleNavigation}
+        activeOpacity={0.9}
+        style={
+          isGridView
+            ? [styles.gridItemContainer, { width: gridWidth }]
+            : styles.itemContainer
+        }
       >
-        {content}
-      </ContextMenuView>
-    );
-  }
+        {image}
 
-  return content;
+        <View
+          style={
+            isGridView ? styles.gridTextContainer : styles.textContainer
+          }
+        >
+          <Text
+            style={[styles.title, isDarkMode && styles.titleDark]}
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+          <Text
+            style={[styles.subtext, isDarkMode && styles.subtextDark]}
+            numberOfLines={1}
+          >
+            {subtext}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </MenuView>
+  );
 };
 
 export default AlbumItem;

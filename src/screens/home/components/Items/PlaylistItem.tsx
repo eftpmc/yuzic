@@ -3,10 +3,9 @@ import {
     View,
     Text,
     StyleSheet,
-    Platform,
     Appearance,
 } from 'react-native';
-import { ContextMenuView } from 'react-native-ios-context-menu';
+import { MenuView } from '@react-native-menu/menu';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useDownload } from '@/contexts/DownloadContext';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -25,7 +24,6 @@ interface ItemProps {
     title: string;
     subtext: string;
     cover: CoverSource;
-
     isGridView: boolean;
     gridWidth: number;
 }
@@ -115,104 +113,92 @@ const PlaylistItem: React.FC<ItemProps> = ({
         />
     );
 
-    const content = (
-        <TouchableOpacity
-            onPress={handleNavigation}
-            style={
-                isGridView
-                    ? [styles.gridItemContainer, { width: gridWidth }]
-                    : styles.itemContainer
-            }
-            activeOpacity={0.9}
+    const actions = [
+        {
+            id: 'play',
+            title: 'Play',
+            image: 'play.fill',
+        },
+        {
+            id: 'shuffle',
+            title: 'Shuffle',
+            image: 'shuffle',
+        },
+        {
+            id: 'go-to',
+            title: 'Go to Playlist',
+            image: 'music.note.list',
+        },
+        {
+            id: 'download',
+            title: isDownloading
+                ? 'Downloading…'
+                : isDownloaded
+                    ? 'Downloaded'
+                    : 'Download',
+            image: isDownloading
+                ? 'hourglass'
+                : isDownloaded
+                    ? 'checkmark.circle'
+                    : 'arrow.down.circle',
+            attributes: {
+                disabled: isDownloaded || isDownloading,
+            },
+        },
+    ];
+
+    const onPressAction = ({ nativeEvent }: any) => {
+        switch (nativeEvent.event) {
+            case 'play':
+                handlePlay(false);
+                break;
+            case 'shuffle':
+                handlePlay(true);
+                break;
+            case 'go-to':
+                handleNavigation();
+                break;
+            case 'download':
+                handleDownload();
+                break;
+        }
+    };
+
+    return (
+        <MenuView
+            title={title || 'Options'}
+            actions={actions}
+            onPressAction={onPressAction}
+            shouldOpenOnLongPress
         >
-            {image}
-
-            <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
-                <Text
-                    style={[styles.title, isDarkMode && styles.titleDark]}
-                    numberOfLines={1}
-                >
-                    {title}
-                </Text>
-                <Text
-                    style={[styles.subtext, isDarkMode && styles.subtextDark]}
-                    numberOfLines={1}
-                >
-                    {subtext}
-                </Text>
-            </View>
-        </TouchableOpacity>
-    );
-
-    const menuTitle = title || 'Options';
-
-    if (Platform.OS === 'ios') {
-        return (
-            <ContextMenuView
-                style={{ borderRadius: 8 }}
-                previewConfig={{ previewType: 'none' }}
-                menuConfig={{
-                    menuTitle,
-                    menuItems: [
-                        {
-                            actionKey: 'play',
-                            actionTitle: 'Play',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: { systemName: 'play.fill' },
-                            },
-                        },
-                        {
-                            actionKey: 'shuffle',
-                            actionTitle: 'Shuffle',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: { systemName: 'shuffle' },
-                            },
-                        },
-                        {
-                            actionKey: 'go-to',
-                            actionTitle: 'Go to Playlist',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: { systemName: 'music.note.list' },
-                            },
-                        },
-                        {
-                            actionKey: 'download',
-                            actionTitle: isDownloading
-                                ? 'Downloading...'
-                                : isDownloaded
-                                    ? 'Downloaded'
-                                    : 'Download',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: {
-                                    systemName: isDownloading
-                                        ? 'hourglass'
-                                        : isDownloaded
-                                            ? 'checkmark.circle'
-                                            : 'arrow.down.circle',
-                                },
-                            },
-                            attributes:
-                                isDownloaded || isDownloading ? ['disabled'] : [],
-                        },
-                    ],
-                }}
-                onPressMenuItem={({ nativeEvent }) => {
-                    if (nativeEvent.actionKey === 'play') handlePlay(false);
-                    if (nativeEvent.actionKey === 'shuffle') handlePlay(true);
-                    if (nativeEvent.actionKey === 'go-to') handleNavigation();
-                    if (nativeEvent.actionKey === 'download') handleDownload();
-                }}
+            <TouchableOpacity
+                onPress={handleNavigation}
+                style={
+                    isGridView
+                        ? [styles.gridItemContainer, { width: gridWidth }]
+                        : styles.itemContainer
+                }
+                activeOpacity={0.9}
             >
-                {content}
-            </ContextMenuView>
-        );
-    }
+                {image}
 
-    return content;
+                <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
+                    <Text
+                        style={[styles.title, isDarkMode && styles.titleDark]}
+                        numberOfLines={1}
+                    >
+                        {title}
+                    </Text>
+                    <Text
+                        style={[styles.subtext, isDarkMode && styles.subtextDark]}
+                        numberOfLines={1}
+                    >
+                        {subtext}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        </MenuView>
+    );
 };
 
 export default PlaylistItem;

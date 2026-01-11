@@ -10,7 +10,7 @@ import {
     Dimensions,
     AppState,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import TrackPlayer, { useProgress } from 'react-native-track-player';
@@ -64,6 +64,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     } = usePlaying();
     const duration = currentSong ? Number(currentSong.duration) : 1;
     const { artists } = useLibrary();
+    const insets = useSafeAreaInsets();
     const themeColor = useSelector(selectThemeColor);
     const [currentGradient, setCurrentGradient] = useState(['#000', '#000']);
     const [nextGradient, setNextGradient] = useState(['#000', '#000']);
@@ -190,11 +191,10 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 onFadeComplete={() => setCurrentGradient([...nextGradient])}
             />
 
-            <SafeAreaView 
-            edges={['top']}
-            style={[
-                styles.container
-            ]}>
+            <SafeAreaView
+                style={[
+                    styles.container
+                ]}>
                 <StatusBar
                     barStyle={isDarkMode ? 'light-content' : 'dark-content'}
                     backgroundColor="transparent"
@@ -210,9 +210,16 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     style={[animatedPlayerStyle, { alignItems: 'center', justifyContent: 'center' }]}
                     pointerEvents={showQueue ? 'none' : 'auto'}
                 >
-                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                    <TouchableOpacity
+                        onPress={onClose}
+                        style={[
+                            styles.closeButton,
+                            { top: insets.top + 60 }
+                        ]}
+                    >
                         <Ionicons name="chevron-down" size={28} color="#fff" />
                     </TouchableOpacity>
+
                     <Image
                         source={{ uri: coverUri }}
                         style={[
@@ -437,7 +444,6 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 60 : 32,
         left: 16,
         padding: 4,
     },

@@ -3,10 +3,9 @@ import {
     View,
     Text,
     StyleSheet,
-    Platform,
     Appearance,
 } from 'react-native';
-import { ContextMenuView } from 'react-native-ios-context-menu';
+import { MenuView } from '@react-native-menu/menu';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
@@ -21,7 +20,6 @@ interface ItemProps {
     name: string;
     subtext: string;
     cover: CoverSource;
-
     isGridView: boolean;
     gridWidth: number;
 }
@@ -111,83 +109,73 @@ const ArtistItem: React.FC<ItemProps> = ({
         />
     );
 
-    const content = (
-        <TouchableOpacity
-            onPress={handleNavigation}
-            style={
-                isGridView
-                    ? [styles.gridItemContainer, { width: gridWidth }]
-                    : styles.itemContainer
-            }
-            activeOpacity={0.9}
+    const actions = [
+        {
+            id: 'play',
+            title: 'Play',
+            image: 'play.fill',
+        },
+        {
+            id: 'shuffle',
+            title: 'Shuffle',
+            image: 'shuffle',
+        },
+        {
+            id: 'go-to',
+            title: 'Go to Artist',
+            image: 'music.note.list',
+        },
+    ];
+
+    const onPressAction = ({ nativeEvent }: any) => {
+        switch (nativeEvent.event) {
+            case 'play':
+                handlePlay(false);
+                break;
+            case 'shuffle':
+                handlePlay(true);
+                break;
+            case 'go-to':
+                handleNavigation();
+                break;
+        }
+    };
+
+    return (
+        <MenuView
+            title={name || 'Options'}
+            actions={actions}
+            onPressAction={onPressAction}
+            shouldOpenOnLongPress
         >
-            {image}
-
-            <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
-                <Text
-                    style={[styles.title, isDarkMode && styles.titleDark]}
-                    numberOfLines={1}
-                >
-                    {name}
-                </Text>
-                <Text
-                    style={[styles.subtext, isDarkMode && styles.subtextDark]}
-                    numberOfLines={1}
-                >
-                    {subtext}
-                </Text>
-            </View>
-        </TouchableOpacity>
-    );
-
-    const menuTitle = name || 'Options';
-
-    if (Platform.OS === 'ios') {
-        return (
-            <ContextMenuView
-                style={{ borderRadius: 8 }}
-                previewConfig={{ previewType: 'none' }}
-                menuConfig={{
-                    menuTitle,
-                    menuItems: [
-                        {
-                            actionKey: 'play',
-                            actionTitle: 'Play',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: { systemName: 'play.fill' },
-                            },
-                        },
-                        {
-                            actionKey: 'shuffle',
-                            actionTitle: 'Shuffle',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: { systemName: 'shuffle' },
-                            },
-                        },
-                        {
-                            actionKey: 'go-to',
-                            actionTitle: 'Go to Artist',
-                            icon: {
-                                type: 'IMAGE_SYSTEM',
-                                imageValue: { systemName: 'music.note.list' },
-                            },
-                        },
-                    ],
-                }}
-                onPressMenuItem={({ nativeEvent }) => {
-                    if (nativeEvent.actionKey === 'play') handlePlay(false);
-                    if (nativeEvent.actionKey === 'shuffle') handlePlay(true);
-                    if (nativeEvent.actionKey === 'go-to') handleNavigation();
-                }}
+            <TouchableOpacity
+                onPress={handleNavigation}
+                style={
+                    isGridView
+                        ? [styles.gridItemContainer, { width: gridWidth }]
+                        : styles.itemContainer
+                }
+                activeOpacity={0.9}
             >
-                {content}
-            </ContextMenuView>
-        );
-    }
+                {image}
 
-    return content;
+                <View style={isGridView ? styles.gridTextContainer : styles.textContainer}>
+                    <Text
+                        style={[styles.title, isDarkMode && styles.titleDark]}
+                        numberOfLines={1}
+                    >
+                        {name}
+                    </Text>
+                    <Text
+                        style={[styles.subtext, isDarkMode && styles.subtextDark]}
+                        numberOfLines={1}
+                    >
+                        {subtext}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        </MenuView>
+    );
 };
 
 export default ArtistItem;
