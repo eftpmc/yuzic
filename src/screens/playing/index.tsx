@@ -148,6 +148,10 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         setShowQueue((prev) => !prev);
     };
 
+    const closeButtonOffset =
+        Platform.OS === 'android' ? 60 : 32;
+
+
     useEffect(() => {
         if (currentSong?.cover) {
             lastCoverRef.current = currentSong.cover;
@@ -214,7 +218,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         onPress={onClose}
                         style={[
                             styles.closeButton,
-                            { top: insets.top + 60 }
+                            { top: insets.top + closeButtonOffset }
                         ]}
                     >
                         <Ionicons name="chevron-down" size={28} color="#fff" />
