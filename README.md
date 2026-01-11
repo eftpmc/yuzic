@@ -5,6 +5,7 @@
 ## Contents
 
 - [Info](#info)
+- [Download](#download)
 - [Features](#features)
 - [Future](#future)
 - [Screenshots](#screenshots)
