@@ -150,7 +150,7 @@ const PlayingBar: React.FC = () => {
 
     return (
         <>
-            <TouchableOpacity onPress={handleExpand} activeOpacity={inputMode ? 1 : 0.9}>
+            <TouchableOpacity onPress={handleExpand} activeOpacity={inputMode ? 1 : 0.9} disabled={inputMode}>
                 <View style={styles.wrapper}>
                     <BlurView intensity={100} tint={isDarkMode ? "dark" : "light"} style={styles.container}>
                         <View style={styles.topRowWrapper}>
@@ -193,6 +193,9 @@ const PlayingBar: React.FC = () => {
                                 <View style={styles.inputWrapper}>
                                     <TextInput
                                         ref={inputRef}
+                                        editable={inputMode}
+                                        focusable={inputMode}
+                                        pointerEvents={inputMode ? 'auto' : 'none'}
                                         value={inputValue}
                                         onChangeText={setInputValue}
                                         placeholder="Play alternative and chill rap..."

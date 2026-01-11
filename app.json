@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "yuzic",
+    "name": "Yuzic",
     "slug": "yuzic",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
@@ -20,16 +20,16 @@
       }
     },
     "android": {
-      "versionCode": 21,
+      "versionCode": 22,
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#000000"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "usesCleartextTraffic": true,
       "package": "com.arinora.rawarr"
     },
     "web": {
@@ -45,6 +45,18 @@
           "backgroundColor": "#000",
           "image": "./assets/images/logo.png",
           "imageWidth": 100
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.0.21",
+            "javaVersion": "17",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "usesCleartextTraffic": true
+          }
         }
       ],
       [
