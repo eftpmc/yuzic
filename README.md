@@ -71,8 +71,6 @@ Screenshots taken on iPhone 13
   <img src="screenshots/home-list.png" alt="Jellify Home" width="275" height="600">
 </p>
 
----
-
 ### Playing
 
 <p align="center">
@@ -80,15 +78,11 @@ Screenshots taken on iPhone 13
   <img src="screenshots/queue.png" alt="Jellify Home" width="275" height="600">
 </p>
 
----
-
 ### Album
 
 <p align="center">
   <img src="screenshots/album.png" alt="Jellify Home" width="275" height="600">
 </p>
-
----
 
 ### Artist
 
@@ -96,15 +90,11 @@ Screenshots taken on iPhone 13
   <img src="screenshots/artist.png" alt="Jellify Home" width="275" height="600">
 </p>
 
----
-
 ### Playlist
 
 <p align="center">
   <img src="screenshots/playlist.png" alt="Jellify Home" width="275" height="600">
 </p>
-
----
 
 ### Onboarding
 
@@ -115,16 +105,12 @@ Screenshots taken on iPhone 13
   <img src="screenshots/credentials.png" alt="Jellify Home" width="275" height="600">
 </p>
 
----
-
 ### Search
 
 <p align="center">
   <img src="screenshots/search.png" alt="Jellify Home" width="275" height="600">
   <img src="screenshots/search-results.png" alt="Jellify Home" width="275" height="600">
 </p>
-
----
 
 ### Settings
 
@@ -135,8 +121,6 @@ Screenshots taken on iPhone 13
   <img src="screenshots/settings-player.png" alt="Jellify Home" width="275" height="600">
   <img src="screenshots/settings-appearance.png" alt="Jellify Home" width="275" height="600">
 </p>
-
----
 
 ### Plugins
 
