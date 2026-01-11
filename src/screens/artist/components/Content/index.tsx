@@ -2,11 +2,13 @@ import React, { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 import { Artist, Album, AlbumBase } from '@/types';
 
 import AlbumRow from '@/components/rows/AlbumRow';
 import Header from '../Header';
+import { selectOwnedAlbumsEnabled } from '@/utils/redux/selectors/settingsSelectors';
 
 type Props = {
   artist: Artist;
@@ -21,24 +23,32 @@ const ESTIMATED_ROW_HEIGHT = 80;
 const ArtistContent: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
+  const hideUnowned = useSelector(selectOwnedAlbumsEnabled);
 
   const mergedAlbums: CombinedAlbum[] = useMemo(() => {
+    const owned = artist.ownedAlbums.map(a => ({
+      ...a,
+      isExternal: false,
+    }));
+
+    if (hideUnowned) {
+      return owned.sort(
+        (a, b) => (b.userPlayCount ?? 0) - (a.userPlayCount ?? 0)
+      );
+    }
+
     const ownedMap = new Map(
-      artist.ownedAlbums.map(a => [
-        a.title.toLowerCase(),
-        { ...a, isExternal: false },
-      ])
+      owned.map(a => [a.title.toLowerCase(), a])
     );
 
-    const external = (artist.externalAlbums ?? []).filter(
-      a => !ownedMap.has(a.title.toLowerCase())
-    );
+    const external = (artist.externalAlbums ?? [])
+      .filter(a => !ownedMap.has(a.title.toLowerCase()))
+      .map(a => ({ ...a, isExternal: true }));
 
-    return [
-      ...Array.from(ownedMap.values()),
-      ...external.map(a => ({ ...a, isExternal: true })),
-    ].sort((a, b) => (b.userPlayCount ?? 0) - (a.userPlayCount ?? 0));
-  }, [artist.ownedAlbums, artist.externalAlbums]);
+    return [...owned, ...external].sort(
+      (a, b) => (b.userPlayCount ?? 0) - (a.userPlayCount ?? 0)
+    );
+  }, [artist.ownedAlbums, artist.externalAlbums, hideUnowned]);
 
   const navigateToAlbum = (album: CombinedAlbum) => {
     if (album.isExternal) return;

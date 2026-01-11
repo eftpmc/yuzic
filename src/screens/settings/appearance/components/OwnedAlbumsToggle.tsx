@@ -7,29 +7,29 @@ import {
   Appearance,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectAiButtonEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { setAiButtonEnabled } from '@/utils/redux/slices/settingsSlice';
+import { selectOwnedAlbumsEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { setOwnedAlbumsEnabled } from '@/utils/redux/slices/settingsSlice';
 
-export const AiButtonToggle: React.FC = () => {
+export const OwnedAlbumsToggle: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
-  const aiButtonEnabled = useSelector(selectAiButtonEnabled);
+  const ownedAlbumsEnabled = useSelector(selectOwnedAlbumsEnabled);
   const isDarkMode = Appearance.getColorScheme() === 'dark';
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
       <View style={styles.row}>
         <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-          Text-to-Music button
+          Hide unowned albums
         </Text>
 
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => dispatch(setAiButtonEnabled(!aiButtonEnabled))}
+          onPress={() => dispatch(setOwnedAlbumsEnabled(!ownedAlbumsEnabled))}
           style={[
             styles.switch,
             {
-              backgroundColor: aiButtonEnabled
+              backgroundColor: ownedAlbumsEnabled
                 ? themeColor
                 : isDarkMode
                   ? '#333'
@@ -43,7 +43,7 @@ export const AiButtonToggle: React.FC = () => {
               {
                 backgroundColor: '#fff',
                 transform: [
-                  { translateX: aiButtonEnabled ? 18 : 2 },
+                  { translateX: ownedAlbumsEnabled ? 18 : 2 },
                 ],
               },
             ]}
@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderRadius: 10
+    borderRadius: 10,
+    marginBottom: 24,
   },
   sectionDark: {
     backgroundColor: '#111',

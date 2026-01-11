@@ -38,7 +38,7 @@ const AlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
         >
           <MediaImage
             cover={album.cover}
-            size="thumb"
+            size="grid"
             style={styles.cover}
           />
 
