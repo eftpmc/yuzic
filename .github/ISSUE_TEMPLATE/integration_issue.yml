@@ -1,0 +1,56 @@
+name: Integration issue
+description: Problems with Jellyfin, Navidrome, or Lidarr integration
+labels: ["integration"]
+body:
+  - type: dropdown
+    id: service
+    attributes:
+      label: Service
+      options:
+        - Jellyfin
+        - Navidrome
+        - Lidarr
+    validations:
+      required: true
+
+  - type: input
+    id: service_version
+    attributes:
+      label: Service version
+      placeholder: e.g. Jellyfin 10.10.7
+    validations:
+      required: true
+
+  - type: input
+    id: auth_method
+    attributes:
+      label: Authentication method
+      placeholder: API key / username+password / token
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What does not work?
+    validations:
+      required: true
+
+  - type: textarea
+    id: server_test
+    attributes:
+      label: Server test results
+      description: |
+        Does it work:
+        - via browser?
+        - via curl?
+        - via other clients?
+    validations:
+      required: true
+
+  - type: textarea
+    id: network
+    attributes:
+      label: Network setup
+      placeholder: Reverse proxy? HTTPS? VPN? Self-signed certs?
+
