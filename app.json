@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "versionCode": 22,
+      "versionCode": 23,
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
