@@ -30,7 +30,7 @@ export default function Settings() {
         return null;
     }
 
-    const { type: serverType, username, serverUrl } = activeServer;
+    const { type, username, serverUrl } = activeServer;
     const avatarLetter = username?.[0]?.toUpperCase() || 'U';
 
     return (
@@ -72,7 +72,7 @@ export default function Settings() {
                                     isDarkMode && styles.profileSubtextDark,
                                 ]}
                             >
-                                Connected to {serverType} at{' '}
+                                Connected to {type} at{' '}
                                 {serverUrl?.replace(/^https?:\/\//, '') || 'no server'}
                             </Text>
                         </View>

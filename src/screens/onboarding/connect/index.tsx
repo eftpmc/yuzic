@@ -23,8 +23,7 @@ import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { track } from '@/utils/analytics/amplitude';
 import { useDispatch } from 'react-redux';
 import { connect } from '@/api/navidrome/auth/connect';
-
-type ServerType = 'navidrome' | 'jellyfin';
+import { ServerType } from '@/types';
 
 export default function Connect() {
     const [localServerUrl, setLocalServerUrl] = useState('');

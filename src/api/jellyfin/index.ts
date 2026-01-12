@@ -11,7 +11,7 @@ import {
   AuthApi,
 } from "../types";
 
-import { JellyfinServer, Playlist } from "@/types";
+import { Playlist, JellyfinServer } from "@/types";
 
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
