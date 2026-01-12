@@ -29,7 +29,7 @@ async function getAllArtists(config: LidarrConfig) {
 
 async function getAlbumsByArtist(config: LidarrConfig, artistId: number) {
   const { request } = createLidarrClient(config);
-  return request<LidarrAlbum[]>(`/album&artistId=${artistId}`);
+  return request<LidarrAlbum[]>(`/album?artistId=${artistId}`);
 }
 
 async function triggerAlbumSearch(config: LidarrConfig, albumId: number) {
@@ -62,13 +62,17 @@ export async function downloadAlbum(
       a => normalize(a.artistName) === normalizedArtist
     );
 
-    console.log(matchedArtist)
+    console.log("beep")
 
     if (matchedArtist) {
+      console.log("hey")
       const albums = await getAlbumsByArtist(config, matchedArtist.id);
+      console.log(albums)
       const album = albums.find(
         a => normalize(a.title) === normalizedAlbum
       );
+
+      console.log(album)
 
       if (album) {
         await triggerAlbumSearch(config, album.id);

@@ -10,6 +10,8 @@ import Header from '../components/Header';
 import { ThemeColor } from './components/ThemeColor';
 import { Columns } from './components/Columns';
 import { AiButtonToggle } from './components/AiButtonToggle';
+import { OwnedAlbumsToggle } from './components/OwnedAlbumsToggle';
+import { AppearanceToggles } from './components/Toggles';
 
 const AppearanceSettings: React.FC = () => {
   const isDarkMode = Appearance.getColorScheme() === 'dark';
@@ -27,7 +29,7 @@ const AppearanceSettings: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemeColor />
         <Columns />
-        <AiButtonToggle />
+        <AppearanceToggles/>
       </ScrollView>
     </SafeAreaView>
   );

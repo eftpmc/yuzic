@@ -4,9 +4,9 @@ import {
   Text,
   StyleSheet,
   Appearance,
+  TouchableOpacity
 } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useDownload } from '@/contexts/DownloadContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
@@ -155,42 +155,42 @@ const AlbumItem: React.FC<ItemProps> = ({
 
   return (
     <MenuView
-      title={title || 'Options'}
-      actions={menuActions}
-      onPressAction={onMenuAction}
-      shouldOpenOnLongPress
-    >
-      <TouchableOpacity
-        onPress={handleNavigation}
-        activeOpacity={0.9}
-        style={
-          isGridView
-            ? [styles.gridItemContainer, { width: gridWidth }]
-            : styles.itemContainer
-        }
-      >
-        {image}
+  title={title || 'Options'}
+  actions={menuActions}
+  onPressAction={onMenuAction}
+  shouldOpenOnLongPress={false}
+>
+  <TouchableOpacity
+    onPress={handleNavigation}
+    onLongPress={() => {}}
+    delayLongPress={300}
+    activeOpacity={0.9}
+    style={
+      isGridView
+        ? [styles.gridItemContainer, { width: gridWidth }]
+        : styles.itemContainer
+    }
+  >
+    {image}
 
-        <View
-          style={
-            isGridView ? styles.gridTextContainer : styles.textContainer
-          }
-        >
-          <Text
-            style={[styles.title, isDarkMode && styles.titleDark]}
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
-          <Text
-            style={[styles.subtext, isDarkMode && styles.subtextDark]}
-            numberOfLines={1}
-          >
-            {subtext}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    </MenuView>
+    <View
+      style={isGridView ? styles.gridTextContainer : styles.textContainer}
+    >
+      <Text
+        style={[styles.title, isDarkMode && styles.titleDark]}
+        numberOfLines={1}
+      >
+        {title}
+      </Text>
+      <Text
+        style={[styles.subtext, isDarkMode && styles.subtextDark]}
+        numberOfLines={1}
+      >
+        {subtext}
+      </Text>
+    </View>
+  </TouchableOpacity>
+</MenuView>
   );
 };
 

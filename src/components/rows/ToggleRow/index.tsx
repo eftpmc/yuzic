@@ -6,34 +6,42 @@ import {
   StyleSheet,
   Appearance,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectAiButtonEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { setAiButtonEnabled } from '@/utils/redux/slices/settingsSlice';
 
-export const AiButtonToggle: React.FC = () => {
-  const dispatch = useDispatch();
-  const themeColor = useSelector(selectThemeColor);
-  const aiButtonEnabled = useSelector(selectAiButtonEnabled);
+type ToggleRowProps = {
+  label: string;
+  value: boolean;
+  onToggle: () => void;
+  activeColor: string;
+  style?: any;
+};
+
+export const ToggleRow: React.FC<ToggleRowProps> = ({
+  label,
+  value,
+  onToggle,
+  activeColor,
+  style,
+}) => {
   const isDarkMode = Appearance.getColorScheme() === 'dark';
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+    <View style={[styles.section, isDarkMode && styles.sectionDark, style]}>
       <View style={styles.row}>
         <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-          Text-to-Music button
+          {label}
         </Text>
 
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => dispatch(setAiButtonEnabled(!aiButtonEnabled))}
+          onPress={onToggle}
           style={[
             styles.switch,
             {
-              backgroundColor: aiButtonEnabled
-                ? themeColor
+              backgroundColor: value
+                ? activeColor
                 : isDarkMode
-                  ? '#333'
-                  : '#ddd',
+                ? '#333'
+                : '#ddd',
             },
           ]}
         >
@@ -41,10 +49,7 @@ export const AiButtonToggle: React.FC = () => {
             style={[
               styles.thumb,
               {
-                backgroundColor: '#fff',
-                transform: [
-                  { translateX: aiButtonEnabled ? 18 : 2 },
-                ],
+                transform: [{ translateX: value ? 18 : 2 }],
               },
             ]}
           />
@@ -59,7 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderRadius: 10
+    borderRadius: 10,
   },
   sectionDark: {
     backgroundColor: '#111',
@@ -89,6 +94,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 6,
     marginLeft: 2,
+    backgroundColor: '#fff',
     elevation: 2,
   },
 });

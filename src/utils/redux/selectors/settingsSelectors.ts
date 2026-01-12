@@ -6,10 +6,8 @@ import {
   PromptHistoryEntry,
 } from '@/utils/redux/slices/settingsSlice';
 
-/* Base selector */
 export const selectSettings = (state: RootState) => state.settings;
 
-/* UI */
 export const selectThemeColor = (state: RootState): string =>
   state.settings.themeColor;
 
@@ -19,19 +17,26 @@ export const selectGridColumns = (state: RootState): number =>
 export const selectIsGridView = (state: RootState): boolean =>
   state.settings.isGridView;
 
-/* Library */
+export const selectAiButtonEnabled = (
+  state: RootState
+): boolean =>
+  state.settings.aiButtonEnabled;
+
+export const selectOwnedAlbumsEnabled = (
+state: RootState
+): boolean =>
+  state.settings.ownedAlbumsEnabled
+
 export const selectLibrarySortOrder = (
   state: RootState
 ): LibrarySortOrder =>
   state.settings.librarySortOrder;
 
-/* Onboarding */
 export const selectHasSeenGetStarted = (
   state: RootState
 ): boolean =>
   state.settings.hasSeenGetStarted;
 
-/* Audio */
 export const selectAudioQuality = (
   state: RootState
 ): AudioQuality =>
@@ -47,11 +52,6 @@ export const selectActiveAiApiKey = (state: RootState): string => {
   const provider = state.settings.aiProvider;
   return state.settings.aiApiKeys[provider];
 };
-
-export const selectAiButtonEnabled = (
-  state: RootState
-): boolean =>
-  state.settings.aiButtonEnabled;
 
 export const selectPromptHistory = (
   state: RootState

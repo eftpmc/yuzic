@@ -4,9 +4,9 @@ import {
     Text,
     StyleSheet,
     Appearance,
+    TouchableOpacity
 } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';

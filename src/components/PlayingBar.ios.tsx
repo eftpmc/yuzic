@@ -4,7 +4,6 @@ import {
     View,
     Text,
     StyleSheet,
-    Dimensions,
     TouchableOpacity,
     useColorScheme,
     useWindowDimensions,
@@ -22,7 +21,11 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useAI } from '@/contexts/AIContext';
 import { Loader2 } from 'lucide-react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
-import { selectActiveAiApiKey, selectAiButtonEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import {
+    selectActiveAiApiKey,
+    selectAiButtonEnabled,
+    selectThemeColor,
+} from '@/utils/redux/selectors/settingsSelectors';
 import { useSelector } from 'react-redux';
 import { MediaImage } from './MediaImage';
 
@@ -86,7 +89,7 @@ const PlayingBar: React.FC = () => {
         } else {
             if (spinLoopRef.current) {
                 spinLoopRef.current.stop();
-                spinAnim.setValue(0); // Reset for next time
+                spinAnim.setValue(0);
                 spinLoopRef.current = null;
             }
         }
@@ -99,7 +102,7 @@ const PlayingBar: React.FC = () => {
 
     const handleToggleInput = () => {
         if (!aiApiKey) {
-            toast.error("Please enter your AI API key in Settings > Plugins.");
+            toast.error('Please enter your AI API key in Settings > Plugins.');
             return;
         }
 
@@ -121,9 +124,7 @@ const PlayingBar: React.FC = () => {
 
     const handleSubmitInput = async () => {
         if (!inputValue.trim()) return;
-
         await generateQueue(inputValue);
-
         inputRef.current?.blur();
         setInputValue('');
         handleCloseInput();
@@ -152,19 +153,30 @@ const PlayingBar: React.FC = () => {
         <>
             <TouchableOpacity onPress={handleExpand} activeOpacity={inputMode ? 1 : 0.9} disabled={inputMode}>
                 <View style={styles.wrapper}>
-                    <BlurView intensity={100} tint={isDarkMode ? "dark" : "light"} style={styles.container}>
+                    <BlurView intensity={100} tint={isDarkMode ? 'dark' : 'light'} style={styles.container}>
                         <View style={styles.topRowWrapper}>
-                            <Animated.View style={[styles.topRow, { opacity: fadeAnim, zIndex: 0 }]}>
+                            <Animated.View
+                                pointerEvents={inputMode ? 'none' : 'auto'}
+                                style={[styles.topRow, { opacity: fadeAnim, zIndex: 0 }]}
+                            >
                                 {currentSong?.cover ? (
-                                    <MediaImage cover={currentSong.cover} size='thumb' style={styles.coverArt} />
+                                    <MediaImage cover={currentSong.cover} size="thumb" style={styles.coverArt} />
                                 ) : (
-                                    <Ionicons name="musical-notes-outline" size={40} style={styles.coverArt} color={isDarkMode ? '#fff' : '#333'} />
+                                    <Ionicons
+                                        name="musical-notes-outline"
+                                        size={40}
+                                        style={styles.coverArt}
+                                        color={isDarkMode ? '#fff' : '#333'}
+                                    />
                                 )}
                                 <View style={styles.details}>
                                     <Text numberOfLines={1} style={[styles.title, isDarkMode ? styles.textDark : styles.textLight]}>
                                         {currentSong?.title || 'No song playing'}
                                     </Text>
-                                    <Text numberOfLines={1} style={[styles.artist, isDarkMode ? styles.textDarkSecondary : styles.textLightSecondary]}>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={[styles.artist, isDarkMode ? styles.textDarkSecondary : styles.textLightSecondary]}
+                                    >
                                         {currentSong?.artist || 'Select a track to begin'}
                                     </Text>
                                 </View>
@@ -181,21 +193,25 @@ const PlayingBar: React.FC = () => {
                                         />
                                     </TouchableOpacity>
                                 )}
-
                                 {aiButtonEnabled && (
-                                    <TouchableOpacity style={[styles.fabButton, { backgroundColor: themeColor }]} onPress={handleToggleInput}>
+                                    <TouchableOpacity
+                                        style={[styles.fabButton, { backgroundColor: themeColor }]}
+                                        onPress={handleToggleInput}
+                                    >
                                         <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
                                     </TouchableOpacity>
                                 )}
                             </Animated.View>
 
-                            <Animated.View style={[styles.topRow, styles.inputOverlay, { opacity: inputFadeAnim, zIndex: 1 }]}>
+                            <Animated.View
+                                pointerEvents={inputMode ? 'auto' : 'none'}
+                                style={[styles.topRow, styles.inputOverlay, { opacity: inputFadeAnim, zIndex: 1 }]}
+                            >
                                 <View style={styles.inputWrapper}>
                                     <TextInput
                                         ref={inputRef}
                                         editable={inputMode}
                                         focusable={inputMode}
-                                        pointerEvents={inputMode ? 'auto' : 'none'}
                                         value={inputValue}
                                         onChangeText={setInputValue}
                                         placeholder="Play alternative and chill rap..."
@@ -203,7 +219,7 @@ const PlayingBar: React.FC = () => {
                                         style={[
                                             styles.input,
                                             isDarkMode ? styles.textDark : styles.textLight,
-                                            { color: isDarkMode ? '#fff' : '#000' }
+                                            { color: isDarkMode ? '#fff' : '#000' },
                                         ]}
                                         returnKeyType="done"
                                     />
@@ -218,7 +234,11 @@ const PlayingBar: React.FC = () => {
                                             <Loader2 size={18} color="#fff" />
                                         </Animated.View>
                                     ) : (
-                                        <Ionicons name={inputValue.trim() ? 'checkmark' : 'close'} size={20} color="#fff" />
+                                        <Ionicons
+                                            name={inputValue.trim() ? 'checkmark' : 'close'}
+                                            size={20}
+                                            color="#fff"
+                                        />
                                     )}
                                 </TouchableOpacity>
                             </Animated.View>
@@ -233,12 +253,7 @@ const PlayingBar: React.FC = () => {
                 </View>
             </TouchableOpacity>
 
-            <BottomSheet
-                ref={bottomSheetRef}
-                height={screenHeight}
-                sheetBackgroundColor="transparent"
-                draggable
-            >
+            <BottomSheet ref={bottomSheetRef} height={screenHeight} sheetBackgroundColor="transparent" draggable>
                 <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
             </BottomSheet>
         </>
@@ -275,13 +290,12 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         minHeight: 50,
-        paddingRight: 4, // consistent with marginRight on play/pause
+        paddingRight: 4,
     },
     inputOverlay: {
         alignItems: 'center',
-        paddingRight: 4, // ensures FAB aligns the same
+        paddingRight: 4,
     },
-
     coverArt: {
         width: 45,
         height: 45,
@@ -321,7 +335,6 @@ const styles = StyleSheet.create({
     progressBar: {
         height: '100%',
     },
-    // styles
     playPauseButton: {
         padding: 8,
         justifyContent: 'center',

@@ -16,6 +16,9 @@ export interface SettingsState {
   themeColor: string;
   gridColumns: number;
   isGridView: boolean;
+  ownedAlbumsEnabled: boolean;
+  aiButtonEnabled: boolean;
+
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
@@ -33,7 +36,6 @@ export interface SettingsState {
     anthropic: string;
     gemini: string;
   };
-  aiButtonEnabled: boolean;
   promptHistory: PromptHistoryEntry[];
 
   /* Analytics */
@@ -44,6 +46,8 @@ const initialState: SettingsState = {
   themeColor: '#ff7f7f',
   gridColumns: 3,
   isGridView: true,
+  ownedAlbumsEnabled: false,
+  aiButtonEnabled: true,
 
   librarySortOrder: 'title',
   hasSeenGetStarted: false,
@@ -56,7 +60,6 @@ const initialState: SettingsState = {
     anthropic: '',
     gemini: '',
   },
-  aiButtonEnabled: true,
   promptHistory: [],
 
   analyticsEnabled: false,
@@ -75,6 +78,12 @@ const settingsSlice = createSlice({
     },
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
+    },
+    setOwnedAlbumsEnabled(state, action: PayloadAction<boolean>) {
+      state.ownedAlbumsEnabled = action.payload;
+    },
+    setAiButtonEnabled(state, action: PayloadAction<boolean>) {
+      state.aiButtonEnabled = action.payload;
     },
 
     /* Library */
@@ -103,9 +112,6 @@ const settingsSlice = createSlice({
     ) {
       state.aiApiKeys[action.payload.provider] = action.payload.key;
     },
-    setAiButtonEnabled(state, action: PayloadAction<boolean>) {
-      state.aiButtonEnabled = action.payload;
-    },
     addPromptToHistory(state, action: PayloadAction<PromptHistoryEntry>) {
       const filtered = state.promptHistory.filter(
         p => p.prompt !== action.payload.prompt
@@ -129,12 +135,13 @@ export const {
   setThemeColor,
   setGridColumns,
   setIsGridView,
+  setOwnedAlbumsEnabled,
+  setAiButtonEnabled,
   setLibrarySortOrder,
   setHasSeenGetStarted,
   setAudioQuality,
   setAiProvider,
   setAiApiKey,
-  setAiButtonEnabled,
   addPromptToHistory,
   setAnalyticsEnabled,
   resetSettings,
