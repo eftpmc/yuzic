@@ -189,12 +189,12 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: Platform.OS === 'ios' ? 60 : 32,
+        paddingTop: 60,
         paddingHorizontal: 16,
     },
     scrollWrapper: {
         flex: 1,
-        paddingBottom: 100,
+        paddingBottom: 120,
     },
     header: {
         flexDirection: 'row',

@@ -32,6 +32,11 @@ import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
+import { useApi } from '@/api';
+import { LyricsResult } from '@/api/types';
+import { toast } from '@backpackapp-io/react-native-toast';
+import Lyrics from './components/Lyrics';
+import { useTheme } from '@/hooks/useTheme';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -43,12 +48,58 @@ const formatTime = (seconds: number): string => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
+type PlayingViewMode = "player" | "queue" | "lyrics";
+
+const usePlayingTransitions = (mode: PlayingViewMode) => {
+    const playerOpacity = useSharedValue(1);
+    const queueOpacity = useSharedValue(0);
+    const lyricsOpacity = useSharedValue(0);
+
+    useEffect(() => {
+        playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: 300 });
+        queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: 300 });
+        lyricsOpacity.value = withTiming(mode === "lyrics" ? 1 : 0, { duration: 300 });
+    }, [mode]);
+
+    const playerStyle = useAnimatedStyle(() => ({
+        opacity: playerOpacity.value,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    }));
+
+    const queueStyle = useAnimatedStyle(() => ({
+        opacity: queueOpacity.value,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    }));
+
+    const lyricsStyle = useAnimatedStyle(() => ({
+        opacity: lyricsOpacity.value,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    }));
+
+    return {
+        playerStyle,
+        queueStyle,
+        lyricsStyle,
+    };
+};
+
 const PlayingScreen: React.FC<PlayingScreenProps> = ({
     onClose,
 }) => {
-    const colorScheme = useColorScheme();
     const navigation = useNavigation();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
     const { position } = useProgress(250);
     const {
         currentSong,
@@ -63,6 +114,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         toggleRepeat,
     } = usePlaying();
     const duration = currentSong ? Number(currentSong.duration) : 1;
+    const api = useApi();
     const { artists } = useLibrary();
     const insets = useSafeAreaInsets();
     const themeColor = useSelector(selectThemeColor);
@@ -70,7 +122,13 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const [nextGradient, setNextGradient] = useState(['#000', '#000']);
     const [isSeeking, setIsSeeking] = useState(false);
     const [seekPosition, setSeekPosition] = useState(0);
-    const [showQueue, setShowQueue] = useState(false);
+    const [lyrics, setLyrics] = useState<LyricsResult | null>(null);
+    const [lyricsAvailable, setLyricsAvailable] = useState(false);
+
+    const [mode, setMode] = useState<PlayingViewMode>("player");
+    const { playerStyle, queueStyle, lyricsStyle } =
+        usePlayingTransitions(mode);
+
 
     const lastCoverRef = useRef<CoverSource | null>(null);
 
@@ -118,39 +176,38 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         }
     };
 
-    const queueOpacity = useSharedValue(showQueue ? 1 : 0);
-    const playerOpacity = useSharedValue(showQueue ? 0 : 1);
 
     useEffect(() => {
-        queueOpacity.value = withTiming(showQueue ? 1 : 0, { duration: 300 });
-        playerOpacity.value = withTiming(showQueue ? 0 : 1, { duration: 300 });
-    }, [showQueue]);
+        if (!currentSong?.id) return;
 
-    const animatedQueueStyle = useAnimatedStyle(() => ({
-        opacity: queueOpacity.value,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    }));
+        let cancelled = false;
 
-    const animatedPlayerStyle = useAnimatedStyle(() => ({
-        opacity: playerOpacity.value,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    }));
+        setLyrics(null);
+        setLyricsAvailable(false);
+        setMode("player");
 
-    const toggleQueue = () => {
-        setShowQueue((prev) => !prev);
-    };
+        (async () => {
+            try {
+                const res = await api.lyrics.getBySongId(currentSong.id);
+
+                if (cancelled) return;
+
+                if (res?.synced && res.lines.length > 0) {
+                    setLyrics(res);
+                    setLyricsAvailable(true);
+                }
+            } catch (err) {
+                console.error("❌ Lyrics fetch failed", err);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [currentSong?.id]);
 
     const closeButtonOffset =
         Platform.OS === 'android' ? 60 : 32;
-
 
     useEffect(() => {
         if (currentSong?.cover) {
@@ -205,14 +262,31 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     translucent
                 />
                 <Animated.View
-                    style={[animatedQueueStyle, { alignItems: 'center', justifyContent: 'flex-start' }]}
-                    pointerEvents={showQueue ? 'auto' : 'none'}
+                    style={[queueStyle, { alignItems: 'center', justifyContent: 'flex-start' }]}
+                    pointerEvents={mode === "queue" ? 'auto' : 'none'}
                 >
-                    <Queue onBack={() => setShowQueue(false)} width={layoutWidth} />
+                    <Queue
+                        onBack={() => setMode("player")}
+                        width={layoutWidth}
+                    />
                 </Animated.View>
+
                 <Animated.View
-                    style={[animatedPlayerStyle, { alignItems: 'center', justifyContent: 'center' }]}
-                    pointerEvents={showQueue ? 'none' : 'auto'}
+                    style={[lyricsStyle, { alignItems: "center", justifyContent: "flex-start" }]}
+                    pointerEvents={mode === "lyrics" ? "auto" : "none"}
+                >
+                    {lyrics && (
+                        <Lyrics
+                            lyrics={lyrics}
+                            width={layoutWidth}
+                            onBack={() => setMode("player")}
+                        />
+                    )}
+                </Animated.View>
+
+                <Animated.View
+                    style={[playerStyle, { alignItems: 'center', justifyContent: 'center' }]}
+                    pointerEvents={mode === "player" ? 'auto' : 'none'}
                 >
                     <TouchableOpacity
                         onPress={onClose}
@@ -331,9 +405,32 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     borderRadius: 20,
                     alignSelf: 'center',
                 }]}>
-                    <TouchableOpacity onPress={() => console.log('Lyrics')} style={styles.utilityButton}>
-                        <Ionicons name="chatbox-ellipses-outline" size={24} color="#ccc" />
+                    <TouchableOpacity
+                        onPress={() => {
+                            if (!lyricsAvailable) {
+                                toast("Lyrics aren’t available for this song");
+                                return;
+                            }
+                            setMode(mode === "lyrics" ? "player" : "lyrics");
+                        }}
+                        style={[
+                            styles.utilityButton,
+                            mode === "lyrics" && styles.activeUtilityButton
+                        ]}
+                    >
+                        <Ionicons
+                            name="chatbox-ellipses-outline"
+                            size={24}
+                            color={
+                                !lyricsAvailable
+                                    ? "#666"
+                                    : mode === "lyrics"
+                                        ? "#fff"
+                                        : "#ccc"
+                            }
+                        />
                     </TouchableOpacity>
+
 
                     {Platform.OS === "ios" ? (
                         <AirplayButton
@@ -350,16 +447,18 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
 
                     <TouchableOpacity
-                        onPress={toggleQueue}
+                        onPress={() => {
+                            setMode(mode === "queue" ? "player" : "queue");
+                        }}
                         style={[
                             styles.utilityButton,
-                            showQueue && styles.activeUtilityButton
+                            mode === "queue" && styles.activeUtilityButton
                         ]}
                     >
                         <MaterialIcons
                             name="queue-music"
                             size={24}
-                            color={showQueue ? '#fff' : '#ccc'}
+                            color={mode === "queue" ? '#fff' : '#ccc'}
                         />
                     </TouchableOpacity>
                 </View>
@@ -431,7 +530,7 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     artist: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: '400',
     },
     slider: {

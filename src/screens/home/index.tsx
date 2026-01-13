@@ -22,6 +22,7 @@ import HomeHeader from './components/Header';
 import LibraryFilterBar from './components/Filters';
 import LibraryListHeader from './components/Content/Header';
 import LibraryContent from './components/Content';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
@@ -29,8 +30,7 @@ export default function HomeScreen() {
     const activeServer = useSelector(selectActiveServer);
     const isAuthenticated = activeServer?.isAuthenticated;
     const username = activeServer?.username;
-    const colorScheme = Appearance.getColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
     const { albums, artists, playlists, fetchLibrary, clearLibrary, isLoading } = useLibrary();
     const gridColumns = useSelector(selectGridColumns);
 

@@ -10,13 +10,14 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/api';
-import { Song, CoverSource } from '@/types';
+import { Song, CoverSource, Artist } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
 import ContextMenuModal, {
   ContextMenuAction,
 } from '@/components/ContextMenuModal';
-import { Ionicons } from '@expo/vector-icons';
+import InfoModal, { InfoRow } from '@/components/InfoModal';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ItemProps {
   id: string;
@@ -35,26 +36,31 @@ const ArtistItem: React.FC<ItemProps> = ({
   isGridView,
   gridWidth,
 }) => {
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const api = useApi();
   const { playSongInCollection } = usePlaying();
 
   const [menuVisible, setMenuVisible] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
+  const [artistInfo, setArtistInfo] = useState<Artist | null>(null);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('artistView', { id });
   }, [navigation, id]);
 
+  const fetchArtist = useCallback(async () => {
+    return queryClient.fetchQuery({
+      queryKey: [QueryKeys.Artist, id],
+      queryFn: () => api.artists.get(id),
+      staleTime: 10 * 60 * 1000,
+    });
+  }, [api, queryClient, id]);
+
   const handlePlay = useCallback(
     async (shuffle: boolean) => {
-      const artist = await queryClient.fetchQuery({
-        queryKey: [QueryKeys.Artist, id],
-        queryFn: () => api.artists.get(id),
-        staleTime: 10 * 60 * 1000,
-      });
-
+      const artist = await fetchArtist();
       if (!artist) return;
 
       const albumIds = artist.ownedAlbums.map(a => a.id);
@@ -87,34 +93,63 @@ const ArtistItem: React.FC<ItemProps> = ({
         shuffle
       );
     },
-    [id, api, queryClient, playSongInCollection]
+    [fetchArtist, queryClient, api, playSongInCollection]
   );
 
-  const menuActions: ContextMenuAction[] = useMemo(
-    () => [
+  const handleShowInfo = useCallback(async () => {
+    const artist = await fetchArtist();
+    if (!artist) return;
+    setArtistInfo(artist);
+    setInfoVisible(true);
+  }, [fetchArtist]);
+
+  const infoRows: InfoRow[] = useMemo(() => {
+    if (!artistInfo) return [];
+    return [
       {
-        id: 'play',
-        label: 'Play',
-        icon: 'play',
-        primary: true,
-        onPress: () => handlePlay(false),
+        id: 'albums',
+        label: 'Albums',
+        value: artistInfo.ownedAlbums.length,
       },
       {
-        id: 'shuffle',
-        label: 'Shuffle',
-        icon: 'shuffle',
-        onPress: () => handlePlay(true),
+        id: 'externalAlbums',
+        label: 'External Albums',
+        value: artistInfo.externalAlbums.length,
       },
-      {
-        id: 'navigate',
-        label: 'Go to Artist',
-        icon: 'person',
-        dividerBefore: true,
-        onPress: handleNavigation,
+    ];
+  }, [artistInfo]);
+
+  const menuActions: ContextMenuAction[] = [
+    {
+      id: 'play',
+      label: 'Play',
+      icon: 'play',
+      primary: true,
+      onPress: () => handlePlay(false),
+    },
+    {
+      id: 'shuffle',
+      label: 'Shuffle',
+      icon: 'shuffle',
+      onPress: () => handlePlay(true),
+    },
+    {
+      id: 'info',
+      label: 'Artist Info',
+      icon: 'information-circle',
+      onPress: () => {
+        setMenuVisible(false);
+        handleShowInfo();
       },
-    ],
-    [handlePlay, handleNavigation]
-  );
+    },
+    {
+      id: 'navigate',
+      label: 'Go to Artist',
+      icon: 'person',
+      dividerBefore: true,
+      onPress: handleNavigation,
+    },
+  ];
 
   return (
     <>
@@ -160,6 +195,20 @@ const ArtistItem: React.FC<ItemProps> = ({
         onClose={() => setMenuVisible(false)}
         actions={menuActions}
       />
+
+      {artistInfo && (
+        <InfoModal
+          visible={infoVisible}
+          onClose={() => {
+            setInfoVisible(false);
+            setArtistInfo(null);
+          }}
+          title={artistInfo.name}
+          subtitle="Artist"
+          cover={artistInfo.cover}
+          rows={infoRows}
+        />
+      )}
     </>
   );
 };

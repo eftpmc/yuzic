@@ -8,23 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		1FE785189043656AD94B554D /* libPods-Yuzic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 61F71ED6A1B4B8B481A0F59A /* libPods-Yuzic.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		70B73DEBE5BBE1A1FB038A74 /* libPods-Yuzic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D4CC3B4B3AE746F8350CFE1 /* libPods-Yuzic.a */; };
+		50393B959B48F11FEFEF381D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7BA516B678B998C0AD25D03B /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		C0DAD939F2725A4D4A065475 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7972273DFEA4CD0B82FECFF8 /* PrivacyInfo.xcprivacy */; };
-		C0DED121FB1D39F9E1DACAAD /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27FABD6FCFC5E4D10D7EEB83 /* ExpoModulesProvider.swift */; };
+		D249F8A9A7F37494EF10E42D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DDFB9315C23EA14F5C81FA /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		07BB7C3C439B2F5C9010C96E /* Pods-Yuzic.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yuzic.release.xcconfig"; path = "Target Support Files/Pods-Yuzic/Pods-Yuzic.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Yuzic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yuzic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Yuzic/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Yuzic/Info.plist; sourceTree = "<group>"; };
-		27FABD6FCFC5E4D10D7EEB83 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Yuzic/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		3616F0894AB7142F5C9FCF39 /* Pods-Yuzic.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yuzic.debug.xcconfig"; path = "Target Support Files/Pods-Yuzic/Pods-Yuzic.debug.xcconfig"; sourceTree = "<group>"; };
-		7972273DFEA4CD0B82FECFF8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Yuzic/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		8D4CC3B4B3AE746F8350CFE1 /* libPods-Yuzic.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Yuzic.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		15DDFB9315C23EA14F5C81FA /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Yuzic/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		432F911DA67868BF3E521EBA /* Pods-Yuzic.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yuzic.release.xcconfig"; path = "Target Support Files/Pods-Yuzic/Pods-Yuzic.release.xcconfig"; sourceTree = "<group>"; };
+		4A39191C9790BBE71E310333 /* Pods-Yuzic.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yuzic.debug.xcconfig"; path = "Target Support Files/Pods-Yuzic/Pods-Yuzic.debug.xcconfig"; sourceTree = "<group>"; };
+		61F71ED6A1B4B8B481A0F59A /* libPods-Yuzic.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Yuzic.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BA516B678B998C0AD25D03B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Yuzic/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Yuzic/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				70B73DEBE5BBE1A1FB038A74 /* libPods-Yuzic.a in Frameworks */,
+				1FE785189043656AD94B554D /* libPods-Yuzic.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				7972273DFEA4CD0B82FECFF8 /* PrivacyInfo.xcprivacy */,
+				7BA516B678B998C0AD25D03B /* PrivacyInfo.xcprivacy */,
 			);
 			name = Yuzic;
 			sourceTree = "<group>";
@@ -62,17 +62,17 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				8D4CC3B4B3AE746F8350CFE1 /* libPods-Yuzic.a */,
+				61F71ED6A1B4B8B481A0F59A /* libPods-Yuzic.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		7CA392ACB9B9928A2E35A56A /* Yuzic */ = {
+		4E90A43D7695CD9CE06B38D2 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				27FABD6FCFC5E4D10D7EEB83 /* ExpoModulesProvider.swift */,
+				9ED3BD71E2804CC116F39859 /* Yuzic */,
 			);
-			name = Yuzic;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				A1485963E6DF7967F0A22D82 /* Pods */,
-				B564D3E3760D6ED5A4360FB2 /* ExpoModulesProviders */,
+				B7BE4B6C1203576C7A7D0CFA /* Pods */,
+				4E90A43D7695CD9CE06B38D2 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,21 +105,21 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A1485963E6DF7967F0A22D82 /* Pods */ = {
+		9ED3BD71E2804CC116F39859 /* Yuzic */ = {
 			isa = PBXGroup;
 			children = (
-				3616F0894AB7142F5C9FCF39 /* Pods-Yuzic.debug.xcconfig */,
-				07BB7C3C439B2F5C9010C96E /* Pods-Yuzic.release.xcconfig */,
+				15DDFB9315C23EA14F5C81FA /* ExpoModulesProvider.swift */,
 			);
-			path = Pods;
+			name = Yuzic;
 			sourceTree = "<group>";
 		};
-		B564D3E3760D6ED5A4360FB2 /* ExpoModulesProviders */ = {
+		B7BE4B6C1203576C7A7D0CFA /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				7CA392ACB9B9928A2E35A56A /* Yuzic */,
+				4A39191C9790BBE71E310333 /* Pods-Yuzic.debug.xcconfig */,
+				432F911DA67868BF3E521EBA /* Pods-Yuzic.release.xcconfig */,
 			);
-			name = ExpoModulesProviders;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -139,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Yuzic" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				B0444DFFEC99E1971DA47F1F /* [Expo] Configure project */,
+				7A55EFA95F237B53D92A7BCA /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				40954CA73A3A663B2B529768 /* [CP] Embed Pods Frameworks */,
+				8E91D82EC7A9EAA8A6381EF4 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -195,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				C0DAD939F2725A4D4A065475 /* PrivacyInfo.xcprivacy in Resources */,
+				50393B959B48F11FEFEF381D /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,27 +239,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		40954CA73A3A663B2B529768 /* [CP] Embed Pods Frameworks */ = {
+		7A55EFA95F237B53D92A7BCA /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Yuzic/Pods-Yuzic-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/AmplitudeCore/AmplitudeCore.framework/AmplitudeCore",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/AmplitudeSessionReplay/AmplitudeSessionReplay.framework/AmplitudeSessionReplay",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AmplitudeCore.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AmplitudeSessionReplay.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Yuzic/Pods-Yuzic-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Yuzic/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -307,24 +304,27 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Yuzic/Pods-Yuzic-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B0444DFFEC99E1971DA47F1F /* [Expo] Configure project */ = {
+		8E91D82EC7A9EAA8A6381EF4 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Yuzic/Pods-Yuzic-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/AmplitudeCore/AmplitudeCore.framework/AmplitudeCore",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/AmplitudeSessionReplay/AmplitudeSessionReplay.framework/AmplitudeSessionReplay",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AmplitudeCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AmplitudeSessionReplay.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Yuzic/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Yuzic/Pods-Yuzic-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -334,7 +334,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				C0DED121FB1D39F9E1DACAAD /* ExpoModulesProvider.swift in Sources */,
+				D249F8A9A7F37494EF10E42D /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,7 +343,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3616F0894AB7142F5C9FCF39 /* Pods-Yuzic.debug.xcconfig */;
+			baseConfigurationReference = 4A39191C9790BBE71E310333 /* Pods-Yuzic.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -363,7 +363,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.1.4;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -382,7 +382,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 07BB7C3C439B2F5C9010C96E /* Pods-Yuzic.release.xcconfig */;
+			baseConfigurationReference = 432F911DA67868BF3E521EBA /* Pods-Yuzic.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -397,7 +397,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.1.4;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -468,10 +468,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -526,10 +523,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

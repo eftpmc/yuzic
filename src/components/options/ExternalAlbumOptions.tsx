@@ -3,7 +3,6 @@ import { MenuView } from '@react-native-menu/menu';
 import {
   TouchableOpacity,
   StyleSheet,
-  useColorScheme,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +14,7 @@ import {
   selectLidarrConfig,
   selectLidarrAuthenticated,
 } from '@/utils/redux/selectors/lidarrSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ExternalAlbumOptionsProps {
   selectedAlbumTitle: string;
@@ -25,7 +25,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
   selectedAlbumTitle,
   selectedAlbumArtist,
 }) => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   const config = useSelector(selectLidarrConfig);
   const isAuthenticated = useSelector(selectLidarrAuthenticated);

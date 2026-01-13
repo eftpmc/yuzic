@@ -7,9 +7,12 @@ import {
   Pressable,
   Appearance,
   Animated,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { BlurView } from 'expo-blur';
+import { useTheme } from '@/hooks/useTheme';
 
 export type ContextMenuAction = {
   id: string;
@@ -33,28 +36,28 @@ const ContextMenuModal: React.FC<ContextMenuModalProps> = ({
   onClose,
   actions,
 }) => {
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   const opacity = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0.96)).current;
+  const scale = useRef(new Animated.Value(0.975)).current;
 
   useEffect(() => {
     if (visible) {
       Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
-          duration: 120,
+          duration: 140,
           useNativeDriver: true,
         }),
         Animated.timing(scale, {
           toValue: 1,
-          duration: 120,
+          duration: 140,
           useNativeDriver: true,
         }),
       ]).start();
     } else {
       opacity.setValue(0);
-      scale.setValue(0.96);
+      scale.setValue(0.975);
     }
   }, [visible]);
 
@@ -64,104 +67,105 @@ const ContextMenuModal: React.FC<ContextMenuModalProps> = ({
         style={styles.backdrop}
         onPress={onClose}
         unstable_pressDelay={40}
-        accessibilityRole="button"
-        accessibilityLabel="Dismiss menu"
       >
         <Animated.View
           style={[
-            styles.menu,
-            isDarkMode && styles.menuDark,
+            styles.menuWrapper,
             {
               opacity,
               transform: [{ scale }],
             },
           ]}
         >
-          {actions.map(action => (
-            <View key={action.id}>
-              {action.dividerBefore && (
-                <View
-                  style={[
-                    styles.divider,
-                    isDarkMode && styles.dividerDark,
-                  ]}
-                />
-              )}
-
-              <Pressable
-                onPress={() => {
-                  if (action.disabled) return;
-                  Haptics.selectionAsync();
-                  action.onPress();
-                  onClose();
-                }}
-                disabled={action.disabled}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: action.disabled }}
-                style={({ pressed }) => [
-                  styles.menuItem,
-                  pressed && styles.menuItemPressed,
-                  isDarkMode && pressed && styles.menuItemPressedDark,
-                  action.disabled && styles.menuItemDisabled,
-                ]}
-              >
-                {action.icon && (
-                  <Ionicons
-                    name={action.icon}
-                    size={20}
+          <BlurView
+            intensity={isDarkMode ? 140 : 100}
+            tint={isDarkMode ? 'dark' : 'light'}
+            style={styles.menu}
+          >
+            {actions.map(action => (
+              <View key={action.id}>
+                {action.dividerBefore && (
+                  <View
                     style={[
-                      styles.icon,
-                      isDarkMode && styles.iconDark,
-                      action.destructive && styles.iconDestructive,
+                      styles.divider,
+                      isDarkMode && styles.dividerDark,
                     ]}
                   />
                 )}
 
-                <Text
-                  numberOfLines={1}
-                  style={[
-                    styles.menuText,
-                    isDarkMode && styles.menuTextDark,
-                    action.destructive && styles.menuTextDestructive,
-                    action.primary && styles.menuTextPrimary,
+                <Pressable
+                  onPress={() => {
+                    if (action.disabled) return;
+                    Haptics.selectionAsync();
+                    action.onPress();
+                    onClose();
+                  }}
+                  disabled={action.disabled}
+                  style={({ pressed }) => [
+                    styles.menuItem,
+                    pressed && styles.menuItemPressed,
+                    action.disabled && styles.menuItemDisabled,
                   ]}
                 >
-                  {action.label}
-                </Text>
-              </Pressable>
-            </View>
-          ))}
+                  {action.icon && (
+                    <Ionicons
+                      name={action.icon}
+                      size={19}
+                      style={[
+                        styles.icon,
+                        isDarkMode && styles.iconDark,
+                        action.destructive && styles.iconDestructive,
+                      ]}
+                    />
+                  )}
 
-          <View
-            style={[
-              styles.divider,
-              isDarkMode && styles.dividerDark,
-            ]}
-          />
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.menuText,
+                      isDarkMode && styles.menuTextDark,
+                      action.destructive && styles.menuTextDestructive,
+                      action.primary && styles.menuTextPrimary,
+                    ]}
+                  >
+                    {action.label}
+                  </Text>
+                </Pressable>
+              </View>
+            ))}
 
-          <Pressable
-            onPress={onClose}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.menuItem,
-              pressed && styles.menuItemPressed,
-              isDarkMode && pressed && styles.menuItemPressedDark,
-            ]}
-          >
-            <Ionicons
-              name="close"
-              size={20}
-              style={[styles.icon, isDarkMode && styles.iconDark]}
-            />
-            <Text
+            <View
               style={[
-                styles.menuText,
-                isDarkMode && styles.menuTextDark,
+                styles.divider,
+                isDarkMode && styles.dividerDark,
+              ]}
+            />
+
+            <Pressable
+              onPress={onClose}
+              style={({ pressed }) => [
+                styles.menuItem,
+                pressed && styles.menuItemPressed,
               ]}
             >
-              Cancel
-            </Text>
-          </Pressable>
+              <Ionicons
+                name="close"
+                size={19}
+                style={[
+                  styles.icon,
+                  isDarkMode && styles.iconDark,
+                ]}
+              />
+              <Text
+                style={[
+                  styles.menuText,
+                  isDarkMode && styles.menuTextDark,
+                ]}
+              >
+                Cancel
+              </Text>
+            </Pressable>
+          </BlurView>
         </Animated.View>
       </Pressable>
     </Modal>
@@ -173,64 +177,76 @@ export default ContextMenuModal;
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.28)',
     justifyContent: 'center',
-    padding: 24,
+    padding: 22,
   },
-  menu: {
-    backgroundColor: '#fff',
+
+  menuWrapper: {
+    alignSelf: 'center',
     borderRadius: 18,
     overflow: 'hidden',
-    alignSelf: 'center',
-    minWidth: 320,
-    maxWidth: 440,
   },
-  menuDark: {
-    backgroundColor: '#1c1c1e',
+
+  menu: {
+    minWidth: 300,
+    maxWidth: 400,
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
+
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 13,
     paddingHorizontal: 18,
   },
+
   menuItemPressed: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
-  menuItemPressedDark: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
+
   menuItemDisabled: {
     opacity: 0.45,
   },
+
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(0,0,0,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
+
   dividerDark: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
+
   icon: {
     marginRight: 14,
     color: '#111',
   },
+
   iconDark: {
     color: '#f2f2f2',
   },
+
   iconDestructive: {
-    color: '#ff3b30',
+    color: '#ff453a',
   },
+
   menuText: {
-    fontSize: 16,
-    color: '#000',
+    fontSize: 15.5,
+    color: '#111',
     flexShrink: 1,
   },
+
   menuTextDark: {
     color: '#f2f2f2',
   },
+
   menuTextDestructive: {
-    color: '#ff3b30',
+    color: '#ff453a',
   },
+
   menuTextPrimary: {
     fontWeight: '600',
   },

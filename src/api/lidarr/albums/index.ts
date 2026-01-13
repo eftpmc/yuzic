@@ -62,17 +62,11 @@ export async function downloadAlbum(
       a => normalize(a.artistName) === normalizedArtist
     );
 
-    console.log("beep")
-
     if (matchedArtist) {
-      console.log("hey")
       const albums = await getAlbumsByArtist(config, matchedArtist.id);
-      console.log(albums)
       const album = albums.find(
         a => normalize(a.title) === normalizedAlbum
       );
-
-      console.log(album)
 
       if (album) {
         await triggerAlbumSearch(config, album.id);

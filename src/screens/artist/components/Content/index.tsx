@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { useColorScheme } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
@@ -8,7 +7,8 @@ import { Artist, Album, AlbumBase } from '@/types';
 
 import AlbumRow from '@/components/rows/AlbumRow';
 import Header from '../Header';
-import { selectOwnedAlbumsEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { selectInternalOnlyEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   artist: Artist;
@@ -22,8 +22,8 @@ const ESTIMATED_ROW_HEIGHT = 80;
 
 const ArtistContent: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
-  const isDarkMode = useColorScheme() === 'dark';
-  const hideUnowned = useSelector(selectOwnedAlbumsEnabled);
+  const { isDarkMode } = useTheme();
+  const hideUnowned = useSelector(selectInternalOnlyEnabled);
 
   const mergedAlbums: CombinedAlbum[] = useMemo(() => {
     const owned = artist.ownedAlbums.map(a => ({

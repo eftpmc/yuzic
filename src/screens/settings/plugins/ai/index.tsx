@@ -28,6 +28,7 @@ import {
 
 import { testConnection as testOpenAI } from '@/api/openai/testConnection';
 import Header from '../../components/Header';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function AIView() {
     const dispatch = useDispatch();
@@ -36,7 +37,7 @@ export default function AIView() {
     const activeProvider = useSelector(selectAiProvider);
     const apiKey = useSelector(selectActiveAiApiKey);
 
-    const isDarkMode = Appearance.getColorScheme() === 'dark';
+    const { isDarkMode } = useTheme();
 
     const providers = [
         {

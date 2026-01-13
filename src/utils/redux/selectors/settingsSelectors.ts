@@ -4,9 +4,13 @@ import {
   AudioQuality,
   LibrarySortOrder,
   PromptHistoryEntry,
+  ThemeMode,
 } from '@/utils/redux/slices/settingsSlice';
 
 export const selectSettings = (state: RootState) => state.settings;
+
+export const selectThemeMode = (state: RootState): ThemeMode =>
+  state.settings.themeMode;
 
 export const selectThemeColor = (state: RootState): string =>
   state.settings.themeColor;
@@ -22,10 +26,10 @@ export const selectAiButtonEnabled = (
 ): boolean =>
   state.settings.aiButtonEnabled;
 
-export const selectOwnedAlbumsEnabled = (
+export const selectInternalOnlyEnabled = (
 state: RootState
 ): boolean =>
-  state.settings.ownedAlbumsEnabled
+  state.settings.internalOnlyEnabled
 
 export const selectLibrarySortOrder = (
   state: RootState

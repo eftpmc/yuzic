@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
   Animated,
   Easing,
 } from 'react-native';
@@ -15,9 +14,10 @@ import { useAI } from '@/contexts/AIContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useSelector } from 'react-redux';
 import { selectPromptHistory } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 const Prompt: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const promptHistory = useSelector(selectPromptHistory);
 
   const {

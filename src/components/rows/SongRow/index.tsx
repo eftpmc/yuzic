@@ -3,14 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
+  TouchableOpacity
 } from 'react-native';
 
 import { Song } from '@/types';
 import SongOptions from '@/components/options/SongOptions';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   song: Song;
@@ -19,7 +19,7 @@ type Props = {
 };
 
 const SongRow: React.FC<Props> = ({ song, collection, onPress }) => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const { playSongInCollection } = usePlaying();
 
   const handlePress = () => {

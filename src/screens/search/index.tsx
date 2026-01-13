@@ -23,12 +23,12 @@ import { track } from '@/utils/analytics/amplitude';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { MediaImage } from '@/components/MediaImage';
+import { useTheme } from '@/hooks/useTheme';
 
 const Search = () => {
     const searchInputRef = useRef(null);
     const navigation = useNavigation();
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
 
     const themeColor = useSelector(selectThemeColor);
 

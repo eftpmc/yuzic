@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
   useWindowDimensions,
   Animated,
   Easing,
@@ -28,9 +27,10 @@ import {
 } from '@/utils/redux/selectors/settingsSelectors';
 import { useSelector } from 'react-redux';
 import { MediaImage } from './MediaImage';
+import { useTheme } from '@/hooks/useTheme';
 
 const PlayingBar: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const [appState, setAppState] = useState(AppState.currentState);
 
   const themeColor = useSelector(selectThemeColor);
@@ -114,7 +114,7 @@ const PlayingBar: React.FC = () => {
       <TouchableOpacity onPress={handleExpand} activeOpacity={0.9}>
         <View style={styles.wrapper}>
           <BlurView
-            intensity={100}
+            intensity={isDarkMode ? 140 : 100}
             tint={isDarkMode ? 'dark' : 'light'}
             style={styles.container}
           >

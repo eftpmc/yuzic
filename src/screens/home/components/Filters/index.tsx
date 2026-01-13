@@ -1,8 +1,9 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet, useColorScheme } from 'react-native';
+import { ScrollView, View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { FilterPill } from './FilterPill';
+import { useTheme } from '@/hooks/useTheme';
 
 const isColorLight = (color: string) => {
   const hex = color.replace('#', '');
@@ -29,7 +30,7 @@ export default function LibraryFilterBar<T extends string>({
   filters,
   onChange,
 }: Props<T>) {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   const activeTextColor = isColorLight(themeColor) ? '#000' : '#fff';

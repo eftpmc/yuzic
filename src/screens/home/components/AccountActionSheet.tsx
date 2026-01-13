@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  useColorScheme,
 } from 'react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,9 +16,10 @@ import { disconnect } from "@/utils/redux/slices/serversSlice";
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 const AccountActionSheet = forwardRef<BottomSheet, {}>((_, ref) => {
-    const isDarkMode = useColorScheme() === 'dark';
+    const { isDarkMode } = useTheme();
     const router = useRouter();
     const dispatch = useDispatch();
     const api = useApi();

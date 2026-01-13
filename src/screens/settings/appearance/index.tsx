@@ -9,12 +9,12 @@ import {
 import Header from '../components/Header';
 import { ThemeColor } from './components/ThemeColor';
 import { Columns } from './components/Columns';
-import { AiButtonToggle } from './components/AiButtonToggle';
-import { OwnedAlbumsToggle } from './components/OwnedAlbumsToggle';
 import { AppearanceToggles } from './components/Toggles';
+import { ThemeModeSelector } from './components/ThemeModeSelector';
+import { useTheme } from '@/hooks/useTheme';
 
 const AppearanceSettings: React.FC = () => {
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <SafeAreaView
@@ -27,6 +27,7 @@ const AppearanceSettings: React.FC = () => {
       <Header title="Appearance" />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ThemeModeSelector />
         <ThemeColor />
         <Columns />
         <AppearanceToggles/>

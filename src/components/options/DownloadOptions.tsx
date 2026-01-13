@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/hooks/useTheme';
 
 interface DownloadOptionsProps {
     onDownload: () => void;
@@ -15,8 +16,7 @@ interface DownloadOptionsProps {
 }
 
 const DownloadOptions: React.FC<DownloadOptionsProps> = ({ onDownload, isDownloaded, isLoading = false }) => {
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
 
     return (
         <TouchableOpacity

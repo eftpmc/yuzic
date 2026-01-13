@@ -13,18 +13,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
-import { CoverSource } from '@/types';
+import { CoverSource, Album } from '@/types';
 import ContextMenuModal, {
   ContextMenuAction,
 } from '@/components/ContextMenuModal';
-
-import {
-  Play,
-  Shuffle,
-  Download,
-  CheckCircle,
-  Album,
-} from 'lucide-react-native';
+import InfoModal, { InfoRow } from '@/components/InfoModal';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ItemProps {
   id: string;
@@ -43,16 +37,24 @@ const AlbumItem: React.FC<ItemProps> = ({
   isGridView,
   gridWidth,
 }) => {
+  const {
+    playSongInCollection,
+    addCollectionToQueue,
+    shuffleCollectionToQueue,
+    getQueue,
+  } = usePlaying();
+
   const { downloadAlbumById, isAlbumDownloaded, isDownloadingAlbum } =
     useDownload();
 
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
   const api = useApi();
   const queryClient = useQueryClient();
-  const { playSongInCollection } = usePlaying();
 
   const [menuVisible, setMenuVisible] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
+  const [albumInfo, setAlbumInfo] = useState<Album | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const isDownloaded = isAlbumDownloaded(id);
@@ -62,19 +64,60 @@ const AlbumItem: React.FC<ItemProps> = ({
     navigation.navigate('albumView', { id });
   }, [navigation, id]);
 
+  const fetchAlbum = useCallback(async () => {
+    return queryClient.fetchQuery({
+      queryKey: [QueryKeys.Album, id],
+      queryFn: () => api.albums.get(id),
+      staleTime: 5 * 60 * 1000,
+    });
+  }, [api, queryClient, id]);
+
   const handlePlay = useCallback(
     async (shuffle: boolean) => {
-      const album = await queryClient.fetchQuery({
-        queryKey: [QueryKeys.Album, id],
-        queryFn: () => api.albums.get(id),
-        staleTime: 5 * 60 * 1000,
-      });
-
+      const album = await fetchAlbum();
       if (!album || !album.songs?.length) return;
       playSongInCollection(album.songs[0], album, shuffle);
     },
-    [id, api, queryClient, playSongInCollection]
+    [fetchAlbum, playSongInCollection]
   );
+
+  const handleAddToQueue = useCallback(async () => {
+    const album = await fetchAlbum();
+    if (!album || !album.songs.length) return;
+
+    const queue = getQueue();
+    if (queue.length === 0) {
+      playSongInCollection(album.songs[0], album, false);
+      return;
+    }
+
+    addCollectionToQueue(album);
+  }, [fetchAlbum, getQueue, addCollectionToQueue, playSongInCollection]);
+
+  const handleShuffleToQueue = useCallback(async () => {
+    const album = await fetchAlbum();
+    if (!album || !album.songs.length) return;
+
+    const queue = getQueue();
+    if (queue.length === 0) {
+      playSongInCollection(album.songs[0], album, true);
+      return;
+    }
+
+    shuffleCollectionToQueue(album);
+  }, [
+    fetchAlbum,
+    getQueue,
+    shuffleCollectionToQueue,
+    playSongInCollection,
+  ]);
+
+  const handleShowInfo = useCallback(async () => {
+    const album = await fetchAlbum();
+    if (!album) return;
+    setAlbumInfo(album);
+    setInfoVisible(true);
+  }, [fetchAlbum]);
 
   const handleDownload = useCallback(async () => {
     if (isDownloaded || isDownloadingNow || isLoading) return;
@@ -85,6 +128,27 @@ const AlbumItem: React.FC<ItemProps> = ({
       setIsLoading(false);
     }
   }, [id, isDownloaded, isDownloadingNow, isLoading, downloadAlbumById]);
+
+  const infoRows: InfoRow[] = useMemo(() => {
+    if (!albumInfo) return [];
+    return [
+      {
+        id: 'artist',
+        label: 'Artist',
+        value: albumInfo.artist.name,
+      },
+      {
+        id: 'songs',
+        label: 'Songs',
+        value: albumInfo.songs.length,
+      },
+      {
+        id: 'plays',
+        label: 'Plays',
+        value: albumInfo.userPlayCount,
+      },
+    ];
+  }, [albumInfo]);
 
   const menuActions: ContextMenuAction[] = [
     {
@@ -100,6 +164,35 @@ const AlbumItem: React.FC<ItemProps> = ({
       onPress: () => handlePlay(true),
     },
     {
+      id: 'addQueue',
+      label: 'Add to Queue',
+      icon: 'list',
+      dividerBefore: true,
+      onPress: () => {
+        setMenuVisible(false);
+        handleAddToQueue();
+      },
+    },
+    {
+      id: 'shuffleQueue',
+      label: 'Shuffle to Queue',
+      icon: 'shuffle',
+      onPress: () => {
+        setMenuVisible(false);
+        handleShuffleToQueue();
+      },
+    },
+    {
+      id: 'info',
+      label: 'Album Info',
+      icon: 'information-circle',
+      dividerBefore: true,
+      onPress: () => {
+        setMenuVisible(false);
+        handleShowInfo();
+      },
+    },
+    {
       id: 'navigate',
       label: 'Go to Album',
       icon: 'albums',
@@ -110,11 +203,12 @@ const AlbumItem: React.FC<ItemProps> = ({
       label: isDownloadingNow
         ? 'Downloading…'
         : isDownloaded
-          ? 'Downloaded'
-          : 'Download',
+        ? 'Downloaded'
+        : 'Download',
       icon: isDownloaded ? 'checkmark-circle' : 'arrow-down-circle',
-      onPress: handleDownload,
       disabled: isDownloaded || isDownloadingNow,
+      dividerBefore: true,
+      onPress: handleDownload,
     },
   ];
 
@@ -164,6 +258,17 @@ const AlbumItem: React.FC<ItemProps> = ({
         onClose={() => setMenuVisible(false)}
         actions={menuActions}
       />
+
+      {albumInfo && (
+        <InfoModal
+          visible={infoVisible}
+          onClose={() => setInfoVisible(false)}
+          title={albumInfo.title}
+          subtitle={albumInfo.subtext}
+          cover={albumInfo.cover}
+          rows={infoRows}
+        />
+      )}
     </>
   );
 };

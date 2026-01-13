@@ -1,12 +1,12 @@
 import {
-    Playlist,
-    GenreListing,
-    AlbumBase,
-    Album,
-    ArtistBase,
-    Artist,
-    Song,
-    PlaylistBase,
+  Playlist,
+  GenreListing,
+  AlbumBase,
+  Album,
+  ArtistBase,
+  Artist,
+  Song,
+  PlaylistBase,
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
@@ -34,15 +34,14 @@ export type AuthResult =
   | AuthFailure;
 
 export interface ApiAdapter {
-    auth: AuthApi;
-    albums: AlbumsApi;
-    artists: ArtistsApi;
-    genres: GenresApi;
-    playlists: PlaylistsApi;
-    starred: StarredApi;
-    scrobble: ScrobbleApi;
-    stats: StatsApi;
-    search: SearchApi;
+  auth: AuthApi;
+  albums: AlbumsApi;
+  artists: ArtistsApi;
+  genres: GenresApi;
+  playlists: PlaylistsApi;
+  starred: StarredApi;
+  scrobble: ScrobbleApi;
+  lyrics: LyricsApi;
 }
 
 export interface AuthApi {
@@ -58,13 +57,13 @@ export interface AuthApi {
 }
 
 export interface AlbumsApi {
-    list(): Promise<AlbumBase[]>;
-    get(id: string): Promise<Album>;
+  list(): Promise<AlbumBase[]>;
+  get(id: string): Promise<Album>;
 }
 
 export interface ArtistsApi {
-    list(): Promise<ArtistBase[]>;
-    get(id: string): Promise<Artist>;
+  list(): Promise<ArtistBase[]>;
+  get(id: string): Promise<Artist>;
 }
 
 export interface GenresApi {
@@ -80,25 +79,28 @@ export interface PlaylistsApi {
 }
 
 export interface StarredApi {
-    list(): Promise<{
-        songs: Song[];
-    }>;
-    add(id: string): Promise<void>;
-    remove(id: string): Promise<void>;
+  list(): Promise<{
+    songs: Song[];
+  }>;
+  add(id: string): Promise<void>;
+  remove(id: string): Promise<void>;
 }
 
 export interface ScrobbleApi {
-    submit(songId: string): Promise<void>;
+  submit(songId: string): Promise<void>;
 }
 
-export interface StatsApi {
-    list(): Promise<Record<string, number>>;
+export interface LyricsApi {
+  getBySongId(songId: string): Promise<LyricsResult | null>;
 }
 
-export interface SearchApi {
-    all(query: string): Promise<{
-        songs: Song[];
-        albums: AlbumBase[];
-        artists: ArtistBase[];
-    }>;
-}
+export type LyricLine = {
+  startMs: number;
+  text: string;
+};
+
+export type LyricsResult = {
+  provider: "jellyfin" | "navidrome";
+  synced: true;
+  lines: LyricLine[];
+};

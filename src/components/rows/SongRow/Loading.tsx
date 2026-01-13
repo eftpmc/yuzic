@@ -2,12 +2,12 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  useColorScheme,
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
+import { useTheme } from '@/hooks/useTheme';
 
 const LoadingSongRow: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const colorMode = isDarkMode ? 'dark' : 'light';
 
   return (

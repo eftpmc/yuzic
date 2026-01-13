@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
-  useColorScheme,
   Dimensions,
 } from 'react-native';
 import BottomSheet from 'react-native-gesture-bottom-sheet';
@@ -25,6 +24,7 @@ import { useApi } from '@/api';
 import { Song, Playlist } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
+import { useTheme } from '@/hooks/useTheme';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -33,7 +33,7 @@ type PlaylistListProps = {
 
 const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
-    const isDarkMode = useColorScheme() === 'dark';
+    const { isDarkMode } = useTheme();
     const themeColor = useSelector(selectThemeColor);
 
     const {

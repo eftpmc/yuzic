@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { LibraryGridSkeleton, LibraryListSkeleton } from './Skeletons';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props<T> = {
   data: T[];
@@ -25,7 +26,7 @@ export default function LibraryContent<T>({
   renderItem,
   ListHeaderComponent,
 }: Props<T>) {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   if (isLoading) {
     return isGridView ? (

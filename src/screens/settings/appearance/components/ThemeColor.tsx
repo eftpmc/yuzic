@@ -5,12 +5,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDispatch, useSelector } from 'react-redux';
 import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
+import { useTheme } from '@/hooks/useTheme';
 
 export const ThemeColor: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const [open, setOpen] = useState(false);
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>

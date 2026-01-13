@@ -6,9 +6,8 @@ import {
   PlaylistsApi,
   StarredApi,
   ScrobbleApi,
-  StatsApi,
-  SearchApi,
-  AuthApi
+  AuthApi,
+  LyricsApi
 } from "../types";
 import { FAVORITES_ID } from '@/constants/favorites';
 import { buildFavoritesPlaylist } from '@/utils/builders/buildFavoritesPlaylist';
@@ -40,6 +39,8 @@ import { getSongsByGenre } from "./genres/getSongsByGenre";
 import { getGenres } from "./genres/getGenres";
 
 import { scrobbleTrack } from "./scrobbleTrack";
+
+import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 
 export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => {
   const { serverUrl, username, password } = adapter;
@@ -178,18 +179,10 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
     },
   };
 
-  const stats: StatsApi = {
-    list: async () => {
-      return {};
+  const lyrics: LyricsApi = {
+    getBySongId: async (songId) => {
+      return getLyricsBySongId(serverUrl, username, password, songId);
     },
-  };
-
-  const search: SearchApi = {
-    all: async () => ({
-      songs: [],
-      albums: [],
-      artists: [],
-    }),
   };
 
   return {
@@ -200,7 +193,6 @@ export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => 
     playlists,
     starred,
     scrobble,
-    stats,
-    search,
+    lyrics
   };
 };

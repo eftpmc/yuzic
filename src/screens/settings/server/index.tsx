@@ -17,9 +17,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Header from '../components/Header';
 import Loader from '@/components/Loader';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 const ServerSettings: React.FC = () => {
-    const isDarkMode = Appearance.getColorScheme() === 'dark';
+    const { isDarkMode } = useTheme();
     const api = useApi();
 
     const activeServer = useSelector(selectActiveServer);

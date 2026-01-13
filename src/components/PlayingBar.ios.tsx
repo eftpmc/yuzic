@@ -5,7 +5,6 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    useColorScheme,
     useWindowDimensions,
     Animated,
     TextInput,
@@ -28,10 +27,10 @@ import {
 } from '@/utils/redux/selectors/settingsSelectors';
 import { useSelector } from 'react-redux';
 import { MediaImage } from './MediaImage';
+import { useTheme } from '@/hooks/useTheme';
 
 const PlayingBar: React.FC = () => {
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
     const [appState, setAppState] = useState(AppState.currentState);
     const themeColor = useSelector(selectThemeColor);
     const aiApiKey = useSelector(selectActiveAiApiKey);

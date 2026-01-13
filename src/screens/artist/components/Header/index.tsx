@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
   Platform,
   Linking,
 } from 'react-native';
@@ -22,6 +21,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { buildCover } from '@/utils/builders/buildCover';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   artist: Artist;
@@ -29,7 +29,7 @@ type Props = {
 
 const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   const queryClient = useQueryClient();

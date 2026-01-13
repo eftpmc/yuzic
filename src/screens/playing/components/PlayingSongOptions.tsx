@@ -3,7 +3,6 @@ import { MenuView } from '@react-native-menu/menu';
 import {
     TouchableOpacity,
     StyleSheet,
-    useColorScheme,
     Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +15,6 @@ import { Song } from '@/types';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 const PlayingSongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
-    const isDarkMode = useColorScheme() === 'dark';
     const playlistRef = useRef<BottomSheet>(null);
 
     const { starred, starItem, unstarItem } = useLibrary();

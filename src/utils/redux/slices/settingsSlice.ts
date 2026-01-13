@@ -10,13 +10,15 @@ export interface PromptHistoryEntry {
 }
 
 export type AIProvider = 'openai' | 'anthropic' | 'gemini';
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface SettingsState {
   /* UI */
+  themeMode: ThemeMode;
   themeColor: string;
   gridColumns: number;
   isGridView: boolean;
-  ownedAlbumsEnabled: boolean;
+  internalOnlyEnabled: boolean;
   aiButtonEnabled: boolean;
 
 
@@ -43,10 +45,11 @@ export interface SettingsState {
 }
 
 const initialState: SettingsState = {
+  themeMode: 'system',
   themeColor: '#ff7f7f',
   gridColumns: 3,
   isGridView: true,
-  ownedAlbumsEnabled: false,
+  internalOnlyEnabled: false,
   aiButtonEnabled: true,
 
   librarySortOrder: 'title',
@@ -70,6 +73,9 @@ const settingsSlice = createSlice({
   initialState,
   reducers: {
     /* UI */
+    setThemeMode(state, action: PayloadAction<ThemeMode>) {
+      state.themeMode = action.payload;
+    },
     setThemeColor(state, action: PayloadAction<string>) {
       state.themeColor = action.payload;
     },
@@ -79,8 +85,8 @@ const settingsSlice = createSlice({
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
     },
-    setOwnedAlbumsEnabled(state, action: PayloadAction<boolean>) {
-      state.ownedAlbumsEnabled = action.payload;
+    setInternalOnlyEnabled(state, action: PayloadAction<boolean>) {
+      state.internalOnlyEnabled = action.payload;
     },
     setAiButtonEnabled(state, action: PayloadAction<boolean>) {
       state.aiButtonEnabled = action.payload;
@@ -132,10 +138,11 @@ const settingsSlice = createSlice({
 });
 
 export const {
+  setThemeMode,
   setThemeColor,
   setGridColumns,
   setIsGridView,
-  setOwnedAlbumsEnabled,
+  setInternalOnlyEnabled,
   setAiButtonEnabled,
   setLibrarySortOrder,
   setHasSeenGetStarted,

@@ -10,6 +10,7 @@ import BottomSheet from 'react-native-gesture-bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 type SortOrder = 'title' | 'recent' | 'userplays';
 
@@ -27,8 +28,7 @@ const sortOptions = [
 const SortBottomSheet = forwardRef<BottomSheet, SortBottomSheetProps>(
     ({ sortOrder, onSelect }, ref) => {
         const themeColor = useSelector(selectThemeColor);
-        const colorScheme = Appearance.getColorScheme();
-        const isDarkMode = colorScheme === 'dark';
+        const { isDarkMode } = useTheme();
 
         return (
             <BottomSheet

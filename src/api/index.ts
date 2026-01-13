@@ -46,16 +46,9 @@ export const useApi = (): ApiAdapter => {
       scrobble: {
         submit: empty,
       },
-      stats: {
-        list: async () => ({}),
-      },
-      search: {
-        all: async () => ({
-          songs: [],
-          albums: [],
-          artists: [],
-        }),
-      },
+      lyrics: {
+        getBySongId: empty,
+      }
     };
   }
 
@@ -101,15 +94,8 @@ export const useApi = (): ApiAdapter => {
     scrobble: {
       submit: empty,
     },
-    stats: {
-      list: async () => ({}),
-    },
-    search: {
-      all: async () => ({
-        songs: [],
-        albums: [],
-        artists: [],
-      }),
-    },
+    lyrics: {
+      getBySongId: empty
+    }
   };
 };

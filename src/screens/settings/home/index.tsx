@@ -10,21 +10,20 @@ import {
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Appearance } from 'react-native';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { AnalyticsToggle } from './components/AnalyticsToggle';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function Settings() {
     const router = useRouter();
     const activeServer = useSelector(selectActiveServer);
     const themeColor = useSelector(selectThemeColor);
 
-    const colorScheme = Appearance.getColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
 
     if (!activeServer) {
         return null;
@@ -38,25 +37,25 @@ export default function Settings() {
             edges={['top']}
             style={[styles.container, isDarkMode && styles.containerDark]}
         >
-            {/* HEADER */}
             <View style={[styles.headerContainer, isDarkMode && styles.headerContainerDark]}>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons
-                        name="chevron-back"
-                        size={24}
-                        color={isDarkMode ? '#fff' : '#1C1C1E'}
-                    />
-                </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.back()}>
+        <Ionicons
+            name="chevron-back"
+            size={24}
+            color={isDarkMode ? '#fff' : '#1C1C1E'}
+        />
+    </TouchableOpacity>
 
-                <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
-                    Settings
-                </Text>
+    <View pointerEvents="none" style={styles.headerTitleWrapper}>
+        <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
+            Settings
+        </Text>
+    </View>
 
-                <View style={{ width: 24 }} />
-            </View>
+    <View style={{ width: 24 }} />
+</View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* PROFILE */}
                 <View style={[styles.profileCard, isDarkMode && styles.profileCardDark]}>
                     <View style={styles.profileRow}>
                         <View style={[styles.avatar, { backgroundColor: themeColor }]}>
@@ -79,7 +78,6 @@ export default function Settings() {
                     </View>
                 </View>
 
-                {/* GENERAL */}
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                     General
                 </Text>
@@ -93,7 +91,6 @@ export default function Settings() {
                     {renderRow('Appearance', 'brush', '/settings/appearanceView')}
                 </View>
 
-                {/* PLUGINS */}
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                     Plugins
                 </Text>
@@ -127,12 +124,11 @@ export default function Settings() {
                     </TouchableOpacity>
                 </View>
 
-                {/* ABOUT */}
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                     About
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    {renderLinkRow('Discord', 'https://discord.gg/NzsGEhg5Fs')}
+                    {renderLinkRow('Github', 'https://github.com/eftpmc/yuzic')}
                     {renderDivider()}
                     {renderLinkRow('Privacy Policy', 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
@@ -253,7 +249,12 @@ const styles = StyleSheet.create({
     sectionDark: {
         backgroundColor: '#1C1C1E',
     },
-
+headerTitleWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+},
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',

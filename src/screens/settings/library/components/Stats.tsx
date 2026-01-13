@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  useColorScheme,
   Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,6 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useTheme } from '@/hooks/useTheme';
 
 type QuerySummary = {
   label: string;
@@ -26,7 +26,7 @@ type QuerySummary = {
 };
 
 const Stats: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   const { refreshLibrary, isLoading } = useLibrary();

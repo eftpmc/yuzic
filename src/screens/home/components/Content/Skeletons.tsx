@@ -1,11 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, useColorScheme, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
+import { useTheme } from '@/hooks/useTheme';
 
 export function LibraryListSkeleton({ count = 8 }: { count?: number }) {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <View style={styles.listContainer}>
@@ -39,8 +38,6 @@ export function LibraryListSkeleton({ count = 8 }: { count?: number }) {
   );
 }
 
-/* ---------- GRID SKELETON ---------- */
-
 export function LibraryGridSkeleton({
   columns,
   itemWidth,
@@ -50,7 +47,7 @@ export function LibraryGridSkeleton({
   itemWidth: number;
   count?: number;
 }) {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <View style={styles.gridContainer}>

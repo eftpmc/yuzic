@@ -1,8 +1,6 @@
 import React from 'react';
 import {
-  View,
   Text,
-  useColorScheme,
   StyleSheet,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
@@ -13,12 +11,13 @@ import { useArtist } from '@/hooks/artists';
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
 import { track } from '@/utils/analytics/amplitude';
+import { useTheme } from '@/hooks/useTheme';
 
 const ArtistScreen: React.FC = () => {
   const route = useRoute<any>();
   const { id } = route.params;
 
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const { artist, isLoading } = useArtist(id);
 
   if (isLoading) {

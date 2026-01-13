@@ -3,8 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
+  TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -17,6 +16,7 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   album: Album;
@@ -24,7 +24,7 @@ type Props = {
 
 const AlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation();
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   const { playSongInCollection } = usePlaying();

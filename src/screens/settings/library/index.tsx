@@ -4,7 +4,6 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    Appearance,
 } from 'react-native';
 
 import Header from '../components/Header';
@@ -12,10 +11,10 @@ import Header from '../components/Header';
 import Stats from './components/Stats';
 import AudioQuality from './components/AudioQuality';
 import Downloads from './components/Downloads';
+import { useTheme } from '@/hooks/useTheme';
 
 const LibrarySettings: React.FC = () => {
-    const colorScheme = Appearance.getColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
 
     return (
         <SafeAreaView

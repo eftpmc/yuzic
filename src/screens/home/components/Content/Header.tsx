@@ -4,11 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { selectIsGridView } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   sortLabel: string;
@@ -21,7 +21,7 @@ export default function LibraryListHeader({
   onSortPress,
   onToggleView,
 }: Props) {
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const isGridView = useSelector(selectIsGridView);
 
   return (

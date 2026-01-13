@@ -6,27 +6,27 @@ import { ToggleRow } from '@/components/rows/ToggleRow';
 import {
   selectThemeColor,
   selectAiButtonEnabled,
-  selectOwnedAlbumsEnabled,
+  selectInternalOnlyEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setAiButtonEnabled,
-  setOwnedAlbumsEnabled,
+  setInternalOnlyEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
 export const AppearanceToggles: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const aiButtonEnabled = useSelector(selectAiButtonEnabled);
-  const ownedAlbumsEnabled = useSelector(selectOwnedAlbumsEnabled);
+  const internalEnabled = useSelector(selectInternalOnlyEnabled);
 
   return (
     <View style={styles.container}>
       <ToggleRow
-        label="Hide unowned albums"
-        value={ownedAlbumsEnabled}
+        label="Internal data only"
+        value={internalEnabled}
         activeColor={themeColor}
         onToggle={() =>
-          dispatch(setOwnedAlbumsEnabled(!ownedAlbumsEnabled))
+          dispatch(setInternalOnlyEnabled(!internalEnabled))
         }
       />
 

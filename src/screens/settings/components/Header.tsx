@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/hooks/useTheme';
 
 type HeaderProps = {
     title: string;
@@ -21,8 +22,7 @@ const Header: React.FC<HeaderProps> = ({
     rightAction,
 }) => {
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
 
     const handleBack = () => {
         if (onBackPress) {

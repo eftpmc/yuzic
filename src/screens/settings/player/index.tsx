@@ -10,9 +10,10 @@ import {
 import Header from '../components/Header';
 import CurrentlyPlaying from './components/CurrentlyPlaying';
 import Prompt from './components/Prompt';
+import { useTheme } from '@/hooks/useTheme';
 
 const PlayerSettings: React.FC = () => {
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <SafeAreaView

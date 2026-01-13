@@ -4,12 +4,12 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    useColorScheme,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectAudioQuality, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setAudioQuality } from '@/utils/redux/slices/settingsSlice';
+import { useTheme } from '@/hooks/useTheme';
 
 const QUALITY_OPTIONS = [
     { key: 'low', label: 'Low (64kbps)' },
@@ -22,7 +22,7 @@ const AudioQuality: React.FC = () => {
     const dispatch = useDispatch();
     const themeColor = useSelector(selectThemeColor);
     const audioQuality = useSelector(selectAudioQuality);
-    const isDarkMode = useColorScheme() === 'dark';
+    const { isDarkMode } = useTheme();
     const [expanded, setExpanded] = useState(false);
 
     return (

@@ -34,6 +34,7 @@ import {
   disconnect,
 } from '@/utils/redux/slices/lidarrSlice';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 const LidarrView: React.FC = () => {
   const dispatch = useDispatch();
@@ -44,7 +45,7 @@ const LidarrView: React.FC = () => {
   const isAuthenticated = useSelector(selectLidarrAuthenticated);
   const config = useSelector(selectLidarrConfig);
 
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   const [isLoading, setIsLoading] = useState(false);
   const [queue, setQueue] = useState<any[]>([]);

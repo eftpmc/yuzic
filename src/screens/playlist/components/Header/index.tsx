@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -17,6 +16,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { MediaImage } from '@/components/MediaImage';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   playlist: Playlist;
@@ -24,7 +24,7 @@ type Props = {
 
 const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const navigation = useNavigation();
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   const { playSongInCollection } = usePlaying();

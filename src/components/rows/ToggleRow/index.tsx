@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/useTheme';
 import React from 'react';
 import {
   View,
@@ -22,7 +23,7 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({
   activeColor,
   style,
 }) => {
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark, style]}>

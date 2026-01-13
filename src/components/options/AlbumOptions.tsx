@@ -3,16 +3,15 @@ import { MenuView } from '@react-native-menu/menu';
 import {
     TouchableOpacity,
     StyleSheet,
-    useColorScheme,
     Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { useTheme } from '@/hooks/useTheme';
 
 const AlbumOptions: React.FC<{ selectedAlbumId: string | null }> = ({ selectedAlbumId }) => {
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
+    const { isDarkMode } = useTheme();
     const navigation = useNavigation();
     const { albums } = useLibrary();
 

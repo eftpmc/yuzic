@@ -1,8 +1,6 @@
 import React from 'react';
 import {
-  View,
   Text,
-  useColorScheme,
   StyleSheet,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
@@ -12,12 +10,13 @@ import { useAlbum } from '@/hooks/albums';
 
 import AlbumContent from './components/Content';
 import LoadingAlbumContent from './components/Content/Loading';
+import { useTheme } from '@/hooks/useTheme';
 
 const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
   const { id } = route.params;
 
-  const isDarkMode = useColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   const { album, isLoading, error } = useAlbum(id);
 

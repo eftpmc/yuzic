@@ -3,12 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet, Appearance } from 'react-nati
 import { useDispatch, useSelector } from 'react-redux';
 import { selectGridColumns, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setGridColumns } from '@/utils/redux/slices/settingsSlice';
+import { useTheme } from '@/hooks/useTheme';
 
 export const Columns: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const gridColumns = useSelector(selectGridColumns);
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
