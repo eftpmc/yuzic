@@ -16,10 +16,6 @@ prepare_react_native_project!
 target 'Yuzic' do
   use_expo_modules!
 
-  pod 'SwiftAudioEx',
-    :git => 'https://github.com/eftpmc/SwiftAudioEx.git',
-    :branch => 'crossfade'
-
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
   else
