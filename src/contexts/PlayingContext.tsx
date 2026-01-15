@@ -110,7 +110,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       await api.scrobble.submit(song.id);
       lastScrobbledIdRef.current = song.id;
-    } catch {}
+    } catch { }
   };
 
   const loadAndPlay = async (song: Song) => {
@@ -133,10 +133,48 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     await TrackPlayer.play();
   };
 
-  useTrackPlayerEvents([Event.PlaybackQueueEnded], async () => {
-    await scrobbleIfNeeded(currentSong);
-    await skipToNext();
-  });
+  const appendNextIfNeeded = async (index: number) => {
+    const next = queueRef.current[index + 1];
+    if (!next) return;
+
+    const nativeQueue = await TrackPlayer.getQueue();
+    const alreadyQueued = nativeQueue.some(t => t.id === next.id);
+    if (alreadyQueued) return;
+
+    const url = (await getSongLocalUri(next.id)) ?? next.streamUrl;
+    const cover = buildCover(next.cover, 'grid') || undefined;
+
+    await TrackPlayer.add({
+      id: next.id,
+      title: next.title,
+      artist: next.artist,
+      artwork: cover,
+      url,
+      duration: parseFloat(next.duration || '0'),
+    });
+  };
+
+
+  useTrackPlayerEvents(
+    [Event.PlaybackActiveTrackChanged],
+    async event => {
+      if (!event.track) return;
+
+      const trackId = event.track?.id;
+      if (!trackId) return;
+
+      const newIndex = queueRef.current.findIndex(
+        s => s.id === trackId
+      );
+
+      if (newIndex === -1) return;
+
+      setCurrentIndex(newIndex);
+      setCurrentSong(queueRef.current[newIndex]);
+
+      await appendNextIfNeeded(newIndex);
+    }
+  );
 
   useTrackPlayerEvents(
     [Event.RemoteNext, Event.RemotePrevious],

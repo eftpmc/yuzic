@@ -60,7 +60,6 @@
     "react-airplay": "^1.2.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.6",
-    "react-native-audio-api": "^0.10.3",
     "react-native-device-info": "^15.0.1",
     "react-native-dialog": "^9.3.0",
     "react-native-exception-handler": "^2.10.10",
