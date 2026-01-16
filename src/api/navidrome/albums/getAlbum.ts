@@ -58,6 +58,7 @@ export async function getAlbum(
         ? `Album • ${artist.name}`
         : `Single • ${artist.name}`,
     artist,
+    year: album.year,
     userPlayCount: 0,
     songs,
   };

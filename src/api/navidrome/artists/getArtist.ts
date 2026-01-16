@@ -54,6 +54,7 @@ export async function getArtist(
       title: album.name,
       cover,
       subtext: `Album • ${artist.name}`,
+      year: album.year,
       artist: artistBase,
       userPlayCount: 0
     }

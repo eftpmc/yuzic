@@ -166,7 +166,6 @@ export default function HomeScreen() {
                         subtext={item.subtext}
                         cover={item.cover}
                         isGridView={isGridView}
-                        isDarkMode={isDarkMode}
                         gridWidth={gridWidth}
                     />
                 );
@@ -178,7 +177,6 @@ export default function HomeScreen() {
                         subtext={item.subtext}
                         cover={item.cover}
                         isGridView={isGridView}
-                        isDarkMode={isDarkMode}
                         gridWidth={gridWidth}
                     />
                 );
@@ -190,7 +188,6 @@ export default function HomeScreen() {
                         subtext={item.subtext}
                         cover={item.cover}
                         isGridView={isGridView}
-                        isDarkMode={isDarkMode}
                         gridWidth={gridWidth}
                     />
                 );

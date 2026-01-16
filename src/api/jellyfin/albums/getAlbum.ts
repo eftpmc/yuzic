@@ -47,6 +47,7 @@ async function normalizeAlbum(
     title: a.Name,
     subtext: `Album • ${artist.name}`,
     artist,
+    year: a.ProductionYear,
     songs: [],
     userPlayCount: a.UserData.PlayCount,
   };

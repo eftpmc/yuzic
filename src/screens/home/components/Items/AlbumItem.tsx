@@ -135,17 +135,22 @@ const AlbumItem: React.FC<ItemProps> = ({
       {
         id: 'artist',
         label: 'Artist',
-        value: albumInfo.artist.name,
-      },
-      {
-        id: 'songs',
-        label: 'Songs',
-        value: albumInfo.songs.length,
+        value: albumInfo.artist.name
       },
       {
         id: 'plays',
         label: 'Plays',
-        value: albumInfo.userPlayCount,
+        value: albumInfo.userPlayCount
+      },
+      {
+        id: 'year',
+        label: 'Year',
+        value: albumInfo.year
+      },
+      {
+        id: 'songs',
+        label: 'Songs',
+        value: albumInfo.songs.length
       },
     ];
   }, [albumInfo]);

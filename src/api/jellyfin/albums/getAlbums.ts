@@ -28,6 +28,7 @@ async function normalizeAlbum(
       title: a.Name ?? "Unknown Album",
       subtext: `Album • ${artist.name}`,
       artist,
+      year: a.ProductionYear,
       userPlayCount: a.UserData.PlayCount ?? 0,
     };
   } catch (error) {
