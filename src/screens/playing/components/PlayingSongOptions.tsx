@@ -29,10 +29,10 @@ const PlayingSongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) 
     const toggleFavorite = async () => {
         try {
             if (isStarred) {
-                await unstarItem(selectedSong.id!);
+                await unstarItem(selectedSong);
                 toast.success(`${selectedSong.title} removed from favorites.`);
             } else {
-                await starItem(selectedSong.id!);
+                await starItem(selectedSong);
                 toast.success(`${selectedSong.title} added to favorites.`);
             }
         } catch (err) {

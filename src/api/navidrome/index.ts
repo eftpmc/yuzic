@@ -12,7 +12,7 @@ import {
 import { FAVORITES_ID } from '@/constants/favorites';
 import { buildFavoritesPlaylist } from '@/utils/builders/buildFavoritesPlaylist';
 
-import { Song, NavidromeServer } from "@/types";
+import { Song, Server } from "@/types";
 
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
@@ -42,8 +42,9 @@ import { scrobbleTrack } from "./scrobbleTrack";
 
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 
-export const createNavidromeAdapter = (adapter: NavidromeServer): ApiAdapter => {
-  const { serverUrl, username, password } = adapter;
+export const createNavidromeAdapter = (server: Server): ApiAdapter => {
+  const { serverUrl, username, auth: providerAuth } = server;
+  const password = providerAuth?.password as string;
 
   const auth: AuthApi = {
     connect: (serverUrl, username, password) => connect(serverUrl, username, password),

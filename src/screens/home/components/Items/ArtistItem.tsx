@@ -113,12 +113,7 @@ const ArtistItem: React.FC<ItemProps> = ({
         id: 'albums',
         label: 'Albums',
         value: artistInfo.ownedAlbums.length,
-      },
-      {
-        id: 'externalAlbums',
-        label: 'External Albums',
-        value: artistInfo.externalAlbums.length,
-      },
+      }
     ];
   }, [artistInfo]);
 

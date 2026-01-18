@@ -1,5 +1,4 @@
 import { AlbumBase, Artist, ArtistBase, CoverSource } from "@/types";
-import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -28,9 +27,6 @@ export async function getArtist(
   const artist = raw?.["subsonic-response"]?.artist;
   if (!artist) return null;
 
-  const lastFmData = await getArtistInfo(artist.name);
-  if (!lastFmData) return null;
-
   const albums: AlbumBase[] = []
 
   const artistCover: CoverSource = artist.coverArt
@@ -56,6 +52,7 @@ export async function getArtist(
       subtext: `Album • ${artist.name}`,
       year: album.year,
       artist: artistBase,
+      genres: [album.genre],
       userPlayCount: 0
     }
 
@@ -67,9 +64,6 @@ export async function getArtist(
     name: artist.name,
     cover: artistCover,
     subtext: "Artist",
-    bio: lastFmData.bio,
-    lastfmurl: lastFmData.artistUrl,
-    ownedAlbums: albums,
-    externalAlbums: lastFmData.albums
+    ownedAlbums: albums
   };
 }

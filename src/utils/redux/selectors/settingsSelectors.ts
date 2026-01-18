@@ -26,11 +26,6 @@ export const selectAiButtonEnabled = (
 ): boolean =>
   state.settings.aiButtonEnabled;
 
-export const selectInternalOnlyEnabled = (
-state: RootState
-): boolean =>
-  state.settings.internalOnlyEnabled
-
 export const selectLibrarySortOrder = (
   state: RootState
 ): LibrarySortOrder =>

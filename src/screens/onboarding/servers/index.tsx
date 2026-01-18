@@ -20,15 +20,14 @@ import {
 import { AntDesign } from '@expo/vector-icons';
 import { MenuView } from '@react-native-menu/menu';
 
-import NavidromeIcon from '@assets/images/navidrome.png';
-import JellyfinIcon from '@assets/images/jellyfin.png';
+import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { track } from '@/utils/analytics/amplitude';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { Server } from '@/types';
 
 export default function Servers() {
     const router = useRouter();
     const dispatch = useDispatch();
-    const themeColor = useSelector(selectThemeColor);
 
     const servers = useSelector((state: RootState) => state.servers.servers);
     const activeServerId = useSelector(
@@ -60,9 +59,9 @@ export default function Servers() {
         );
     };
 
-    const renderServer = ({ item }: any) => {
+    const renderServer = ({ item }: { item: Server }) => {
         const isActive = item.id === activeServerId;
-        const icon = item.type === 'jellyfin' ? JellyfinIcon : NavidromeIcon;
+        const icon = SERVER_PROVIDERS[item.type]?.icon;
 
         return (
             <View style={styles.serverCard}>

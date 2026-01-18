@@ -1,209 +1,200 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useRef } from 'react';
 import { AlbumBase, ArtistBase, CoverSource, PlaylistBase } from '@/types';
-import { selectAlbumList, selectArtistList, selectPlaylistList } from '@/utils/redux/selectors/librarySelectors';
 import { useSelector } from 'react-redux';
 import { useLibrary } from './LibraryContext';
+import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
+import * as lastfm from '@/api/lastfm';
 
 interface SearchContextType {
-    searchResults: SearchResult[];
-    searchLibrary: (query: string) => Promise<SearchResult[]>;
-    searchExternal: (query: string) => Promise<SearchResult[]>;
-    clearSearch: () => void;
-    isLoading: boolean;
-    handleSearch: (query: string) => Promise<void>;
+  searchResults: SearchResult[];
+  searchLibrary: (query: string) => Promise<SearchResult[]>;
+  searchExternal: (query: string) => Promise<SearchResult[]>;
+  clearSearch: () => void;
+  isLoading: boolean;
+  handleSearch: (query: string) => Promise<void>;
 }
 
 interface SearchProviderProps {
-    children: ReactNode;
+  children: ReactNode;
 }
 
 export interface SearchResult {
-    id: string;
-    title: string;
-    subtext: string;
-    cover: CoverSource;
-    type: 'album' | 'artist' | 'playlist';
-    isDownloaded: boolean;
+  id: string;
+  title: string;
+  subtext: string;
+  cover: CoverSource;
+  type: 'album' | 'artist' | 'playlist';
+  isDownloaded: boolean;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export const useSearch = () => {
-    const context = useContext(SearchContext);
-    if (!context) {
-        throw new Error('useSearch must be used within a SearchProvider');
-    }
-    return context;
+  const context = useContext(SearchContext);
+  if (!context) {
+    throw new Error('useSearch must be used within a SearchProvider');
+  }
+  return context;
 };
 
 export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
-    const { albums, artists, playlists } = useLibrary();
-    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { albums, artists, playlists } = useLibrary();
+  const lastfmConfig = useSelector(selectLastfmConfig);
 
-    const searchRequestIdRef = React.useRef(0);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const searchLibrary = async (query: string): Promise<SearchResult[]> => {
-        const lowerQuery = query.toLowerCase();
+  const searchRequestIdRef = useRef(0);
 
-        const albumResults: SearchResult[] = albums.map((album: AlbumBase) => ({
-            id: album.id,
-            title: album.title,
-            subtext: album.subtext,
-            cover: album.cover,
-            type: 'album',
-            isDownloaded: true,
-        }));
+  const searchLibrary = async (query: string): Promise<SearchResult[]> => {
+    const lowerQuery = query.toLowerCase();
 
-        const artistResults: SearchResult[] = artists.map((artist: ArtistBase) => ({
-            id: artist.id,
-            title: artist.name,
-            subtext: artist.subtext,
-            cover: artist.cover,
-            type: 'artist',
-            isDownloaded: true,
-        }));
+    const albumResults: SearchResult[] = albums
+      .filter(a => a.title.toLowerCase().includes(lowerQuery))
+      .map((album: AlbumBase) => ({
+        id: album.id,
+        title: album.title,
+        subtext: album.subtext,
+        cover: album.cover,
+        type: 'album',
+        isDownloaded: true,
+      }));
 
-        const playlistResults: SearchResult[] = playlists.map((playlist: PlaylistBase) => ({
-            id: playlist.id,
-            title: playlist.title,
-            subtext: playlist.subtext,
-            cover: playlist.cover,
-            type: 'playlist',
-            isDownloaded: true,
-        }));
+    const artistResults: SearchResult[] = artists
+      .filter(a => a.name.toLowerCase().includes(lowerQuery))
+      .map((artist: ArtistBase) => ({
+        id: artist.id,
+        title: artist.name,
+        subtext: artist.subtext,
+        cover: artist.cover,
+        type: 'artist',
+        isDownloaded: true,
+      }));
 
-        const results = [
-            ...albumResults,
-            ...artistResults,
-            ...playlistResults,
-        ].filter((item) => item.title.toLowerCase().includes(lowerQuery));
+    const playlistResults: SearchResult[] = playlists
+      .filter(p => p.title.toLowerCase().includes(lowerQuery))
+      .map((playlist: PlaylistBase) => ({
+        id: playlist.id,
+        title: playlist.title,
+        subtext: playlist.subtext,
+        cover: playlist.cover,
+        type: 'playlist',
+        isDownloaded: true,
+      }));
 
-        return results;
-    };
+    return [...albumResults, ...artistResults, ...playlistResults];
+  };
 
-    const searchExternal = async (query: string): Promise<SearchResult[]> => {
-        try {
-            const res = await fetch(`https://rawarr-server-af0092d911f6.herokuapp.com/api/lastfm/search?query=${encodeURIComponent(query)}`);
-            const data = await res.json();
+  const searchExternal = async (query: string): Promise<SearchResult[]> => {
+    if (!lastfmConfig) return [];
 
-            const albumResults: SearchResult[] = data.albums.map((item: any) => ({
-                id: item.id,
-                title: item.title,
-                subtext: item.subtext,
-                cover: item.cover,
-                type: 'album',
-                isDownloaded: false,
-            }));
+    try {
+      const result = await lastfm.searchAlbums(lastfmConfig, query);
 
-            return albumResults;
-        } catch (error) {
-            console.error('External search failed:', error);
-            return [];
+      return result.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        subtext: item.subtext,
+        cover: item.cover,
+        type: 'album',
+        isDownloaded: false,
+      }));
+    } catch {
+      return [];
+    }
+  };
+
+  const resultKey = (r: SearchResult) => `${r.type}:${r.id}`;
+
+  const handleSearch = async (query: string) => {
+    const requestId = ++searchRequestIdRef.current;
+
+    if (!query.trim()) {
+      clearSearch();
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const lowerQuery = query.toLowerCase();
+
+      const localResults = await searchLibrary(query);
+      const externalResults = lastfmConfig.apiKey
+        ? await searchExternal(query)
+        : [];
+
+      const combined = [...localResults, ...externalResults];
+
+      const uniqueMap = new Map<string, SearchResult>();
+
+      for (const result of combined) {
+        const key = resultKey(result);
+        const existing = uniqueMap.get(key);
+
+        if (!existing) {
+          uniqueMap.set(key, result);
+        } else if (!existing.isDownloaded && result.isDownloaded) {
+          uniqueMap.set(key, result);
         }
-    };
+      }
 
-    const resultKey = (r: SearchResult) =>
-        `${r.type}:${r.id}`;
+      const uniqueResults = Array.from(uniqueMap.values());
 
-    const handleSearch = async (query: string) => {
-        const requestId = ++searchRequestIdRef.current;
+      uniqueResults.sort((a, b) => {
+        if (a.isDownloaded && !b.isDownloaded) return -1;
+        if (b.isDownloaded && !a.isDownloaded) return 1;
 
-        if (!query.trim()) {
-            clearSearch();
-            return;
-        }
+        const aTitle = a.title.toLowerCase();
+        const bTitle = b.title.toLowerCase();
 
-        setIsLoading(true);
-        try {
-            const lowerQuery = query.toLowerCase();
+        const aExact = aTitle === lowerQuery;
+        const bExact = bTitle === lowerQuery;
 
-            const [localResults, externalResults] = await Promise.all([
-                searchLibrary(query),
-                searchExternal(query),
-            ]);
+        if (aExact && !bExact) return -1;
+        if (bExact && !aExact) return 1;
 
-            const combined = [...localResults, ...externalResults];
+        const aIncludes = aTitle.includes(lowerQuery);
+        const bIncludes = bTitle.includes(lowerQuery);
 
-            const uniqueMap = new Map<string, SearchResult>();
+        if (aIncludes && !bIncludes) return -1;
+        if (bIncludes && !aIncludes) return 1;
 
-            for (const result of combined) {
-                const key = resultKey(result);
-                const existing = uniqueMap.get(key);
+        const typePriority = (type: string) =>
+          type === 'album' ? 1 : type === 'artist' ? 2 : 3;
 
-                if (!existing) {
-                    uniqueMap.set(key, result);
-                } else if (!existing.isDownloaded && result.isDownloaded) {
-                    uniqueMap.set(key, result);
-                }
-            }
+        const diff = typePriority(a.type) - typePriority(b.type);
+        if (diff !== 0) return diff;
 
-            const uniqueResults = Array.from(uniqueMap.values());
+        return aTitle.localeCompare(bTitle);
+      });
 
-            uniqueResults.sort((a, b) => {
-                if (a.isDownloaded && !b.isDownloaded) return -1;
-                if (b.isDownloaded && !a.isDownloaded) return 1;
+      if (requestId !== searchRequestIdRef.current) return;
 
-                const aTitle = a.title.toLowerCase();
-                const bTitle = b.title.toLowerCase();
+      setSearchResults(uniqueResults.slice(0, 25));
+    } finally {
+      if (requestId === searchRequestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
+  };
 
-                const aExact = aTitle === lowerQuery;
-                const bExact = bTitle === lowerQuery;
-                if (aExact && !bExact) return -1;
-                if (bExact && !aExact) return 1;
+  const clearSearch = () => {
+    setSearchResults([]);
+  };
 
-                const aIncludes = aTitle.includes(lowerQuery);
-                const bIncludes = bTitle.includes(lowerQuery);
-                if (aIncludes && !bIncludes) return -1;
-                if (bIncludes && !aIncludes) return 1;
-
-                const typePriority = (type: string) => {
-                    switch (type) {
-                        case 'album': return 1;
-                        case 'artist': return 2;
-                        case 'playlist': return 3;
-                        default: return 5;
-                    }
-                };
-
-                const aPriority = typePriority(a.type);
-                const bPriority = typePriority(b.type);
-
-                if (aPriority !== bPriority) {
-                    return aPriority - bPriority;
-                }
-
-                return aTitle.localeCompare(bTitle);
-            });
-
-            const LIMITED_RESULTS = 25;
-
-            if (requestId !== searchRequestIdRef.current) return;
-
-            setSearchResults(uniqueResults.slice(0, LIMITED_RESULTS));
-        } finally {
-            if (requestId === searchRequestIdRef.current) {
-                setIsLoading(false);
-            }
-        }
-    };
-
-    const clearSearch = () => {
-        setSearchResults([]);
-    };
-
-    return (
-        <SearchContext.Provider
-            value={{
-                searchResults,
-                searchLibrary,
-                searchExternal,
-                clearSearch,
-                isLoading,
-                handleSearch,
-            }}
-        >
-            {children}
-        </SearchContext.Provider>
-    );
+  return (
+    <SearchContext.Provider
+      value={{
+        searchResults,
+        searchLibrary,
+        searchExternal,
+        clearSearch,
+        isLoading,
+        handleSearch,
+      }}
+    >
+      {children}
+    </SearchContext.Provider>
+  );
 };

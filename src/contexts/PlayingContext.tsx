@@ -160,18 +160,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     async event => {
       if (!event.track) return;
 
-      const trackId = event.track?.id;
-      if (!trackId) return;
+      const prev = currentSong;
+      if (prev) {
+        await scrobbleIfNeeded(prev);
+      }
 
-      const newIndex = queueRef.current.findIndex(
-        s => s.id === trackId
-      );
-
+      const trackId = event.track.id;
+      const newIndex = queueRef.current.findIndex(s => s.id === trackId);
       if (newIndex === -1) return;
 
       setCurrentIndex(newIndex);
       setCurrentSong(queueRef.current[newIndex]);
-
       await appendNextIfNeeded(newIndex);
     }
   );

@@ -4,5 +4,6 @@
 export enum QueryKeys {
 	Album = 'album',
 	Artist = 'artist',
-	Playlist = 'playlist'
+	Playlist = 'playlist',
+	LastfmArtist = 'lastfm'
 }

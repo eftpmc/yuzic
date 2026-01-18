@@ -9,11 +9,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   TextInput,
-  Dimensions,
 } from 'react-native';
-import BottomSheet from 'react-native-gesture-bottom-sheet';
+import {
+  BottomSheetModal,
+  BottomSheetFlatList,
+} from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -26,16 +27,18 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { staleTime } from '@/constants/staleTime';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
   onClose: () => void;
 };
 
-const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
+const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
     const { isDarkMode } = useTheme();
     const themeColor = useSelector(selectThemeColor);
+    const insets = useSafeAreaInsets();
 
     const {
       playlists,
@@ -51,6 +54,8 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
     const [newPlaylistName, setNewPlaylistName] = useState('');
     const [initialIds, setInitialIds] = useState<Set<string>>(new Set());
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const snapPoints = useMemo(() => ['85%'], []);
 
     const filteredPlaylists = useMemo(
       () =>
@@ -93,7 +98,6 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
       };
 
       load();
-
       return () => {
         cancelled = true;
       };
@@ -111,7 +115,6 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
       if (!newPlaylistName.trim()) return;
       await createPlaylist(newPlaylistName.trim());
       setNewPlaylistName('');
-      onClose();
     };
 
     const handleDone = async () => {
@@ -131,40 +134,52 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
       }
 
       toast.success('Playlists updated');
-      ref?.current?.close();
+      onClose();
     };
 
     return (
-      <BottomSheet
+      <BottomSheetModal
         ref={ref}
-        height={Dimensions.get('screen').height * 0.8}
-        hasDraggableIcon={false}
-        sheetBackgroundColor={isDarkMode ? '#222' : '#F2F2F7'}
+        snapPoints={snapPoints}
+        onDismiss={onClose}
+        enableDynamicSizing={false}
+        stackBehavior="push"
+        handleComponent={null}
+        backgroundStyle={{
+          backgroundColor: isDarkMode ? '#1c1c1e' : '#E5E5EA',
+        }}
       >
+        {/* Header (lighter grey) */}
         <View
           style={[
-            styles.container,
-            isDarkMode && styles.containerDark,
+            styles.headerContainer,
+            {
+              backgroundColor: isDarkMode ? '#2c2c2e' : '#F2F2F7',
+            },
           ]}
         >
-          <View style={styles.headerContainer}>
-            <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-              <Ionicons
-                name="close"
-                size={24}
-                color={isDarkMode ? '#fff' : '#000'}
-              />
-            </TouchableOpacity>
+          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
             <Text
               style={[
-                styles.headerTitle,
+                styles.cancelText,
                 isDarkMode && styles.textDark,
               ]}
             >
-              Add to Playlist
+              Cancel
             </Text>
-          </View>
+          </TouchableOpacity>
 
+          <Text
+            style={[
+              styles.headerTitle,
+              isDarkMode && styles.textDark,
+            ]}
+          >
+            Add to Playlist
+          </Text>
+        </View>
+
+        <View style={styles.content}>
           <View
             style={[
               styles.searchContainer,
@@ -205,9 +220,10 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
             </TouchableOpacity>
           </View>
 
-          <FlatList
+          <BottomSheetFlatList
             data={filteredPlaylists}
             keyExtractor={item => item.id}
+            contentContainerStyle={{ paddingBottom: 120 }}
             renderItem={({ item }) => {
               const isChecked = selectedIds.has(item.id);
 
@@ -222,16 +238,14 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
                     style={styles.playlistCover}
                   />
 
-                  <View style={styles.playlistDetails}>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isDarkMode && styles.textDark,
-                      ]}
-                    >
-                      {item.title}
-                    </Text>
-                  </View>
+                  <Text
+                    style={[
+                      styles.optionText,
+                      isDarkMode && styles.textDark,
+                    ]}
+                  >
+                    {item.title}
+                  </Text>
 
                   <Ionicons
                     name={isChecked ? 'checkmark-circle' : 'ellipse-outline'}
@@ -242,7 +256,14 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
               );
             }}
           />
+        </View>
 
+        <View
+          style={[
+            styles.doneWrapper,
+            { paddingBottom: insets.bottom + 12 },
+          ]}
+        >
           <TouchableOpacity
             style={[
               styles.doneButton,
@@ -253,7 +274,7 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
             <Text style={styles.doneButtonText}>Done</Text>
           </TouchableOpacity>
         </View>
-      </BottomSheet>
+      </BottomSheetModal>
     );
   }
 );
@@ -261,46 +282,43 @@ const PlaylistList = forwardRef<BottomSheet, PlaylistListProps>(
 export default PlaylistList;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#F2F2F7',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  containerDark: {
-    backgroundColor: '#222',
-  },
   headerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
-    position: 'relative',
   },
   cancelButton: {
     position: 'absolute',
-    left: 0,
-    padding: 8,
+    left: 16,
+  },
+  cancelText: {
+    fontSize: 16,
+    color: '#000',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '600',
     color: '#000',
   },
   textDark: {
     color: '#fff',
   },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 10,
+    padding: 10,
     marginBottom: 16,
   },
   inputDark: {
-    backgroundColor: '#333',
+    backgroundColor: '#2c2c2e',
   },
   searchInput: {
     flex: 1,
@@ -315,8 +333,8 @@ const styles = StyleSheet.create({
   },
   newPlaylistInput: {
     flex: 1,
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 10,
+    padding: 10,
     fontSize: 16,
     backgroundColor: '#fff',
     marginRight: 8,
@@ -325,34 +343,32 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   playlistCover: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  playlistDetails: {
-    marginLeft: 12,
-    flex: 1,
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    marginRight: 12,
   },
   optionText: {
+    flex: 1,
     fontSize: 16,
     color: '#000',
   },
+  doneWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: 'transparent',
+  },
   doneButton: {
-    position: 'absolute',
-    bottom: 48,
-    left: 48,
-    right: 48,
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   doneButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '600',
     color: '#fff',
   },
 });

@@ -20,6 +20,7 @@ import { selectAlbumList, selectArtistList, selectGenres, selectPlaylistList, se
 import { useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/enums/queryKeys";
 import { FAVORITES_ID } from "@/constants/favorites";
+import { useExplore } from "./ExploreContext";
 
 interface LibraryContextType {
     fetchLibrary: (force?: boolean) => Promise<void>;
@@ -38,8 +39,8 @@ interface LibraryContextType {
     starred: {
         songs: Song[]
     };
-    starItem: (id: string) => Promise<void>;
-    unstarItem: (id: string) => Promise<void>;
+    starItem: (song: Song) => Promise<void>;
+    unstarItem: (song: Song) => Promise<void>;
 
     addSongToPlaylist: (playlistId: string, songId: string) => Promise<void>;
     removeSongFromPlaylist: (playlistId: string, songId: string) => Promise<void>;
@@ -62,6 +63,7 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
     const api = useApi();
+    const { refresh } = useExplore();
 
     const isLibraryFetchedRef = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +92,14 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
             dispatch(setArtistList(artists));
             dispatch(setPlaylistList(playlists));
             dispatch(setStarred(starred));
+
+            const seedArtists = artists
+                .slice(0, 5)
+                .map(a => a.name);
+
+            if (seedArtists.length > 0) {
+                refresh(seedArtists);
+            }
         } catch (e) {
 
             console.warn('fetchLibrary failed, using cached redux data');
@@ -122,14 +132,36 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         isLibraryFetchedRef.current = false;
     };
 
-    const starItem = async (id: string) => {
-        await api.starred.add(id);
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, FAVORITES_ID] });
+    const starItem = async (song: Song) => {
+        const prev = starred.songs;
+
+        dispatch(setStarred({
+            songs: [...prev, song]
+        }));
+
+        try {
+            await api.starred.add(song.id);
+            queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, FAVORITES_ID] });
+        } catch (e) {
+            dispatch(setStarred({ songs: prev }));
+            throw e;
+        }
     };
 
-    const unstarItem = async (id: string) => {
-        await api.starred.remove(id);
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, FAVORITES_ID] });
+    const unstarItem = async (song: Song) => {
+        const prev = starred.songs;
+
+        dispatch(setStarred({
+            songs: prev.filter(s => s.id !== song.id)
+        }));
+
+        try {
+            await api.starred.remove(song.id);
+            queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, FAVORITES_ID] });
+        } catch (e) {
+            dispatch(setStarred({ songs: prev }));
+            throw e;
+        }
     };
 
     const addSongToPlaylist = async (playlistId: string, songId: string) => {

@@ -6,20 +6,17 @@ import {
     TouchableOpacity,
     StyleSheet,
     ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
-import { connect as connectNavidrome } from "@/api/navidrome/auth/connect";
-import { connect as connectJellyfin } from "@/api/jellyfin/auth/connect";
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ServerType } from '@/types';
 import { track } from '@/utils/analytics/amplitude';
+import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 
 export default function Credentials() {
     const dispatch = useDispatch();
@@ -45,16 +42,22 @@ export default function Credentials() {
     }, [type, serverUrl]);
 
     const handleNext = async () => {
+        if (!type || !serverUrl) return;
+
         if (!localUsername || !localPassword) {
             toast.error('Please enter both username and password.');
             return;
         }
+
+        const provider = SERVER_PROVIDERS[type];
+
         setIsTesting(true);
         try {
-            const result =
-                type === "navidrome"
-                    ? await connectNavidrome(serverUrl, localUsername, localPassword)
-                    : await connectJellyfin(serverUrl, localUsername, localPassword);
+            const result = await provider.connect(
+                serverUrl,
+                localUsername,
+                localPassword
+            );
 
             if (!result.success) {
                 toast.error(result.message || 'Connection failed.');
@@ -63,38 +66,21 @@ export default function Credentials() {
 
             const id = nanoid();
 
-            if (result.type === 'navidrome') {
-                dispatch(
-                    addServer({
-                        id,
-                        type: 'navidrome',
-                        serverUrl,
-                        username: localUsername,
-                        password: localPassword,
-                        isAuthenticated: true,
-                    })
-                );
-            }
+            dispatch(
+                addServer({
+                    id,
+                    type,
+                    serverUrl,
+                    username: localUsername,
+                    auth: result.auth,
+                    isAuthenticated: true,
+                })
+            );
 
-            if (result.type === 'jellyfin') {
-                dispatch(
-                    addServer({
-                        id,
-                        type: 'jellyfin',
-                        serverUrl,
-                        username: localUsername,
-                        password: localPassword,
-                        token: result.token,
-                        userId: result.userId,
-                        isAuthenticated: true,
-                    })
-                );
-            }
-
-            track("connected new server", { type });
+            track('connected new server', { type });
             dispatch(setActiveServer(id));
             router.replace('/(home)');
-        } catch (e) {
+        } catch {
             toast.error('An error occurred while connecting.');
         } finally {
             setIsTesting(false);
@@ -105,20 +91,14 @@ export default function Credentials() {
         router.back();
     };
 
-    const isJellyfin = type === 'jellyfin';
-
     return (
         <SafeAreaView style={styles.container}>
-            <View
-                style={{ flex: 1 }}
-            >
+            <View style={{ flex: 1 }}>
                 <View style={styles.mainContent}>
                     <Text style={styles.title}>Enter Your Credentials</Text>
 
                     <Text style={styles.subtitle}>
-                        {isJellyfin
-                            ? 'Provide your Jellyfin username and password to continue.'
-                            : 'Provide your Navidrome username and password to continue.'}
+                        Enter your username and password to continue.
                     </Text>
 
                     <View style={styles.inputWrapper}>
@@ -166,14 +146,10 @@ export default function Credentials() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[
-                            styles.backButton
-                        ]}
+                        style={styles.backButton}
                         onPress={handleBack}
                     >
-                        <Text style={styles.backButtonText}>
-                            Back
-                        </Text>
+                        <Text style={styles.backButtonText}>Back</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -214,11 +190,6 @@ const styles = StyleSheet.create({
         flex: 1,
         color: '#fff',
         fontSize: 16,
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        marginTop: 12,
     },
     title: {
         fontSize: 28,

@@ -1,4 +1,4 @@
-import { AuthResult } from "@/api/types";
+import { NavidromeConnectResult } from "@/api/types";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -7,7 +7,7 @@ export async function connect(
   serverUrl: string,
   username: string,
   password: string
-): Promise<AuthResult> {
+): Promise<NavidromeConnectResult> {
   if (!serverUrl || !username || !password) {
     return { success: false, message: "Missing credentials or server URL." };
   }
@@ -31,7 +31,7 @@ export async function connect(
     const response = data["subsonic-response"];
 
     if (response?.status === "ok") {
-      return { success: true, type: "navidrome" };
+      return { success: true };
     }
 
     return {

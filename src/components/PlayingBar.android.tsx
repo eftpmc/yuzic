@@ -19,7 +19,9 @@ import PlayingScreen from '@/screens/playing';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useAI } from '@/contexts/AIContext';
 import { Loader2 } from 'lucide-react-native';
-import BottomSheet from 'react-native-gesture-bottom-sheet';
+import {
+  BottomSheetModal,
+} from '@gorhom/bottom-sheet';
 import {
   selectAiButtonEnabled,
   selectActiveAiApiKey,
@@ -45,7 +47,7 @@ const PlayingBar: React.FC = () => {
   const duration = currentSong ? Number(currentSong.duration) : 1;
   const progress = duration > 0 ? position / duration : 0;
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { height: screenHeight } = useWindowDimensions();
 
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -64,10 +66,11 @@ const PlayingBar: React.FC = () => {
 
   const handleExpand = () => {
     if (currentSong) {
-      bottomSheetRef.current?.show();
+      bottomSheetRef.current?.present();
     }
   };
 
+  /* Spinner */
   const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -81,7 +84,7 @@ const PlayingBar: React.FC = () => {
         toValue: 1,
         duration: 1000,
         easing: Easing.linear,
-        useNativeDriver: false,
+        useNativeDriver: true,
       })
     );
 
@@ -94,6 +97,7 @@ const PlayingBar: React.FC = () => {
     outputRange: ['0deg', '360deg'],
   });
 
+  /* AI */
   const handleAIPress = () => {
     if (!aiApiKey) {
       toast.error('Please enter your AI API key in Settings > Plugins.');
@@ -121,9 +125,18 @@ const PlayingBar: React.FC = () => {
             <View style={styles.topRowWrapper}>
               <View style={styles.topRow}>
                 {currentSong?.cover ? (
-                  <MediaImage cover={currentSong.cover} size='thumb' style={styles.coverArt} />
+                  <MediaImage
+                    cover={currentSong.cover}
+                    size="thumb"
+                    style={styles.coverArt}
+                  />
                 ) : (
-                  <Ionicons name="musical-notes-outline" size={40} style={styles.coverArt} color={isDarkMode ? '#fff' : '#333'} />
+                  <Ionicons
+                    name="musical-notes-outline"
+                    size={40}
+                    style={styles.coverArt}
+                    color={isDarkMode ? '#fff' : '#333'}
+                  />
                 )}
 
                 <View style={styles.details}>
@@ -189,7 +202,7 @@ const PlayingBar: React.FC = () => {
         </View>
       </TouchableOpacity>
 
-      {/* AI PROMPT DIALOG (ANDROID ONLY) */}
+      {/* AI PROMPT (ANDROID) */}
       <Dialog.Container visible={dialogVisible}>
         <Dialog.Title>Play something</Dialog.Title>
         <Dialog.Description>
@@ -204,14 +217,16 @@ const PlayingBar: React.FC = () => {
         <Dialog.Button label="Play" onPress={handleSubmitPrompt} />
       </Dialog.Container>
 
-      <BottomSheet
+      {/* NEW BOTTOM SHEET */}
+      <BottomSheetModal
         ref={bottomSheetRef}
-        height={screenHeight}
-        sheetBackgroundColor="transparent"
-        draggable
+        snapPoints={[screenHeight]}
+        enableDynamicSizing={false}
+        handleComponent={null}
+        backgroundStyle={{ backgroundColor: 'transparent' }}
       >
         <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
-      </BottomSheet>
+      </BottomSheetModal>
     </>
   );
 };
@@ -225,6 +240,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 10,
+    elevation: 4,
   },
   container: {
     flexDirection: 'column',

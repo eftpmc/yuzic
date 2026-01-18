@@ -1,6 +1,7 @@
 import { COVER_PX, CoverSource } from '@/types';
 import store from '@/utils/redux/store';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { getServerProvider } from '@/utils/servers/registry';
 
 export function buildCover(
   cover: CoverSource,
@@ -21,10 +22,16 @@ export function buildCover(
   const state = store.getState();
   const active = selectActiveServer(state);
 
-  if (cover.kind === 'navidrome' && active?.type === 'navidrome') {
-    const { serverUrl, username, password } = active;
+  if (!active) return null;
 
-    if (!serverUrl || !username || !password) return null;
+  const provider = getServerProvider(active.type);
+  const { serverUrl, username, auth } = active;
+
+  if (!serverUrl || !username || !auth) return null;
+
+  if (cover.kind === 'navidrome' && active.type === 'navidrome') {
+    const password = auth.password as string | undefined;
+    if (!password) return null;
 
     return (
       `${serverUrl}/rest/getCoverArt.view` +
@@ -37,11 +44,11 @@ export function buildCover(
     );
   }
 
-  if (cover.kind === 'jellyfin' && active?.type === 'jellyfin') {
-    const { serverUrl, token } = active;
-    const type = cover.imageType ?? 'Primary';
+  if (cover.kind === 'jellyfin' && active.type === 'jellyfin') {
+    const token = auth.token as string | undefined;
+    if (!token) return null;
 
-    if (!serverUrl || !token) return null;
+    const type = cover.imageType ?? 'Primary';
 
     const params = new URLSearchParams();
     params.set('quality', '90');

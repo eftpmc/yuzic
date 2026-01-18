@@ -39,7 +39,7 @@ export async function scrobbleTrack(
   username: string,
   password: string,
   songId: string,
-  isSubmission: boolean = false
+  isSubmission: boolean = true
 ): Promise<ScrobbleResult> {
   const raw = await fetchScrobble(
     serverUrl,

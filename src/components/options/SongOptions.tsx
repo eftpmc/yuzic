@@ -1,161 +1,295 @@
-import React, { useRef } from 'react';
-import { MenuView } from '@react-native-menu/menu';
+import React, { forwardRef, useMemo } from 'react';
 import {
-    TouchableOpacity,
-    StyleSheet,
-    Platform,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import { usePlaying } from '@/contexts/PlayingContext';
-import PlaylistList from '@/components/PlaylistList';
-import BottomSheet from 'react-native-gesture-bottom-sheet';
-import { useLibrary } from '@/contexts/LibraryContext';
 
 import { Song } from '@/types';
+import { usePlaying } from '@/contexts/PlayingContext';
+import { useLibrary } from '@/contexts/LibraryContext';
+import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
+import { ListEnd, ListStart, PlusCircle } from 'lucide-react-native';
 
-const SongOptions: React.FC<{ selectedSong: Song }> = ({ selectedSong }) => {
+type SongOptionsProps = {
+  selectedSong: Song;
+  onAddToPlaylist: () => void;
+};
+
+const SongOptions = forwardRef<BottomSheetModal, SongOptionsProps>(
+  ({ selectedSong, onAddToPlaylist }, ref) => {
     const { isDarkMode } = useTheme();
-    const playlistRef = useRef<BottomSheet>(null);
+    const themeStyles = isDarkMode ? stylesDark : stylesLight;
+
+    const snapPoints = useMemo(() => ['55%'], []);
 
     const { starred, starItem, unstarItem } = useLibrary();
-    const {
-        currentSong,
-        addToQueue,
-        playNext,
-    } = usePlaying();
+    const { currentSong, addToQueue, playNext } = usePlaying();
 
-    const isStarred = starred.songs.some(s => s.id === selectedSong.id);
+    const isStarred = starred.songs.some(
+      s => s.id === selectedSong.id
+    );
+
+    const close = () => {
+      (ref as any)?.current?.dismiss();
+    };
 
     const toggleFavorite = async () => {
-        try {
-            if (isStarred) {
-                await unstarItem(selectedSong.id!);
-                toast.success(`${selectedSong.title} removed from favorites.`);
-            } else {
-                await starItem(selectedSong.id!);
-                toast.success(`${selectedSong.title} added to favorites.`);
-            }
-        } catch (err) {
-            console.error('toggleFavorite error:', err);
-            toast.error('Failed to update favorites.');
+      try {
+        if (isStarred) {
+          await unstarItem(selectedSong);
+          toast.success(`${selectedSong.title} removed from favorites.`);
+        } else {
+          await starItem(selectedSong);
+          toast.success(`${selectedSong.title} added to favorites.`);
         }
+      } catch {
+        toast.error('Failed to update favorites.');
+      } finally {
+        close();
+      }
+    };
+
+    const handleAddToEndQueue = async () => {
+      if (!currentSong) {
+        toast.error('Nothing is currently playing.');
+        return;
+      }
+
+      if (selectedSong.id === currentSong.id) {
+        toast.error(`${selectedSong.title} is already playing.`);
+        return;
+      }
+      
+      try {
+        await addToQueue(selectedSong);
+        toast.success(`${selectedSong.title} added to queue.`);
+      } catch {
+        toast.error('Failed to add to queue.');
+      } finally {
+        close();
+      }
     };
 
     const handleAddToQueue = async () => {
-        try {
-            await addToQueue(selectedSong);
-            toast.success(`${selectedSong.title} added to queue.`);
-        } catch (err) {
-            console.error('addToQueue error:', err);
-            toast.error('Failed to add to queue.');
-        }
+      if (!currentSong) {
+        toast.error('Nothing is currently playing.');
+        return;
+      }
+
+      if (selectedSong.id === currentSong.id) {
+        toast.error(`${selectedSong.title} is already playing.`);
+        return;
+      }
+
+      try {
+        await playNext(selectedSong);
+        toast.success(`${selectedSong.title} will play next.`);
+      } catch {
+        toast.error('Failed to queue song next.');
+      } finally {
+        close();
+      }
     };
 
-    const handlePlayNext = async () => {
-        if (!currentSong) {
-            toast.error('Nothing is currently playing.');
-            return;
-        }
-
-        if (selectedSong.id === currentSong.id) {
-            toast.error(`${selectedSong.title} is already playing.`);
-            return;
-        }
-
-        try {
-            await playNext(selectedSong);
-            toast.success(`${selectedSong.title} will play next.`);
-        } catch (err) {
-            console.error('playNext error:', err);
-            toast.error('Failed to queue song next.');
-        }
+    const handleAddToPlaylist = () => {
+      close();
+      requestAnimationFrame(onAddToPlaylist);
     };
 
     return (
-        <>
-            <MenuView
-                title={selectedSong.title}
-                actions={[
-                    {
-                        id: 'favorite',
-                        title: isStarred ? 'Unfavorite' : 'Favorite',
-                        image: Platform.select({
-                            ios: isStarred ? 'heart.slash' : 'heart',
-                            android: 'ic_heart',
-                        }),
-                        imageColor: '#fff',
-                    },
-                    {
-                        id: 'play-next',
-                        title: 'Play Next',
-                        image: Platform.select({
-                            ios: 'play.fill',
-                            android: 'ic_play',
-                        }),
-                        imageColor: '#fff',
-                    },
-                    {
-                        id: 'add-to-queue',
-                        title: 'Add to Queue',
-                        image: Platform.select({
-                            ios: 'plus',
-                            android: 'ic_plus',
-                        }),
-                        imageColor: '#fff',
-                    },
-                    {
-                        id: 'add-to-playlist',
-                        title: 'Add to Playlist',
-                        image: Platform.select({
-                            ios: 'text.badge.plus',
-                            android: 'ic_playlist_add',
-                        }),
-                        imageColor: '#fff',
-                    },
-                ]}
-                onPressAction={({ nativeEvent }) => {
-                    switch (nativeEvent.event) {
-                        case 'favorite':
-                            toggleFavorite();
-                            break;
-                        case 'play-next':
-                            handlePlayNext();
-                            break;
-                        case 'add-to-queue':
-                            handleAddToQueue();
-                            break;
-                        case 'add-to-playlist':
-                            playlistRef.current?.show();
-                            break;
-                        default:
-                            console.warn(`Unhandled action: ${nativeEvent.event}`);
-                    }
-                }}
-            >
-                <TouchableOpacity style={styles.moreButton}>
-                    <Ionicons
-                        name="ellipsis-horizontal"
-                        size={22}
-                        color={isDarkMode ? '#fff' : '#000'}
-                    />
-                </TouchableOpacity>
-            </MenuView>
-
-            <PlaylistList
-                ref={playlistRef}
-                selectedSong={selectedSong}
-                onClose={() => playlistRef.current?.close()}
+      <BottomSheetModal
+        ref={ref}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        handleIndicatorStyle={styles.handle}
+        backgroundStyle={[
+          styles.sheetBackground,
+          themeStyles.sheetBackground,
+        ]}
+        stackBehavior='push'
+      >
+        <BottomSheetView style={styles.sheetContent}>
+          <View style={styles.header}>
+            <MediaImage
+              cover={selectedSong.cover}
+              size="grid"
+              style={styles.cover}
             />
-        </>
+            <View style={styles.headerText}>
+              <Text
+                style={[styles.title, themeStyles.title]}
+                numberOfLines={1}
+              >
+                {selectedSong.title}
+              </Text>
+              <Text
+                style={[styles.artist, themeStyles.artist]}
+                numberOfLines={1}
+              >
+                {selectedSong.artist || 'Unknown'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <TouchableOpacity
+            style={styles.option}
+            onPress={toggleFavorite}
+          >
+            <Ionicons
+              name={isStarred ? 'heart' : 'heart-outline'}
+              size={26}
+              color="#ff3b30"
+            />
+            <Text
+              style={[styles.optionText, themeStyles.optionText]}
+            >
+              {isStarred ? 'Unfavorite' : 'Favorite'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.option}
+            onPress={handleAddToQueue}
+          >
+            <ListStart
+              size={26}
+              color={themeStyles.icon.color}
+            />
+            <Text
+              style={[styles.optionText, themeStyles.optionText]}
+            >
+              Add to Queue
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.option}
+            onPress={handleAddToEndQueue}
+          >
+            <ListEnd
+              size={26}
+              color={themeStyles.icon.color}
+            />
+            <Text
+              style={[styles.optionText, themeStyles.optionText]}
+            >
+              Add to End
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.option}
+            onPress={handleAddToPlaylist}
+          >
+            <PlusCircle
+              size={26}
+              color={themeStyles.icon.color}
+            />
+            <Text
+              style={[styles.optionText, themeStyles.optionText]}
+            >
+              Add to Playlist
+            </Text>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheetModal>
     );
-};
+  }
+);
 
 export default SongOptions;
 
 const styles = StyleSheet.create({
-    moreButton: {
-        padding: 8,
-    },
+  sheetBackground: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  handle: {
+    backgroundColor: '#999',
+  },
+  sheetContent: {
+    padding: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cover: {
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  headerText: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  artist: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#444',
+    marginVertical: 12,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  optionText: {
+    marginLeft: 16,
+    fontSize: 16,
+  },
+});
+
+const stylesLight = StyleSheet.create({
+  sheetBackground: {
+    backgroundColor: '#F2F2F7',
+  },
+  title: {
+    color: '#000',
+  },
+  artist: {
+    color: '#666',
+  },
+  optionText: {
+    color: '#000',
+  },
+  icon: {
+    color: '#000',
+  },
+});
+
+const stylesDark = StyleSheet.create({
+  sheetBackground: {
+    backgroundColor: '#222',
+  },
+  title: {
+    color: '#fff',
+  },
+  artist: {
+    color: '#aaa',
+  },
+  optionText: {
+    color: '#fff',
+  },
+  icon: {
+    color: '#999',
+  },
 });

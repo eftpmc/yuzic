@@ -10,7 +10,6 @@ import { Toasts } from '@backpackapp-io/react-native-toast';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { SearchProvider } from '@/contexts/SearchContext';
-import { LidarrProvider } from '@/contexts/LidarrContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { AIProvider } from '@/contexts/AIContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -26,6 +25,7 @@ import { useTheme } from '@/hooks/useTheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
+import { ExploreProvider } from '@/contexts/ExploreContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,8 +48,8 @@ function AppShell() {
 
   return (
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
-      <LibraryProvider>
-        <LidarrProvider>
+      <ExploreProvider>
+        <LibraryProvider>
           <DownloadProvider>
             <PlayingProvider>
               <AIProvider>
@@ -96,8 +96,8 @@ function AppShell() {
               </AIProvider>
             </PlayingProvider>
           </DownloadProvider>
-        </LidarrProvider>
-      </LibraryProvider>
+        </LibraryProvider>
+      </ExploreProvider>
     </ThemeProvider>
   );
 }
@@ -124,7 +124,7 @@ export default function RootLayout() {
     };
 
     setJSExceptionHandler(jsErrorHandler, true);
-    setNativeExceptionHandler(() => {}, false, true);
+    setNativeExceptionHandler(() => { }, false, true);
   }, []);
 
   useEffect(() => {

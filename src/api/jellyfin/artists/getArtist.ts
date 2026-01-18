@@ -1,4 +1,3 @@
-import { getArtistInfo } from "@/api/lastfm/getArtistInfo";
 import { AlbumBase, Artist, CoverSource } from "@/types";
 import { getAlbums } from "../albums/getAlbums";
 
@@ -30,9 +29,6 @@ export async function getArtist(
         throw new Error("Artist not found");
     }
 
-    const lastFmData = await getArtistInfo(artistRaw.Name);
-    if (!lastFmData) return null;
-
     const cover: CoverSource = artistRaw.Id
       ? { kind: "jellyfin", itemId: artistRaw.Id }
       : { kind: "none" };
@@ -48,9 +44,6 @@ export async function getArtist(
         name: artistRaw.Name ?? "Unknown Artist",
         cover,
         subtext: "Artist",
-        bio: lastFmData.bio,
-        lastfmurl: lastFmData.artistUrl,
         ownedAlbums: ownedAlbums,
-        externalAlbums: lastFmData.albums,
     };
 }

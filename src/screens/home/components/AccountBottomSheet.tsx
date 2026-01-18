@@ -1,78 +1,94 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import BottomSheet from 'react-native-gesture-bottom-sheet';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import { useSelector, useDispatch } from "react-redux";
-import { useLibrary } from "@/contexts/LibraryContext";
-import { usePlaying } from "@/contexts/PlayingContext";
+import { useSelector, useDispatch } from 'react-redux';
+import { useLibrary } from '@/contexts/LibraryContext';
+import { usePlaying } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
-import { useApi } from "@/api";
-import { disconnect } from "@/utils/redux/slices/serversSlice";
+import { useApi } from '@/api';
+import { disconnect } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
-const AccountActionSheet = forwardRef<BottomSheet, {}>((_, ref) => {
+type Props = {
+  onDismiss?: () => void;
+};
+
+const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
+  ({ onDismiss }, ref) => {
+
     const { isDarkMode } = useTheme();
     const router = useRouter();
     const dispatch = useDispatch();
     const api = useApi();
 
+    const snapPoints = useMemo(() => ['40%'], []);
+
     const activeServer = useSelector(selectActiveServer);
     const username = activeServer?.username;
     const serverUrl = activeServer?.serverUrl;
-
     const themeColor = useSelector(selectThemeColor);
+
     const { clearLibrary } = useLibrary();
     const { pauseSong, resetQueue } = usePlaying();
 
     const initial = username?.[0]?.toUpperCase() ?? '?';
 
+    const close = () => (ref as any)?.current?.dismiss();
+
     const handleSettings = () => {
-      (ref as any)?.current?.close();
+      close();
       router.push('/settings');
     };
 
+    const handleScan = async () => {
+      close();
+      try {
+        const result = await api.auth.startScan();
+        toast.success(result?.message ?? 'Scan triggered.');
+      } catch {
+        toast.error('Could not trigger scan.');
+      }
+    };
+
     const handleSignOut = async () => {
-      (ref as any)?.current?.close();
+      close();
       try {
         await pauseSong();
         await resetQueue();
         clearLibrary();
-        if (activeServer) {
-          dispatch(disconnect());
-        }
+        dispatch(disconnect());
         router.replace('/(onboarding)');
-      } catch (e) {
-        console.error('Sign-out failed:', e);
+      } catch {
         toast.error('Could not sign out cleanly.');
       }
     };
 
-    const handleScan = async () => {
-      (ref as any)?.current?.close();
-      try {
-        const result = await api.auth.startScan();
-        toast.success(result?.message ?? "Scan triggered.");
-      } catch {
-        toast.error("Could not trigger scan.");
-      }
-    };
-
     return (
-      <BottomSheet
+      <BottomSheetModal
         ref={ref}
-        height={320}
-        hasDraggableIcon
-        sheetBackgroundColor={isDarkMode ? '#222' : '#f9f9f9'}
+        onDismiss={onDismiss}
+        snapPoints={snapPoints}
+        backgroundStyle={{
+          backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: isDarkMode ? '#555' : '#ccc',
+        }}
+        enableDynamicSizing={false}
       >
-        <View style={styles.sheetContainer}>
+        <BottomSheetView style={styles.sheetContainer}>
           <View style={styles.headerContainer}>
             <View style={[styles.iconCircle, { backgroundColor: themeColor }]}>
               <Text style={styles.iconInitial}>{initial}</Text>
@@ -95,47 +111,31 @@ const AccountActionSheet = forwardRef<BottomSheet, {}>((_, ref) => {
           />
 
           <TouchableOpacity style={styles.row} onPress={handleSettings}>
-            <Ionicons
-              name="settings-outline"
-              size={18}
-              color={themeColor}
-              style={styles.icon}
-            />
+            <Ionicons name="settings-outline" size={18} color={themeColor} />
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               Settings
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.row} onPress={handleScan}>
-            <Ionicons
-              name="sync-outline"
-              size={18}
-              color={themeColor}
-              style={styles.icon}
-            />
+            <Ionicons name="sync-outline" size={18} color={themeColor} />
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               Trigger Scan
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.row} onPress={handleSignOut}>
-            <Ionicons
-              name="log-out-outline"
-              size={18}
-              color={themeColor}
-              style={styles.icon}
-            />
+            <Ionicons name="log-out-outline" size={18} color={themeColor} />
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               Sign Out
             </Text>
           </TouchableOpacity>
-        </View>
-      </BottomSheet>
+        </BottomSheetView>
+      </BottomSheetModal>
     );
-  }
-);
+  });
 
-export default AccountActionSheet;
+export default AccountBottomSheet;
 
 const styles = StyleSheet.create({
   sheetContainer: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   iconInitial: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 18,
   },
   username: {
@@ -178,17 +178,15 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    marginVertical: 4,
+    marginVertical: 6,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     paddingVertical: 12,
-    borderRadius: 8,
     paddingHorizontal: 12,
-  },
-  icon: {
-    marginRight: 10,
+    borderRadius: 8,
   },
   rowText: {
     fontSize: 15,

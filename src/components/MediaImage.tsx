@@ -1,10 +1,11 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
+
+const PLACEHOLDER = require('@assets/images/placeholder.png');
 
 export function MediaImage({
   cover,
@@ -25,24 +26,20 @@ export function MediaImage({
     );
   }
 
-  if (!uri) {
-    return (
-      <View style={[style, { backgroundColor: '#ccc', alignItems: 'center', justifyContent: 'center' }]}>
-        <Ionicons name="musical-notes-outline" size={32} color="#999" />
-      </View>
-    );
-  }
-
   const priority =
-    size === 'detail' || size === 'grid' ? 'high'
-    : size === 'thumb' ? 'normal'
-    : 'low';
+    size === 'detail' || size === 'grid'
+      ? 'high'
+      : size === 'thumb'
+      ? 'normal'
+      : 'low';
 
   return (
     <Image
-      source={{ uri }}
-      style={style}
+      source={uri ? { uri } : PLACEHOLDER}
+      placeholder={PLACEHOLDER}
+      placeholderContentFit="cover"
       contentFit="cover"
+      style={style}
       cachePolicy="memory-disk"
       priority={priority}
       transition={200}

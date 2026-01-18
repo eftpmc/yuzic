@@ -7,23 +7,16 @@ import {
     TouchableOpacity,
     StyleSheet,
     ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { testServerUrl as testNavidromeUrl } from '@/api/navidrome/auth/testServerUrl';
-import { testServerUrl as testJellyfinUrl } from '@/api/jellyfin/auth/testServerUrl'
-import NavidromeIcon from '@assets/images/navidrome.png';
-import JellyfinIcon from '@assets/images/jellyfin.png';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { track } from '@/utils/analytics/amplitude';
 import { useDispatch } from 'react-redux';
-import { connect } from '@/api/navidrome/auth/connect';
 import { ServerType } from '@/types';
+import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 
 export default function Connect() {
     const [localServerUrl, setLocalServerUrl] = useState('');
@@ -50,12 +43,11 @@ export default function Connect() {
             return;
         }
 
+        const provider = SERVER_PROVIDERS[selectedType];
+
         setIsTesting(true);
         try {
-            const result =
-                selectedType === "navidrome"
-                    ? await testNavidromeUrl(localServerUrl)
-                    : await testJellyfinUrl(localServerUrl);
+            const result = await provider.testServerUrl(localServerUrl);
 
             if (!result.success) {
                 toast.error(result.message ?? 'Server could not be reached.');
@@ -69,8 +61,7 @@ export default function Connect() {
                     serverUrl: localServerUrl,
                 },
             });
-        } catch (e) {
-            console.log(e);
+        } catch {
             toast.error('Failed to connect.');
         } finally {
             setIsTesting(false);
@@ -78,33 +69,35 @@ export default function Connect() {
     };
 
     const handleDemo = async () => {
+        if (!selectedType) return;
+
+        const provider = SERVER_PROVIDERS[selectedType];
+
+        if (!provider.capabilities.supportsDemo || !provider.demo) {
+            toast.error('Demo unavailable for this provider.');
+            return;
+        }
+
         setIsTesting(true);
         try {
-            const serverUrl = "https://demo.navidrome.org"
-            const result = await connect(serverUrl, "demo", "demo");
-
-            if (!result.success) {
-                toast.error(result.message || 'Connection failed.');
-                return;
-            }
-
+            const demo = await provider.demo();
             const id = nanoid();
 
             dispatch(
                 addServer({
                     id,
-                    type: 'navidrome',
-                    serverUrl: "https://demo.navidrome.org",
-                    username: "demo",
-                    password: "demo",
+                    type: selectedType,
+                    serverUrl: demo.serverUrl,
+                    username: demo.username,
+                    auth: demo.auth,
                     isAuthenticated: true,
                 })
             );
 
-            track("connected new server", { type: "navidrome demo" })
+            track('connected new server', { type: selectedType, demo: true });
             dispatch(setActiveServer(id));
             router.replace('/(home)');
-        } catch (e) {
+        } catch {
             toast.error('An error occurred while connecting.');
         } finally {
             setIsTesting(false);
@@ -121,19 +114,14 @@ export default function Connect() {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-            <View
-                style={{ flex: 1 }}
-            >
-                <View
-                    style={styles.mainContent}
-                >
+            <View style={{ flex: 1 }}>
+                <View style={styles.mainContent}>
                     <Text style={styles.title}>Connect to your Server</Text>
-
                     <Text style={styles.subtitle}>Enter your server URL (http/https)</Text>
 
                     <TextInput
                         style={styles.input}
-                        placeholder={'https://navidrome.example.com'}
+                        placeholder="https://your-server.example.com"
                         placeholderTextColor="#888"
                         value={localServerUrl}
                         onChangeText={setLocalServerUrl}
@@ -146,20 +134,20 @@ export default function Connect() {
                     />
 
                     <View style={styles.serverTypeContainer}>
-                        {(['navidrome', 'jellyfin'] as const).map((type) => {
-                            const isSelected = selectedType === type;
+                        {Object.values(SERVER_PROVIDERS).map((provider) => {
+                            const isSelected = selectedType === provider.type;
 
                             return (
                                 <TouchableOpacity
-                                    key={type}
-                                    onPress={() => setSelectedType(type)}
+                                    key={provider.type}
+                                    onPress={() => setSelectedType(provider.type)}
                                     style={[
                                         styles.serverTypeButton,
                                         isSelected && styles.serverTypeButtonSelected,
                                     ]}
                                 >
                                     <Image
-                                        source={type === 'navidrome' ? NavidromeIcon : JellyfinIcon}
+                                        source={provider.icon}
                                         style={{ width: 36, height: 36, marginBottom: 6 }}
                                         resizeMode="contain"
                                     />
@@ -169,7 +157,7 @@ export default function Connect() {
                                             isSelected && styles.serverTypeTextSelected,
                                         ]}
                                     >
-                                        {type === 'navidrome' ? 'Navidrome' : 'Jellyfin'}
+                                        {provider.label}
                                     </Text>
                                 </TouchableOpacity>
                             );
@@ -178,9 +166,7 @@ export default function Connect() {
 
                     {selectedType && (
                         <Text style={styles.description}>
-                            {selectedType === 'navidrome'
-                                ? 'A lightweight, self-hosted music server.'
-                                : 'A full-featured media server for music, movies, and TV.'}
+                            {SERVER_PROVIDERS[selectedType].description}
                         </Text>
                     )}
                 </View>
@@ -201,16 +187,23 @@ export default function Connect() {
                     <TouchableOpacity
                         style={[
                             styles.demoButton,
-                            (selectedType === 'jellyfin' || isTesting) &&
-                            styles.nextButtonDisabled,
+                            (!selectedType ||
+                                !SERVER_PROVIDERS[selectedType].capabilities.supportsDemo ||
+                                isTesting) &&
+                                styles.nextButtonDisabled,
                         ]}
                         onPress={handleDemo}
-                        disabled={selectedType === 'jellyfin' || isTesting}
+                        disabled={
+                            !selectedType ||
+                            !SERVER_PROVIDERS[selectedType].capabilities.supportsDemo ||
+                            isTesting
+                        }
                     >
                         <Text style={styles.demoButtonText}>
-                            {selectedType === 'jellyfin'
-                                ? 'Demo unavailable for Jellyfin'
-                                : 'Use Navidrome demo'}
+                            {selectedType &&
+                            SERVER_PROVIDERS[selectedType].capabilities.supportsDemo
+                                ? `Use ${SERVER_PROVIDERS[selectedType].label} demo`
+                                : 'Demo unavailable'}
                         </Text>
                     </TouchableOpacity>
                 </View>

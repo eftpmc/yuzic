@@ -18,7 +18,6 @@ export interface SettingsState {
   themeColor: string;
   gridColumns: number;
   isGridView: boolean;
-  internalOnlyEnabled: boolean;
   aiButtonEnabled: boolean;
 
 
@@ -49,7 +48,6 @@ const initialState: SettingsState = {
   themeColor: '#ff7f7f',
   gridColumns: 3,
   isGridView: true,
-  internalOnlyEnabled: false,
   aiButtonEnabled: true,
 
   librarySortOrder: 'title',
@@ -84,9 +82,6 @@ const settingsSlice = createSlice({
     },
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
-    },
-    setInternalOnlyEnabled(state, action: PayloadAction<boolean>) {
-      state.internalOnlyEnabled = action.payload;
     },
     setAiButtonEnabled(state, action: PayloadAction<boolean>) {
       state.aiButtonEnabled = action.payload;
@@ -142,7 +137,6 @@ export const {
   setThemeColor,
   setGridColumns,
   setIsGridView,
-  setInternalOnlyEnabled,
   setAiButtonEnabled,
   setLibrarySortOrder,
   setHasSeenGetStarted,

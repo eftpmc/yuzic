@@ -11,27 +11,31 @@ import {
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
 
-export type NavidromeAuthResult = {
-  success: true;
-  type: "navidrome";
-};
+export type JellyfinConnectResult =
+  | {
+    success: true;
+    token: string;
+    userId: string;
+  }
+  | {
+    success: false;
+    message?: string;
+  };
 
-export type JellyfinAuthResult = {
-  success: true;
-  type: "jellyfin";
-  token: string;
-  userId: string;
-};
+export type NavidromeConnectResult =
+  | {
+    success: true;
+  }
+  | {
+    success: false;
+    message?: string;
+  };
+
 
 export type AuthFailure = {
   success: false;
   message?: string;
 };
-
-export type AuthResult =
-  | NavidromeAuthResult
-  | JellyfinAuthResult
-  | AuthFailure;
 
 export interface ApiAdapter {
   auth: AuthApi;

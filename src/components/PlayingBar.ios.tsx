@@ -10,7 +10,7 @@ import {
     TextInput,
     Easing,
 } from 'react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { toast, Toasts } from '@backpackapp-io/react-native-toast';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { BlurView } from 'expo-blur';
@@ -19,7 +19,10 @@ import PlayingScreen from '@/screens/playing';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useAI } from '@/contexts/AIContext';
 import { Loader2 } from 'lucide-react-native';
-import BottomSheet from 'react-native-gesture-bottom-sheet';
+import {
+    BottomSheetModal
+} from '@gorhom/bottom-sheet';
+
 import {
     selectActiveAiApiKey,
     selectAiButtonEnabled,
@@ -28,6 +31,9 @@ import {
 import { useSelector } from 'react-redux';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import ImageColors from 'react-native-image-colors';
+import { buildCover } from '@/utils/builders/buildCover';
+import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 
 const PlayingBar: React.FC = () => {
     const { isDarkMode } = useTheme();
@@ -38,6 +44,50 @@ const PlayingBar: React.FC = () => {
     const { generateQueue, isLoading } = useAI();
     const [inputValue, setInputValue] = useState('');
     const { currentSong, isPlaying, pauseSong, resumeSong } = usePlaying();
+    const [currentGradient, setCurrentGradient] = useState<string[]>(["#000", "#000"]);
+    const [nextGradient, setNextGradient] = useState<string[]>(["#000", "#000"]);
+
+    const darkenHexColor = (hex: string, amount = 0.3) => {
+        let col = hex.replace("#", "");
+        if (col.length === 3) col = col.split("").map(c => c + c).join("");
+
+        const num = parseInt(col, 16);
+        const r = Math.floor(((num >> 16) & 0xff) * (1 - amount));
+        const g = Math.floor(((num >> 8) & 0xff) * (1 - amount));
+        const b = Math.floor((num & 0xff) * (1 - amount));
+
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    };
+
+    const extractColors = async (uri: string) => {
+        try {
+            const colors = await ImageColors.getColors(uri, {
+                fallback: "#121212",
+            });
+
+            let dominant = "#121212";
+            if (colors.platform === "android") {
+                dominant = colors.darkVibrant || colors.dominant || dominant;
+            } else {
+                dominant = colors.primary || dominant;
+            }
+
+            dominant = darkenHexColor(dominant);
+            setNextGradient([dominant, "#000"]);
+        } catch {
+            setNextGradient(["#121212", "#000"]);
+        }
+    };
+
+    useEffect(() => {
+        if (!currentSong?.cover) return;
+
+        const uri =
+            buildCover(currentSong.cover, "detail") ??
+            buildCover({ kind: "none" }, "detail");
+
+        if (uri) extractColors(uri);
+    }, [currentSong?.id]);
 
     const playbackProgress = useProgress(500);
     const position = appState === 'active' ? playbackProgress.position : 0;
@@ -45,9 +95,8 @@ const PlayingBar: React.FC = () => {
     const progress = duration > 0 ? position / duration : 0;
 
     const inputRef = useRef<TextInput>(null);
-    const bottomSheetRef = useRef<BottomSheet>(null);
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-    const { height: screenHeight } = useWindowDimensions();
     const [inputMode, setInputMode] = useState(false);
     const fadeAnim = useRef(new Animated.Value(1)).current;
     const inputFadeAnim = useRef(new Animated.Value(0)).current;
@@ -65,7 +114,7 @@ const PlayingBar: React.FC = () => {
 
     const handleExpand = () => {
         if (currentSong && !inputMode) {
-            bottomSheetRef.current?.show();
+            bottomSheetModalRef.current?.present();
         }
     };
 
@@ -252,9 +301,18 @@ const PlayingBar: React.FC = () => {
                 </View>
             </TouchableOpacity>
 
-            <BottomSheet ref={bottomSheetRef} height={screenHeight} sheetBackgroundColor="transparent" draggable>
-                <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
-            </BottomSheet>
+            <BottomSheetModal ref={bottomSheetModalRef} snapPoints={['100%']} enableDynamicSizing={false} backgroundStyle={{ backgroundColor: 'transparent' }} backgroundComponent={(props) => (
+                <PlayingBackground
+                    {...props}
+                    current={currentGradient}
+                    next={nextGradient}
+                    onFadeComplete={() => {
+                        setCurrentGradient(nextGradient);
+                    }}
+                />
+            )}>
+                <PlayingScreen onClose={() => bottomSheetModalRef.current?.close()} />
+            </BottomSheetModal>
         </>
     );
 };

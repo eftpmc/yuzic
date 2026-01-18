@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
     StyleSheet,
-    Dimensions
+    Dimensions,
+    Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Appearance } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useLibrary } from '@/contexts/LibraryContext';;
+import { useLibrary } from '@/contexts/LibraryContext';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -14,41 +14,51 @@ import AlbumItem from "./components/Items/AlbumItem";
 import PlaylistItem from './components/Items/PlaylistItem';
 import ArtistItem from './components/Items/ArtistItem';
 import SortBottomSheet from './components/SortBottomSheet';
-import AccountActionSheet from './components/AccountActionSheet';
-import BottomSheet from '@gorhom/bottom-sheet';
+import AccountBottomSheet from './components/AccountBottomSheet';
+import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { setIsGridView, setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
 import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
 import HomeHeader from './components/Header';
 import LibraryFilterBar from './components/Filters';
 import LibraryListHeader from './components/Content/Header';
 import LibraryContent from './components/Content';
+import Explore from '@/screens/explore';
 import { useTheme } from '@/hooks/useTheme';
+import { useGridLayout } from '@/hooks/useGridLayout';
+import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
+import { toast } from '@backpackapp-io/react-native-toast';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
     const router = useRouter();
+    const dispatch = useDispatch();
+
+    const lastfmConfig = useSelector(selectLastfmConfig);
     const activeServer = useSelector(selectActiveServer);
     const isAuthenticated = activeServer?.isAuthenticated;
     const username = activeServer?.username;
+
     const { isDarkMode } = useTheme();
     const { albums, artists, playlists, fetchLibrary, clearLibrary, isLoading } = useLibrary();
+
     const gridColumns = useSelector(selectGridColumns);
-
-    const [activeFilter, setActiveFilter] = useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
-    const dispatch = useDispatch();
-
     const isGridView = useSelector(selectIsGridView);
     const sortOrder = useSelector(selectLibrarySortOrder);
 
-    const accountSheetRef = useRef<BottomSheet>(null);
-    const [isMounted, setIsMounted] = useState(false);
-    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+    const [activeFilter, setActiveFilter] =
+        useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
 
+    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+    const [isMounted, setIsMounted] = useState(false);
+    const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false);
+    const [mode, setMode] = useState<'home' | 'explore'>('home');
+
+    const opacity = useRef(new Animated.Value(1)).current;
+
+    const accountSheetRef = useRef<BottomSheetModal>(null);
     const sortSheetRef = useRef<BottomSheet>(null);
 
-    const GRID_MARGIN = 8 * 2;
-    const gridWidth =
-        screenWidth / gridColumns - GRID_MARGIN;
+    const { gridItemWidth } = useGridLayout();
 
     useEffect(() => {
         setIsMounted(true);
@@ -56,12 +66,10 @@ export default function HomeScreen() {
 
     useEffect(() => {
         if (!isMounted) return;
-
         if (!isAuthenticated) {
             router.replace('/(onboarding)');
         }
     }, [isMounted, isAuthenticated]);
-
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -72,28 +80,15 @@ export default function HomeScreen() {
     }, [fetchLibrary]);
 
     useEffect(() => {
-        const onChange = ({ window }: { window: { width: number } }) => {
+        const sub = Dimensions.addEventListener('change', ({ window }) => {
             setScreenWidth(window.width);
-        };
-
-        const subscription = Dimensions.addEventListener('change', onChange);
-        return () => subscription?.remove?.();
+        });
+        return () => sub?.remove?.();
     }, []);
 
-    const albumData = useMemo(
-        () => albums.map(a => ({ ...a, type: 'Album' as const })),
-        [albums]
-    );
-
-    const artistData = useMemo(
-        () => artists.map(a => ({ ...a, type: 'Artist' as const })),
-        [artists]
-    );
-
-    const playlistData = useMemo(
-        () => playlists.map(p => ({ ...p, type: 'Playlist' as const })),
-        [playlists]
-    );
+    const albumData = useMemo(() => albums.map(a => ({ ...a, type: 'Album' as const })), [albums]);
+    const artistData = useMemo(() => artists.map(a => ({ ...a, type: 'Artist' as const })), [artists]);
+    const playlistData = useMemo(() => playlists.map(p => ({ ...p, type: 'Playlist' as const })), [playlists]);
 
     const allData = useMemo(
         () => [...albumData, ...artistData, ...playlistData],
@@ -115,7 +110,6 @@ export default function HomeScreen() {
 
     const sortedFilteredData = useMemo(() => {
         const data = [...filteredData];
-
         switch (sortOrder) {
             case 'title':
                 data.sort((a, b) => {
@@ -124,11 +118,9 @@ export default function HomeScreen() {
                     return aTitle.localeCompare(bTitle);
                 });
                 break;
-
             case 'recent':
                 data.reverse();
                 break;
-
             case 'userplays':
                 data.sort(
                     (a, b) =>
@@ -137,7 +129,6 @@ export default function HomeScreen() {
                 );
                 break;
         }
-
         return data;
     }, [filteredData, sortOrder]);
 
@@ -148,51 +139,42 @@ export default function HomeScreen() {
         { label: 'Playlists', value: 'playlists' },
     ] as const;
 
-    const sortOptions = [
-        { value: 'title', label: 'Alphabetical', icon: 'text-outline' },
-        { value: 'recent', label: 'Most Recent', icon: 'time-outline' },
-        { value: 'userplays', label: 'Most Played', icon: 'flame-outline' },
-    ];
-
-    const currentSortLabel = sortOptions.find(option => option.value === sortOrder)?.label || 'Sort';
+    const currentSortLabel =
+        sortOrder === 'title'
+            ? 'Alphabetical'
+            : sortOrder === 'recent'
+                ? 'Most Recent'
+                : 'Most Played';
 
     const renderItem = ({ item }) => {
         switch (item.type) {
-            case "Album":
-                return (
-                    <AlbumItem
-                        id={item.id}
-                        title={item.title}
-                        subtext={item.subtext}
-                        cover={item.cover}
-                        isGridView={isGridView}
-                        gridWidth={gridWidth}
-                    />
-                );
-            case "Playlist":
-                return (
-                    <PlaylistItem
-                        id={item.id}
-                        title={item.title}
-                        subtext={item.subtext}
-                        cover={item.cover}
-                        isGridView={isGridView}
-                        gridWidth={gridWidth}
-                    />
-                );
-            case "Artist":
-                return (
-                    <ArtistItem
-                        id={item.id}
-                        name={item.name}
-                        subtext={item.subtext}
-                        cover={item.cover}
-                        isGridView={isGridView}
-                        gridWidth={gridWidth}
-                    />
-                );
+            case 'Album':
+                return <AlbumItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} />;
+            case 'Playlist':
+                return <PlaylistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} />;
+            case 'Artist':
+                return <ArtistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} />;
             default:
                 return null;
+        }
+    };
+
+    const fadeTo = (next: 'home' | 'explore') => {
+        setMode(next);
+        opacity.setValue(0);
+        Animated.timing(opacity, {
+            toValue: 1,
+            duration: 220,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const toggleAccountSheet = () => {
+        if (isAccountSheetOpen) {
+            accountSheetRef.current?.dismiss();
+        } else {
+            setIsAccountSheetOpen(true);
+            accountSheetRef.current?.present();
         }
     };
 
@@ -205,42 +187,70 @@ export default function HomeScreen() {
                 title="yuzic"
                 username={username}
                 onSearch={() => navigation.navigate('search')}
-                onAccountPress={() => accountSheetRef.current?.show()}
+                onAccountPress={toggleAccountSheet}
             />
 
             <LibraryFilterBar
+                mode={mode}
                 value={activeFilter}
                 filters={filters}
                 onChange={setActiveFilter}
-            />
-
-            <LibraryContent
-                data={sortedFilteredData}
-                isLoading={isLoading}
-                isGridView={isGridView}
-                gridColumns={gridColumns}
-                gridItemWidth={gridWidth}
-                estimatedItemSize={302}
-                renderItem={renderItem}
-                ListHeaderComponent={
-                    <LibraryListHeader
-                        sortLabel={currentSortLabel}
-                        onSortPress={() => sortSheetRef.current?.show()}
-                        onToggleView={() => dispatch(setIsGridView(!isGridView))}
-                    />
-                }
-            />
-
-            <SortBottomSheet
-                ref={sortSheetRef}
-                sortOrder={sortOrder}
-                onSelect={(value) => {
-                    dispatch(setLibrarySortOrder(value));
-                    sortSheetRef.current?.close();
+                onExplorePress={() => {
+                    if (!lastfmConfig.apiKey) {
+                        toast.error('Connect Last.fm to use Explore');
+                        return;
+                    }
+                    fadeTo(mode === 'explore' ? 'home' : 'explore');
                 }}
             />
-            <AccountActionSheet ref={accountSheetRef} />
-        </SafeAreaView >
+
+            <Animated.View style={{ flex: 1, opacity }}>
+                {mode === 'home' ? (
+                    <>
+                        <LibraryContent
+                            data={sortedFilteredData}
+                            isLoading={isLoading}
+                            isGridView={isGridView}
+                            gridColumns={gridColumns}
+                            gridItemWidth={gridItemWidth}
+                            estimatedItemSize={302}
+                            renderItem={renderItem}
+                            ListHeaderComponent={
+                                <LibraryListHeader
+                                    sortLabel={currentSortLabel}
+                                    onSortPress={() => sortSheetRef.current?.show()}
+                                    onToggleView={() => dispatch(setIsGridView(!isGridView))}
+                                />
+                            }
+                        />
+
+                        <SortBottomSheet
+                            ref={sortSheetRef}
+                            sortOrder={sortOrder}
+                            onSelect={(value) => {
+                                dispatch(setLibrarySortOrder(value));
+                                sortSheetRef.current?.close();
+                            }}
+                        />
+                    </>
+                ) : (
+                    <Animated.View
+                        style={[
+                            StyleSheet.absoluteFill,
+                            { opacity: mode === 'explore' ? opacity : 0 },
+                        ]}
+                        pointerEvents={mode === 'explore' ? 'auto' : 'none'}
+                    >
+                        <Explore onBack={() => fadeTo('home')} />
+                    </Animated.View>
+                )}
+            </Animated.View>
+
+            <AccountBottomSheet
+                ref={accountSheetRef}
+                onDismiss={() => setIsAccountSheetOpen(false)}
+            />
+        </SafeAreaView>
     );
 }
 

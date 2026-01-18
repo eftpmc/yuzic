@@ -9,8 +9,11 @@ export interface ArtistBase {
 }
 
 export interface Artist extends ArtistBase {
+    ownedAlbums: AlbumBase[];
+}
+
+export interface LastfmArtist {
     bio: string;
     lastfmurl: string;
-    ownedAlbums: AlbumBase[];
     externalAlbums: AlbumBase[];
 }

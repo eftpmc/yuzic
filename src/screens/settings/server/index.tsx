@@ -7,7 +7,6 @@ import {
     TouchableOpacity,
     ScrollView,
     StyleSheet,
-    Appearance,
     Platform,
 } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -19,17 +18,19 @@ import Loader from '@/components/Loader';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
+const ICON_SIZE = 20;
+
 const ServerSettings: React.FC = () => {
     const { isDarkMode } = useTheme();
     const api = useApi();
 
     const activeServer = useSelector(selectActiveServer);
 
-    if (!activeServer){
+    if (!activeServer) {
         return null;
     }
 
-    const { serverUrl, username, isAuthenticated } = activeServer
+    const { serverUrl, username, isAuthenticated } = activeServer;
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -65,6 +66,7 @@ const ServerSettings: React.FC = () => {
                         Server URL
                     </Text>
                     <TextInput
+                        numberOfLines={1}
                         value={serverUrl || ''}
                         editable={false}
                         placeholder="Not Set"
@@ -76,6 +78,7 @@ const ServerSettings: React.FC = () => {
                         Username
                     </Text>
                     <TextInput
+                        numberOfLines={1}
                         value={username || ''}
                         editable={false}
                         placeholder="Not Set"
@@ -90,15 +93,17 @@ const ServerSettings: React.FC = () => {
                             Connectivity
                         </Text>
 
-                        {isLoading ? (
-                            <Loader />
-                        ) : (
-                            <MaterialIcons
-                                name={isAuthenticated ? 'check-circle' : 'cancel'}
-                                size={20}
-                                color={isAuthenticated ? 'green' : 'red'}
-                            />
-                        )}
+                        <View style={styles.iconSlot}>
+                            {isLoading ? (
+                                <Loader />
+                            ) : (
+                                <MaterialIcons
+                                    name={isAuthenticated ? 'check-circle' : 'cancel'}
+                                    size={ICON_SIZE}
+                                    color={isAuthenticated ? 'green' : 'red'}
+                                />
+                            )}
+                        </View>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -112,10 +117,11 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F2F2F7' },
     containerDark: { backgroundColor: '#000' },
     scrollContent: { padding: 16, paddingBottom: 100 },
-    section: { backgroundColor: '#fff',
+    section: {
+        backgroundColor: '#fff',
         paddingVertical: 20,
         paddingHorizontal: 16,
-        borderRadius: 10, 
+        borderRadius: 10,
     },
     sectionDark: {
         backgroundColor: '#111',
@@ -153,4 +159,10 @@ const styles = StyleSheet.create({
     },
     rowText: { fontSize: 16, color: '#000' },
     rowTextDark: { color: '#fff' },
+    iconSlot: {
+        width: ICON_SIZE,
+        height: ICON_SIZE,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });

@@ -10,7 +10,7 @@ import {
   LyricsApi
 } from "../types";
 
-import { Playlist, JellyfinServer } from "@/types";
+import { Playlist, Server } from "@/types";
 
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
@@ -34,22 +34,27 @@ import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist"
 import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 
-export const createJellyfinAdapter = (adapter: JellyfinServer): ApiAdapter => {
-  const { serverUrl, username, password, token, userId } = adapter;
+export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
+  const { serverUrl, auth: providerAuth } = adapter;
+
+  const { token, userId } = providerAuth as {
+    token: string;
+    userId: string;
+  };
 
   const auth: AuthApi = {
     connect: async (serverUrl, username, password) => {
       return connect(serverUrl, username, password);
     },
     ping: async () => {
-      if (!password) return false;
-      return ping(serverUrl, password);
+      if (!token) return false;
+      return ping(serverUrl, token);
     },
     testUrl: async (url) => {
       return testServerUrl(url);
     },
     startScan: async () => {
-      return startScan(serverUrl, password);
+      return startScan(serverUrl, token);
     },
     disconnect: () => { },
   };
