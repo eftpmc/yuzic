@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  useWindowDimensions,
   Animated,
   Easing,
 } from 'react-native';
@@ -19,9 +18,7 @@ import PlayingScreen from '@/screens/playing';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useAI } from '@/contexts/AIContext';
 import { Loader2 } from 'lucide-react-native';
-import {
-  BottomSheetModal,
-} from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   selectAiButtonEnabled,
   selectActiveAiApiKey,
@@ -30,6 +27,9 @@ import {
 import { useSelector } from 'react-redux';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import ImageColors from 'react-native-image-colors';
+import { buildCover } from '@/utils/builders/buildCover';
+import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 
 const PlayingBar: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -42,13 +42,49 @@ const PlayingBar: React.FC = () => {
   const { currentSong, isPlaying, pauseSong, resumeSong } = usePlaying();
   const { generateQueue, isLoading } = useAI();
 
+  const [currentGradient, setCurrentGradient] = useState<string[]>(['#000', '#000']);
+  const [nextGradient, setNextGradient] = useState<string[]>(['#000', '#000']);
+
+  const darkenHexColor = (hex: string, amount = 0.3) => {
+    let col = hex.replace('#', '');
+    if (col.length === 3) col = col.split('').map(c => c + c).join('');
+    const num = parseInt(col, 16);
+    const r = Math.floor(((num >> 16) & 0xff) * (1 - amount));
+    const g = Math.floor(((num >> 8) & 0xff) * (1 - amount));
+    const b = Math.floor((num & 0xff) * (1 - amount));
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  };
+
+  const extractColors = async (uri: string) => {
+    try {
+      const colors = await ImageColors.getColors(uri, { fallback: '#121212' });
+      let dominant = '#121212';
+      if (colors.platform === 'android') {
+        dominant = colors.darkVibrant || colors.dominant || dominant;
+      } else {
+        dominant = colors.primary || dominant;
+      }
+      dominant = darkenHexColor(dominant);
+      setNextGradient([dominant, '#000']);
+    } catch {
+      setNextGradient(['#121212', '#000']);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentSong?.cover) return;
+    const uri =
+      buildCover(currentSong.cover, 'detail') ??
+      buildCover({ kind: 'none' }, 'detail');
+    if (uri) extractColors(uri);
+  }, [currentSong?.id]);
+
   const playbackProgress = useProgress(500);
   const position = appState === 'active' ? playbackProgress.position : 0;
   const duration = currentSong ? Number(currentSong.duration) : 1;
   const progress = duration > 0 ? position / duration : 0;
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const { height: screenHeight } = useWindowDimensions();
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [promptText, setPromptText] = useState('');
@@ -65,12 +101,9 @@ const PlayingBar: React.FC = () => {
   };
 
   const handleExpand = () => {
-    if (currentSong) {
-      bottomSheetRef.current?.present();
-    }
+    if (currentSong) bottomSheetRef.current?.present();
   };
 
-  /* Spinner */
   const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -78,7 +111,6 @@ const PlayingBar: React.FC = () => {
       spinAnim.setValue(0);
       return;
     }
-
     const loop = Animated.loop(
       Animated.timing(spinAnim, {
         toValue: 1,
@@ -87,7 +119,6 @@ const PlayingBar: React.FC = () => {
         useNativeDriver: true,
       })
     );
-
     loop.start();
     return () => loop.stop();
   }, [isLoading]);
@@ -97,7 +128,6 @@ const PlayingBar: React.FC = () => {
     outputRange: ['0deg', '360deg'],
   });
 
-  /* AI */
   const handleAIPress = () => {
     if (!aiApiKey) {
       toast.error('Please enter your AI API key in Settings > Plugins.');
@@ -122,108 +152,76 @@ const PlayingBar: React.FC = () => {
             tint={isDarkMode ? 'dark' : 'light'}
             style={styles.container}
           >
-            <View style={styles.topRowWrapper}>
-              <View style={styles.topRow}>
-                {currentSong?.cover ? (
-                  <MediaImage
-                    cover={currentSong.cover}
-                    size="thumb"
-                    style={styles.coverArt}
-                  />
-                ) : (
-                  <Ionicons
-                    name="musical-notes-outline"
-                    size={40}
-                    style={styles.coverArt}
-                    color={isDarkMode ? '#fff' : '#333'}
-                  />
-                )}
+            <View style={styles.topRow}>
+              {currentSong?.cover ? (
+                <MediaImage cover={currentSong.cover} size="thumb" style={styles.coverArt} />
+              ) : (
+                <Ionicons
+                  name="musical-notes-outline"
+                  size={40}
+                  style={styles.coverArt}
+                  color={isDarkMode ? '#fff' : '#333'}
+                />
+              )}
 
-                <View style={styles.details}>
-                  <Text
-                    numberOfLines={1}
-                    style={[styles.title, isDarkMode ? styles.textDark : styles.textLight]}
-                  >
-                    {currentSong?.title || 'No song playing'}
-                  </Text>
-                  <Text
-                    numberOfLines={1}
-                    style={[
-                      styles.artist,
-                      isDarkMode ? styles.textDarkSecondary : styles.textLightSecondary,
-                    ]}
-                  >
-                    {currentSong?.artist || 'Select a track to begin'}
-                  </Text>
-                </View>
-
-                {currentSong && (
-                  <TouchableOpacity
-                    style={styles.playPauseButton}
-                    onPress={handlePlayPause}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <FontAwesome6
-                      name={isPlaying ? 'pause' : 'play'}
-                      size={20}
-                      color={isDarkMode ? '#fff' : '#000'}
-                    />
-                  </TouchableOpacity>
-                )}
-
-                {aiButtonEnabled && (
-                  <TouchableOpacity
-                    style={[styles.fabButton, { backgroundColor: themeColor }]}
-                    onPress={handleAIPress}
-                  >
-                    {isLoading ? (
-                      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                        <Loader2 size={18} color="#fff" />
-                      </Animated.View>
-                    ) : (
-                      <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
-                    )}
-                  </TouchableOpacity>
-                )}
+              <View style={styles.details}>
+                <Text numberOfLines={1} style={[styles.title, isDarkMode ? styles.textDark : styles.textLight]}>
+                  {currentSong?.title || 'No song playing'}
+                </Text>
+                <Text numberOfLines={1} style={[styles.artist, isDarkMode ? styles.textDarkSecondary : styles.textLightSecondary]}>
+                  {currentSong?.artist || 'Select a track to begin'}
+                </Text>
               </View>
+
+              {currentSong && (
+                <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
+                  <FontAwesome6 name={isPlaying ? 'pause' : 'play'} size={20} color={isDarkMode ? '#fff' : '#000'} />
+                </TouchableOpacity>
+              )}
+
+              {aiButtonEnabled && (
+                <TouchableOpacity style={[styles.fabButton, { backgroundColor: themeColor }]} onPress={handleAIPress}>
+                  {isLoading ? (
+                    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                      <Loader2 size={18} color="#fff" />
+                    </Animated.View>
+                  ) : (
+                    <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.progressBarContainer}>
               {currentSong && (
-                <View
-                  style={[
-                    styles.progressBar,
-                    { width: `${progress * 100}%`, backgroundColor: themeColor },
-                  ]}
-                />
+                <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: themeColor }]} />
               )}
             </View>
           </BlurView>
         </View>
       </TouchableOpacity>
 
-      {/* AI PROMPT (ANDROID) */}
       <Dialog.Container visible={dialogVisible}>
         <Dialog.Title>Play something</Dialog.Title>
-        <Dialog.Description>
-          Describe what you want to hear
-        </Dialog.Description>
-        <Dialog.Input
-          placeholder="Alternative chill rap…"
-          value={promptText}
-          onChangeText={setPromptText}
-        />
+        <Dialog.Description>Describe what you want to hear</Dialog.Description>
+        <Dialog.Input value={promptText} onChangeText={setPromptText} />
         <Dialog.Button label="Cancel" onPress={() => setDialogVisible(false)} />
         <Dialog.Button label="Play" onPress={handleSubmitPrompt} />
       </Dialog.Container>
 
-      {/* NEW BOTTOM SHEET */}
       <BottomSheetModal
         ref={bottomSheetRef}
-        snapPoints={[screenHeight]}
+        snapPoints={['100%']}
         enableDynamicSizing={false}
-        handleComponent={null}
         backgroundStyle={{ backgroundColor: 'transparent' }}
+        backgroundComponent={(props) => (
+          <PlayingBackground
+            {...props}
+            current={currentGradient}
+            next={nextGradient}
+            onFadeComplete={() => setCurrentGradient(nextGradient)}
+          />
+        )}
       >
         <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
       </BottomSheetModal>
@@ -243,21 +241,15 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   container: {
-    flexDirection: 'column',
     padding: 10,
     paddingBottom: 6,
     paddingHorizontal: 16,
     borderRadius: 14,
   },
-  topRowWrapper: {
-    height: 50,
-    justifyContent: 'center',
-  },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 50,
-    paddingRight: 4,
   },
   coverArt: {
     width: 45,

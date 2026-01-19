@@ -4,16 +4,12 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    useColorScheme,
     Platform,
     StatusBar,
     Dimensions,
-    AppState,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlaying } from '@/contexts/PlayingContext';
-import ImageColors from 'react-native-image-colors';
 import { useNavigation } from "@react-navigation/native";
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
@@ -23,9 +19,6 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useLibrary } from '@/contexts/LibraryContext';
-import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
@@ -154,11 +147,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     if (!currentSong) {
         return <View style={{ flex: 1, backgroundColor: '#000' }} />;
     }
-
-    const coverUri =
-        buildCover(currentSong?.cover, "detail") ??
-        buildCover(lastCoverRef.current, "detail") ??
-        buildCover({ kind: "none" }, "detail");
 
     const navigateToArtist = () => {
         onClose();
