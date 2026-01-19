@@ -1,6 +1,6 @@
 <img alt='Yuzic' src="/assets/images/logo.png" width="40" />
 
-  [![Latest Version](https://img.shields.io/github/package-json/version/eftpmc/yuzic?label=Latest%20Version&color=orange)](https://github.com/eftpmc/yuzic/releases) [![iTunes App Store](https://img.shields.io/itunes/v/6740042497?logo=app-store&logoColor=white&label=Apple%20App%20Store&labelColor=%60&color=blue)](https://apps.apple.com/us/app/yuzic-navidrome-jellyfin/id6740042497) [![Google Play](https://img.shields.io/badge/Google%20Play-Download-red?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.arinora.rawarr) ![Discord](https://img.shields.io/discord/:1417549384127610932)
+  [![Latest Version](https://img.shields.io/github/package-json/version/eftpmc/yuzic?label=Latest%20Version&color=orange)](https://github.com/eftpmc/yuzic/releases) [![iTunes App Store](https://img.shields.io/itunes/v/6740042497?logo=app-store&logoColor=white&label=Apple%20App%20Store&labelColor=%60&color=blue)](https://apps.apple.com/us/app/yuzic-navidrome-jellyfin/id6740042497) [![Google Play](https://img.shields.io/badge/Google%20Play-Download-red?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.arinora.rawarr) ![Discord](https://img.shields.io/discord/1417549384127610932)
 
 
 <p align="center">
