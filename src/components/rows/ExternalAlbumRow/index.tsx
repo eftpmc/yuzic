@@ -5,23 +5,24 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
 
-import { AlbumBase } from '@/types';
-import AlbumOptions from '@/components/options/AlbumOptions';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { ExternalAlbumBase } from '@/types';
+import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
-  album: AlbumBase;
-  onPress?: (album: AlbumBase) => void;
+  album: ExternalAlbumBase;
+  artistName: string;
+  onPress?: (album: ExternalAlbumBase) => void;
 };
 
-const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
+const ExternalAlbumRow: React.FC<Props> = ({
+  album,
+  artistName,
+  onPress,
+}) => {
   const { isDarkMode } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
 
   return (
     <View style={styles.wrapper}>
@@ -59,22 +60,16 @@ const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
           </View>
         </TouchableOpacity>
 
-        <View style={styles.optionsContainer}>
-          <MaterialIcons
-            name="check-circle"
-            size={20}
-            color={themeColor}
-            style={{ marginRight: 8 }}
-          />
-
-          <AlbumOptions selectedAlbumId={album.id} />
-        </View>
+        <ExternalAlbumOptions
+          selectedAlbumTitle={album.title}
+          selectedAlbumArtist={artistName}
+        />
       </View>
     </View>
   );
 };
 
-export default AlbumRow;
+export default ExternalAlbumRow;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -114,9 +109,5 @@ const styles = StyleSheet.create({
   },
   albumSubtextDark: {
     color: '#aaa',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
 });

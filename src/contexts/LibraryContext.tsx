@@ -96,7 +96,9 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
             dispatch(setStarred(starred));
 
             const seedArtists = artists
-                .slice(0, 5)
+                .slice()
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 8)
                 .map(a => a.name);
 
             if (seedArtists.length > 0 && lastfmConfig.apiKey) {

@@ -45,14 +45,14 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const [loadingSongs, setLoadingSongs] = useState(true);
 
   const { data: lastfmData, isLoading: isLastfmLoading } = useQuery({
-    queryKey: [QueryKeys.LastfmArtist, artist.name],
-    queryFn: () =>
-      lastfmConfig
-        ? lastfm.getArtistInfo(lastfmConfig, artist.name)
-        : null,
-    staleTime: staleTime.lastfm,
-    enabled: !!artist.name && !!lastfmConfig,
-  });
+  queryKey: [QueryKeys.LastfmArtist, artist.name],
+  queryFn: () =>
+    lastfmConfig
+      ? lastfm.getArtistInfo(lastfmConfig, artist.name)
+      : Promise.resolve(null),
+  staleTime: staleTime.lastfm,
+  enabled: !!artist.name && !!lastfmConfig,
+});
 
   useEffect(() => {
     let cancelled = false;

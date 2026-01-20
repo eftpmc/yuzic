@@ -17,6 +17,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { staleTime } from '@/constants/staleTime';
 import * as lastfm from '@/api/lastfm';
 import { QueryKeys } from '@/enums/queryKeys';
+import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 
 type Props = {
   artist: Artist;
@@ -63,24 +64,33 @@ const ArtistContent: React.FC<Props> = ({ artist }) => {
     return [...owned, ...external];
   }, [artist.ownedAlbums, lastfmData?.albums]);
 
-  const navigateToAlbum = (album: CombinedAlbum) => {
-    if (album.source === 'external') return;
-    navigation.navigate('albumView', { id: album.id });
-  };
-
   return (
     <FlashList
       data={mergedAlbums}
       keyExtractor={item => item.id}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<Header artist={artist} />}
-      renderItem={({ item }) => (
-        <AlbumRow
-          album={item}
-          artistName={artist.name}
-          onPress={navigateToAlbum}
-        />
-      )}
+      renderItem={({ item }) =>
+        item.source === 'owned' ? (
+          <AlbumRow
+            album={item}
+            onPress={album =>
+              navigation.navigate('albumView', { id: album.id })
+            }
+          />
+        ) : (
+          <ExternalAlbumRow
+            album={item}
+            artistName={artist.name}
+            onPress={album =>
+              navigation.navigate('externalAlbumView', {
+                album: album.title,
+                artist: artist.name,
+              })
+            }
+          />
+        )
+      }
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: 140,

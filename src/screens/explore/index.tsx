@@ -138,17 +138,16 @@ const PlaceholderTile = React.memo(function PlaceholderTile({
 export default function Explore({ onBack }: Props) {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation();
-  const { artists, albums } = useExplore();
-
+  const { artistPool, albumPool, isLoading } = useExplore();
   const { gridItemWidth, gridGap } = useGridLayout();
 
-  const artistData = artists.length
-    ? artists
-    : Array.from({ length: 6 });
+  const artistData = artistPool.length
+  ? artistPool
+  : Array.from({ length: 6 });
 
-  const albumData = albums.length
-    ? albums
-    : Array.from({ length: 6 });
+const albumData = albumPool.length
+  ? albumPool
+  : Array.from({ length: 6 });
 
   return (
     <ScrollView
@@ -184,7 +183,9 @@ export default function Explore({ onBack }: Props) {
                 radius={gridItemWidth / 2}
                 isDarkMode={isDarkMode}
                 onPress={() =>
-                  navigation.navigate('artistView', { id: item.id })
+                  navigation.navigate('artistView', {
+                    id: item.id,
+                  })
                 }
               />
             ) : (
@@ -214,7 +215,7 @@ export default function Explore({ onBack }: Props) {
             <View style={{ width: gridGap }} />
           )}
           renderItem={({ item }) =>
-            item?.id ? (
+            item?.title ? (
               <MediaTile
                 cover={item.cover}
                 title={item.title}
@@ -223,7 +224,10 @@ export default function Explore({ onBack }: Props) {
                 radius={12}
                 isDarkMode={isDarkMode}
                 onPress={() =>
-                  navigation.navigate('albumView', { id: item.id })
+                  navigation.navigate('externalAlbumView', {
+                    album: item.title,
+                    artist: item.subtext,
+                  })
                 }
               />
             ) : (

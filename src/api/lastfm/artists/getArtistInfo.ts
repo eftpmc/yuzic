@@ -1,4 +1,4 @@
-import { ExternalAlbumBase, LastfmConfig } from '@/types';
+import { CoverSource, ExternalAlbumBase, LastfmConfig } from '@/types';
 import { createLastfmClient } from '../client';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -9,23 +9,26 @@ export type GetArtistInfoResult = {
   globalPlayCount: number;
 };
 
+const normalizeLastFmImage = (images?: any[]): CoverSource => {
+  if (!Array.isArray(images)) return { kind: 'none' };
+
+  const preferred =
+    images.find(i => i.size === 'extralarge') ||
+    images.find(i => i.size === 'large') ||
+    images.find(i => i.size === 'medium') ||
+    images.find(i => i.size === 'small');
+
+  return preferred?.['#text']
+    ? { kind: 'lastfm', url: preferred['#text'] }
+    : { kind: 'none' };
+};
+
 const normalizeLastFmAlbum = (album: any): ExternalAlbumBase => ({
   id: album.mbid || `lastfm:${nanoid()}`,
   title: album.name,
   artist: album.artist?.name ?? album.artist ?? '',
   subtext: album.artist?.name ?? album.artist ?? '',
-  cover:
-    album.image?.find((i: any) => i.size === 'extralarge')?.['#text']
-      ? {
-          kind: 'lastfm',
-          url: album.image.find((i: any) => i.size === 'extralarge')['#text'],
-        }
-      : album.image?.find((i: any) => i.size === 'large')?.['#text']
-      ? {
-          kind: 'lastfm',
-          url: album.image.find((i: any) => i.size === 'large')['#text'],
-        }
-      : { kind: 'none' },
+  cover: normalizeLastFmImage(album.image),
 });
 
 export const getArtistInfo = async (
@@ -58,7 +61,7 @@ export const getArtistInfo = async (
         : [],
       bio: infoRes.artist?.bio?.summary ?? '',
       artistUrl: infoRes.artist?.url ?? '',
-      globalPlayCount: Number(infoRes.artist?.stats?.playcount ?? 0),
+      globalPlayCount: Number(infoRes.artist?.stats?.playcount ?? 0)
     };
   } catch (error) {
     console.warn(
@@ -69,7 +72,7 @@ export const getArtistInfo = async (
       albums: [],
       bio: '',
       artistUrl: '',
-      globalPlayCount: 0,
+      globalPlayCount: 0
     };
   }
 };

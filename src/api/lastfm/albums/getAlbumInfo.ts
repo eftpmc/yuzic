@@ -43,22 +43,30 @@ export async function getAlbumInfo(
 
   const cover: CoverSource =
     imageMap.extralarge || imageMap.mega
-      ? { kind: 'lastfm', url: imageMap.extralarge ?? imageMap.mega }
+      ? { kind: 'lastfm', url: imageMap.extralarge ?? imageMap.medium }
       : imageMap.large
-      ? { kind: 'lastfm', url: imageMap.large }
-      : { kind: 'none' };
+        ? { kind: 'lastfm', url: imageMap.large }
+        : { kind: 'none' };
 
   const albumId = album.mbid || `lastfm:${nanoid()}`;
 
-  const songs: ExternalSong[] =
-    album.tracks?.track?.map(track => ({
-      id: `lastfm:track:${nanoid()}`,
-      title: track.name,
-      artist: album.artist,
-      cover,
-      duration: String(track.duration ?? 0),
-      albumId,
-    })) ?? [];
+  const rawTracks = album.tracks?.track;
+
+  const trackArray =
+    Array.isArray(rawTracks)
+      ? rawTracks
+      : rawTracks
+        ? [rawTracks]
+        : [];
+
+  const songs: ExternalSong[] = trackArray.map(track => ({
+    id: `lastfm:track:${nanoid()}`,
+    title: track.name,
+    artist: album.artist,
+    cover,
+    duration: String(track.duration ?? 0),
+    albumId,
+  }));
 
   return {
     id: albumId,

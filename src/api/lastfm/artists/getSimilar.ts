@@ -1,32 +1,15 @@
-import { ExternalArtistBase, CoverSource, LastfmConfig } from '@/types';
+import { ExternalArtistBase, LastfmConfig } from '@/types';
 import { createLastfmClient } from '../client';
 import { nanoid } from 'nanoid/non-secure';
 
 export type GetSimilarArtistsResult = ExternalArtistBase[];
 
 const normalizeSimilarArtist = (artist: any): ExternalArtistBase => {
-  const cover: CoverSource =
-    artist.image?.find((i: any) => i.size === 'extralarge')?.['#text']
-      ? {
-          kind: 'lastfm',
-          url: artist.image.find((i: any) => i.size === 'extralarge')['#text'],
-        }
-      : artist.image?.find((i: any) => i.size === 'large')?.['#text']
-      ? {
-          kind: 'lastfm',
-          url: artist.image.find((i: any) => i.size === 'large')['#text'],
-        }
-      : artist.image?.[0]?.['#text']
-      ? {
-          kind: 'lastfm',
-          url: artist.image[0]['#text'],
-        }
-      : { kind: 'none' };
 
   return {
     id: artist.mbid || `lastfm:artist:${nanoid()}`,
     name: artist.name,
-    cover,
+    cover: { kind: "none" },
     subtext: 'Artist',
   };
 };

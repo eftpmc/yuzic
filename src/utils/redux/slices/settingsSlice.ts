@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Song } from '@/types';
 
-export type LibrarySortOrder = 'title' | 'recent' | 'userplays';
+export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 
 export interface PromptHistoryEntry {

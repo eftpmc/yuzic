@@ -63,7 +63,7 @@ export default function HomeScreen() {
     const opacity = useRef(new Animated.Value(1)).current;
 
     const accountSheetRef = useRef<BottomSheetModal>(null);
-    const sortSheetRef = useRef<BottomSheet>(null);
+    const sortSheetRef = useRef<BottomSheetModal>(null);
 
     const { gridItemWidth } = useGridLayout();
 
@@ -147,6 +147,12 @@ export default function HomeScreen() {
                     return bPlays - aPlays;
                 });
                 break;
+            case 'year':
+                data.sort((a, b) => {
+                    if (a.type !== 'Album' || b.type !== 'Album') return 0;
+                    return (b.year ?? 0) - (a.year ?? 0);
+                });
+                break;
         }
         return data;
     }, [filteredData, sortOrder]);
@@ -163,7 +169,12 @@ export default function HomeScreen() {
             ? 'Alphabetical'
             : sortOrder === 'recent'
                 ? 'Most Recent'
-                : 'Most Played';
+                : sortOrder === 'userplays'
+                    ? 'Most Played'
+                    : sortOrder === 'year'
+                        ? 'Release Year'
+                        : 'Last Modified';
+
 
     const renderItem = ({ item }) => {
         switch (item.type) {
@@ -237,7 +248,7 @@ export default function HomeScreen() {
                             ListHeaderComponent={
                                 <LibraryListHeader
                                     sortLabel={currentSortLabel}
-                                    onSortPress={() => sortSheetRef.current?.show()}
+                                    onSortPress={() => sortSheetRef.current?.present()}
                                     onToggleView={() => dispatch(setIsGridView(!isGridView))}
                                 />
                             }
@@ -248,7 +259,7 @@ export default function HomeScreen() {
                             sortOrder={sortOrder}
                             onSelect={(value) => {
                                 dispatch(setLibrarySortOrder(value));
-                                sortSheetRef.current?.close();
+                                sortSheetRef.current?.dismiss();
                             }}
                         />
                     </>
