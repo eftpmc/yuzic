@@ -20,27 +20,30 @@ import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 
 import {
-  selectLastfmApiKey,
-  selectLastfmAuthenticated,
-  selectLastfmConfig,
-} from '@/utils/redux/selectors/lastfmSelectors';
+  selectListenBrainzUsername,
+  selectListenBrainzToken,
+  selectListenBrainzAuthenticated,
+  selectListenBrainzConfig,
+} from '@/utils/redux/selectors/listenbrainzSelectors';
 
 import {
-  setApiKey,
+  setUsername,
+  setToken,
   setAuthenticated,
   disconnect,
-} from '@/utils/redux/slices/lastfmSlice';
+} from '@/utils/redux/slices/listenbrainzSlice';
 
-import * as lastfm from '@/api/lastfm';
+import * as listenbrainz from '@/api/listenbrainz';
 
-const LastfmView: React.FC = () => {
+const ListenBrainzView: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
 
-  const apiKey = useSelector(selectLastfmApiKey);
-  const isAuthenticated = useSelector(selectLastfmAuthenticated);
-  const config = useSelector(selectLastfmConfig);
+  const username = useSelector(selectListenBrainzUsername);
+  const token = useSelector(selectListenBrainzToken);
+  const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
+  const config = useSelector(selectListenBrainzConfig);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,23 +65,26 @@ const LastfmView: React.FC = () => {
     outputRange: ['0deg', '360deg'],
   });
 
-  const handleTest = async () => {
-    if (!config) {
-      toast.error('Enter an API key first.');
+  const handlePing = async () => {
+    if (!username || !token) {
+      toast.error('Enter username and token first.');
       return;
     }
 
     setIsLoading(true);
     try {
-      const result = await lastfm.testConnection(config);
+      const result = await listenbrainz.testConnection(config);
 
       if (result.success) {
         dispatch(setAuthenticated(true));
-        toast.success('Last.fm connected.');
+        toast.success('ListenBrainz connection successful.');
       } else {
         dispatch(setAuthenticated(false));
-        toast.error(result.message);
+        toast.error(result.message || 'Connection failed.');
       }
+    } catch {
+      dispatch(setAuthenticated(false));
+      toast.error('Failed to connect to ListenBrainz.');
     } finally {
       setIsLoading(false);
     }
@@ -86,31 +92,43 @@ const LastfmView: React.FC = () => {
 
   const handleDisconnect = () => {
     dispatch(disconnect());
-    toast('Disconnected from Last.fm.');
+    toast('Disconnected from ListenBrainz.');
   };
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
-      <Header title="Last.fm" />
+      <Header title="ListenBrainz" />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-            API Key
+            Username
           </Text>
-
           <TextInput
-            value={apiKey}
-            onChangeText={(v) => dispatch(setApiKey(v))}
-            secureTextEntry
+            value={username}
+            onChangeText={(v) => dispatch(setUsername(v.trim()))}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="Last.fm API key"
+            placeholder="ListenBrainz username"
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
-          <TouchableOpacity style={styles.row} onPress={handleTest}>
+          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+            User Token
+          </Text>
+          <TextInput
+            value={token}
+            onChangeText={(v) => dispatch(setToken(v.trim()))}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="ListenBrainz user token"
+            placeholderTextColor={isDarkMode ? '#666' : '#999'}
+            style={[styles.input, isDarkMode && styles.inputDark]}
+          />
+
+          <TouchableOpacity style={styles.row} onPress={handlePing}>
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               Connectivity
             </Text>
@@ -131,8 +149,9 @@ const LastfmView: React.FC = () => {
 
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.helperText, isDarkMode && styles.helperTextDark]}>
-            Last.fm is used to enrich artists with bios, similar artists, and
-            external albums. No listening data is sent from Yuzic.
+            ListenBrainz is used for scrobbling and personalized discovery.
+            MusicBrainz provides artist, albums, genres, and release metadata.
+            No listening data is sent without your permission.
           </Text>
         </View>
 
@@ -151,7 +170,7 @@ const LastfmView: React.FC = () => {
   );
 };
 
-export default LastfmView;
+export default ListenBrainzView;
 
 const styles = StyleSheet.create({
   container: {
@@ -196,6 +215,18 @@ const styles = StyleSheet.create({
     borderColor: '#444',
     backgroundColor: '#1a1a1a',
     color: '#fff',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',

@@ -78,8 +78,7 @@ const Search = () => {
           artistName={result.subtext}
           onPress={album =>
             navigation.navigate('externalAlbumView', {
-              album: album.title,
-              artist: album.subtext,
+              albumId: album.id
             })
           }
         />

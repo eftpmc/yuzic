@@ -5,7 +5,6 @@ import {
   GenresApi,
   PlaylistsApi,
   StarredApi,
-  ScrobbleApi,
   AuthApi,
   LyricsApi
 } from "../types";
@@ -37,8 +36,6 @@ import { unstar } from "./starred/unstar";
 
 import { getSongsByGenre } from "./genres/getSongsByGenre";
 import { getGenres } from "./genres/getGenres";
-
-import { scrobbleTrack } from "./scrobbleTrack";
 
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 
@@ -174,12 +171,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     },
   };
 
-  const scrobble: ScrobbleApi = {
-    submit: async (songId) => {
-      await scrobbleTrack(serverUrl, username, password, songId);
-    },
-  };
-
   const lyrics: LyricsApi = {
     getBySongId: async (songId) => {
       return getLyricsBySongId(serverUrl, username, password, songId);
@@ -193,7 +184,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     genres,
     playlists,
     starred,
-    scrobble,
     lyrics
   };
 };

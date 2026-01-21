@@ -20,8 +20,10 @@ import shuffleArray from '@/utils/shuffleArray';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useApi } from '@/api';
 import { buildCover } from '@/utils/builders/buildCover';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
+import * as listenbrainz from '@/api/listenbrainz'
+import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -77,9 +79,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const playbackState = usePlaybackState();
   const isPlaying = playbackState.state === State.Playing;
 
-  const api = useApi();
   const { getSongLocalUri } = useDownload();
   const dispatch = useDispatch();
+  const listenBrainzConfig = useSelector(selectListenBrainzConfig);
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -110,16 +112,30 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const scrobbleIfNeeded = async (song: Song | null) => {
     if (!song) return;
     if (lastScrobbledIdRef.current === song.id) return;
+    if (!listenBrainzConfig?.token) return;
+
+    const listenedAt = Math.floor(Date.now() / 1000);
+
     try {
-      await api.scrobble.submit(song.id);
+      await listenbrainz.submitScrobble(
+        listenBrainzConfig,
+        {
+          artist: song.artist,
+          track: song.title,
+          listenedAt
+        },
+      );
+
       lastScrobbledIdRef.current = song.id;
-    } catch { }
+    } catch (err) {
+      console.warn('ListenBrainz scrobble failed', err);
+    }
 
     dispatch(
       incrementPlay({
         songId: song.id,
         albumId: song.albumId,
-        artistId: song.artistId
+        artistId: song.artistId,
       })
     );
   };

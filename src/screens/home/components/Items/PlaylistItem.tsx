@@ -11,9 +11,6 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/api';
-import { QueryKeys } from '@/enums/queryKeys';
-import { useSelector } from 'react-redux';
-import { selectFavoritesPlaylist } from '@/utils/redux/selectors/selectFavoritesPlaylist';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource, Playlist } from '@/types';
 import { FAVORITES_ID } from '@/constants/favorites';
@@ -22,8 +19,8 @@ import ContextMenuModal, {
 } from '@/components/ContextMenuModal';
 import InfoModal, { InfoRow } from '@/components/InfoModal';
 import { useTheme } from '@/hooks/useTheme';
-import { buildFavoritesPlaylist } from '@/utils/builders/buildFavoritesPlaylist';
-import { staleTime } from '@/constants/staleTime';
+import { useFavoritesPlaylist } from '@/hooks/starred';
+import { usePlaylist } from '@/hooks/playlists';
 
 interface ItemProps {
   id: string;
@@ -60,7 +57,13 @@ const PlaylistItem: React.FC<ItemProps> = ({
   const queryClient = useQueryClient();
   const api = useApi();
 
-  const favorites = useSelector(selectFavoritesPlaylist);
+  const { playlist: favoritesPlaylist } = useFavoritesPlaylist();
+const { playlist: normalPlaylist } = usePlaylist(id);
+
+const playlist = useMemo<Playlist | null>(() => {
+  if (id === FAVORITES_ID) return favoritesPlaylist;
+  return normalPlaylist;
+}, [id, favoritesPlaylist, normalPlaylist]);
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
@@ -74,30 +77,15 @@ const PlaylistItem: React.FC<ItemProps> = ({
     navigation.navigate('playlistView', { id });
   }, [navigation, id]);
 
-  const fetchPlaylist = useCallback(async () => {
-    if (id === FAVORITES_ID) {
-      if (!favorites || !favorites.songs?.length) return null;
-      return buildFavoritesPlaylist(favorites.songs);
-    }
-
-    return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Playlist, id],
-      queryFn: () => api.playlists.get(id),
-      staleTime: staleTime.playlists,
-    });
-  }, [id, favorites, api, queryClient]);
-
   const handlePlay = useCallback(
     async (shuffle: boolean) => {
-      const playlist = await fetchPlaylist();
       if (!playlist || !playlist.songs.length) return;
       playSongInCollection(playlist.songs[0], playlist, shuffle);
     },
-    [fetchPlaylist, playSongInCollection]
+    [playlist, playSongInCollection]
   );
 
   const handleAddToQueue = useCallback(async () => {
-    const playlist = await fetchPlaylist();
     if (!playlist || !playlist.songs.length) return;
 
     const queue = getQueue();
@@ -108,14 +96,13 @@ const PlaylistItem: React.FC<ItemProps> = ({
 
     addCollectionToQueue(playlist);
   }, [
-    fetchPlaylist,
+    playlist,
     getQueue,
     addCollectionToQueue,
     playSongInCollection,
   ]);
 
   const handleShuffleToQueue = useCallback(async () => {
-    const playlist = await fetchPlaylist();
     if (!playlist || !playlist.songs.length) return;
 
     const queue = getQueue();
@@ -126,18 +113,17 @@ const PlaylistItem: React.FC<ItemProps> = ({
 
     shuffleCollectionToQueue(playlist);
   }, [
-    fetchPlaylist,
+    playlist,
     getQueue,
     shuffleCollectionToQueue,
     playSongInCollection,
   ]);
 
   const handleShowInfo = useCallback(async () => {
-    const playlist = await fetchPlaylist();
     if (!playlist) return;
     setPlaylistInfo(playlist);
     setInfoVisible(true);
-  }, [fetchPlaylist]);
+  }, [playlist]);
 
   const handleDownload = useCallback(async () => {
     if (isDownloaded || isDownloading || isLoading) return;

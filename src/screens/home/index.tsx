@@ -6,7 +6,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -15,7 +14,7 @@ import PlaylistItem from './components/Items/PlaylistItem';
 import ArtistItem from './components/Items/ArtistItem';
 import SortBottomSheet from './components/SortBottomSheet';
 import AccountBottomSheet from './components/AccountBottomSheet';
-import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { setIsGridView, setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
 import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
 import {
@@ -29,21 +28,29 @@ import LibraryContent from './components/Content';
 import Explore from '@/screens/explore';
 import { useTheme } from '@/hooks/useTheme';
 import { useGridLayout } from '@/hooks/useGridLayout';
-import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
+import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
+import { useAlbums } from '@/hooks/albums';
+import { useArtists } from '@/hooks/artists';
+import { usePlaylists } from '@/hooks/playlists';
+import { QueryKeys } from '@/enums/queryKeys';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
     const router = useRouter();
     const dispatch = useDispatch();
 
-    const lastfmConfig = useSelector(selectLastfmConfig);
+    const listenbrainzConfig = useSelector(selectListenBrainzConfig);
     const activeServer = useSelector(selectActiveServer);
     const isAuthenticated = activeServer?.isAuthenticated;
     const username = activeServer?.username;
 
     const { isDarkMode } = useTheme();
-    const { albums, artists, playlists, fetchLibrary, clearLibrary, isLoading } = useLibrary();
+    const { albums, isLoading: albumsLoading } = useAlbums();
+    const { artists, isLoading: artistsLoading } = useArtists();
+    const { playlists, isLoading: playlistsLoading } = usePlaylists();
+    const isLoading = albumsLoading || artistsLoading || playlistsLoading;
 
     const gridColumns = useSelector(selectGridColumns);
     const isGridView = useSelector(selectIsGridView);
@@ -67,6 +74,16 @@ export default function HomeScreen() {
 
     const { gridItemWidth } = useGridLayout();
 
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!activeServer?.isAuthenticated) return;
+
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Albums] });
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Artists] });
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Playlists] });
+    }, [activeServer?.id, activeServer?.isAuthenticated]);
+
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -77,14 +94,6 @@ export default function HomeScreen() {
             router.replace('/(onboarding)');
         }
     }, [isMounted, isAuthenticated]);
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            fetchLibrary();
-        } else {
-            clearLibrary();
-        }
-    }, [fetchLibrary]);
 
     useEffect(() => {
         const sub = Dimensions.addEventListener('change', ({ window }) => {
@@ -226,8 +235,8 @@ export default function HomeScreen() {
                 filters={filters}
                 onChange={setActiveFilter}
                 onExplorePress={() => {
-                    if (!lastfmConfig.apiKey) {
-                        toast.error('Connect Last.fm to use Explore');
+                    if (!listenbrainzConfig?.token) {
+                        toast.error('Connect ListenBrainz to use Explore');
                         return;
                     }
                     fadeTo(mode === 'explore' ? 'home' : 'explore');

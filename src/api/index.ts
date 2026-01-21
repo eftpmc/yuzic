@@ -43,9 +43,6 @@ export const useApi = (): ApiAdapter => {
         add: empty,
         remove: empty,
       },
-      scrobble: {
-        submit: empty,
-      },
       lyrics: {
         getBySongId: empty,
       }
@@ -90,9 +87,6 @@ export const useApi = (): ApiAdapter => {
       list: empty,
       add: empty,
       remove: empty,
-    },
-    scrobble: {
-      submit: empty,
     },
     lyrics: {
       getBySongId: empty

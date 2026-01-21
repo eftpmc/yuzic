@@ -18,7 +18,6 @@ import Animated, {
     useAnimatedStyle,
     withTiming,
 } from 'react-native-reanimated';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { CoverSource } from '@/types';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
@@ -30,6 +29,7 @@ import PlayingMain from './components/PlayingMain';
 import Controls from './components/Controls';
 import BottomControls from './components/BottomControls';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
+import { useArtists } from '@/hooks/artists';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -91,7 +91,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         currentSong
     } = usePlaying();
     const api = useApi();
-    const { artists } = useLibrary();
+    const { artists } = useArtists();
     const insets = useSafeAreaInsets();
     const [lyrics, setLyrics] = useState<LyricsResult | null>(null);
     const [lyricsAvailable, setLyricsAvailable] = useState(false);
@@ -152,18 +152,15 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         onClose();
 
         if (currentSong.artist) {
-            const artist = artists.find(a => a.name === currentSong.artist);
+            const artist = artists.find(
+                a => a.name === currentSong.artist
+            );
 
             if (artist?.id) {
-                console.log(`Navigating to artist with ID: ${artist.id}`);
                 navigation.navigate("(home)", {
                     screen: "artistView",
-                    params: {
-                        id: artist.id
-                    }
+                    params: { id: artist.id },
                 });
-            } else {
-                console.error("Artist ID not found for the current song.");
             }
         }
     };

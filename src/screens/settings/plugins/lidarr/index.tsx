@@ -221,6 +221,7 @@ const LidarrView: React.FC = () => {
           <TextInput
             value={serverUrl}
             onChangeText={(v) => dispatch(setServerUrl(v))}
+            placeholder='http://node:8686'
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
@@ -230,6 +231,7 @@ const LidarrView: React.FC = () => {
           <TextInput
             value={apiKey}
             onChangeText={(v) => dispatch(setApiKey(v))}
+            placeholder='API key'
             secureTextEntry
             style={[styles.input, isDarkMode && styles.inputDark]}
           />

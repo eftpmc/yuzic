@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,19 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import { useAlbums } from '@/hooks/albums';
+import { usePlaylists } from '@/hooks/playlists';
 
 const Downloads: React.FC = () => {
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const { albums, playlists } = useLibrary();
+  const { albums = [] } = useAlbums();
+  const { playlists = [] } = usePlaylists();
+
 
   const {
     getDownloadedSongsCount,
@@ -46,7 +49,7 @@ const Downloads: React.FC = () => {
     return [...albumItems, ...playlistItems];
   }, [albums, playlists, markedAlbums, markedPlaylists]);
 
-  const handleClearDownloads = () => {
+  const handleClearDownloads = useCallback(() => {
     Alert.alert(
       'Clear downloads?',
       'This will remove all downloaded songs from your device.',
@@ -55,7 +58,7 @@ const Downloads: React.FC = () => {
         { text: 'Delete', style: 'destructive', onPress: clearAllDownloads },
       ]
     );
-  };
+  }, [clearAllDownloads]);
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -91,17 +94,11 @@ const Downloads: React.FC = () => {
               ? isDownloadingAlbum(item.id)
               : isDownloadingPlaylist(item.id);
 
-          const statusLabel = downloaded
-            ? 'Downloaded'
+          const status = downloaded
+            ? { label: 'Downloaded', color: '#22c55e' }
             : downloading
-              ? 'Downloading'
-              : 'Incomplete';
-
-          const statusColor = downloaded
-            ? '#22c55e'
-            : downloading
-              ? themeColor
-              : '#f97316';
+              ? { label: 'Downloading', color: themeColor }
+              : { label: 'Incomplete', color: '#f97316' };
 
           return (
             <View
@@ -113,7 +110,6 @@ const Downloads: React.FC = () => {
                 size="thumb"
                 style={styles.downloadCover}
               />
-
 
               <View style={styles.cardInfo}>
                 <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>
@@ -129,19 +125,19 @@ const Downloads: React.FC = () => {
                   style={[
                     styles.statusBadge,
                     {
-                      backgroundColor: statusColor + '22',
-                      borderColor: statusColor,
+                      backgroundColor: `${status.color}22`,
+                      borderColor: status.color,
                     },
                   ]}
                 >
-                  <Text style={{ color: statusColor, fontSize: 12, fontWeight: '600' }}>
-                    {statusLabel}
+                  <Text style={{ color: status.color, fontSize: 12, fontWeight: '600' }}>
+                    {status.label}
                   </Text>
                 </View>
 
                 {downloading && (
                   <TouchableOpacity onPress={() => cancelDownload(item.id)}>
-                    <MaterialIcons name="cancel" size={18} color={statusColor} />
+                    <MaterialIcons name="cancel" size={18} color={status.color} />
                   </TouchableOpacity>
                 )}
               </View>

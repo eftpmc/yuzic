@@ -13,11 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Song } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
 import { ListEnd, ListStart, PlusCircle } from 'lucide-react-native';
+import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -31,10 +31,13 @@ const SongOptions = forwardRef<BottomSheetModal, SongOptionsProps>(
 
     const snapPoints = useMemo(() => ['55%'], []);
 
-    const { starred, starItem, unstarItem } = useLibrary();
     const { currentSong, addToQueue, playNext } = usePlaying();
 
-    const isStarred = starred.songs.some(
+    const { songs: starredSongs } = useStarredSongs();
+    const starSong = useStarSong();
+    const unstarSong = useUnstarSong();
+
+    const isStarred = starredSongs.some(
       s => s.id === selectedSong.id
     );
 
@@ -45,10 +48,10 @@ const SongOptions = forwardRef<BottomSheetModal, SongOptionsProps>(
     const toggleFavorite = async () => {
       try {
         if (isStarred) {
-          await unstarItem(selectedSong);
+          await unstarSong.mutateAsync(selectedSong.id);
           toast.success(`${selectedSong.title} removed from favorites.`);
         } else {
-          await starItem(selectedSong);
+          await starSong.mutateAsync(selectedSong.id);
           toast.success(`${selectedSong.title} added to favorites.`);
         }
       } catch {
@@ -68,7 +71,7 @@ const SongOptions = forwardRef<BottomSheetModal, SongOptionsProps>(
         toast.error(`${selectedSong.title} is already playing.`);
         return;
       }
-      
+
       try {
         await addToQueue(selectedSong);
         toast.success(`${selectedSong.title} added to queue.`);

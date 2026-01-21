@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
 
 import { QueryKeys } from '@/enums/queryKeys';
 import { ExternalAlbum } from '@/types';
 import { staleTime } from '@/constants/staleTime';
-import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
-import * as lastfm from '@/api/lastfm';
+
+import * as musicbrainz from '@/api/musicbrainz';
 
 type UseExternalAlbumResult = {
   album: ExternalAlbum | null;
@@ -14,19 +13,42 @@ type UseExternalAlbumResult = {
 };
 
 export function useExternalAlbum(
-  album: string,
-  artist: string
+  releaseGroupId: string
 ): UseExternalAlbumResult {
-  const lastfmConfig = useSelector(selectLastfmConfig);
-
   const query = useQuery<ExternalAlbum | null, Error>({
-    queryKey: [QueryKeys.LastfmAlbum, artist, album],
-    queryFn: () =>
-      lastfmConfig
-        ? lastfm.getAlbumInfo(lastfmConfig, { album, artist })
-        : Promise.resolve(null),
-    enabled: !!album && !!artist && !!lastfmConfig,
-    staleTime: staleTime.lastfm,
+    queryKey: [QueryKeys.ExternalAlbum, releaseGroupId],
+    enabled: !!releaseGroupId,
+    staleTime: staleTime.musicbrainz,
+
+    queryFn: async () => {
+      // 1. Fetch release-group (album metadata)
+      const group = await musicbrainz.getReleaseGroup(
+        releaseGroupId
+      );
+
+      if (!group) return null;
+
+      // 2. Pick a canonical release (earliest official)
+      const release = await musicbrainz.getCanonicalRelease(
+        releaseGroupId
+      );
+
+      if (!release) return null;
+
+      // 3. Fetch tracks from the release
+      const tracks = await musicbrainz.getReleaseTracks(
+        release.id
+      );
+
+      return {
+        id: group.id,
+        title: group.title,
+        artist: group.artist,
+        subtext: group.artist,
+        cover: { kind: 'musicbrainz' },
+        songs: tracks,
+      };
+    },
   });
 
   return {

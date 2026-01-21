@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import * as FileSystem from 'expo-file-system';
 import { RootState } from '@/utils/redux/store';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { Song, Playlist, Album } from '@/types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -21,6 +20,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { staleTime } from '@/constants/staleTime';
+import { useAlbums } from '@/hooks/albums';
+import { usePlaylists } from '@/hooks/playlists';
 
 type DownloadContextType = {
     downloadAlbumById: (albumId: string) => Promise<void>;
@@ -62,7 +63,8 @@ const getSongFilePath = (songId: string) => `${SONGS_DIR}/${songId}.mp3`;
 
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const queryClient = useQueryClient();
-    const { albums, playlists } = useLibrary();
+    const { albums } = useAlbums();
+    const { playlists } = usePlaylists();
     const api = useApi();
     const dispatch = useDispatch();
 

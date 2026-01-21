@@ -12,8 +12,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
-
-import { useLibrary } from '@/contexts/LibraryContext';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useTheme } from '@/hooks/useTheme';
@@ -29,8 +27,15 @@ const Stats: React.FC = () => {
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
-  const { refreshLibrary, isLoading } = useLibrary();
   const queryClient = useQueryClient();
+
+  const isLoading = queryClient.isFetching() > 0;
+
+  const refreshLibrary = () => {
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.Albums], exact: false });
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.Artists], exact: false });
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlists], exact: false });
+  };
 
   const { summaries, errors } = useMemo(() => {
     const cache = queryClient.getQueryCache();
@@ -57,9 +62,9 @@ const Stats: React.FC = () => {
 
     return {
       summaries: [
-        collect(QueryKeys.Album, 'Albums'),
-        collect(QueryKeys.Artist, 'Artists'),
-        collect(QueryKeys.Playlist, 'Playlists'),
+        collect(QueryKeys.Albums, 'Albums'),
+        collect(QueryKeys.Artists, 'Artists'),
+        collect(QueryKeys.Playlists, 'Playlists'),
       ],
       errors: errorQueries,
     };
@@ -145,10 +150,10 @@ const Stats: React.FC = () => {
               {stat.errored > 0
                 ? `${stat.errored} error${stat.errored > 1 ? 's' : ''}`
                 : stat.stale > 0
-                ? `${stat.fresh} fresh, ${stat.stale} stale`
-                : stat.fresh > 0
-                ? `${stat.fresh} fresh`
-                : 'Cached'}
+                  ? `${stat.fresh} fresh, ${stat.stale} stale`
+                  : stat.fresh > 0
+                    ? `${stat.fresh} fresh`
+                    : 'Cached'}
             </Text>
           </View>
         </View>

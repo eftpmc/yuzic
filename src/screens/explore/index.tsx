@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,11 @@ import {
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTheme } from '@/hooks/useTheme';
-import { MediaImage } from '@/components/MediaImage';
 import { useExplore } from '@/contexts/ExploreContext';
 import { useNavigation } from '@react-navigation/native';
 import MediaTile from './components/MediaTile';
+import LoaderCard from './components/LoaderCard';
+
 import {
   ExternalArtistBase,
   ExternalAlbumBase,
@@ -20,16 +21,12 @@ import {
 const H_PADDING = 16;
 const VISIBLE_ITEMS = 2.5;
 
+const ARTIST_TARGET = 12;
+const ALBUM_TARGET = 12;
+
 type Props = {
   onBack: () => void;
 };
-
-type PlaceholderItem = {
-  __placeholder: true;
-};
-
-type ArtistItem = ExternalArtistBase | PlaceholderItem;
-type AlbumItem = ExternalAlbumBase | PlaceholderItem;
 
 function Section({
   title,
@@ -55,62 +52,35 @@ function Section({
   );
 }
 
-const PlaceholderTile = React.memo(function PlaceholderTile({
-  size,
-  radius,
-  isDarkMode,
-}: {
-  size: number;
-  radius: number;
-  isDarkMode: boolean;
-}) {
-  return (
-    <View style={{ width: size }}>
-      <MediaImage
-        cover={{ kind: 'none' }}
-        size="grid"
-        style={{
-          width: size,
-          height: size,
-          borderRadius: radius,
-          overflow: 'hidden',
-        }}
-      />
-      <View
-        style={[
-          styles.skeletonLine,
-          isDarkMode ? styles.skeletonDark : styles.skeletonLight,
-          { width: '90%' },
-        ]}
-      />
-      <View
-        style={[
-          styles.skeletonLine,
-          isDarkMode ? styles.skeletonDark : styles.skeletonLight,
-          { width: '65%' },
-        ]}
-      />
-    </View>
-  );
-});
-
 export default function Explore({ onBack }: Props) {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation();
-  const { artistPool, albumPool } = useExplore();
+  const { artistPool, albumPool, isLoading } = useExplore();
 
   const screenWidth = Dimensions.get('window').width;
   const gridGap = 12;
+
   const gridItemWidth =
     (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS;
 
-  const artistData: ArtistItem[] = artistPool.length
-    ? artistPool
-    : Array.from({ length: 6 }, () => ({ __placeholder: true }));
+  const tileHeight =
+    gridItemWidth + 8 + 14 + 4 + 12;
 
-  const albumData: AlbumItem[] = albumPool.length
-    ? albumPool
-    : Array.from({ length: 6 }, () => ({ __placeholder: true }));
+  const artistsReady =
+    artistPool.length >= ARTIST_TARGET || !isLoading;
+
+  const albumsReady =
+    albumPool.length >= ALBUM_TARGET || !isLoading;
+
+  const artists = useMemo(
+    () => artistPool.slice(0, ARTIST_TARGET),
+    [artistPool]
+  );
+
+  const albums = useMemo(
+    () => albumPool.slice(0, ALBUM_TARGET),
+    [albumPool]
+  );
 
   return (
     <ScrollView
@@ -122,28 +92,26 @@ export default function Explore({ onBack }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <Section title="Artists for You" isDarkMode={isDarkMode}>
-        <FlashList<ArtistItem>
-          horizontal
-          data={artistData}
-          keyExtractor={(item, index) =>
-            '__placeholder' in item
-              ? `placeholder-artist-${index}`
-              : item.id
-          }
-          estimatedItemSize={gridItemWidth}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: H_PADDING }}
-          ItemSeparatorComponent={() => (
-            <View style={{ width: gridGap }} />
-          )}
-          renderItem={({ item }) =>
-            '__placeholder' in item ? (
-              <PlaceholderTile
-                size={gridItemWidth}
-                radius={gridItemWidth / 2}
-                isDarkMode={isDarkMode}
-              />
-            ) : (
+        {!artistsReady ? (
+          <View style={styles.rowLoaderWrapper}>
+            <LoaderCard
+              width={screenWidth - H_PADDING * 2}
+              height={tileHeight}
+              radius={14}
+            />
+          </View>
+        ) : (
+          <FlashList<ExternalArtistBase>
+            horizontal
+            data={artists}
+            keyExtractor={(item) => item.id}
+            estimatedItemSize={gridItemWidth}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: H_PADDING }}
+            ItemSeparatorComponent={() => (
+              <View style={{ width: gridGap }} />
+            )}
+            renderItem={({ item }) => (
               <MediaTile
                 cover={item.cover}
                 title={item.name}
@@ -156,34 +124,32 @@ export default function Explore({ onBack }: Props) {
                   })
                 }
               />
-            )
-          }
-        />
+            )}
+          />
+        )}
       </Section>
 
       <Section title="Albums You Might Like" isDarkMode={isDarkMode}>
-        <FlashList<AlbumItem>
-          horizontal
-          data={albumData}
-          keyExtractor={(item, index) =>
-            '__placeholder' in item
-              ? `placeholder-album-${index}`
-              : item.id
-          }
-          estimatedItemSize={gridItemWidth}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: H_PADDING }}
-          ItemSeparatorComponent={() => (
-            <View style={{ width: gridGap }} />
-          )}
-          renderItem={({ item }) =>
-            '__placeholder' in item ? (
-              <PlaceholderTile
-                size={gridItemWidth}
-                radius={14}
-                isDarkMode={isDarkMode}
-              />
-            ) : (
+        {!albumsReady ? (
+          <View style={styles.rowLoaderWrapper}>
+            <LoaderCard
+              width={screenWidth - H_PADDING * 2}
+              height={tileHeight}
+              radius={14}
+            />
+          </View>
+        ) : (
+          <FlashList<ExternalAlbumBase>
+            horizontal
+            data={albums}
+            keyExtractor={(item) => item.id}
+            estimatedItemSize={gridItemWidth}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: H_PADDING }}
+            ItemSeparatorComponent={() => (
+              <View style={{ width: gridGap }} />
+            )}
+            renderItem={({ item }) => (
               <MediaTile
                 cover={item.cover}
                 title={item.title}
@@ -192,14 +158,13 @@ export default function Explore({ onBack }: Props) {
                 radius={14}
                 onPress={() =>
                   navigation.navigate('externalAlbumView', {
-                    album: item.title,
-                    artist: item.artist,
+                    albumId: item.id,
                   })
                 }
               />
-            )
-          }
-        />
+            )}
+          />
+        )}
       </Section>
     </ScrollView>
   );
@@ -229,15 +194,7 @@ const styles = StyleSheet.create({
   sectionTitleDark: {
     color: '#fff',
   },
-  skeletonLine: {
-    height: 10,
-    borderRadius: 6,
-    marginTop: 8,
-  },
-  skeletonLight: {
-    backgroundColor: '#E5E5EA',
-  },
-  skeletonDark: {
-    backgroundColor: '#1C1C1E',
+  rowLoaderWrapper: {
+    paddingHorizontal: H_PADDING,
   },
 });

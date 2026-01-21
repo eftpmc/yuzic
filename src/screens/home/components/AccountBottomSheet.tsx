@@ -11,7 +11,6 @@ import {
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useApi } from '@/api';
@@ -20,6 +19,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useQueryClient } from '@tanstack/react-query';
 
 type Props = {
   onDismiss?: () => void;
@@ -40,7 +40,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
     const serverUrl = activeServer?.serverUrl;
     const themeColor = useSelector(selectThemeColor);
 
-    const { clearLibrary } = useLibrary();
+    const queryClient = useQueryClient();
     const { pauseSong, resetQueue } = usePlaying();
 
     const initial = username?.[0]?.toUpperCase() ?? '?';
@@ -67,7 +67,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
       try {
         await pauseSong();
         await resetQueue();
-        clearLibrary();
+        queryClient.clear();
         dispatch(disconnect());
         router.replace('/(onboarding)');
       } catch {

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Song } from '@/types';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,6 +8,8 @@ import {
     selectActiveAiApiKey,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { addPromptToHistory } from '@/utils/redux/slices/settingsSlice';
+import { useStarredSongs } from '@/hooks/starred';
+import { useGenres } from '@/hooks/genres';
 
 interface AIContextType {
     input: string;
@@ -37,7 +38,9 @@ export const useAI = () => {
 export const AIProvider = ({ children }: { children: ReactNode }) => {
     const dispatch = useDispatch();
 
-    const { albums, genres, fetchGenres, starred } = useLibrary();
+    const { genres, isLoading: genresLoading } = useGenres();
+    const { songs: starredSongs } = useStarredSongs();
+
     const { playSongInCollection } = usePlaying();
 
     const provider = useSelector(selectAiProvider);
@@ -217,7 +220,7 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const getSongWeight = (song: Song): number => {
-        const isFavorite = starred.songs.some(s => s.id === song.id);
+        const isFavorite = starredSongs.some((s: Song) => s.id === song.id);
         return isFavorite ? 2 : 1;
     };
 
@@ -252,7 +255,10 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
             const type = await classifyPrompt(userPrompt);
 
             if (type === 'genre') {
-                if (!genres.length) await fetchGenres();
+                if (!genres.length) {
+                    toast.error('Genres not available yet.');
+                    return [];
+                }
 
                 const genreNames = genres.map(g => g.name);
                 const selected = await matchGenres(userPrompt, genreNames);
@@ -268,11 +274,11 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
                     await playSongInCollection(queue[0], {
                         id: 'ai-generated',
                         title: `AI Queue • ${userPrompt}`,
-                        cover: { kind: "none" },
+                        cover: { kind: 'none' },
                         subtext: 'Playlist',
                         songs: queue,
                         changed: new Date(2000),
-                        created: new Date(2000)
+                        created: new Date(2000),
                     });
                 }
 

@@ -19,15 +19,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { useLibrary } from '@/contexts/LibraryContext';
-import { useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/api';
 import { Song, Playlist } from '@/types';
-import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePlaylists, usePlaylist, useCreatePlaylist, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '@/hooks/playlists';
+import { fetchPlaylist } from '@/hooks/playlists/usePlaylists';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -40,15 +37,10 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
 
-    const {
-      playlists,
-      createPlaylist,
-      addSongToPlaylist,
-      removeSongFromPlaylist,
-    } = useLibrary();
-
-    const queryClient = useQueryClient();
-    const api = useApi();
+    const { playlists = [] } = usePlaylists();
+    const createPlaylist = useCreatePlaylist();
+    const addSongToPlaylist = useAddSongToPlaylist();
+    const removeSongFromPlaylist = useRemoveSongFromPlaylist();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [newPlaylistName, setNewPlaylistName] = useState('');
@@ -70,38 +62,27 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
       let cancelled = false;
 
-      const load = async () => {
-        try {
-          const fullPlaylists: Playlist[] = await Promise.all(
-            playlists.map(p =>
-              queryClient.fetchQuery({
-                queryKey: [QueryKeys.Playlist, p.id],
-                queryFn: () => api.playlists.get(p.id),
-                staleTime: staleTime.playlists,
-              })
-            )
-          );
+      (async () => {
+        const ids = new Set<string>();
 
-          const ids = new Set<string>();
-
-          for (const playlist of fullPlaylists) {
-            if (playlist?.songs?.some(s => s.id === selectedSong.id)) {
-              ids.add(playlist.id);
-            }
+        for (const playlist of playlists) {
+          const full = await fetchPlaylist(playlist.id);
+          if (full.songs.some(s => s.id === selectedSong.id)) {
+            ids.add(playlist.id);
           }
+        }
 
-          if (!cancelled) {
-            setInitialIds(ids);
-            setSelectedIds(new Set(ids));
-          }
-        } catch {}
-      };
+        if (!cancelled) {
+          setInitialIds(ids);
+          setSelectedIds(new Set(ids));
+        }
+      })();
 
-      load();
       return () => {
         cancelled = true;
       };
     }, [selectedSong?.id, playlists]);
+
 
     const togglePlaylist = (id: string) => {
       setSelectedIds(prev => {
@@ -113,7 +94,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
-      await createPlaylist(newPlaylistName.trim());
+      await createPlaylist.mutateAsync(newPlaylistName.trim());
       setNewPlaylistName('');
     };
 
@@ -125,11 +106,17 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         const isIn = selectedIds.has(playlist.id);
 
         if (isIn && !wasIn) {
-          await addSongToPlaylist(playlist.id, selectedSong.id);
+          await addSongToPlaylist.mutateAsync({
+            playlistId: playlist.id,
+            songId: selectedSong.id,
+          });
         }
 
         if (!isIn && wasIn) {
-          await removeSongFromPlaylist(playlist.id, selectedSong.id);
+          await removeSongFromPlaylist.mutateAsync({
+            playlistId: playlist.id,
+            songId: selectedSong.id,
+          });
         }
       }
 

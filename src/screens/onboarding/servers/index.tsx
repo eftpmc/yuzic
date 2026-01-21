@@ -37,7 +37,7 @@ export default function Servers() {
     const handleSelectServer = (id: string) => {
         track("selected server")
         dispatch(setActiveServer(id));
-        router.push('(home)');
+        router.replace('(home)');
     };
 
     const handleAddServer = () => {

@@ -37,6 +37,11 @@ export type AuthFailure = {
   message?: string;
 };
 
+export type AuthResult =
+  | NavidromeConnectResult
+  | JellyfinConnectResult
+  | AuthFailure;
+
 export interface ApiAdapter {
   auth: AuthApi;
   albums: AlbumsApi;
@@ -44,7 +49,6 @@ export interface ApiAdapter {
   genres: GenresApi;
   playlists: PlaylistsApi;
   starred: StarredApi;
-  scrobble: ScrobbleApi;
   lyrics: LyricsApi;
 }
 
@@ -88,10 +92,6 @@ export interface StarredApi {
   }>;
   add(id: string): Promise<void>;
   remove(id: string): Promise<void>;
-}
-
-export interface ScrobbleApi {
-  submit(songId: string): Promise<void>;
 }
 
 export interface LyricsApi {

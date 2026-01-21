@@ -18,14 +18,11 @@ import { Artist, Song, Album } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { buildCover } from '@/utils/builders/buildCover';
 import { useTheme } from '@/hooks/useTheme';
 import { staleTime } from '@/constants/staleTime';
-import * as lastfm from '@/api/lastfm';
-import { Skeleton } from 'moti/skeleton';
 
 type Props = {
   artist: Artist;
@@ -35,7 +32,6 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const lastfmConfig = useSelector(selectLastfmConfig);
 
   const queryClient = useQueryClient();
   const api = useApi();
@@ -43,16 +39,6 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
   const [artistSongs, setArtistSongs] = useState<Song[]>([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
-
-  const { data: lastfmData, isLoading: isLastfmLoading } = useQuery({
-  queryKey: [QueryKeys.LastfmArtist, artist.name],
-  queryFn: () =>
-    lastfmConfig
-      ? lastfm.getArtistInfo(lastfmConfig, artist.name)
-      : Promise.resolve(null),
-  staleTime: staleTime.lastfm,
-  enabled: !!artist.name && !!lastfmConfig,
-});
 
   useEffect(() => {
     let cancelled = false;
@@ -122,12 +108,6 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     );
   };
 
-  const cleanBio =
-    lastfmData?.bio
-      ?.replace(/<[^>]*>/g, '')
-      .replace(/Read more on Last\.fm\.?$/i, '')
-      .trim() ?? '';
-
   return (
     <>
       <View style={styles.fullBleedWrapper}>
@@ -175,55 +155,6 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           <Text style={[styles.artistName, isDarkMode && styles.artistNameDark]}>
             {artist.name}
           </Text>
-
-          {lastfmConfig && isLastfmLoading && (
-            <View style={{ width: '100%', marginTop: 12 }}>
-              <Skeleton
-                height={14}
-                width="90%"
-                radius={4}
-                colorMode={isDarkMode ? 'dark' : 'light'}
-              />
-              <View style={{ height: 8 }} />
-              <Skeleton
-                height={14}
-                width="80%"
-                radius={4}
-                colorMode={isDarkMode ? 'dark' : 'light'}
-              />
-              <View style={{ height: 8 }} />
-              <Skeleton
-                height={14}
-                width="60%"
-                radius={4}
-                colorMode={isDarkMode ? 'dark' : 'light'}
-              />
-            </View>
-          )}
-
-          {!lastfmConfig && (
-            <Text
-              style={[styles.artistBio, isDarkMode && styles.artistBioDark]}
-            >
-              Connect Last.fm in settings to see artist bio and external albums.
-            </Text>
-          )}
-
-          {lastfmConfig && cleanBio.length > 0 && (
-            <Text
-              style={[styles.artistBio, isDarkMode && styles.artistBioDark]}
-            >
-              {cleanBio}{' '}
-              {lastfmData?.artistUrl && (
-                <Text
-                  style={{ color: themeColor, fontWeight: '600' }}
-                  onPress={() => Linking.openURL(lastfmData.artistUrl)}
-                >
-                  Read more on Last.fm
-                </Text>
-              )}
-            </Text>
-          )}
         </View>
       </View>
 

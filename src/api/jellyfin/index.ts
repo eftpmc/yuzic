@@ -5,7 +5,6 @@ import {
   GenresApi,
   PlaylistsApi,
   StarredApi,
-  ScrobbleApi,
   AuthApi,
   LyricsApi
 } from "../types";
@@ -175,10 +174,6 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
     },
   };
 
-  const scrobble: ScrobbleApi = {
-    submit: async (songId: string) => { },
-  };
-
   const lyrics: LyricsApi = {
     getBySongId: async (songId) => {
       return getLyricsBySongId(serverUrl, token, songId);
@@ -192,7 +187,6 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
     genres,
     playlists,
     starred,
-    scrobble,
     lyrics
   };
 };

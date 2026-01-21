@@ -1,23 +1,19 @@
 import React, { useMemo } from 'react';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import { useQuery } from '@tanstack/react-query';
 
 import {
   Artist,
   AlbumBase,
   ExternalAlbumBase,
 } from '@/types';
+
 import AlbumRow from '@/components/rows/AlbumRow';
+import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import Header from '../Header';
 
-import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
-import * as lastfm from '@/api/lastfm';
-import { QueryKeys } from '@/enums/queryKeys';
-import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
+import { useExternalArtist } from '@/hooks/artists/useExternalArtist';
 
 type Props = {
   artist: Artist;
@@ -29,40 +25,45 @@ type CombinedAlbum =
 
 const ESTIMATED_ROW_HEIGHT = 80;
 
+const normalizeKey = (artist: string, title: string) =>
+  `${artist}:${title}`.toLowerCase().trim();
+
 const ArtistContent: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
-  const lastfmConfig = useSelector(selectLastfmConfig);
 
-  const { data: lastfmData } = useQuery({
-    queryKey: [QueryKeys.LastfmArtist, artist.name],
-    queryFn: () =>
-      lastfmConfig
-        ? lastfm.getArtistInfo(lastfmConfig, artist.name)
-        : Promise.resolve(null),
-    staleTime: staleTime.lastfm,
-    enabled: !!lastfmConfig,
-  });
+  const { data: externalArtist } =
+    useExternalArtist(artist);
 
   const mergedAlbums: CombinedAlbum[] = useMemo(() => {
-    const owned: CombinedAlbum[] = artist.ownedAlbums.map(a => ({
-      ...a,
-      source: 'owned',
-    }));
-
-    const ownedTitles = new Set(
-      owned.map(a => a.title.toLowerCase())
-    );
-
-    const external: CombinedAlbum[] = (lastfmData?.albums ?? [])
-      .filter(a => !ownedTitles.has(a.title.toLowerCase()))
-      .map(a => ({
+    const owned: CombinedAlbum[] =
+      artist.ownedAlbums.map(a => ({
         ...a,
-        source: 'external',
+        source: 'owned',
       }));
 
+    const ownedKeys = new Set(
+      owned.map(a =>
+        normalizeKey(artist.name, a.title)
+      )
+    );
+
+    const external: CombinedAlbum[] =
+      (externalArtist?.albums ?? [])
+        .filter(a => {
+          const key = normalizeKey(
+            a.artist,
+            a.title
+          );
+          return !ownedKeys.has(key);
+        })
+        .map(a => ({
+          ...a,
+          source: 'external',
+        }));
+
     return [...owned, ...external];
-  }, [artist.ownedAlbums, lastfmData?.albums]);
+  }, [artist, externalArtist?.albums]);
 
   return (
     <FlashList
@@ -75,7 +76,10 @@ const ArtistContent: React.FC<Props> = ({ artist }) => {
           <AlbumRow
             album={item}
             onPress={album =>
-              navigation.navigate('albumView', { id: album.id })
+              navigation.navigate(
+                'albumView',
+                { id: album.id }
+              )
             }
           />
         ) : (
@@ -83,10 +87,12 @@ const ArtistContent: React.FC<Props> = ({ artist }) => {
             album={item}
             artistName={artist.name}
             onPress={album =>
-              navigation.navigate('externalAlbumView', {
-                album: album.title,
-                artist: artist.name,
-              })
+              navigation.navigate(
+                'externalAlbumView',
+                {
+                  albumId: album.id
+                }
+              )
             }
           />
         )
@@ -94,7 +100,9 @@ const ArtistContent: React.FC<Props> = ({ artist }) => {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: 140,
-        backgroundColor: isDarkMode ? '#000' : '#fff',
+        backgroundColor: isDarkMode
+          ? '#000'
+          : '#fff',
       }}
     />
   );

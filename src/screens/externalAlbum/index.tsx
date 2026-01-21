@@ -8,17 +8,28 @@ import ExternalAlbumContent from './components/Content';
 import LoadingExternalAlbumContent from './components/Content/Loading';
 import { useTheme } from '@/hooks/useTheme';
 
+type RouteParams = {
+  albumId: string;
+};
+
 const ExternalAlbumScreen: React.FC = () => {
   const route = useRoute<any>();
-  const { album, artist } = route.params;
+  const { albumId } = route.params as RouteParams;
 
   const { isDarkMode } = useTheme();
-  const { album: externalAlbum, isLoading, error } =
-    useExternalAlbum(album, artist);
+
+  const {
+    album: externalAlbum,
+    isLoading,
+    error,
+  } = useExternalAlbum(albumId);
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+      <SafeAreaView
+        edges={['top']}
+        style={styles.screen(isDarkMode)}
+      >
         <LoadingExternalAlbumContent />
       </SafeAreaView>
     );
@@ -35,7 +46,10 @@ const ExternalAlbumScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+    <SafeAreaView
+      edges={['top']}
+      style={styles.screen(isDarkMode)}
+    >
       <ExternalAlbumContent album={externalAlbum} />
     </SafeAreaView>
   );
