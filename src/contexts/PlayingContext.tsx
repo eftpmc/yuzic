@@ -20,6 +20,8 @@ import shuffleArray from '@/utils/shuffleArray';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useApi } from '@/api';
 import { buildCover } from '@/utils/builders/buildCover';
+import { useDispatch } from 'react-redux';
+import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -77,6 +79,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const api = useApi();
   const { getSongLocalUri } = useDownload();
+  const dispatch = useDispatch();
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -111,6 +114,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       await api.scrobble.submit(song.id);
       lastScrobbledIdRef.current = song.id;
     } catch { }
+
+    dispatch(
+      incrementPlay({
+        songId: song.id,
+        albumId: song.albumId,
+        artistId: song.artistId
+      })
+    );
   };
 
   const loadAndPlay = async (song: Song) => {

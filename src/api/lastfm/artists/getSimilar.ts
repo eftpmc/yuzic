@@ -1,23 +1,15 @@
-import { ArtistBase, CoverSource, LastfmConfig } from '@/types';
+import { ExternalArtistBase, LastfmConfig } from '@/types';
 import { createLastfmClient } from '../client';
+import { nanoid } from 'nanoid/non-secure';
 
-export type GetSimilarArtistsResult = ArtistBase[];
+export type GetSimilarArtistsResult = ExternalArtistBase[];
 
-const normalizeSimilarArtist = (artist: any): ArtistBase => {
-  const cover: CoverSource = artist.image?.length
-    ? {
-        kind: 'lastfm',
-        url:
-          artist.image.find((i: any) => i.size === 'large')?.['#text'] ??
-          artist.image[0]?.['#text'] ??
-          '',
-      }
-    : { kind: 'none' };
+const normalizeSimilarArtist = (artist: any): ExternalArtistBase => {
 
   return {
-    id: artist.mbid || artist.name,
+    id: artist.mbid || `lastfm:artist:${nanoid()}`,
     name: artist.name,
-    cover,
+    cover: { kind: "none" },
     subtext: 'Artist',
   };
 };
@@ -38,11 +30,9 @@ export const getSimilarArtists = async (
       limit: String(limit),
     });
 
-    const artists = Array.isArray(res.similarartists?.artist)
-      ? res.similarartists!.artist.map(normalizeSimilarArtist)
+    return Array.isArray(res.similarartists?.artist)
+      ? res.similarartists.artist.map(normalizeSimilarArtist)
       : [];
-
-    return artists;
   } catch (error) {
     console.warn(
       `❌ Failed to fetch similar artists for "${artistName}":`,

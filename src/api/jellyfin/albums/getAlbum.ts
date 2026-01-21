@@ -38,7 +38,7 @@ async function normalizeAlbum(
     ? { kind: "jellyfin", itemId: a.Id }
     : { kind: "none" };
 
-  const artist: Artist | null = await getArtist(serverUrl, token, a.AlbumArtists[0].Id)
+  const artist: Artist | null = await getArtist(serverUrl, token, a.ArtistItems[0].Id)
   if (!artist) return null;
 
   return {
@@ -52,8 +52,7 @@ async function normalizeAlbum(
     genres: (a.Genres ?? [])
       .flatMap((g: string) => g.split(";"))
       .map((g: string) => g.trim())
-      .filter(Boolean),
-    userPlayCount: a.UserData.PlayCount,
+      .filter(Boolean)
   };
 }
 

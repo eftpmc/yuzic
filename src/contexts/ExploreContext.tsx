@@ -8,13 +8,20 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ArtistBase, AlbumBase } from '@/types';
+import {
+  ExternalArtistBase,
+  ExternalAlbumBase,
+} from '@/types';
 import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
 import * as lastfm from '@/api/lastfm';
 
-type ExploreContextType = {
-  artists: ArtistBase[];
-  albums: AlbumBase[];
+const MIN_ARTISTS = 12;
+const MIN_ALBUMS = 12;
+const ALBUM_ARTIST_SAMPLE = 16;
+
+export type ExploreContextType = {
+  artistPool: ExternalArtistBase[];
+  albumPool: ExternalAlbumBase[];
   isLoading: boolean;
   refresh: (seedArtists: string[]) => Promise<void>;
   clear: () => void;
@@ -24,7 +31,7 @@ const ExploreContext = createContext<ExploreContextType | undefined>(
   undefined
 );
 
-export const useExplore = () => {
+export const useExplore = (): ExploreContextType => {
   const ctx = useContext(ExploreContext);
   if (!ctx) {
     throw new Error('useExplore must be used within ExploreProvider');
@@ -39,13 +46,12 @@ type Props = {
 export const ExploreProvider: React.FC<Props> = ({ children }) => {
   const lastfmConfig = useSelector(selectLastfmConfig);
 
-  const [artists, setArtists] = useState<ArtistBase[]>([]);
-  const [albums, setAlbums] = useState<AlbumBase[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [artistPool, setArtistPool] = useState<ExternalArtistBase[]>([]);
+  const [albumPool, setAlbumPool] = useState<ExternalAlbumBase[]>([]);
 
   const clear = useCallback(() => {
-    setArtists([]);
-    setAlbums([]);
+    setArtistPool([]);
+    setAlbumPool([]);
   }, []);
 
   const refresh = useCallback(
@@ -55,73 +61,92 @@ export const ExploreProvider: React.FC<Props> = ({ children }) => {
         return;
       }
 
-      setIsLoading(true);
-
       try {
-        const similarArtistsResults = await Promise.all(
+        const similarResults = await Promise.all(
           seedArtists.map(name =>
             lastfm.getSimilarArtists(lastfmConfig, name, 6)
           )
         );
 
-        const flattenedArtists = similarArtistsResults.flat();
+        const flattenedArtists = similarResults.flat();
 
-        const uniqueArtistsMap = new Map<string, ArtistBase>();
+        const nextArtistMap = new Map<string, ExternalArtistBase>();
+
         for (const artist of flattenedArtists) {
-          if (!uniqueArtistsMap.has(artist.name.toLowerCase())) {
-            uniqueArtistsMap.set(artist.name.toLowerCase(), artist);
+          const key = artist.name.toLowerCase();
+          if (!nextArtistMap.has(key)) {
+            nextArtistMap.set(key, artist);
           }
         }
 
-        const curatedArtists = Array.from(
-          uniqueArtistsMap.values()
-        ).slice(0, 24);
+        const nextArtists = Array.from(nextArtistMap.values());
 
-        setArtists(curatedArtists);
+        setArtistPool(prev => {
+          const merged = new Map<string, ExternalArtistBase>();
 
-        const albumsResults = await Promise.all(
-          curatedArtists.slice(0, 6).map(a =>
+          for (const a of prev) {
+            merged.set(a.name.toLowerCase(), a);
+          }
+
+          for (const a of nextArtists) {
+            merged.set(a.name.toLowerCase(), a);
+          }
+
+          return Array.from(merged.values());
+        });
+
+        const artistInfos = await Promise.all(
+          nextArtists.slice(0, ALBUM_ARTIST_SAMPLE).map(a =>
             lastfm.getArtistInfo(lastfmConfig, a.name)
           )
         );
 
-        const flattenedAlbums = albumsResults.flatMap(
-          r => r.albums
-        );
+        const albums = artistInfos.flatMap(info => info.albums);
 
-        const uniqueAlbumsMap = new Map<string, AlbumBase>();
-        for (const album of flattenedAlbums) {
-          const key = `${album.artist.name}-${album.title}`.toLowerCase();
-          if (!uniqueAlbumsMap.has(key)) {
-            uniqueAlbumsMap.set(key, album);
+        const oneAlbumPerArtist = new Map<string, ExternalAlbumBase>();
+
+        for (const album of albums) {
+          const key = album.artist.toLowerCase();
+          if (!oneAlbumPerArtist.has(key)) {
+            oneAlbumPerArtist.set(key, album);
           }
         }
 
-        const curatedAlbums = Array.from(
-          uniqueAlbumsMap.values()
-        ).slice(0, 24);
+        setAlbumPool(prev => {
+          const merged = new Map<string, ExternalAlbumBase>();
 
-        console.log(curatedAlbums[0].year)
+          for (const a of prev) {
+            const key = `${a.artist}-${a.title}`.toLowerCase();
+            merged.set(key, a);
+          }
 
-        setAlbums(curatedAlbums);
-      } catch (e) {
+          for (const a of oneAlbumPerArtist.values()) {
+            const key = `${a.artist}-${a.title}`.toLowerCase();
+            merged.set(key, a);
+          }
+
+          return Array.from(merged.values());
+        });
+      } catch {
         clear();
-      } finally {
-        setIsLoading(false);
       }
     },
     [lastfmConfig, clear]
   );
 
+  const isLoading =
+    artistPool.length < MIN_ARTISTS ||
+    albumPool.length < MIN_ALBUMS;
+
   const value = useMemo(
     () => ({
-      artists,
-      albums,
+      artistPool,
+      albumPool,
       isLoading,
       refresh,
       clear,
     }),
-    [artists, albums, isLoading, refresh, clear]
+    [artistPool, albumPool, isLoading, refresh, clear]
   );
 
   return (

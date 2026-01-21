@@ -42,14 +42,13 @@ function normalizeStarred(
   const songs: Song[] = items.map((i: any) => ({
     id: i.Id,
     title: i.Name,
-    artist: i.AlbumArtists?.[0].Name ?? "Unknown Artist",
+    artist: i.ArtistItems?.[0].Name ?? "Unknown Artist",
     albumId: i.AlbumId,
     cover: i.Id
           ? { kind: "jellyfin", itemId: i.Id }
           : { kind: "none" },
     duration: Math.floor((i.RunTimeTicks ?? 0) / 10_000_000),
-    streamUrl: buildJellyfinStreamUrl(serverUrl, token, i.Id),
-    userPlayCount: i.UserData.PlayCount,
+    streamUrl: buildJellyfinStreamUrl(serverUrl, token, i.Id)
   }));
 
   return { songs };

@@ -90,7 +90,6 @@ const ArtistItem: React.FC<ItemProps> = ({
           subtext: 'Artist',
           changed: new Date("1995-12-17T03:24:00"),
           created: new Date("1995-12-17T03:24:00"),
-          userPlayCount: 0,
           songs,
         },
         shuffle

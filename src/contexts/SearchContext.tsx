@@ -1,5 +1,17 @@
-import React, { createContext, useContext, useState, ReactNode, useRef } from 'react';
-import { AlbumBase, ArtistBase, CoverSource, PlaylistBase } from '@/types';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useRef,
+} from 'react';
+import {
+  AlbumBase,
+  ArtistBase,
+  PlaylistBase,
+  CoverSource,
+  ExternalAlbumBase,
+} from '@/types';
 import { useSelector } from 'react-redux';
 import { useLibrary } from './LibraryContext';
 import { selectLastfmConfig } from '@/utils/redux/selectors/lastfmSelectors';
@@ -27,7 +39,9 @@ export interface SearchResult {
   isDownloaded: boolean;
 }
 
-const SearchContext = createContext<SearchContextType | undefined>(undefined);
+const SearchContext = createContext<SearchContextType | undefined>(
+  undefined
+);
 
 export const useSearch = () => {
   const context = useContext(SearchContext);
@@ -37,7 +51,9 @@ export const useSearch = () => {
   return context;
 };
 
-export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
+export const SearchProvider: React.FC<SearchProviderProps> = ({
+  children,
+}) => {
   const { albums, artists, playlists } = useLibrary();
   const lastfmConfig = useSelector(selectLastfmConfig);
 
@@ -46,16 +62,15 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
 
   const searchRequestIdRef = useRef(0);
 
-  const searchLibrary = async (query: string): Promise<SearchResult[]> => {
+  const searchLibrary = async (
+    query: string
+  ): Promise<SearchResult[]> => {
     const lowerQuery = query.toLowerCase();
 
     const albumResults: SearchResult[] = albums
       .filter(a => a.title.toLowerCase().includes(lowerQuery))
       .map((album: AlbumBase) => ({
-        id: album.id,
-        title: album.title,
-        subtext: album.subtext,
-        cover: album.cover,
+        ...album,
         type: 'album',
         isDownloaded: true,
       }));
@@ -74,28 +89,29 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     const playlistResults: SearchResult[] = playlists
       .filter(p => p.title.toLowerCase().includes(lowerQuery))
       .map((playlist: PlaylistBase) => ({
-        id: playlist.id,
-        title: playlist.title,
-        subtext: playlist.subtext,
-        cover: playlist.cover,
+        ...playlist,
         type: 'playlist',
         isDownloaded: true,
       }));
 
-    return [...albumResults, ...artistResults, ...playlistResults];
+    return [
+      ...albumResults,
+      ...artistResults,
+      ...playlistResults,
+    ];
   };
 
-  const searchExternal = async (query: string): Promise<SearchResult[]> => {
+  const searchExternal = async (
+    query: string
+  ): Promise<SearchResult[]> => {
     if (!lastfmConfig) return [];
 
     try {
-      const result = await lastfm.searchAlbums(lastfmConfig, query);
+      const results: ExternalAlbumBase[] =
+        await lastfm.searchAlbums(lastfmConfig, query);
 
-      return result.map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        subtext: item.subtext,
-        cover: item.cover,
+      return results.map(album => ({
+        ...album,
         type: 'album',
         isDownloaded: false,
       }));
@@ -120,9 +136,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
       const lowerQuery = query.toLowerCase();
 
       const localResults = await searchLibrary(query);
-      const externalResults = lastfmConfig.apiKey
-        ? await searchExternal(query)
-        : [];
+      const externalResults =
+        lastfmConfig?.apiKey
+          ? await searchExternal(query)
+          : [];
 
       const combined = [...localResults, ...externalResults];
 
@@ -134,7 +151,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
 
         if (!existing) {
           uniqueMap.set(key, result);
-        } else if (!existing.isDownloaded && result.isDownloaded) {
+        } else if (
+          !existing.isDownloaded &&
+          result.isDownloaded
+        ) {
           uniqueMap.set(key, result);
         }
       }
@@ -160,10 +180,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         if (aIncludes && !bIncludes) return -1;
         if (bIncludes && !aIncludes) return 1;
 
-        const typePriority = (type: string) =>
+        const typePriority = (type: SearchResult['type']) =>
           type === 'album' ? 1 : type === 'artist' ? 2 : 3;
 
-        const diff = typePriority(a.type) - typePriority(b.type);
+        const diff =
+          typePriority(a.type) - typePriority(b.type);
         if (diff !== 0) return diff;
 
         return aTitle.localeCompare(bTitle);

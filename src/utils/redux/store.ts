@@ -7,14 +7,16 @@ import libraryReducer from './slices/librarySlice';
 import lidarrReducer from './slices/lidarrSlice';
 import settingsReducer from './slices/settingsSlice';
 import downloadsReducer from './slices/downloadsSlice';
-import lastfmReducer from './slices/lastfmSlice'
+import lastfmReducer from './slices/lastfmSlice';
+import statsReducer from './slices/statsSlice';
 
 const serversPersistConfig = { key: 'servers', storage };
 const lidarrPersistConfig = { key: 'lidarr', storage };
 const libraryPersistConfig = { key: 'library', storage };
 const settingsPersistConfig = { key: 'settings', storage };
 const downloadsPersistConfig = { key: 'downloads', storage };
-const lastfmPersistConfig = {key: 'lastfm', storage };
+const lastfmPersistConfig = { key: 'lastfm', storage };
+const statsPersistConfig = { key: 'stats', storage };
 
 export const rootReducer = combineReducers({
     servers: serversReducer,
@@ -22,7 +24,8 @@ export const rootReducer = combineReducers({
     library: libraryReducer,
     settings: settingsReducer,
     downloads: downloadsReducer,
-    lastfm: lastfmReducer
+    lastfm: lastfmReducer,
+    stats: statsReducer
 });
 
 const persistedReducer = combineReducers({
@@ -31,7 +34,8 @@ const persistedReducer = combineReducers({
     library: persistReducer(libraryPersistConfig, libraryReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     downloads: persistReducer(downloadsPersistConfig, downloadsReducer),
-    lastfm: persistReducer(lastfmPersistConfig, lastfmReducer)
+    lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),
+    stats: persistReducer(statsPersistConfig, statsReducer)
 });
 
 const store = configureStore({

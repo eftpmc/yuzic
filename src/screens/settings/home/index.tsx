@@ -114,7 +114,7 @@ export default function Settings() {
                         onPress={() => router.push('/settings/lastfmView')}
                     >
                         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            Lastfm
+                            Last.fm
                         </Text>
                         <MaterialIcons
                             name="chevron-right"

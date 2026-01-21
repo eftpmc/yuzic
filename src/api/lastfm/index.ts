@@ -1,5 +1,5 @@
 export { testConnection } from './auth';
 
-export { getArtistInfo, getSimilarArtists } from './artist'
+export { getArtistInfo, getSimilarArtists } from './artists'
 
-export { searchAlbums } from './albums'
+export { searchAlbums, getAlbumInfo } from './albums'

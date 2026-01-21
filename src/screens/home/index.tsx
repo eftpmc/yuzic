@@ -18,6 +18,10 @@ import AccountBottomSheet from './components/AccountBottomSheet';
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { setIsGridView, setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
 import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
+import {
+    selectAlbumPlays,
+    selectArtistPlays,
+} from '@/utils/redux/selectors/statsSelectors';
 import HomeHeader from './components/Header';
 import LibraryFilterBar from './components/Filters';
 import LibraryListHeader from './components/Content/Header';
@@ -45,6 +49,9 @@ export default function HomeScreen() {
     const isGridView = useSelector(selectIsGridView);
     const sortOrder = useSelector(selectLibrarySortOrder);
 
+    const albumPlays = useSelector(selectAlbumPlays);
+    const artistPlays = useSelector(selectArtistPlays);
+
     const [activeFilter, setActiveFilter] =
         useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
 
@@ -56,7 +63,7 @@ export default function HomeScreen() {
     const opacity = useRef(new Animated.Value(1)).current;
 
     const accountSheetRef = useRef<BottomSheetModal>(null);
-    const sortSheetRef = useRef<BottomSheet>(null);
+    const sortSheetRef = useRef<BottomSheetModal>(null);
 
     const { gridItemWidth } = useGridLayout();
 
@@ -122,11 +129,29 @@ export default function HomeScreen() {
                 data.reverse();
                 break;
             case 'userplays':
-                data.sort(
-                    (a, b) =>
-                        ('userPlayCount' in b ? b.userPlayCount : 0) -
-                        ('userPlayCount' in a ? a.userPlayCount : 0)
-                );
+                data.sort((a, b) => {
+                    const aPlays =
+                        a.type === 'Album'
+                            ? albumPlays[a.id] ?? 0
+                            : a.type === 'Artist'
+                                ? artistPlays[a.id] ?? 0
+                                : 0;
+
+                    const bPlays =
+                        b.type === 'Album'
+                            ? albumPlays[b.id] ?? 0
+                            : b.type === 'Artist'
+                                ? artistPlays[b.id] ?? 0
+                                : 0;
+
+                    return bPlays - aPlays;
+                });
+                break;
+            case 'year':
+                data.sort((a, b) => {
+                    if (a.type !== 'Album' || b.type !== 'Album') return 0;
+                    return (b.year ?? 0) - (a.year ?? 0);
+                });
                 break;
         }
         return data;
@@ -144,7 +169,12 @@ export default function HomeScreen() {
             ? 'Alphabetical'
             : sortOrder === 'recent'
                 ? 'Most Recent'
-                : 'Most Played';
+                : sortOrder === 'userplays'
+                    ? 'Most Played'
+                    : sortOrder === 'year'
+                        ? 'Release Year'
+                        : 'Last Modified';
+
 
     const renderItem = ({ item }) => {
         switch (item.type) {
@@ -218,7 +248,7 @@ export default function HomeScreen() {
                             ListHeaderComponent={
                                 <LibraryListHeader
                                     sortLabel={currentSortLabel}
-                                    onSortPress={() => sortSheetRef.current?.show()}
+                                    onSortPress={() => sortSheetRef.current?.present()}
                                     onToggleView={() => dispatch(setIsGridView(!isGridView))}
                                 />
                             }
@@ -229,7 +259,7 @@ export default function HomeScreen() {
                             sortOrder={sortOrder}
                             onSelect={(value) => {
                                 dispatch(setLibrarySortOrder(value));
-                                sortSheetRef.current?.close();
+                                sortSheetRef.current?.dismiss();
                             }}
                         />
                     </>

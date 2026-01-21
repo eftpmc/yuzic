@@ -42,7 +42,6 @@ export async function getStarredItems(
         `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
           username
         )}&p=${encodeURIComponent(password)}&v=${API_VERSION}&c=${CLIENT_NAME}`,
-      userPlayCount: 0,
     })),
   };
 }

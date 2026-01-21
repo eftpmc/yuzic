@@ -1,42 +1,37 @@
-import { AlbumBase, LastfmConfig } from '@/types';
+import { ExternalAlbumBase, LastfmConfig } from '@/types';
 import { createLastfmClient } from '../client';
+import { nanoid } from 'nanoid/non-secure';
 
-const normalizeLastFmAlbum = (album: any): AlbumBase => ({
-  id: album.mbid || album.url || album.name,
+const normalizeLastFmAlbum = (album: any): ExternalAlbumBase => ({
+  id: album.mbid || `lastfm:album:${nanoid()}`,
   title: album.name,
-  cover: {
-    kind: 'lastfm',
-    url:
-      album.image?.find((i: any) => i.size === 'large')?.['#text'] ??
-      '',
-  },
+  artist: album.artist ?? '',
   subtext: album.artist ?? '',
-  artist: {
-    id: '',
-    cover: { kind: 'none' },
-    name: album.artist ?? '',
-    subtext: 'Artist',
-  },
-  year: 2000,
-  genres: [],
-  userPlayCount: 0,
+  cover:
+    album.image?.find((i: any) => i.size === 'extralarge')?.['#text']
+      ? {
+          kind: 'lastfm',
+          url: album.image.find((i: any) => i.size === 'extralarge')['#text'],
+        }
+      : album.image?.find((i: any) => i.size === 'large')?.['#text']
+      ? {
+          kind: 'lastfm',
+          url: album.image.find((i: any) => i.size === 'large')['#text'],
+        }
+      : { kind: 'none' },
 });
 
 export const searchAlbums = async (
   config: LastfmConfig,
   query: string
-): Promise<AlbumBase[]> => {
+): Promise<ExternalAlbumBase[]> => {
   if (!query.trim()) return [];
 
   try {
     const { request } = createLastfmClient(config);
 
     const res = await request<{
-      results?: {
-        albummatches?: {
-          album?: any[];
-        };
-      };
+      results?: { albummatches?: { album?: any[] } };
     }>({
       method: 'album.search',
       album: query,
@@ -44,10 +39,9 @@ export const searchAlbums = async (
     });
 
     const albums = res.results?.albummatches?.album;
-
-    if (!Array.isArray(albums)) return [];
-
-    return albums.map(normalizeLastFmAlbum);
+    return Array.isArray(albums)
+      ? albums.map(normalizeLastFmAlbum)
+      : [];
   } catch (error) {
     console.warn(`❌ Last.fm album.search failed for "${query}":`, error);
     return [];

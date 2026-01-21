@@ -44,11 +44,11 @@ function normalizePlaylistSongEntry(
     id: s.Id,
     title: s.Name,
     artist: s.ArtistItems[0].Name || "Unknown Artist",
+    artistId: s.ArtistItems[0].Id,
     cover,
     duration: String(Math.round(Number(ticks) / 10_000_000)),
     streamUrl: buildJellyfinStreamUrl(serverUrl, token, s.Id),
-    albumId: s.AlbumId,
-    userPlayCount: s.UserData.PlayCount ?? 0,
+    albumId: s.AlbumId
   };
 }
 

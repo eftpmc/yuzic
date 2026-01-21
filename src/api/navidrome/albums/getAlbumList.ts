@@ -55,7 +55,6 @@ function normalizeAlbumEntry(
     artist,
     year: a.year,
     genres: a.genre ? [a.genre] : [],
-    userPlayCount: a.playCount,
   };
 }
 

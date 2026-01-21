@@ -39,10 +39,10 @@ export async function getAlbum(
     id: s.id,
     title: s.title,
     artist: s.artist,
+    artistId: s.artistId,
     duration: s.duration,
     cover,
     albumId: album.id,
-    userPlayCount: 0,
     streamUrl:
       `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
         username
@@ -60,7 +60,6 @@ export async function getAlbum(
     artist,
     year: album.year,
     genres: album.genre ? [album.genre] : [],
-    userPlayCount: 0,
     songs,
   };
 }

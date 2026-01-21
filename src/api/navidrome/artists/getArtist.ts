@@ -52,8 +52,7 @@ export async function getArtist(
       subtext: `Album • ${artist.name}`,
       year: album.year,
       artist: artistBase,
-      genres: [album.genre],
-      userPlayCount: 0
+      genres: [album.genre]
     }
 
     albums.push(a);

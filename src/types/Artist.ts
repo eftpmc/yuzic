@@ -1,4 +1,4 @@
-import { AlbumBase } from "./Album";
+import { AlbumBase, ExternalAlbumBase } from "./Album";
 import { CoverSource } from "./Cover";
 
 export interface ArtistBase {
@@ -12,8 +12,13 @@ export interface Artist extends ArtistBase {
     ownedAlbums: AlbumBase[];
 }
 
-export interface LastfmArtist {
-    bio: string;
-    lastfmurl: string;
-    externalAlbums: AlbumBase[];
+export interface ExternalArtistBase {
+    id: string;
+    name: string;
+    cover: CoverSource;
+    subtext: string;
+}
+
+export interface ExternalArtist extends ExternalArtistBase {
+    albums: ExternalAlbumBase[];
 }

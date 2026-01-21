@@ -38,7 +38,6 @@ export async function getPlaylist(
       ? { kind: "navidrome", coverArtId: s.coverArt }
       : { kind: "none" },
     albumId: s.albumId,
-    userPlayCount: 0,
     streamUrl:
       `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
         username

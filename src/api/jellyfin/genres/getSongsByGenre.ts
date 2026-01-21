@@ -1,4 +1,4 @@
-import { Song } from "@/types";
+import { CoverSource, Song } from "@/types";
 import { buildJellyfinStreamUrl } from "@/utils/builders/buildStreamUrls";
 
 export type GetSongsByGenreResult = Song[];
@@ -36,19 +36,19 @@ function normalizeGenreSongEntry(
     s.MediaSources?.[0]?.RunTimeTicks ??
     0;
 
-  const cover =
-    `${serverUrl}/Items/${s.Id}/Images/Primary?quality=90&X-Emby-Token=${token}` +
-    (s.ImageTags?.Primary ? `&tag=${s.ImageTags.Primary}` : "");
+  const cover: CoverSource = s.Id
+      ? { kind: "jellyfin", itemId: s.Id }
+      : { kind: "none" };
 
   return {
     id: s.Id,
     title: s.Name,
-    artist: s.AlbumArtist || s.Artists?.[0] || "Unknown Artist",
+    artist: s.ArtistItems[0].Name || "Unknown Artist",
+    artistId: s.ArtistItems[0].Id,
     cover,
     duration: String(Math.round(Number(ticks) / 10_000_000)),
     streamUrl: buildJellyfinStreamUrl(serverUrl, token, s.Id),
-    albumId: s.AlbumId,
-    userPlayCount: s.UserData?.PlayCount ?? 0
+    albumId: s.AlbumId
   };
 }
 

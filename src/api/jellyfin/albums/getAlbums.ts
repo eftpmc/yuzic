@@ -16,8 +16,8 @@ async function normalizeAlbum(
           : { kind: "none" };
 
     const artist: ArtistBase = {
-      id: a.AlbumArtists[0].Id,
-      name: a.AlbumArtists[0].Name || "Unknown Artist",
+      id: a.ArtistItems[0].Id,
+      name: a.ArtistItems[0].Name || "Unknown Artist",
       cover: { kind: "none" },
       subtext: "Artist"
     }
@@ -32,8 +32,7 @@ async function normalizeAlbum(
       genres: (a.Genres ?? [])
       .flatMap((g: string) => g.split(";"))
       .map((g: string) => g.trim())
-      .filter(Boolean),
-      userPlayCount: a.UserData.PlayCount ?? 0,
+      .filter(Boolean)
     };
   } catch (error) {
     console.error(`Failed to normalize album:`, error);

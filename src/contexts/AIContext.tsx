@@ -270,8 +270,9 @@ export const AIProvider = ({ children }: { children: ReactNode }) => {
                         title: `AI Queue • ${userPrompt}`,
                         cover: { kind: "none" },
                         subtext: 'Playlist',
-                        userPlayCount: 0,
                         songs: queue,
+                        changed: new Date(2000),
+                        created: new Date(2000)
                     });
                 }
 

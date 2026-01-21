@@ -17,11 +17,11 @@ function normalizeSongEntry(
     id: s.Id,
     title: s.Name,
     artist,
+    artistId: s.ArtistItems[0].Id,
     cover: album.cover,
     duration: String(Math.round(Number(ticks) / 10_000_000)),
     streamUrl: buildJellyfinStreamUrl(serverUrl, token, s.Id),
-    albumId: album.id,
-    userPlayCount: s.UserData.PlayCount ?? 0,
+    albumId: album.id
   };
 }
 

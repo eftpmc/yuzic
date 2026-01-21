@@ -47,10 +47,10 @@ function normalizeSongsByGenre(
       id: s.id,
       title: s.title,
       artist: s.artist,
+      artistId: s.artistId,
       duration: s.duration,
       cover,
       albumId: s.albumId,
-      userPlayCount: 0,
       streamUrl:
         `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
           username
