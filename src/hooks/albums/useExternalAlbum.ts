@@ -37,7 +37,9 @@ export function useExternalAlbum(
 
       // 3. Fetch tracks from the release
       const tracks = await musicbrainz.getReleaseTracks(
-        release.id
+        release.id,
+        group.id,
+        group.artist
       );
 
       return {
@@ -45,7 +47,7 @@ export function useExternalAlbum(
         title: group.title,
         artist: group.artist,
         subtext: group.artist,
-        cover: { kind: 'musicbrainz' },
+        cover: { kind: 'musicbrainz', releaseGroupId: group.id },
         songs: tracks,
       };
     },

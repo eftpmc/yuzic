@@ -1,16 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Song } from '@/types';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
-
-export interface PromptHistoryEntry {
-  prompt: string;
-  queue: Song[];
-}
-
-export type AIProvider = 'openai' | 'anthropic' | 'gemini';
+export type PlayingBarAction = 'none' | 'skip' | 'favorite';
 export type ThemeMode = 'light' | 'dark' | 'system';
+export type SearchScope =
+  | 'client'
+  | 'client+external'
+  | 'server'
+  | 'server+external';
 
 export interface SettingsState {
   /* UI */
@@ -18,26 +16,20 @@ export interface SettingsState {
   themeColor: string;
   gridColumns: number;
   isGridView: boolean;
-  aiButtonEnabled: boolean;
 
+  playingBarAction: PlayingBarAction;
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
+
+  /* Search */
+  searchScope: SearchScope;
 
   /* Onboarding */
   hasSeenGetStarted: boolean;
 
   /* Audio */
   audioQuality: AudioQuality;
-
-  /* AI */
-  aiProvider: AIProvider;
-  aiApiKeys: {
-    openai: string;
-    anthropic: string;
-    gemini: string;
-  };
-  promptHistory: PromptHistoryEntry[];
 
   /* Analytics */
   analyticsEnabled: boolean;
@@ -48,20 +40,13 @@ const initialState: SettingsState = {
   themeColor: '#ff7f7f',
   gridColumns: 3,
   isGridView: true,
-  aiButtonEnabled: true,
+  playingBarAction: 'skip',
 
   librarySortOrder: 'title',
+  searchScope: 'client+external',
   hasSeenGetStarted: false,
 
   audioQuality: 'medium',
-
-  aiProvider: 'openai',
-  aiApiKeys: {
-    openai: '',
-    anthropic: '',
-    gemini: '',
-  },
-  promptHistory: [],
 
   analyticsEnabled: false,
 };
@@ -83,13 +68,20 @@ const settingsSlice = createSlice({
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
     },
-    setAiButtonEnabled(state, action: PayloadAction<boolean>) {
-      state.aiButtonEnabled = action.payload;
+    setPlayingBarAction(
+      state,
+      action: PayloadAction<PlayingBarAction>
+    ) {
+      state.playingBarAction = action.payload;
     },
 
     /* Library */
     setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
       state.librarySortOrder = action.payload;
+    },
+
+    setSearchScope(state, action: PayloadAction<SearchScope>) {
+      state.searchScope = action.payload;
     },
 
     /* Onboarding */
@@ -100,27 +92,6 @@ const settingsSlice = createSlice({
     /* Audio */
     setAudioQuality(state, action: PayloadAction<AudioQuality>) {
       state.audioQuality = action.payload;
-    },
-
-    /* AI */
-    setAiProvider(state, action: PayloadAction<AIProvider>) {
-      state.aiProvider = action.payload;
-    },
-
-    setAiApiKey(
-      state,
-      action: PayloadAction<{ provider: AIProvider; key: string }>
-    ) {
-      state.aiApiKeys[action.payload.provider] = action.payload.key;
-    },
-    addPromptToHistory(state, action: PayloadAction<PromptHistoryEntry>) {
-      const filtered = state.promptHistory.filter(
-        p => p.prompt !== action.payload.prompt
-      );
-      state.promptHistory = [
-        action.payload,
-        ...filtered,
-      ].slice(0, 10);
     },
 
     /* Analytics */
@@ -137,13 +108,11 @@ export const {
   setThemeColor,
   setGridColumns,
   setIsGridView,
-  setAiButtonEnabled,
+  setPlayingBarAction,
   setLibrarySortOrder,
+  setSearchScope,
   setHasSeenGetStarted,
   setAudioQuality,
-  setAiProvider,
-  setAiApiKey,
-  addPromptToHistory,
   setAnalyticsEnabled,
   resetSettings,
 } = settingsSlice.actions;

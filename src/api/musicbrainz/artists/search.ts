@@ -5,7 +5,7 @@ const normalizeArtist = (artist: any): ExternalArtistBase => ({
   id: artist.id,
   name: artist.name,
   subtext: artist.area?.name ?? '',
-  cover: { kind: 'musicbrainz' },
+  cover: { kind: 'musicbrainz', releaseGroupId: artist.id },
 });
 
 export const searchArtists = async (

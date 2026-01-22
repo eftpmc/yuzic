@@ -19,6 +19,14 @@ export function buildCover(
     return cover.url || null;
   }
 
+  if (cover.kind === 'musicbrainz') {
+    const id = cover.releaseGroupId;
+    if (!id) return null;
+
+    return `https://coverartarchive.org/release-group/${id}/front-${px}`;
+  }
+
+
   const state = store.getState();
   const active = selectActiveServer(state);
 
@@ -48,19 +56,13 @@ export function buildCover(
     const token = auth.token as string | undefined;
     if (!token) return null;
 
-    const type = cover.imageType ?? 'Primary';
-
     const params = new URLSearchParams();
     params.set('quality', '90');
     params.set('maxWidth', String(px));
     params.set('maxHeight', String(px));
     params.set('X-Emby-Token', token);
 
-    if (cover.tag) {
-      params.set('tag', cover.tag);
-    }
-
-    return `${serverUrl}/Items/${cover.itemId}/Images/${type}?${params.toString()}`;
+    return `${serverUrl}/Items/${cover.itemId}/Images/${'Primary'}?${params.toString()}`;
   }
 
   return null;

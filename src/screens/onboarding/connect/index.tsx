@@ -33,40 +33,24 @@ export default function Connect() {
     }, []);
 
     const handleNext = async () => {
-        if (!selectedType) {
-            toast.error('Select a server type first.');
-            return;
-        }
+    if (!selectedType) {
+        toast.error('Select a server type first.');
+        return;
+    }
 
-        if (!localServerUrl) {
-            toast.error('Please enter a valid server URL.');
-            return;
-        }
+    if (!localServerUrl) {
+        toast.error('Please enter a valid server URL.');
+        return;
+    }
 
-        const provider = SERVER_PROVIDERS[selectedType];
-
-        setIsTesting(true);
-        try {
-            const result = await provider.testServerUrl(localServerUrl);
-
-            if (!result.success) {
-                toast.error(result.message ?? 'Server could not be reached.');
-                return;
-            }
-
-            router.push({
-                pathname: '(onboarding)/credentials',
-                params: {
-                    type: selectedType,
-                    serverUrl: localServerUrl,
-                },
-            });
-        } catch {
-            toast.error('Failed to connect.');
-        } finally {
-            setIsTesting(false);
-        }
-    };
+    router.push({
+        pathname: '(onboarding)/credentials',
+        params: {
+            type: selectedType,
+            serverUrl: localServerUrl.trim(),
+        },
+    });
+};
 
     const handleDemo = async () => {
         if (!selectedType) return;

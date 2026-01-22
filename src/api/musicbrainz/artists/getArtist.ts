@@ -13,7 +13,7 @@ export async function getArtist(
       id: artist.id,
       name: artist.name,
       subtext: artist.area?.name ?? '',
-      cover: { kind: 'musicbrainz' },
+      cover: { kind: 'musicbrainz', releaseGroupId: artist.id, },
     };
   } catch (err) {
     console.warn(

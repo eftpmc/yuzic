@@ -50,8 +50,8 @@ export default function Credentials() {
         }
 
         const provider = SERVER_PROVIDERS[type];
-
         setIsTesting(true);
+
         try {
             const result = await provider.connect(
                 serverUrl,
@@ -59,8 +59,16 @@ export default function Credentials() {
                 localPassword
             );
 
-            if (!result.success) {
-                toast.error(result.message || 'Connection failed.');
+            if (!result.success || !result.auth) {
+                toast.error(result.message || 'Authentication failed.');
+                return;
+            }
+
+            console.log(result.auth)
+            const pingOk = await provider.ping(serverUrl, localUsername, result.auth);
+
+            if (!pingOk) {
+                toast.error('Server connected, but API is not responding.');
                 return;
             }
 
@@ -80,7 +88,7 @@ export default function Credentials() {
             track('connected new server', { type });
             dispatch(setActiveServer(id));
             router.replace('/(home)');
-        } catch {
+        } catch (err) {
             toast.error('An error occurred while connecting.');
         } finally {
             setIsTesting(false);

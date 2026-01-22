@@ -6,7 +6,8 @@ import {
   PlaylistsApi,
   StarredApi,
   AuthApi,
-  LyricsApi
+  LyricsApi,
+  SearchApi
 } from "../types";
 import { FAVORITES_ID } from '@/constants/favorites';
 import { buildFavoritesPlaylist } from '@/utils/builders/buildFavoritesPlaylist';
@@ -38,6 +39,9 @@ import { getSongsByGenre } from "./genres/getSongsByGenre";
 import { getGenres } from "./genres/getGenres";
 
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
+
+import { search as searchNavidrome } from './search/search';
+
 
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const { serverUrl, username, auth: providerAuth } = server;
@@ -177,6 +181,17 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     },
   };
 
+  const search = {
+    search: async (query: string) => {
+      return searchNavidrome(
+        serverUrl,
+        username,
+        password,
+        query
+      );
+    },
+  };
+
   return {
     auth,
     albums,
@@ -184,6 +199,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     genres,
     playlists,
     starred,
-    lyrics
+    lyrics,
+    search
   };
 };

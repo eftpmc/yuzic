@@ -235,6 +235,10 @@ export default function HomeScreen() {
                 filters={filters}
                 onChange={setActiveFilter}
                 onExplorePress={() => {
+                    if (true) {
+                        toast.error('Music discovery coming soon');
+                        return;
+                    }
                     if (!listenbrainzConfig?.token) {
                         toast.error('Connect ListenBrainz to use Explore');
                         return;

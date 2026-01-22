@@ -17,6 +17,9 @@ import * as musicbrainz from '@/api/musicbrainz';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
+import { useApi } from '@/api';
+import { useSelector } from 'react-redux';
+import { selectSearchScope } from '@/utils/redux/selectors/settingsSelectors';
 
 interface SearchContextType {
   searchResults: SearchResult[];
@@ -57,9 +60,12 @@ export const useSearch = () => {
 export const SearchProvider: React.FC<SearchProviderProps> = ({
   children,
 }) => {
+  const api = useApi();
   const { albums } = useAlbums();
   const { artists } = useArtists();
   const { playlists } = usePlaylists();
+
+  const searchScope = useSelector(selectSearchScope);
 
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
@@ -112,6 +118,28 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     ];
   };
 
+  const searchServer = async (
+    query: string
+  ): Promise<SearchResult[]> => {
+    if (!api?.search) return [];
+
+    const { albums = [] } =
+      await api.search.search(query);
+
+    const albumResults: SearchResult[] = albums.map(
+      (album: AlbumBase) => ({
+        id: album.id,
+        title: album.title,
+        subtext: album.subtext,
+        cover: album.cover,
+        type: 'album',
+        isDownloaded: true,
+      })
+    );
+
+    return albumResults;
+  };
+
   const searchExternal = async (
     query: string
   ): Promise<SearchResult[]> => {
@@ -150,17 +178,32 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     try {
       const lowerQuery = query.toLowerCase();
 
-      const localResults = await searchLibrary(query);
-      const externalResults = await searchExternal(query);
+      const results: SearchResult[] = [];
 
-      const combined = [
-        ...localResults,
-        ...externalResults,
-      ];
+      if (searchScope === 'client') {
+        results.push(...await searchLibrary(query));
+      }
 
+      if (searchScope === 'client+external') {
+        results.push(
+          ...await searchLibrary(query),
+          ...await searchExternal(query)
+        );
+      }
+
+      if (searchScope === 'server') {
+        results.push(...await searchServer(query));
+      }
+
+      if (searchScope === 'server+external') {
+        results.push(
+          ...await searchServer(query),
+          ...await searchExternal(query)
+        );
+      }
       const uniqueMap = new Map<string, SearchResult>();
 
-      for (const result of combined) {
+      for (const result of results) {
         const key = resultKey(result);
         const existing = uniqueMap.get(key);
 

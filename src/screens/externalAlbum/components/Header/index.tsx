@@ -118,7 +118,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
               isDarkMode && styles.sheetBodyDark,
             ]}
           >
-            This album’s information is provided by Last.fm. Track listings, durations, artwork, or
+            This album’s information is provided by MusicBrainz. Track listings, durations, artwork, or
             release details may be incomplete or differ from your local files.
           </Text>
         </BottomSheetView>

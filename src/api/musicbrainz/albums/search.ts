@@ -8,7 +8,7 @@ const normalizeReleaseGroup = (rg: any): ExternalAlbumBase => ({
   subtext: rg['artist-credit']?.[0]?.name ?? '',
   cover: {
     kind: 'musicbrainz',
-    // artwork is resolved later via Cover Art Archive
+    releaseGroupId: rg.id,
   },
 });
 

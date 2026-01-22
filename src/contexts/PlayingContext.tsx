@@ -27,7 +27,7 @@ import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSe
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
-interface PlayingContextType {
+export interface PlayingContextType {
   currentSong: Song | null;
   isPlaying: boolean;
 

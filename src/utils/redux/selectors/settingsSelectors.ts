@@ -1,10 +1,9 @@
 import { RootState } from '@/utils/redux/store';
 import {
-  AIProvider,
   AudioQuality,
   LibrarySortOrder,
-  PromptHistoryEntry,
   ThemeMode,
+  SearchScope
 } from '@/utils/redux/slices/settingsSlice';
 
 export const selectSettings = (state: RootState) => state.settings;
@@ -21,15 +20,19 @@ export const selectGridColumns = (state: RootState): number =>
 export const selectIsGridView = (state: RootState): boolean =>
   state.settings.isGridView;
 
-export const selectAiButtonEnabled = (
-  state: RootState
-): boolean =>
-  state.settings.aiButtonEnabled;
+export const selectPlayingBarAction = (state: RootState) =>
+  state.settings.playingBarAction;
 
 export const selectLibrarySortOrder = (
   state: RootState
 ): LibrarySortOrder =>
   state.settings.librarySortOrder;
+
+export const selectSearchScope = (
+  state: RootState
+): SearchScope =>
+  state.settings.searchScope;
+
 
 export const selectHasSeenGetStarted = (
   state: RootState
@@ -41,23 +44,6 @@ export const selectAudioQuality = (
 ): AudioQuality =>
   state.settings.audioQuality;
 
-export const selectAiProvider = (state: RootState): AIProvider =>
-  state.settings.aiProvider;
-
-export const selectAiApiKeys = (state: RootState) =>
-  state.settings.aiApiKeys;
-
-export const selectActiveAiApiKey = (state: RootState): string => {
-  const provider = state.settings.aiProvider;
-  return state.settings.aiApiKeys[provider];
-};
-
-export const selectPromptHistory = (
-  state: RootState
-): PromptHistoryEntry[] =>
-  state.settings.promptHistory;
-
-/* Analytics */
 export const selectAnalyticsEnabled = (
   state: RootState
 ): boolean =>

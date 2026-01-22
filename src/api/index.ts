@@ -45,6 +45,9 @@ export const useApi = (): ApiAdapter => {
       },
       lyrics: {
         getBySongId: empty,
+      },
+      search: {
+        search: empty
       }
     };
   }
@@ -90,6 +93,9 @@ export const useApi = (): ApiAdapter => {
     },
     lyrics: {
       getBySongId: empty
+    },
+    search: {
+      search: empty
     }
   };
 };

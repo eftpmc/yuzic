@@ -13,7 +13,10 @@ export async function getReleaseGroup(
     const { request } = createMusicBrainzClient();
 
     const rg = await request<any>(
-      `release-group/${releaseGroupId}`
+      `release-group/${releaseGroupId}`,
+      {
+        inc: 'artist-credits'
+      }
     );
 
     return {

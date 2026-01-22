@@ -9,7 +9,7 @@ const normalizeReleaseGroup = (
   title: rg.title,
   artist: artistName,
   subtext: artistName,
-  cover: { kind: 'musicbrainz' },
+  cover: { kind: 'musicbrainz', releaseGroupId: rg.id },
 });
 
 export async function getArtistAlbums(

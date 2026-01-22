@@ -9,9 +9,9 @@ import {
 import Header from '../components/Header';
 import { ThemeColor } from './components/ThemeColor';
 import { Columns } from './components/Columns';
-import { AppearanceToggles } from './components/Toggles';
 import { ThemeModeSelector } from './components/ThemeModeSelector';
 import { useTheme } from '@/hooks/useTheme';
+import { PlayingBarActionSelector } from './components/PlayingBarActionSelector';
 
 const AppearanceSettings: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -29,8 +29,8 @@ const AppearanceSettings: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemeModeSelector />
         <ThemeColor />
+        <PlayingBarActionSelector />
         <Columns />
-        <AppearanceToggles/>
       </ScrollView>
     </SafeAreaView>
   );

@@ -10,7 +10,6 @@ import { Toasts } from '@backpackapp-io/react-native-toast';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
-import { AIProvider } from '@/contexts/AIContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -50,48 +49,46 @@ function AppShell() {
       <ExploreProvider>
         <DownloadProvider>
           <PlayingProvider>
-            <AIProvider>
-              <SearchProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <BottomSheetModalProvider>
-                    <Stack>
-                      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-                      <Stack.Screen name="(home)" options={{ headerShown: false }} />
-                      <Stack.Screen name="index" options={{ headerShown: false }} />
-                      <Stack.Screen name="+not-found" />
-                    </Stack>
+            <SearchProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <BottomSheetModalProvider>
+                  <Stack>
+                    <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(home)" options={{ headerShown: false }} />
+                    <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
 
-                    <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+                  <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-                    <Toasts
-                      defaultStyle={{
-                        view: {
-                          backgroundColor: isDarkMode
-                            ? 'rgba(32,32,32,0.9)'
-                            : 'rgba(255,255,255,0.9)',
-                          borderRadius: 10,
-                          shadowColor: '#000',
-                          shadowOpacity: 0.15,
-                          shadowRadius: 10,
-                          elevation: 4,
-                        },
-                        pressable: {
-                          backgroundColor: 'transparent',
-                        },
-                        text: {
-                          color: isDarkMode ? '#fff' : '#000',
-                          fontSize: 16,
-                          fontWeight: '500',
-                        },
-                        indicator: {
-                          marginRight: 12,
-                        },
-                      }}
-                    />
-                  </BottomSheetModalProvider>
-                </GestureHandlerRootView>
-              </SearchProvider>
-            </AIProvider>
+                  <Toasts
+                    defaultStyle={{
+                      view: {
+                        backgroundColor: isDarkMode
+                          ? 'rgba(32,32,32,0.9)'
+                          : 'rgba(255,255,255,0.9)',
+                        borderRadius: 10,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.15,
+                        shadowRadius: 10,
+                        elevation: 4,
+                      },
+                      pressable: {
+                        backgroundColor: 'transparent',
+                      },
+                      text: {
+                        color: isDarkMode ? '#fff' : '#000',
+                        fontSize: 16,
+                        fontWeight: '500',
+                      },
+                      indicator: {
+                        marginRight: 12,
+                      },
+                    }}
+                  />
+                </BottomSheetModalProvider>
+              </GestureHandlerRootView>
+            </SearchProvider>
           </PlayingProvider>
         </DownloadProvider>
       </ExploreProvider>

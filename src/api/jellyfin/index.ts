@@ -6,7 +6,8 @@ import {
   PlaylistsApi,
   StarredApi,
   AuthApi,
-  LyricsApi
+  LyricsApi,
+  SearchApi
 } from "../types";
 
 import { Playlist, Server } from "@/types";
@@ -32,6 +33,7 @@ import { getGenres } from "./genres/getGenres";
 import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
 import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
+import { search as searchJellyfin } from './search/search'
 
 export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
   const { serverUrl, auth: providerAuth } = adapter;
@@ -180,6 +182,12 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
     },
   };
 
+    const search = {
+    search: async (query: string) => {
+      return searchJellyfin(serverUrl, token, query);
+    },
+  };
+
   return {
     auth,
     albums,
@@ -187,6 +195,7 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
     genres,
     playlists,
     starred,
-    lyrics
+    lyrics,
+    search
   };
 };

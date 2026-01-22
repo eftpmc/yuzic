@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import {View} from "react-native";
-import PlayingBarHolder from "@/components/PlayingBarHolder";
+import PlayingBarHolder from "@/screens/playing/playingBar/PlayingBarHolder";
 
 export default function HomeLayout() {
     return (

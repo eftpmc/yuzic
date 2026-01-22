@@ -122,20 +122,6 @@ export default function Settings() {
                             color={isDarkMode ? '#fff' : '#6E6E73'}
                         />
                     </TouchableOpacity>
-                    {renderDivider()}
-                    <TouchableOpacity
-                        style={styles.row}
-                        onPress={() => router.push('/settings/aiView')}
-                    >
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            AI Providers
-                        </Text>
-                        <MaterialIcons
-                            name="chevron-right"
-                            size={24}
-                            color={isDarkMode ? '#fff' : '#6E6E73'}
-                        />
-                    </TouchableOpacity>
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>

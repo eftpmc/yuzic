@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Appearance,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAnalyticsEnabled } from '@/utils/redux/slices/settingsSlice';
@@ -12,11 +11,15 @@ import {
   enableAnalytics,
   disableAnalytics,
 } from '@/utils/analytics/amplitude';
-import { selectAnalyticsEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import {
+  selectAnalyticsEnabled,
+  selectThemeColor,
+} from '@/utils/redux/selectors/settingsSelectors';
+import { useTheme } from '@/hooks/useTheme';
 
 export const AnalyticsToggle: React.FC = () => {
   const dispatch = useDispatch();
-  const isDark = Appearance.getColorScheme() === 'dark';
+  const { isDarkMode } = useTheme();
 
   const analyticsEnabled = useSelector(selectAnalyticsEnabled);
   const themeColor = useSelector(selectThemeColor);
@@ -34,27 +37,27 @@ export const AnalyticsToggle: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={[styles.container, isDarkMode && styles.containerDark]}>
       <View style={styles.text}>
-        <Text style={[styles.title, isDark && styles.titleDark]}>
+        <Text style={[styles.title, isDarkMode && styles.titleDark]}>
           Anonymous analytics
         </Text>
-        <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+        <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
           Helps improve the app
         </Text>
       </View>
 
       <TouchableOpacity
-        activeOpacity={0.8}
+        activeOpacity={0.85}
         onPress={toggleAnalytics}
         style={[
           styles.switch,
           {
             backgroundColor: analyticsEnabled
               ? themeColor
-              : isDark
+              : isDarkMode
                 ? '#333'
-                : '#ddd',
+                : '#E5E5EA',
           },
         ]}
       >
@@ -75,9 +78,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: '#f2f2f2',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#fff',
   },
   containerDark: {
     backgroundColor: '#1C1C1E',
@@ -88,28 +91,28 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#555',
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1C1C1E',
   },
   titleDark: {
-    color: '#aaa',
+    color: '#fff',
   },
   subtitle: {
     fontSize: 12,
-    color: '#777',
+    color: '#6E6E73',
     marginTop: 2,
   },
   subtitleDark: {
-    color: '#888',
+    color: '#aaa',
   },
 
   switch: {
-    width: 44,
-    height: 24,
+    width: 46,
+    height: 26,
     borderRadius: 8,
     justifyContent: 'center',
-    paddingHorizontal: 2,
+    paddingHorizontal: 3,
   },
   thumb: {
     width: 20,

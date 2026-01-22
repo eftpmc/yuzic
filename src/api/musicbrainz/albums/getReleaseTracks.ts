@@ -2,26 +2,31 @@ import { createMusicBrainzClient } from '../client';
 import { ExternalSong } from '@/types';
 
 export async function getReleaseTracks(
-  releaseId: string
+  releaseId: string,
+  releaseGroupId: string,
+  artistName: string
 ): Promise<ExternalSong[]> {
   try {
     const { request } = createMusicBrainzClient();
 
     const release = await request<any>(
       `release/${releaseId}`,
-      {
-        inc: 'recordings',
-      }
+      { inc: 'recordings' }
     );
 
     const media = release.media ?? [];
 
-    const tracks = media.flatMap((m: any) =>
+    const tracks: ExternalSong[] = media.flatMap((m: any) =>
       (m.tracks ?? []).map((t: any, index: number) => ({
         id: t.recording?.id ?? t.id,
         title: t.title,
-        duration: t.length ?? 0,
-        trackNumber: index + 1,
+        artist: artistName,
+        albumId: releaseGroupId,
+        duration: String(Math.floor((t.length ?? 0) / 1000)),
+        cover: {
+          kind: 'musicbrainz',
+          releaseGroupId,
+        },
       }))
     );
 

@@ -2,25 +2,20 @@ import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 
 import {
-  testServerUrl as testNavidromeUrl,
-} from '@/api/navidrome/auth/testServerUrl';
+  ping as pingNavidrome,
+} from '@/api/navidrome/auth/ping';
 import {
   connect as connectNavidrome,
 } from '@/api/navidrome/auth/connect';
 
 import {
-  testServerUrl as testJellyfinUrl,
-} from '@/api/jellyfin/auth/testServerUrl';
+  ping as pingJellyfin,
+} from '@/api/jellyfin/auth/ping';
 import {
   connect as connectJellyfin,
 } from '@/api/jellyfin/auth/connect';
 
 import { ServerType } from '@/types';
-
-export type TestResult = {
-  success: boolean;
-  message?: string;
-};
 
 export type ProviderAuth = {
   [key: string]: string | number | boolean | null;
@@ -48,7 +43,11 @@ export type ServerProviderConfig = {
   description: string;
   icon: any;
   capabilities: ServerCapabilities;
-  testServerUrl: (url: string) => Promise<TestResult>;
+  ping: (
+    url: string,
+    username: string,
+    auth: ProviderAuth
+  ) => Promise<boolean>;
   connect: (
     url: string,
     username: string,
@@ -66,8 +65,12 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: true,
     },
-    testServerUrl: async (url) => {
-      return await testNavidromeUrl(url);
+    ping: async (url, username, auth) => {
+      const password = auth.password as string;
+
+      if (!username || !password) return false;
+
+      return pingNavidrome(url, username, password);
     },
     connect: async (url, username, password) => {
       const result = await connectNavidrome(url, username, password);
@@ -81,7 +84,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
         success: true,
         username,
         auth: {
-            password
+          password
         },
       };
     },
@@ -97,7 +100,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
         serverUrl,
         username,
         auth: {
-            password
+          password
         },
       };
     },
@@ -111,8 +114,12 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: false,
     },
-    testServerUrl: async (url) => {
-      return await testJellyfinUrl(url);
+    ping: async (url, username, auth) => {
+      const token = auth.token as string;
+
+      if (!token) return false;
+
+      return pingJellyfin(url, token);
     },
     connect: async (url, username, password) => {
       const result = await connectJellyfin(url, username, password);

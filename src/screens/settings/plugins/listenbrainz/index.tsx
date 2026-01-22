@@ -65,6 +65,48 @@ const ListenBrainzView: React.FC = () => {
     outputRange: ['0deg', '360deg'],
   });
 
+  useEffect(() => {
+    if (!username || !token) {
+      dispatch(setAuthenticated(false));
+      return;
+    }
+
+    if (isAuthenticated) return;
+
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      setIsLoading(true);
+
+      try {
+        if (config) {
+          const result = await listenbrainz.testConnection(config);
+
+          if (!cancelled) {
+            dispatch(setAuthenticated(result.success));
+            if (!result.success) {
+              toast.error(result.message || 'ListenBrainz connection failed');
+            }
+          }
+        }
+
+      } catch {
+        if (!cancelled) {
+          dispatch(setAuthenticated(false));
+          toast.error('Failed to connect to ListenBrainz');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }, 500); // debounce
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [username, token]);
+
   const handlePing = async () => {
     if (!username || !token) {
       toast.error('Enter username and token first.');
@@ -128,7 +170,7 @@ const ListenBrainzView: React.FC = () => {
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
-          <TouchableOpacity style={styles.row} onPress={handlePing}>
+          <View style={styles.row} onPress={handlePing}>
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               Connectivity
             </Text>
@@ -144,7 +186,7 @@ const ListenBrainzView: React.FC = () => {
                 color={isAuthenticated ? 'green' : 'red'}
               />
             )}
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>

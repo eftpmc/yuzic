@@ -50,6 +50,7 @@ export interface ApiAdapter {
   playlists: PlaylistsApi;
   starred: StarredApi;
   lyrics: LyricsApi;
+  search: SearchApi;
 }
 
 export interface AuthApi {
@@ -107,4 +108,11 @@ export type LyricsResult = {
   provider: "jellyfin" | "navidrome";
   synced: true;
   lines: LyricLine[];
+};
+
+export type SearchApi = {
+  search: (query: string) => Promise<{
+    albums: AlbumBase[];
+    artists: ArtistBase[];
+  }>;
 };
