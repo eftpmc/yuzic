@@ -225,19 +225,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     shuffle = false
   ) => {
     let songs = [...collection.songs];
+    let index = 0;
 
     if (shuffle) {
       originalQueueRef.current = songs;
-      const rest = songs.filter(s => s.id !== selectedSong.id);
-      songs = [selectedSong, ...shuffleArray(rest)];
+      songs = shuffleArray(songs);
+      // When shuffling, always start from the beginning of the shuffled array
+      index = 0;
       setShuffleOn(true);
     } else {
       originalQueueRef.current = null;
+      // When not shuffling, find the selected song's position
+      index = songs.findIndex(s => s.id === selectedSong.id);
       setShuffleOn(false);
     }
 
     queueRef.current = songs;
-    const index = songs.findIndex(s => s.id === selectedSong.id);
     setCurrentIndex(index);
     bumpQueue();
     await loadAndPlay(songs[index]);
