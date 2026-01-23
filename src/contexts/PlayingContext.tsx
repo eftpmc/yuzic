@@ -230,7 +230,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (shuffle) {
       originalQueueRef.current = songs;
       songs = shuffleArray(songs);
-      // When shuffling, always start from the beginning of the shuffled array
+      // When shuffling, always start from the beginning of the shuffled array.
+      // The selectedSong parameter is ignored to ensure true randomization.
       index = 0;
       setShuffleOn(true);
     } else {
