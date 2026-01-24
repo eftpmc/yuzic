@@ -17,6 +17,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlbums } from '@/hooks/albums';
+import { ChevronDown } from 'lucide-react-native';
 
 type QueueItemProps = {
   item: any;
@@ -124,6 +125,16 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
     <View style={[styles.container, { width }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.closeButton}
+          accessibilityLabel="Close queue"
+          accessibilityRole="button"
+          accessibilityHint="Returns to the player view"
+        >
+          <ChevronDown size={28} color="#fff" />
+        </TouchableOpacity>
+
         {currentSong && (
           <MediaImage
             cover={currentSong.cover}
@@ -207,6 +218,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingBottom: 32
+  },
+
+  closeButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
 
   header: {
