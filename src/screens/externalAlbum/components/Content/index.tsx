@@ -7,11 +7,13 @@ import ExternalSongRow from '@/components/rows/ExternalSongRow';
 
 type Props = {
   album: ExternalAlbum;
+  onRefresh: () => void;
+  isRefreshing: boolean;
 };
 
 const ESTIMATED_ROW_HEIGHT = 72;
 
-const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
+const ExternalAlbumContent: React.FC<Props> = ({ album, onRefresh, isRefreshing }) => {
   const songs = album.songs ?? [];
 
   const header = useMemo(() => {
@@ -31,6 +33,8 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       ListHeaderComponent={header}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   );
 };

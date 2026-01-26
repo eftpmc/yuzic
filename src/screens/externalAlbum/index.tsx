@@ -22,6 +22,8 @@ const ExternalAlbumScreen: React.FC = () => {
     album: externalAlbum,
     isLoading,
     error,
+    refetch,
+    isRefetching,
   } = useExternalAlbum(albumId);
 
   if (isLoading) {
@@ -50,7 +52,11 @@ const ExternalAlbumScreen: React.FC = () => {
       edges={['top']}
       style={styles.screen(isDarkMode)}
     >
-      <ExternalAlbumContent album={externalAlbum} />
+      <ExternalAlbumContent 
+        album={externalAlbum}
+        onRefresh={refetch}
+        isRefreshing={isRefetching}
+      />
     </SafeAreaView>
   );
 };

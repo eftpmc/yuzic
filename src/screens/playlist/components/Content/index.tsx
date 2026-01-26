@@ -8,11 +8,13 @@ import Header from '../Header';
 
 type Props = {
   playlist: Playlist;
+  onRefresh: () => void;
+  isRefreshing: boolean;
 };
 
 const ESTIMATED_ROW_HEIGHT = 72;
 
-const PlaylistContent: React.FC<Props> = ({ playlist }) => {
+const PlaylistContent: React.FC<Props> = ({ playlist, onRefresh, isRefreshing }) => {
   const songs = playlist.songs ?? [];
 
   const header = useMemo(() => {
@@ -35,6 +37,8 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
       ListHeaderComponent={header}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   );
 };

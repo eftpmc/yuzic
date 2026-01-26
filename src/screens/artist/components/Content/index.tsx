@@ -17,6 +17,8 @@ import { useExternalArtist } from '@/hooks/artists/useExternalArtist';
 
 type Props = {
   artist: Artist;
+  onRefresh: () => void;
+  isRefreshing: boolean;
 };
 
 type CombinedAlbum =
@@ -28,7 +30,7 @@ const ESTIMATED_ROW_HEIGHT = 80;
 const normalizeKey = (artist: string, title: string) =>
   `${artist}:${title}`.toLowerCase().trim();
 
-const ArtistContent: React.FC<Props> = ({ artist }) => {
+const ArtistContent: React.FC<Props> = ({ artist, onRefresh, isRefreshing }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
 
@@ -104,6 +106,8 @@ const ArtistContent: React.FC<Props> = ({ artist }) => {
           ? '#000'
           : '#fff',
       }}
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   );
 };

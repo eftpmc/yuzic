@@ -18,7 +18,7 @@ const ArtistScreen: React.FC = () => {
   const { id } = route.params;
 
   const { isDarkMode } = useTheme();
-  const { artist, isLoading } = useArtist(id);
+  const { artist, isLoading, refetch, isRefetching } = useArtist(id);
 
   if (isLoading) {
     return (
@@ -40,7 +40,11 @@ const ArtistScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-      <ArtistContent artist={artist} />
+      <ArtistContent 
+        artist={artist} 
+        onRefresh={refetch}
+        isRefreshing={isRefetching}
+      />
     </SafeAreaView>
   );
 };

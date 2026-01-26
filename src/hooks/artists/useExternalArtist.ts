@@ -27,6 +27,7 @@ export function useExternalArtist(
 
     enabled: !!artist?.name,
     staleTime: staleTime.musicbrainz,
+    refetchOnMount: true,
 
     queryFn: async (): Promise<ExternalArtist | null> => {
       if (!artist) return null;
