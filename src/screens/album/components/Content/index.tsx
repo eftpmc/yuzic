@@ -8,11 +8,13 @@ import SongRow from '@/components/rows/SongRow';
 
 type Props = {
   album: Album;
+  onRefresh: () => void;
+  isRefreshing: boolean;
 };
 
 const ESTIMATED_ROW_HEIGHT = 72;
 
-const AlbumContent: React.FC<Props> = ({ album }) => {
+const AlbumContent: React.FC<Props> = ({ album, onRefresh, isRefreshing }) => {
   const songs = album.songs ?? [];
 
   /**
@@ -40,6 +42,8 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
       ListHeaderComponent={header}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   );
 };

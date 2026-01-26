@@ -8,6 +8,8 @@ type UseAlbumResult = {
   album: Album | null;
   isLoading: boolean;
   error: Error | null;
+  refetch: () => void;
+  isRefetching: boolean;
 };
 
 export function useAlbum(id: string): UseAlbumResult {
@@ -18,11 +20,14 @@ export function useAlbum(id: string): UseAlbumResult {
     queryFn: () => api.albums.get(id),
     enabled: !!id,
     staleTime: staleTime.albums,
+    refetchOnMount: true,
   });
 
   return {
     album: query.data ?? null,
     isLoading: query.isLoading,
     error: query.error ?? null,
+    refetch: query.refetch,
+    isRefetching: query.isRefetching,
   };
 }

@@ -15,7 +15,7 @@ const PlaylistScreen: React.FC = () => {
   const { id } = route.params;
 
   const { isDarkMode } = useTheme();
-  const { playlist, isLoading } = usePlaylist(id);
+  const { playlist, isLoading, refetch, isRefetching } = usePlaylist(id);
 
   if (isLoading) {
     return (
@@ -37,7 +37,11 @@ const PlaylistScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
-      <PlaylistContent playlist={playlist} />
+      <PlaylistContent 
+        playlist={playlist} 
+        onRefresh={refetch}
+        isRefreshing={isRefetching}
+      />
     </SafeAreaView>
   );
 };

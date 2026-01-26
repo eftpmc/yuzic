@@ -8,6 +8,8 @@ type UsePlaylistResult = {
   playlist: Playlist | null;
   isLoading: boolean;
   error: Error | null;
+  refetch: () => void;
+  isRefetching: boolean;
 };
 
 export function usePlaylist(id: string): UsePlaylistResult {
@@ -18,11 +20,14 @@ export function usePlaylist(id: string): UsePlaylistResult {
     queryFn: () => api.playlists.get(id),
     enabled: !!id,
     staleTime: staleTime.playlists,
+    refetchOnMount: true,
   });
 
   return {
     playlist: query.data ?? null,
     isLoading: query.isLoading,
     error: query.error ?? null,
+    refetch: query.refetch,
+    isRefetching: query.isRefetching,
   };
 }
