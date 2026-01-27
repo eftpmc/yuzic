@@ -1,11 +1,19 @@
+import { createSelector } from '@reduxjs/toolkit'
 import { RootState } from '@/utils/redux/store'
 
-export const selectSimilarArtists = (state: RootState) =>
-  state.explore.similarArtists
+const selectArtistOrder = (state: RootState) =>
+  state.explore.artistOrder
 
-export const selectExploreBootstrapped = (
-  state: RootState
-) => state.explore.bootstrapped
+const selectArtistsById = (state: RootState) =>
+  state.explore.artistsById
+
+export const selectSimilarArtists = createSelector(
+  [selectArtistOrder, selectArtistsById],
+  (order, byId) => order.map(id => byId[id])
+)
+
+export const selectGenres = (state: RootState) =>
+  Object.values(state.explore.genresByName)
 
 export const selectServerArtistMbidMap = (
   state: RootState
@@ -14,3 +22,7 @@ export const selectServerArtistMbidMap = (
 export const selectExploreHasNewData = (
   state: RootState
 ) => state.explore.newDataAvailable
+
+export const selectExploreHasInitialFill = (
+  state: RootState
+) => state.explore.hasInitialFill

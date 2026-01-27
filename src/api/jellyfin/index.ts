@@ -86,6 +86,8 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
     list: async () => {
       const names = await getGenres(serverUrl, token);
 
+      console.log(names)
+
       const results = await Promise.all(
         names.map(async (name) => {
           const songs = await getSongsByGenre(
@@ -100,6 +102,8 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
           };
         })
       );
+
+      console.log(results)
 
       return results.filter(g => g.songs.length > 0);
     },

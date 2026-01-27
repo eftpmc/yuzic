@@ -22,6 +22,7 @@ export interface ExternalAlbumBase {
     cover: CoverSource;
     artist: string;
     subtext: string;
+    releaseDate?: string
 }
 
 export interface ExternalAlbum extends ExternalAlbumBase {

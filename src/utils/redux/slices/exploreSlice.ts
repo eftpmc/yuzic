@@ -1,37 +1,38 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import {
-  ExternalArtistBase,
-  ExternalAlbumBase,
-} from '@/types'
+import { ExternalArtistBase, ExternalAlbumBase } from '@/types'
 
 type SimilarArtistEntry = {
   artist: ExternalArtistBase
   albums: ExternalAlbumBase[]
-  fetchedAlbums: boolean
 }
 
 type GenreEntry = {
   genre: string
   albums: ExternalAlbumBase[]
-  fetched: boolean
 }
 
 type ExploreState = {
-  similarArtists: SimilarArtistEntry[]
-  genres: GenreEntry[]
+  artistsById: Record<string, SimilarArtistEntry>
+  artistOrder: string[]
+
+  genresByName: Record<string, GenreEntry>
+
   serverArtistMbidMap: Record<string, string>
-  expandedSeedMbids: Record<string, true>
-  bootstrapped: boolean
+
   newDataAvailable: boolean
+  hasInitialFill: boolean
 }
 
 const initialState: ExploreState = {
-  similarArtists: [],
-  genres: [],
+  artistsById: {},
+  artistOrder: [],
+
+  genresByName: {},
+
   serverArtistMbidMap: {},
-  expandedSeedMbids: {},
-  bootstrapped: false,
+
   newDataAvailable: false,
+  hasInitialFill: false,
 }
 
 const exploreSlice = createSlice({
@@ -42,33 +43,25 @@ const exploreSlice = createSlice({
       state,
       action: PayloadAction<ExternalArtistBase>
     ) {
-      if (
-        state.similarArtists.some(
-          e => e.artist.id === action.payload.id
-        )
-      ) {
-        return
-      }
+      if (state.artistsById[action.payload.id]) return
 
-      state.similarArtists.push({
+      state.artistsById[action.payload.id] = {
         artist: action.payload,
         albums: [],
-        fetchedAlbums: false,
-      })
+      }
 
+      state.artistOrder.push(action.payload.id)
       state.newDataAvailable = true
     },
 
-    addAlbumsToSimilarArtist(
+    addAlbumsToArtist(
       state,
       action: PayloadAction<{
         artistId: string
         albums: ExternalAlbumBase[]
       }>
     ) {
-      const entry = state.similarArtists.find(
-        e => e.artist.id === action.payload.artistId
-      )
+      const entry = state.artistsById[action.payload.artistId]
       if (!entry) return
 
       const existing = new Set(
@@ -82,24 +75,15 @@ const exploreSlice = createSlice({
           state.newDataAvailable = true
         }
       }
-
-      entry.fetchedAlbums = true
     },
 
     addGenre(state, action: PayloadAction<string>) {
-      if (
-        state.genres.some(
-          g => g.genre === action.payload
-        )
-      ) {
-        return
-      }
+      if (state.genresByName[action.payload]) return
 
-      state.genres.push({
+      state.genresByName[action.payload] = {
         genre: action.payload,
         albums: [],
-        fetched: false,
-      })
+      }
     },
 
     addAlbumsToGenre(
@@ -109,14 +93,10 @@ const exploreSlice = createSlice({
         albums: ExternalAlbumBase[]
       }>
     ) {
-      const entry = state.genres.find(
-        g => g.genre === action.payload.genre
-      )
+      const entry = state.genresByName[action.payload.genre]
       if (!entry) return
 
-      const existing = new Set(
-        entry.albums.map(a => a.id)
-      )
+      const existing = new Set(entry.albums.map(a => a.id))
 
       for (const album of action.payload.albums) {
         if (!existing.has(album.id)) {
@@ -124,8 +104,6 @@ const exploreSlice = createSlice({
           state.newDataAvailable = true
         }
       }
-
-      entry.fetched = true
     },
 
     mapServerArtistToMbid(
@@ -139,15 +117,8 @@ const exploreSlice = createSlice({
         action.payload.mbid
     },
 
-    markSeedExpanded(
-      state,
-      action: PayloadAction<string>
-    ) {
-      state.expandedSeedMbids[action.payload] = true
-    },
-
-    markBootstrapped(state) {
-      state.bootstrapped = true
+    markInitialFillComplete(state) {
+      state.hasInitialFill = true
     },
 
     clearExploreNewData(state) {
@@ -162,12 +133,11 @@ const exploreSlice = createSlice({
 
 export const {
   addSimilarArtist,
-  addAlbumsToSimilarArtist,
+  addAlbumsToArtist,
   addGenre,
   addAlbumsToGenre,
   mapServerArtistToMbid,
-  markSeedExpanded,
-  markBootstrapped,
+  markInitialFillComplete,
   clearExploreNewData,
   resetExplore,
 } = exploreSlice.actions
