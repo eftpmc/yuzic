@@ -1,68 +1,66 @@
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  Artist,
-  ExternalArtist,
-  ExternalAlbumBase,
-} from '@/types';
-
+import { ExternalArtist, ExternalAlbumBase } from '@/types';
 import * as musicbrainz from '@/api/musicbrainz';
 import { resolveArtistMbid } from '@/utils/musicbrainz/resolveArtistMbid';
 import { QueryKeys } from '@/enums/queryKeys';
 import { staleTime } from '@/constants/staleTime';
 
-type ExternalArtistInput = {
-  id?: string;
-  name: string;
+const MBID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type UseExternalArtistInput = {
+  /** Use directly when present and valid; otherwise we resolve via name. */
+  mbid?: string | null;
+  /** Used to resolve MBID when mbid is not provided or invalid. */
+  name?: string | null;
 };
 
-export function useExternalArtist(
-  artist: Artist | ExternalArtistInput | null
-) {
-  return useQuery({
-    queryKey: [
-      QueryKeys.ExternalArtist,
-      artist?.id ?? artist?.name,
-    ],
+function isValidMbid(s: string): boolean {
+  return MBID_REGEX.test(s);
+}
 
-    enabled: !!artist?.name,
+export function useExternalArtist(input: UseExternalArtistInput | null) {
+  const mbid = input?.mbid ?? null;
+  const name = input?.name ?? null;
+  const enabled = !!(mbid || name);
+
+  return useQuery({
+    queryKey: [QueryKeys.ExternalArtist, mbid ?? name ?? ''],
+    enabled,
     staleTime: staleTime.musicbrainz,
     refetchOnMount: true,
 
     queryFn: async (): Promise<ExternalArtist | null> => {
-      if (!artist) return null;
+      if (!enabled) return null;
 
-      const mbid = await resolveArtistMbid(
-        artist.id,
-        artist.name
-      );
+      let resolvedMbid: string | null =
+        mbid && isValidMbid(mbid) ? mbid : null;
 
-      if (!mbid) {
+      if (!resolvedMbid && name) {
+        resolvedMbid = await resolveArtistMbid(undefined, name);
+      }
+
+      if (!resolvedMbid) {
         throw new Error(
-          `Unable to resolve MusicBrainz ID for "${artist.name}"`
+          `Unable to resolve MusicBrainz ID for "${name ?? 'artist'}"`
         );
       }
 
-      const baseArtist =
-        await musicbrainz.getArtist(mbid);
-
+      const baseArtist = await musicbrainz.getArtist(resolvedMbid);
       if (!baseArtist) {
         throw new Error(
-          `MusicBrainz artist not found: ${mbid}`
+          `MusicBrainz artist not found: ${resolvedMbid}`
         );
       }
 
-      const albums: ExternalAlbumBase[] =
-        await musicbrainz.getArtistAlbums(
-          mbid,
-          baseArtist.name,
-          15
-        );
+      const albums: ExternalAlbumBase[] = await musicbrainz.getArtistAlbums(
+        resolvedMbid,
+        baseArtist.name,
+        15
+      );
 
-      return {
-        ...baseArtist,
-        albums,
-      };
+      return { ...baseArtist, albums };
     },
   });
 }

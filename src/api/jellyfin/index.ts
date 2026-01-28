@@ -27,7 +27,6 @@ import { removePlaylistItems } from "./playlists/removePlaylistItems";
 import { getStarredItems } from "./starred/getStarredItems";
 import { star } from "./starred/star";
 import { unstar } from "./starred/unstar";
-import { getSongsByGenre } from "./genres/getSongsByGenre";
 import { getArtist } from "./artists/getArtist";
 import { getGenres } from "./genres/getGenres";
 import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
@@ -83,26 +82,7 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
   };
 
   const genres: GenresApi = {
-    list: async () => {
-      const names = await getGenres(serverUrl, token);
-
-      const results = await Promise.all(
-        names.map(async (name) => {
-          const songs = await getSongsByGenre(
-            serverUrl,
-            token,
-            name
-          );
-
-          return {
-            name,
-            songs,
-          };
-        })
-      );
-
-      return results.filter(g => g.songs.length > 0);
-    },
+    list: async () => getGenres(serverUrl, token),
   };
 
   const playlists: PlaylistsApi = {

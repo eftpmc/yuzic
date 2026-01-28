@@ -1,6 +1,2 @@
-import { Song } from "./Song";
-
-export type GenreListing = {
-  name: string;
-  songs: Song[];
-};
+/** Genre name from api.genres.list() - returns only names, no songs. */
+export type GenreListing = string;

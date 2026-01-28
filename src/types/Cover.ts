@@ -4,7 +4,7 @@ export type CoverSource =
   | { kind: 'navidrome'; coverArtId: string }
   | { kind: 'jellyfin'; itemId: string; }
   | { kind: 'lastfm'; url: string }
-  | { kind: 'musicbrainz'; releaseGroupId: string };
+  | { kind: 'musicbrainz'; releaseGroupId: string }
 
 export const COVER_PX: Record<'thumb' | 'grid' | 'detail' | 'background', number> = {
   thumb: 96,

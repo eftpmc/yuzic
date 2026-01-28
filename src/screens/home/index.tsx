@@ -35,14 +35,19 @@ import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
+import { useApi } from '@/api';
+import { runExploreSync } from '@/features/explore/exploreSync';
+import { useExploreMeta } from '@/features/explore/hooks/useExploreMeta';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
     const router = useRouter();
     const dispatch = useDispatch();
+    const api = useApi();
 
     const listenbrainzConfig = useSelector(selectListenBrainzConfig);
     const activeServer = useSelector(selectActiveServer);
+    const { hasInitialFill: hasInitialExploreFill } = useExploreMeta();
     const isAuthenticated = activeServer?.isAuthenticated;
     const username = activeServer?.username;
 
@@ -76,29 +81,18 @@ export default function HomeScreen() {
 
     const queryClient = useQueryClient();
 
-    // Background sync: Defer refetch to avoid blocking UI with network requests
-    // This allows cached data to display immediately while syncing in the background
     useEffect(() => {
         if (!activeServer?.isAuthenticated) return;
 
-        // Defer refetch to allow cached data to render first
-        const timer = setTimeout(() => {
-            queryClient.refetchQueries({ 
-                queryKey: [QueryKeys.Albums],
-                type: 'active' // Only refetch if query is actively being used
-            });
-            queryClient.refetchQueries({ 
-                queryKey: [QueryKeys.Artists],
-                type: 'active'
-            });
-            queryClient.refetchQueries({ 
-                queryKey: [QueryKeys.Playlists],
-                type: 'active'
-            });
-        }, 1000); // 1 second delay to let cached data render first
-
-        return () => clearTimeout(timer);
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Albums] });
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Artists] });
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Playlists] });
     }, [activeServer?.id, activeServer?.isAuthenticated]);
+
+    useEffect(() => {
+        if (!activeServer?.isAuthenticated || hasInitialExploreFill) return;
+        runExploreSync(queryClient, api);
+    }, [activeServer?.id, activeServer?.isAuthenticated, hasInitialExploreFill, queryClient, api]);
 
     useEffect(() => {
         setIsMounted(true);
@@ -251,12 +245,9 @@ export default function HomeScreen() {
                 filters={filters}
                 onChange={setActiveFilter}
                 onExplorePress={() => {
-                    if (true) {
-                        toast.error('Music discovery coming soon');
-                        return;
-                    }
+                    
                     if (!listenbrainzConfig?.token) {
-                        toast.error('Connect ListenBrainz to use Explore');
+                        toast.error('Connect ListenBrainz to use Discovery');
                         return;
                     }
                     fadeTo(mode === 'explore' ? 'home' : 'explore');

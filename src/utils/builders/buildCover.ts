@@ -20,10 +20,12 @@ export function buildCover(
   }
 
   if (cover.kind === 'musicbrainz') {
-    const id = cover.releaseGroupId;
-    if (!id) return null;
+    const id = cover.releaseGroupId
+    if (!id) return null
 
-    return `https://coverartarchive.org/release-group/${id}/front-${px}`;
+    const mbSize = mapMusicBrainzCoverSize(px)
+
+    return `https://coverartarchive.org/release-group/${id}/front-${mbSize}`
   }
 
 
@@ -66,4 +68,10 @@ export function buildCover(
   }
 
   return null;
+}
+
+export function mapMusicBrainzCoverSize(px: number): 250 | 500 | 1200 {
+  if (px <= 250) return 250
+  if (px <= 500) return 500
+  return 1200
 }

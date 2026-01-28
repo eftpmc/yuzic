@@ -5,13 +5,15 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { BlurView } from 'expo-blur';
 import { useProgress } from 'react-native-track-player';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, useBottomSheetTimingConfigs } from '@gorhom/bottom-sheet';
 import { useSelector } from 'react-redux';
+import { Easing, useSharedValue } from 'react-native-reanimated';
 import ImageColors from 'react-native-image-colors';
 
 import PlayingScreen from '@/screens/playing';
@@ -45,6 +47,15 @@ const PlayingBar: React.FC = () => {
   const [nextGradient, setNextGradient] = useState<string[]>(['#000', '#000']);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+  const animationConfigs = useBottomSheetTimingConfigs({
+    duration: 280,
+    easing: Easing.out(Easing.cubic),
+  });
+  const containerLayoutState = useSharedValue({
+    height: Dimensions.get('window').height,
+    offset: { top: 0, bottom: 0, left: 0, right: 0 },
+  });
 
   const primaryAction = usePlayingBarAction(actionMode);
 
@@ -196,6 +207,9 @@ const PlayingBar: React.FC = () => {
         ref={bottomSheetRef}
         snapPoints={['100%']}
         enableDynamicSizing={false}
+        containerLayoutState={containerLayoutState}
+        animationConfigs={animationConfigs}
+        enablePanDownToClose
         backgroundStyle={{ backgroundColor: 'transparent' }}
         backgroundComponent={props => (
           <PlayingBackground

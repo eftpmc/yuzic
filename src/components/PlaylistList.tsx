@@ -19,12 +19,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { Song, Playlist } from '@/types';
+import { Song } from '@/types';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePlaylists, usePlaylist, useCreatePlaylist, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '@/hooks/playlists';
-import { fetchPlaylist } from '@/hooks/playlists/usePlaylists';
+import {
+  usePlaylists,
+  useCreatePlaylist,
+  useAddSongToPlaylist,
+  useRemoveSongFromPlaylist,
+  useFullPlaylists,
+} from '@/hooks/playlists';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -37,52 +42,39 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
 
-    const { playlists = [] } = usePlaylists();
+    const { playlists: basePlaylists } = usePlaylists();
+    const { playlists: fullPlaylists } = useFullPlaylists(basePlaylists);
     const createPlaylist = useCreatePlaylist();
     const addSongToPlaylist = useAddSongToPlaylist();
     const removeSongFromPlaylist = useRemoveSongFromPlaylist();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [newPlaylistName, setNewPlaylistName] = useState('');
-    const [initialIds, setInitialIds] = useState<Set<string>>(new Set());
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const snapPoints = useMemo(() => ['85%'], []);
 
     const filteredPlaylists = useMemo(
       () =>
-        playlists.filter(p =>
+        fullPlaylists.filter(p =>
           p.title.toLowerCase().includes(searchQuery.toLowerCase())
         ),
-      [playlists, searchQuery]
+      [fullPlaylists, searchQuery]
     );
 
+    const initialIds = useMemo(() => {
+      if (!selectedSong) return new Set<string>();
+
+      return new Set(
+        fullPlaylists
+          .filter(p => p.songs.some(s => s.id === selectedSong.id))
+          .map(p => p.id)
+      );
+    }, [selectedSong?.id, fullPlaylists]);
+
     useEffect(() => {
-      if (!selectedSong) return;
-
-      let cancelled = false;
-
-      (async () => {
-        const ids = new Set<string>();
-
-        for (const playlist of playlists) {
-          const full = await fetchPlaylist(playlist.id);
-          if (full.songs.some(s => s.id === selectedSong.id)) {
-            ids.add(playlist.id);
-          }
-        }
-
-        if (!cancelled) {
-          setInitialIds(ids);
-          setSelectedIds(new Set(ids));
-        }
-      })();
-
-      return () => {
-        cancelled = true;
-      };
-    }, [selectedSong?.id, playlists]);
-
+      setSelectedIds(new Set(initialIds));
+    }, [selectedSong?.id]);
 
     const togglePlaylist = (id: string) => {
       setSelectedIds(prev => {
@@ -101,7 +93,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const handleDone = async () => {
       if (!selectedSong) return;
 
-      for (const playlist of playlists) {
+      for (const playlist of fullPlaylists) {
         const wasIn = initialIds.has(playlist.id);
         const isIn = selectedIds.has(playlist.id);
 
@@ -136,7 +128,6 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           backgroundColor: isDarkMode ? '#1c1c1e' : '#E5E5EA',
         }}
       >
-        {/* Header (lighter grey) */}
         <View
           style={[
             styles.headerContainer,

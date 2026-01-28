@@ -12,15 +12,17 @@ async function normalizeAlbum(
     if (!albumId) return null;
 
     const cover: CoverSource = albumId
-          ? { kind: "jellyfin", itemId: albumId }
-          : { kind: "none" };
+      ? { kind: "jellyfin", itemId: albumId }
+      : { kind: "none" };
+
+    const artistItem = a.ArtistItems?.[0];
 
     const artist: ArtistBase = {
-      id: a.ArtistItems[0].Id,
-      name: a.ArtistItems[0].Name || "Unknown Artist",
+      id: artistItem?.Id ?? "unknown",
+      name: artistItem?.Name ?? "Unknown Artist",
       cover: { kind: "none" },
-      subtext: "Artist"
-    }
+      subtext: "Artist",
+    };
 
     return {
       id: albumId,
@@ -30,9 +32,9 @@ async function normalizeAlbum(
       artist,
       year: a.ProductionYear,
       genres: (a.Genres ?? [])
-      .flatMap((g: string) => g.split(";"))
-      .map((g: string) => g.trim())
-      .filter(Boolean)
+        .flatMap((g: string) => g.split(";"))
+        .map((g: string) => g.trim())
+        .filter(Boolean)
     };
   } catch (error) {
     console.error(`Failed to normalize album:`, error);

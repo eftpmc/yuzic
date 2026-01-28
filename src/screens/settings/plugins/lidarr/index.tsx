@@ -8,7 +8,6 @@ import {
   ScrollView,
   FlatList,
   StyleSheet,
-  Appearance,
   Pressable,
   Animated,
   Easing,
@@ -33,19 +32,19 @@ import {
   setAuthenticated,
   disconnect,
 } from '@/utils/redux/slices/lidarrSlice';
+
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 const LidarrView: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
+  const { isDarkMode } = useTheme();
 
   const serverUrl = useSelector(selectLidarrServerUrl);
   const apiKey = useSelector(selectLidarrApiKey);
   const isAuthenticated = useSelector(selectLidarrAuthenticated);
   const config = useSelector(selectLidarrConfig);
-
-  const { isDarkMode } = useTheme();
 
   const [isLoading, setIsLoading] = useState(false);
   const [queue, setQueue] = useState<any[]>([]);
@@ -73,6 +72,51 @@ const LidarrView: React.FC = () => {
     outputRange: ['0deg', '360deg'],
   });
 
+  useEffect(() => {
+    if (!serverUrl || !apiKey) {
+      dispatch(setAuthenticated(false));
+      return;
+    }
+
+    if (isAuthenticated) return;
+
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      setIsLoading(true);
+
+      try {
+        if (config) {
+          await lidarr.testConnection(config);
+
+          if (!cancelled) {
+            dispatch(setAuthenticated(true));
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          dispatch(setAuthenticated(false));
+          toast.error('Lidarr connection failed');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }, 500); // debounce
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [serverUrl, apiKey]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setQueue([]);
+      previousQueueRef.current = [];
+    }
+  }, [isAuthenticated]);
+
   const pollQueue = async () => {
     if (!isAuthenticated) return;
 
@@ -95,7 +139,6 @@ const LidarrView: React.FC = () => {
   };
 
   useEffect(() => {
-    // HARD STOP when not fully connected
     if (!config.serverUrl || !config.apiKey || !isAuthenticated) {
       setQueue([]);
       previousQueueRef.current = [];
@@ -121,28 +164,14 @@ const LidarrView: React.FC = () => {
     };
   }, [config.serverUrl, config.apiKey, isAuthenticated]);
 
-  const handlePing = async () => {
-    setIsLoading(true);
-    try {
-      await lidarr.testConnection(config);
-      dispatch(setAuthenticated(true));
-      toast.success('Lidarr connection successful.');
-    } catch {
-      dispatch(setAuthenticated(false));
-      setQueue([]);
-      previousQueueRef.current = [];
-      toast.error('Failed to connect.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleDisconnect = () => {
     dispatch(disconnect());
     setQueue([]);
     previousQueueRef.current = [];
     toast('Disconnected from Lidarr.');
   };
+
+  /* ─────────────────── queue UI ─────────────────── */
 
   const toggleExpand = (id: number) => {
     setExpandedItemId(expandedItemId === id ? null : id);
@@ -221,7 +250,8 @@ const LidarrView: React.FC = () => {
           <TextInput
             value={serverUrl}
             onChangeText={(v) => dispatch(setServerUrl(v))}
-            placeholder='http://node:8686'
+            placeholder="http://node:8686"
+            placeholderTextColor={isDarkMode ? '#666' : '#999'}
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
@@ -231,12 +261,13 @@ const LidarrView: React.FC = () => {
           <TextInput
             value={apiKey}
             onChangeText={(v) => dispatch(setApiKey(v))}
-            placeholder='API key'
+            placeholder="API key"
+            placeholderTextColor={isDarkMode ? '#666' : '#999'}
             secureTextEntry
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
-          <TouchableOpacity style={styles.row} onPress={handlePing}>
+          <View style={styles.row}>
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               Connectivity
             </Text>
@@ -252,7 +283,7 @@ const LidarrView: React.FC = () => {
                 color={isAuthenticated ? 'green' : 'red'}
               />
             )}
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -261,7 +292,9 @@ const LidarrView: React.FC = () => {
           </Text>
 
           {loadingQueue ? (
-            <Animated.View style={{ alignItems: 'center', marginTop: 20, transform: [{ rotate: spin }] }}>
+            <Animated.View
+              style={{ alignItems: 'center', marginTop: 20, transform: [{ rotate: spin }] }}
+            >
               <Loader2 size={32} color={isDarkMode ? '#fff' : '#000'} />
             </Animated.View>
           ) : queue.length === 0 ? (
@@ -279,7 +312,10 @@ const LidarrView: React.FC = () => {
         </View>
 
         <TouchableOpacity
-          style={[styles.disconnectButton, isDarkMode && styles.disconnectButtonDark]}
+          style={[
+            styles.disconnectButton,
+            isDarkMode && styles.disconnectButtonDark,
+          ]}
           onPress={handleDisconnect}
         >
           <MaterialIcons name="logout" size={20} color="#fff" />
@@ -295,35 +331,12 @@ export default LidarrView;
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F2F7' },
   containerDark: { backgroundColor: '#000' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 6,
-  },
-  headerDark: {
-    // No background, keep it transparent like OpenAI
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginLeft: 12,
-    color: '#000',
-  },
-  headerTitleDark: {
-    color: '#fff',
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: {
     backgroundColor: '#fff',
-    padding: 16, borderRadius: 10,
-    marginBottom: 24
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 24,
   },
   sectionDark: { backgroundColor: '#111' },
   label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#000' },
@@ -353,7 +366,6 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginVertical: 16, fontSize: 16, color: '#666' },
   emptyTextDark: { color: '#aaa' },
   itemContainer: { padding: 16, borderRadius: 10, marginBottom: 12 },
-  itemInfo: { flexDirection: 'column' },
   albumTitle: { fontSize: 16, fontWeight: '600', color: '#000' },
   albumTitleDark: { color: '#fff' },
   artistName: { fontSize: 14, color: '#666', marginTop: 4 },
@@ -372,9 +384,6 @@ const styles = StyleSheet.create({
   progressBarFill: { height: '100%', borderRadius: 3 },
   warningContainer: { marginTop: 8, padding: 8, backgroundColor: '#f0f0f0', borderRadius: 6 },
   warningContainerDark: { backgroundColor: '#1a1a1a' },
-  warningItem: { marginBottom: 6 },
-  warningTitle: { fontSize: 13, fontWeight: '600', color: '#555' },
-  warningTitleDark: { color: '#ccc' },
   warningMessage: { fontSize: 12, color: '#777', marginLeft: 8, marginTop: 2 },
   warningMessageDark: { color: '#aaa' },
   disconnectButton: {
@@ -386,12 +395,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 16,
   },
-  disconnectButtonDark: {
-    backgroundColor: '#FF453A',
-  },
-  disconnectButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  disconnectButtonDark: { backgroundColor: '#FF453A' },
+  disconnectButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

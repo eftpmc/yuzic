@@ -17,10 +17,13 @@ import { nanoid } from '@reduxjs/toolkit';
 import { ServerType } from '@/types';
 import { track } from '@/utils/analytics/amplitude';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
+import { useQueryClient } from '@tanstack/react-query';
+import { clearExploreQueries } from '@/features/explore/exploreCache';
 
 export default function Credentials() {
     const dispatch = useDispatch();
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const params = useLocalSearchParams<{
         type: ServerType;
@@ -87,6 +90,7 @@ export default function Credentials() {
 
             track('connected new server', { type });
             dispatch(setActiveServer(id));
+            clearExploreQueries(queryClient);
             router.replace('/(home)');
         } catch (err) {
             toast.error('An error occurred while connecting.');

@@ -3,23 +3,18 @@ import {
   View,
   Text,
   StyleSheet,
-  Appearance,
   Pressable,
 } from 'react-native';
 import { useDownload } from '@/contexts/DownloadContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/api';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource, Playlist } from '@/types';
-import { FAVORITES_ID } from '@/constants/favorites';
 import ContextMenuModal, {
   ContextMenuAction,
 } from '@/components/ContextMenuModal';
 import InfoModal, { InfoRow } from '@/components/InfoModal';
 import { useTheme } from '@/hooks/useTheme';
-import { useFavoritesPlaylist } from '@/hooks/starred';
 import { usePlaylist } from '@/hooks/playlists';
 
 interface ItemProps {
@@ -54,16 +49,8 @@ const PlaylistItem: React.FC<ItemProps> = ({
 
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const queryClient = useQueryClient();
-  const api = useApi();
 
-  const { playlist: favoritesPlaylist } = useFavoritesPlaylist();
-const { playlist: normalPlaylist } = usePlaylist(id);
-
-const playlist = useMemo<Playlist | null>(() => {
-  if (id === FAVORITES_ID) return favoritesPlaylist;
-  return normalPlaylist;
-}, [id, favoritesPlaylist, normalPlaylist]);
+  const { playlist } = usePlaylist(id);
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
@@ -119,7 +106,7 @@ const playlist = useMemo<Playlist | null>(() => {
     playSongInCollection,
   ]);
 
-  const handleShowInfo = useCallback(async () => {
+  const handleShowInfo = useCallback(() => {
     if (!playlist) return;
     setPlaylistInfo(playlist);
     setInfoVisible(true);
@@ -141,12 +128,12 @@ const playlist = useMemo<Playlist | null>(() => {
       {
         id: 'changed',
         label: 'Last changed',
-        value: new Date(playlistInfo.changed).toDateString()
+        value: new Date(playlistInfo.changed).toDateString(),
       },
       {
         id: 'created',
         label: 'Created',
-        value: new Date(playlistInfo.created).toDateString()
+        value: new Date(playlistInfo.created).toDateString(),
       },
       {
         id: 'songs',
@@ -175,29 +162,20 @@ const playlist = useMemo<Playlist | null>(() => {
       label: 'Add to Queue',
       icon: 'list',
       dividerBefore: true,
-      onPress: () => {
-        setMenuVisible(false);
-        handleAddToQueue();
-      },
+      onPress: handleAddToQueue,
     },
     {
       id: 'shuffleQueue',
       label: 'Shuffle to Queue',
       icon: 'shuffle',
-      onPress: () => {
-        setMenuVisible(false);
-        handleShuffleToQueue();
-      },
+      onPress: handleShuffleToQueue,
     },
     {
       id: 'info',
       label: 'Playlist Info',
       icon: 'information-circle',
       dividerBefore: true,
-      onPress: () => {
-        setMenuVisible(false);
-        handleShowInfo();
-      },
+      onPress: handleShowInfo,
     },
     {
       id: 'navigate',

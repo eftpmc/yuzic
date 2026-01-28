@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
-export type PlayingBarAction = 'none' | 'skip' | 'favorite';
+export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type SearchScope =
   | 'client'

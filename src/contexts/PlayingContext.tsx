@@ -27,6 +27,19 @@ import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSe
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
+/** ListenBrainz: only scrobble when user listened ≥ 50% of track or 4 minutes, whichever is lower. */
+function passesScrobbleThreshold(
+  listenedSeconds: number,
+  durationSeconds: number
+): boolean {
+  const duration = Number(durationSeconds) || 0;
+  const threshold =
+    duration > 0
+      ? Math.min(Math.floor(duration * 0.5), 4 * 60)
+      : 4 * 60;
+  return listenedSeconds >= threshold;
+}
+
 export interface PlayingContextType {
   currentSong: Song | null;
   isPlaying: boolean;
@@ -92,6 +105,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const queueRef = useRef<Song[]>([]);
   const originalQueueRef = useRef<Song[] | null>(null);
   const lastScrobbledIdRef = useRef<string | null>(null);
+  const scrobbleStartTimeRef = useRef<number>(0);
+  const lastListenedSecondsRef = useRef<number>(0);
 
   const bumpQueue = () => setQueueVersion(v => v + 1);
 
@@ -109,26 +124,47 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
   }, []);
 
-  const scrobbleIfNeeded = async (song: Song | null) => {
+  useEffect(() => {
+    if (!currentSong || !isPlaying) return;
+    const interval = setInterval(async () => {
+      try {
+        const { position } = await TrackPlayer.getProgress();
+        lastListenedSecondsRef.current = Math.floor(position);
+      } catch {
+        /* ignore */
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [currentSong?.id, isPlaying]);
+
+  const scrobbleIfNeeded = async (
+    song: Song | null,
+    opts: {
+      listenedSeconds: number;
+      startTime: number;
+    }
+  ) => {
     if (!song) return;
     if (lastScrobbledIdRef.current === song.id) return;
     if (!listenBrainzConfig?.token) return;
 
-    const listenedAt = Math.floor(Date.now() / 1000);
+    const duration = Number(song.duration) || 0;
+    if (!passesScrobbleThreshold(opts.listenedSeconds, duration)) return;
+
+    const listenedAt = Math.floor(opts.startTime / 1000);
 
     try {
-      await listenbrainz.submitScrobble(
-        listenBrainzConfig,
-        {
-          artist: song.artist,
-          track: song.title,
-          listenedAt
-        },
-      );
-
+      await listenbrainz.submitScrobble(listenBrainzConfig, {
+        artist: song.artist,
+        track: song.title,
+        listenedAt,
+        durationSeconds: duration > 0 ? duration : undefined,
+        durationPlayedSeconds: opts.listenedSeconds,
+      });
       lastScrobbledIdRef.current = song.id;
     } catch (err) {
       console.warn('ListenBrainz scrobble failed', err);
+      return;
     }
 
     dispatch(
@@ -140,8 +176,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
   };
 
-  const loadAndPlay = async (song: Song) => {
-    lastScrobbledIdRef.current = null;
+  const loadAndPlay = async (
+    song: Song,
+    opts?: { clearScrobbleState?: boolean }
+  ) => {
+    if (opts?.clearScrobbleState) lastScrobbledIdRef.current = null;
+    scrobbleStartTimeRef.current = Date.now();
+    lastListenedSecondsRef.current = 0;
     await TrackPlayer.reset();
 
     const url = (await getSongLocalUri(song.id)) ?? song.streamUrl;
@@ -189,13 +230,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       const prev = currentSong;
       if (prev) {
-        await scrobbleIfNeeded(prev);
+        const listened = lastListenedSecondsRef.current;
+        const start = scrobbleStartTimeRef.current;
+        await scrobbleIfNeeded(prev, {
+          listenedSeconds: listened,
+          startTime: start,
+        });
       }
 
       const trackId = event.track.id;
       const newIndex = queueRef.current.findIndex(s => s.id === trackId);
       if (newIndex === -1) return;
 
+      scrobbleStartTimeRef.current = Date.now();
+      lastListenedSecondsRef.current = 0;
       setCurrentIndex(newIndex);
       setCurrentSong(queueRef.current[newIndex]);
       await appendNextIfNeeded(newIndex);
@@ -216,7 +264,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setShuffleOn(false);
     setCurrentIndex(0);
     bumpQueue();
-    await loadAndPlay(song);
+    await loadAndPlay(song, { clearScrobbleState: true });
   };
 
   const playSongInCollection = async (
@@ -244,7 +292,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     queueRef.current = songs;
     setCurrentIndex(index);
     bumpQueue();
-    await loadAndPlay(songs[index]);
+    await loadAndPlay(songs[index], { clearScrobbleState: true });
   };
 
   const addCollectionToQueue = (collection: Album | Playlist) => {
@@ -359,6 +407,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const resetQueue = async () => {
+    lastScrobbledIdRef.current = null;
+    scrobbleStartTimeRef.current = 0;
+    lastListenedSecondsRef.current = 0;
     await TrackPlayer.reset();
     queueRef.current = [];
     originalQueueRef.current = null;

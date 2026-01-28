@@ -33,7 +33,7 @@ const ExternalAlbumRow: React.FC<Props> = ({
         >
           <MediaImage
             cover={album.cover}
-            size="grid"
+            size="thumb"
             style={styles.cover}
           />
 

@@ -1,6 +1,5 @@
 import {
   Playlist,
-  GenreListing,
   AlbumBase,
   Album,
   ArtistBase,
@@ -76,7 +75,7 @@ export interface ArtistsApi {
 }
 
 export interface GenresApi {
-  list(): Promise<GenreListing[]>;
+  list(): Promise<string[]>;
 }
 
 export interface PlaylistsApi {

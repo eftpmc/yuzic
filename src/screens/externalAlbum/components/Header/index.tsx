@@ -1,17 +1,27 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSelector } from 'react-redux';
+import { toast } from '@backpackapp-io/react-native-toast';
 
 import { ExternalAlbum } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import {
+  selectLidarrConfig,
+  selectLidarrAuthenticated,
+} from '@/utils/redux/selectors/lidarrSelectors';
+import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import * as lidarr from '@/api/lidarr';
+import { LucideDownload } from 'lucide-react-native';
 
 type Props = {
   album: ExternalAlbum;
@@ -20,11 +30,36 @@ type Props = {
 const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
+  const themeColor = useSelector(selectThemeColor);
+  const config = useSelector(selectLidarrConfig);
+  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
+  const [downloading, setDownloading] = useState(false);
 
   const infoSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['25%'], []);
 
   const songs = album.songs ?? [];
+
+  const handleDownload = async () => {
+    if (!album.title || !album.artist || !config || downloading) return;
+    setDownloading(true);
+    try {
+      const result = await lidarr.downloadAlbum(
+        config,
+        album.title,
+        album.artist
+      );
+      if (result.success) {
+        toast.success('Album added to Lidarr!');
+      } else {
+        toast.error(result.message ?? 'Download failed.');
+      }
+    } catch {
+      toast.error('Failed to start download.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <>
@@ -88,6 +123,25 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {isLidarrConnected ? (
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={[styles.playButton, { backgroundColor: themeColor }]}
+                onPress={handleDownload}
+                disabled={downloading}
+              >
+                {downloading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <LucideDownload
+                    size={24}
+                    color="#fff"
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
       </View>
 
@@ -207,6 +261,18 @@ const styles = StyleSheet.create({
   },
   badgeTextDark: {
     color: '#ccc',
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
+  playButton: {
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sheetContainer: {
     paddingHorizontal: 20,

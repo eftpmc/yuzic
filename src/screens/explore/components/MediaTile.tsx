@@ -21,7 +21,7 @@ const MediaTile = React.memo(
       <Wrapper onPress={onPress} style={{ width: size }}>
         <MediaImage
           cover={cover}
-          size="grid"
+          size="thumb"
           style={{
             width: size,
             height: size,

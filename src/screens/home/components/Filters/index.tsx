@@ -1,38 +1,39 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react'
 import {
   ScrollView,
   View,
   StyleSheet,
   TouchableOpacity,
   Animated,
-} from 'react-native';
-import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { FilterPill } from './FilterPill';
-import { useTheme } from '@/hooks/useTheme';
-import { Earth, Inbox, Music } from 'lucide-react-native';
+} from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
+import { useExploreMeta } from '@/features/explore/hooks/useExploreMeta'
+import { FilterPill } from './FilterPill'
+import { useTheme } from '@/hooks/useTheme'
+import { Earth } from 'lucide-react-native'
 
 const isColorLight = (color: string) => {
-  const hex = color.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 128;
-};
+  const hex = color.replace('#', '')
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return luminance > 128
+}
 
 type Filter<T extends string> = {
-  label: string;
-  value: T;
-};
+  label: string
+  value: T
+}
 
 type Props<T extends string> = {
-  mode: 'home' | 'explore';
-  value: T;
-  filters: readonly Filter<T>[];
-  onChange: (value: T) => void;
-  onExplorePress: () => void;
-};
+  mode: 'home' | 'explore'
+  value: T
+  filters: readonly Filter<T>[]
+  onChange: (value: T) => void
+  onExplorePress: () => void
+}
 
 export default function LibraryFilterBar<T extends string>({
   mode,
@@ -41,15 +42,20 @@ export default function LibraryFilterBar<T extends string>({
   onChange,
   onExplorePress,
 }: Props<T>) {
-  const { isDarkMode } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const { isDarkMode } = useTheme()
+  const themeColor = useSelector(selectThemeColor)
+  const { hasNewData: hasNewExploreData } = useExploreMeta()
 
-  const inactiveTextColor = isDarkMode ? '#aaa' : '#666';
-  const activeIconColor = isColorLight(themeColor) ? '#000' : '#fff';
+  const inactiveTextColor = isDarkMode ? '#aaa' : '#666'
+  const activeIconColor = isColorLight(themeColor)
+    ? '#000'
+    : '#fff'
 
-  const filtersOpacity = useRef(new Animated.Value(1)).current;
-  const filtersScale = useRef(new Animated.Value(1)).current;
-  const filtersTranslateX = useRef(new Animated.Value(0)).current;
+  const filtersOpacity = useRef(new Animated.Value(1)).current
+  const filtersScale = useRef(new Animated.Value(1)).current
+  const filtersTranslateX = useRef(
+    new Animated.Value(0)
+  ).current
 
   useEffect(() => {
     Animated.parallel([
@@ -68,13 +74,18 @@ export default function LibraryFilterBar<T extends string>({
         duration: 140,
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [mode]);
+    ]).start()
+  }, [mode])
 
-  const exploreActive = mode === 'explore';
+  const exploreActive = mode === 'explore'
 
   return (
-    <View style={[styles.container, isDarkMode && styles.containerDark]}>
+    <View
+      style={[
+        styles.container,
+        isDarkMode && styles.containerDark,
+      ]}
+    >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -90,10 +101,18 @@ export default function LibraryFilterBar<T extends string>({
             },
           ]}
         >
-          <Music
+          <Earth
             size={18}
-            color={exploreActive ? activeIconColor : inactiveTextColor}
+            color={
+              exploreActive
+                ? activeIconColor
+                : inactiveTextColor
+            }
           />
+
+          {hasNewExploreData && !exploreActive && (
+            <View style={styles.badge} />
+          )}
         </TouchableOpacity>
 
         <View style={styles.separator} />
@@ -106,7 +125,9 @@ export default function LibraryFilterBar<T extends string>({
               { translateX: filtersTranslateX },
               { scaleX: filtersScale },
             ],
-            pointerEvents: exploreActive ? 'none' : 'auto',
+            pointerEvents: exploreActive
+              ? 'none'
+              : 'auto',
           }}
         >
           {filters.map(filter => (
@@ -124,7 +145,7 @@ export default function LibraryFilterBar<T extends string>({
         </Animated.View>
       </ScrollView>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -158,4 +179,13 @@ const styles = StyleSheet.create({
     opacity: 0.35,
     marginRight: 8,
   },
-});
+  badge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ff3b30',
+  },
+})

@@ -24,10 +24,13 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { track } from '@/utils/analytics/amplitude';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { Server } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { clearExploreQueries } from '@/features/explore/exploreCache';
 
 export default function Servers() {
     const router = useRouter();
     const dispatch = useDispatch();
+    const queryClient = useQueryClient();
 
     const servers = useSelector((state: RootState) => state.servers.servers);
     const activeServerId = useSelector(
@@ -37,6 +40,7 @@ export default function Servers() {
     const handleSelectServer = (id: string) => {
         track("selected server")
         dispatch(setActiveServer(id));
+        clearExploreQueries(queryClient);
         router.replace('(home)');
     };
 

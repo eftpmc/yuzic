@@ -20,4 +20,8 @@ export const PLAYING_BAR_ACTIONS: PlayingBarActionMeta[] = [
     id: 'favorite',
     icon: <Ionicons name="heart-outline" size={20} />,
   },
+  {
+    id: 'randomAlbum',
+    icon: <Ionicons name="dice-outline" size={20} />,
+  },
 ];

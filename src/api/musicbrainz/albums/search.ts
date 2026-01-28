@@ -31,7 +31,7 @@ export const searchAlbums = async (
       ? res['release-groups'].map(normalizeReleaseGroup)
       : [];
   } catch (error) {
-    console.warn(`❌ MusicBrainz release-group search failed for "${query}":`, error);
+    console.warn(`MusicBrainz release-group search failed for "${query}":`, error);
     return [];
   }
 };

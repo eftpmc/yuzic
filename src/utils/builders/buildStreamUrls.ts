@@ -17,5 +17,5 @@ export const buildJellyfinStreamUrl = (
     token: string,
     songId: string
 ) => {
-    return `${serverUrl}/Audio/${songId}/stream.mp3?X-Emby-Token=${token}`;
+    return `${serverUrl}/Audio/${songId}/stream.mp3?static=true&X-Emby-Token=${token}`;
 };

@@ -23,7 +23,6 @@ import { useTheme } from '@/hooks/useTheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
-import { ExploreProvider } from '@/contexts/ExploreContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,7 +47,6 @@ function AppShell() {
 
   return (
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
-      <ExploreProvider>
         <DownloadProvider>
           <PlayingProvider>
             <SearchProvider>
@@ -93,7 +91,6 @@ function AppShell() {
             </SearchProvider>
           </PlayingProvider>
         </DownloadProvider>
-      </ExploreProvider>
     </ThemeProvider>
   );
 }

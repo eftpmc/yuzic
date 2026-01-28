@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/enums/queryKeys';
-import { PlaylistBase } from '@/types';
+import { Playlist, PlaylistBase } from '@/types';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 
@@ -26,8 +26,26 @@ export function usePlaylists(): UsePlaylistsResult {
     };
 }
 
-export async function fetchPlaylist(id: string) {
-    const api = useApi();
 
-    return api.playlists.get(id);
+export function useFullPlaylists(playlists: PlaylistBase[]) {
+  const api = useApi();
+
+  const queries = useQueries({
+    queries: playlists.map(p => ({
+      queryKey: [QueryKeys.Playlist, p.id],
+      queryFn: () => api.playlists.get(p.id),
+      staleTime: staleTime.playlists,
+    })),
+  });
+
+  const fullPlaylists = queries
+    .map(q => q.data)
+    .filter(Boolean) as Playlist[];
+
+  const isLoading = queries.some(q => q.isLoading);
+
+  return {
+    playlists: fullPlaylists,
+    isLoading,
+  };
 }

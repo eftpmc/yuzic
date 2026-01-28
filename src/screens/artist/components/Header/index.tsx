@@ -26,9 +26,10 @@ import { staleTime } from '@/constants/staleTime';
 
 type Props = {
   artist: Artist;
+  mbid?: string | null;
 };
 
-const ArtistHeader: React.FC<Props> = ({ artist }) => {
+const ArtistHeader: React.FC<Props> = ({ artist, mbid }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
@@ -147,6 +148,19 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
+          {mbid ? (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() =>
+                navigation.navigate('externalArtistView', {
+                  mbid,
+                  name: artist.name,
+                })
+              }
+            >
+              <Ionicons name="open-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
 
@@ -212,7 +226,12 @@ const styles = StyleSheet.create({
   header: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 20 : 50,
-    left: 16,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     zIndex: 20,
   },
   backButton: {

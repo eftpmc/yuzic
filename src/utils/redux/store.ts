@@ -22,7 +22,7 @@ export const rootReducer = combineReducers({
     settings: settingsReducer,
     downloads: downloadsReducer,
     listenbrainz: listenbrainzReducer,
-    stats: statsReducer
+    stats: statsReducer,
 });
 
 const persistedReducer = combineReducers({
@@ -31,7 +31,7 @@ const persistedReducer = combineReducers({
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     downloads: persistReducer(downloadsPersistConfig, downloadsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
-    stats: persistReducer(statsPersistConfig, statsReducer)
+    stats: persistReducer(statsPersistConfig, statsReducer),
 });
 
 const store = configureStore({

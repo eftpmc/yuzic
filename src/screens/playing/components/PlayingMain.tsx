@@ -97,7 +97,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <CirclePlus
-            size={28}
+            size={32}
             color="#fff"
           />
         </TouchableOpacity>

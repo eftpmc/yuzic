@@ -1,173 +1,247 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { useTheme } from '@/hooks/useTheme';
-import { useExplore } from '@/contexts/ExploreContext';
-import { useNavigation } from '@react-navigation/native';
-import MediaTile from './components/MediaTile';
-import LoaderCard from './components/LoaderCard';
-
+  RefreshControl,
+  TouchableOpacity,
+} from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { useTheme } from '@/hooks/useTheme'
 import {
-  ExternalArtistBase,
-  ExternalAlbumBase,
-} from '@/types';
+  useClearExploreNewData,
+  useExploreMeta,
+  useRetryExploreSync,
+} from '@/features/explore/hooks/useExploreMeta'
+import ArtistsForYouSection from './components/ArtistsForYouSection'
+import AlbumsForYouSection from './components/AlbumsForYouSection'
+import NewAlbumsSection from './components/NewAlbumsSection'
+import ViewAllBottomSheet, {
+  type ViewAllItem,
+  type ViewAllVariant,
+} from './components/ViewAllBottomSheet'
+import { useExploreArtists } from '@/features/explore/hooks/useExploreArtists'
+import { useExploreAlbums } from '@/features/explore/hooks/useExploreAlbums'
+import { useExploreNewAlbums } from '@/features/explore/hooks/useExploreNewAlbums'
+import type { ExternalArtistBase, ExternalAlbumBase } from '@/types'
 
-const H_PADDING = 16;
-const VISIBLE_ITEMS = 2.5;
-
-const ARTIST_TARGET = 12;
-const ALBUM_TARGET = 12;
-
-type Props = {
-  onBack: () => void;
-};
+const H_PADDING = 16
 
 function Section({
   title,
   children,
   isDarkMode,
+  showViewAll,
+  onViewAll,
 }: {
-  title: string;
-  children: React.ReactNode;
-  isDarkMode: boolean;
+  title: string
+  children: React.ReactNode
+  isDarkMode: boolean
+  showViewAll?: boolean
+  onViewAll?: () => void
 }) {
   return (
     <View style={styles.section}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          isDarkMode && styles.sectionTitleDark,
-        ]}
-      >
-        {title}
-      </Text>
+      <View style={styles.sectionHeader}>
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.sectionTitle,
+            isDarkMode && styles.sectionTitleDark,
+          ]}
+        >
+          {title}
+        </Text>
+        {showViewAll && onViewAll ? (
+          <TouchableOpacity
+            onPress={onViewAll}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Text
+              style={[
+                styles.viewAll,
+                isDarkMode && styles.viewAllDark,
+              ]}
+            >
+              View all
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
       {children}
     </View>
-  );
+  )
 }
 
-export default function Explore({ onBack }: Props) {
-  const { isDarkMode } = useTheme();
-  const navigation = useNavigation();
-  const { artistPool, albumPool, isLoading } = useExplore();
+type ViewAllState = {
+  variant: ViewAllVariant
+  items: ViewAllItem[]
+}
 
-  const screenWidth = Dimensions.get('window').width;
-  const gridGap = 12;
+export default function Explore() {
+  const { isDarkMode } = useTheme()
+  const navigation = useNavigation()
+  const [refreshing, setRefreshing] = useState(false)
+  const [shuffleKey, setShuffleKey] = useState(0)
+  const [viewAll, setViewAll] = useState<ViewAllState | null>(null)
+  const sheetRef = useRef<BottomSheetModal>(null)
+  const clearNewData = useClearExploreNewData()
+  const { lastSyncError } = useExploreMeta()
+  const retrySync = useRetryExploreSync()
 
-  const gridItemWidth =
-    (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS;
+  useEffect(() => {
+    clearNewData()
+  }, [clearNewData])
 
-  const tileHeight =
-    gridItemWidth + 8 + 14 + 4 + 12;
+  const artists = useExploreArtists(shuffleKey)
+  const albums = useExploreAlbums(shuffleKey)
+  const newAlbums = useExploreNewAlbums(shuffleKey)
 
-  const artistsReady =
-    artistPool.length >= ARTIST_TARGET || !isLoading;
+  const onRefresh = useCallback(() => {
+    setRefreshing(true)
+    setShuffleKey((k) => k + 1)
+    setRefreshing(false)
+  }, [])
 
-  const albumsReady =
-    albumPool.length >= ALBUM_TARGET || !isLoading;
+  const openViewAll = useCallback(
+    (variant: ViewAllVariant, items: ViewAllItem[]) => {
+      setViewAll({ variant, items })
+    },
+    []
+  )
 
-  const artists = useMemo(
-    () => artistPool.slice(0, ARTIST_TARGET),
-    [artistPool]
-  );
+  const closeViewAll = useCallback(() => {
+    sheetRef.current?.dismiss()
+  }, [])
 
-  const albums = useMemo(
-    () => albumPool.slice(0, ALBUM_TARGET),
-    [albumPool]
-  );
+  const handleViewAllDismissed = useCallback(() => {
+    setViewAll(null)
+  }, [])
+
+  useEffect(() => {
+    if (viewAll) sheetRef.current?.present()
+  }, [viewAll])
+
+  const onViewAllItemPress = useCallback(
+    (item: ViewAllItem) => {
+      if (!viewAll) return
+      if (viewAll.variant === 'artists') {
+        const a = item as ExternalArtistBase
+        navigation.navigate('externalArtistView', {
+          mbid: a.id,
+          name: a.name,
+        })
+      } else {
+        navigation.navigate('externalAlbumView', {
+          albumId: (item as ExternalAlbumBase).id,
+        })
+      }
+    },
+    [viewAll, navigation]
+  )
 
   return (
     <ScrollView
-      style={[styles.container, isDarkMode && styles.containerDark]}
+      style={[
+        styles.container,
+        isDarkMode && styles.containerDark,
+      ]}
       contentContainerStyle={[
         styles.content,
         { paddingBottom: 150 },
       ]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={isDarkMode ? '#fff' : '#000'}
+        />
+      }
       showsVerticalScrollIndicator={false}
     >
-      <Section title="Artists for You" isDarkMode={isDarkMode}>
-        {!artistsReady ? (
-          <View style={styles.rowLoaderWrapper}>
-            <LoaderCard
-              width={screenWidth - H_PADDING * 2}
-              height={tileHeight}
-              radius={14}
-            />
-          </View>
-        ) : (
-          <FlashList<ExternalArtistBase>
-            horizontal
-            data={artists}
-            keyExtractor={(item) => item.id}
-            estimatedItemSize={gridItemWidth}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: H_PADDING }}
-            ItemSeparatorComponent={() => (
-              <View style={{ width: gridGap }} />
-            )}
-            renderItem={({ item }) => (
-              <MediaTile
-                cover={item.cover}
-                title={item.name}
-                subtitle={item.subtext}
-                size={gridItemWidth}
-                radius={gridItemWidth / 2}
-                onPress={() =>
-                  navigation.navigate('artistView', {
-                    id: item.id,
-                  })
-                }
-              />
-            )}
-          />
-        )}
+      {lastSyncError ? (
+        <View style={styles.errorBanner}>
+          <Text
+            numberOfLines={2}
+            style={[
+              styles.errorText,
+              isDarkMode && styles.errorTextDark,
+            ]}
+          >
+            {lastSyncError}
+          </Text>
+          <TouchableOpacity
+            onPress={retrySync}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Text
+              style={[
+                styles.retryText,
+                isDarkMode && styles.retryTextDark,
+              ]}
+            >
+              Try again
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      <Section
+        title="Artists for You"
+        isDarkMode={isDarkMode}
+        showViewAll={artists.data.length > 0}
+        onViewAll={() =>
+          openViewAll('artists', artists.allData as ViewAllItem[])
+        }
+      >
+        <ArtistsForYouSection
+          data={artists.data}
+          ready={artists.ready}
+        />
       </Section>
 
-      <Section title="Albums You Might Like" isDarkMode={isDarkMode}>
-        {!albumsReady ? (
-          <View style={styles.rowLoaderWrapper}>
-            <LoaderCard
-              width={screenWidth - H_PADDING * 2}
-              height={tileHeight}
-              radius={14}
-            />
-          </View>
-        ) : (
-          <FlashList<ExternalAlbumBase>
-            horizontal
-            data={albums}
-            keyExtractor={(item) => item.id}
-            estimatedItemSize={gridItemWidth}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: H_PADDING }}
-            ItemSeparatorComponent={() => (
-              <View style={{ width: gridGap }} />
-            )}
-            renderItem={({ item }) => (
-              <MediaTile
-                cover={item.cover}
-                title={item.title}
-                subtitle={item.subtext}
-                size={gridItemWidth}
-                radius={14}
-                onPress={() =>
-                  navigation.navigate('externalAlbumView', {
-                    albumId: item.id,
-                  })
-                }
-              />
-            )}
-          />
-        )}
+      <Section
+        title="New Albums to Check Out"
+        isDarkMode={isDarkMode}
+        showViewAll={newAlbums.data.length > 0}
+        onViewAll={() =>
+          openViewAll('albums', newAlbums.allData as ViewAllItem[])
+        }
+      >
+        <NewAlbumsSection
+          data={newAlbums.data}
+          ready={newAlbums.ready}
+        />
       </Section>
+
+      <Section
+        title="Albums You Might Like"
+        isDarkMode={isDarkMode}
+        showViewAll={albums.data.length > 0}
+        onViewAll={() =>
+          openViewAll('albums', albums.allData as ViewAllItem[])
+        }
+      >
+        <AlbumsForYouSection
+          data={albums.data}
+          ready={albums.ready}
+        />
+      </Section>
+
+      {viewAll ? (
+        <ViewAllBottomSheet
+          ref={sheetRef}
+          variant={viewAll.variant}
+          items={viewAll.items}
+          onItemPress={onViewAllItemPress}
+          onClose={closeViewAll}
+          onDismissed={handleViewAllDismissed}
+        />
+      ) : null}
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -181,20 +255,57 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: 12,
   },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: H_PADDING,
+    paddingVertical: 12,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#666',
+    marginRight: 12,
+  },
+  errorTextDark: {
+    color: '#aaa',
+  },
+  retryText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+  },
+  retryTextDark: {
+    color: '#fff',
+  },
   section: {
     marginTop: 28,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingHorizontal: H_PADDING,
+  },
   sectionTitle: {
+    flex: 1,
     fontSize: 22,
     fontWeight: '700',
     color: '#000',
-    marginBottom: 16,
-    paddingHorizontal: H_PADDING,
   },
   sectionTitleDark: {
     color: '#fff',
   },
-  rowLoaderWrapper: {
-    paddingHorizontal: H_PADDING,
+  viewAll: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#666',
   },
-});
+  viewAllDark: {
+    color: '#aaa',
+  },
+})
