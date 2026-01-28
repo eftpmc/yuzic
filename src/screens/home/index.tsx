@@ -247,7 +247,7 @@ export default function HomeScreen() {
                 onExplorePress={() => {
                     
                     if (!listenbrainzConfig?.token) {
-                        toast.error('Connect ListenBrainz to use Explore');
+                        toast.error('Connect ListenBrainz to use Discovery');
                         return;
                     }
                     fadeTo(mode === 'explore' ? 'home' : 'explore');

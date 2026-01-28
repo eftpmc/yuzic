@@ -1,5 +1,5 @@
 import { ExternalArtistBase } from '@/types'
-import { createMusicBrainzClient } from '../client'
+import { createMusicBrainzClient, USER_AGENT } from '../client'
 
 /** Uses artist.relations from a single MB artist call (inc=url-rels) so we don’t make a 2nd MB request. */
 async function resolveArtistImageFromRelations(
@@ -18,7 +18,8 @@ async function resolveArtistImageFromRelations(
     if (!wikidataId) return null
 
     const wdRes = await fetch(
-      `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`
+      `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
+      { headers: { 'User-Agent': USER_AGENT } }
     )
     if (!wdRes.ok) return null
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Yuzic",
     "slug": "yuzic",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
@@ -23,7 +23,7 @@
       }
     },
     "android": {
-      "versionCode": 25,
+      "versionCode": 26,
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
