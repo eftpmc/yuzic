@@ -1,9 +1,11 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
+import { useSelector } from 'react-redux';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 
 const PLACEHOLDER = require('@assets/images/placeholder.png');
 
@@ -16,6 +18,10 @@ export function MediaImage({
   size: 'thumb' | 'grid' | 'detail' | 'background';
   style?: any;
 }) {
+  // Subscribe so we re-render when active server becomes available or changes.
+  // buildCover() reads from the store; without this, URLs stay null until
+  // some other state (e.g. list data) causes a re-render.
+  useSelector(selectActiveServer);
   const uri = buildCover(cover, size);
 
   if (uri === 'heart-icon') {

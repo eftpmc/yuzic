@@ -7,6 +7,7 @@ import {
     Platform,
     StatusBar,
     Dimensions,
+    InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -111,28 +112,28 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         if (!currentSong?.id) return;
 
         let cancelled = false;
-
         setLyrics(null);
         setLyricsAvailable(false);
         setMode("player");
 
-        (async () => {
-            try {
-                const res = await api.lyrics.getBySongId(currentSong.id);
-
-                if (cancelled) return;
-
-                if (res?.synced && res.lines.length > 0) {
-                    setLyrics(res);
-                    setLyricsAvailable(true);
+        const task = InteractionManager.runAfterInteractions(() => {
+            (async () => {
+                try {
+                    const res = await api.lyrics.getBySongId(currentSong.id);
+                    if (cancelled) return;
+                    if (res?.synced && res.lines.length > 0) {
+                        setLyrics(res);
+                        setLyricsAvailable(true);
+                    }
+                } catch (err) {
+                    console.error("❌ Lyrics fetch failed", err);
                 }
-            } catch (err) {
-                console.error("❌ Lyrics fetch failed", err);
-            }
-        })();
+            })();
+        });
 
         return () => {
             cancelled = true;
+            task.cancel();
         };
     }, [currentSong?.id]);
 
