@@ -3,7 +3,7 @@ export type CoverSource =
   | { kind: 'none' }
   | { kind: 'navidrome'; coverArtId: string }
   | { kind: 'jellyfin'; itemId: string; }
-  | { kind: 'lastfm'; url: string }
+  | { kind: 'url'; url: string }
   | { kind: 'musicbrainz'; releaseGroupId: string }
 
 export const COVER_PX: Record<'thumb' | 'grid' | 'detail' | 'background', number> = {

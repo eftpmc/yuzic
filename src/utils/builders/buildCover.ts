@@ -15,7 +15,7 @@ export function buildCover(
     return 'heart-icon';
   }
 
-  if (cover.kind === 'lastfm') {
+  if (cover.kind === 'url') {
     return cover.url || null;
   }
 

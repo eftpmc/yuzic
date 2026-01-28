@@ -3,10 +3,6 @@ export interface LidarrConfig {
   apiKey: string;
 }
 
-export type LastfmConfig = {
-  apiKey: string;
-};
-
 export type ListenBrainzConfig = {
   username: string;
   token: string;

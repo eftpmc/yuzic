@@ -51,7 +51,7 @@ export async function getArtist(
     let cover: ExternalArtistBase['cover'] = { kind: 'none' }
     const imageUrl = await resolveArtistImageFromRelations(artist.relations)
     if (imageUrl) {
-      cover = { kind: 'lastfm', url: imageUrl }
+      cover = { kind: 'url', url: imageUrl }
     }
 
     return {

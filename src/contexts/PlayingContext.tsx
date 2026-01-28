@@ -314,7 +314,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const skipToNext = async () => {
-    await scrobbleIfNeeded(currentSong);
+    await scrobbleIfNeeded(currentSong, {
+      listenedSeconds: lastListenedSecondsRef.current,
+      startTime: scrobbleStartTimeRef.current,
+    });
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= queueRef.current.length) {
@@ -329,7 +332,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const skipToPrevious = async () => {
-    await scrobbleIfNeeded(currentSong);
+    await scrobbleIfNeeded(currentSong, {
+      listenedSeconds: lastListenedSecondsRef.current,
+      startTime: scrobbleStartTimeRef.current,
+    });
     const prev = currentIndex - 1;
     if (prev < 0) return;
     setCurrentIndex(prev);

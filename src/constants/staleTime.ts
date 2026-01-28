@@ -4,6 +4,5 @@ export const staleTime = {
     playlists: 24 * 60 * 60 * 1000,
     genres: 24 * 60 * 60 * 60 * 1000,
     starred: 3 * 60 * 60 * 1000,
-    musicbrainz: 3 * 24 * 60 * 60 * 1000,
-    lastfm: 3 * 24 * 60 * 60 * 1000
+    musicbrainz: 3 * 24 * 60 * 60 * 1000
 }
