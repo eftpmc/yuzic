@@ -18,9 +18,14 @@ import { useTheme } from '@/hooks/useTheme';
 import {
   selectLidarrConfig,
   selectLidarrAuthenticated,
+  selectIsLidarrActive,
+  selectSlskdConfig,
+  selectSlskdAuthenticated,
+  selectIsSlskdActive,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import * as lidarr from '@/api/lidarr';
+import * as slskd from '@/api/slskd';
 import { LucideDownload } from 'lucide-react-native';
 
 type Props = {
@@ -31,8 +36,16 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const config = useSelector(selectLidarrConfig);
+  const lidarrConfig = useSelector(selectLidarrConfig);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
+  const isLidarrActive = useSelector(selectIsLidarrActive);
+  const slskdConfig = useSelector(selectSlskdConfig);
+  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const isSlskdActive = useSelector(selectIsSlskdActive);
+
+  const showDownload =
+    (isLidarrActive && isLidarrConnected) ||
+    (isSlskdActive && isSlskdConnected);
   const [downloading, setDownloading] = useState(false);
 
   const infoSheetRef = useRef<BottomSheetModal>(null);
@@ -41,19 +54,36 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const songs = album.songs ?? [];
 
   const handleDownload = async () => {
-    if (!album.title || !album.artist || !config || downloading) return;
+    if (!album.title || !album.artist || downloading) return;
     setDownloading(true);
     try {
-      const result = await lidarr.downloadAlbum(
-        config,
-        album.title,
-        album.artist
-      );
-      if (result.success) {
-        toast.success('Album added to Lidarr!');
-      } else {
-        toast.error(result.message ?? 'Download failed.');
+      if (isLidarrActive && isLidarrConnected) {
+        const result = await lidarr.downloadAlbum(
+          lidarrConfig,
+          album.title,
+          album.artist
+        );
+        if (result.success) {
+          toast.success('Album added to Lidarr!');
+        } else {
+          toast.error(result.message ?? 'Download failed.');
+        }
+        return;
       }
+      if (isSlskdActive && isSlskdConnected) {
+        const result = await slskd.downloadAlbum(
+          slskdConfig,
+          album.title,
+          album.artist
+        );
+        if (result.success) {
+          toast.success('Album added to slskd queue!');
+        } else {
+          toast.error(result.message ?? 'Download failed.');
+        }
+        return;
+      }
+      toast.error('No active downloader connected.');
     } catch {
       toast.error('Failed to start download.');
     } finally {
@@ -124,7 +154,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
             </View>
           </View>
 
-          {isLidarrConnected ? (
+          {showDownload ? (
             <View style={styles.actions}>
               <TouchableOpacity
                 style={[styles.playButton, { backgroundColor: themeColor }]}

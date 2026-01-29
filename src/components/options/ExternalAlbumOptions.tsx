@@ -10,9 +10,14 @@ import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import * as lidarr from '@/api/lidarr';
+import * as slskd from '@/api/slskd';
 import {
   selectLidarrConfig,
   selectLidarrAuthenticated,
+  selectIsLidarrActive,
+  selectSlskdConfig,
+  selectSlskdAuthenticated,
+  selectIsSlskdActive,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -27,29 +32,55 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
 
-  const config = useSelector(selectLidarrConfig);
-  const isAuthenticated = useSelector(selectLidarrAuthenticated);
+  const lidarrConfig = useSelector(selectLidarrConfig);
+  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
+  const isLidarrActive = useSelector(selectIsLidarrActive);
+  const slskdConfig = useSelector(selectSlskdConfig);
+  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const isSlskdActive = useSelector(selectIsSlskdActive);
+
+  const canDownload =
+    (isLidarrActive && isLidarrConnected) ||
+    (isSlskdActive && isSlskdConnected);
 
   const handleDownloadAlbum = async () => {
     if (!selectedAlbumTitle || !selectedAlbumArtist) return;
 
-    if (!isAuthenticated) {
-      toast.error('Downloader is not connected.');
+    if (!canDownload) {
+      toast.error('No active downloader connected.');
       return;
     }
 
     try {
-      const result = await lidarr.downloadAlbum(
-        config,
-        selectedAlbumTitle,
-        selectedAlbumArtist
-      );
-
-      if (result.success) {
-        toast.success('Album added to Lidarr!');
-      } else {
-        toast.error(result.message ?? 'Download failed.');
+      if (isLidarrActive && isLidarrConnected) {
+        const result = await lidarr.downloadAlbum(
+          lidarrConfig,
+          selectedAlbumTitle,
+          selectedAlbumArtist
+        );
+        if (result.success) {
+          toast.success('Album added to Lidarr!');
+        } else {
+          toast.error(result.message ?? 'Download failed.');
+        }
+        return;
       }
+
+      if (isSlskdActive && isSlskdConnected) {
+        const result = await slskd.downloadAlbum(
+          slskdConfig,
+          selectedAlbumTitle,
+          selectedAlbumArtist
+        );
+        if (result.success) {
+          toast.success('Album added to slskd queue!');
+        } else {
+          toast.error(result.message ?? 'Download failed.');
+        }
+        return;
+      }
+
+      toast.error('No active downloader connected.');
     } catch (e) {
       toast.error('Failed to start download.');
     }
@@ -58,7 +89,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
   return (
     <MenuView
       title="External Album"
-      actions={[
+      actions={canDownload ? [
         {
           id: 'download-album',
           title: 'Download to Server',
@@ -68,7 +99,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           }),
           imageColor: '#fff',
         },
-      ]}
+      ] : []}
       onPressAction={({ nativeEvent }) => {
         if (nativeEvent.event === 'download-album') {
           handleDownloadAlbum();
