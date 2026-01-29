@@ -1,5 +1,5 @@
-import LidarrView from "@/screens/settings/plugins/lidarr";
+import LidarrView from '@/screens/settings/downloaders/Lidarr';
 
-export default function LidarrPluginView() {
+export default function LidarrSettingsView() {
   return <LidarrView />;
 }

@@ -9,6 +9,7 @@ export default function SettingsLayout() {
             <Stack.Screen name='discoveryView' options={{ headerShown: false, title: "Discovery" }} />
             <Stack.Screen name='playerView' options={{ headerShown: false, title: "Player" }} />
             <Stack.Screen name='serverView' options={{ headerShown: false, title: "Server" }} />
+            <Stack.Screen name='downloadersView' options={{ headerShown: false, title: "Downloaders" }} />
             <Stack.Screen name='lidarrView' options={{ headerShown: false, title: "Lidarr" }} />
             <Stack.Screen name='listenbrainzView' options={{ headerShown: false, title: "ListenBrainz" }} />
         </Stack>

@@ -97,10 +97,10 @@ export default function Settings() {
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => router.push('/settings/lidarrView')}
+                        onPress={() => router.push('/settings/downloadersView')}
                     >
                         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            Lidarr
+                            Downloaders
                         </Text>
                         <MaterialIcons
                             name="chevron-right"

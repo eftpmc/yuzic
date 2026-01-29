@@ -17,7 +17,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
-import Header from '../../components/Header';
+import Header from '../components/Header';
 import * as lidarr from '@/api/lidarr';
 
 import {
@@ -25,13 +25,14 @@ import {
   selectLidarrApiKey,
   selectLidarrAuthenticated,
   selectLidarrConfig,
-} from '@/utils/redux/selectors/lidarrSelectors';
+} from '@/utils/redux/selectors/downloadersSelectors';
 import {
-  setServerUrl,
-  setApiKey,
-  setAuthenticated,
-  disconnect,
-} from '@/utils/redux/slices/lidarrSlice';
+  setLidarrServerUrl,
+  setLidarrApiKey,
+  setLidarrAuthenticated,
+  connectLidarr,
+  disconnectLidarr,
+} from '@/utils/redux/slices/downloadersSlice';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -52,7 +53,7 @@ const LidarrView: React.FC = () => {
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
 
   const previousQueueRef = useRef<any[]>([]);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const spinAnim = useRef(new Animated.Value(0)).current;
 
@@ -74,7 +75,7 @@ const LidarrView: React.FC = () => {
 
   useEffect(() => {
     if (!serverUrl || !apiKey) {
-      dispatch(setAuthenticated(false));
+      dispatch(setLidarrAuthenticated(false));
       return;
     }
 
@@ -85,16 +86,16 @@ const LidarrView: React.FC = () => {
       setIsLoading(true);
 
       try {
-        if (config) {
+        if (config.serverUrl && config.apiKey) {
           await lidarr.testConnection(config);
 
           if (!cancelled) {
-            dispatch(setAuthenticated(true));
+            dispatch(connectLidarr());
           }
         }
       } catch {
         if (!cancelled) {
-          dispatch(setAuthenticated(false));
+          dispatch(setLidarrAuthenticated(false));
           toast.error('Lidarr connection failed');
         }
       } finally {
@@ -102,7 +103,7 @@ const LidarrView: React.FC = () => {
           setIsLoading(false);
         }
       }
-    }, 500); // debounce
+    }, 500);
 
     return () => {
       cancelled = true;
@@ -122,10 +123,7 @@ const LidarrView: React.FC = () => {
 
     try {
       const { currentQueue, finishedItems } =
-        await lidarr.fetchQueueWithDiff(
-          config,
-          previousQueueRef.current
-        );
+        await lidarr.fetchQueueWithDiff(config, previousQueueRef.current);
 
       previousQueueRef.current = currentQueue;
       setQueue(currentQueue);
@@ -165,19 +163,17 @@ const LidarrView: React.FC = () => {
   }, [config.serverUrl, config.apiKey, isAuthenticated]);
 
   const handleDisconnect = () => {
-    dispatch(disconnect());
+    dispatch(disconnectLidarr());
     setQueue([]);
     previousQueueRef.current = [];
     toast('Disconnected from Lidarr.');
   };
 
-  /* ─────────────────── queue UI ─────────────────── */
-
   const toggleExpand = (id: number) => {
     setExpandedItemId(expandedItemId === id ? null : id);
   };
 
-  const renderDownloadItem = ({ item }) => {
+  const renderDownloadItem = ({ item }: { item: any }) => {
     const totalSize = item.size || 1;
     const sizeLeft = item.sizeleft || 0;
     const progress = Math.min(1, (totalSize - sizeLeft) / totalSize);
@@ -203,10 +199,12 @@ const LidarrView: React.FC = () => {
             {downloadState} ({percent}%)
           </Text>
 
-          <View style={[
-            styles.progressBarBackground,
-            isDarkMode && styles.progressBarBackgroundDark,
-          ]}>
+          <View
+            style={[
+              styles.progressBarBackground,
+              isDarkMode && styles.progressBarBackgroundDark,
+            ]}
+          >
             <View
               style={[
                 styles.progressBarFill,
@@ -216,11 +214,13 @@ const LidarrView: React.FC = () => {
           </View>
 
           {hasWarnings && isExpanded && (
-            <View style={[
-              styles.warningContainer,
-              isDarkMode && styles.warningContainerDark,
-            ]}>
-              {item.statusMessages.map((msg, idx) => (
+            <View
+              style={[
+                styles.warningContainer,
+                isDarkMode && styles.warningContainerDark,
+              ]}
+            >
+              {item.statusMessages.map((msg: { title: string }, idx: number) => (
                 <Text
                   key={idx}
                   style={[
@@ -249,7 +249,7 @@ const LidarrView: React.FC = () => {
           </Text>
           <TextInput
             value={serverUrl}
-            onChangeText={(v) => dispatch(setServerUrl(v))}
+            onChangeText={(v) => dispatch(setLidarrServerUrl(v))}
             placeholder="http://node:8686"
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
             style={[styles.input, isDarkMode && styles.inputDark]}
@@ -260,7 +260,7 @@ const LidarrView: React.FC = () => {
           </Text>
           <TextInput
             value={apiKey}
-            onChangeText={(v) => dispatch(setApiKey(v))}
+            onChangeText={(v) => dispatch(setLidarrApiKey(v))}
             placeholder="API key"
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
             secureTextEntry
@@ -293,7 +293,11 @@ const LidarrView: React.FC = () => {
 
           {loadingQueue ? (
             <Animated.View
-              style={{ alignItems: 'center', marginTop: 20, transform: [{ rotate: spin }] }}
+              style={{
+                alignItems: 'center',
+                marginTop: 20,
+                transform: [{ rotate: spin }],
+              }}
             >
               <Loader2 size={32} color={isDarkMode ? '#fff' : '#000'} />
             </Animated.View>
@@ -363,7 +367,12 @@ const styles = StyleSheet.create({
   },
   rowText: { fontSize: 16, color: '#000' },
   rowTextDark: { color: '#fff' },
-  emptyText: { textAlign: 'center', marginVertical: 16, fontSize: 16, color: '#666' },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 16,
+    fontSize: 16,
+    color: '#666',
+  },
   emptyTextDark: { color: '#aaa' },
   itemContainer: { padding: 16, borderRadius: 10, marginBottom: 12 },
   albumTitle: { fontSize: 16, fontWeight: '600', color: '#000' },
@@ -382,7 +391,12 @@ const styles = StyleSheet.create({
   },
   progressBarBackgroundDark: { backgroundColor: '#333' },
   progressBarFill: { height: '100%', borderRadius: 3 },
-  warningContainer: { marginTop: 8, padding: 8, backgroundColor: '#f0f0f0', borderRadius: 6 },
+  warningContainer: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
+  },
   warningContainerDark: { backgroundColor: '#1a1a1a' },
   warningMessage: { fontSize: 12, color: '#777', marginLeft: 8, marginTop: 2 },
   warningMessageDark: { color: '#aaa' },
@@ -396,5 +410,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   disconnectButtonDark: { backgroundColor: '#FF453A' },
-  disconnectButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  disconnectButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
 });

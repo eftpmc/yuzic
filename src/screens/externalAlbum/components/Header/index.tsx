@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/useTheme';
 import {
   selectLidarrConfig,
   selectLidarrAuthenticated,
-} from '@/utils/redux/selectors/lidarrSelectors';
+} from '@/utils/redux/selectors/downloadersSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import * as lidarr from '@/api/lidarr';
 import { LucideDownload } from 'lucide-react-native';

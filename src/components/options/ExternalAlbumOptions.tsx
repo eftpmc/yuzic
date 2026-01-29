@@ -13,7 +13,7 @@ import * as lidarr from '@/api/lidarr';
 import {
   selectLidarrConfig,
   selectLidarrAuthenticated,
-} from '@/utils/redux/selectors/lidarrSelectors';
+} from '@/utils/redux/selectors/downloadersSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ExternalAlbumOptionsProps {
@@ -34,7 +34,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
     if (!selectedAlbumTitle || !selectedAlbumArtist) return;
 
     if (!isAuthenticated) {
-      toast.error('Lidarr is not connected.');
+      toast.error('Downloader is not connected.');
       return;
     }
 

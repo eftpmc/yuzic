@@ -3,14 +3,14 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from '@react-native-async-storage/async-storage';
 
 import serversReducer from './slices/serversSlice';
-import lidarrReducer from './slices/lidarrSlice';
+import downloadersReducer from './slices/downloadersSlice';
 import settingsReducer from './slices/settingsSlice';
 import downloadsReducer from './slices/downloadsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
 import statsReducer from './slices/statsSlice';
 
 const serversPersistConfig = { key: 'servers', storage };
-const lidarrPersistConfig = { key: 'lidarr', storage };
+const downloadersPersistConfig = { key: 'downloaders', storage };
 const settingsPersistConfig = { key: 'settings', storage };
 const downloadsPersistConfig = { key: 'downloads', storage };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
@@ -18,7 +18,7 @@ const statsPersistConfig = { key: 'stats', storage };
 
 export const rootReducer = combineReducers({
     servers: serversReducer,
-    lidarr: lidarrReducer,
+    downloaders: downloadersReducer,
     settings: settingsReducer,
     downloads: downloadsReducer,
     listenbrainz: listenbrainzReducer,
@@ -27,7 +27,7 @@ export const rootReducer = combineReducers({
 
 const persistedReducer = combineReducers({
     servers: persistReducer(serversPersistConfig, serversReducer),
-    lidarr: persistReducer(lidarrPersistConfig, lidarrReducer),
+    downloaders: persistReducer(downloadersPersistConfig, downloadersReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     downloads: persistReducer(downloadsPersistConfig, downloadsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
