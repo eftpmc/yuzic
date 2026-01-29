@@ -113,7 +113,9 @@ const SongOptions = forwardRef<BottomSheetModal, SongOptionsProps>(
         ref={ref}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
-        handleIndicatorStyle={styles.handle}
+        handleIndicatorStyle={{
+          backgroundColor: isDarkMode ? '#555' : '#ccc',
+        }}
         backgroundStyle={[
           styles.sheetBackground,
           themeStyles.sheetBackground,
@@ -217,9 +219,6 @@ const styles = StyleSheet.create({
   sheetBackground: {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-  },
-  handle: {
-    backgroundColor: '#999',
   },
   sheetContent: {
     padding: 16,

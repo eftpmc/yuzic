@@ -5,30 +5,34 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import { toast } from '@backpackapp-io/react-native-toast';
 
-import { Album } from '@/types';
+import { Playlist } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
+import { useDeletePlaylist } from '@/hooks/playlists';
+import { FAVORITES_ID } from '@/constants/favorites';
 
-export type AlbumOptionsProps = {
-  album: Album | null;
-  /** Hide "Go to Album" when already on the album screen */
-  hideGoToAlbum?: boolean;
+export type PlaylistOptionsProps = {
+  playlist: Playlist | null;
+  /** Hide "Go to Playlist" when already on the playlist screen */
+  hideGoToPlaylist?: boolean;
 };
 
-const AlbumOptions = forwardRef<
+const PlaylistOptions = forwardRef<
   React.ElementRef<typeof BottomSheetModal>,
-  AlbumOptionsProps
->(({ album, hideGoToAlbum }, ref) => {
+  PlaylistOptionsProps
+>(({ playlist, hideGoToPlaylist }, ref) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
   const navigation = useNavigation<any>();
@@ -40,8 +44,10 @@ const AlbumOptions = forwardRef<
     getQueue,
   } = usePlaying();
 
-  const { downloadAlbumById, isAlbumDownloaded, isDownloadingAlbum } =
+  const { downloadPlaylistById, isPlaylistDownloaded, isDownloadingPlaylist } =
     useDownload();
+
+  const deletePlaylist = useDeletePlaylist();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
 
@@ -49,51 +55,78 @@ const AlbumOptions = forwardRef<
     (ref as any)?.current?.dismiss();
   };
 
-  const songs = album?.songs ?? [];
-  const isDownloaded = album ? isAlbumDownloaded(album.id) : false;
-  const isDownloading = album ? isDownloadingAlbum(album.id) : false;
+  const songs = playlist?.songs ?? [];
+  const isDownloaded = playlist ? isPlaylistDownloaded(playlist.id) : false;
+  const isDownloading = playlist ? isDownloadingPlaylist(playlist.id) : false;
 
   const handlePlay = (shuffle: boolean) => {
-    if (!album || !songs.length) return;
-    playSongInCollection(songs[0], album, shuffle);
+    if (!playlist || !songs.length) return;
+    playSongInCollection(songs[0], playlist, shuffle);
     close();
   };
 
   const handleAddToQueue = () => {
-    if (!album || !songs.length) return;
+    if (!playlist || !songs.length) return;
     const queue = getQueue();
     if (queue.length === 0) {
-      playSongInCollection(songs[0], album, false);
+      playSongInCollection(songs[0], playlist, false);
     } else {
-      addCollectionToQueue(album);
+      addCollectionToQueue(playlist);
     }
     close();
   };
 
   const handleShuffleToQueue = () => {
-    if (!album || !songs.length) return;
+    if (!playlist || !songs.length) return;
     const queue = getQueue();
     if (queue.length === 0) {
-      playSongInCollection(songs[0], album, true);
+      playSongInCollection(songs[0], playlist, true);
     } else {
-      shuffleCollectionToQueue(album);
+      shuffleCollectionToQueue(playlist);
     }
     close();
   };
 
-  const handleGoToAlbum = () => {
-    if (!album) return;
+  const handleGoToPlaylist = () => {
+    if (!playlist) return;
     close();
-    navigation.navigate('(home)', { screen: 'albumView', params: { id: album.id } });
+    navigation.navigate('(home)', { screen: 'playlistView', params: { id: playlist.id } });
   };
 
   const handleDownload = async () => {
-    if (!album || isDownloaded || isDownloading) return;
-    await downloadAlbumById(album.id);
+    if (!playlist || isDownloaded || isDownloading) return;
+    await downloadPlaylistById(playlist.id);
     close();
   };
 
-  if (!album) {
+  const handleDeletePress = () => {
+    if (!playlist || playlist.id === FAVORITES_ID) return;
+    Alert.alert(
+      'Delete playlist',
+      `"${playlist.title}" will be permanently deleted. This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletePlaylist.mutateAsync(playlist.id);
+              close();
+              if (hideGoToPlaylist) {
+                navigation.goBack();
+              }
+              toast.success('Playlist deleted');
+            } catch {
+              toast.error('Could not delete playlist');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  if (!playlist) {
     return (
       <BottomSheetModal
         ref={ref}
@@ -127,20 +160,15 @@ const AlbumOptions = forwardRef<
         contentContainerStyle={styles.sheetContent}
       >
         <View style={styles.header}>
-          <MediaImage cover={album.cover} size="grid" style={styles.cover} />
+          <MediaImage cover={playlist.cover} size="grid" style={styles.cover} />
           <View style={styles.headerText}>
             <Text
               style={[styles.title, themeStyles.title]}
               numberOfLines={2}
             >
-              {album.title}
+              {playlist.title}
             </Text>
-            <Text
-              style={[styles.artist, themeStyles.artist]}
-              numberOfLines={1}
-            >
-              {album.artist?.name ?? ''}
-            </Text>
+            <Text style={[styles.artist, themeStyles.artist]}>Playlist</Text>
           </View>
         </View>
 
@@ -163,10 +191,10 @@ const AlbumOptions = forwardRef<
           <Text style={[styles.optionText, themeStyles.optionText]}>Shuffle to Queue</Text>
         </TouchableOpacity>
 
-        {!hideGoToAlbum && (
-          <TouchableOpacity style={styles.option} onPress={handleGoToAlbum}>
-            <Ionicons name="albums" size={26} color={themeStyles.icon.color} />
-            <Text style={[styles.optionText, themeStyles.optionText]}>Go to Album</Text>
+        {!hideGoToPlaylist && (
+          <TouchableOpacity style={styles.option} onPress={handleGoToPlaylist}>
+            <Ionicons name="list" size={26} color={themeStyles.icon.color} />
+            <Text style={[styles.optionText, themeStyles.optionText]}>Go to Playlist</Text>
           </TouchableOpacity>
         )}
 
@@ -195,23 +223,42 @@ const AlbumOptions = forwardRef<
           </Text>
         </TouchableOpacity>
 
+        {playlist.id !== FAVORITES_ID && (
+          <TouchableOpacity
+            style={styles.option}
+            onPress={handleDeletePress}
+            disabled={deletePlaylist.isPending}
+          >
+            {deletePlaylist.isPending ? (
+              <ActivityIndicator size="small" color={themeStyles.artist.color} />
+            ) : (
+              <Ionicons name="trash-outline" size={26} color="#ff3b30" />
+            )}
+            <Text
+              style={[
+                styles.optionText,
+                { color: '#ff3b30' },
+                deletePlaylist.isPending && { opacity: 0.6 },
+              ]}
+            >
+              Delete playlist
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.divider} />
 
-        <Text style={[styles.sectionLabel, themeStyles.artist]}>Album Info</Text>
+        <Text style={[styles.sectionLabel, themeStyles.artist]}>Playlist Info</Text>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Artist</Text>
-          <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>
-            {album.artist?.name ?? '—'}
+          <Text style={[styles.infoLabel, themeStyles.artist]}>Last changed</Text>
+          <Text style={[styles.infoValue, themeStyles.title]}>
+            {playlist.changed ? new Date(playlist.changed).toDateString() : '—'}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Year</Text>
-          <Text style={[styles.infoValue, themeStyles.title]}>{album.year ?? '—'}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Genres</Text>
-          <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>
-            {album.genres?.length ? album.genres.join(', ') : '—'}
+          <Text style={[styles.infoLabel, themeStyles.artist]}>Created</Text>
+          <Text style={[styles.infoValue, themeStyles.title]}>
+            {playlist.created ? new Date(playlist.created).toDateString() : '—'}
           </Text>
         </View>
         <View style={styles.infoRow}>
@@ -223,9 +270,9 @@ const AlbumOptions = forwardRef<
   );
 });
 
-AlbumOptions.displayName = 'AlbumOptions';
+PlaylistOptions.displayName = 'PlaylistOptions';
 
-export default AlbumOptions;
+export default PlaylistOptions;
 
 const styles = StyleSheet.create({
   sheetBackground: {

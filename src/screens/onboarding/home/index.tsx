@@ -5,8 +5,8 @@ import {
     TouchableWithoutFeedback,
     StyleSheet,
     Platform,
-    Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -64,6 +64,8 @@ export default function Home() {
                 <Image
                     source={require('@assets/images/logo.png')}
                     style={styles.appIcon}
+                    contentFit="contain"
+                    cachePolicy="memory-disk"
                 />
                 <Text style={styles.appName}>Yuzic</Text>
                 <Text style={styles.subtext}>

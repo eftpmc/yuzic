@@ -1,21 +1,17 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
 } from 'react-native';
-import { useDownload } from '@/contexts/DownloadContext';
-import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource, Playlist } from '@/types';
-import ContextMenuModal, {
-  ContextMenuAction,
-} from '@/components/ContextMenuModal';
-import InfoModal, { InfoRow } from '@/components/InfoModal';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaylist } from '@/hooks/playlists';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 interface ItemProps {
   id: string;
@@ -34,174 +30,28 @@ const PlaylistItem: React.FC<ItemProps> = ({
   isGridView,
   gridWidth,
 }) => {
-  const {
-    playSongInCollection,
-    addCollectionToQueue,
-    shuffleCollectionToQueue,
-    getQueue,
-  } = usePlaying();
-
-  const {
-    downloadPlaylistById,
-    isPlaylistDownloaded,
-    isDownloadingPlaylist,
-  } = useDownload();
-
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-
   const { playlist } = usePlaylist(id);
 
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [infoVisible, setInfoVisible] = useState(false);
-  const [playlistInfo, setPlaylistInfo] = useState<Playlist | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const isDownloaded = isPlaylistDownloaded(id);
-  const isDownloading = isDownloadingPlaylist(id);
+  const sheetRef = useRef<BottomSheetModal>(null);
+  const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('playlistView', { id });
   }, [navigation, id]);
 
-  const handlePlay = useCallback(
-    async (shuffle: boolean) => {
-      if (!playlist || !playlist.songs.length) return;
-      playSongInCollection(playlist.songs[0], playlist, shuffle);
-    },
-    [playlist, playSongInCollection]
-  );
-
-  const handleAddToQueue = useCallback(async () => {
-    if (!playlist || !playlist.songs.length) return;
-
-    const queue = getQueue();
-    if (queue.length === 0) {
-      playSongInCollection(playlist.songs[0], playlist, false);
-      return;
-    }
-
-    addCollectionToQueue(playlist);
-  }, [
-    playlist,
-    getQueue,
-    addCollectionToQueue,
-    playSongInCollection,
-  ]);
-
-  const handleShuffleToQueue = useCallback(async () => {
-    if (!playlist || !playlist.songs.length) return;
-
-    const queue = getQueue();
-    if (queue.length === 0) {
-      playSongInCollection(playlist.songs[0], playlist, true);
-      return;
-    }
-
-    shuffleCollectionToQueue(playlist);
-  }, [
-    playlist,
-    getQueue,
-    shuffleCollectionToQueue,
-    playSongInCollection,
-  ]);
-
-  const handleShowInfo = useCallback(() => {
+  const handleLongPress = useCallback(() => {
     if (!playlist) return;
-    setPlaylistInfo(playlist);
-    setInfoVisible(true);
+    setPlaylistForSheet(playlist);
+    sheetRef.current?.present();
   }, [playlist]);
-
-  const handleDownload = useCallback(async () => {
-    if (isDownloaded || isDownloading || isLoading) return;
-    setIsLoading(true);
-    try {
-      await downloadPlaylistById(id);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id, isDownloaded, isDownloading, isLoading, downloadPlaylistById]);
-
-  const infoRows: InfoRow[] = useMemo(() => {
-    if (!playlistInfo) return [];
-    return [
-      {
-        id: 'changed',
-        label: 'Last changed',
-        value: new Date(playlistInfo.changed).toDateString(),
-      },
-      {
-        id: 'created',
-        label: 'Created',
-        value: new Date(playlistInfo.created).toDateString(),
-      },
-      {
-        id: 'songs',
-        label: 'Songs',
-        value: playlistInfo.songs.length,
-      },
-    ];
-  }, [playlistInfo]);
-
-  const menuActions: ContextMenuAction[] = [
-    {
-      id: 'play',
-      label: 'Play',
-      icon: 'play',
-      primary: true,
-      onPress: () => handlePlay(false),
-    },
-    {
-      id: 'shuffle',
-      label: 'Shuffle',
-      icon: 'shuffle',
-      onPress: () => handlePlay(true),
-    },
-    {
-      id: 'addQueue',
-      label: 'Add to Queue',
-      icon: 'list',
-      dividerBefore: true,
-      onPress: handleAddToQueue,
-    },
-    {
-      id: 'shuffleQueue',
-      label: 'Shuffle to Queue',
-      icon: 'shuffle',
-      onPress: handleShuffleToQueue,
-    },
-    {
-      id: 'info',
-      label: 'Playlist Info',
-      icon: 'information-circle',
-      dividerBefore: true,
-      onPress: handleShowInfo,
-    },
-    {
-      id: 'navigate',
-      label: 'Go to Playlist',
-      icon: 'list',
-      onPress: handleNavigation,
-    },
-    {
-      id: 'download',
-      label: isDownloading
-        ? 'Downloading…'
-        : isDownloaded
-        ? 'Downloaded'
-        : 'Download',
-      icon: isDownloaded ? 'checkmark-circle' : 'arrow-down-circle',
-      disabled: isDownloaded || isDownloading,
-      dividerBefore: true,
-      onPress: handleDownload,
-    },
-  ];
 
   return (
     <>
       <Pressable
         onPress={handleNavigation}
-        onLongPress={() => setMenuVisible(true)}
+        onLongPress={handleLongPress}
         delayLongPress={300}
         style={({ pressed }) => [
           isGridView
@@ -238,25 +88,11 @@ const PlaylistItem: React.FC<ItemProps> = ({
         </View>
       </Pressable>
 
-      <ContextMenuModal
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        actions={menuActions}
+      <PlaylistOptions
+        ref={sheetRef}
+        playlist={playlistForSheet}
+        hideGoToPlaylist={false}
       />
-
-      {playlistInfo && (
-        <InfoModal
-          visible={infoVisible}
-          onClose={() => {
-            setInfoVisible(false);
-            setPlaylistInfo(null);
-          }}
-          title={playlistInfo.title}
-          subtitle="Playlist"
-          cover={playlistInfo.cover}
-          rows={infoRows}
-        />
-      )}
     </>
   );
 };

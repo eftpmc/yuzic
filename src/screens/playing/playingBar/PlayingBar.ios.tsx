@@ -201,6 +201,9 @@ const PlayingBar: React.FC = () => {
                 snapPoints={['100%']}
                 enableDynamicSizing={false}
                 backgroundStyle={{ backgroundColor: 'transparent' }}
+                handleIndicatorStyle={{
+                    backgroundColor: isDarkMode ? '#555' : '#ccc',
+                }}
                 backgroundComponent={props => (
                     <PlayingBackground
                         {...props}

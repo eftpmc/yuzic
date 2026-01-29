@@ -6,9 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Image,
-  ImageSourcePropType,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -29,7 +28,7 @@ const SLSKD_ICON = require('@assets/images/slskd.png');
 const DOWNLOADERS: {
   id: DownloaderType;
   label: string;
-  icon: ImageSourcePropType;
+  icon: number;
   route: string;
 }[] = [
   { id: 'lidarr', label: 'Lidarr', icon: LIDARR_ICON, route: '/settings/lidarrView' },
@@ -79,7 +78,8 @@ const DownloadersView: React.FC = () => {
               <Image
                 source={d.icon}
                 style={styles.downloaderIcon}
-                resizeMode="contain"
+                contentFit="contain"
+                cachePolicy="memory-disk"
               />
               <View style={styles.rowContent}>
                 <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>

@@ -28,6 +28,7 @@ import { getArtists } from "./artists/getArtists";
 import { getPlaylists } from "./playlists/getPlaylists";
 import { getPlaylist } from "./playlists/getPlaylist";
 import { createPlaylist } from "./playlists/createPlaylist";
+import { deletePlaylist } from "./playlists/deletePlaylist";
 import { addSongToPlaylist } from "./playlists/addSongToPlaylist";
 import { removeSongFromPlaylist } from "./playlists/removeSongFromPlaylist";
 
@@ -56,12 +57,14 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
 
   const albums: AlbumsApi = {
     list: async () => {
+      
       return getAlbumList(serverUrl, username, password);
     },
 
     get: async (id: string) => {
       const full = await getAlbum(serverUrl, username, password, id);
       if (!full) throw new Error("Album not found");
+      console.log(full.cover)
       return full;
     }
   };
@@ -138,7 +141,14 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
         playlistId,
         index.toString()
       );
-    }
+    },
+
+    delete: async (id: string) => {
+      if (id === FAVORITES_ID) {
+        throw new Error("Cannot delete Favorites playlist");
+      }
+      await deletePlaylist(serverUrl, username, password, id);
+    },
   };
 
   const starred: StarredApi = {

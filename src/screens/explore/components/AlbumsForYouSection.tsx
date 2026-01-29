@@ -37,7 +37,6 @@ export default function AlbumsForYouSection({
           width={screenWidth - H_PADDING * 2}
           height={tileHeight}
           radius={14}
-          loading={!ready}
         />
       </View>
     )

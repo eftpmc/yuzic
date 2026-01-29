@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Image,
     View,
     Text,
     TextInput,
@@ -8,6 +7,7 @@ import {
     StyleSheet,
     ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -133,7 +133,8 @@ export default function Connect() {
                                     <Image
                                         source={provider.icon}
                                         style={{ width: 36, height: 36, marginBottom: 6 }}
-                                        resizeMode="contain"
+                                        contentFit="contain"
+                                        cachePolicy="memory-disk"
                                     />
                                     <Text
                                         style={[

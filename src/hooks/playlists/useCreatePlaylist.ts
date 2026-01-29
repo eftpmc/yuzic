@@ -12,7 +12,7 @@ export function useCreatePlaylist() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Playlist],
+        queryKey: [QueryKeys.Playlists],
       });
     },
   });

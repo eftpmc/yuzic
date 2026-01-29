@@ -7,8 +7,8 @@ import {
     Platform,
     FlatList,
     Alert,
-    Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -73,7 +73,8 @@ export default function Servers() {
                     <Image
                         source={icon}
                         style={styles.serverIcon}
-                        resizeMode="contain"
+                        contentFit="contain"
+                        cachePolicy="memory-disk"
                     />
 
                     <View style={styles.textContainer}>

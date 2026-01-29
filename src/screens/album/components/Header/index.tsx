@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Album } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
-import DownloadOptions from '@/components/options/DownloadOptions';
+import AlbumOptions from '@/components/options/AlbumOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
-import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -26,10 +26,9 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const { playSongInCollection } = usePlaying();
-  const { isAlbumDownloaded, isDownloadingAlbum, downloadAlbumById } =
-    useDownload();
 
   const songs = album.songs ?? [];
 
@@ -66,12 +65,23 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           />
         </TouchableOpacity>
 
-        <DownloadOptions
-          onDownload={() => downloadAlbumById(album.id)}
-          isDownloaded={isAlbumDownloaded(album.id)}
-          isLoading={isDownloadingAlbum(album.id)}
-        />
+        <TouchableOpacity
+          onPress={() => optionsSheetRef.current?.present()}
+          style={styles.headerButton}
+        >
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={24}
+            color={isDarkMode ? '#fff' : '#000'}
+          />
+        </TouchableOpacity>
       </View>
+
+      <AlbumOptions
+        ref={optionsSheetRef}
+        album={album}
+        hideGoToAlbum
+      />
 
       {/* Album cover */}
       <View style={styles.coverWrapper}>

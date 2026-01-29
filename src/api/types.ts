@@ -84,6 +84,7 @@ export interface PlaylistsApi {
   create(name: string): Promise<string>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
   removeSong(playlistId: string, songId: string): Promise<RemoveSongFromPlaylistResult>;
+  delete(id: string): Promise<void>;
 }
 
 export interface StarredApi {

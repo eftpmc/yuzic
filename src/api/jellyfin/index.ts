@@ -21,7 +21,8 @@ import { getAlbums } from "./albums/getAlbums";
 import { getArtists } from "./artists/getArtists";
 import { getPlaylists } from "./playlists/getPlaylists";
 import { getPlaylistItems } from "./playlists/getPlaylistItems";
-import { createPlaylist } from "./playlists/createPlaylist"
+import { createPlaylist } from "./playlists/createPlaylist";
+import { deletePlaylist } from "./playlists/deletePlaylist";
 import { addPlaylistItems } from "./playlists/addPlaylistItems";
 import { removePlaylistItems } from "./playlists/removePlaylistItems";
 import { getStarredItems } from "./starred/getStarredItems";
@@ -141,6 +142,13 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
 
       await removePlaylistItems(serverUrl, playlistId, token, [songId]);
       return { success: true };
+    },
+
+    delete: async (id: string) => {
+      if (id === FAVORITES_ID) {
+        throw new Error("Cannot delete Favorites playlist");
+      }
+      await deletePlaylist(serverUrl, token, id);
     },
   };
 

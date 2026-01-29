@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import { useAlbum } from '@/hooks/albums';
 
 type Props = {
   album: AlbumBase;
@@ -22,6 +24,8 @@ type Props = {
 const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const { album: fullAlbum } = useAlbum(album.id);
 
   return (
     <View style={styles.wrapper}>
@@ -60,16 +64,24 @@ const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
         </TouchableOpacity>
 
         <View style={styles.optionsContainer}>
-          <MaterialIcons
-            name="check-circle"
-            size={20}
-            color={themeColor}
-            style={{ marginRight: 8 }}
-          />
-
-          <AlbumOptions selectedAlbumId={album.id} />
+          <TouchableOpacity
+            onPress={() => optionsSheetRef.current?.present()}
+            style={styles.optionButton}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={24}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
+      <AlbumOptions
+        ref={optionsSheetRef}
+        album={fullAlbum}
+        hideGoToAlbum={false}
+      />
     </View>
   );
 };
@@ -118,5 +130,8 @@ const styles = StyleSheet.create({
   optionsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  optionButton: {
+    padding: 8,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Playlist } from '@/types';
-import DownloadOptions from '@/components/options/DownloadOptions';
+import { MediaImage } from '@/components/MediaImage';
+import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
-import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
@@ -26,10 +26,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const { playSongInCollection } = usePlaying();
-  const { isPlaylistDownloaded, isDownloadingPlaylist, downloadPlaylistById } =
-    useDownload();
 
   const songs = playlist.songs ?? [];
 
@@ -66,12 +65,23 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           />
         </TouchableOpacity>
 
-        <DownloadOptions
-          onDownload={() => downloadPlaylistById(playlist.id)}
-          isDownloaded={isPlaylistDownloaded(playlist.id)}
-          isLoading={isDownloadingPlaylist(playlist.id)}
-        />
+        <TouchableOpacity
+          onPress={() => optionsSheetRef.current?.present()}
+          style={styles.headerButton}
+        >
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={24}
+            color={isDarkMode ? '#fff' : '#000'}
+          />
+        </TouchableOpacity>
       </View>
+
+      <PlaylistOptions
+        ref={optionsSheetRef}
+        playlist={playlist}
+        hideGoToPlaylist
+      />
 
       {/* Playlist cover */}
       <View style={styles.coverWrapper}>
