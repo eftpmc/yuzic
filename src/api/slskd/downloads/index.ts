@@ -88,7 +88,6 @@ export async function downloadAlbum(
       if (responses.length > 0) break;
     }
 
-    /** Explo-style: one user, one directory (album) only. */
     type DirGroup = { dir: string; files: SearchFile[] };
     type Candidate = {
       username: string;
@@ -134,7 +133,6 @@ export async function downloadAlbum(
       };
     }
 
-    /** Pick one user: prefer free slot, then most files. */
     candidates.sort((a, b) => {
       if (a.hasFreeUploadSlot !== b.hasFreeUploadSlot) {
         return a.hasFreeUploadSlot ? -1 : 1;
@@ -145,7 +143,6 @@ export async function downloadAlbum(
     });
 
     const user = candidates[0];
-    /** Pick one directory (album) from that user: use largest group. */
     user.dirs.sort((a, b) => b.files.length - a.files.length);
     const chosenDir = user.dirs[0];
     const toEnqueue = chosenDir.files;

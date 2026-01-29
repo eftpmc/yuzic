@@ -37,6 +37,7 @@ export const useApi = (): ApiAdapter => {
         create: empty,
         addSong: empty,
         removeSong: empty,
+        delete: empty,
       },
       starred: {
         list: empty,
@@ -85,6 +86,7 @@ export const useApi = (): ApiAdapter => {
       create: empty,
       addSong: empty,
       removeSong: empty,
+      delete: empty,
     },
     starred: {
       list: empty,

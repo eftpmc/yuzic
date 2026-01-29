@@ -12,6 +12,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import { ListEnd } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist } from '@/types';
@@ -183,7 +184,7 @@ const PlaylistOptions = forwardRef<
           <Text style={[styles.optionText, themeStyles.optionText]}>Shuffle</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleAddToQueue}>
-          <Ionicons name="list" size={26} color={themeStyles.icon.color} />
+          <ListEnd size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>Add to Queue</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>

@@ -1,12 +1,9 @@
 import { createSlskdClient, SlskdConfig } from '../client';
 
-/** One queue entry per album (directory). Keeps queue minimal. */
 export interface SlskdQueueRecord {
   id: string;
   username: string;
-  /** Album name from directory basename */
   title: string;
-  /** Username or peer label */
   artistName: string;
   state: string;
   size: number;
