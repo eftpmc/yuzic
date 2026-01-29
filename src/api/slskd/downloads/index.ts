@@ -51,12 +51,19 @@ export async function downloadAlbum(
     const uuid =
       typeof crypto !== 'undefined' && (crypto as any).randomUUID
         ? (crypto as any).randomUUID()
-        : `s-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          });
     const searchBody = {
       id: uuid,
       searchText,
       fileLimit: 5000,
       filterResponses: true,
+      maximumPeerQueueLength: 1000000,
+      minimumPeerUploadSpeed: 0,
+      minimumResponseFileCount: 1,
       responseLimit: 100,
       searchTimeout: 15000,
     };
@@ -81,38 +88,73 @@ export async function downloadAlbum(
       if (responses.length > 0) break;
     }
 
-    const toEnqueue: { username: string; files: SearchFile[] }[] = [];
-    const seen = new Set<string>();
+    /** Explo-style: one user, one directory (album) only. */
+    type DirGroup = { dir: string; files: SearchFile[] };
+    type Candidate = {
+      username: string;
+      hasFreeUploadSlot: boolean;
+      dirs: DirGroup[];
+    };
+    const candidates: Candidate[] = [];
 
     for (const r of responses) {
-      const userFiles = (r.files ?? []).filter((f) => {
-        const e = ext(f.filename ?? '');
-        if (!ALLOWED_EXTENSIONS.includes(e)) return false;
-        const key = `${r.username}:${(f.filename ?? '').toLowerCase()}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+      const userFiles = (r.files ?? [])
+        .filter((f) => {
+          if (f.isLocked) return false;
+          const e = ext(f.filename ?? '');
+          return ALLOWED_EXTENSIONS.includes(e);
+        });
 
-      if (userFiles.length > 0) {
-        toEnqueue.push({ username: r.username, files: userFiles });
+      if (userFiles.length === 0) continue;
+
+      const byDir = new Map<string, SearchFile[]>();
+      for (const f of userFiles) {
+        const path = (f.filename ?? '').replace(/\//g, '\\');
+        const last = path.lastIndexOf('\\');
+        const dir = last < 0 ? '' : path.slice(0, last);
+        const list = byDir.get(dir) ?? [];
+        list.push(f);
+        byDir.set(dir, list);
       }
+
+      const dirs: DirGroup[] = [];
+      byDir.forEach((files, dir) => dirs.push({ dir, files }));
+
+      candidates.push({
+        username: r.username,
+        hasFreeUploadSlot: r.hasFreeUploadSlot === true,
+        dirs,
+      });
     }
 
-    if (toEnqueue.length === 0) {
+    if (candidates.length === 0) {
       return {
         success: false,
         message: 'No matching flac/mp3 files found on Soulseek',
       };
     }
 
-    for (const { username, files } of toEnqueue) {
-      const encoded = encodeURIComponent(username);
-      await request(`/transfers/downloads/${encoded}`, {
-        method: 'POST',
-        body: JSON.stringify(files),
-      });
-    }
+    /** Pick one user: prefer free slot, then most files. */
+    candidates.sort((a, b) => {
+      if (a.hasFreeUploadSlot !== b.hasFreeUploadSlot) {
+        return a.hasFreeUploadSlot ? -1 : 1;
+      }
+      const aTotal = a.dirs.reduce((n, d) => n + d.files.length, 0);
+      const bTotal = b.dirs.reduce((n, d) => n + d.files.length, 0);
+      return bTotal - aTotal;
+    });
+
+    const user = candidates[0];
+    /** Pick one directory (album) from that user: use largest group. */
+    user.dirs.sort((a, b) => b.files.length - a.files.length);
+    const chosenDir = user.dirs[0];
+    const toEnqueue = chosenDir.files;
+
+    const encoded = encodeURIComponent(user.username);
+    await request(`/transfers/downloads/${encoded}`, {
+      method: 'POST',
+      body: JSON.stringify(toEnqueue),
+    });
 
     return { success: true };
   } catch (e: unknown) {
