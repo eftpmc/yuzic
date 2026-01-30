@@ -111,7 +111,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const bumpQueue = () => setQueueVersion(v => v + 1);
 
   useEffect(() => {
-    TrackPlayer.setupPlayer().then(() =>
+    TrackPlayer.setupPlayer({
+      autoHandleInterruptions: true
+    }).then(() =>
       TrackPlayer.updateOptions({
         capabilities: [
           Capability.Play,
