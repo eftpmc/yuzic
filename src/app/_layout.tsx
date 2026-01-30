@@ -22,7 +22,7 @@ import { initAnalytics } from '@/utils/analytics/amplitude';
 import { useTheme } from '@/hooks/useTheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 
 SplashScreen.preventAutoHideAsync();
 

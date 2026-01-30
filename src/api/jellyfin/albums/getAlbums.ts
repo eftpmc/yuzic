@@ -44,15 +44,19 @@ async function normalizeAlbum(
 
 export async function getAlbums(
   serverUrl: string,
-  token: string
+  token: string,
+  artistId?: string
 ): Promise<GetAlbumsResult> {
   try {
-    const url =
-      `${serverUrl}/Items` +
-      `?IncludeItemTypes=MusicAlbum` +
+    const baseParams =
+      `IncludeItemTypes=MusicAlbum` +
       `&Recursive=true` +
       `&SortBy=SortName` +
       `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists`;
+
+    const url =
+      `${serverUrl}/Items?${baseParams}` +
+      (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "");
 
     const res = await fetch(url, {
       headers: {

@@ -13,7 +13,7 @@ import {
   LayoutChangeEvent,
   Platform,
 } from "react-native";
-import { useProgress } from "react-native-track-player";
+import { usePlaying } from "@/contexts/PlayingContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LyricsResult } from "@/api/types";
 
@@ -25,7 +25,8 @@ type Props = {
 const BOTTOM_CONTROLS_HEIGHT = 120;
 
 const Lyrics: React.FC<Props> = ({ lyrics, width }) => {
-  const { position } = useProgress(250);
+  const { progress } = usePlaying();
+  const position = progress.position;
   const insets = useSafeAreaInsets();
 
   const scrollRef = useRef<ScrollView>(null);

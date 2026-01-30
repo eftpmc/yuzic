@@ -19,7 +19,9 @@ import { setIsGridView, setLibrarySortOrder } from '@/utils/redux/slices/setting
 import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
 import {
     selectAlbumPlays,
+    selectAlbumLastPlayedAt,
     selectArtistPlays,
+    selectArtistLastPlayedAt,
 } from '@/utils/redux/selectors/statsSelectors';
 import HomeHeader from './components/Header';
 import LibraryFilterBar from './components/Filters';
@@ -58,6 +60,8 @@ export default function HomeScreen() {
 
     const albumPlays = useSelector(selectAlbumPlays);
     const artistPlays = useSelector(selectArtistPlays);
+    const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt);
+    const artistLastPlayedAt = useSelector(selectArtistLastPlayedAt);
 
     const [activeFilter, setActiveFilter] =
         useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
@@ -135,7 +139,21 @@ export default function HomeScreen() {
                 });
                 break;
             case 'recent':
-                data.reverse();
+                data.sort((a, b) => {
+                    const aTime =
+                        a.type === 'Album'
+                            ? albumLastPlayedAt[a.id] ?? 0
+                            : a.type === 'Artist'
+                                ? artistLastPlayedAt[a.id] ?? 0
+                                : 0;
+                    const bTime =
+                        b.type === 'Album'
+                            ? albumLastPlayedAt[b.id] ?? 0
+                            : b.type === 'Artist'
+                                ? artistLastPlayedAt[b.id] ?? 0
+                                : 0;
+                    return bTime - aTime;
+                });
                 break;
             case 'userplays':
                 data.sort((a, b) => {
@@ -164,7 +182,7 @@ export default function HomeScreen() {
                 break;
         }
         return data;
-    }, [filteredData, sortOrder]);
+    }, [filteredData, sortOrder, albumPlays, artistPlays, albumLastPlayedAt, artistLastPlayedAt]);
 
     const filters = [
         { label: 'All', value: 'all' },

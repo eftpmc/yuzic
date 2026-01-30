@@ -10,14 +10,13 @@ function normalizeSongEntry(
   token: string
 ): Song {
   const ticks = s.RunTimeTicks ?? 0;
-
-  const artist = s.ArtistItems[0].Name || "Unknown Artist";
+  const artistItem = s.ArtistItems?.[0];
 
   return {
     id: s.Id,
     title: s.Name,
-    artist,
-    artistId: s.ArtistItems[0].Id,
+    artist: artistItem?.Name ?? "Unknown Artist",
+    artistId: artistItem?.Id ?? album.artist?.id ?? "",
     cover: album.cover,
     duration: String(Math.round(Number(ticks) / 10_000_000)),
     streamUrl: buildJellyfinStreamUrl(serverUrl, token, s.Id),
@@ -32,11 +31,11 @@ export async function getAlbumSongs(
 ): Promise<GetAlbumSongsResult> {
   const url =
     `${serverUrl}/Items` +
-    `?ParentId=${album.id}` +
+    `?ParentId=${encodeURIComponent(album.id)}` +
     `&IncludeItemTypes=Audio` +
     `&Recursive=true` +
     `&SortBy=IndexNumber` +
-    `&Fields=MediaSources,RunTimeTicks,Genres,Album,AlbumArtist,Artists,UserData,PlayCount`;
+    `&Fields=RunTimeTicks,ArtistItems`;
 
   const res = await fetch(url, {
     headers: {

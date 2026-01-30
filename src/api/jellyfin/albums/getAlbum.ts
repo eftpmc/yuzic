@@ -1,6 +1,5 @@
-import { Album, Artist, CoverSource } from "@/types";
+import { Album, ArtistBase, CoverSource } from "@/types";
 import { getAlbumSongs } from "./getAlbumSongs";
-import { getArtist } from "../artists/getArtist";
 
 export type GetAlbumResult = Album | null;
 
@@ -11,8 +10,9 @@ async function fetchGetAlbum(
 ) {
   const url =
     `${serverUrl}/Items` +
-    `?Ids=${albumId}` +
-    `&Fields=Genres,AlbumArtist,ArtistItems,Artists,PrimaryImageAspectRatio,PrimaryImageTag`;
+    `?Ids=${encodeURIComponent(albumId)}` +
+    `&IncludeItemTypes=MusicAlbum` +
+    `&Fields=Genres,ArtistItems,PrimaryImageTag`;
 
   const res = await fetch(url, {
     headers: {
@@ -26,20 +26,25 @@ async function fetchGetAlbum(
   return res.json();
 }
 
-async function normalizeAlbum(
-  raw: any,
-  serverUrl: string,
-  token: string
-): Promise<Album | null> {
+function normalizeAlbum(raw: any): Album | null {
   const a = raw?.Items?.[0];
   if (!a) return null;
+
+  const artistItem = a.ArtistItems?.[0];
+  if (!artistItem) return null;
 
   const cover: CoverSource = a.Id
     ? { kind: "jellyfin", itemId: a.Id }
     : { kind: "none" };
 
-  const artist: Artist | null = await getArtist(serverUrl, token, a.ArtistItems[0].Id)
-  if (!artist) return null;
+  const artist: ArtistBase = {
+    id: artistItem.Id,
+    name: artistItem.Name ?? "Unknown Artist",
+    cover: artistItem.Id
+      ? { kind: "jellyfin", itemId: artistItem.Id }
+      : { kind: "none" },
+    subtext: "Artist"
+  };
 
   return {
     id: a.Id,
@@ -62,7 +67,7 @@ export async function getAlbum(
   albumId: string
 ): Promise<GetAlbumResult> {
   const raw = await fetchGetAlbum(serverUrl, token, albumId);
-  const base = await normalizeAlbum(raw, serverUrl, token);
+  const base = normalizeAlbum(raw);
   if (!base) return null;
 
   const songs = await getAlbumSongs(serverUrl, token, base);

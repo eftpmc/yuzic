@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import Slider from '@react-native-community/slider';
 import TrackPlayer from 'react-native-track-player';
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 
-import { useProgress } from 'react-native-track-player';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
+import { SeekableProgressBar } from './SeekableProgressBar';
 
 type PlayingMainProps = {
   width: number;
@@ -35,13 +33,9 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressOptions,
   onPressAdd
 }) => {
-  const { currentSong } = usePlaying();
-  const { position } = useProgress(250);
-
+  const { currentSong, progress } = usePlaying();
+  const position = progress.position;
   const duration = currentSong ? Number(currentSong.duration) : 1;
-
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [seekPosition, setSeekPosition] = useState(0);
 
   if (!currentSong) {
     return null;
@@ -51,15 +45,8 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
     buildCover(currentSong.cover, 'detail') ??
     buildCover({ kind: 'none' } as CoverSource, 'detail');
 
-  const handleSeekChange = (value: number) => {
-    if (!isSeeking) setIsSeeking(true);
-    setSeekPosition(value);
-  };
-
-  const handleSeekComplete = async (value: number) => {
-    setSeekPosition(value);
-    await TrackPlayer.seekTo(value);
-    setTimeout(() => setIsSeeking(false), 200);
+  const handleSeek = (positionSeconds: number) => {
+    TrackPlayer.seekTo(positionSeconds);
   };
 
   return (
@@ -104,24 +91,21 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         </View>
       </View>
 
-      <Slider
-        style={styles.slider}
-        value={isSeeking ? seekPosition : position}
-        minimumValue={0}
-        maximumValue={duration}
-        minimumTrackTintColor="#fff"
-        maximumTrackTintColor="#888"
-        thumbTintColor="#fff"
-        onValueChange={handleSeekChange}
-        onSlidingComplete={handleSeekComplete}
+      <SeekableProgressBar
+        value={position}
+        duration={duration}
+        onSeek={handleSeek}
+        fillColor="#fff"
+        trackColor="#555"
+        style={styles.progressBar}
       />
 
       <View style={styles.timestamps}>
         <Text style={styles.timestamp}>
-          {formatTime(isSeeking ? seekPosition : position)}
+          {formatTime(position)}
         </Text>
         <Text style={styles.timestamp}>
-          -{formatTime(duration - (isSeeking ? seekPosition : position))}
+          -{formatTime(duration - position)}
         </Text>
       </View>
     </View>
@@ -159,12 +143,13 @@ const styles = StyleSheet.create({
   optionsButton: {
     padding: 6,
   },
-  slider: {
-    height: 36,
+  progressBar: {
+    marginTop: 8,
   },
   timestamps: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 10,
   },
   timestamp: {
     fontSize: 12,

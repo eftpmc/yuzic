@@ -10,6 +10,7 @@ import TrackPlayer, {
   Capability,
   State,
   usePlaybackState,
+  useProgress,
   RepeatMode,
   Event,
   useTrackPlayerEvents,
@@ -40,9 +41,16 @@ function passesScrobbleThreshold(
   return listenedSeconds >= threshold;
 }
 
+export interface PlaybackProgress {
+  position: number;
+  duration: number;
+  buffered: number;
+}
+
 export interface PlayingContextType {
   currentSong: Song | null;
   isPlaying: boolean;
+  progress: PlaybackProgress;
 
   pauseSong(): Promise<void>;
   resumeSong(): Promise<void>;
@@ -82,6 +90,14 @@ export interface PlayingContextType {
 
 const PlayingContext = createContext<PlayingContextType | undefined>(undefined);
 
+function normalizeProgress(raw: ReturnType<typeof useProgress>): PlaybackProgress {
+  return {
+    position: typeof raw?.position === 'number' && !Number.isNaN(raw.position) ? raw.position : 0,
+    duration: typeof raw?.duration === 'number' && !Number.isNaN(raw.duration) ? raw.duration : 0,
+    buffered: typeof raw?.buffered === 'number' && !Number.isNaN(raw.buffered) ? raw.buffered : 0,
+  };
+}
+
 export const usePlaying = () => {
   const ctx = useContext(PlayingContext);
   if (!ctx) throw new Error('usePlaying must be used within PlayingProvider');
@@ -91,6 +107,8 @@ export const usePlaying = () => {
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const playbackState = usePlaybackState();
   const isPlaying = playbackState.state === State.Playing;
+  const rawProgress = useProgress(250);
+  const progress = normalizeProgress(rawProgress);
 
   const { getSongLocalUri } = useDownload();
   const dispatch = useDispatch();
@@ -433,6 +451,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       value={{
         currentSong,
         isPlaying,
+        progress,
         pauseSong,
         resumeSong,
         currentIndex,
