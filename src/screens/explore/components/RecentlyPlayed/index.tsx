@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import {
   selectAlbumLastPlayedAt,
@@ -8,50 +8,43 @@ import {
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { useTheme } from '@/hooks/useTheme';
-import AlbumItem from '../Items/AlbumItem';
-import ArtistItem from '../Items/ArtistItem';
+import AlbumItem from '@/screens/home/components/Items/AlbumItem';
+import ArtistItem from '@/screens/home/components/Items/ArtistItem';
 
-const FLASHLIST_PADDING = 16; // LibraryContent contentContainerStyle paddingHorizontal: 8
-const CONTAINER_PADDING = 16; // RecentlyPlayed paddingHorizontal: 8
-const GAP = 8;
-const ITEM_MARGIN = 4; // AlbumItem/ArtistItem have marginHorizontal: 4
+const H_PADDING = 12;
+const GAP = 12;
+const ITEM_MARGIN = 4;
+const VISIBLE_ITEMS = 2.08; // 2 full + sliver of third (close to original large size)
 
-type FilterValue = 'all' | 'albums' | 'artists' | 'playlists';
-
-type Props = {
-  activeFilter: FilterValue;
+const getItemWidth = (width: number) => {
+  const availableWidth = width - H_PADDING * 2;
+  const slotWidth = (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
+  return slotWidth - ITEM_MARGIN * 2;
 };
 
-export default function RecentlyPlayed({ activeFilter }: Props) {
+export default function RecentlyPlayed() {
   const { isDarkMode } = useTheme();
   const { width } = useWindowDimensions();
-  const availableWidth = width - FLASHLIST_PADDING - CONTAINER_PADDING - GAP;
-  const slotWidth = availableWidth / 2;
-  const gridWidth = slotWidth - ITEM_MARGIN * 2; // account for item margins
+  const gridItemWidth = getItemWidth(width);
+  const slotWidth = gridItemWidth + ITEM_MARGIN * 2;
   const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt);
   const artistLastPlayedAt = useSelector(selectArtistLastPlayedAt);
   const { albums } = useAlbums();
   const { artists } = useArtists();
 
   const recentlyPlayed = useMemo(() => {
-    if (activeFilter === 'playlists') return []; // no playlist playback tracking
-
     const entries: { id: string; timestamp: number; type: 'Album' | 'Artist' }[] = [];
 
-    if (activeFilter === 'all' || activeFilter === 'albums') {
-      Object.entries(albumLastPlayedAt).forEach(([id, timestamp]) => {
-        if (timestamp > 0) entries.push({ id, timestamp, type: 'Album' });
-      });
-    }
-    if (activeFilter === 'all' || activeFilter === 'artists') {
-      Object.entries(artistLastPlayedAt).forEach(([id, timestamp]) => {
-        if (timestamp > 0) entries.push({ id, timestamp, type: 'Artist' });
-      });
-    }
+    Object.entries(albumLastPlayedAt).forEach(([id, timestamp]) => {
+      if (timestamp > 0) entries.push({ id, timestamp, type: 'Album' });
+    });
+    Object.entries(artistLastPlayedAt).forEach(([id, timestamp]) => {
+      if (timestamp > 0) entries.push({ id, timestamp, type: 'Artist' });
+    });
 
     entries.sort((a, b) => b.timestamp - a.timestamp);
-    return entries.slice(0, 2);
-  }, [albumLastPlayedAt, artistLastPlayedAt, activeFilter]);
+    return entries;
+  }, [albumLastPlayedAt, artistLastPlayedAt]);
 
   const itemsToRender = useMemo(() => {
     return recentlyPlayed
@@ -87,7 +80,11 @@ export default function RecentlyPlayed({ activeFilter }: Props) {
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         Recently played
       </Text>
-      <View style={styles.row}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {itemsToRender.map((item) =>
           item.type === 'Album' ? (
             <View key={`album-${item.id}`} style={[styles.item, { width: slotWidth }]}>
@@ -97,7 +94,7 @@ export default function RecentlyPlayed({ activeFilter }: Props) {
                 subtext={item.subtext}
                 cover={item.cover}
                 isGridView
-                gridWidth={gridWidth}
+                gridWidth={gridItemWidth}
               />
             </View>
           ) : (
@@ -108,43 +105,39 @@ export default function RecentlyPlayed({ activeFilter }: Props) {
                 subtext={item.subtext}
                 cover={item.cover}
                 isGridView
-                gridWidth={gridWidth}
+                gridWidth={gridItemWidth}
               />
             </View>
           )
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 8,
     paddingTop: 12,
     paddingBottom: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#D1D1D6',
-  },
-  containerDark: {
-    borderBottomColor: '#1C1C1E',
   },
   title: {
     fontSize: 13,
     fontWeight: '600',
     color: '#666',
     marginBottom: 8,
+    marginLeft: H_PADDING,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   titleDark: {
     color: '#888',
   },
-  row: {
-    flexDirection: 'row',
-    gap: 8,
+  scrollContent: {
+    paddingHorizontal: H_PADDING,
   },
   item: {
+    marginRight: GAP,
     minWidth: 0,
   },
+  containerDark: {},
 });

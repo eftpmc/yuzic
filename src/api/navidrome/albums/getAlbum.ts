@@ -60,6 +60,7 @@ export async function getAlbum(
     artist,
     year: album.year,
     genres: album.genre ? [album.genre] : [],
+    created: album.created ? new Date(album.created) : new Date(0),
     songs,
   };
 }

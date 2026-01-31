@@ -19,7 +19,8 @@ export async function search(
       `${serverUrl}/Items` +
         `?SearchTerm=${encodeURIComponent(query)}` +
         `&IncludeItemTypes=MusicAlbum` +
-        `&Recursive=true`,
+        `&Recursive=true` +
+        `&Fields=DateCreated`,
       { headers: headers(token) }
     ),
     fetch(
@@ -58,6 +59,7 @@ export async function search(
     },
     year: item.ProductionYear ?? 0,
     genres: item.Genres ?? [],
+    created: item.DateCreated ? new Date(item.DateCreated) : new Date(0),
   }));
 
   const artists: ArtistBase[] = artistItems.map((item: any) => ({

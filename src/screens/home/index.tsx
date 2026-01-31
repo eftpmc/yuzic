@@ -24,7 +24,6 @@ import {
     selectArtistLastPlayedAt,
 } from '@/utils/redux/selectors/statsSelectors';
 import HomeHeader from './components/Header';
-import RecentlyPlayed from './components/RecentlyPlayed';
 import LibraryFilterBar from './components/Filters';
 import LibraryListHeader from './components/Content/Header';
 import LibraryContent from './components/Content';
@@ -187,7 +186,6 @@ export default function HomeScreen() {
         return data;
     }, [filteredData, sortOrder, albumPlays, artistPlays, albumLastPlayedAt, artistLastPlayedAt]);
 
-    // Reset displayed count when filter or sort changes
     useEffect(() => {
         setDisplayedCount(LIBRARY_INITIAL_PAGE_SIZE);
     }, [activeFilter, sortOrder]);
@@ -273,11 +271,6 @@ export default function HomeScreen() {
                 filters={filters}
                 onChange={setActiveFilter}
                 onExplorePress={() => {
-                    
-                    if (!listenbrainzConfig?.token) {
-                        toast.error('Connect ListenBrainz to use Discovery');
-                        return;
-                    }
                     fadeTo(mode === 'explore' ? 'home' : 'explore');
                 }}
             />
@@ -296,14 +289,11 @@ export default function HomeScreen() {
                             estimatedItemSize={302}
                             renderItem={renderItem}
                             ListHeaderComponent={
-                                <>
-                                    <RecentlyPlayed activeFilter={activeFilter} />
-                                    <LibraryListHeader
-                                        sortLabel={currentSortLabel}
-                                        onSortPress={() => sortSheetRef.current?.present()}
-                                        onToggleView={() => dispatch(setIsGridView(!isGridView))}
-                                    />
-                                </>
+                                <LibraryListHeader
+                                    sortLabel={currentSortLabel}
+                                    onSortPress={() => sortSheetRef.current?.present()}
+                                    onToggleView={() => dispatch(setIsGridView(!isGridView))}
+                                />
                             }
                         />
 

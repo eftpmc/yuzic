@@ -55,6 +55,7 @@ function normalizeAlbumEntry(
     artist,
     year: a.year,
     genres: a.genre ? [a.genre] : [],
+    created: a.created ? new Date(a.created) : new Date(0),
   };
 }
 

@@ -34,7 +34,8 @@ async function normalizeAlbum(
       genres: (a.Genres ?? [])
         .flatMap((g: string) => g.split(";"))
         .map((g: string) => g.trim())
-        .filter(Boolean)
+        .filter(Boolean),
+      created: a.DateCreated ? new Date(a.DateCreated) : new Date(0),
     };
   } catch (error) {
     console.error(`Failed to normalize album:`, error);
@@ -52,7 +53,7 @@ export async function getAlbums(
       `IncludeItemTypes=MusicAlbum` +
       `&Recursive=true` +
       `&SortBy=SortName` +
-      `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists`;
+      `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated`;
 
     const url =
       `${serverUrl}/Items?${baseParams}` +

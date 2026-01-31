@@ -56,6 +56,7 @@ export async function search(
     },
     year: a.year ?? 0,
     genres: a.genre ? [a.genre] : [],
+    created: a.created ? new Date(a.created) : new Date(0),
   }));
 
   const artists: ArtistBase[] = (r.artist ?? []).map((a: any) => ({

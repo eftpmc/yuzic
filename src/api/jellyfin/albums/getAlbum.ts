@@ -12,7 +12,7 @@ async function fetchGetAlbum(
     `${serverUrl}/Items` +
     `?Ids=${encodeURIComponent(albumId)}` +
     `&IncludeItemTypes=MusicAlbum` +
-    `&Fields=Genres,ArtistItems,PrimaryImageTag`;
+    `&Fields=Genres,ArtistItems,PrimaryImageTag,DateCreated`;
 
   const res = await fetch(url, {
     headers: {
@@ -57,7 +57,8 @@ function normalizeAlbum(raw: any): Album | null {
     genres: (a.Genres ?? [])
       .flatMap((g: string) => g.split(";"))
       .map((g: string) => g.trim())
-      .filter(Boolean)
+      .filter(Boolean),
+    created: a.DateCreated ? new Date(a.DateCreated) : new Date(0),
   };
 }
 
