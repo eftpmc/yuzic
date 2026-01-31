@@ -181,7 +181,7 @@ const Search = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {isLoading
           ? [...Array(8)].map((_, i) => <LoadingAlbumRow key={i} />)
-          : searchResults.map((result, index) => (
+          :             searchResults.map((result, index) => (
               <React.Fragment key={`${result.type}:${result.id}`}>
                 {renderResult(result)}
                 {index < searchResults.length - 1 && (

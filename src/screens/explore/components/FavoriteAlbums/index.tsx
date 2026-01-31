@@ -4,6 +4,7 @@ import { useAlbums } from '@/hooks/albums';
 import { useStarredSongs } from '@/hooks/starred';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/home/components/Items/AlbumItem';
+import SectionEmptyState from '../SectionEmptyState';
 
 const H_PADDING = 12;
 const GAP = 12;
@@ -42,16 +43,18 @@ export default function FavoriteAlbums() {
         const countB = albumFavoriteCount.get(b.id) ?? 0;
         if (countB !== countA) return countB - countA;
         return new Date(b.created).getTime() - new Date(a.created).getTime();
-      });
+      })
+      .slice(0, 12);
   }, [albums, starredSongs]);
-
-  if (favoriteAlbums.length === 0) return null;
 
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         Favorite albums
       </Text>
+      {favoriteAlbums.length === 0 ? (
+        <SectionEmptyState message="Star songs to add albums here" />
+      ) : (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -70,6 +73,7 @@ export default function FavoriteAlbums() {
           </View>
         ))}
       </ScrollView>
+      )}
     </View>
   );
 }

@@ -66,7 +66,7 @@ const QueueItem = memo(
 );
 
 const Queue: React.FC<{ onBack: () => void; width: number }> = ({
-  onBack: _onBack,
+  onBack,
   width,
 }) => {
   const {
@@ -124,6 +124,13 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
     <View style={[styles.container, { width }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={28} color="#fff" />
+        </TouchableOpacity>
+
         {currentSong && (
           <MediaImage
             cover={currentSong.cover}
@@ -213,6 +220,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+  },
+
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+    marginLeft: -8,
   },
 
   playControls: {

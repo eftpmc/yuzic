@@ -8,6 +8,7 @@ import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
 import FavoriteAlbums from './components/FavoriteAlbums'
 import RandomAlbums from './components/RandomAlbums'
+import RecentSongsSpeedDial from './components/RecentSongsSpeedDial'
 
 export default function Explore() {
   const { isDarkMode } = useTheme()

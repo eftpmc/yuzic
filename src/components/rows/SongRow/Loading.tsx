@@ -15,9 +15,9 @@ const LoadingSongRow: React.FC = () => {
       <View style={styles.songInfo}>
         {/* Cover art */}
         <Skeleton
-          width={40}
-          height={40}
-          radius={4}
+          width={44}
+          height={44}
+          radius={6}
           colorMode={colorMode}
         />
 

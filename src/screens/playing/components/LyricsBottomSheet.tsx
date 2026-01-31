@@ -133,7 +133,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     return (
       <BottomSheetModal
         ref={ref}
-        snapPoints={['90%', '100%']}
+        snapPoints={['90%']}
         enableDynamicSizing={false}
         enablePanDownToClose
         stackBehavior="push"
@@ -145,7 +145,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           backgroundColor: isDarkMode ? '#666' : '#ccc',
         }}
       >
-        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={[styles.header, { paddingTop: 12 }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <ChevronDown size={28} color={isDarkMode ? '#fff' : '#000'} />
           </TouchableOpacity>

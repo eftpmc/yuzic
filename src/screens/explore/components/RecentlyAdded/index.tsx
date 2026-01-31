@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-n
 import { useAlbums } from '@/hooks/albums';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/home/components/Items/AlbumItem';
+import SectionEmptyState from '../SectionEmptyState';
 
 const H_PADDING = 12;
 const GAP = 12;
@@ -24,16 +25,18 @@ export default function RecentlyAdded() {
 
   const recentlyAdded = useMemo(() => {
     return [...albums]
-      .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+      .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
+      .slice(0, 12);
   }, [albums]);
-
-  if (recentlyAdded.length === 0) return null;
 
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         Recently added
       </Text>
+      {recentlyAdded.length === 0 ? (
+        <SectionEmptyState message="No albums in your library yet" />
+      ) : (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -52,6 +55,7 @@ export default function RecentlyAdded() {
           </View>
         ))}
       </ScrollView>
+      )}
     </View>
   );
 }

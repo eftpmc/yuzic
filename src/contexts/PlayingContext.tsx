@@ -24,6 +24,7 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz'
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
@@ -112,6 +113,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const { getSongLocalUri } = useDownload();
   const dispatch = useDispatch();
+  const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -187,13 +189,16 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    dispatch(
-      incrementPlay({
-        songId: song.id,
-        albumId: song.albumId,
-        artistId: song.artistId,
-      })
-    );
+    if (activeServer?.id) {
+      dispatch(
+        incrementPlay({
+          serverId: activeServer.id,
+          songId: song.id,
+          albumId: song.albumId,
+          artistId: song.artistId,
+        })
+      );
+    }
   };
 
   const loadAndPlay = async (

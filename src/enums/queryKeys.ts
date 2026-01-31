@@ -9,6 +9,7 @@ export enum QueryKeys {
 	Playlist = 'playlist',
 	Playlists = 'playlists',
 	Starred = 'starred',
+	RecentSongs = 'recent-songs',
 	Genres = 'genres',
 	ExternalAlbum = 'external-album',
 	ExternalArtist = 'external-artist',

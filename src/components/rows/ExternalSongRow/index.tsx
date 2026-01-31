@@ -76,9 +76,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cover: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
+    width: 44,
+    height: 44,
+    borderRadius: 6,
     marginRight: 12,
   },
   textContainer: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
   },
 });
 

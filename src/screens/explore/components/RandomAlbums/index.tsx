@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-n
 import { useAlbums } from '@/hooks/albums';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/home/components/Items/AlbumItem';
+import SectionEmptyState from '../SectionEmptyState';
 
 const H_PADDING = 12;
 const GAP = 12;
@@ -38,13 +39,14 @@ export default function RandomAlbums() {
     return shuffled.slice(0, Math.min(MAX_ALBUMS, albums.length));
   }, [albums]);
 
-  if (randomAlbums.length === 0) return null;
-
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         Random albums
       </Text>
+      {randomAlbums.length === 0 ? (
+        <SectionEmptyState message="No albums in your library yet" />
+      ) : (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -63,6 +65,7 @@ export default function RandomAlbums() {
           </View>
         ))}
       </ScrollView>
+      )}
     </View>
   );
 }

@@ -109,7 +109,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
         setLyrics(null);
         setLyricsAvailable(false);
-        setMode("player");
 
         (async () => {
             try {

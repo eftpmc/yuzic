@@ -41,6 +41,10 @@ export type AuthResult =
   | JellyfinConnectResult
   | AuthFailure;
 
+export interface SongsApi {
+  get(id: string): Promise<Song | null>;
+}
+
 export interface ApiAdapter {
   auth: AuthApi;
   albums: AlbumsApi;
@@ -48,6 +52,7 @@ export interface ApiAdapter {
   genres: GenresApi;
   playlists: PlaylistsApi;
   starred: StarredApi;
+  songs: SongsApi;
   lyrics: LyricsApi;
   search: SearchApi;
 }

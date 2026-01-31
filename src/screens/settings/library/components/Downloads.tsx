@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 10,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#fff',
   },
   sectionDark: {
     backgroundColor: '#111',

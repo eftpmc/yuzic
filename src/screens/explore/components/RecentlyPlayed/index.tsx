@@ -10,6 +10,7 @@ import { useArtists } from '@/hooks/artists';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/home/components/Items/AlbumItem';
 import ArtistItem from '@/screens/home/components/Items/ArtistItem';
+import SectionEmptyState from '../SectionEmptyState';
 
 const H_PADDING = 12;
 const GAP = 12;
@@ -70,16 +71,18 @@ export default function RecentlyPlayed() {
           cover: artist.cover,
         };
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      .slice(0, 12);
   }, [recentlyPlayed, albums, artists]);
-
-  if (itemsToRender.length === 0) return null;
 
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         Recently played
       </Text>
+      {itemsToRender.length === 0 ? (
+        <SectionEmptyState message="Play albums or artists to see them here" />
+      ) : (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -111,6 +114,7 @@ export default function RecentlyPlayed() {
           )
         )}
       </ScrollView>
+      )}
     </View>
   );
 }

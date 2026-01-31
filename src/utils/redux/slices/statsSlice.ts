@@ -1,7 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type PlayMap = Record<string, number>;
-type LastPlayedMap = Record<string, number>; // id -> timestamp (ms)
+type LastPlayedMap = Record<string, number>; // "serverId:entityId" -> timestamp (ms)
+
+const key = (serverId: string, id: string) => `${serverId}:${id}`;
 
 interface StatsState {
   songPlays: PlayMap;
@@ -21,16 +23,6 @@ const initialState: StatsState = {
   artistLastPlayedAt: {},
 };
 
-const increment = (map: PlayMap, id?: string) => {
-  if (!id) return;
-  map[id] = (map[id] ?? 0) + 1;
-};
-
-const setLastPlayed = (map: LastPlayedMap, id: string | undefined, now: number) => {
-  if (!id) return;
-  map[id] = now;
-};
-
 const statsSlice = createSlice({
   name: "stats",
   initialState,
@@ -38,21 +30,30 @@ const statsSlice = createSlice({
     incrementPlay(
       state,
       action: PayloadAction<{
+        serverId: string;
         songId: string;
         albumId?: string;
         artistId?: string;
       }>
     ) {
-      const { songId, albumId, artistId } = action.payload;
+      const { serverId, songId, albumId, artistId } = action.payload;
       const now = Date.now();
 
-      increment(state.songPlays, songId);
-      increment(state.albumPlays, albumId);
-      increment(state.artistPlays, artistId);
-
-      setLastPlayed(state.songLastPlayedAt, songId, now);
-      setLastPlayed(state.albumLastPlayedAt, albumId, now);
-      setLastPlayed(state.artistLastPlayedAt, artistId, now);
+      if (songId) {
+        const k = key(serverId, songId);
+        state.songPlays[k] = (state.songPlays[k] ?? 0) + 1;
+        state.songLastPlayedAt[k] = now;
+      }
+      if (albumId) {
+        const k = key(serverId, albumId);
+        state.albumPlays[k] = (state.albumPlays[k] ?? 0) + 1;
+        state.albumLastPlayedAt[k] = now;
+      }
+      if (artistId) {
+        const k = key(serverId, artistId);
+        state.artistPlays[k] = (state.artistPlays[k] ?? 0) + 1;
+        state.artistLastPlayedAt[k] = now;
+      }
     },
   },
 });

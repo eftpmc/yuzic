@@ -34,7 +34,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
       renderItem={renderItem}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
-      ItemSeparatorComponent={ListSeparator}
+      ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
     />
