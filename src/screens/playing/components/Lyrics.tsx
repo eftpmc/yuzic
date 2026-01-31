@@ -15,16 +15,25 @@ import {
 } from "react-native";
 import { usePlaying } from "@/contexts/PlayingContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "@/hooks/useTheme";
 import { LyricsResult } from "@/api/types";
 
 type Props = {
   lyrics: LyricsResult;
   width: number;
+  scrollEnabled?: boolean;
+  embedded?: boolean;
 };
 
 const BOTTOM_CONTROLS_HEIGHT = 120;
 
-const Lyrics: React.FC<Props> = ({ lyrics, width }) => {
+const Lyrics: React.FC<Props> = ({
+  lyrics,
+  width,
+  scrollEnabled = false,
+  embedded = false,
+}) => {
+  const { isDarkMode } = useTheme();
   const { progress } = usePlaying();
   const position = progress.position;
   const insets = useSafeAreaInsets();
@@ -91,16 +100,16 @@ const Lyrics: React.FC<Props> = ({ lyrics, width }) => {
         styles.container,
         {
           width,
-          paddingTop:
-            insets.top +
-            (Platform.OS === "android" ? 48 : 12),
+          paddingTop: embedded
+            ? 12
+            : insets.top + (Platform.OS === "android" ? 48 : 12),
         },
       ]}
       onLayout={onContainerLayout}
     >
       <ScrollView
         ref={scrollRef}
-        scrollEnabled={false}
+        scrollEnabled={scrollEnabled}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollContent,
@@ -116,8 +125,8 @@ const Lyrics: React.FC<Props> = ({ lyrics, width }) => {
                 style={[
                   styles.line,
                   isActive
-                    ? styles.activeLine
-                    : styles.inactiveLine,
+                    ? (isDarkMode ? styles.activeLineDark : styles.activeLineLight)
+                    : (isDarkMode ? styles.inactiveLineDark : styles.inactiveLineLight),
                 ]}
               >
                 {line.text}
@@ -146,12 +155,20 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 26,
   },
-  inactiveLine: {
+  inactiveLineDark: {
     color: "#666",
     opacity: 0.6,
   },
-  activeLine: {
+  inactiveLineLight: {
+    color: "#666",
+    opacity: 0.6,
+  },
+  activeLineDark: {
     color: "#fff",
+    opacity: 1,
+  },
+  activeLineLight: {
+    color: "#000",
     opacity: 1,
   },
 });

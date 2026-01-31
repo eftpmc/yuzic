@@ -4,9 +4,9 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    Platform,
     StatusBar,
     Dimensions,
+    ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -21,30 +21,29 @@ import Animated, {
 import { CoverSource } from '@/types';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
-import Lyrics from './components/Lyrics';
 import { useTheme } from '@/hooks/useTheme';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import PlaylistList from '@/components/PlaylistList';
 import PlayingMain from './components/PlayingMain';
 import Controls from './components/Controls';
 import BottomControls from './components/BottomControls';
+import LyricsBottomSheet from './components/LyricsBottomSheet';
+import LyricsPreviewCard from './components/LyricsPreviewCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 
 interface PlayingScreenProps {
     onClose: () => void;
 }
 
-type PlayingViewMode = "player" | "queue" | "lyrics";
+type PlayingViewMode = "player" | "queue";
 
 const usePlayingTransitions = (mode: PlayingViewMode) => {
     const playerOpacity = useSharedValue(1);
     const queueOpacity = useSharedValue(0);
-    const lyricsOpacity = useSharedValue(0);
 
     useEffect(() => {
         playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: 300 });
         queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: 300 });
-        lyricsOpacity.value = withTiming(mode === "lyrics" ? 1 : 0, { duration: 300 });
     }, [mode]);
 
     const playerStyle = useAnimatedStyle(() => ({
@@ -65,19 +64,9 @@ const usePlayingTransitions = (mode: PlayingViewMode) => {
         bottom: 0,
     }));
 
-    const lyricsStyle = useAnimatedStyle(() => ({
-        opacity: lyricsOpacity.value,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    }));
-
     return {
         playerStyle,
         queueStyle,
-        lyricsStyle,
     };
 };
 
@@ -87,7 +76,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const router = useRouter();
     const { isDarkMode } = useTheme();
     const {
-        currentSong
+        currentSong,
+        progress,
     } = usePlaying();
     const api = useApi();
     const insets = useSafeAreaInsets();
@@ -96,16 +86,19 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
     const songOptionsRef = useRef<BottomSheetModal>(null);
     const playlistRef = useRef<BottomSheetModal>(null);
+    const lyricsSheetRef = useRef<BottomSheetModal>(null);
 
     const [mode, setMode] = useState<PlayingViewMode>("player");
-    const { playerStyle, queueStyle, lyricsStyle } =
+    const { playerStyle, queueStyle } =
         usePlayingTransitions(mode);
 
     const lastCoverRef = useRef<CoverSource | null>(null);
 
-    const { width } = Dimensions.get('window');
+    const { width, height } = Dimensions.get('window');
     const isTablet = width >= 768;
     const layoutWidth = width - 24;
+    const contentWidth = isTablet ? 500 : width - 48;
+    const playerMinHeight = height - insets.top - insets.bottom;
 
     useEffect(() => {
         if (!currentSong?.id) return;
@@ -156,6 +149,12 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         }
     };
 
+    const openLyricsSheet = () => {
+        if (lyricsAvailable && lyrics) {
+            lyricsSheetRef.current?.present();
+        }
+    };
+
     return (
         <View style={styles.gradientContainer}>
             <View style={styles.container}>
@@ -177,60 +176,76 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     </Animated.View>
 
                     <Animated.View
-                        style={[lyricsStyle, { alignItems: "center", justifyContent: "flex-start" }]}
-                        pointerEvents={mode === "lyrics" ? "auto" : "none"}
-                    >
-                        {lyrics && (
-                            <Lyrics
-                                lyrics={lyrics}
-                                width={layoutWidth}
-                            />
-                        )}
-                    </Animated.View>
-
-                    <Animated.View
-                        style={[playerStyle, { alignItems: 'center', justifyContent: 'center' }]}
+                        style={[playerStyle, { flex: 1, width: '100%' }]}
                         pointerEvents={mode === "player" ? 'auto' : 'none'}
                     >
-                        <View style={[styles.header, { paddingTop: insets.top }]}>
-                            <TouchableOpacity
-                                onPress={onClose}
-                                style={styles.headerButton}
-                            >
-                                <ChevronDown size={28} color="#fff" />
-                            </TouchableOpacity>
+                        <ScrollView
+                            style={styles.scrollView}
+                            contentContainerStyle={[
+                                styles.scrollContent,
+                                { paddingBottom: insets.bottom + (lyricsAvailable ? 100 : 24) },
+                            ]}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <View style={[styles.playerSection, { minHeight: playerMinHeight }]}>
+                                <View style={[styles.header, { paddingTop: insets.top }]}>
+                                    <TouchableOpacity
+                                        onPress={onClose}
+                                        style={styles.headerButton}
+                                    >
+                                        <ChevronDown size={28} color="#fff" />
+                                    </TouchableOpacity>
 
-                            <TouchableOpacity
-                                onPress={() => songOptionsRef.current?.present()}
-                                style={styles.headerButton}
-                            >
-                                <Ellipsis size={24} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
+                                    <TouchableOpacity
+                                        onPress={() => songOptionsRef.current?.present()}
+                                        style={styles.headerButton}
+                                    >
+                                        <Ellipsis size={24} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
 
-                        <View style={styles.centerContent}>
-                            <PlayingMain
-                                width={isTablet ? 500 : width - 48}
-                                onPressArtist={navigateToArtist}
-                                onPressOptions={() => songOptionsRef.current?.present()}
-                                onPressAdd={() => playlistRef.current?.present()}
-                            />
+                                <View style={styles.centerContent}>
+                                    <PlayingMain
+                                        width={contentWidth}
+                                        onPressArtist={navigateToArtist}
+                                        onPressOptions={() => songOptionsRef.current?.present()}
+                                        onPressAdd={() => playlistRef.current?.present()}
+                                    />
 
-                            <View style={{ width: isTablet ? 500 : width - 48 }}>
-                                <Controls />
+                                    <View style={{ width: contentWidth }}>
+                                        <Controls />
+                                    </View>
+                                </View>
+
+                                <View
+                                    style={[
+                                        styles.bottomControlsRow,
+                                        {
+                                            width: contentWidth,
+                                            paddingBottom: insets.bottom + 12,
+                                        },
+                                    ]}
+                                >
+                                    <BottomControls
+                                        mode={mode}
+                                        setMode={setMode}
+                                    />
+                                </View>
                             </View>
-                        </View>
+
+                            {lyricsAvailable && lyrics && (
+                                <LyricsPreviewCard
+                                    lyrics={lyrics}
+                                    position={progress.position}
+                                    contentWidth={contentWidth}
+                                    isDarkMode={isDarkMode}
+                                    onPress={openLyricsSheet}
+                                />
+                            )}
+                        </ScrollView>
                     </Animated.View>
 
                 </View>
-                <View style={{ width: isTablet ? 500 : width - 48, marginTop: 24, bottom: insets.bottom + (Platform.OS === "ios" ? 12 : 12) }}>
-                    <BottomControls
-                        lyricsAvailable={lyricsAvailable}
-                        mode={mode}
-                        setMode={setMode}
-                    />
-                </View>
-
             </View>
             <SongOptions
                 ref={songOptionsRef}
@@ -242,6 +257,12 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 ref={playlistRef}
                 selectedSong={currentSong}
                 onClose={() => playlistRef.current?.dismiss()}
+            />
+
+            <LyricsBottomSheet
+                ref={lyricsSheetRef}
+                lyrics={lyrics}
+                onClose={() => lyricsSheetRef.current?.dismiss()}
             />
         </View>
     );
@@ -255,6 +276,17 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
     },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        alignItems: 'center',
+    },
+    playerSection: {
+        width: '100%',
+        alignItems: 'center',
+    },
     centerContent: {
         flex: 1,
         alignItems: 'center',
@@ -264,100 +296,26 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
     },
-    activeUtilityButton: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 8,
-    },
-    coverArt: {
-        borderRadius: 10,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 10,
-    },
-    titleArtistContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginBottom: 8,
-    },
-    textContainer: {
-        flex: 1,
-    },
     header: {
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingBottom: 12,
+        paddingBottom: 40,
     },
-
     headerButton: {
         width: 40,
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
     },
-
-    utilityContainer: {
-        position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 48 : 32,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingHorizontal: 32,
-        alignSelf: 'center',
-        zIndex: 99,
-        backgroundColor: 'rgba(0,0,0,0.2)', // optional styling
-        borderRadius: 16,                   // optional styling
-    },
-    utilityButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 6,
-    },
-    optionsButton: {
-        marginLeft: 16,
-    },
-    detailsContainer: {
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    artist: {
-        fontSize: 14,
-        fontWeight: '400',
-    },
-    slider: {
-        height: 40,
-    },
-    timestamps: {
+    bottomControlsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-    },
-    controls: {
-        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    closeButton: {
-        position: 'absolute',
-        left: 16,
-        padding: 4,
-    },
-    queueButton: {
-        position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 60 : 32,
-        right: 16,
-        padding: 4,
+        paddingTop: 12,
+        paddingBottom: 12,
     },
 });
 
