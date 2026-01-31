@@ -6,7 +6,6 @@ import {
     TouchableOpacity,
     StatusBar,
     Dimensions,
-    ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -22,13 +21,15 @@ import { CoverSource } from '@/types';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
 import { useTheme } from '@/hooks/useTheme';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useAlbum } from '@/hooks/albums';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import PlaylistList from '@/components/PlaylistList';
 import PlayingMain from './components/PlayingMain';
 import Controls from './components/Controls';
 import BottomControls from './components/BottomControls';
 import LyricsBottomSheet from './components/LyricsBottomSheet';
 import LyricsPreviewCard from './components/LyricsPreviewCard';
+import AboutTheArtistCard from './components/AboutTheArtistCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 
 interface PlayingScreenProps {
@@ -81,6 +82,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     } = usePlaying();
     const api = useApi();
     const insets = useSafeAreaInsets();
+    const { album } = useAlbum(currentSong?.albumId ?? '');
     const [lyrics, setLyrics] = useState<LyricsResult | null>(null);
     const [lyricsAvailable, setLyricsAvailable] = useState(false);
 
@@ -139,12 +141,13 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         return <View style={{ flex: 1, backgroundColor: '#000' }} />;
     }
 
+    const artistId = currentSong.artistId ?? album?.artist?.id;
     const navigateToArtist = () => {
-        if (currentSong.artistId) {
+        if (artistId) {
             onClose();
             router.push({
                 pathname: '/(home)/artistView',
-                params: { id: currentSong.artistId },
+                params: { id: artistId },
             });
         }
     };
@@ -179,7 +182,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         style={[playerStyle, { flex: 1, width: '100%' }]}
                         pointerEvents={mode === "player" ? 'auto' : 'none'}
                     >
-                        <ScrollView
+                        <BottomSheetScrollView
                             style={styles.scrollView}
                             contentContainerStyle={[
                                 styles.scrollContent,
@@ -233,6 +236,18 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 </View>
                             </View>
 
+                            <AboutTheArtistCard
+                                artistName={currentSong.artist}
+                                artistCover={
+                                  album?.artist?.cover ??
+                                  currentSong.cover ??
+                                  null
+                                }
+                                contentWidth={contentWidth}
+                                isDarkMode={isDarkMode}
+                                onPress={artistId ? navigateToArtist : undefined}
+                            />
+
                             {lyricsAvailable && lyrics && (
                                 <LyricsPreviewCard
                                     lyrics={lyrics}
@@ -242,7 +257,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     onPress={openLyricsSheet}
                                 />
                             )}
-                        </ScrollView>
+                        </BottomSheetScrollView>
                     </Animated.View>
 
                 </View>

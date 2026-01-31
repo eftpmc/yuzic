@@ -196,6 +196,7 @@ const PlayingBar: React.FC = () => {
         ref={bottomSheetRef}
         snapPoints={['100%']}
         enableDynamicSizing={false}
+        enablePanDownToClose
         backgroundStyle={{ backgroundColor: 'transparent' }}
         backgroundComponent={props => (
           <PlayingBackground
