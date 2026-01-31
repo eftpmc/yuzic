@@ -17,6 +17,8 @@ import { useSelector } from 'react-redux';
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
 import AlbumRow from '@/components/rows/AlbumRow';
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
+import ArtistRow from '@/components/rows/ArtistRow';
+import PlaylistRow from '@/components/rows/PlaylistRow';
 import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
 import { track } from '@/utils/analytics/amplitude';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -87,41 +89,35 @@ const Search = () => {
 
     if (result.type === 'artist') {
       return (
-        <TouchableOpacity
-          style={styles.simpleRow}
+        <ArtistRow
+          artist={{
+            id: result.id,
+            name: result.title,
+            subtext: result.subtext,
+            cover: result.cover,
+          }}
           onPress={() =>
             navigation.navigate('artistView', { id: result.id })
           }
-        >
-          <Text
-            style={[
-              styles.simpleText,
-              isDarkMode && styles.simpleTextDark,
-            ]}
-          >
-            {result.title}
-          </Text>
-        </TouchableOpacity>
+        />
       );
     }
 
     if (result.type === 'playlist') {
       return (
-        <TouchableOpacity
-          style={styles.simpleRow}
+        <PlaylistRow
+          playlist={{
+            id: result.id,
+            title: result.title,
+            subtext: result.subtext,
+            cover: result.cover,
+            changed: new Date(),
+            created: new Date(),
+          }}
           onPress={() =>
             navigation.navigate('playlistView', { id: result.id })
           }
-        >
-          <Text
-            style={[
-              styles.simpleText,
-              isDarkMode && styles.simpleTextDark,
-            ]}
-          >
-            {result.title}
-          </Text>
-        </TouchableOpacity>
+        />
       );
     }
 
@@ -185,10 +181,18 @@ const Search = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {isLoading
           ? [...Array(8)].map((_, i) => <LoadingAlbumRow key={i} />)
-          : searchResults.map(result => (
-              <View key={`${result.type}:${result.id}`}>
+          : searchResults.map((result, index) => (
+              <React.Fragment key={`${result.type}:${result.id}`}>
                 {renderResult(result)}
-              </View>
+                {index < searchResults.length - 1 && (
+                  <View
+                    style={[
+                      styles.separator,
+                      isDarkMode && styles.separatorDark,
+                    ]}
+                  />
+                )}
+              </React.Fragment>
             ))}
 
         {!isLoading && searchResults.length === 0 && (
@@ -257,15 +261,14 @@ const styles = StyleSheet.create({
   noResultsDark: {
     color: '#aaa',
   },
-  simpleRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#e0e0e0',
+    marginHorizontal: 16,
+    marginTop: -8,
+    marginBottom: 8,
   },
-  simpleText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  simpleTextDark: {
-    color: '#fff',
+  separatorDark: {
+    backgroundColor: '#333',
   },
 });

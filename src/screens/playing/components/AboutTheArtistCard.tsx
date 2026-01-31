@@ -10,15 +10,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 
-const CARD_HEIGHT = 260;
-const IMAGE_RATIO = 0.78;
+const CARD_HEIGHT = 280;
+const TEXT_AREA_MIN_HEIGHT = 70;
 const PADDING = 16;
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
   subtext?: string;
   contentWidth: number;
-  isDarkMode: boolean;
   onPress?: () => void;
 };
 
@@ -27,21 +26,16 @@ export default function AboutTheArtistCard({
   artistCover,
   subtext = 'Artist',
   contentWidth,
-  isDarkMode,
   onPress,
 }: Props) {
-  const imageHeight = CARD_HEIGHT * IMAGE_RATIO;
+  const imageHeight = CARD_HEIGHT - TEXT_AREA_MIN_HEIGHT;
   const imageUri = artistCover
     ? buildCover(artistCover, 'detail')
     : null;
 
   const card = (
     <View
-      style={[
-        styles.card,
-        { width: contentWidth, height: CARD_HEIGHT },
-        isDarkMode && styles.cardDark,
-      ]}
+      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
     >
       <View style={[styles.imageContainer, { height: imageHeight }]}>
         <Image
@@ -64,13 +58,13 @@ export default function AboutTheArtistCard({
 
       <View style={styles.textContainer}>
         <Text
-          style={[styles.title, isDarkMode && styles.titleDark]}
+          style={styles.title}
           numberOfLines={1}
         >
           {artistName}
         </Text>
         <Text
-          style={[styles.subtext, isDarkMode && styles.subtextDark]}
+          style={styles.subtext}
           numberOfLines={1}
         >
           {subtext}
@@ -100,11 +94,8 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     overflow: 'hidden',
-  },
-  cardDark: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   header: {
     position: 'absolute',
@@ -119,28 +110,23 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     overflow: 'hidden',
-    backgroundColor: '#222',
+    backgroundColor: '#1a1a1a',
   },
   textContainer: {
     justifyContent: 'center',
+    minHeight: TEXT_AREA_MIN_HEIGHT,
     paddingHorizontal: PADDING,
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
-  },
-  titleDark: {
     color: '#fff',
   },
   subtext: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
-  },
-  subtextDark: {
-    color: '#aaa',
   },
 });

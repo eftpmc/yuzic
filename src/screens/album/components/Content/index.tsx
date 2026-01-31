@@ -5,6 +5,7 @@ import { Album, Song } from '@/types';
 
 import AlbumHeader from '../Header';
 import SongRow from '@/components/rows/SongRow';
+import ListSeparator from '@/components/ListSeparator';
 
 type Props = {
   album: Album;
@@ -38,6 +39,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
       renderItem={renderItem}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
+      ItemSeparatorComponent={ListSeparator}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
     />

@@ -123,7 +123,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   ): Promise<SearchResult[]> => {
     if (!api?.search) return [];
 
-    const { albums = [] } =
+    const { albums = [], artists = [] } =
       await api.search.search(query);
 
     const albumResults: SearchResult[] = albums.map(
@@ -137,7 +137,18 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       })
     );
 
-    return albumResults;
+    const artistResults: SearchResult[] = artists.map(
+      (artist: ArtistBase) => ({
+        id: artist.id,
+        title: artist.name,
+        subtext: artist.subtext,
+        cover: artist.cover,
+        type: 'artist',
+        isDownloaded: true,
+      })
+    );
+
+    return [...albumResults, ...artistResults];
   };
 
   const searchExternal = async (

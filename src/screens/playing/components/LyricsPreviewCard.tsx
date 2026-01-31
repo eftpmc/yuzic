@@ -18,7 +18,6 @@ type Props = {
   lyrics: LyricsResult;
   position: number;
   contentWidth: number;
-  isDarkMode: boolean;
   onPress: () => void;
 };
 
@@ -39,11 +38,9 @@ function getCurrentLineIndex(
 function LyricLine({
   text,
   variant,
-  isDarkMode,
 }: {
   text: string;
   variant: 'active' | 'adjacent' | 'inactive';
-  isDarkMode: boolean;
 }) {
   const opacityTarget =
     variant === 'active' ? 1 : variant === 'adjacent' ? 0.85 : 0.5;
@@ -58,9 +55,7 @@ function LyricLine({
   }));
 
   const baseStyle =
-    variant === 'active'
-      ? (isDarkMode ? styles.activeLineDark : styles.activeLineLight)
-      : (isDarkMode ? styles.inactiveLineDark : styles.inactiveLineLight);
+    variant === 'active' ? styles.activeLine : styles.inactiveLine;
 
   return (
     <Animated.Text
@@ -76,7 +71,6 @@ export default function LyricsPreviewCard({
   lyrics,
   position,
   contentWidth,
-  isDarkMode,
   onPress,
 }: Props) {
   const scrollRef = useRef<ScrollView>(null);
@@ -125,13 +119,10 @@ export default function LyricsPreviewCard({
     return 'inactive';
   };
 
+  // Playing screen background is always dark — use light text
   return (
     <TouchableOpacity
-      style={[
-        styles.card,
-        { width: contentWidth, height: CARD_HEIGHT },
-        isDarkMode && styles.cardDark,
-      ]}
+      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
       onPress={onPress}
       activeOpacity={0.8}
     >
@@ -147,7 +138,6 @@ export default function LyricsPreviewCard({
             <LyricLine
               text={line.text}
               variant={getVariant(index)}
-              isDarkMode={isDarkMode}
             />
           </View>
         ))}
@@ -162,11 +152,8 @@ const styles = StyleSheet.create({
     paddingVertical: CARD_PADDING_V,
     paddingHorizontal: 24,
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     overflow: 'hidden',
-  },
-  cardDark: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   scrollContent: {
     paddingVertical: 4,
@@ -176,20 +163,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginVertical: 6,
   },
-  activeLineDark: {
+  activeLine: {
     color: '#fff',
     fontWeight: '700',
   },
-  activeLineLight: {
-    color: '#000',
-    fontWeight: '700',
-  },
-  inactiveLineDark: {
-    color: '#999',
-    fontWeight: '500',
-  },
-  inactiveLineLight: {
-    color: '#666',
+  inactiveLine: {
+    color: 'rgba(255,255,255,0.6)',
     fontWeight: '500',
   },
 });

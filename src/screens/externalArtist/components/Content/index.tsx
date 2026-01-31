@@ -3,6 +3,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import type { ExternalArtist } from '@/types'
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
+import ListSeparator from '@/components/ListSeparator'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -33,6 +34,7 @@ export default function ExternalArtistContent({ artist }: Props) {
           }
         />
       )}
+      ItemSeparatorComponent={ListSeparator}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: 140,

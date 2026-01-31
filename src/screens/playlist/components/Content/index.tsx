@@ -3,6 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 
 import { Playlist, Song } from '@/types';
 import SongRow from '@/components/rows/SongRow';
+import ListSeparator from '@/components/ListSeparator';
 
 import Header from '../Header';
 
@@ -33,6 +34,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
       renderItem={renderItem}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
+      ItemSeparatorComponent={ListSeparator}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
     />

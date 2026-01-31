@@ -4,6 +4,7 @@ import { FlashList } from '@shopify/flash-list';
 import { ExternalAlbum, ExternalSong } from '@/types';
 import ExternalAlbumHeader from '../Header';
 import ExternalSongRow from '@/components/rows/ExternalSongRow';
+import ListSeparator from '@/components/ListSeparator';
 
 type Props = {
   album: ExternalAlbum;
@@ -29,6 +30,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       renderItem={renderItem}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
+      ItemSeparatorComponent={ListSeparator}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
     />

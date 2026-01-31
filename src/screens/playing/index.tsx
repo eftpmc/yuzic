@@ -244,7 +244,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                   null
                                 }
                                 contentWidth={contentWidth}
-                                isDarkMode={isDarkMode}
                                 onPress={artistId ? navigateToArtist : undefined}
                             />
 
@@ -253,7 +252,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     lyrics={lyrics}
                                     position={progress.position}
                                     contentWidth={contentWidth}
-                                    isDarkMode={isDarkMode}
                                     onPress={openLyricsSheet}
                                 />
                             )}

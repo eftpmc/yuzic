@@ -1,6 +1,10 @@
 import { AlbumBase } from '@/types/Album';
 import { ArtistBase } from '@/types/Artist';
 
+const headers = (token: string) => ({
+  'X-Emby-Token': token,
+});
+
 export async function search(
   serverUrl: string,
   token: string,
@@ -10,22 +14,32 @@ export async function search(
     return { albums: [], artists: [] };
   }
 
-  const url =
-    `${serverUrl}/Items` +
-    `?SearchTerm=${encodeURIComponent(query)}` +
-    `&IncludeItemTypes=MusicAlbum` +
-    `&Recursive=true`;
+  const [albumsRes, artistsRes] = await Promise.all([
+    fetch(
+      `${serverUrl}/Items` +
+        `?SearchTerm=${encodeURIComponent(query)}` +
+        `&IncludeItemTypes=MusicAlbum` +
+        `&Recursive=true`,
+      { headers: headers(token) }
+    ),
+    fetch(
+      `${serverUrl}/Items` +
+        `?SearchTerm=${encodeURIComponent(query)}` +
+        `&IncludeItemTypes=MusicArtist` +
+        `&Recursive=true`,
+      { headers: headers(token) }
+    ),
+  ]);
 
-  const res = await fetch(url, {
-    headers: {
-      'X-Emby-Token': token,
-    },
-  });
+  const [albumsData, artistsData] = await Promise.all([
+    albumsRes.json(),
+    artistsRes.json(),
+  ]);
 
-  const data = await res.json();
-  const items = data.Items ?? [];
+  const albumItems = albumsData.Items ?? [];
+  const artistItems = artistsData.Items ?? [];
 
-  const albums: AlbumBase[] = items.map((item: any) => ({
+  const albums: AlbumBase[] = albumItems.map((item: any) => ({
     id: item.Id,
     title: item.Name,
     subtext: item.Artists?.[0] ?? '',
@@ -46,8 +60,14 @@ export async function search(
     genres: item.Genres ?? [],
   }));
 
-  return {
-    albums,
-    artists: [],
-  };
+  const artists: ArtistBase[] = artistItems.map((item: any) => ({
+    id: item.Id,
+    name: item.Name ?? 'Unknown Artist',
+    subtext: 'Artist',
+    cover: item.Id
+      ? { kind: 'jellyfin' as const, itemId: item.Id }
+      : { kind: 'none' as const },
+  }));
+
+  return { albums, artists };
 }
