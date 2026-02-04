@@ -32,8 +32,6 @@ const PlaylistScreen: React.FC = () => {
     );
   }
 
-  track("playlist screen", { title: playlist.title });
-
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
       <PlaylistContent playlist={playlist} />

@@ -21,7 +21,6 @@ import { AntDesign } from '@expo/vector-icons';
 import { MenuView } from '@react-native-menu/menu';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { Server } from '@/types';
 
 export default function Servers() {
