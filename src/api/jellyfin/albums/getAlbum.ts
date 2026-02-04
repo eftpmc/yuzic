@@ -1,29 +1,16 @@
 import { Album, ArtistBase, CoverSource } from "@/types";
+import type { JellyfinClient } from "../client";
 import { getAlbumSongs } from "./getAlbumSongs";
 
 export type GetAlbumResult = Album | null;
 
-async function fetchGetAlbum(
-  serverUrl: string,
-  token: string,
-  albumId: string
-) {
-  const url =
-    `${serverUrl}/Items` +
+async function fetchGetAlbum(client: JellyfinClient, albumId: string) {
+  const path =
+    `/Items` +
     `?Ids=${encodeURIComponent(albumId)}` +
     `&IncludeItemTypes=MusicAlbum` +
     `&Fields=Genres,ArtistItems,PrimaryImageTag,DateCreated,ProviderIds`;
-
-  const res = await fetch(url, {
-    headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
-    }
-  });
-
-  if (!res.ok) throw new Error(`Jellyfin getAlbum failed: ${res.status}`);
-  return res.json();
+  return client.request<any>(path);
 }
 
 function normalizeAlbum(raw: any): Album | null {
@@ -67,15 +54,14 @@ function normalizeAlbum(raw: any): Album | null {
 }
 
 export async function getAlbum(
-  serverUrl: string,
-  token: string,
+  client: JellyfinClient,
   albumId: string
 ): Promise<GetAlbumResult> {
-  const raw = await fetchGetAlbum(serverUrl, token, albumId);
+  const raw = await fetchGetAlbum(client, albumId);
   const base = normalizeAlbum(raw);
   if (!base) return null;
 
-  const songs = await getAlbumSongs(serverUrl, token, base);
+  const songs = await getAlbumSongs(client, base);
 
   return {
     ...base,

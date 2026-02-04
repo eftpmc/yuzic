@@ -1,4 +1,4 @@
-import { createLidarrClient } from '../client';
+import { createLidarrClient, type LidarrClient } from '../client';
 import { LidarrConfig } from '@/types';
 
 export type LidarrArtistLookupResult = {
@@ -29,30 +29,25 @@ export type EnsureArtistOptions = {
 };
 
 export async function lookupArtist(
-  config: LidarrConfig,
+  client: LidarrClient,
   term: string
 ): Promise<LidarrArtistLookupResult[]> {
-  const { request } = createLidarrClient(config);
-
   if (!term?.trim()) return [];
-
-  return request<LidarrArtistLookupResult[]>(
+  return client.request<LidarrArtistLookupResult[]>(
     `/artist/lookup?term=${encodeURIComponent(term)}`
   );
 }
 
-export async function getArtists(config: LidarrConfig): Promise<LidarrArtist[]> {
-  const { request } = createLidarrClient(config);
-  return request<LidarrArtist[]>('/artist');
+export async function getArtists(client: LidarrClient): Promise<LidarrArtist[]> {
+  return client.request<LidarrArtist[]>('/artist');
 }
 
-export async function getRootFolders(config: LidarrConfig): Promise<{ path: string }[]> {
-  const { request } = createLidarrClient(config);
-  return request<{ path: string }[]>('/rootfolder');
+export async function getRootFolders(client: LidarrClient): Promise<{ path: string }[]> {
+  return client.request<{ path: string }[]>('/rootfolder');
 }
 
 export async function ensureArtist(
-  config: LidarrConfig,
+  client: LidarrClient,
   artist: LidarrArtistLookupResult,
   opts: EnsureArtistOptions = {}
 ): Promise<{ success: true; artistId: number; created: boolean } | { success: false; message: string }> {
@@ -61,14 +56,14 @@ export async function ensureArtist(
       return { success: false, message: 'Invalid artist: missing foreignArtistId' };
     }
 
-    const existing = await getArtists(config);
+    const existing = await getArtists(client);
     const found = existing.find(a => a.foreignArtistId === artist.foreignArtistId);
 
     if (found?.id) {
       return { success: true, artistId: found.id, created: false };
     }
 
-    const rootFolders = await getRootFolders(config);
+    const rootFolders = await getRootFolders(client);
     if (!rootFolders || rootFolders.length === 0) {
       return { success: false, message: 'No Lidarr root folders configured' };
     }
@@ -76,9 +71,6 @@ export async function ensureArtist(
     const rootFolderIndex = opts.rootFolderIndex ?? 0;
     const rootFolderPath = rootFolders[Math.min(rootFolderIndex, rootFolders.length - 1)].path;
 
-    // NOTE:
-    // qualityProfileId / metadataProfileId are installation-specific.
-    // We'll default to 1 like your original code, but you may later fetch profiles.
     const qualityProfileId = opts.qualityProfileId ?? 1;
     const metadataProfileId = opts.metadataProfileId ?? 1;
 
@@ -101,8 +93,7 @@ export async function ensureArtist(
       },
     };
 
-    const { request } = createLidarrClient(config);
-    const created = await request<any>('/artist', {
+    const created = await client.request<any>('/artist', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -118,13 +109,11 @@ export async function ensureArtist(
 }
 
 export async function deleteArtist(
-  config: LidarrConfig,
+  client: LidarrClient,
   artistId: number
 ): Promise<{ success: true } | { success: false; message: string }> {
   try {
-    const { request } = createLidarrClient(config);
-    // Lidarr delete endpoint: /artist/{id}
-    await request(`/artist/${artistId}`, { method: 'DELETE' });
+    await client.request(`/artist/${artistId}`, { method: 'DELETE' });
     return { success: true };
   } catch (e: any) {
     return { success: false, message: e?.message ?? 'Failed to delete artist' };

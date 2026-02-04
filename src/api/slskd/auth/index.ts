@@ -1,4 +1,4 @@
-import { createSlskdClient, SlskdConfig } from '../client';
+import { createSlskdClient, type SlskdConfig } from '../client';
 
 export async function testConnection(config: SlskdConfig): Promise<boolean> {
   const client = createSlskdClient(config);

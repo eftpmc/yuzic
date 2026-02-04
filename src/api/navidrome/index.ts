@@ -11,11 +11,12 @@ import {
   LyricsApi,
   SearchApi
 } from "../types";
-import { FAVORITES_ID } from '@/constants/favorites';
-import { buildFavoritesPlaylist } from '@/utils/builders/buildFavoritesPlaylist';
+import { FAVORITES_ID } from "@/constants/favorites";
+import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
 
 import { Song, Server } from "@/types";
 
+import { createNavidromeClient } from "./client";
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
 import { testServerUrl } from "./auth/testServerUrl";
@@ -44,26 +45,27 @@ import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 import { getSong } from "./songs/getSong";
 import { getSimilarSongs } from "./similar/getSimilarSongs";
 
-import { search as searchNavidrome } from './search/search';
-
+import { search as searchNavidrome } from "./search/search";
 
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const { serverUrl, username, auth: providerAuth } = server;
   const password = providerAuth?.password as string;
+  const client = createNavidromeClient({ serverUrl, username, password });
 
   const auth: AuthApi = {
-    connect: (serverUrl, username, password) => connect(serverUrl, username, password),
-    ping: () => ping(serverUrl, username, password),
+    connect: (serverUrl, username, password) =>
+      connect(serverUrl, username, password),
+    ping: () => ping(client),
     testUrl: (url) => testServerUrl(url),
-    startScan: () => startScan(serverUrl, username, password),
-    disconnect: () => { },
+    startScan: () => startScan(client),
+    disconnect: () => {},
   };
 
   const albums: AlbumsApi = {
     list: async () => {
       const [baseAlbums, starred] = await Promise.all([
-        getAlbumList(serverUrl, username, password),
-        getStarredItems(serverUrl, username, password),
+        getAlbumList(client),
+        getStarredItems(client),
       ]);
       const baseIds = new Set(baseAlbums.map((a) => a.id));
       const albumIdsFromStarred = [
@@ -74,7 +76,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
         ),
       ].filter((id) => !baseIds.has(id));
       const extraAlbums = await Promise.all(
-        albumIdsFromStarred.map((id) => getAlbum(serverUrl, username, password, id))
+        albumIdsFromStarred.map((id) => getAlbum(client, id))
       );
       const added = extraAlbums.filter(
         (a): a is NonNullable<typeof a> => a !== null
@@ -83,130 +85,99 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     },
 
     get: async (id: string) => {
-      const full = await getAlbum(serverUrl, username, password, id);
+      const full = await getAlbum(client, id);
       if (!full) throw new Error("Album not found");
       return full;
-    }
+    },
   };
 
   const artists: ArtistsApi = {
-    list: async () => {
-      return getArtists(serverUrl, username, password);
-    },
-
+    list: async () => getArtists(client),
     get: async (id: string) => {
-      const artist = await getArtist(serverUrl, username, password, id);
+      const artist = await getArtist(client, id);
       if (!artist) throw new Error("Artist not found");
       return artist;
     },
   };
 
   const genres: GenresApi = {
-    list: async () => getGenres(serverUrl, username, password),
+    list: async () => getGenres(client),
   };
 
   const playlists: PlaylistsApi = {
     list: async () => {
       const [playlists, starred] = await Promise.all([
-        getPlaylists(serverUrl, username, password),
-        getStarredItems(serverUrl, username, password),
+        getPlaylists(client),
+        getStarredItems(client),
       ]);
-
       const favorites = buildFavoritesPlaylist(starred.songs ?? []);
       return [favorites, ...playlists];
     },
 
     get: async (id: string) => {
       if (id === FAVORITES_ID) {
-        const starred = await getStarredItems(serverUrl, username, password);
+        const starred = await getStarredItems(client);
         return buildFavoritesPlaylist(starred.songs ?? []);
       }
-
-      const playlist = await getPlaylist(serverUrl, username, password, id);
+      const playlist = await getPlaylist(client, id);
       if (!playlist) throw new Error("Playlist not found");
       return playlist;
     },
 
-
     create: async (name: string) => {
-      const res = await createPlaylist(serverUrl, username, password, name);
+      const res = await createPlaylist(client, name);
       if (!res.id) throw new Error("Failed to create playlist");
       return res.id;
     },
 
     addSong: async (playlistId, songId) => {
       if (playlistId === FAVORITES_ID) {
-        await star(serverUrl, username, password, songId);
+        await star(client, songId);
         return { success: true };
       }
-      return addSongToPlaylist(serverUrl, username, password, playlistId, songId);
+      return addSongToPlaylist(client, playlistId, songId);
     },
 
     removeSong: async (playlistId, songId) => {
       if (playlistId === FAVORITES_ID) {
-        await unstar(serverUrl, username, password, songId);
+        await unstar(client, songId);
         return { success: true };
       }
-
-      const playlist = await getPlaylist(serverUrl, username, password, playlistId);
+      const playlist = await getPlaylist(client, playlistId);
       if (!playlist) throw new Error("Playlist not found");
-
       const index = playlist.songs.findIndex((s: Song) => s.id === songId);
       if (index === -1) throw new Error("Song not found in playlist");
-
-      return removeSongFromPlaylist(
-        serverUrl,
-        username,
-        password,
-        playlistId,
-        index.toString()
-      );
+      return removeSongFromPlaylist(client, playlistId, index.toString());
     },
 
     delete: async (id: string) => {
       if (id === FAVORITES_ID) {
         throw new Error("Cannot delete Favorites playlist");
       }
-      await deletePlaylist(serverUrl, username, password, id);
+      await deletePlaylist(client, id);
     },
   };
 
   const starred: StarredApi = {
-    list: async () => getStarredItems(serverUrl, username, password),
-
-    add: async (id) => {
-      await star(serverUrl, username, password, id);
-    },
-
-    remove: async (id) => {
-      await unstar(serverUrl, username, password, id);
-    },
+    list: async () => getStarredItems(client),
+    add: async (id) => { await star(client, id); },
+    remove: async (id) => { await unstar(client, id); },
   };
 
   const songs: SongsApi = {
-    get: async (id: string) => getSong(serverUrl, username, password, id),
+    get: async (id: string) => getSong(client, id),
   };
 
   const similar: SimilarApi = {
-    getSimilarSongs: async (songId: string) =>
-      getSimilarSongs(serverUrl, username, password, songId),
+    getSimilarSongs: async (songId: string) => getSimilarSongs(client, songId),
   };
 
   const lyrics: LyricsApi = {
-    getBySongId: async (songId) => {
-      return getLyricsBySongId(serverUrl, username, password, songId);
-    },
+    getBySongId: async (songId) => getLyricsBySongId(client, songId),
   };
 
   const search = {
-    search: async (query: string) => {
-      return searchNavidrome(
-        serverUrl,
-        username,
-        password,
-        query
-      );
-    },
+    search: async (query: string) => searchNavidrome(client, query),
   };
 
   return {

@@ -1,37 +1,18 @@
 import { CoverSource, Song } from "@/types";
-import { buildJellyfinStreamUrl } from "@/utils/builders/buildStreamUrls";
+import type { JellyfinClient } from "../client";
 import { normalizeGenres } from "../utils/normalizeGenres";
 
 export type GetPlaylistItemsResult = Song[];
 
 async function fetchGetPlaylistItems(
-  serverUrl: string,
-  playlistId: string,
-  userId: string,
-  token: string
+  client: JellyfinClient,
+  playlistId: string
 ) {
-  const url =
-    `${serverUrl}/Playlists/${playlistId}/Items` +
-    `?userId=${userId}`;
-
-  const res = await fetch(url, {
-    headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`,
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!res.ok) throw new Error(`Jellyfin getPlaylistItems failed: ${res.status}`);
-  return res.json();
+  const path = `/Playlists/${playlistId}/Items?userId=${client.userId}`;
+  return client.request<any>(path);
 }
 
-function normalizePlaylistSongEntry(
-  s: any,
-  serverUrl: string,
-  token: string
-): Song {
+function normalizePlaylistSongEntry(s: any, client: JellyfinClient): Song {
   const ticks =
     s.RunTimeTicks ??
     s.MediaSources?.[0]?.RunTimeTicks ??
@@ -51,7 +32,7 @@ function normalizePlaylistSongEntry(
     artistId: s.ArtistItems?.[0]?.Id ?? "",
     cover,
     duration: String(Math.round(Number(ticks) / 10_000_000)),
-    streamUrl: buildJellyfinStreamUrl(serverUrl, token, s.Id),
+    streamUrl: client.buildStreamUrl(s.Id),
     albumId: s.AlbumId ?? "",
     bitrate: (audioStream?.BitRate ?? ms?.Bitrate) ?? undefined,
     sampleRate: audioStream?.SampleRate ?? undefined,
@@ -66,25 +47,21 @@ function normalizePlaylistSongEntry(
 }
 
 export async function getPlaylistItems(
-  serverUrl: string,
-  playlistId: string,
-  userId: string,
-  token: string
+  client: JellyfinClient,
+  playlistId: string
 ): Promise<GetPlaylistItemsResult> {
-  const raw = await fetchGetPlaylistItems(serverUrl, playlistId, userId, token);
+  const raw = await fetchGetPlaylistItems(client, playlistId);
   const items = raw?.Items ?? [];
-  return items.map((s: any) => normalizePlaylistSongEntry(s, serverUrl, token));
+  return items.map((s: any) => normalizePlaylistSongEntry(s, client));
 }
 
 /** Resolve song ID to Jellyfin PlaylistItemId (required for remove). */
 export async function getPlaylistEntryIdForSong(
-  serverUrl: string,
+  client: JellyfinClient,
   playlistId: string,
-  userId: string,
-  token: string,
   songId: string
 ): Promise<string | null> {
-  const raw = await fetchGetPlaylistItems(serverUrl, playlistId, userId, token);
+  const raw = await fetchGetPlaylistItems(client, playlistId);
   const items = raw?.Items ?? [];
   const item = items.find((s: any) => s.Id === songId);
   return item?.PlaylistItemId ?? null;

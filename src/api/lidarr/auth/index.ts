@@ -1,5 +1,5 @@
 import { createLidarrClient } from '../client';
-import { LidarrConfig } from '@/types';
+import type { LidarrConfig } from '@/types';
 
 export async function testConnection(config: LidarrConfig) {
   const client = createLidarrClient(config);

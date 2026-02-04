@@ -1,9 +1,6 @@
 import { AlbumBase } from '@/types/Album';
 import { ArtistBase } from '@/types/Artist';
-import { CoverSource } from '@/types/Cover';
-
-const API_VERSION = '1.16.0';
-const CLIENT_NAME = 'Yuzic';
+import type { NavidromeClient } from '../client';
 
 export type NavidromeSearchResult = {
   albums: AlbumBase[];
@@ -11,26 +8,14 @@ export type NavidromeSearchResult = {
 };
 
 export async function search(
-  serverUrl: string,
-  username: string,
-  password: string,
+  client: NavidromeClient,
   query: string
 ): Promise<NavidromeSearchResult> {
   if (!query.trim()) {
     return { albums: [], artists: [] };
   }
 
-  const url =
-    `${serverUrl}/rest/search3.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&query=${encodeURIComponent(query)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json`;
-
-  const res = await fetch(url);
-  const data = await res.json();
+  const data = await client.request<any>("search3.view", { query });
 
   const r = data['subsonic-response']?.searchResult3;
   if (!r) {
@@ -45,15 +30,13 @@ export async function search(
       id: a.artistId,
       name: a.artist,
       subtext: 'Artist',
-      cover: {
-        kind: 'navidrome-artist',
-        id: a.artistId,
-      },
+      cover: a.artistId
+        ? { kind: 'navidrome' as const, coverArtId: a.artistId }
+        : { kind: 'none' as const },
     },
-    cover: {
-      kind: 'navidrome',
-      coverArtId: a.coverArt,
-    },
+    cover: a.coverArt
+      ? { kind: "navidrome" as const, coverArtId: a.coverArt }
+      : { kind: "none" as const },
     year: a.year ?? 0,
     genres: a.genre ? [a.genre] : [],
     created: a.created ? new Date(a.created) : new Date(0),
@@ -62,11 +45,10 @@ export async function search(
   const artists: ArtistBase[] = (r.artist ?? []).map((a: any) => ({
     id: a.id,
     name: a.name,
-    subtext: 'Artist',
-    cover: {
-      kind: 'navidrome',
-      coverArtId: a.coverArt,
-    },
+    subtext: "Artist",
+    cover: a.coverArt
+      ? { kind: "navidrome" as const, coverArtId: a.coverArt }
+      : { kind: "none" as const },
   }));
 
   return { albums, artists };

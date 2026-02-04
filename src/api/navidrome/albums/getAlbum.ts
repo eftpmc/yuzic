@@ -1,37 +1,21 @@
-import { Album, ArtistBase, CoverSource, Song } from "@/types";
+import { Album, CoverSource, Song } from "@/types";
+import type { NavidromeClient } from "../client";
 import { getArtist } from "../artists/getArtist";
 import { getAlbumInfo } from "./getAlbumInfo";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
 
 export type GetAlbumResult = Album | null;
 
 export async function getAlbum(
-  serverUrl: string,
-  username: string,
-  password: string,
+  client: NavidromeClient,
   albumId: string
 ): Promise<GetAlbumResult> {
-  const url =
-    `${serverUrl}/rest/getAlbum.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json` +
-    `&id=${albumId}`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Navidrome getAlbum failed: ${res.status}`);
-
-  const raw = await res.json();
+  const raw = await client.request<any>("getAlbum.view", { id: albumId });
   const album = raw?.["subsonic-response"]?.album;
   if (!album) return null;
 
   const [artist, albumInfo] = await Promise.all([
-    getArtist(serverUrl, username, password, album.artistId),
-    getAlbumInfo(serverUrl, username, password, albumId),
+    getArtist(client, album.artistId),
+    getAlbumInfo(client, albumId),
   ]);
   if (!artist) return null;
 
@@ -47,10 +31,7 @@ export async function getAlbum(
     duration: s.duration,
     cover,
     albumId: album.id,
-    streamUrl:
-      `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
-        username
-      )}&p=${encodeURIComponent(password)}&v=${API_VERSION}&c=${CLIENT_NAME}`,
+    streamUrl: client.buildStreamUrl(s.id),
     filePath: s.path ?? undefined,
     bitrate: s.bitRate ?? undefined,
     sampleRate: s.samplingRate ?? undefined,

@@ -21,7 +21,6 @@ import { AntDesign } from '@expo/vector-icons';
 import { MenuView } from '@react-native-menu/menu';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
-import { track } from '@/utils/analytics/amplitude';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { Server } from '@/types';
 
@@ -35,7 +34,6 @@ export default function Servers() {
     );
 
     const handleSelectServer = (id: string) => {
-        track("selected server")
         dispatch(setActiveServer(id));
         router.replace('(home)');
     };

@@ -1,12 +1,9 @@
 import { AlbumBase, ArtistBase, CoverSource } from "@/types";
+import type { JellyfinClient } from "../client";
 
 export type GetAlbumsResult = AlbumBase[];
 
-async function normalizeAlbum(
-  a: any,
-  serverUrl: string,
-  token: string
-): Promise<AlbumBase | null> {
+function normalizeAlbum(a: any): AlbumBase | null {
   try {
     const albumId = a.Id;
     if (!albumId) return null;
@@ -47,9 +44,9 @@ async function normalizeAlbum(
   }
 }
 
+
 export async function getAlbums(
-  serverUrl: string,
-  token: string,
+  client: JellyfinClient,
   artistId?: string
 ): Promise<GetAlbumsResult> {
   try {
@@ -59,26 +56,14 @@ export async function getAlbums(
       `&SortBy=SortName` +
       `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds`;
 
-    const url =
-      `${serverUrl}/Items?${baseParams}` +
+    const path =
+      `/Items?${baseParams}` +
       (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "");
 
-    const res = await fetch(url, {
-      headers: {
-        "X-Emby-Token": token,
-        "X-Emby-Authorization":
-          `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
-      }
-    });
-
-    if (!res.ok) throw new Error(`Jellyfin getAlbums failed: ${res.status}`);
-
-    const raw = await res.json();
+    const raw = await client.request(path);
     const items = raw?.Items ?? [];
 
-    const albums = await Promise.all(
-      items.map((a: any) => normalizeAlbum(a, serverUrl, token))
-    );
+    const albums = items.map((a: any) => normalizeAlbum(a));
 
     return albums.filter((a): a is AlbumBase => a !== null);
   } catch (error) {

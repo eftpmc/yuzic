@@ -20,7 +20,6 @@ import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
 import PlaylistRow from '@/components/rows/PlaylistRow';
 import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
-import { track } from '@/utils/analytics/amplitude';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 

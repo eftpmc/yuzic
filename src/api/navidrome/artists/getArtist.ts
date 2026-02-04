@@ -1,30 +1,14 @@
 import { AlbumBase, Artist, ArtistBase, CoverSource } from "@/types";
+import type { NavidromeClient } from "../client";
 import { getAlbumInfo } from "../albums/getAlbumInfo";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
 
 export type GetArtistResult = Artist | null;
 
 export async function getArtist(
-  serverUrl: string,
-  username: string,
-  password: string,
+  client: NavidromeClient,
   artistId: string
 ): Promise<GetArtistResult> {
-  const url =
-    `${serverUrl}/rest/getArtist.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json` +
-    `&id=${artistId}`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Navidrome getArtist failed: ${res.status}`);
-
-  const raw = await res.json();
+  const raw = await client.request<any>("getArtist.view", { id: artistId });
   const artist = raw?.["subsonic-response"]?.artist;
   if (!artist) return null;
 
@@ -36,13 +20,11 @@ export async function getArtist(
     id: artist.id,
     cover: artistCover,
     name: artist.name,
-    subtext: "Artist"
+    subtext: "Artist",
   };
 
   const albumInfos = await Promise.all(
-    artist.album.map((a: { id: string }) =>
-      getAlbumInfo(serverUrl, username, password, a.id)
-    )
+    artist.album.map((a: { id: string }) => getAlbumInfo(client, a.id))
   );
 
   const albums: AlbumBase[] = artist.album.map((album: any, i: number) => {

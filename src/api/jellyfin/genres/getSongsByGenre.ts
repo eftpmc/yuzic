@@ -1,69 +1,28 @@
 import { CoverSource, Song } from '@/types'
-import { buildJellyfinStreamUrl } from '@/utils/builders/buildStreamUrls'
+import type { JellyfinClient } from '../client'
+import { normalizeGenres } from '../utils/normalizeGenres'
 
 export type GetSongsByGenreResult = Song[]
 
-async function fetchAlbumsByGenre(
-  serverUrl: string,
-  token: string,
-  genre: string
-) {
-  const url =
-    `${serverUrl}/Items` +
+async function fetchAlbumsByGenre(client: JellyfinClient, genre: string) {
+  const path =
+    `/Items` +
     `?IncludeItemTypes=MusicAlbum` +
     `&Genres=${encodeURIComponent(genre)}` +
     `&Recursive=true`
-
-  const res = await fetch(url, {
-    headers: {
-      'X-Emby-Token': token,
-      'X-Emby-Authorization':
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`,
-    },
-  })
-
-  if (!res.ok) {
-    throw new Error(
-      `Jellyfin fetchAlbumsByGenre failed: ${res.status}`
-    )
-  }
-
-  return res.json()
+  return client.request<any>(path)
 }
 
-async function fetchSongsForAlbum(
-  serverUrl: string,
-  token: string,
-  albumId: string
-) {
-  const url =
-    `${serverUrl}/Items` +
+async function fetchSongsForAlbum(client: JellyfinClient, albumId: string) {
+  const path =
+    `/Items` +
     `?ParentId=${albumId}` +
     `&IncludeItemTypes=Audio` +
     `&Fields=MediaSources,RunTimeTicks,Genres,Album,AlbumArtist,Artists,UserData,PlayCount`
-
-  const res = await fetch(url, {
-    headers: {
-      'X-Emby-Token': token,
-      'X-Emby-Authorization':
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`,
-    },
-  })
-
-  if (!res.ok) {
-    throw new Error(
-      `Jellyfin fetchSongsForAlbum failed: ${res.status}`
-    )
-  }
-
-  return res.json()
+  return client.request<any>(path)
 }
 
-function normalizeGenreSongEntry(
-  s: any,
-  serverUrl: string,
-  token: string
-): Song {
+function normalizeGenreSongEntry(s: any, client: JellyfinClient): Song {
   const ticks =
     s.RunTimeTicks ??
     s.MediaSources?.[0]?.RunTimeTicks ??
@@ -85,11 +44,7 @@ function normalizeGenreSongEntry(
     duration: String(
       Math.round(Number(ticks) / 10_000_000)
     ),
-    streamUrl: buildJellyfinStreamUrl(
-      serverUrl,
-      token,
-      s.Id
-    ),
+    streamUrl: client.buildStreamUrl(s.Id),
     albumId: s.AlbumId ?? '',
     bitrate: (audioStream?.BitRate ?? ms?.Bitrate) ?? undefined,
     sampleRate: audioStream?.SampleRate ?? undefined,
@@ -104,30 +59,21 @@ function normalizeGenreSongEntry(
 }
 
 export async function getSongsByGenre(
-  serverUrl: string,
-  token: string,
+  client: JellyfinClient,
   genre: string
 ): Promise<GetSongsByGenreResult> {
-  const albumRes = await fetchAlbumsByGenre(
-    serverUrl,
-    token,
-    genre
-  )
-
+  const albumRes = await fetchAlbumsByGenre(client, genre)
   const albums = albumRes?.Items ?? []
   if (!albums.length) return []
 
   const songResults = await Promise.all(
     albums.map((album: any) =>
-      fetchSongsForAlbum(serverUrl, token, album.Id)
+      fetchSongsForAlbum(client, album.Id)
         .then(res => res?.Items ?? [])
         .catch(() => [])
     )
   )
 
   const songs = songResults.flat()
-
-  return songs.map(s =>
-    normalizeGenreSongEntry(s, serverUrl, token)
-  )
+  return songs.map(s => normalizeGenreSongEntry(s, client))
 }

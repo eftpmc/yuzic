@@ -1,17 +1,11 @@
+import type { JellyfinClient } from "../client";
+
 export async function deletePlaylist(
-  serverUrl: string,
-  token: string,
+  client: JellyfinClient,
   playlistId: string
 ): Promise<void> {
-  const res = await fetch(`${serverUrl}/Playlists/${playlistId}`, {
+  await client.request(`/Playlists/${playlistId}`, {
     method: "DELETE",
-    headers: {
-      "X-Emby-Token": token,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
   });
-
-  if (!res.ok) {
-    throw new Error(`Jellyfin deletePlaylist failed: ${res.status}`);
-  }
 }

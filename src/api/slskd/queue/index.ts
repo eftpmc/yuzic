@@ -1,4 +1,4 @@
-import { createSlskdClient, SlskdConfig } from '../client';
+import { createSlskdClient, type SlskdConfig } from '../client';
 
 export interface SlskdQueueRecord {
   id: string;
@@ -70,8 +70,8 @@ function groupDownloadsByDirectory(transfers: Transfer[]): SlskdQueueRecord[] {
 }
 
 export async function fetchQueue(config: SlskdConfig): Promise<SlskdQueueRecord[]> {
-  const { request } = createSlskdClient(config);
-  const data = await request<Transfer[]>('/transfers/downloads/');
+  const client = createSlskdClient(config);
+  const data = await client.request<Transfer[]>('/transfers/downloads/');
   return groupDownloadsByDirectory(Array.isArray(data) ? data : []);
 }
 

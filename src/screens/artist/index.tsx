@@ -10,7 +10,6 @@ import { useArtist } from '@/hooks/artists';
 
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
-import { track } from '@/utils/analytics/amplitude';
 import { useTheme } from '@/hooks/useTheme';
 
 const ArtistScreen: React.FC = () => {
@@ -35,8 +34,6 @@ const ArtistScreen: React.FC = () => {
       </SafeAreaView>
     );
   }
-
-  track("artist screen", { name: artist.name })
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>

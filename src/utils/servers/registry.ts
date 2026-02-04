@@ -1,19 +1,13 @@
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 
-import {
-  ping as pingNavidrome,
-} from '@/api/navidrome/auth/ping';
-import {
-  connect as connectNavidrome,
-} from '@/api/navidrome/auth/connect';
+import { createNavidromeClient } from '@/api/navidrome/client';
+import { ping as pingNavidrome } from '@/api/navidrome/auth/ping';
+import { connect as connectNavidrome } from '@/api/navidrome/auth/connect';
 
-import {
-  ping as pingJellyfin,
-} from '@/api/jellyfin/auth/ping';
-import {
-  connect as connectJellyfin,
-} from '@/api/jellyfin/auth/connect';
+import { createJellyfinClient } from '@/api/jellyfin/client';
+import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
+import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 
 import { ServerType } from '@/types';
 
@@ -67,10 +61,9 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     },
     ping: async (url, username, auth) => {
       const password = auth.password as string;
-
       if (!username || !password) return false;
-
-      return pingNavidrome(url, username, password);
+      const client = createNavidromeClient({ serverUrl: url, username, password });
+      return pingNavidrome(client);
     },
     connect: async (url, username, password) => {
       const result = await connectNavidrome(url, username, password);
@@ -116,10 +109,10 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     },
     ping: async (url, username, auth) => {
       const token = auth.token as string;
-
-      if (!token) return false;
-
-      return pingJellyfin(url, token);
+      const userId = auth.userId as string;
+      if (!token || !userId) return false;
+      const client = createJellyfinClient({ serverUrl: url, token, userId });
+      return pingJellyfin(client);
     },
     connect: async (url, username, password) => {
       const result = await connectJellyfin(url, username, password);

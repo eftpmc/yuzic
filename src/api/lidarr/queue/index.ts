@@ -1,5 +1,5 @@
 import { createLidarrClient } from '../client';
-import { LidarrConfig } from '@/types';
+import type { LidarrConfig } from '@/types';
 
 /** Raw queue record from Lidarr API. */
 type LidarrQueueRecordRaw = {
@@ -82,8 +82,8 @@ function groupByAlbum(records: LidarrQueueRecordRaw[]): LidarrQueueRecord[] {
 export async function fetchQueue(
   config: LidarrConfig
 ): Promise<LidarrQueueRecord[]> {
-  const { request } = createLidarrClient(config);
-  const data = await request<LidarrQueueResponse>('/queue');
+  const client = createLidarrClient(config);
+  const data = await client.request<LidarrQueueResponse>('/queue');
   const raw = data?.records ?? [];
   return groupByAlbum(raw);
 }

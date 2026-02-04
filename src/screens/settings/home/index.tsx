@@ -14,7 +14,6 @@ import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { AnalyticsToggle } from './components/AnalyticsToggle';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -133,10 +132,6 @@ export default function Settings() {
                     {renderLinkRow('Privacy Policy', 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
                     {renderLinkRow('Terms of Use', 'https://eftpmc.github.io/yuzic-web/tos/')}
-                </View>
-
-                <View style={{ marginTop: 32 }}>
-                    <AnalyticsToggle />
                 </View>
             </ScrollView>
         </SafeAreaView>

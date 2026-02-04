@@ -1,43 +1,22 @@
 import { Song } from "@/types";
-import { buildJellyfinStreamUrl } from "@/utils/builders/buildStreamUrls";
+import type { JellyfinClient } from "../client";
 import { normalizeGenres } from "../utils/normalizeGenres";
 
 export interface GetStarredItemsResult {
   songs: Song[];
 }
 
-async function fetchGetStarredSongs(
-  serverUrl: string,
-  userId: string,
-  token: string
-) {
-  const url =
-    `${serverUrl}/Users/${userId}/Items` +
+async function fetchGetStarredSongs(client: JellyfinClient) {
+  const path =
+    `/Users/${client.userId}/Items` +
     `?Recursive=true` +
     `&Filters=IsFavorite` +
     `&IncludeItemTypes=Audio` +
     `&Fields=Id,Name,Artists,AlbumId,RunTimeTicks,ImageTags,MediaSources,Genres,PremiereDate,DateCreated`;
-
-  const res = await fetch(url, {
-    headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
-    }
-  });
-
-  if (!res.ok) {
-    throw new Error(`Jellyfin getStarred failed: ${res.status}`);
-  }
-
-  return res.json();
+  return client.request<any>(path);
 }
 
-function normalizeStarred(
-  raw: any,
-  serverUrl: string,
-  token: string
-): GetStarredItemsResult {
+function normalizeStarred(raw: any, client: JellyfinClient): GetStarredItemsResult {
   const items = raw?.Items ?? [];
 
   const songs: Song[] = items.map((i: any) => {
@@ -53,7 +32,7 @@ function normalizeStarred(
         ? { kind: "jellyfin", itemId: i.Id }
         : { kind: "none" },
       duration: String(Math.floor((i.RunTimeTicks ?? 0) / 10_000_000)),
-      streamUrl: buildJellyfinStreamUrl(serverUrl, token, i.Id),
+      streamUrl: client.buildStreamUrl(i.Id),
       bitrate: (audioStream?.BitRate ?? ms?.Bitrate) ?? undefined,
       sampleRate: audioStream?.SampleRate ?? undefined,
       bitsPerSample: audioStream?.BitDepth ?? undefined,
@@ -70,13 +49,11 @@ function normalizeStarred(
 }
 
 export async function getStarredItems(
-  serverUrl: string,
-  userId: string,
-  token: string
+  client: JellyfinClient
 ): Promise<GetStarredItemsResult> {
   try {
-    const raw = await fetchGetStarredSongs(serverUrl, userId, token);
-    return normalizeStarred(raw, serverUrl, token);
+    const raw = await fetchGetStarredSongs(client);
+    return normalizeStarred(raw, client);
   } catch (error) {
     console.error("Failed to fetch Jellyfin starred items:", error);
     return { songs: [] };

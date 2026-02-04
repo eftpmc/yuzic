@@ -1,5 +1,7 @@
 import { LidarrConfig } from '@/types';
 
+export type LidarrClient = ReturnType<typeof createLidarrClient>;
+
 export function createLidarrClient(config: LidarrConfig) {
   const { serverUrl, apiKey } = config;
 
@@ -17,7 +19,7 @@ export function createLidarrClient(config: LidarrConfig) {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'X-Api-Key': apiKey, // ✅ THIS FIXES IT
+        'X-Api-Key': apiKey,
         ...(options.headers ?? {}),
       },
     });

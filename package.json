@@ -21,8 +21,6 @@
     "preset": "jest-expo"
   },
   "dependencies": {
-    "@amplitude/analytics-react-native": "^1.5.32",
-    "@amplitude/plugin-session-replay-react-native": "^0.4.5",
     "@backpackapp-io/react-native-toast": "^0.13.0",
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.2.8",

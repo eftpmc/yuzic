@@ -18,7 +18,6 @@ import { Alert } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { initAnalytics } from '@/utils/analytics/amplitude';
 import { useTheme } from '@/hooks/useTheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
@@ -122,7 +121,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      initAnalytics();
       SplashScreen.hideAsync();
     }
   }, [loaded]);

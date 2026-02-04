@@ -15,7 +15,6 @@ import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ServerType } from '@/types';
-import { track } from '@/utils/analytics/amplitude';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 
 export default function Credentials() {
@@ -84,7 +83,6 @@ export default function Credentials() {
                 })
             );
 
-            track('connected new server', { type });
             dispatch(setActiveServer(id));
             router.replace('/(home)');
         } catch (err) {

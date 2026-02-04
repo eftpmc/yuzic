@@ -7,7 +7,6 @@ import { usePlaylist } from '@/hooks/playlists';
 
 import PlaylistContent from './components/Content';
 import LoadingPlaylistContent from './components/Content/Loading';
-import { track } from '@/utils/analytics/amplitude';
 import { useTheme } from '@/hooks/useTheme';
 
 const PlaylistScreen: React.FC = () => {

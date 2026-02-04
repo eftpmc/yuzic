@@ -1,4 +1,4 @@
-import { createLidarrClient } from '../client';
+import { createLidarrClient, type LidarrClient } from '../client';
 import {
   lookupArtist,
   ensureArtist,
@@ -22,20 +22,16 @@ type AlbumSearchResult =
   | { success: true }
   | { success: false; message: string };
 
-async function getAllArtists(config: LidarrConfig) {
-  const { request } = createLidarrClient(config);
-  return request<any[]>('/artist');
+async function getAllArtists(client: LidarrClient) {
+  return client.request<any[]>('/artist');
 }
 
-async function getAlbumsByArtist(config: LidarrConfig, artistId: number) {
-  const { request } = createLidarrClient(config);
-  return request<LidarrAlbum[]>(`/album?artistId=${artistId}`);
+async function getAlbumsByArtist(client: LidarrClient, artistId: number) {
+  return client.request<LidarrAlbum[]>(`/album?artistId=${artistId}`);
 }
 
-async function triggerAlbumSearch(config: LidarrConfig, albumId: number) {
-  const { request } = createLidarrClient(config);
-
-  await request('/command', {
+async function triggerAlbumSearch(client: LidarrClient, albumId: number) {
+  await client.request('/command', {
     method: 'POST',
     body: JSON.stringify({
       name: 'AlbumSearch',
@@ -53,28 +49,29 @@ export async function downloadAlbum(
     return { success: false, message: 'Missing album or artist name' };
   }
 
+  const client = createLidarrClient(config);
   const normalizedAlbum = normalize(albumTitle);
   const normalizedArtist = normalize(artistName);
 
   try {
-    const localArtists = await getAllArtists(config);
+    const localArtists = await getAllArtists(client);
     const matchedArtist = localArtists.find(
       a => normalize(a.artistName) === normalizedArtist
     );
 
     if (matchedArtist) {
-      const albums = await getAlbumsByArtist(config, matchedArtist.id);
+      const albums = await getAlbumsByArtist(client, matchedArtist.id);
       const album = albums.find(
         a => normalize(a.title) === normalizedAlbum
       );
 
       if (album) {
-        await triggerAlbumSearch(config, album.id);
+        await triggerAlbumSearch(client, album.id);
         return { success: true };
       }
     }
 
-    const lookupResults = await lookupArtist(config, artistName);
+    const lookupResults = await lookupArtist(client, artistName);
     if (!lookupResults || lookupResults.length === 0) {
       return { success: false, message: 'Artist not found in lookup' };
     }
@@ -84,7 +81,7 @@ export async function downloadAlbum(
       .slice(0, 3);
 
     for (const candidate of candidates) {
-      const ensured = await ensureArtist(config, candidate, {
+      const ensured = await ensureArtist(client, candidate, {
         monitored: false,
         searchForMissingAlbums: true,
       });
@@ -94,7 +91,7 @@ export async function downloadAlbum(
       const artistId = ensured.artistId;
 
       const album = await waitForAlbum(
-        config,
+        client,
         artistId,
         normalizedAlbum,
         {
@@ -104,12 +101,12 @@ export async function downloadAlbum(
       );
 
       if (album) {
-        await triggerAlbumSearch(config, album.id);
+        await triggerAlbumSearch(client, album.id);
         return { success: true };
       }
 
       if (ensured.created) {
-        await deleteArtist(config, artistId);
+        await deleteArtist(client, artistId);
       }
     }
 
@@ -126,7 +123,7 @@ export async function downloadAlbum(
 }
 
 async function waitForAlbum(
-  config: LidarrConfig,
+  client: LidarrClient,
   artistId: number,
   normalizedAlbum: string,
   {
@@ -137,7 +134,7 @@ async function waitForAlbum(
   const started = Date.now();
 
   while (Date.now() - started < timeoutMs) {
-    const albums = await getAlbumsByArtist(config, artistId);
+    const albums = await getAlbumsByArtist(client, artistId);
 
     const album = albums.find(
       a => normalize(a.title) === normalizedAlbum

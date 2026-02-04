@@ -1,21 +1,15 @@
+import type { JellyfinClient } from "../client";
+
 export async function startScan(
-  serverUrl: string,
-  token: string
+  client: JellyfinClient
 ): Promise<{ success: boolean; message?: string }> {
   try {
-    const res = await fetch(`${serverUrl}/Library/Refresh`, {
-      method: "POST",
-      headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
-    }
-    });
-
-    return res.ok
-      ? { success: true }
-      : { success: false, message: "Failed to start library scan" };
-  } catch {
-    return { success: false, message: "Scan failed" };
+    await client.request("/Library/Refresh", { method: "POST" });
+    return { success: true };
+  } catch (e) {
+    return {
+      success: false,
+      message: (e as Error)?.message ?? "Scan failed",
+    };
   }
 }

@@ -1,6 +1,5 @@
 const BASE_URL = 'https://musicbrainz.org/ws/2';
 
-/** Shared for MusicBrainz and Wikidata; Wikidata requires a proper User-Agent per Wikimedia policy. */
 export const USER_AGENT = 'Yuzic/1.1.6 (eftpmc1@gmail.com)';
 
 export function createMusicBrainzClient() {

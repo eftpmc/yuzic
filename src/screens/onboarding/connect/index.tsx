@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
-import { track } from '@/utils/analytics/amplitude';
 import { useDispatch } from 'react-redux';
 import { ServerType } from '@/types';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
@@ -78,7 +77,6 @@ export default function Connect() {
                 })
             );
 
-            track('connected new server', { type: selectedType, demo: true });
             dispatch(setActiveServer(id));
             router.replace('/(home)');
         } catch {

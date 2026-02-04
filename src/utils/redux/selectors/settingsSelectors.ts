@@ -43,8 +43,3 @@ export const selectAudioQuality = (
   state: RootState
 ): AudioQuality =>
   state.settings.audioQuality;
-
-export const selectAnalyticsEnabled = (
-  state: RootState
-): boolean =>
-  state.settings.analyticsEnabled;
