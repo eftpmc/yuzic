@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 export type ContextMenuAction = {
   id: string;
@@ -36,6 +37,7 @@ const ContextMenuModal: React.FC<ContextMenuModalProps> = ({
   onClose,
   actions,
 }) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
 
   const opacity = useRef(new Animated.Value(0)).current;
@@ -162,7 +164,7 @@ const ContextMenuModal: React.FC<ContextMenuModalProps> = ({
                   isDarkMode && styles.menuTextDark,
                 ]}
               >
-                Cancel
+                {t('common.cancel')}
               </Text>
             </Pressable>
           </BlurView>

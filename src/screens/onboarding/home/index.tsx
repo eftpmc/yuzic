@@ -14,8 +14,10 @@ import Loader from '@/components/Loader';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
+    const { t } = useTranslation();
     const router = useRouter();
     const themeColor = useSelector(selectThemeColor);
     const dispatch = useDispatch();
@@ -69,7 +71,7 @@ export default function Home() {
                 />
                 <Text style={styles.appName}>Yuzic</Text>
                 <Text style={styles.subtext}>
-                    Your personal music library. Stream from your own server anywhere.
+                    {t('onboarding.home.subtitle')}
                 </Text>
             </View>
 
@@ -92,14 +94,13 @@ export default function Home() {
                                 isPressed && styles.buttonPressed,
                             ]}
                         >
-                            <Text style={styles.buttonText}>Get Started</Text>
+                            <Text style={styles.buttonText}>{t('onboarding.home.getStarted')}</Text>
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
 
                 <Text style={styles.termsText}>
-                    By continuing you confirm that you've read and accepted our Terms and
-                    Privacy Policy
+                    {t('onboarding.home.terms')}
                 </Text>
             </View>
         </SafeAreaView>

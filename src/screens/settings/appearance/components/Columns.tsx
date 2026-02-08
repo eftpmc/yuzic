@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Appearance } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectGridColumns, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setGridColumns } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 
 export const Columns: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const gridColumns = useSelector(selectGridColumns);
@@ -14,7 +16,7 @@ export const Columns: React.FC = () => {
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
       <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
-        Set how many columns are shown in grid view
+        {t('settings.appearance.columns.info')}
       </Text>
 
       <View style={styles.row}>
@@ -43,7 +45,7 @@ export const Columns: React.FC = () => {
                   fontWeight: active ? '600' : '400',
                 }}
               >
-                {cols} Columns
+                {t('settings.appearance.columns.count', { count: cols })}
               </Text>
             </TouchableOpacity>
           );

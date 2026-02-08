@@ -13,11 +13,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function Settings() {
+    const { t } = useTranslation();
     const router = useRouter();
     const activeServer = useSelector(selectActiveServer);
     const themeColor = useSelector(selectThemeColor);
@@ -47,7 +49,7 @@ export default function Settings() {
 
                 <View pointerEvents="none" style={styles.headerTitleWrapper}>
                     <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
-                        Settings
+                        {t('settings.title')}
                     </Text>
                 </View>
 
@@ -62,7 +64,7 @@ export default function Settings() {
                         </View>
                         <View>
                             <Text style={[styles.profileName, isDarkMode && styles.profileNameDark]}>
-                                {username || 'Unknown User'}
+                                {username || t('settings.profile.unknownUser')}
                             </Text>
                             <Text
                                 style={[
@@ -70,28 +72,27 @@ export default function Settings() {
                                     isDarkMode && styles.profileSubtextDark,
                                 ]}
                             >
-                                Connected to {type} at{' '}
-                                {serverUrl?.replace(/^https?:\/\//, '') || 'no server'}
+                                {t('settings.profile.connectedTo', { type, server: serverUrl?.replace(/^https?:\/\//, '') || t('settings.profile.noServer') })}
                             </Text>
                         </View>
                     </View>
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                    General
+                    {t('settings.sections.general')}
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    {renderRow('Server', 'drive', '/settings/serverView')}
+                    {renderRow(t('settings.rows.server'), 'drive', '/settings/serverView')}
                     {renderDivider()}
-                    {renderRow('Library', 'book', '/settings/libraryView')}
+                    {renderRow(t('settings.rows.library'), 'book', '/settings/libraryView')}
                     {renderDivider()}
-                    {renderRow('Player', 'controller-play', '/settings/playerView')}
+                    {renderRow(t('settings.rows.player'), 'controller-play', '/settings/playerView')}
                     {renderDivider()}
-                    {renderRow('Appearance', 'brush', '/settings/appearanceView')}
+                    {renderRow(t('settings.rows.appearance'), 'brush', '/settings/appearanceView')}
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                    Plugins
+                    {t('settings.sections.plugins')}
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
                     <TouchableOpacity
@@ -113,7 +114,7 @@ export default function Settings() {
                         onPress={() => router.push('/settings/listenbrainzView')}
                     >
                         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            ListenBrainz
+                            {t('settings.rows.listenBrainz')}
                         </Text>
                         <MaterialIcons
                             name="chevron-right"
@@ -124,14 +125,14 @@ export default function Settings() {
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                    About
+                    {t('settings.sections.about')}
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    {renderLinkRow('Github', 'https://github.com/eftpmc/yuzic')}
+                    {renderLinkRow(t('settings.rows.github'), 'https://github.com/eftpmc/yuzic')}
                     {renderDivider()}
-                    {renderLinkRow('Privacy Policy', 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
+                    {renderLinkRow(t('settings.rows.privacyPolicy'), 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
-                    {renderLinkRow('Terms of Use', 'https://eftpmc.github.io/yuzic-web/tos/')}
+                    {renderLinkRow(t('settings.rows.termsOfUse'), 'https://eftpmc.github.io/yuzic-web/tos/')}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -166,7 +167,7 @@ export default function Settings() {
                 style={styles.row}
                 onPress={async () => {
                     const supported = await Linking.canOpenURL(url);
-                    supported ? Linking.openURL(url) : Alert.alert(`Can't open ${url}`);
+                    supported ? Linking.openURL(url) : Alert.alert(t('settings.links.cantOpen', { url }));
                 }}
             >
                 <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>

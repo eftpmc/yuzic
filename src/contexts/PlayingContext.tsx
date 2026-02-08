@@ -27,6 +27,7 @@ import * as listenbrainz from '@/api/listenbrainz'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
+import { useTranslation } from 'react-i18next';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -109,6 +110,7 @@ export const usePlaying = () => {
 };
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const playbackState = usePlaybackState();
   const isPlaying = playbackState.state === State.Playing;
   const rawProgress = useProgress(250);
@@ -434,7 +436,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         songs,
       };
       await playSongInCollection(song, collection, false);
-      if (others.length > 0) toast.success('Playing similar music');
+      if (others.length > 0) toast.success(t('common.playingSimilar'));
     } catch {
       await playSong(song);
     }

@@ -1,14 +1,33 @@
 import { RootState } from '@/utils/redux/store';
 import { createSelector } from '@reduxjs/toolkit';
+import { PerServerListenBrainzState } from '@/utils/redux/slices/listenbrainzSlice';
 
-export const selectListenBrainzUsername = (s: RootState) =>
-  s.listenbrainz.username;
+const defaultEntry: PerServerListenBrainzState = {
+  username: '',
+  token: '',
+  isAuthenticated: false,
+};
 
-export const selectListenBrainzToken = (s: RootState) =>
-  s.listenbrainz.token;
+const selectListenBrainzForActiveServer = createSelector(
+  [(s: RootState) => s.listenbrainz.byServer, (s: RootState) => s.servers.activeServerId],
+  (byServer, activeServerId): PerServerListenBrainzState =>
+    (activeServerId && byServer[activeServerId]) ?? defaultEntry
+);
 
-export const selectListenBrainzAuthenticated = (s: RootState) =>
-  s.listenbrainz.isAuthenticated;
+export const selectListenBrainzUsername = createSelector(
+  [selectListenBrainzForActiveServer],
+  (entry) => entry.username
+);
+
+export const selectListenBrainzToken = createSelector(
+  [selectListenBrainzForActiveServer],
+  (entry) => entry.token
+);
+
+export const selectListenBrainzAuthenticated = createSelector(
+  [selectListenBrainzForActiveServer],
+  (entry) => entry.isAuthenticated
+);
 
 export const selectListenBrainzConfig = createSelector(
   [selectListenBrainzUsername, selectListenBrainzToken],

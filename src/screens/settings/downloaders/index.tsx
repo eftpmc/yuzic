@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectLidarrAuthenticated,
   selectSlskdAuthenticated,
@@ -27,18 +29,20 @@ const SLSKD_ICON = require('@assets/images/slskd.png');
 
 const DOWNLOADERS: {
   id: DownloaderType;
-  label: string;
+  labelKey: string;
   icon: number;
   route: string;
 }[] = [
-  { id: 'lidarr', label: 'Lidarr', icon: LIDARR_ICON, route: '/settings/lidarrView' },
-  { id: 'slskd', label: 'slskd', icon: SLSKD_ICON, route: '/settings/slskdView' },
+  { id: 'lidarr', labelKey: 'settings.downloaders.lidarr.title', icon: LIDARR_ICON, route: '/settings/lidarrView' },
+  { id: 'slskd', labelKey: 'settings.downloaders.slskd.title', icon: SLSKD_ICON, route: '/settings/slskdView' },
 ];
 
 const DownloadersView: React.FC = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
+  const activeServer = useSelector(selectActiveServer);
   const activeDownloader = useSelector(selectActiveDownloader);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
@@ -50,13 +54,15 @@ const DownloadersView: React.FC = () => {
   };
 
   const handleSelect = (id: DownloaderType, route: string) => {
-    dispatch(setActiveDownloader(id));
+    if (activeServer) {
+      dispatch(setActiveDownloader({ serverId: activeServer.id, value: id }));
+    }
     router.push(route as any);
   };
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
-      <Header title="Downloaders" />
+      <Header title={t('settings.downloaders.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {DOWNLOADERS.map((d) => {
@@ -83,10 +89,10 @@ const DownloadersView: React.FC = () => {
               />
               <View style={styles.rowContent}>
                 <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                  {d.label}
+                  {t(d.labelKey)}
                 </Text>
                 <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
-                  {isConnected ? 'Connected' : 'Not connected'}
+                  {isConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
                 </Text>
               </View>
               {isActive ? (

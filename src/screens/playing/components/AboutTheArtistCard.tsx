@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -24,10 +25,11 @@ type Props = {
 export default function AboutTheArtistCard({
   artistName,
   artistCover,
-  subtext = 'Artist',
+  subtext,
   contentWidth,
   onPress,
 }: Props) {
+  const { t } = useTranslation();
   const imageHeight = CARD_HEIGHT - TEXT_AREA_MIN_HEIGHT;
   const imageUri = artistCover
     ? buildCover(artistCover, 'detail')
@@ -52,7 +54,7 @@ export default function AboutTheArtistCard({
           style={styles.header}
           numberOfLines={1}
         >
-          Artist
+          {t('playing.aboutArtist.header')}
         </Text>
       </View>
 
@@ -67,7 +69,7 @@ export default function AboutTheArtistCard({
           style={styles.subtext}
           numberOfLines={1}
         >
-          {subtext}
+          {subtext ?? t('playing.aboutArtist.subtext')}
         </Text>
       </View>
     </View>

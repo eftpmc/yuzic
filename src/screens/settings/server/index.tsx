@@ -11,6 +11,7 @@ import {
     Easing,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -88,30 +89,30 @@ const ServerSettings: React.FC = () => {
                 Platform.OS === 'android' && { paddingTop: 24 },
             ]}
         >
-            <Header title="Server" />
+            <Header title={t('settings.server.title')} />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
                     <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-                        Server URL
+                        {t('settings.server.serverUrl')}
                     </Text>
                     <TextInput
                         numberOfLines={1}
                         value={serverUrl || ''}
                         editable={false}
-                        placeholder="Not Set"
+                        placeholder={t('settings.server.notSet')}
                         placeholderTextColor="#888"
                         style={[styles.input, isDarkMode && styles.inputDark]}
                     />
 
                     <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-                        Username
+                        {t('settings.server.username')}
                     </Text>
                     <TextInput
                         numberOfLines={1}
                         value={username || ''}
                         editable={false}
-                        placeholder="Not Set"
+                        placeholder={t('settings.server.notSet')}
                         placeholderTextColor="#888"
                         style={[
                             styles.inputNoMargin,
@@ -128,7 +129,7 @@ const ServerSettings: React.FC = () => {
                                 isDarkMode && styles.rowTextDark,
                             ]}
                         >
-                            Connectivity
+                            {t('settings.server.connectivity')}
                         </Text>
 
                         <View style={styles.iconSlot}>
@@ -171,17 +172,17 @@ const ServerSettings: React.FC = () => {
                             isDarkMode && styles.infoTextDark,
                         ]}
                     >
-                        Choose where search results come from
+                        {t('settings.server.searchScopeHelp')}
                     </Text>
 
                     <View style={styles.scopeRow}>
                         {[
-                            { key: 'client', label: 'On Device' },
-                            { key: 'client+external', label: 'Device + External' },
-                            { key: 'server', label: 'Server' },
+                            { key: 'client', label: t('settings.server.searchScope.client') },
+                            { key: 'client+external', label: t('settings.server.searchScope.clientExternal') },
+                            { key: 'server', label: t('settings.server.searchScope.server') },
                             {
                                 key: 'server+external',
-                                label: 'Server + External',
+                                label: t('settings.server.searchScope.serverExternal'),
                             },
                         ].map(option => {
                             const active = searchScope === option.key;

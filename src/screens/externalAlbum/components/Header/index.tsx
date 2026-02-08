@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -33,6 +34,7 @@ type Props = {
 };
 
 const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
@@ -64,9 +66,9 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           album.artist
         );
         if (result.success) {
-          toast.success('Album added to Lidarr!');
+          toast.success(t('externalAlbum.download.addedToLidarr'));
         } else {
-          toast.error(result.message ?? 'Download failed.');
+          toast.error(result.message ?? t('externalAlbum.download.failed'));
         }
         return;
       }
@@ -77,15 +79,15 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           album.artist
         );
         if (result.success) {
-          toast.success('Album added to slskd queue!');
+          toast.success(t('externalAlbum.download.addedToSlskd'));
         } else {
-          toast.error(result.message ?? 'Download failed.');
+          toast.error(result.message ?? t('externalAlbum.download.failed'));
         }
         return;
       }
-      toast.error('No active downloader connected.');
+      toast.error(t('externalAlbum.download.noDownloader'));
     } catch {
-      toast.error('Failed to start download.');
+      toast.error(t('externalAlbum.download.startFailed'));
     } finally {
       setDownloading(false);
     }
@@ -127,7 +129,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
 
             <View style={styles.subRow}>
               <Text style={styles.subtext(isDarkMode)}>
-                {songs.length} songs
+                {t('externalAlbum.header.songs', { count: songs.length })}
               </Text>
 
               <TouchableOpacity
@@ -148,7 +150,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
                     isDarkMode && styles.badgeTextDark,
                   ]}
                 >
-                  External metadata
+                  {t('externalAlbum.header.externalMetadata')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -193,7 +195,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
               isDarkMode && styles.sheetTitleDark,
             ]}
           >
-            About external albums
+            {t('externalAlbum.info.title')}
           </Text>
 
           <Text
@@ -202,8 +204,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
               isDarkMode && styles.sheetBodyDark,
             ]}
           >
-            This album’s information is provided by MusicBrainz. Track listings, durations, artwork, or
-            release details may be incomplete or differ from your local files.
+            {t('externalAlbum.info.body')}
           </Text>
         </BottomSheetView>
       </BottomSheetModal>

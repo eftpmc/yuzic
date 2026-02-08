@@ -11,31 +11,23 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 
-type SortOrder = 'title' | 'recent' | 'userplays' | 'year';
-
-interface SortBottomSheetProps {
-  sortOrder: SortOrder;
-  onSelect: (value: SortOrder) => void;
+interface LanguageBottomSheetProps {
+  selected: string;
+  onSelect: (code: string) => void;
 }
 
-const SortBottomSheet = forwardRef<
+const LanguageBottomSheet = forwardRef<
   BottomSheetModal,
-  SortBottomSheetProps
->(({ sortOrder, onSelect }, ref) => {
-  const { t } = useTranslation();
+  LanguageBottomSheetProps
+>(({ selected, onSelect }, ref) => {
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
 
-  const sortOptions = [
-    { value: 'title' as const, label: t('home.sort.alphabetical'), icon: 'text-outline' as const },
-    { value: 'year' as const, label: t('home.sort.releaseYear'), icon: 'calendar-outline' as const },
-    { value: 'userplays' as const, label: t('home.sort.mostPlayed'), icon: 'flame-outline' as const },
-    { value: 'recent' as const, label: t('home.sort.mostRecent'), icon: 'time-outline' as const },
-  ];
-
-  const snapPoints = useMemo(() => ['40%'], []);
+  const snapPoints = useMemo(() => ['35%'], []);
 
   return (
     <BottomSheetModal
@@ -56,15 +48,15 @@ const SortBottomSheet = forwardRef<
             isDarkMode && styles.sheetTitleDark,
           ]}
         >
-          {t('home.sortSheet.title')}
+          {t('settings.appearance.language.title')}
         </Text>
 
-        {sortOptions.map(option => {
-          const isSelected = sortOrder === option.value;
+        {AVAILABLE_LANGUAGES.map(lang => {
+          const isSelected = selected === lang.code;
 
           return (
             <TouchableOpacity
-              key={option.value}
+              key={lang.code}
               style={[
                 styles.pickerItem,
                 {
@@ -73,11 +65,11 @@ const SortBottomSheet = forwardRef<
                     : 'transparent',
                 },
               ]}
-              onPress={() => onSelect(option.value)}
+              onPress={() => onSelect(lang.code)}
             >
               <View style={styles.pickerLeft}>
                 <Ionicons
-                  name={option.icon}
+                  name="language-outline"
                   size={18}
                   color={
                     isSelected
@@ -95,7 +87,7 @@ const SortBottomSheet = forwardRef<
                     { fontWeight: isSelected ? '600' : '400' },
                   ]}
                 >
-                  {option.label}
+                  {lang.nativeName}
                 </Text>
               </View>
 
@@ -114,7 +106,7 @@ const SortBottomSheet = forwardRef<
   );
 });
 
-export default SortBottomSheet;
+export default LanguageBottomSheet;
 
 const styles = StyleSheet.create({
   sheetContainer: {

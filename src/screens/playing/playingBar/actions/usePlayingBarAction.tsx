@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { PlusCircle } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -22,6 +23,7 @@ export function usePlayingBarAction(
   id: PlayingBarAction,
   options?: UsePlayingBarActionOptions
 ): PlayingBarActionConfig | null {
+  const { t } = useTranslation();
   const { skipToNext, currentSong, playSongInCollection } = usePlaying();
   const { albums } = useAlbums();
   const api = useApi();
@@ -65,16 +67,16 @@ export function usePlayingBarAction(
             if (isFavorite) {
               await unstar.mutateAsync(currentSong.id);
               toast.success(
-                `${currentSong.title} removed from favorites.`
+                t('playing.actions.removedFromFavorites', { title: currentSong.title })
               );
             } else {
               await star.mutateAsync(currentSong.id);
               toast.success(
-                `${currentSong.title} added to favorites.`
+                t('playing.actions.addedToFavorites', { title: currentSong.title })
               );
             }
           } catch {
-            toast.error('Failed to update favorites.');
+            toast.error(t('playing.actions.updateFavoritesFailed'));
           }
         },
       };
@@ -101,9 +103,9 @@ export function usePlayingBarAction(
             if (!album.songs.length) return;
 
             playSongInCollection(album.songs[0], album, true);
-            toast.success(`Playing random album: ${album.title}`);
+            toast.success(t('playing.actions.randomAlbum', { title: album.title }));
           } catch {
-            toast.error('Failed to load album.');
+            toast.error(t('playing.actions.loadAlbumFailed'));
           }
         },
       };

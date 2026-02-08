@@ -20,6 +20,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   onDismiss?: () => void;
@@ -28,6 +29,7 @@ type Props = {
 const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
   ({ onDismiss }, ref) => {
 
+    const { t } = useTranslation();
     const { isDarkMode } = useTheme();
     const router = useRouter();
     const dispatch = useDispatch();
@@ -56,9 +58,9 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
       close();
       try {
         const result = await api.auth.startScan();
-        toast.success(result?.message ?? 'Scan triggered.');
+        toast.success(result?.message ?? t('home.account.scanTriggered'));
       } catch {
-        toast.error('Could not trigger scan.');
+        toast.error(t('home.account.scanFailed'));
       }
     };
 
@@ -71,7 +73,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
         dispatch(disconnect());
         router.replace('/(onboarding)');
       } catch {
-        toast.error('Could not sign out cleanly.');
+        toast.error(t('home.account.signOutFailed'));
       }
     };
 
@@ -113,21 +115,21 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
           <TouchableOpacity style={styles.row} onPress={handleSettings}>
             <Ionicons name="settings-outline" size={18} color={themeColor} />
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-              Settings
+              {t('home.account.settings')}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.row} onPress={handleScan}>
             <Ionicons name="sync-outline" size={18} color={themeColor} />
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-              Trigger Scan
+              {t('home.account.triggerScan')}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.row} onPress={handleSignOut}>
             <Ionicons name="log-out-outline" size={18} color={themeColor} />
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-              Sign Out
+              {t('home.account.signOut')}
             </Text>
           </TouchableOpacity>
         </BottomSheetView>

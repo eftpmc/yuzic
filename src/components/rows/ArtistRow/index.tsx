@@ -21,6 +21,7 @@ import InfoModal, { InfoRow } from '@/components/InfoModal';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { staleTime } from '@/constants/staleTime';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   artist: ArtistBase;
@@ -28,6 +29,7 @@ type Props = {
 };
 
 const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
@@ -80,7 +82,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
           title: fullArtist.name,
           artist: fullArtist,
           cover: fullArtist.cover,
-          subtext: 'Artist',
+          subtext: t('common.artist'),
           changed: new Date('1995-12-17T03:24:00'),
           created: new Date('1995-12-17T03:24:00'),
           songs,
@@ -88,7 +90,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
         shuffle
       );
     },
-    [fetchArtist, queryClient, api, playSongInCollection, activeServer?.id]
+    [fetchArtist, queryClient, api, playSongInCollection, activeServer?.id, t]
   );
 
   const handleShowInfo = useCallback(async () => {
@@ -103,30 +105,30 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
     return [
       {
         id: 'albums',
-        label: 'Albums',
+        label: t('artistOptions.info.albums'),
         value: artistInfo.ownedAlbums.length,
       },
     ];
-  }, [artistInfo]);
+  }, [artistInfo, t]);
 
   const menuActions: ContextMenuAction[] = useMemo(
     () => [
       {
         id: 'play',
-        label: 'Play',
+        label: t('common.play'),
         icon: 'play',
         primary: true,
         onPress: () => handlePlay(false),
       },
       {
         id: 'shuffle',
-        label: 'Shuffle',
+        label: t('common.shuffle'),
         icon: 'shuffle',
         onPress: () => handlePlay(true),
       },
       {
         id: 'info',
-        label: 'Artist Info',
+        label: t('artistOptions.sections.info'),
         icon: 'information-circle',
         onPress: () => {
           setMenuVisible(false);
@@ -135,13 +137,13 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
       },
       {
         id: 'navigate',
-        label: 'Go to Artist',
+        label: t('artistOptions.actions.goToArtist'),
         icon: 'person',
         dividerBefore: true,
         onPress: handleNavigation,
       },
     ],
-    [handlePlay, handleShowInfo, handleNavigation]
+    [handlePlay, handleShowInfo, handleNavigation, t]
   );
 
   return (
@@ -176,7 +178,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
                   isDarkMode && styles.subtextDark,
                 ]}
               >
-                {artist.subtext}
+                {artist.subtext === 'Artist' ? t('common.artist') : artist.subtext}
               </Text>
             </View>
           </TouchableOpacity>
@@ -210,7 +212,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
             setArtistInfo(null);
           }}
           title={artistInfo.name}
-          subtitle="Artist"
+          subtitle={t('common.artist')}
           cover={artistInfo.cover}
           rows={infoRows}
         />

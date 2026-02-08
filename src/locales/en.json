@@ -1,0 +1,487 @@
+{
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "general": "General",
+      "plugins": "Plugins",
+      "about": "About"
+    },
+    "rows": {
+      "server": "Server",
+      "library": "Library",
+      "player": "Player",
+      "appearance": "Appearance",
+      "downloaders": "Downloaders",
+      "listenBrainz": "ListenBrainz",
+      "github": "Github",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfUse": "Terms of Use"
+    },
+    "profile": {
+      "unknownUser": "Unknown User",
+      "connectedTo": "Connected to {{type}} at {{server}}",
+      "noServer": "no server"
+    },
+    "links": {
+      "cantOpen": "Can't open {{url}}"
+    },
+    "server": {
+      "title": "Server",
+      "serverUrl": "Server URL",
+      "username": "Username",
+      "notSet": "Not Set",
+      "connectivity": "Connectivity",
+      "searchScopeHelp": "Choose where search results come from",
+      "searchScope": {
+        "client": "On Device",
+        "clientExternal": "Device + External",
+        "server": "Server",
+        "serverExternal": "Server + External"
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": {
+        "title": "Theme",
+        "subtitle": "Light, dark, or system"
+      },
+      "color": {
+        "info": "Customize the primary color of your app",
+        "change": "Change Theme Color"
+      },
+      "playingBarAction": {
+        "info": "Choose which action appears in the playing bar"
+      },
+      "columns": {
+        "info": "Set how many columns are shown in grid view",
+        "count": "{{count}} Columns"
+      },
+      "language": {
+        "title": "Language",
+        "subtitle": "App language",
+        "english": "English",
+        "japanese": "Japanese"
+      }
+    },
+    "library": {
+      "title": "Library",
+      "discovery": {
+        "title": "Discovery",
+        "info": "How Discovery suggests artists and albums from your library.",
+        "about": "About discovery"
+      },
+      "stats": {
+        "title": "Library",
+        "refreshTitle": "Refresh Library?",
+        "refreshBody": "This will re-fetch library data and invalidate cached entries.",
+        "refreshCancel": "Cancel",
+        "refreshConfirm": "Refresh",
+        "summary": {
+          "albums": "Albums",
+          "artists": "Artists",
+          "playlists": "Playlists"
+        },
+        "status": {
+          "cached": "Cached",
+          "fresh": "{{count}} fresh",
+          "freshStale": "{{fresh}} fresh, {{stale}} stale",
+          "errors": "{{count}} error",
+          "errors_plural": "{{count}} errors"
+        },
+        "errorsTitle": "Errors",
+        "unknownError": "Unknown error"
+      },
+      "downloads": {
+        "title": "Downloads",
+        "clearTitle": "Clear downloads?",
+        "clearBody": "This will remove all downloaded songs from your device.",
+        "status": {
+          "downloaded": "Downloaded",
+          "downloading": "Downloading",
+          "incomplete": "Incomplete"
+        },
+        "type": {
+          "album": "Album",
+          "playlist": "Playlist"
+        },
+        "sizeLabel": "Download Size",
+        "offlineNote": "These songs are stored locally for offline playback."
+      },
+      "audioQuality": {
+        "info": "Set your preferred audio quality for offline downloads.",
+        "label": "Audio Quality: {{value}}",
+        "options": {
+          "low": "Low (64kbps)",
+          "medium": "Medium (128kbps)",
+          "high": "High (192kbps)",
+          "original": "Original (no compression)"
+        }
+      }
+    },
+    "player": {
+      "title": "Player",
+      "nothingPlaying": "Nothing playing",
+      "unknownArtist": "—"
+    },
+    "listenBrainz": {
+      "title": "ListenBrainz",
+      "username": "Username",
+      "userToken": "User Token",
+      "usernamePlaceholder": "ListenBrainz username",
+      "tokenPlaceholder": "ListenBrainz user token",
+      "connectivity": "Connectivity",
+      "helperText": "ListenBrainz is used for scrobbling and personalized discovery. MusicBrainz provides artist, albums, genres, and release metadata. No listening data is sent without your permission.",
+      "disconnect": "Disconnect",
+      "missingCredentials": "Enter username and token first.",
+      "connectionSuccessful": "ListenBrainz connection successful.",
+      "connectionFailed": "Connection failed.",
+      "connectFailed": "Failed to connect to ListenBrainz.",
+      "disconnected": "Disconnected from ListenBrainz."
+    },
+    "downloaders": {
+      "title": "Downloaders",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "serverUrl": "Server URL",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "API key",
+      "connectivity": "Connectivity",
+      "queue": "Queue",
+      "emptyQueue": "Nothing downloading yet.",
+      "disconnect": "Disconnect",
+      "downloadComplete": "Download complete!",
+      "unknown": "Unknown",
+      "unknownAlbum": "Unknown Album",
+      "tracks": "track",
+      "tracks_plural": "tracks",
+      "files": "file",
+      "files_plural": "files",
+      "serverUrlPlaceholder": {
+        "lidarr": "http://node:8686",
+        "slskd": "http://slskd:5030"
+      },
+      "lidarr": {
+        "title": "Lidarr",
+        "connectionFailed": "Lidarr connection failed",
+        "disconnected": "Disconnected from Lidarr."
+      },
+      "slskd": {
+        "title": "slskd",
+        "connectionFailed": "slskd connection failed",
+        "disconnected": "Disconnected from slskd."
+      }
+    },
+    "discovery": {
+      "title": "Discovery",
+      "sections": {
+        "about": {
+          "title": "Discovery",
+          "body": "The Discovery tab suggests artists and albums based on your library. You see similar artists, albums you might like, and new releases from those artists."
+        },
+        "how": {
+          "title": "How it works",
+          "body": "We use your library artists to find similar artists via MusicBrainz and ListenBrainz. From those we pull albums and new releases, then show a shuffled mix in Explore."
+        },
+        "sync": {
+          "title": "Sync & refresh",
+          "body": "Discovery syncs when you connect to a server. Pull to refresh on Discovery only shuffles what’s already loaded; it doesn’t re-fetch. If something fails, you’ll see a message and can tap “Try again” to retry."
+        }
+      }
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "next": "Next",
+    "done": "Done",
+    "back": "Back",
+    "play": "Play",
+    "shuffle": "Shuffle",
+    "artist": "Artist",
+    "playlist": "Playlist",
+    "oneSecond": "One moment.",
+    "playingSimilar": "Playing similar music",
+    "error": {
+      "unexpected": "Unexpected error occurred",
+      "details": "Error: {{name}} {{message}}",
+      "restart": "Restart"
+    }
+  },
+  "onboarding": {
+    "home": {
+      "subtitle": "Your personal music library. Stream from your own server anywhere.",
+      "getStarted": "Get Started",
+      "terms": "By continuing you confirm that you've read and accepted our Terms and Privacy Policy"
+    },
+    "servers": {
+      "title": "Your Servers",
+      "subtitle": "Choose a server to continue or add a new one.",
+      "empty": "No servers added yet.",
+      "add": "Add Server",
+      "active": "ACTIVE",
+      "deleteTitle": "Delete Server",
+      "deleteBody": "Remove {{server}}?"
+    },
+    "connect": {
+      "title": "Connect to your Server",
+      "subtitle": "Enter your server URL (http/https)",
+      "urlPlaceholder": "https://your-server.example.com",
+      "selectTypeFirst": "Select a server type first.",
+      "enterUrl": "Please enter a valid server URL.",
+      "demoUnavailableProvider": "Demo unavailable for this provider.",
+      "connectError": "An error occurred while connecting.",
+      "useDemo": "Use {{provider}} demo",
+      "demoUnavailable": "Demo unavailable",
+      "demoFailed": "Demo connection failed",
+      "providerDescription": {
+        "navidrome": "A lightweight, self-hosted music server.",
+        "jellyfin": "A full-featured media server for music, movies, and TV."
+      }
+    },
+    "credentials": {
+      "title": "Enter Your Credentials",
+      "subtitle": "Enter your username and password to continue.",
+      "usernamePlaceholder": "Username",
+      "passwordPlaceholder": "Password",
+      "missingCredentials": "Please enter both username and password.",
+      "authFailed": "Authentication failed.",
+      "apiNotResponding": "Server connected, but API is not responding.",
+      "connectError": "An error occurred while connecting."
+    }
+  },
+  "home": {
+    "title": "yuzic",
+    "filters": {
+      "all": "All",
+      "albums": "Albums",
+      "artists": "Artists",
+      "playlists": "Playlists"
+    },
+    "sort": {
+      "alphabetical": "Alphabetical",
+      "mostRecent": "Most Recent",
+      "mostPlayed": "Most Played",
+      "releaseYear": "Release Year",
+      "lastModified": "Last Modified"
+    },
+    "sortSheet": {
+      "title": "Sort by"
+    },
+    "empty": "No content available.",
+    "account": {
+      "settings": "Settings",
+      "triggerScan": "Trigger Scan",
+      "signOut": "Sign Out",
+      "scanTriggered": "Scan triggered.",
+      "scanFailed": "Could not trigger scan.",
+      "signOutFailed": "Could not sign out cleanly."
+    }
+  },
+  "search": {
+    "placeholder": "Search for music, artists, or playlists...",
+    "noResults": "No results found"
+  },
+  "media": {
+    "albumNotFound": "Album not found",
+    "artistNotFound": "Artist not found.",
+    "playlistNotFound": "Playlist not found."
+  },
+  "explore": {
+    "sections": {
+      "dial": "Dial",
+      "recentlyPlayed": "Recently played",
+      "recentlyAdded": "Recently added",
+      "favoriteAlbums": "Favorite albums",
+      "randomAlbums": "Random albums"
+    },
+    "empty": {
+      "recentSongs": "Play something to see it here",
+      "recentlyPlayed": "Play albums to see them here",
+      "recentlyAdded": "No albums in your library yet",
+      "favoriteAlbums": "Star songs to add albums here",
+      "randomAlbums": "No albums in your library yet"
+    }
+  },
+  "playing": {
+    "queue": {
+      "title": "Queue",
+      "playingFromAlbum": "Playing from {{album}}",
+      "playingFromQueue": "Playing from Queue"
+    },
+    "lyrics": {
+      "title": "Lyrics"
+    },
+    "aboutArtist": {
+      "header": "Artist",
+      "subtext": "Artist"
+    },
+    "bar": {
+      "noSong": "No song playing",
+      "selectTrack": "Select a track to begin"
+    },
+    "actions": {
+      "addedToFavorites": "{{title}} added to favorites.",
+      "removedFromFavorites": "{{title}} removed from favorites.",
+      "updateFavoritesFailed": "Failed to update favorites.",
+      "randomAlbum": "Playing random album: {{title}}",
+      "loadAlbumFailed": "Failed to load album."
+    }
+  },
+  "playlist": {
+    "favoritesTitle": "Favorites",
+    "subtext": "Playlist • {{count}} song",
+    "subtext_plural": "Playlist • {{count}} songs"
+  },
+  "playlistList": {
+    "title": "Add to Playlist",
+    "searchPlaceholder": "Search playlists",
+    "newPlaceholder": "New playlist name",
+    "updated": "Playlists updated"
+  },
+  "songOptions": {
+    "unknownArtist": "Unknown",
+    "actions": {
+      "favorite": "Favorite",
+      "unfavorite": "Unfavorite",
+      "addToQueue": "Add to Queue",
+      "addToEnd": "Add to End",
+      "addToPlaylist": "Add to Playlist",
+      "instantMix": "Instant Mix"
+    },
+    "sections": {
+      "media": "Media",
+      "track": "Track",
+      "dates": "Dates",
+      "other": "Other"
+    },
+    "media": {
+      "duration": "Duration",
+      "bitrate": "Bitrate",
+      "sampleRate": "Sample rate",
+      "bitsPerSample": "Bits per sample",
+      "format": "Format",
+      "kbps": "{{value}} kbps",
+      "hz": "{{value}} Hz"
+    },
+    "track": {
+      "disc": "Disc",
+      "track": "Track"
+    },
+    "dates": {
+      "released": "Released",
+      "added": "Date added"
+    },
+    "other": {
+      "bpm": "BPM",
+      "genres": "Genres",
+      "filePath": "File path"
+    },
+    "toasts": {
+      "removedFromFavorites": "{{title}} removed from favorites.",
+      "addedToFavorites": "{{title}} added to favorites.",
+      "updateFavoritesFailed": "Failed to update favorites.",
+      "nothingPlaying": "Nothing is currently playing.",
+      "alreadyPlaying": "{{title}} is already playing.",
+      "addedToQueue": "{{title}} added to queue.",
+      "addToQueueFailed": "Failed to add to queue.",
+      "playNext": "{{title}} will play next.",
+      "playNextFailed": "Failed to queue song next.",
+      "instantMixFailed": "Failed to start instant mix"
+    }
+  },
+  "externalAlbum": {
+    "menu": {
+      "title": "External Album",
+      "downloadToServer": "Download to Server"
+    },
+    "download": {
+      "noDownloader": "No active downloader connected.",
+      "addedToLidarr": "Album added to Lidarr!",
+      "addedToSlskd": "Album added to slskd queue!",
+      "failed": "Download failed.",
+      "startFailed": "Failed to start download."
+    },
+    "header": {
+      "songs": "{{count}} song",
+      "songs_plural": "{{count}} songs",
+      "externalMetadata": "External metadata"
+    },
+    "info": {
+      "title": "About external albums",
+      "body": "This album’s information is provided by MusicBrainz. Track listings, durations, artwork, or release details may be incomplete or differ from your local files."
+    }
+  },
+  "albumOptions": {
+    "actions": {
+      "play": "Play",
+      "shuffle": "Shuffle",
+      "addToQueue": "Add to Queue",
+      "shuffleToQueue": "Shuffle to Queue",
+      "goToAlbum": "Go to Album",
+      "goToExternalAlbum": "Go to External Album",
+      "goToExternalArtist": "Go to External Artist",
+      "viewExternal": "View External",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded"
+    },
+    "sections": {
+      "albumInfo": "Album Info"
+    },
+    "info": {
+      "artist": "Artist",
+      "year": "Year",
+      "genres": "Genres",
+      "songs": "Songs",
+      "unknown": "—"
+    }
+  },
+  "playlistOptions": {
+    "playlistLabel": "Playlist",
+    "actions": {
+      "play": "Play",
+      "shuffle": "Shuffle",
+      "addToQueue": "Add to Queue",
+      "shuffleToQueue": "Shuffle to Queue",
+      "goToPlaylist": "Go to Playlist",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded",
+      "delete": "Delete playlist"
+    },
+    "sections": {
+      "info": "Playlist Info"
+    },
+    "info": {
+      "lastChanged": "Last changed",
+      "created": "Created",
+      "songs": "Songs"
+    },
+    "delete": {
+      "title": "Delete playlist",
+      "body": "\"{{title}}\" will be permanently deleted. This cannot be undone."
+    },
+    "toasts": {
+      "deleted": "Playlist deleted",
+      "deleteFailed": "Could not delete playlist"
+    }
+  },
+  "artistOptions": {
+    "artistLabel": "Artist",
+    "actions": {
+      "play": "Play",
+      "shuffle": "Shuffle",
+      "addToQueue": "Add to Queue",
+      "shuffleToQueue": "Shuffle to Queue",
+      "goToArtist": "Go to Artist",
+      "goToExternalArtist": "Go to External Artist",
+      "viewExternal": "View External"
+    },
+    "sections": {
+      "info": "Artist Info"
+    },
+    "info": {
+      "albums": "Albums"
+    }
+  }
+}

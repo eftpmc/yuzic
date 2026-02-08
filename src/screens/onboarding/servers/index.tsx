@@ -22,8 +22,10 @@ import { MenuView } from '@react-native-menu/menu';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 export default function Servers() {
+    const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch();
 
@@ -43,12 +45,12 @@ export default function Servers() {
 
     const confirmDelete = (id: string, serverUrl: string) => {
         Alert.alert(
-            'Delete Server',
-            `Remove ${serverUrl.replace(/^https?:\/\//, '')}?`,
+            t('onboarding.servers.deleteTitle'),
+            t('onboarding.servers.deleteBody', { server: serverUrl.replace(/^https?:\/\//, '') }),
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: t('common.cancel'), style: 'cancel' },
                 {
-                    text: 'Delete',
+                    text: t('common.delete'),
                     style: 'destructive',
                     onPress: () => dispatch(removeServer(id)),
                 },
@@ -87,7 +89,7 @@ export default function Servers() {
                             {isActive && (
                                 <View style={styles.activeBadge}>
                                     <Text style={styles.activeBadgeText}>
-                                        ACTIVE
+                                        {t('onboarding.servers.active')}
                                     </Text>
                                 </View>
                             )}
@@ -104,7 +106,7 @@ export default function Servers() {
                     actions={[
                         {
                             id: 'delete',
-                            title: 'Delete',
+                            title: t('common.delete'),
                             attributes: {
                                 destructive: true,
                             },
@@ -125,9 +127,9 @@ export default function Servers() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
-                <Text style={styles.title}>Your Servers</Text>
+                <Text style={styles.title}>{t('onboarding.servers.title')}</Text>
                 <Text style={styles.subtitle}>
-                    Choose a server to continue or add a new one.
+                    {t('onboarding.servers.subtitle')}
                 </Text>
 
                 <FlatList
@@ -136,7 +138,7 @@ export default function Servers() {
                     renderItem={renderServer}
                     ListEmptyComponent={
                         <Text style={styles.emptyText}>
-                            No servers added yet.
+                            {t('onboarding.servers.empty')}
                         </Text>
                     }
                     contentContainerStyle={{
@@ -154,7 +156,7 @@ export default function Servers() {
                     activeOpacity={0.85}
                     onPress={handleAddServer}
                 >
-                    <Text style={styles.addButtonText}>Add Server</Text>
+                    <Text style={styles.addButtonText}>{t('onboarding.servers.add')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

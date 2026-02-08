@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
@@ -16,6 +17,7 @@ import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
 
 const Downloads: React.FC = () => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const { albums = [] } = useAlbums();
@@ -51,11 +53,11 @@ const Downloads: React.FC = () => {
 
   const handleClearDownloads = useCallback(() => {
     Alert.alert(
-      'Clear downloads?',
-      'This will remove all downloaded songs from your device.',
+      t('settings.library.downloads.clearTitle'),
+      t('settings.library.downloads.clearBody'),
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: clearAllDownloads },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.delete'), style: 'destructive', onPress: clearAllDownloads },
       ]
     );
   }, [clearAllDownloads]);
@@ -64,7 +66,7 @@ const Downloads: React.FC = () => {
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-          Downloads
+          {t('settings.library.downloads.title')}
         </Text>
 
         <TouchableOpacity
@@ -95,10 +97,10 @@ const Downloads: React.FC = () => {
               : isDownloadingPlaylist(item.id);
 
           const status = downloaded
-            ? { label: 'Downloaded', color: '#22c55e' }
+            ? { label: t('settings.library.downloads.status.downloaded'), color: '#22c55e' }
             : downloading
-              ? { label: 'Downloading', color: themeColor }
-              : { label: 'Incomplete', color: '#f97316' };
+              ? { label: t('settings.library.downloads.status.downloading'), color: themeColor }
+              : { label: t('settings.library.downloads.status.incomplete'), color: '#f97316' };
 
           return (
             <View
@@ -116,7 +118,7 @@ const Downloads: React.FC = () => {
                   {item.title}
                 </Text>
                 <Text style={[styles.cardSub, isDarkMode && styles.cardSubDark]}>
-                  {item.type === 'album' ? 'Album' : 'Playlist'}
+                  {item.type === 'album' ? t('settings.library.downloads.type.album') : t('settings.library.downloads.type.playlist')}
                 </Text>
               </View>
 
@@ -148,7 +150,7 @@ const Downloads: React.FC = () => {
 
       <View style={styles.row}>
         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-          Download Size
+          {t('settings.library.downloads.sizeLabel')}
         </Text>
         <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
           {getFormattedDownloadSize()}
@@ -157,7 +159,7 @@ const Downloads: React.FC = () => {
 
       {downloadedSongCount > 0 && (
         <Text style={[styles.note, isDarkMode && styles.noteDark]}>
-          These songs are stored locally for offline playback.
+          {t('settings.library.downloads.offlineNote')}
         </Text>
       )}
     </View>

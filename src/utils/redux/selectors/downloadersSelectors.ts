@@ -1,13 +1,53 @@
 import { RootState } from '@/utils/redux/store';
 import { createSelector } from '@reduxjs/toolkit';
+import { PerServerDownloadersState } from '@/utils/redux/slices/downloadersSlice';
 
-export const selectActiveDownloader = (s: RootState) => s.downloaders.activeDownloader;
-export const selectLidarrServerUrl = (s: RootState) => s.downloaders.lidarr.serverUrl;
-export const selectLidarrApiKey = (s: RootState) => s.downloaders.lidarr.apiKey;
-export const selectLidarrAuthenticated = (s: RootState) => s.downloaders.lidarr.isAuthenticated;
-export const selectSlskdServerUrl = (s: RootState) => s.downloaders.slskd.serverUrl;
-export const selectSlskdApiKey = (s: RootState) => s.downloaders.slskd.apiKey;
-export const selectSlskdAuthenticated = (s: RootState) => s.downloaders.slskd.isAuthenticated;
+const defaultEntry: PerServerDownloadersState = {
+  activeDownloader: null,
+  lidarr: { serverUrl: '', apiKey: '', isAuthenticated: false },
+  slskd: { serverUrl: '', apiKey: '', isAuthenticated: false },
+};
+
+const selectDownloadersForActiveServer = createSelector(
+  [(s: RootState) => s.downloaders.byServer, (s: RootState) => s.servers.activeServerId],
+  (byServer, activeServerId): PerServerDownloadersState =>
+    (activeServerId && byServer[activeServerId]) ?? defaultEntry
+);
+
+export const selectActiveDownloader = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.activeDownloader
+);
+
+export const selectLidarrServerUrl = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.lidarr.serverUrl
+);
+
+export const selectLidarrApiKey = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.lidarr.apiKey
+);
+
+export const selectLidarrAuthenticated = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.lidarr.isAuthenticated
+);
+
+export const selectSlskdServerUrl = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.slskd.serverUrl
+);
+
+export const selectSlskdApiKey = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.slskd.apiKey
+);
+
+export const selectSlskdAuthenticated = createSelector(
+  [selectDownloadersForActiveServer],
+  (entry) => entry.slskd.isAuthenticated
+);
 
 export const selectLidarrConfig = createSelector(
   [selectLidarrServerUrl, selectLidarrApiKey],

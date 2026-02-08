@@ -8,6 +8,7 @@ import {
   Easing,
   Alert,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
@@ -24,6 +25,7 @@ type QuerySummary = {
 };
 
 const Stats: React.FC = () => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
@@ -62,13 +64,13 @@ const Stats: React.FC = () => {
 
     return {
       summaries: [
-        collect(QueryKeys.Albums, 'Albums'),
-        collect(QueryKeys.Artists, 'Artists'),
-        collect(QueryKeys.Playlists, 'Playlists'),
+        collect(QueryKeys.Albums, t('settings.library.stats.summary.albums')),
+        collect(QueryKeys.Artists, t('settings.library.stats.summary.artists')),
+        collect(QueryKeys.Playlists, t('settings.library.stats.summary.playlists')),
       ],
       errors: errorQueries,
     };
-  }, [queryClient]);
+  }, [queryClient, t]);
 
   const spinValue = useRef(new Animated.Value(0)).current;
 
@@ -99,12 +101,12 @@ const Stats: React.FC = () => {
 
   const handleRefresh = () => {
     Alert.alert(
-      'Refresh Library?',
-      'This will re-fetch library data and invalidate cached entries.',
+      t('settings.library.stats.refreshTitle'),
+      t('settings.library.stats.refreshBody'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('settings.library.stats.refreshCancel'), style: 'cancel' },
         {
-          text: 'Refresh',
+          text: t('settings.library.stats.refreshConfirm'),
           style: 'destructive',
           onPress: refreshLibrary,
         },
@@ -116,7 +118,7 @@ const Stats: React.FC = () => {
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-          Library
+          {t('settings.library.stats.title')}
         </Text>
 
         <TouchableOpacity
@@ -148,12 +150,12 @@ const Stats: React.FC = () => {
             </Text>
             <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
               {stat.errored > 0
-                ? `${stat.errored} error${stat.errored > 1 ? 's' : ''}`
+                ? t('settings.library.stats.status.errors', { count: stat.errored })
                 : stat.stale > 0
-                  ? `${stat.fresh} fresh, ${stat.stale} stale`
+                  ? t('settings.library.stats.status.freshStale', { fresh: stat.fresh, stale: stat.stale })
                   : stat.fresh > 0
-                    ? `${stat.fresh} fresh`
-                    : 'Cached'}
+                    ? t('settings.library.stats.status.fresh', { count: stat.fresh })
+                    : t('settings.library.stats.status.cached')}
             </Text>
           </View>
         </View>
@@ -163,7 +165,7 @@ const Stats: React.FC = () => {
         <>
           <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
           <Text style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>
-            Errors
+            {t('settings.library.stats.errorsTitle')}
           </Text>
 
           {errors.map((err, i) => (

@@ -38,8 +38,10 @@ import { usePlaylists } from '@/hooks/playlists';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
 import { LIBRARY_INITIAL_PAGE_SIZE, LIBRARY_PAGE_SIZE } from '@/constants/library';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeScreen() {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const router = useRouter();
     const dispatch = useDispatch();
@@ -204,22 +206,22 @@ export default function HomeScreen() {
     }, [hasMore, sortedFilteredData.length]);
 
     const filters = [
-        { label: 'All', value: 'all' },
-        { label: 'Albums', value: 'albums' },
-        { label: 'Artists', value: 'artists' },
-        { label: 'Playlists', value: 'playlists' },
+        { label: t('home.filters.all'), value: 'all' },
+        { label: t('home.filters.albums'), value: 'albums' },
+        { label: t('home.filters.artists'), value: 'artists' },
+        { label: t('home.filters.playlists'), value: 'playlists' },
     ] as const;
 
     const currentSortLabel =
         sortOrder === 'title'
-            ? 'Alphabetical'
+            ? t('home.sort.alphabetical')
             : sortOrder === 'recent'
-                ? 'Most Recent'
+                ? t('home.sort.mostRecent')
                 : sortOrder === 'userplays'
-                    ? 'Most Played'
+                    ? t('home.sort.mostPlayed')
                     : sortOrder === 'year'
-                        ? 'Release Year'
-                        : 'Last Modified';
+                        ? t('home.sort.releaseYear')
+                        : t('home.sort.lastModified');
 
 
     const renderItem = ({ item }) => {
@@ -260,7 +262,7 @@ export default function HomeScreen() {
             style={[styles.container, isDarkMode && styles.containerDark]}
         >
             <HomeHeader
-                title="yuzic"
+                title={t('home.title')}
                 username={username}
                 onSearch={() => navigation.navigate('search')}
                 onAccountPress={toggleAccountSheet}

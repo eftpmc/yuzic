@@ -4,6 +4,7 @@ import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { LibraryGridSkeleton, LibraryListSkeleton } from './Skeletons';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 type Props<T> = {
   data: T[];
@@ -31,6 +32,7 @@ export default function LibraryContent<T>({
   hasMore,
 }: Props<T>) {
   const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return isGridView ? (
@@ -49,7 +51,7 @@ export default function LibraryContent<T>({
           color={isDarkMode ? '#555' : '#999'}
         />
         <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
-          No content available.
+          {t('home.empty')}
         </Text>
       </View>
     );

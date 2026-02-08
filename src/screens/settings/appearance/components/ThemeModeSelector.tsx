@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -15,6 +16,7 @@ import { setThemeMode, ThemeMode } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 
 export const ThemeModeSelector: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const themeMode = useSelector(selectThemeMode) as ThemeMode;
@@ -34,10 +36,10 @@ export const ThemeModeSelector: React.FC = () => {
       <View style={styles.row}>
         <View style={styles.textColumn}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Theme
+            {t('settings.appearance.theme.title')}
           </Text>
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
-            Light, dark, or system
+            {t('settings.appearance.theme.subtitle')}
           </Text>
         </View>
 

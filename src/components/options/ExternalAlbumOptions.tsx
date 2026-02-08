@@ -20,6 +20,7 @@ import {
   selectIsSlskdActive,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 interface ExternalAlbumOptionsProps {
   selectedAlbumTitle: string;
@@ -30,6 +31,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
   selectedAlbumTitle,
   selectedAlbumArtist,
 }) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
 
   const lidarrConfig = useSelector(selectLidarrConfig);
@@ -47,7 +49,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
     if (!selectedAlbumTitle || !selectedAlbumArtist) return;
 
     if (!canDownload) {
-      toast.error('No active downloader connected.');
+      toast.error(t('externalAlbum.download.noDownloader'));
       return;
     }
 
@@ -59,9 +61,9 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           selectedAlbumArtist
         );
         if (result.success) {
-          toast.success('Album added to Lidarr!');
+          toast.success(t('externalAlbum.download.addedToLidarr'));
         } else {
-          toast.error(result.message ?? 'Download failed.');
+          toast.error(result.message ?? t('externalAlbum.download.failed'));
         }
         return;
       }
@@ -73,26 +75,26 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           selectedAlbumArtist
         );
         if (result.success) {
-          toast.success('Album added to slskd queue!');
+          toast.success(t('externalAlbum.download.addedToSlskd'));
         } else {
-          toast.error(result.message ?? 'Download failed.');
+          toast.error(result.message ?? t('externalAlbum.download.failed'));
         }
         return;
       }
 
-      toast.error('No active downloader connected.');
+      toast.error(t('externalAlbum.download.noDownloader'));
     } catch (e) {
-      toast.error('Failed to start download.');
+      toast.error(t('externalAlbum.download.startFailed'));
     }
   };
 
   return (
     <MenuView
-      title="External Album"
+      title={t('externalAlbum.menu.title')}
       actions={canDownload ? [
         {
           id: 'download-album',
-          title: 'Download to Server',
+          title: t('externalAlbum.menu.downloadToServer'),
           image: Platform.select({
             ios: 'arrow.down.circle',
             android: 'ic_download',

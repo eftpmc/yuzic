@@ -3,7 +3,8 @@ import {
   AudioQuality,
   LibrarySortOrder,
   ThemeMode,
-  SearchScope
+  SearchScope,
+  AppLanguage
 } from '@/utils/redux/slices/settingsSlice';
 
 export const selectSettings = (state: RootState) => state.settings;
@@ -33,6 +34,10 @@ export const selectSearchScope = (
 ): SearchScope =>
   state.settings.searchScope;
 
+export const selectLanguage = (
+  state: RootState
+): AppLanguage =>
+  state.settings.language;
 
 export const selectHasSeenGetStarted = (
   state: RootState

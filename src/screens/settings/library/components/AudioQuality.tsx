@@ -5,6 +5,7 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectAudioQuality, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -12,13 +13,14 @@ import { setAudioQuality } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 
 const QUALITY_OPTIONS = [
-    { key: 'low', label: 'Low (64kbps)' },
-    { key: 'medium', label: 'Medium (128kbps)' },
-    { key: 'high', label: 'High (192kbps)' },
-    { key: 'original', label: 'Original (no compression)' },
+    { key: 'low' as const, labelKey: 'settings.library.audioQuality.options.low' },
+    { key: 'medium' as const, labelKey: 'settings.library.audioQuality.options.medium' },
+    { key: 'high' as const, labelKey: 'settings.library.audioQuality.options.high' },
+    { key: 'original' as const, labelKey: 'settings.library.audioQuality.options.original' },
 ] as const;
 
 const AudioQuality: React.FC = () => {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const themeColor = useSelector(selectThemeColor);
     const audioQuality = useSelector(selectAudioQuality);
@@ -28,7 +30,7 @@ const AudioQuality: React.FC = () => {
     return (
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
             <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
-                Set your preferred audio quality for offline downloads.
+                {t('settings.library.audioQuality.info')}
             </Text>
 
             <TouchableOpacity
@@ -43,8 +45,7 @@ const AudioQuality: React.FC = () => {
                         style={{ marginRight: 12 }}
                     />
                     <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                        Audio Quality:{' '}
-                        {audioQuality.charAt(0).toUpperCase() + audioQuality.slice(1)}
+                        {t('settings.library.audioQuality.label', { value: t(`settings.library.audioQuality.options.${audioQuality}`) })}
                     </Text>
                 </View>
 
@@ -93,7 +94,7 @@ const AudioQuality: React.FC = () => {
                                         fontWeight: selected ? '600' : '400',
                                     }}
                                 >
-                                    {option.label}
+                                    {t(option.labelKey)}
                                 </Text>
                             </TouchableOpacity>
                         );

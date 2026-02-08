@@ -11,7 +11,7 @@ import { PlayingProvider } from '@/contexts/PlayingContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import store, { persistor } from '@/utils/redux/store';
 import { Alert } from 'react-native';
@@ -19,6 +19,8 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useTheme } from '@/hooks/useTheme';
+import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
+import i18n from '@/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
@@ -43,53 +45,60 @@ const asyncStoragePersister = createAsyncStoragePersister({
 
 function AppShell() {
   const { resolved, isDarkMode, colors } = useTheme();
+  const language = useSelector(selectLanguage);
+
+  useEffect(() => {
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
 
   return (
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
-        <DownloadProvider>
-          <PlayingProvider>
-            <SearchProvider>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <BottomSheetModalProvider>
-                  <Stack>
-                    <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(home)" options={{ headerShown: false }} />
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
+      <DownloadProvider>
+        <PlayingProvider>
+          <SearchProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <BottomSheetModalProvider>
+                <Stack>
+                  <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+                  <Stack.Screen name="(home)" options={{ headerShown: false }} />
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
 
-                  <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+                <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-                  <Toasts
-                    defaultStyle={{
-                      view: {
-                        backgroundColor: isDarkMode
-                          ? 'rgba(32,32,32,0.9)'
-                          : 'rgba(255,255,255,0.9)',
-                        borderRadius: 10,
-                        shadowColor: '#000',
-                        shadowOpacity: 0.15,
-                        shadowRadius: 10,
-                        elevation: 4,
-                      },
-                      pressable: {
-                        backgroundColor: 'transparent',
-                      },
-                      text: {
-                        color: isDarkMode ? '#fff' : '#000',
-                        fontSize: 16,
-                        fontWeight: '500',
-                      },
-                      indicator: {
-                        marginRight: 12,
-                      },
-                    }}
-                  />
-                </BottomSheetModalProvider>
-              </GestureHandlerRootView>
-            </SearchProvider>
-          </PlayingProvider>
-        </DownloadProvider>
+                <Toasts
+                  defaultStyle={{
+                    view: {
+                      backgroundColor: isDarkMode
+                        ? 'rgba(32,32,32,0.9)'
+                        : 'rgba(255,255,255,0.9)',
+                      borderRadius: 10,
+                      shadowColor: '#000',
+                      shadowOpacity: 0.15,
+                      shadowRadius: 10,
+                      elevation: 4,
+                    },
+                    pressable: {
+                      backgroundColor: 'transparent',
+                    },
+                    text: {
+                      color: isDarkMode ? '#fff' : '#000',
+                      fontSize: 16,
+                      fontWeight: '500',
+                    },
+                    indicator: {
+                      marginRight: 12,
+                    },
+                  }}
+                />
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+          </SearchProvider>
+        </PlayingProvider>
+      </DownloadProvider>
     </ThemeProvider>
   );
 }
@@ -108,9 +117,9 @@ export default function RootLayout() {
     const jsErrorHandler = (error: { name: string; message: string }, isFatal: boolean) => {
       if (isFatal) {
         Alert.alert(
-          'Unexpected error occurred',
-          `Error: ${error.name} ${error.message}`,
-          [{ text: 'Restart', onPress: () => RNRestart.Restart() }]
+          i18n.t('common.error.unexpected'),
+          i18n.t('common.error.details', { name: error.name, message: error.message }),
+          [{ text: i18n.t('common.error.restart'), onPress: () => RNRestart.Restart() }]
         );
       }
     };
