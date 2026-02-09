@@ -88,10 +88,22 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
     }
   };
 
+  if (!canDownload) {
+    return (
+      <TouchableOpacity style={styles.moreButton} onPress={handleDownloadAlbum}>
+        <Ionicons
+          name="ellipsis-horizontal"
+          size={24}
+          color={isDarkMode ? '#fff' : '#000'}
+        />
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <MenuView
       title={t('externalAlbum.menu.title')}
-      actions={canDownload ? [
+      actions={[
         {
           id: 'download-album',
           title: t('externalAlbum.menu.downloadToServer'),
@@ -101,7 +113,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           }),
           imageColor: '#fff',
         },
-      ] : []}
+      ]}
       onPressAction={({ nativeEvent }) => {
         if (nativeEvent.event === 'download-album') {
           handleDownloadAlbum();

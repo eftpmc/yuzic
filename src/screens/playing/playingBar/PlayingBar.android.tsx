@@ -131,7 +131,7 @@ const PlayingBar: React.FC = () => {
                 />
               ) : (
                 <Ionicons
-                  name="musical-notes-outline"
+                  name="musical-notes"
                   size={40}
                   style={styles.coverArt}
                   color={isDarkMode ? '#fff' : '#333'}

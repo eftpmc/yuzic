@@ -36,8 +36,6 @@ const Search = () => {
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  track('searching');
-
   const onSearchChange = (text: string) => {
     setQuery(text);
 
