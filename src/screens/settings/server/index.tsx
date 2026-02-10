@@ -29,6 +29,7 @@ const ICON_SIZE = 20;
 
 const ServerSettings: React.FC = () => {
     const { isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const api = useApi();
     const dispatch = useDispatch();
 

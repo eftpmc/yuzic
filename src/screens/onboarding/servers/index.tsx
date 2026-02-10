@@ -18,7 +18,6 @@ import {
     removeServer,
 } from '@/utils/redux/slices/serversSlice';
 import { AntDesign } from '@expo/vector-icons';
-import { MenuView } from '@react-native-menu/menu';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
@@ -97,29 +96,13 @@ export default function Servers() {
                     </View>
                 </TouchableOpacity>
 
-                <MenuView
-                    onPressAction={({ nativeEvent }) => {
-                        if (nativeEvent.event === 'delete') {
-                            confirmDelete(item.id, item.serverUrl);
-                        }
-                    }}
-                    actions={[
-                        {
-                            id: 'delete',
-                            title: t('common.delete'),
-                            attributes: {
-                                destructive: true,
-                            },
-                        },
-                    ]}
+                <TouchableOpacity
+                    style={styles.menuButton}
+                    hitSlop={10}
+                    onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <TouchableOpacity
-                        style={styles.menuButton}
-                        hitSlop={10}
-                    >
-                        <AntDesign name="ellipsis1" size={18} color="#888" />
-                    </TouchableOpacity>
-                </MenuView>
+                    <AntDesign name="ellipsis1" size={18} color="#888" />
+                </TouchableOpacity>
             </View>
         );
     };

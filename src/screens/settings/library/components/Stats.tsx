@@ -59,7 +59,7 @@ const Stats: React.FC = () => {
       .map(q => ({
         key: q.queryKey.join(' / '),
         message:
-          (q.state.error as Error | null)?.message ?? 'Unknown error',
+          (q.state.error as Error | null)?.message ?? t('settings.library.stats.unknownError'),
       }));
 
     return {

@@ -10,6 +10,7 @@ import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
 import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 
 import { ServerType } from '@/types';
+import i18n from '@/i18n';
 
 export type ProviderAuth = {
   [key: string]: string | number | boolean | null;
@@ -54,7 +55,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
   navidrome: {
     type: 'navidrome',
     label: 'Navidrome',
-    description: 'A lightweight, self-hosted music server.',
+    get description() { return i18n.t('onboarding.connect.providerDescription.navidrome'); },
     icon: NavidromeIcon,
     capabilities: {
       supportsDemo: true,
@@ -87,7 +88,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       const password = 'demo';
       const result = await connectNavidrome(serverUrl, username, password);
       if (!result.success) {
-        throw new Error(result.message || 'Demo connection failed');
+        throw new Error(result.message || i18n.t('onboarding.connect.demoFailed'));
       }
       return {
         serverUrl,
@@ -102,7 +103,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
   jellyfin: {
     type: 'jellyfin',
     label: 'Jellyfin',
-    description: 'A full-featured media server for music, movies, and TV.',
+    get description() { return i18n.t('onboarding.connect.providerDescription.jellyfin'); },
     icon: JellyfinIcon,
     capabilities: {
       supportsDemo: false,

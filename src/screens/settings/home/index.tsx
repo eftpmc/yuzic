@@ -100,7 +100,7 @@ export default function Settings() {
                         onPress={() => router.push('/settings/downloadersView')}
                     >
                         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            Downloaders
+                            {t('settings.rows.downloaders')}
                         </Text>
                         <MaterialIcons
                             name="chevron-right"
