@@ -1,47 +1,18 @@
 import { CoverSource, Song } from "@/types";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
+import type { NavidromeClient } from "../client";
 
 export type GetSongsByGenreResult = Song[];
 
-async function fetchGetSongsByGenre(
-  serverUrl: string,
-  username: string,
-  password: string,
-  genre: string,
-  count: number
-) {
-  const url =
-    `${serverUrl}/rest/getSongsByGenre.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json` +
-    `&genre=${encodeURIComponent(genre)}` +
-    `&count=${count}`;
-
-  const res = await fetch(url);
-  if (!res.ok)
-    throw new Error(`Navidrome getSongsByGenre failed: ${res.status}`);
-
-  return res.json();
-}
-
 function normalizeSongsByGenre(
   raw: any,
-  serverUrl: string,
-  username: string,
-  password: string
+  client: NavidromeClient
 ): GetSongsByGenreResult {
   const list = raw?.["subsonic-response"]?.songsByGenre?.song || [];
 
   return list.map((s: any) => {
-
     const cover: CoverSource = s.coverArt
-        ? { kind: "navidrome", coverArtId: s.coverArt }
-        : { kind: "none" };
+      ? { kind: "navidrome", coverArtId: s.coverArt }
+      : { kind: "none" };
 
     return {
       id: s.id,
@@ -51,12 +22,7 @@ function normalizeSongsByGenre(
       duration: String(s.duration ?? 0),
       cover,
       albumId: s.albumId ?? "",
-      streamUrl:
-        `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
-          username
-        )}&p=${encodeURIComponent(
-          password
-        )}&v=${API_VERSION}&c=${CLIENT_NAME}`,
+      streamUrl: client.buildStreamUrl(s.id),
       filePath: s.path ?? undefined,
       bitrate: s.bitRate ?? undefined,
       sampleRate: s.samplingRate ?? undefined,
@@ -75,18 +41,13 @@ function normalizeSongsByGenre(
 }
 
 export async function getSongsByGenre(
-  serverUrl: string,
-  username: string,
-  password: string,
+  client: NavidromeClient,
   genre: string,
-  count: number = 500
+  count = 500
 ): Promise<GetSongsByGenreResult> {
-  const raw = await fetchGetSongsByGenre(
-    serverUrl,
-    username,
-    password,
+  const raw = await client.request<any>("getSongsByGenre.view", {
     genre,
-    count
-  );
-  return normalizeSongsByGenre(raw, serverUrl, username, password);
+    count,
+  });
+  return normalizeSongsByGenre(raw, client);
 }

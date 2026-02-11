@@ -6,14 +6,17 @@ import {
   Appearance,
   Platform,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Header from '../components/Header';
 import { ThemeColor } from './components/ThemeColor';
 import { Columns } from './components/Columns';
 import { ThemeModeSelector } from './components/ThemeModeSelector';
 import { useTheme } from '@/hooks/useTheme';
 import { PlayingBarActionSelector } from './components/PlayingBarActionSelector';
+import { LanguageSelector } from './components/LanguageSelector';
 
 const AppearanceSettings: React.FC = () => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
 
   return (
@@ -24,11 +27,12 @@ const AppearanceSettings: React.FC = () => {
         Platform.OS === 'android' && { paddingTop: 24 },
       ]}
     >
-      <Header title="Appearance" />
+      <Header title={t('settings.appearance.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemeModeSelector />
         <ThemeColor />
+        <LanguageSelector />
         <PlayingBarActionSelector />
         <Columns />
       </ScrollView>

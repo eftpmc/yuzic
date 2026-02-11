@@ -1,4 +1,5 @@
 import { AlbumBase, Artist, CoverSource } from "@/types";
+import type { JellyfinClient } from "../client";
 import { getAlbums } from "../albums/getAlbums";
 
 export type GetArtistResult = Artist | null;
@@ -8,29 +9,16 @@ export type GetArtistResult = Artist | null;
  * Uses /Items?Ids= to fetch the artist and AlbumArtistIds to fetch only that artist's albums.
  */
 export async function getArtist(
-  serverUrl: string,
-  token: string,
+  client: JellyfinClient,
   artistId: string
 ): Promise<GetArtistResult> {
-  const url =
-    `${serverUrl}/Items` +
+  const path =
+    `/Items` +
     `?Ids=${encodeURIComponent(artistId)}` +
     `&IncludeItemTypes=MusicArtist` +
     `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds`;
 
-  const res = await fetch(url, {
-    headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`
-    }
-  });
-
-  if (!res.ok) {
-    throw new Error(`Jellyfin getArtist failed: ${res.status}`);
-  }
-
-  const raw = await res.json();
+  const raw = await client.request<any>(path);
   const artistRaw = raw?.Items?.[0];
 
   if (!artistRaw) {
@@ -43,7 +31,7 @@ export async function getArtist(
 
   const mbid = artistRaw.ProviderIds?.MusicBrainz ?? null;
 
-  const ownedAlbums: AlbumBase[] = await getAlbums(serverUrl, token, artistId);
+  const ownedAlbums: AlbumBase[] = await getAlbums(client, artistId);
 
   return {
     id: artistRaw.Id,

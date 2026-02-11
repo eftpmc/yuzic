@@ -1,37 +1,14 @@
-async function fetchAddPlaylistItems(
-  serverUrl: string,
-  playlistId: string,
-  userId: string,
-  token: string,
-  itemIds: string[]
-) {
-  const ids = itemIds.join(",");
-  const url =
-    `${serverUrl}/Playlists/${playlistId}/Items` +
-    `?Ids=${ids}&UserId=${userId}`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "X-Emby-Token": token,
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!res.ok) throw new Error(`Jellyfin addPlaylistItems failed: ${res.status}`);
-}
-
-function normalizeAddPlaylistItems() {
-  return;
-}
+import type { JellyfinClient } from "../client";
 
 export async function addPlaylistItems(
-  serverUrl: string,
+  client: JellyfinClient,
   playlistId: string,
-  userId: string,
-  token: string,
   itemIds: string[]
 ): Promise<void> {
-  await fetchAddPlaylistItems(serverUrl, playlistId, userId, token, itemIds);
-  return normalizeAddPlaylistItems();
+  const ids = itemIds.join(",");
+  const path = `/Playlists/${playlistId}/Items?Ids=${ids}&UserId=${client.userId}`;
+  await client.request(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
 }

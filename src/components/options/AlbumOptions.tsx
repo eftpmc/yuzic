@@ -21,6 +21,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
 import { getAlbumMbidUrl } from '@/utils/musicbrainz/getAlbumMbidUrl';
+import { useTranslation } from 'react-i18next';
 
 export type AlbumOptionsProps = {
   album: Album | null;
@@ -32,6 +33,7 @@ const AlbumOptions = forwardRef<
   React.ElementRef<typeof BottomSheetModal>,
   AlbumOptionsProps
 >(({ album, hideGoToAlbum }, ref) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
   const navigation = useNavigation<any>();
@@ -178,25 +180,25 @@ const AlbumOptions = forwardRef<
 
         <TouchableOpacity style={styles.option} onPress={() => handlePlay(false)}>
           <Ionicons name="play" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Play</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.play')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={() => handlePlay(true)}>
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Shuffle</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleAddToQueue}>
           <ListEnd size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Add to Queue</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.addToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Shuffle to Queue</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
 
         {!hideGoToAlbum && (
           <TouchableOpacity style={styles.option} onPress={handleGoToAlbum}>
             <Ionicons name="albums" size={26} color={themeStyles.icon.color} />
-            <Text style={[styles.optionText, themeStyles.optionText]}>Go to Album</Text>
+            <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToAlbum')}</Text>
           </TouchableOpacity>
         )}
 
@@ -205,18 +207,18 @@ const AlbumOptions = forwardRef<
             {album?.mbid && (
               <TouchableOpacity style={styles.option} onPress={handleGoToExternalAlbum}>
                 <Ionicons name="albums-outline" size={26} color={themeStyles.icon.color} />
-                <Text style={[styles.optionText, themeStyles.optionText]}>Go to External Album</Text>
+                <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalAlbum')}</Text>
               </TouchableOpacity>
             )}
             {album?.artist?.mbid && (
               <TouchableOpacity style={styles.option} onPress={handleGoToExternalArtist}>
                 <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
-                <Text style={[styles.optionText, themeStyles.optionText]}>Go to External Artist</Text>
+                <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalArtist')}</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
               <Ionicons name="open-outline" size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>View External</Text>
+              <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.viewExternal')}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -242,26 +244,26 @@ const AlbumOptions = forwardRef<
               (isDownloaded || isDownloading) && { opacity: 0.6 },
             ]}
           >
-            {isDownloading ? 'Downloading…' : isDownloaded ? 'Downloaded' : 'Download'}
+            {isDownloading ? t('albumOptions.actions.downloading') : isDownloaded ? t('albumOptions.actions.downloaded') : t('albumOptions.actions.download')}
           </Text>
         </TouchableOpacity>
 
         <View style={styles.divider} />
 
-        <Text style={[styles.sectionLabel, themeStyles.artist]}>Album Info</Text>
+        <Text style={[styles.sectionLabel, themeStyles.artist]}>{t('albumOptions.sections.albumInfo')}</Text>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Artist</Text>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.artist')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>
-            {album.artist?.name ?? '—'}
+            {album.artist?.name ?? t('albumOptions.info.unknown')}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Year</Text>
-          <Text style={[styles.infoValue, themeStyles.title]}>{album.year ?? '—'}</Text>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.year')}</Text>
+          <Text style={[styles.infoValue, themeStyles.title]}>{album.year ?? t('albumOptions.info.unknown')}</Text>
         </View>
         {album.genres?.length ? (
           <View style={styles.genreRow}>
-            <Text style={[styles.infoLabel, themeStyles.artist]}>Genres</Text>
+            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.genres')}</Text>
             <View style={styles.genreList}>
               {album.genres.map((g, i) => (
                 <View key={`${g}-${i}`} style={[styles.genreChip, themeStyles.genreChip]}>
@@ -272,12 +274,12 @@ const AlbumOptions = forwardRef<
           </View>
         ) : (
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, themeStyles.artist]}>Genres</Text>
-            <Text style={[styles.infoValue, themeStyles.title]}>—</Text>
+            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.genres')}</Text>
+            <Text style={[styles.infoValue, themeStyles.title]}>{t('albumOptions.info.unknown')}</Text>
           </View>
         )}
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Songs</Text>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.songs')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]}>{songs.length}</Text>
         </View>
       </BottomSheetScrollView>

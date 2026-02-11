@@ -5,15 +5,16 @@ import {
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { useArtist } from '@/hooks/artists';
 
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
-import { track } from '@/utils/analytics/amplitude';
 import { useTheme } from '@/hooks/useTheme';
 
 const ArtistScreen: React.FC = () => {
+  const { t } = useTranslation();
   const route = useRoute<any>();
   const { id } = route.params;
 
@@ -31,12 +32,10 @@ const ArtistScreen: React.FC = () => {
   if (!artist) {
     return (
       <SafeAreaView style={styles.screen(isDarkMode)}>
-        <Text style={styles.error(isDarkMode)}>Artist not found.</Text>
+        <Text style={styles.error(isDarkMode)}>{t('media.artistNotFound')}</Text>
       </SafeAreaView>
     );
   }
-
-  track("artist screen", { name: artist.name })
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>

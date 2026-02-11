@@ -3,6 +3,8 @@ export interface SlskdConfig {
   apiKey: string;
 }
 
+export type SlskdClient = ReturnType<typeof createSlskdClient>;
+
 export function createSlskdClient(config: SlskdConfig) {
   const { serverUrl, apiKey } = config;
 

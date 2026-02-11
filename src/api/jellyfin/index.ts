@@ -14,6 +14,7 @@ import {
 
 import { Playlist, Server } from "@/types";
 
+import { createJellyfinClient } from "./client";
 import { connect } from "./auth/connect";
 import { ping } from "./auth/ping";
 import { testServerUrl } from "./auth/testServerUrl";
@@ -37,15 +38,12 @@ import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 import { getSong } from "./songs/getSong";
 import { getInstantMix } from "./instantMix/getInstantMix";
-import { search as searchJellyfin } from './search/search'
+import { search as searchJellyfin } from "./search/search";
 
-export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
-  const { serverUrl, auth: providerAuth } = adapter;
-
-  const { token, userId } = providerAuth as {
-    token: string;
-    userId: string;
-  };
+export const createJellyfinAdapter = (server: Server): ApiAdapter => {
+  const { serverUrl, auth: providerAuth } = server;
+  const { token, userId } = providerAuth as { token: string; userId: string };
+  const client = createJellyfinClient({ serverUrl, token, userId });
 
   const auth: AuthApi = {
     connect: async (serverUrl, username, password) => {
@@ -53,108 +51,80 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
     },
     ping: async () => {
       if (!token) return false;
-      return ping(serverUrl, token);
+      return ping(client);
     },
-    testUrl: async (url) => {
-      return testServerUrl(url);
-    },
-    startScan: async () => {
-      return startScan(serverUrl, token);
-    },
-    disconnect: () => { },
+    testUrl: async (url) => testServerUrl(url),
+    startScan: async () => startScan(client),
+    disconnect: () => {},
   };
 
   const albums: AlbumsApi = {
-    list: async () => {
-      return getAlbums(serverUrl, token);
-    },
+    list: async () => getAlbums(client),
     get: async (id: string) => {
-      const album = await getAlbum(serverUrl, token, id);
+      const album = await getAlbum(client, id);
       if (!album) throw new Error("Album not found");
       return album;
     },
   };
 
   const artists: ArtistsApi = {
-    list: async () => {
-      return getArtists(serverUrl, token);
-    },
+    list: async () => getArtists(client),
     get: async (id: string) => {
-      const artist = await getArtist(serverUrl, token, id);
-      if (!artist) throw new Error("Album not found");
+      const artist = await getArtist(client, id);
+      if (!artist) throw new Error("Artist not found");
       return artist;
     },
   };
 
   const genres: GenresApi = {
-    list: async () => getGenres(serverUrl, token),
+    list: async () => getGenres(client),
   };
 
   const playlists: PlaylistsApi = {
     list: async () => {
       const [base, starred] = await Promise.all([
-        getPlaylists(serverUrl, userId, token),
-        getStarredItems(serverUrl, userId, token),
+        getPlaylists(client),
+        getStarredItems(client),
       ]);
-
       const favorites = buildFavoritesPlaylist(starred.songs ?? []);
-
       return [favorites, ...base];
     },
 
     get: async (id: string) => {
       if (id === FAVORITES_ID) {
-        const starred = await getStarredItems(serverUrl, userId, token);
+        const starred = await getStarredItems(client);
         return buildFavoritesPlaylist(starred.songs ?? []);
       }
-
-      const basePlaylists = await getPlaylists(serverUrl, userId, token);
+      const basePlaylists = await getPlaylists(client);
       const base = basePlaylists.find((p) => p.id === id);
-
-      if (!base) {
-        throw new Error("Playlist not found");
-      }
-
-      const songs = await getPlaylistItems(serverUrl, id, userId, token);
-
-      return {
-        ...base,
-        subtext: `Playlist • ${songs.length} songs`,
-        songs,
-      } as Playlist;
+      if (!base) throw new Error("Playlist not found");
+      const songs = await getPlaylistItems(client, id);
+      return { ...base, subtext: `Playlist • ${songs.length} songs`, songs } as Playlist;
     },
 
     create: async (name: string) => {
-      return createPlaylist(serverUrl, userId, token, name);
+      const id = await createPlaylist(client, name);
+      if (!id) throw new Error("Failed to create playlist");
+      return id;
     },
 
     addSong: async (playlistId: string, songId: string) => {
       if (playlistId === FAVORITES_ID) {
-        await star(serverUrl, userId, token, songId);
+        await star(client, songId);
         return { success: true };
       }
-
-      await addPlaylistItems(serverUrl, playlistId, userId, token, [songId]);
+      await addPlaylistItems(client, playlistId, [songId]);
       return { success: true };
     },
 
     removeSong: async (playlistId: string, songId: string) => {
       if (playlistId === FAVORITES_ID) {
-        await unstar(serverUrl, userId, token, songId);
+        await unstar(client, songId);
         return { success: true };
       }
-
-      const entryId = await getPlaylistEntryIdForSong(
-        serverUrl,
-        playlistId,
-        userId,
-        token,
-        songId
-      );
-      if (!entryId) {
-        throw new Error("Song not found in playlist");
-      }
-      await removePlaylistItems(serverUrl, playlistId, token, [entryId]);
+      const entryId = await getPlaylistEntryIdForSong(client, playlistId, songId);
+      if (!entryId) throw new Error("Song not found in playlist");
+      await removePlaylistItems(client, playlistId, [entryId]);
       return { success: true };
     },
 
@@ -162,41 +132,30 @@ export const createJellyfinAdapter = (adapter: Server): ApiAdapter => {
       if (id === FAVORITES_ID) {
         throw new Error("Cannot delete Favorites playlist");
       }
-      await deletePlaylist(serverUrl, token, id);
+      await deletePlaylist(client, id);
     },
   };
 
   const starred: StarredApi = {
-    list: async () => {
-      return getStarredItems(serverUrl, userId, token);
-    },
-    add: async (id: string) => {
-      await star(serverUrl, userId, token, id);
-    },
-    remove: async (id: string) => {
-      await unstar(serverUrl, userId, token, id);
-    },
+    list: async () => getStarredItems(client),
+    add: async (id: string) => { await star(client, id); },
+    remove: async (id: string) => { await unstar(client, id); },
   };
 
   const songs: SongsApi = {
-    get: async (id: string) => getSong(serverUrl, userId, token, id),
+    get: async (id: string) => getSong(client, id),
   };
 
   const similar: SimilarApi = {
-    getSimilarSongs: async (songId: string) =>
-      getInstantMix(serverUrl, songId, userId, token),
+    getSimilarSongs: async (songId: string) => getInstantMix(client, songId),
   };
 
   const lyrics: LyricsApi = {
-    getBySongId: async (songId) => {
-      return getLyricsBySongId(serverUrl, token, songId);
-    },
+    getBySongId: async (songId) => getLyricsBySongId(client, songId),
   };
 
-    const search = {
-    search: async (query: string) => {
-      return searchJellyfin(serverUrl, token, query);
-    },
+  const search = {
+    search: async (query: string) => searchJellyfin(client, query),
   };
 
   return {

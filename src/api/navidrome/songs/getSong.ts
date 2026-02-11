@@ -1,37 +1,16 @@
 import { Song } from "@/types";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
+import type { NavidromeClient } from "../client";
 
 export async function getSong(
-  serverUrl: string,
-  username: string,
-  password: string,
+  client: NavidromeClient,
   songId: string
 ): Promise<Song | null> {
   try {
-    const url =
-      `${serverUrl}/rest/getSong.view` +
-      `?u=${encodeURIComponent(username)}` +
-      `&p=${encodeURIComponent(password)}` +
-      `&v=${API_VERSION}` +
-      `&c=${CLIENT_NAME}` +
-      `&f=json` +
-      `&id=${encodeURIComponent(songId)}`;
-
-    const res = await fetch(url);
-    if (!res.ok) return null;
-
-    const raw = await res.json();
+    const raw = await client.request<any>("getSong.view", { id: songId });
     const s = raw?.["subsonic-response"]?.song;
     if (!s) return null;
 
-    const streamUrl =
-      `${serverUrl}/rest/stream.view?id=${s.id}` +
-      `&u=${encodeURIComponent(username)}` +
-      `&p=${encodeURIComponent(password)}` +
-      `&v=${API_VERSION}` +
-      `&c=${CLIENT_NAME}`;
+    const streamUrl = client.buildStreamUrl(s.id);
 
     return {
       id: s.id,

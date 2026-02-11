@@ -1,4 +1,5 @@
 import { NavidromeConnectResult } from "@/api/types";
+import { buildTokenParams } from "../client";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -13,13 +14,16 @@ export async function connect(
   }
 
   const cleanUrl = serverUrl.replace(/\/+$/, "");
-  const url =
-    `${cleanUrl}/rest/getMusicFolders.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json`;
+  const { u, t, s } = buildTokenParams(username, password);
+  const params = new URLSearchParams({
+    u,
+    t,
+    s,
+    v: API_VERSION,
+    c: CLIENT_NAME,
+    f: "json",
+  });
+  const url = `${cleanUrl}/rest/getMusicFolders.view?${params}`;
 
   try {
     const res = await fetch(url);

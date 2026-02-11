@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -31,6 +32,7 @@ type Props = {
 };
 
 const ArtistHeader: React.FC<Props> = ({ artist }) => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
@@ -87,7 +89,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
   const playArtist = (shuffle = false) => {
     if (!artistSongs.length) {
-      toast.error('One moment.');
+      toast.error(t('common.oneSecond'));
       return;
     }
 
@@ -100,11 +102,11 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           id: artist.id,
           name: artist.name,
           cover: artist.cover,
-          subtext: 'Artist',
+          subtext: t('common.artist'),
         },
         cover: artist.cover,
         songs: artistSongs,
-        subtext: 'Playlist',
+        subtext: t('common.playlist'),
         changed: new Date('1995-12-17T03:24:00'),
         created: new Date('1995-12-17T03:24:00')
       },
@@ -181,7 +183,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
         >
           <Ionicons name="play" size={18} color={themeColor} />
           <Text style={[styles.buttonText, isDarkMode && styles.buttonTextDark]}>
-            Play
+            {t('common.play')}
           </Text>
         </TouchableOpacity>
 
@@ -191,7 +193,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
         >
           <Ionicons name="shuffle" size={18} color={themeColor} />
           <Text style={[styles.buttonText, isDarkMode && styles.buttonTextDark]}>
-            Shuffle
+            {t('common.shuffle')}
           </Text>
         </TouchableOpacity>
       </View>

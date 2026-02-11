@@ -1,4 +1,5 @@
 import React, { forwardRef, useRef, useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   StyleSheet,
@@ -75,6 +76,7 @@ function LyricLine({
 
 const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
   ({ lyrics, onClose }, ref) => {
+    const { t } = useTranslation();
     const { isDarkMode } = useTheme();
     const { progress } = usePlaying();
     const insets = useSafeAreaInsets();
@@ -153,7 +155,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
             style={[styles.title, isDarkMode && styles.titleDark]}
             numberOfLines={1}
           >
-            Lyrics
+            {t('playing.lyrics.title')}
           </Text>
           <View style={styles.closeButton} />
         </View>

@@ -1,19 +1,14 @@
-export const unstar = async (
-    serverUrl: string,
-    userId: string,
-    token: string,
-    itemId: string
-) => {
-    const response = await fetch(
-        `${serverUrl}/Users/${userId}/FavoriteItems/${itemId}`,
-        {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `MediaBrowser Token=${token}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    );
+import type { JellyfinClient } from "../client";
 
-    return response.ok;
-};
+export async function unstar(
+  client: JellyfinClient,
+  itemId: string
+): Promise<void> {
+  await client.request(`/Users/${client.userId}/FavoriteItems/${itemId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `MediaBrowser Token=${client.token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}

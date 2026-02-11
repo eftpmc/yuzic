@@ -1,21 +1,16 @@
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 
-import {
-  ping as pingNavidrome,
-} from '@/api/navidrome/auth/ping';
-import {
-  connect as connectNavidrome,
-} from '@/api/navidrome/auth/connect';
+import { createNavidromeClient } from '@/api/navidrome/client';
+import { ping as pingNavidrome } from '@/api/navidrome/auth/ping';
+import { connect as connectNavidrome } from '@/api/navidrome/auth/connect';
 
-import {
-  ping as pingJellyfin,
-} from '@/api/jellyfin/auth/ping';
-import {
-  connect as connectJellyfin,
-} from '@/api/jellyfin/auth/connect';
+import { createJellyfinClient } from '@/api/jellyfin/client';
+import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
+import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 
 import { ServerType } from '@/types';
+import i18n from '@/i18n';
 
 export type ProviderAuth = {
   [key: string]: string | number | boolean | null;
@@ -60,17 +55,16 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
   navidrome: {
     type: 'navidrome',
     label: 'Navidrome',
-    description: 'A lightweight, self-hosted music server.',
+    get description() { return i18n.t('onboarding.connect.providerDescription.navidrome'); },
     icon: NavidromeIcon,
     capabilities: {
       supportsDemo: true,
     },
     ping: async (url, username, auth) => {
       const password = auth.password as string;
-
       if (!username || !password) return false;
-
-      return pingNavidrome(url, username, password);
+      const client = createNavidromeClient({ serverUrl: url, username, password });
+      return pingNavidrome(client);
     },
     connect: async (url, username, password) => {
       const result = await connectNavidrome(url, username, password);
@@ -94,7 +88,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       const password = 'demo';
       const result = await connectNavidrome(serverUrl, username, password);
       if (!result.success) {
-        throw new Error(result.message || 'Demo connection failed');
+        throw new Error(result.message || i18n.t('onboarding.connect.demoFailed'));
       }
       return {
         serverUrl,
@@ -109,17 +103,17 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
   jellyfin: {
     type: 'jellyfin',
     label: 'Jellyfin',
-    description: 'A full-featured media server for music, movies, and TV.',
+    get description() { return i18n.t('onboarding.connect.providerDescription.jellyfin'); },
     icon: JellyfinIcon,
     capabilities: {
       supportsDemo: false,
     },
     ping: async (url, username, auth) => {
       const token = auth.token as string;
-
-      if (!token) return false;
-
-      return pingJellyfin(url, token);
+      const userId = auth.userId as string;
+      if (!token || !userId) return false;
+      const client = createJellyfinClient({ serverUrl: url, token, userId });
+      return pingJellyfin(client);
     },
     connect: async (url, username, password) => {
       const result = await connectJellyfin(url, username, password);

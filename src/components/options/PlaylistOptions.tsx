@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
 import { useDeletePlaylist } from '@/hooks/playlists';
 import { FAVORITES_ID } from '@/constants/favorites';
+import { useTranslation } from 'react-i18next';
 
 export type PlaylistOptionsProps = {
   playlist: Playlist | null;
@@ -44,6 +45,7 @@ const PlaylistOptions = forwardRef<
   React.ElementRef<typeof BottomSheetModal>,
   PlaylistOptionsProps
 >(({ playlist, hideGoToPlaylist }, ref) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
   const navigation = useNavigation<any>();
@@ -113,12 +115,12 @@ const PlaylistOptions = forwardRef<
   const handleDeletePress = () => {
     if (!playlist || playlist.id === FAVORITES_ID) return;
     Alert.alert(
-      'Delete playlist',
-      `"${playlist.title}" will be permanently deleted. This cannot be undone.`,
+      t('playlistOptions.delete.title'),
+      t('playlistOptions.delete.body', { title: playlist.title }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -127,9 +129,9 @@ const PlaylistOptions = forwardRef<
               if (hideGoToPlaylist) {
                 navigation.goBack();
               }
-              toast.success('Playlist deleted');
+              toast.success(t('playlistOptions.toasts.deleted'));
             } catch {
-              toast.error('Could not delete playlist');
+              toast.error(t('playlistOptions.toasts.deleteFailed'));
             }
           },
         },
@@ -179,7 +181,7 @@ const PlaylistOptions = forwardRef<
             >
               {playlist.title}
             </Text>
-            <Text style={[styles.artist, themeStyles.artist]}>Playlist</Text>
+            <Text style={[styles.artist, themeStyles.artist]}>{t('playlistOptions.playlistLabel')}</Text>
           </View>
         </View>
 
@@ -187,25 +189,25 @@ const PlaylistOptions = forwardRef<
 
         <TouchableOpacity style={styles.option} onPress={() => handlePlay(false)}>
           <Ionicons name="play" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Play</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.play')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={() => handlePlay(true)}>
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Shuffle</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleAddToQueue}>
           <ListEnd size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Add to Queue</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.addToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>Shuffle to Queue</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
 
         {!hideGoToPlaylist && (
           <TouchableOpacity style={styles.option} onPress={handleGoToPlaylist}>
             <Ionicons name="list" size={26} color={themeStyles.icon.color} />
-            <Text style={[styles.optionText, themeStyles.optionText]}>Go to Playlist</Text>
+            <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.goToPlaylist')}</Text>
           </TouchableOpacity>
         )}
 
@@ -230,7 +232,7 @@ const PlaylistOptions = forwardRef<
               (isDownloaded || isDownloading) && { opacity: 0.6 },
             ]}
           >
-            {isDownloading ? 'Downloading…' : isDownloaded ? 'Downloaded' : 'Download'}
+            {isDownloading ? t('playlistOptions.actions.downloading') : isDownloaded ? t('playlistOptions.actions.downloaded') : t('playlistOptions.actions.download')}
           </Text>
         </TouchableOpacity>
 
@@ -252,28 +254,28 @@ const PlaylistOptions = forwardRef<
                 deletePlaylist.isPending && { opacity: 0.6 },
               ]}
             >
-              Delete playlist
+              {t('playlistOptions.actions.delete')}
             </Text>
           </TouchableOpacity>
         )}
 
         <View style={styles.divider} />
 
-        <Text style={[styles.sectionLabel, themeStyles.artist]}>Playlist Info</Text>
+        <Text style={[styles.sectionLabel, themeStyles.artist]}>{t('playlistOptions.sections.info')}</Text>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Last changed</Text>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('playlistOptions.info.lastChanged')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]}>
             {formatDate(playlist.changed)}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Created</Text>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('playlistOptions.info.created')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]}>
             {formatDate(playlist.created)}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>Songs</Text>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('playlistOptions.info.songs')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]}>{songs.length}</Text>
         </View>
       </BottomSheetScrollView>

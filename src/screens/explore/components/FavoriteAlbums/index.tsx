@@ -5,6 +5,7 @@ import { useStarredSongs } from '@/hooks/starred';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/home/components/Items/AlbumItem';
 import SectionEmptyState from '../SectionEmptyState';
+import { useTranslation } from 'react-i18next';
 
 const H_PADDING = 12;
 const GAP = 12;
@@ -18,6 +19,7 @@ const getItemWidth = (width: number) => {
 };
 
 export default function FavoriteAlbums() {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const { width } = useWindowDimensions();
   const { albums } = useAlbums();
@@ -50,10 +52,10 @@ export default function FavoriteAlbums() {
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-        Favorite albums
+        {t('explore.sections.favoriteAlbums')}
       </Text>
       {favoriteAlbums.length === 0 ? (
-        <SectionEmptyState message="Star songs to add albums here" />
+        <SectionEmptyState message={t('explore.empty.favoriteAlbums')} />
       ) : (
       <ScrollView
         horizontal

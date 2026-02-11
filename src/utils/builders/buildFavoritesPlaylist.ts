@@ -1,15 +1,16 @@
 import { FAVORITES_ID } from '@/constants/favorites';
 import { Playlist, Song } from '@/types';
+import i18n from '@/i18n';
 
 export function buildFavoritesPlaylist(songs: Song[]): Playlist {
   return {
     id: FAVORITES_ID,
-    title: 'Favorites',
+    title: i18n.t('playlist.favoritesTitle'),
     cover: {
       kind: 'special',
       name: 'heart',
     },
-    subtext: `Playlist • Custom`,
+    subtext: i18n.t('playlist.subtext', { count: songs.length }),
     changed: new Date("1995-12-17T03:24:00"),
     created: new Date("1995-12-17T03:24:00"),
     songs,

@@ -1,41 +1,24 @@
 import { AlbumBase } from '@/types/Album';
 import { ArtistBase } from '@/types/Artist';
-
-const headers = (token: string) => ({
-  'X-Emby-Token': token,
-});
+import type { JellyfinClient } from '../client';
 
 export async function search(
-  serverUrl: string,
-  token: string,
+  client: JellyfinClient,
   query: string
 ): Promise<{ albums: AlbumBase[]; artists: ArtistBase[] }> {
   if (!query.trim()) {
     return { albums: [], artists: [] };
   }
 
-  const [albumsRes, artistsRes] = await Promise.all([
-    fetch(
-      `${serverUrl}/Items` +
-        `?SearchTerm=${encodeURIComponent(query)}` +
-        `&IncludeItemTypes=MusicAlbum` +
-        `&Recursive=true` +
-        `&Fields=DateCreated,ProviderIds,ArtistItems`,
-      { headers: headers(token) }
-    ),
-    fetch(
-      `${serverUrl}/Items` +
-        `?SearchTerm=${encodeURIComponent(query)}` +
-        `&IncludeItemTypes=MusicArtist` +
-        `&Recursive=true` +
-        `&Fields=ProviderIds`,
-      { headers: headers(token) }
-    ),
-  ]);
-
   const [albumsData, artistsData] = await Promise.all([
-    albumsRes.json(),
-    artistsRes.json(),
+    client.request<any>(
+      `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicAlbum&Recursive=true&Fields=DateCreated,ProviderIds,ArtistItems`,
+      { tokenOnly: true }
+    ),
+    client.request<any>(
+      `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicArtist&Recursive=true&Fields=ProviderIds`,
+      { tokenOnly: true }
+    ),
   ]);
 
   const albumItems = albumsData.Items ?? [];

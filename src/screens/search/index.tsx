@@ -20,13 +20,14 @@ import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
 import PlaylistRow from '@/components/rows/PlaylistRow';
 import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
-import { track } from '@/utils/analytics/amplitude';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
@@ -34,8 +35,6 @@ const Search = () => {
   const { searchResults, handleSearch, clearSearch, isLoading } = useSearch();
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  track('searching');
 
   const onSearchChange = (text: string) => {
     setQuery(text);
@@ -152,7 +151,7 @@ const Search = () => {
               styles.searchInput,
               isDarkMode && styles.searchInputDark,
             ]}
-            placeholder="Search for music, artists, or playlists..."
+            placeholder={t('search.placeholder')}
             placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
             value={query}
             onChangeText={onSearchChange}
@@ -199,7 +198,7 @@ const Search = () => {
           <Text
             style={[styles.noResults, isDarkMode && styles.noResultsDark]}
           >
-            No results found
+            {t('search.noResults')}
           </Text>
         )}
       </ScrollView>

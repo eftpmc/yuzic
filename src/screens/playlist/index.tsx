@@ -7,7 +7,6 @@ import { usePlaylist } from '@/hooks/playlists';
 
 import PlaylistContent from './components/Content';
 import LoadingPlaylistContent from './components/Content/Loading';
-import { track } from '@/utils/analytics/amplitude';
 import { useTheme } from '@/hooks/useTheme';
 
 const PlaylistScreen: React.FC = () => {
@@ -32,8 +31,6 @@ const PlaylistScreen: React.FC = () => {
       </SafeAreaView>
     );
   }
-
-  track("playlist screen", { title: playlist.title });
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>

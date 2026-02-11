@@ -1,30 +1,18 @@
 import { ArtistBase, CoverSource } from "@/types";
+import type { JellyfinClient } from "../client";
 
 export type GetArtistsResult = ArtistBase[];
 
-export async function getArtists(
-  serverUrl: string,
-  token: string
-): Promise<GetArtistsResult> {
+export async function getArtists(client: JellyfinClient): Promise<GetArtistsResult> {
   try {
-    const url =
-      `${serverUrl}/Items` +
+    const path =
+      `/Items` +
       `?IncludeItemTypes=MusicArtist` +
       `&Recursive=true` +
       `&SortBy=SortName` +
       `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds`;
 
-    const res = await fetch(url, {
-      headers: {
-        "X-Emby-Token": token,
-        "X-Emby-Authorization":
-          `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`,
-      },
-    });
-
-    if (!res.ok) throw new Error(`Jellyfin getArtists failed: ${res.status}`);
-
-    const raw = await res.json();
+    const raw = await client.request<any>(path);
     const items = raw?.Items ?? [];
 
     return items.map((a: any) => {

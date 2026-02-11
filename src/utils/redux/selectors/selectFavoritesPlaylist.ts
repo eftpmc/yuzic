@@ -1,14 +1,15 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/utils/redux/store";
+import i18n from '@/i18n';
 
 export const selectFavoritesPlaylist = createSelector(
   [(state: RootState) => state.library.starred.songs],
   (songs) => {
     return {
       id: "favorites",
-      title: "Favorites",
+      title: i18n.t('playlist.favoritesTitle'),
       cover: "heart-icon",
-      subtext: `Playlist • ${songs.length} songs`,
+      subtext: i18n.t('playlist.subtext', { count: songs.length }),
       songs,
     };
   }

@@ -1,4 +1,4 @@
-import { createSlskdClient, SlskdConfig } from '../client';
+import { createSlskdClient, type SlskdClient, type SlskdConfig } from '../client';
 
 const ALLOWED_EXTENSIONS = ['flac', 'mp3'];
 const SEARCH_TIMEOUT_MS = 15000;
@@ -52,7 +52,7 @@ export async function downloadAlbum(
   }
 
   const searchText = `${artistName} ${albumTitle}`.trim();
-  const { request } = createSlskdClient(config);
+  const client = createSlskdClient(config);
 
   try {
     const uuid =
@@ -75,7 +75,7 @@ export async function downloadAlbum(
       searchTimeout: SEARCH_TIMEOUT_MS,
     };
 
-    const searchState = await request<{ id: string }>('/searches', {
+    const searchState = await client.request<{ id: string }>('/searches', {
       method: 'POST',
       body: JSON.stringify(searchBody),
     });
@@ -89,7 +89,7 @@ export async function downloadAlbum(
     let isComplete = false;
     for (let i = 0; i < MAX_POLL_ITERATIONS; i++) {
       await delay(POLL_MS);
-      const state = await request<SearchStateResponse>(
+      const state = await client.request<SearchStateResponse>(
         `/searches/${searchId}`
       );
       if (state.isComplete === true) {
@@ -105,7 +105,7 @@ export async function downloadAlbum(
       };
     }
 
-    const list = await request<SearchResponseItem[]>(
+    const list = await client.request<SearchResponseItem[]>(
       `/searches/${searchId}/responses`
     );
     const responses: SearchResponseItem[] = Array.isArray(list) ? list : [];
@@ -170,7 +170,7 @@ export async function downloadAlbum(
     const toEnqueue = chosenDir.files;
 
     const encoded = encodeURIComponent(user.username);
-    await request(`/transfers/downloads/${encoded}`, {
+    await client.request(`/transfers/downloads/${encoded}`, {
       method: 'POST',
       body: JSON.stringify(toEnqueue),
     });

@@ -18,6 +18,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
 import { ListEnd, ListStart, PlusCircle, Radio } from 'lucide-react-native';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
+import { useTranslation } from 'react-i18next';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -47,6 +48,7 @@ const SongOptions = forwardRef<
   React.ElementRef<typeof BottomSheetModal>,
   SongOptionsProps
 >(({ selectedSong, onAddToPlaylist }, ref) => {
+    const { t } = useTranslation();
     const { isDarkMode } = useTheme();
     const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
@@ -70,13 +72,13 @@ const SongOptions = forwardRef<
       try {
         if (isStarred) {
           await unstarSong.mutateAsync(selectedSong.id);
-          toast.success(`${selectedSong.title} removed from favorites.`);
+          toast.success(t('songOptions.toasts.removedFromFavorites', { title: selectedSong.title }));
         } else {
           await starSong.mutateAsync(selectedSong.id);
-          toast.success(`${selectedSong.title} added to favorites.`);
+          toast.success(t('songOptions.toasts.addedToFavorites', { title: selectedSong.title }));
         }
       } catch {
-        toast.error('Failed to update favorites.');
+        toast.error(t('songOptions.toasts.updateFavoritesFailed'));
       } finally {
         close();
       }
@@ -84,20 +86,20 @@ const SongOptions = forwardRef<
 
     const handleAddToEndQueue = async () => {
       if (!currentSong) {
-        toast.error('Nothing is currently playing.');
+        toast.error(t('songOptions.toasts.nothingPlaying'));
         return;
       }
 
       if (selectedSong.id === currentSong.id) {
-        toast.error(`${selectedSong.title} is already playing.`);
+        toast.error(t('songOptions.toasts.alreadyPlaying', { title: selectedSong.title }));
         return;
       }
 
       try {
         await addToQueue(selectedSong);
-        toast.success(`${selectedSong.title} added to queue.`);
+        toast.success(t('songOptions.toasts.addedToQueue', { title: selectedSong.title }));
       } catch {
-        toast.error('Failed to add to queue.');
+        toast.error(t('songOptions.toasts.addToQueueFailed'));
       } finally {
         close();
       }
@@ -105,20 +107,20 @@ const SongOptions = forwardRef<
 
     const handleAddToQueue = async () => {
       if (!currentSong) {
-        toast.error('Nothing is currently playing.');
+        toast.error(t('songOptions.toasts.nothingPlaying'));
         return;
       }
 
       if (selectedSong.id === currentSong.id) {
-        toast.error(`${selectedSong.title} is already playing.`);
+        toast.error(t('songOptions.toasts.alreadyPlaying', { title: selectedSong.title }));
         return;
       }
 
       try {
         await playNext(selectedSong);
-        toast.success(`${selectedSong.title} will play next.`);
+        toast.success(t('songOptions.toasts.playNext', { title: selectedSong.title }));
       } catch {
-        toast.error('Failed to queue song next.');
+        toast.error(t('songOptions.toasts.playNextFailed'));
       } finally {
         close();
       }
@@ -133,7 +135,7 @@ const SongOptions = forwardRef<
       try {
         await playSimilar(selectedSong);
       } catch {
-        toast.error('Failed to start instant mix');
+        toast.error(t('songOptions.toasts.instantMixFailed'));
       } finally {
         close();
       }
@@ -174,7 +176,7 @@ const SongOptions = forwardRef<
                 style={[styles.artist, themeStyles.artist]}
                 numberOfLines={1}
               >
-                {selectedSong.artist || 'Unknown'}
+                {selectedSong.artist || t('songOptions.unknownArtist')}
               </Text>
             </View>
           </View>
@@ -193,7 +195,7 @@ const SongOptions = forwardRef<
             <Text
               style={[styles.optionText, themeStyles.optionText]}
             >
-              {isStarred ? 'Unfavorite' : 'Favorite'}
+              {isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             </Text>
           </TouchableOpacity>
 
@@ -208,7 +210,7 @@ const SongOptions = forwardRef<
             <Text
               style={[styles.optionText, themeStyles.optionText]}
             >
-              Add to Queue
+              {t('songOptions.actions.addToQueue')}
             </Text>
           </TouchableOpacity>
 
@@ -223,7 +225,7 @@ const SongOptions = forwardRef<
             <Text
               style={[styles.optionText, themeStyles.optionText]}
             >
-              Add to End
+              {t('songOptions.actions.addToEnd')}
             </Text>
           </TouchableOpacity>
 
@@ -238,7 +240,7 @@ const SongOptions = forwardRef<
             <Text
               style={[styles.optionText, themeStyles.optionText]}
             >
-              Add to Playlist
+              {t('songOptions.actions.addToPlaylist')}
             </Text>
           </TouchableOpacity>
 
@@ -253,56 +255,56 @@ const SongOptions = forwardRef<
             <Text
               style={[styles.optionText, themeStyles.optionText]}
             >
-              Instant Mix
+              {t('songOptions.actions.instantMix')}
             </Text>
           </TouchableOpacity>
 
           <View style={styles.divider} />
 
-          <Text style={[styles.sectionLabel, themeStyles.artist]}>Media</Text>
+          <Text style={[styles.sectionLabel, themeStyles.artist]}>{t('songOptions.sections.media')}</Text>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, themeStyles.artist]}>Duration</Text>
+            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.duration')}</Text>
             <Text style={[styles.infoValue, themeStyles.title]}>
               {formatDuration(selectedSong.duration)}
             </Text>
           </View>
           {selectedSong.bitrate != null && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>Bitrate</Text>
-              <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.bitrate} kbps</Text>
+              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.bitrate')}</Text>
+              <Text style={[styles.infoValue, themeStyles.title]}>{t('songOptions.media.kbps', { value: selectedSong.bitrate })}</Text>
             </View>
           )}
           {selectedSong.sampleRate != null && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>Sample rate</Text>
-              <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.sampleRate} Hz</Text>
+              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.sampleRate')}</Text>
+              <Text style={[styles.infoValue, themeStyles.title]}>{t('songOptions.media.hz', { value: selectedSong.sampleRate })}</Text>
             </View>
           )}
           {selectedSong.bitsPerSample != null && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>Bits per sample</Text>
+              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.bitsPerSample')}</Text>
               <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.bitsPerSample}</Text>
             </View>
           )}
           {selectedSong.mimeType && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>Format</Text>
+              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.format')}</Text>
               <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>{selectedSong.mimeType}</Text>
             </View>
           )}
 
           {(selectedSong.disc != null || selectedSong.trackNumber != null) && (
             <>
-              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>Track</Text>
+              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>{t('songOptions.sections.track')}</Text>
               {selectedSong.disc != null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>Disc</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.track.disc')}</Text>
                   <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.disc}</Text>
                 </View>
               )}
               {selectedSong.trackNumber != null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>Track</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.track.track')}</Text>
                   <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.trackNumber}</Text>
                 </View>
               )}
@@ -311,16 +313,16 @@ const SongOptions = forwardRef<
 
           {(selectedSong.dateReleased || selectedSong.dateAdded) && (
             <>
-              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>Dates</Text>
+              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>{t('songOptions.sections.dates')}</Text>
               {selectedSong.dateReleased && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>Released</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.dates.released')}</Text>
                   <Text style={[styles.infoValue, themeStyles.title]}>{formatDate(selectedSong.dateReleased)}</Text>
                 </View>
               )}
               {selectedSong.dateAdded && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>Date added</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.dates.added')}</Text>
                   <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>{formatDate(selectedSong.dateAdded)}</Text>
                 </View>
               )}
@@ -329,16 +331,16 @@ const SongOptions = forwardRef<
 
           {(selectedSong.bpm != null || selectedSong.genres?.length || selectedSong.filePath) && (
             <>
-              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>Other</Text>
+              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>{t('songOptions.sections.other')}</Text>
               {selectedSong.bpm != null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>BPM</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.other.bpm')}</Text>
                   <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.bpm}</Text>
                 </View>
               )}
               {selectedSong.genres?.length ? (
                 <View style={styles.genreRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>Genres</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.other.genres')}</Text>
                   <View style={styles.genreList}>
                     {selectedSong.genres.map((g, i) => (
                       <View key={`${g}-${i}`} style={[styles.genreChip, themeStyles.genreChip]}>
@@ -350,7 +352,7 @@ const SongOptions = forwardRef<
               ) : null}
               {selectedSong.filePath ? (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>File path</Text>
+                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.other.filePath')}</Text>
                   <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={2}>
                     {selectedSong.filePath}
                   </Text>

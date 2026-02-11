@@ -12,6 +12,7 @@ import { BlurView } from 'expo-blur';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 export type InfoRow = {
   id: string;
@@ -36,6 +37,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
   cover,
   rows,
 }) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
 
   const opacity = useRef(new Animated.Value(0)).current;
@@ -170,7 +172,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
                   isDarkMode && styles.closeTextDark,
                 ]}
               >
-                Close
+                {t('common.done')}
               </Text>
             </Pressable>
           </BlurView>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { useExternalAlbum } from '@/hooks/albums';
 import ExternalAlbumContent from './components/Content';
@@ -13,6 +14,7 @@ type RouteParams = {
 };
 
 const ExternalAlbumScreen: React.FC = () => {
+  const { t } = useTranslation();
   const route = useRoute<any>();
   const { albumId } = route.params as RouteParams;
 
@@ -39,7 +41,7 @@ const ExternalAlbumScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.screen(isDarkMode)}>
         <Text style={styles.error(isDarkMode)}>
-          {error?.message ?? 'Album not found'}
+          {error?.message ?? t('media.albumNotFound')}
         </Text>
       </SafeAreaView>
     );

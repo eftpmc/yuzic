@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
@@ -35,12 +36,18 @@ import {
 } from '@/utils/redux/slices/downloadersSlice';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 const SlskdView: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
+  const activeServer = useSelector(selectActiveServer);
+
+  if (!activeServer) return null;
+  const serverId = activeServer.id;
 
   const serverUrl = useSelector(selectSlskdServerUrl);
   const apiKey = useSelector(selectSlskdApiKey);
@@ -74,7 +81,7 @@ const SlskdView: React.FC = () => {
 
   useEffect(() => {
     if (!serverUrl || !apiKey) {
-      dispatch(setSlskdAuthenticated(false));
+      dispatch(setSlskdAuthenticated({ serverId, value: false }));
       return;
     }
 
@@ -89,13 +96,13 @@ const SlskdView: React.FC = () => {
           await slskd.testConnection(config);
 
           if (!cancelled) {
-            dispatch(connectSlskd());
+            dispatch(connectSlskd({ serverId }));
           }
         }
       } catch {
         if (!cancelled) {
-          dispatch(setSlskdAuthenticated(false));
-          toast.error('slskd connection failed');
+          dispatch(setSlskdAuthenticated({ serverId, value: false }));
+          toast.error(t('settings.downloaders.slskd.connectionFailed'));
         }
       } finally {
         if (!cancelled) {
@@ -128,7 +135,7 @@ const SlskdView: React.FC = () => {
       setQueue(currentQueue);
 
       if (finishedItems.length > 0) {
-        toast('Download complete!');
+        toast(t('settings.downloaders.downloadComplete'));
       }
     } catch {
       console.warn('Queue polling failed');
@@ -162,15 +169,15 @@ const SlskdView: React.FC = () => {
   }, [config.serverUrl, config.apiKey, isAuthenticated]);
 
   const handleDisconnect = () => {
-    dispatch(disconnectSlskd());
+    dispatch(disconnectSlskd({ serverId }));
     setQueue([]);
     previousQueueRef.current = [];
-    toast('Disconnected from slskd.');
+    toast(t('settings.downloaders.slskd.disconnected'));
   };
 
   const renderDownloadItem = ({ item }: { item: SlskdQueueRecord }) => {
     const percent = Math.min(100, item.percentComplete ?? 0);
-    const meta = item.fileCount > 0 ? `${item.fileCount} file${item.fileCount === 1 ? '' : 's'}` : '';
+    const meta = item.fileCount > 0 ? `${item.fileCount} ${t('settings.downloaders.files', { count: item.fileCount })}` : '';
 
     return (
       <View style={styles.itemRow}>
@@ -180,7 +187,7 @@ const SlskdView: React.FC = () => {
               style={[styles.itemTitle, isDarkMode && styles.itemTitleDark]}
               numberOfLines={1}
             >
-              {item.title || 'Unknown'}
+              {item.title || t('settings.downloaders.unknown')}
             </Text>
             <Text
               style={[styles.itemSub, isDarkMode && styles.itemSubDark]}
@@ -212,28 +219,28 @@ const SlskdView: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
-      <Header title="slskd" />
+      <Header title={t('settings.downloaders.slskd.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-            Server URL
+            {t('settings.downloaders.serverUrl')}
           </Text>
           <TextInput
             value={serverUrl}
-            onChangeText={(v) => dispatch(setSlskdServerUrl(v))}
-            placeholder="http://slskd:5030"
+            onChangeText={(v) => dispatch(setSlskdServerUrl({ serverId, value: v }))}
+            placeholder={t('settings.downloaders.serverUrlPlaceholder.slskd')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
           <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-            API Key
+            {t('settings.downloaders.apiKey')}
           </Text>
           <TextInput
             value={apiKey}
-            onChangeText={(v) => dispatch(setSlskdApiKey(v))}
-            placeholder="API key"
+            onChangeText={(v) => dispatch(setSlskdApiKey({ serverId, value: v }))}
+            placeholder={t('settings.downloaders.apiKeyPlaceholder')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
             secureTextEntry
             style={[styles.input, isDarkMode && styles.inputDark]}
@@ -241,7 +248,7 @@ const SlskdView: React.FC = () => {
 
           <View style={styles.row}>
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-              Connectivity
+              {t('settings.downloaders.connectivity')}
             </Text>
 
             {isLoading ? (
@@ -260,7 +267,7 @@ const SlskdView: React.FC = () => {
 
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-            Queue
+            {t('settings.downloaders.queue')}
           </Text>
 
           {loadingQueue ? (
@@ -275,7 +282,7 @@ const SlskdView: React.FC = () => {
             </Animated.View>
           ) : queue.length === 0 ? (
             <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
-              Nothing downloading yet.
+              {t('settings.downloaders.emptyQueue')}
             </Text>
           ) : (
             <FlatList
@@ -295,7 +302,7 @@ const SlskdView: React.FC = () => {
           onPress={handleDisconnect}
         >
           <MaterialIcons name="logout" size={20} color="#fff" />
-          <Text style={styles.disconnectButtonText}>Disconnect</Text>
+          <Text style={styles.disconnectButtonText}>{t('settings.downloaders.disconnect')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

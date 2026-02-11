@@ -1,31 +1,14 @@
 import { Song } from "@/types";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
+import type { NavidromeClient } from "../client";
 
 export interface GetStarredItemsResult {
   songs: Song[];
 }
 
 export async function getStarredItems(
-  serverUrl: string,
-  username: string,
-  password: string
+  client: NavidromeClient
 ): Promise<GetStarredItemsResult> {
-  const url =
-    `${serverUrl}/rest/getStarred.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json`;
-
-  const res = await fetch(url);
-  if (!res.ok)
-    throw new Error(`Navidrome getStarred failed: ${res.status}`);
-
-  const raw = await res.json();
-
+  const raw = await client.request<any>("getStarred.view");
   const starred = raw?.["subsonic-response"]?.starred || {};
 
   return {
@@ -36,13 +19,10 @@ export async function getStarredItems(
       artistId: s.artistId ?? "",
       albumId: s.albumId ?? "",
       cover: s.coverArt
-            ? { kind: "navidrome", coverArtId: s.coverArt }
-            : { kind: "none" },
+        ? { kind: "navidrome" as const, coverArtId: s.coverArt }
+        : { kind: "none" as const },
       duration: String(s.duration ?? 0),
-      streamUrl:
-        `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
-          username
-        )}&p=${encodeURIComponent(password)}&v=${API_VERSION}&c=${CLIENT_NAME}`,
+      streamUrl: client.buildStreamUrl(s.id),
       filePath: s.path ?? undefined,
       bitrate: s.bitRate ?? undefined,
       sampleRate: s.samplingRate ?? undefined,

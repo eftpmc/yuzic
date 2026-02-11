@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,18 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useApi } from '@/api';
-import { Song, ArtistBase, Artist } from '@/types';
+import { ArtistBase, Artist } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
-import ContextMenuModal, {
-  ContextMenuAction,
-} from '@/components/ContextMenuModal';
-import InfoModal, { InfoRow } from '@/components/InfoModal';
+import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import { usePlaying } from '@/contexts/PlayingContext';
 import { staleTime } from '@/constants/staleTime';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   artist: ArtistBase;
@@ -28,19 +25,13 @@ type Props = {
 };
 
 const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const api = useApi();
-  const { playSongInCollection } = usePlaying();
 
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [infoVisible, setInfoVisible] = useState(false);
-  const [artistInfo, setArtistInfo] = useState<Artist | null>(null);
-
-  const handleNavigation = useCallback(() => {
-    navigation.navigate('artistView', { id: artist.id });
-  }, [navigation, artist.id]);
+  const sheetRef = useRef<BottomSheetModal>(null);
+  const [fullArtist, setFullArtist] = useState<Artist | null>(null);
 
   const activeServer = useSelector(selectActiveServer);
 
@@ -52,97 +43,12 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
     });
   }, [api, queryClient, activeServer?.id, artist.id]);
 
-  const handlePlay = useCallback(
-    async (shuffle: boolean) => {
-      const fullArtist = await fetchArtist();
-      if (!fullArtist) return;
-
-      const albumIds = fullArtist.ownedAlbums.map(a => a.id);
-      if (!albumIds.length) return;
-
-      const albums = await Promise.all(
-        albumIds.map(albumId =>
-          queryClient.fetchQuery({
-            queryKey: [QueryKeys.Album, activeServer?.id, albumId],
-            queryFn: () => api.albums.get(albumId),
-            staleTime: staleTime.albums,
-          })
-        )
-      );
-
-      const songs: Song[] = albums.flatMap(a => a?.songs ?? []);
-      if (!songs.length) return;
-
-      playSongInCollection(
-        songs[0],
-        {
-          id: fullArtist.id,
-          title: fullArtist.name,
-          artist: fullArtist,
-          cover: fullArtist.cover,
-          subtext: 'Artist',
-          changed: new Date('1995-12-17T03:24:00'),
-          created: new Date('1995-12-17T03:24:00'),
-          songs,
-        },
-        shuffle
-      );
-    },
-    [fetchArtist, queryClient, api, playSongInCollection, activeServer?.id]
-  );
-
-  const handleShowInfo = useCallback(async () => {
-    const fullArtist = await fetchArtist();
-    if (!fullArtist) return;
-    setArtistInfo(fullArtist);
-    setInfoVisible(true);
+  const handleOpenOptions = useCallback(async () => {
+    setFullArtist(null);
+    sheetRef.current?.present();
+    const fetched = await fetchArtist();
+    if (fetched) setFullArtist(fetched);
   }, [fetchArtist]);
-
-  const infoRows: InfoRow[] = useMemo(() => {
-    if (!artistInfo) return [];
-    return [
-      {
-        id: 'albums',
-        label: 'Albums',
-        value: artistInfo.ownedAlbums.length,
-      },
-    ];
-  }, [artistInfo]);
-
-  const menuActions: ContextMenuAction[] = useMemo(
-    () => [
-      {
-        id: 'play',
-        label: 'Play',
-        icon: 'play',
-        primary: true,
-        onPress: () => handlePlay(false),
-      },
-      {
-        id: 'shuffle',
-        label: 'Shuffle',
-        icon: 'shuffle',
-        onPress: () => handlePlay(true),
-      },
-      {
-        id: 'info',
-        label: 'Artist Info',
-        icon: 'information-circle',
-        onPress: () => {
-          setMenuVisible(false);
-          handleShowInfo();
-        },
-      },
-      {
-        id: 'navigate',
-        label: 'Go to Artist',
-        icon: 'person',
-        dividerBefore: true,
-        onPress: handleNavigation,
-      },
-    ],
-    [handlePlay, handleShowInfo, handleNavigation]
-  );
 
   return (
     <>
@@ -176,14 +82,14 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
                   isDarkMode && styles.subtextDark,
                 ]}
               >
-                {artist.subtext}
+                {artist.subtext === 'Artist' ? t('common.artist') : artist.subtext}
               </Text>
             </View>
           </TouchableOpacity>
 
           <View style={styles.optionsContainer}>
             <TouchableOpacity
-              onPress={() => setMenuVisible(true)}
+              onPress={handleOpenOptions}
               style={styles.optionButton}
             >
               <Ionicons
@@ -196,25 +102,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
         </View>
       </View>
 
-      <ContextMenuModal
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        actions={menuActions}
-      />
-
-      {artistInfo && (
-        <InfoModal
-          visible={infoVisible}
-          onClose={() => {
-            setInfoVisible(false);
-            setArtistInfo(null);
-          }}
-          title={artistInfo.name}
-          subtitle="Artist"
-          cover={artistInfo.cover}
-          rows={infoRows}
-        />
-      )}
+      <ArtistOptions ref={sheetRef} artist={fullArtist} />
     </>
   );
 };

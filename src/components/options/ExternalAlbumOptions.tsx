@@ -1,10 +1,14 @@
-import React from 'react';
-import { MenuView } from '@react-native-menu/menu';
+import React, { useRef, useMemo } from 'react';
 import {
+  View,
+  Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
 } from 'react-native';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -20,6 +24,7 @@ import {
   selectIsSlskdActive,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 interface ExternalAlbumOptionsProps {
   selectedAlbumTitle: string;
@@ -30,7 +35,12 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
   selectedAlbumTitle,
   selectedAlbumArtist,
 }) => {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
+  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => ['25%'], []);
 
   const lidarrConfig = useSelector(selectLidarrConfig);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -43,11 +53,16 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
     (isLidarrActive && isLidarrConnected) ||
     (isSlskdActive && isSlskdConnected);
 
+  const close = () => {
+    bottomSheetRef.current?.dismiss();
+  };
+
   const handleDownloadAlbum = async () => {
     if (!selectedAlbumTitle || !selectedAlbumArtist) return;
+    close();
 
     if (!canDownload) {
-      toast.error('No active downloader connected.');
+      toast.error(t('externalAlbum.download.noDownloader'));
       return;
     }
 
@@ -59,9 +74,9 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           selectedAlbumArtist
         );
         if (result.success) {
-          toast.success('Album added to Lidarr!');
+          toast.success(t('externalAlbum.download.addedToLidarr'));
         } else {
-          toast.error(result.message ?? 'Download failed.');
+          toast.error(result.message ?? t('externalAlbum.download.failed'));
         }
         return;
       }
@@ -73,47 +88,85 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           selectedAlbumArtist
         );
         if (result.success) {
-          toast.success('Album added to slskd queue!');
+          toast.success(t('externalAlbum.download.addedToSlskd'));
         } else {
-          toast.error(result.message ?? 'Download failed.');
+          toast.error(result.message ?? t('externalAlbum.download.failed'));
         }
         return;
       }
 
-      toast.error('No active downloader connected.');
+      toast.error(t('externalAlbum.download.noDownloader'));
     } catch (e) {
-      toast.error('Failed to start download.');
+      toast.error(t('externalAlbum.download.startFailed'));
     }
   };
 
   return (
-    <MenuView
-      title="External Album"
-      actions={canDownload ? [
-        {
-          id: 'download-album',
-          title: 'Download to Server',
-          image: Platform.select({
-            ios: 'arrow.down.circle',
-            android: 'ic_download',
-          }),
-          imageColor: '#fff',
-        },
-      ] : []}
-      onPressAction={({ nativeEvent }) => {
-        if (nativeEvent.event === 'download-album') {
-          handleDownloadAlbum();
-        }
-      }}
-    >
-      <TouchableOpacity style={styles.moreButton}>
+    <>
+      <TouchableOpacity
+        style={styles.moreButton}
+        onPress={() => {
+          if (!canDownload) {
+            toast.error(t('externalAlbum.download.noDownloader'));
+            return;
+          }
+          bottomSheetRef.current?.present();
+        }}
+      >
         <Ionicons
           name="ellipsis-horizontal"
           size={24}
           color={isDarkMode ? '#fff' : '#000'}
         />
       </TouchableOpacity>
-    </MenuView>
+
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        handleIndicatorStyle={{
+          backgroundColor: isDarkMode ? '#555' : '#ccc',
+        }}
+        backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
+      >
+        <BottomSheetView style={[styles.sheetContent, themeStyles.sheetBackground]}>
+          <View style={styles.header}>
+            <Ionicons
+              name="disc-outline"
+              size={32}
+              color={themeStyles.icon.color}
+            />
+            <View style={styles.headerText}>
+              <Text
+                style={[styles.title, themeStyles.title]}
+                numberOfLines={1}
+              >
+                {selectedAlbumTitle}
+              </Text>
+              <Text
+                style={[styles.artist, themeStyles.artist]}
+                numberOfLines={1}
+              >
+                {selectedAlbumArtist}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <TouchableOpacity style={styles.option} onPress={handleDownloadAlbum}>
+            <Ionicons
+              name="arrow-down-circle"
+              size={26}
+              color={themeStyles.icon.color}
+            />
+            <Text style={[styles.optionText, themeStyles.optionText]}>
+              {t('externalAlbum.menu.downloadToServer')}
+            </Text>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheetModal>
+    </>
   );
 };
 
@@ -123,4 +176,46 @@ const styles = StyleSheet.create({
   moreButton: {
     padding: 8,
   },
+  sheetBackground: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  sheetContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerText: { flex: 1, marginLeft: 12 },
+  title: { fontSize: 16, fontWeight: '600' },
+  artist: { fontSize: 14, marginTop: 2 },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#444',
+    marginVertical: 12,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  optionText: { marginLeft: 16, fontSize: 16 },
+});
+
+const stylesLight = StyleSheet.create({
+  sheetBackground: { backgroundColor: '#F2F2F7' },
+  title: { color: '#000' },
+  artist: { color: '#666' },
+  optionText: { color: '#000' },
+  icon: { color: '#000' },
+});
+
+const stylesDark = StyleSheet.create({
+  sheetBackground: { backgroundColor: '#222' },
+  title: { color: '#fff' },
+  artist: { color: '#aaa' },
+  optionText: { color: '#fff' },
+  icon: { color: '#999' },
 });

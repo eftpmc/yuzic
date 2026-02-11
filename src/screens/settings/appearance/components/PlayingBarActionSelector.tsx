@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -18,6 +19,7 @@ import {
 } from '@/screens/playing/playingBar/actions/Actions';
 
 export const PlayingBarActionSelector: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const selected = useSelector(selectPlayingBarAction);
@@ -26,7 +28,7 @@ export const PlayingBarActionSelector: React.FC = () => {
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
       <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
-        Choose which action appears in the playing bar
+        {t('settings.appearance.playingBarAction.info')}
       </Text>
 
       <View style={styles.row}>

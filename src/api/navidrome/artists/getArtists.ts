@@ -1,40 +1,13 @@
 import { ArtistBase, CoverSource } from "@/types";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
+import type { NavidromeClient } from "../client";
 
 export type GetArtistResult = ArtistBase;
 export type GetArtistsResult = ArtistBase[];
 
-async function fetchGetArtists(
-  serverUrl: string,
-  username: string,
-  password: string
-) {
-  const url =
-    `${serverUrl}/rest/getArtists.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Navidrome getArtists failed: ${res.status}`);
-
-  return res.json();
-}
-
-async function normalizeArtistEntry(
-  a: any,
-  serverUrl: string,
-  username: string,
-  password: string
-): Promise<GetArtistResult> {
-    const cover: CoverSource = a.coverArt
-      ? { kind: "navidrome", coverArtId: a.coverArt }
-      : { kind: "none" };
-
+function normalizeArtistEntry(a: any): GetArtistResult {
+  const cover: CoverSource = a.coverArt
+    ? { kind: "navidrome", coverArtId: a.coverArt }
+    : { kind: "none" };
   return {
     id: a.id,
     cover,
@@ -44,22 +17,11 @@ async function normalizeArtistEntry(
 }
 
 export async function getArtists(
-  serverUrl: string,
-  username: string,
-  password: string
+  client: NavidromeClient
 ): Promise<GetArtistsResult> {
-  const raw = await fetchGetArtists(serverUrl, username, password);
-
+  const raw = await client.request<any>("getArtists.view");
   const indexes = raw?.["subsonic-response"]?.artists?.index;
   if (!indexes) return [];
-
   const flattened = indexes.flatMap((bucket: any) => bucket.artist || []);
-
-  const normalized = await Promise.all(
-    flattened.map((a: any) =>
-      normalizeArtistEntry(a, serverUrl, username, password)
-    )
-  );
-
-  return normalized;
+  return flattened.map((a: any) => normalizeArtistEntry(a));
 }

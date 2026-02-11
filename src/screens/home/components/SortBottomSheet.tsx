@@ -11,6 +11,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year';
 
@@ -19,19 +20,20 @@ interface SortBottomSheetProps {
   onSelect: (value: SortOrder) => void;
 }
 
-const sortOptions = [
-  { value: 'title', label: 'Alphabetical', icon: 'text-outline' },
-  { value: 'year', label: 'Release Year', icon: 'calendar-outline' },
-  { value: 'userplays', label: 'Most Played', icon: 'flame-outline' },
-  { value: 'recent', label: 'Most Recent', icon: 'time-outline' },
-] as const;
-
 const SortBottomSheet = forwardRef<
   BottomSheetModal,
   SortBottomSheetProps
 >(({ sortOrder, onSelect }, ref) => {
+  const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
+
+  const sortOptions = [
+    { value: 'title' as const, label: t('home.sort.alphabetical'), icon: 'text-outline' as const },
+    { value: 'year' as const, label: t('home.sort.releaseYear'), icon: 'calendar-outline' as const },
+    { value: 'userplays' as const, label: t('home.sort.mostPlayed'), icon: 'flame-outline' as const },
+    { value: 'recent' as const, label: t('home.sort.mostRecent'), icon: 'time-outline' as const },
+  ];
 
   const snapPoints = useMemo(() => ['40%'], []);
 
@@ -54,7 +56,7 @@ const SortBottomSheet = forwardRef<
             isDarkMode && styles.sheetTitleDark,
           ]}
         >
-          Sort by
+          {t('home.sortSheet.title')}
         </Text>
 
         {sortOptions.map(option => {

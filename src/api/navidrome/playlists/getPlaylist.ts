@@ -1,29 +1,13 @@
 import { Playlist, Song } from "@/types";
-
-const API_VERSION = "1.16.0";
-const CLIENT_NAME = "Yuzic";
+import type { NavidromeClient } from "../client";
 
 export type GetPlaylistResult = Playlist | null;
 
 export async function getPlaylist(
-  serverUrl: string,
-  username: string,
-  password: string,
+  client: NavidromeClient,
   playlistId: string
 ): Promise<GetPlaylistResult> {
-  const url =
-    `${serverUrl}/rest/getPlaylist.view` +
-    `?u=${encodeURIComponent(username)}` +
-    `&p=${encodeURIComponent(password)}` +
-    `&v=${API_VERSION}` +
-    `&c=${CLIENT_NAME}` +
-    `&f=json` +
-    `&id=${playlistId}`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Navidrome getPlaylist failed: ${res.status}`);
-
-  const raw = await res.json();
+  const raw = await client.request<any>("getPlaylist.view", { id: playlistId });
   const playlist = raw?.["subsonic-response"]?.playlist;
   if (!playlist) return null;
 
@@ -39,10 +23,7 @@ export async function getPlaylist(
       ? { kind: "navidrome", coverArtId: s.coverArt }
       : { kind: "none" },
     albumId: s.albumId ?? "",
-    streamUrl:
-      `${serverUrl}/rest/stream.view?id=${s.id}&u=${encodeURIComponent(
-        username
-      )}&p=${encodeURIComponent(password)}&v=${API_VERSION}&c=${CLIENT_NAME}`,
+    streamUrl: client.buildStreamUrl(s.id),
     filePath: s.path ?? undefined,
     bitrate: s.bitRate ?? undefined,
     sampleRate: s.samplingRate ?? undefined,

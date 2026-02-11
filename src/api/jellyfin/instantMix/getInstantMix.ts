@@ -1,5 +1,5 @@
 import { CoverSource, Song } from "@/types";
-import { buildJellyfinStreamUrl } from "@/utils/builders/buildStreamUrls";
+import type { JellyfinClient } from "../client";
 import { normalizeGenres } from "../utils/normalizeGenres";
 
 export type GetInstantMixResult = Song[];
@@ -17,34 +17,18 @@ function parseInstantMixResponse(text: string): { Items?: any[] } {
 }
 
 async function fetchInstantMix(
-  serverUrl: string,
+  client: JellyfinClient,
   itemId: string,
-  userId: string,
-  token: string,
   limit = 50
 ) {
-  const url =
-    `${serverUrl}/Items/${itemId}/InstantMix` +
-    `?UserId=${userId}` +
-    `&Limit=${limit}`;
-
-  const res = await fetch(url, {
-    headers: {
-      "X-Emby-Token": token,
-      "X-Emby-Authorization":
-        `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0", Token="${token}"`,
-      "Content-Type": "application/json",
-    },
+  const path = `/Items/${itemId}/InstantMix?UserId=${client.userId}&Limit=${limit}`;
+  const text = await client.requestText(path, {
+    headers: { "Content-Type": "application/json" },
   });
-
-  if (!res.ok) {
-    throw new Error(`Jellyfin getInstantMix failed: ${res.status}`);
-  }
-  const text = await res.text();
   return parseInstantMixResponse(text);
 }
 
-function normalizeItem(s: any, serverUrl: string, token: string): Song | null {
+function normalizeItem(s: any, client: JellyfinClient): Song | null {
   if (!s?.Id || s.Type !== "Audio") return null;
 
   const ticks = s.RunTimeTicks ?? s.MediaSources?.[0]?.RunTimeTicks ?? 0;
@@ -63,7 +47,7 @@ function normalizeItem(s: any, serverUrl: string, token: string): Song | null {
     artistId: artistItem?.Id ?? "",
     cover,
     duration: String(Math.round(Number(ticks) / 10_000_000)),
-    streamUrl: buildJellyfinStreamUrl(serverUrl, token, s.Id),
+    streamUrl: client.buildStreamUrl(s.Id),
     albumId: s.AlbumId ?? "",
     bitrate: (audioStream?.BitRate ?? ms?.Bitrate) ?? undefined,
     sampleRate: audioStream?.SampleRate ?? undefined,
@@ -78,15 +62,13 @@ function normalizeItem(s: any, serverUrl: string, token: string): Song | null {
 }
 
 export async function getInstantMix(
-  serverUrl: string,
+  client: JellyfinClient,
   itemId: string,
-  userId: string,
-  token: string,
   limit = 50
 ): Promise<GetInstantMixResult> {
-  const raw = await fetchInstantMix(serverUrl, itemId, userId, token, limit);
+  const raw = await fetchInstantMix(client, itemId, limit);
   const items = raw?.Items ?? [];
   return items
-    .map((s: any) => normalizeItem(s, serverUrl, token))
+    .map((s: any) => normalizeItem(s, client))
     .filter((s): s is Song => s !== null);
 }
