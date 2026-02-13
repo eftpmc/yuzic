@@ -1,5 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
+/**
+ * Legacy downloads slice - kept as a stub for redux-persist compatibility.
+ * Download state is now managed natively by react-native-nitro-player's DownloadManager.
+ */
 export interface DownloadsState {
   markedAlbums: string[];
   markedPlaylists: string[];
@@ -13,40 +17,7 @@ const initialState: DownloadsState = {
 const downloadsSlice = createSlice({
   name: 'downloads',
   initialState,
-  reducers: {
-    markAlbum(state, action: PayloadAction<string>) {
-      if (!state.markedAlbums.includes(action.payload)) {
-        state.markedAlbums.push(action.payload);
-      }
-    },
-    unmarkAlbum(state, action: PayloadAction<string>) {
-      state.markedAlbums = state.markedAlbums.filter(
-        id => id !== action.payload
-      );
-    },
-    markPlaylist(state, action: PayloadAction<string>) {
-      if (!state.markedPlaylists.includes(action.payload)) {
-        state.markedPlaylists.push(action.payload);
-      }
-    },
-    unmarkPlaylist(state, action: PayloadAction<string>) {
-      state.markedPlaylists = state.markedPlaylists.filter(
-        id => id !== action.payload
-      );
-    },
-    clearAllMarked(state) {
-      state.markedAlbums = [];
-      state.markedPlaylists = [];
-    },
-  },
+  reducers: {},
 });
-
-export const {
-  markAlbum,
-  unmarkAlbum,
-  markPlaylist,
-  unmarkPlaylist,
-  clearAllMarked,
-} = downloadsSlice.actions;
 
 export default downloadsSlice.reducer;

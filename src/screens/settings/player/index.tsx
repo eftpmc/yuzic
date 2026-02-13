@@ -9,6 +9,7 @@ import {
 
 import Header from '../components/Header';
 import CurrentlyPlaying from './components/CurrentlyPlaying';
+import Equalizer from './components/Equalizer';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 
@@ -28,6 +29,7 @@ const PlayerSettings: React.FC = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <CurrentlyPlaying />
+        <Equalizer />
       </ScrollView>
     </SafeAreaView>
   );

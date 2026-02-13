@@ -9,12 +9,18 @@ import {
 import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDownload } from '@/contexts/DownloadContext';
+import {
+  DownloadManager,
+  useDownloadStorage,
+  useDownloadedTracks,
+  useDownloadProgress,
+} from 'react-native-nitro-player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
+import { MediaImage } from '@/components/MediaImage';
 
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
@@ -23,33 +29,29 @@ const Downloads: React.FC = () => {
   const { albums = [] } = useAlbums();
   const { playlists = [] } = usePlaylists();
 
+  const { clearAllDownloads, cancelDownload } = useDownload();
 
-  const {
-    getDownloadedSongsCount,
-    clearAllDownloads,
-    isAlbumDownloaded,
-    isPlaylistDownloaded,
-    isDownloadingAlbum,
-    isDownloadingPlaylist,
-    cancelDownload,
-    getFormattedDownloadSize,
-    markedAlbums,
-    markedPlaylists,
-  } = useDownload();
+  // Nitro-player hooks for storage and download state
+  const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
+  const { downloadedPlaylists, isPlaylistDownloaded } = useDownloadedTracks();
+  const { progressList } = useDownloadProgress({ activeOnly: true });
 
-  const downloadedSongCount = getDownloadedSongsCount();
+  const trackCount = storageInfo?.trackCount ?? 0;
 
+  // Build list of downloaded/downloading items from DownloadManager playlists
   const items = useMemo(() => {
+    const downloadedIds = new Set(downloadedPlaylists.map(dp => dp.playlistId));
+
     const albumItems = albums
-      .filter(a => markedAlbums.includes(a.id))
+      .filter(a => downloadedIds.has(a.id))
       .map(a => ({ ...a, type: 'album' as const }));
 
     const playlistItems = playlists
-      .filter(p => markedPlaylists.includes(p.id))
+      .filter(p => downloadedIds.has(p.id))
       .map(p => ({ ...p, type: 'playlist' as const }));
 
     return [...albumItems, ...playlistItems];
-  }, [albums, playlists, markedAlbums, markedPlaylists]);
+  }, [albums, playlists, downloadedPlaylists]);
 
   const handleClearDownloads = useCallback(() => {
     Alert.alert(
@@ -71,12 +73,12 @@ const Downloads: React.FC = () => {
 
         <TouchableOpacity
           onPress={handleClearDownloads}
-          disabled={downloadedSongCount === 0}
+          disabled={trackCount === 0}
           style={[
             styles.iconButton,
             {
               backgroundColor: themeColor,
-              opacity: downloadedSongCount === 0 ? 0.5 : 1,
+              opacity: trackCount === 0 ? 0.5 : 1,
             },
           ]}
         >
@@ -86,15 +88,12 @@ const Downloads: React.FC = () => {
 
       <View style={styles.list}>
         {items.map(item => {
-          const downloaded =
-            item.type === 'album'
-              ? isAlbumDownloaded(item.id)
-              : isPlaylistDownloaded(item.id);
+          const downloaded = isPlaylistDownloaded(item.id);
 
-          const downloading =
-            item.type === 'album'
-              ? isDownloadingAlbum(item.id)
-              : isDownloadingPlaylist(item.id);
+          const downloading = progressList.some(p => {
+            const task = DownloadManager.getDownloadTask(p.downloadId);
+            return task?.playlistId === item.id;
+          });
 
           const status = downloaded
             ? { label: t('settings.library.downloads.status.downloaded'), color: '#22c55e' }
@@ -153,11 +152,20 @@ const Downloads: React.FC = () => {
           {t('settings.library.downloads.sizeLabel')}
         </Text>
         <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
-          {getFormattedDownloadSize()}
+          {formattedSize}
         </Text>
       </View>
 
-      {downloadedSongCount > 0 && (
+      <View style={styles.row}>
+        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+          {t('settings.library.downloads.availableLabel', { defaultValue: 'Available Space' })}
+        </Text>
+        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
+          {formattedAvailable}
+        </Text>
+      </View>
+
+      {trackCount > 0 && (
         <Text style={[styles.note, isDarkMode && styles.noteDark]}>
           {t('settings.library.downloads.offlineNote')}
         </Text>

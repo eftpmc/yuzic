@@ -122,7 +122,12 @@
     "player": {
       "title": "Lecteur",
       "nothingPlaying": "Aucune lecture en cours",
-      "unknownArtist": "—"
+      "unknownArtist": "—",
+      "equalizer": {
+        "title": "Égaliseur",
+        "reset": "Réinitialiser",
+        "presets": "Préréglages"
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",

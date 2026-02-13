@@ -45,7 +45,7 @@ const AlbumOptions = forwardRef<
     getQueue,
   } = usePlaying();
 
-  const { downloadAlbumById, isAlbumDownloaded, isDownloadingAlbum } =
+  const { downloadAlbumById, isTrackDownloaded, isTrackDownloading } =
     useDownload();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
@@ -55,8 +55,8 @@ const AlbumOptions = forwardRef<
   };
 
   const songs = album?.songs ?? [];
-  const isDownloaded = album ? isAlbumDownloaded(album.id) : false;
-  const isDownloading = album ? isDownloadingAlbum(album.id) : false;
+  const isDownloaded = songs.length > 0 && songs.every(s => isTrackDownloaded(s.id));
+  const isDownloading = !isDownloaded && songs.some(s => isTrackDownloading(s.id));
 
   const handlePlay = (shuffle: boolean) => {
     if (!album || !songs.length) return;
