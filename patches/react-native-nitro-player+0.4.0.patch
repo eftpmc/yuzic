@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-nitro-player/ios/equalizer/EqualizerCore.swift b/node_modules/react-native-nitro-player/ios/equalizer/EqualizerCore.swift
+index bbfc1d3..b3de54a 100644
+--- a/node_modules/react-native-nitro-player/ios/equalizer/EqualizerCore.swift
++++ b/node_modules/react-native-nitro-player/ios/equalizer/EqualizerCore.swift
+@@ -128,7 +128,7 @@ class EqualizerCore {
+         process: tapProcessCallback
+       )
+ 
+-      var tap: MTAudioProcessingTap?
++      var tap: Unmanaged<MTAudioProcessingTap>?
+       let createStatus = MTAudioProcessingTapCreate(
+         kCFAllocatorDefault,
+         &callbacks,
+@@ -136,7 +136,7 @@ class EqualizerCore {
+         &tap
+       )
+ 
+-      guard createStatus == noErr, let audioTap = tap else {
++      guard createStatus == noErr, let audioTap = tap?.takeRetainedValue() else {
+         print("❌ EqualizerCore: Failed to create audio processing tap, status: \(createStatus)")
+         return
+       }
