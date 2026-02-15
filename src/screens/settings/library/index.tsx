@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Platform,
@@ -8,6 +7,7 @@ import {
     Text,
     TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';

@@ -13,13 +13,13 @@ import { useTheme } from '@/hooks/useTheme';
 type Props = {
   sortLabel: string;
   onSortPress: () => void;
-  onToggleView: () => void;
+  onGridSettingsPress: () => void;
 };
 
 export default function LibraryListHeader({
   sortLabel,
   onSortPress,
-  onToggleView,
+  onGridSettingsPress,
 }: Props) {
   const { isDarkMode } = useTheme();
   const isGridView = useSelector(selectIsGridView);
@@ -37,7 +37,7 @@ export default function LibraryListHeader({
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.viewToggleButton} onPress={onToggleView}>
+      <TouchableOpacity style={styles.viewToggleButton} onPress={onGridSettingsPress}>
         <Ionicons
           name={isGridView ? 'list-outline' : 'grid-outline'}
           size={20}

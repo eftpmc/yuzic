@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    SafeAreaView,
     View,
     Text,
     TextInput,
@@ -10,6 +9,7 @@ import {
     Animated,
     Easing,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';

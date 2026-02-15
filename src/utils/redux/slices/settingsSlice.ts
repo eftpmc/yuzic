@@ -17,6 +17,7 @@ export interface SettingsState {
   themeMode: ThemeMode;
   themeColor: string;
   gridColumns: number;
+  gridSpacing: number;
   isGridView: boolean;
 
   playingBarAction: PlayingBarAction;
@@ -40,6 +41,7 @@ const initialState: SettingsState = {
   themeMode: 'system',
   themeColor: '#ff7f7f',
   gridColumns: 3,
+  gridSpacing: 8,
   isGridView: true,
   playingBarAction: 'skip',
 
@@ -65,6 +67,9 @@ const settingsSlice = createSlice({
     },
     setGridColumns(state, action: PayloadAction<number>) {
       state.gridColumns = action.payload;
+    },
+    setGridSpacing(state, action: PayloadAction<number>) {
+      state.gridSpacing = action.payload;
     },
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
@@ -107,6 +112,7 @@ export const {
   setThemeMode,
   setThemeColor,
   setGridColumns,
+  setGridSpacing,
   setIsGridView,
   setPlayingBarAction,
   setLibrarySortOrder,

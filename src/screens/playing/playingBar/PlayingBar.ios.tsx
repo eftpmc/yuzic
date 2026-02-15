@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { BlurView } from 'expo-blur';
-import { useProgress } from 'react-native-track-player';
+import { useOnPlaybackProgressChange } from 'react-native-nitro-player';
 import { BottomSheetModal, useBottomSheetTimingConfigs } from '@gorhom/bottom-sheet';
 import { useSelector } from 'react-redux';
 import { Easing, useSharedValue } from 'react-native-reanimated';
@@ -93,8 +93,8 @@ const PlayingBar: React.FC = () => {
         if (uri) extractColors(uri);
     }, [currentSong?.id]);
 
-    const playbackProgress = useProgress(500);
-    const position = appState === 'active' ? playbackProgress.position : 0;
+    const { position: progressPosition } = useOnPlaybackProgressChange();
+    const position = appState === 'active' ? (progressPosition ?? 0) : 0;
     const duration = currentSong ? Number(currentSong.duration) : 1;
     const progress = duration > 0 ? position / duration : 0;
 

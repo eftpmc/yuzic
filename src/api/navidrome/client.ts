@@ -27,17 +27,19 @@ export function buildTokenParams(username: string, password: string): {
 
 function buildParams(
   auth: { u: string; t: string; s: string },
-  extra: Record<string, string | number> = {}
+  extra: Record<string, string | number> = {},
+  opts?: { format?: "json" | null }
 ): string {
   const combined = {
     ...auth,
     v: API_VERSION,
     c: CLIENT_NAME,
-    f: "json",
+    ...(opts?.format === null ? {} : { f: "json" }),
     ...Object.fromEntries(
       Object.entries(extra).map(([k, v]) => [k, String(v)])
     ),
   };
+
   return new URLSearchParams(combined).toString();
 }
 
@@ -61,10 +63,10 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
   }
 
   function buildStreamUrl(songId: string): string {
-    const auth = buildTokenParams(username, password);
-    const params = buildParams(auth, { id: songId });
-    return `${baseUrl}/rest/stream.view?${params}`;
-  }
+  const auth = buildTokenParams(username, password);
+  const params = buildParams(auth, { id: songId }, { format: null });
+  return `${baseUrl}/rest/stream.view?${params}`;
+}
 
   return {
     request,

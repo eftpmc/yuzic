@@ -101,7 +101,7 @@ export default function Servers() {
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <AntDesign name="ellipsis1" size={18} color="#888" />
+                    <AntDesign name="ellipsis" size={18} color="#888" />
                 </TouchableOpacity>
             </View>
         );

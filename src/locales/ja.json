@@ -121,7 +121,12 @@
     "player": {
       "title": "プレーヤー",
       "nothingPlaying": "再生中の曲はありません",
-      "unknownArtist": "—"
+      "unknownArtist": "—",
+      "equalizer": {
+        "title": "イコライザー",
+        "reset": "リセット",
+        "presets": "プリセット"
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",

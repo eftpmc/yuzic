@@ -57,7 +57,7 @@ const PlaylistOptions = forwardRef<
     getQueue,
   } = usePlaying();
 
-  const { downloadPlaylistById, isPlaylistDownloaded, isDownloadingPlaylist } =
+  const { downloadPlaylistById, isTrackDownloaded, isTrackDownloading } =
     useDownload();
 
   const deletePlaylist = useDeletePlaylist();
@@ -69,8 +69,8 @@ const PlaylistOptions = forwardRef<
   };
 
   const songs = playlist?.songs ?? [];
-  const isDownloaded = playlist ? isPlaylistDownloaded(playlist.id) : false;
-  const isDownloading = playlist ? isDownloadingPlaylist(playlist.id) : false;
+  const isDownloaded = songs.length > 0 && songs.every(s => isTrackDownloaded(s.id));
+  const isDownloading = !isDownloaded && songs.some(s => isTrackDownloading(s.id));
 
   const handlePlay = (shuffle: boolean) => {
     if (!playlist || !songs.length) return;

@@ -121,7 +121,12 @@
     "player": {
       "title": "Player",
       "nothingPlaying": "Nothing playing",
-      "unknownArtist": "—"
+      "unknownArtist": "—",
+      "equalizer": {
+        "title": "Equalizer",
+        "reset": "Reset",
+        "presets": "Presets"
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",

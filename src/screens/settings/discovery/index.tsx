@@ -1,12 +1,12 @@
 import React from 'react'
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Platform,
   View,
   Text,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import Header from '../components/Header'
 import { useTheme } from '@/hooks/useTheme'
