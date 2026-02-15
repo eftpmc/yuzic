@@ -222,8 +222,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     PlayerQueue.addTracksToPlaylist(playlistId, trackItems);
 
     PlayerQueue.loadPlaylist(playlistId);
+    await TrackPlayer.skipToIndex(startIndex)
+
     setCurrentSong(songs[startIndex]);
-    await TrackPlayer.playSong(songs[startIndex].id, playlistId);
+    await TrackPlayer.play();
   }, [songToTrackItem]);
 
   useEffect(() => {
