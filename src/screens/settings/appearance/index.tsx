@@ -1,15 +1,15 @@
 import React from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Appearance,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Header from '../components/Header';
 import { ThemeColor } from './components/ThemeColor';
-import { Columns } from './components/Columns';
+
 import { ThemeModeSelector } from './components/ThemeModeSelector';
 import { useTheme } from '@/hooks/useTheme';
 import { PlayingBarActionSelector } from './components/PlayingBarActionSelector';
@@ -30,11 +30,10 @@ const AppearanceSettings: React.FC = () => {
       <Header title={t('settings.appearance.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <LanguageSelector />
         <ThemeModeSelector />
         <ThemeColor />
-        <LanguageSelector />
         <PlayingBarActionSelector />
-        <Columns />
       </ScrollView>
     </SafeAreaView>
   );

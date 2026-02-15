@@ -26,6 +26,7 @@ interface ItemProps {
   cover: CoverSource;
   isGridView: boolean;
   gridWidth: number;
+  gridSpacing?: number;
 }
 
 const AlbumItem: React.FC<ItemProps> = ({
@@ -35,6 +36,7 @@ const AlbumItem: React.FC<ItemProps> = ({
   cover,
   isGridView,
   gridWidth,
+  gridSpacing = 8,
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
@@ -72,7 +74,7 @@ const AlbumItem: React.FC<ItemProps> = ({
         delayLongPress={300}
         style={({ pressed }) => [
           isGridView
-            ? [styles.gridItemContainer, { width: gridWidth }]
+            ? [styles.gridItemContainer, { width: gridWidth, marginHorizontal: gridSpacing, marginVertical: gridSpacing }]
             : styles.itemContainer,
           pressed && styles.pressed,
         ]}
@@ -120,12 +122,11 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
     borderRadius: 12,
   },
   gridItemContainer: {
-    marginVertical: 8,
-    marginHorizontal: 8,
     borderRadius: 14,
   },
   gridTextContainer: {

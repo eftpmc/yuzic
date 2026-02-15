@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "postprebuild": "node scripts/fix-gradle-wrapper.js"
   },
   "overrides": {
     "lucide-react-native": {

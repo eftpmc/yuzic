@@ -8,7 +8,6 @@ import React, {
 import {
     DownloadManager,
     useDownloadedTracks,
-    useDownloadProgress,
 } from 'react-native-nitro-player';
 import type { TrackItem } from 'react-native-nitro-player';
 import { Song, Playlist, Album } from '@/types';
@@ -65,10 +64,6 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const {
         isTrackDownloaded: isNativeTrackDownloaded,
     } = useDownloadedTracks();
-
-    const {
-        progressList,
-    } = useDownloadProgress({ activeOnly: true });
 
     useEffect(() => {
         DownloadManager.configure({
@@ -128,8 +123,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, [isNativeTrackDownloaded]);
 
     const isTrackDownloading = useCallback((trackId: string) => {
-        return progressList.some(p => p.trackId === trackId);
-    }, [progressList]);
+        const activeTasks = DownloadManager.getActiveDownloads();
+        return activeTasks.some(task => task.trackId === trackId);
+    }, []);
 
     const cancelDownload = useCallback(async (id: string) => {
         const activeTasks = DownloadManager.getActiveDownloads();

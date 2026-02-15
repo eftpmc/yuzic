@@ -39,6 +39,13 @@ function passesScrobbleThreshold(
   return listenedSeconds >= threshold;
 }
 
+/** Returns the next virtual-queue index, respecting repeat mode. -1 means no next. */
+function getNextVirtualIndex(queueLength: number, fromIndex: number, repeat: boolean): number {
+  if (fromIndex + 1 < queueLength) return fromIndex + 1;
+  if (repeat) return 0;
+  return -1;
+}
+
 export interface PlaybackProgress {
   position: number;
   duration: number;
@@ -129,7 +136,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const scrobbleStartTimeRef = useRef<number>(0);
   const lastListenedSecondsRef = useRef<number>(0);
 
+  // Virtual-queue refs — keep native PlayerQueue in sync with at most 2 tracks
+  const nativeDirtyRef = useRef(false);
+  const repeatOnRef = useRef(false);
+  const currentIndexRef = useRef(0);
+
   const bumpQueue = () => setQueueVersion(v => v + 1);
+
+  /** Update currentIndex state + ref together to avoid stale closures. */
+  const updateCurrentIndex = (index: number) => {
+    currentIndexRef.current = index;
+    setCurrentIndex(index);
+  };
 
   useEffect(() => {
     TrackPlayer.configure({
@@ -202,8 +220,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
   }, []);
 
-  const loadPlaylistAndPlay = useCallback(async (
-    songs: Song[],
+  /**
+   * Rebuild the native PlayerQueue with at most 2 tracks:
+   * the track at startIndex and the next track (respecting repeat).
+   * This is fast even for huge virtual queues since we only touch 2 songs.
+   */
+  const rebuildNativePlayer = useCallback(async (
     startIndex: number,
     opts?: { clearScrobbleState?: boolean }
   ) => {
@@ -215,17 +237,48 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       try { PlayerQueue.deletePlaylist(currentPlaylistIdRef.current); } catch { /* ignore */ }
     }
 
+    const queue = queueRef.current;
+    const song = queue[startIndex];
+    if (!song) return;
+
+    // Build a window of at most 2 tracks: current + next (for gapless preload)
+    const nextIdx = getNextVirtualIndex(queue.length, startIndex, repeatOnRef.current);
+    const songsToLoad: Song[] = [song];
+    if (nextIdx !== -1 && queue[nextIdx]) {
+      songsToLoad.push(queue[nextIdx]);
+    }
+
     const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
     currentPlaylistIdRef.current = playlistId;
 
-    const trackItems = await Promise.all(songs.map(songToTrackItem));
+    const trackItems = await Promise.all(songsToLoad.map(songToTrackItem));
     PlayerQueue.addTracksToPlaylist(playlistId, trackItems);
 
     PlayerQueue.loadPlaylist(playlistId);
-    await TrackPlayer.skipToIndex(startIndex)
+    await TrackPlayer.skipToIndex(0);
 
-    setCurrentSong(songs[startIndex]);
+    setCurrentSong(song);
     await TrackPlayer.play();
+
+    nativeDirtyRef.current = false;
+  }, [songToTrackItem]);
+
+  /**
+   * Append the next virtual-queue track to the existing native playlist
+   * without rebuilding — preserves gapless playback.
+   */
+  const appendNextToNativePlayer = useCallback(async (virtualIndex: number) => {
+    const queue = queueRef.current;
+    const nextIdx = getNextVirtualIndex(queue.length, virtualIndex, repeatOnRef.current);
+    if (nextIdx === -1) return;
+
+    const nextSong = queue[nextIdx];
+    if (!nextSong || !currentPlaylistIdRef.current) return;
+
+    const trackItem = await songToTrackItem(nextSong);
+    try {
+      PlayerQueue.addTrackToPlaylist(currentPlaylistIdRef.current, trackItem);
+    } catch { /* ignore — track may already exist in native playlist */ }
   }, [songToTrackItem]);
 
   useEffect(() => {
@@ -239,23 +292,53 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     }
 
+    if (nativeDirtyRef.current) {
+      // Native queue is out of sync — calculate the correct next index
+      // from the current virtual position (before this track change).
+      const prevIdx = currentIndexRef.current;
+      const nextIdx = getNextVirtualIndex(
+        queueRef.current.length,
+        prevIdx,
+        repeatOnRef.current
+      );
+
+      if (nextIdx === -1) {
+        // End of queue with no repeat — stop playback
+        TrackPlayer.pause();
+        return;
+      }
+
+      scrobbleStartTimeRef.current = Date.now();
+      lastListenedSecondsRef.current = 0;
+      updateCurrentIndex(nextIdx);
+      setCurrentSong(queueRef.current[nextIdx]);
+
+      // Rebuild to play the correct track
+      rebuildNativePlayer(nextIdx);
+      return;
+    }
+
+    // Clean path — the native track that started is correct
     const trackId = changedTrack.id;
     const newIndex = queueRef.current.findIndex(s => s.id === trackId);
     if (newIndex === -1) return;
 
     scrobbleStartTimeRef.current = Date.now();
     lastListenedSecondsRef.current = 0;
-    setCurrentIndex(newIndex);
+    updateCurrentIndex(newIndex);
     setCurrentSong(queueRef.current[newIndex]);
+
+    // Preload the next track for gapless playback
+    appendNextToNativePlayer(newIndex);
   }, [changedTrack?.id]);
 
   const playSong = async (song: Song) => {
     queueRef.current = [song];
     originalQueueRef.current = null;
     setShuffleOn(false);
-    setCurrentIndex(0);
+    updateCurrentIndex(0);
     bumpQueue();
-    await loadPlaylistAndPlay([song], 0, { clearScrobbleState: true });
+    await rebuildNativePlayer(0, { clearScrobbleState: true });
   };
 
   const playSongInCollection = async (
@@ -278,20 +361,23 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
 
     queueRef.current = songs;
-    setCurrentIndex(index);
+    updateCurrentIndex(index);
     bumpQueue();
-    await loadPlaylistAndPlay(songs, index, { clearScrobbleState: true });
+    await rebuildNativePlayer(index, { clearScrobbleState: true });
   };
 
   const addCollectionToQueue = async (collection: Album | Playlist) => {
     const existingIds = new Set(queueRef.current.map(s => s.id));
     const toAdd = collection.songs.filter(s => !existingIds.has(s.id));
     if (!toAdd.length) return;
+
+    const prevLength = queueRef.current.length;
     queueRef.current = [...queueRef.current, ...toAdd];
 
-    if (currentPlaylistIdRef.current) {
-      const trackItems = await Promise.all(toAdd.map(songToTrackItem));
-      PlayerQueue.addTracksToPlaylist(currentPlaylistIdRef.current, trackItems);
+    // If the "next" track position was affected (e.g. queue was at its end), mark dirty
+    const nextIdx = getNextVirtualIndex(prevLength, currentIndexRef.current, repeatOnRef.current);
+    if (nextIdx === -1 || nextIdx >= prevLength) {
+      nativeDirtyRef.current = true;
     }
 
     bumpQueue();
@@ -303,30 +389,50 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       collection.songs.filter(s => !existingIds.has(s.id))
     );
     if (!toAdd.length) return;
+
+    const prevLength = queueRef.current.length;
     queueRef.current = [...queueRef.current, ...toAdd];
 
-    if (currentPlaylistIdRef.current) {
-      const trackItems = await Promise.all(toAdd.map(songToTrackItem));
-      PlayerQueue.addTracksToPlaylist(currentPlaylistIdRef.current, trackItems);
+    const nextIdx = getNextVirtualIndex(prevLength, currentIndexRef.current, repeatOnRef.current);
+    if (nextIdx === -1 || nextIdx >= prevLength) {
+      nativeDirtyRef.current = true;
     }
 
     bumpQueue();
   };
 
   const skipToNext = async () => {
-    TrackPlayer.skipToNext();
+    const nextIdx = getNextVirtualIndex(
+      queueRef.current.length,
+      currentIndexRef.current,
+      repeatOnRef.current
+    );
+    if (nextIdx === -1) return;
+
+    if (nativeDirtyRef.current) {
+      // Native queue is stale — rebuild with the correct track
+      updateCurrentIndex(nextIdx);
+      await rebuildNativePlayer(nextIdx);
+    } else {
+      // Next track is already preloaded in native player — gapless skip
+      TrackPlayer.skipToNext();
+      // onChangeTrack will handle index update + preloading the next-next
+    }
   };
 
   const skipToPrevious = async () => {
-    TrackPlayer.skipToPrevious();
+    const prevIdx = currentIndexRef.current - 1;
+    if (prevIdx < 0) return;
+    // Previous track is never in the 2-track native window — always rebuild
+    updateCurrentIndex(prevIdx);
+    await rebuildNativePlayer(prevIdx);
   };
 
   const skipTo = async (index: number) => {
     if (!queueRef.current[index]) return;
-    const song = queueRef.current[index];
-    if (currentPlaylistIdRef.current) {
-      await TrackPlayer.playSong(song.id, currentPlaylistIdRef.current);
-    }
+    // Target track is unlikely to be in the 2-track window — rebuild
+    updateCurrentIndex(index);
+    await rebuildNativePlayer(index);
   };
 
   const pauseSong = async () => {
@@ -347,27 +453,29 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     q.splice(to, 0, item);
     queueRef.current = q;
 
-    if (currentPlaylistIdRef.current) {
-      PlayerQueue.reorderTrackInPlaylist(currentPlaylistIdRef.current, item.id, to);
-    }
+    // Recalculate currentIndex after the reorder
+    let newIdx = currentIndexRef.current;
+    if (newIdx === from) newIdx = to;
+    else if (from < newIdx && to >= newIdx) newIdx = newIdx - 1;
+    else if (from > newIdx && to <= newIdx) newIdx = newIdx + 1;
+    updateCurrentIndex(newIdx);
 
-    setCurrentIndex(prev => {
-      if (prev === from) return to;
-      if (from < prev && to >= prev) return prev - 1;
-      if (from > prev && to <= prev) return prev + 1;
-      return prev;
-    });
+    // The native "next" track may have changed
+    nativeDirtyRef.current = true;
 
     bumpQueue();
   };
 
   const addToQueue = async (song: Song) => {
     if (queueRef.current.some(s => s.id === song.id)) return;
+
+    const prevLength = queueRef.current.length;
     queueRef.current = [...queueRef.current, song];
 
-    if (currentPlaylistIdRef.current) {
-      const trackItem = await songToTrackItem(song);
-      PlayerQueue.addTrackToPlaylist(currentPlaylistIdRef.current, trackItem);
+    // If this song becomes the next track (queue was at its end), mark dirty
+    const nextIdx = getNextVirtualIndex(prevLength, currentIndexRef.current, repeatOnRef.current);
+    if (nextIdx === -1 || nextIdx >= prevLength) {
+      nativeDirtyRef.current = true;
     }
 
     bumpQueue();
@@ -375,15 +483,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const playNext = async (song: Song) => {
     if (!currentSong) return;
+    const prevIdx = currentIndexRef.current;
+    const removedIdx = queueRef.current.findIndex(s => s.id === song.id);
     const q = queueRef.current.filter(s => s.id !== song.id);
-    q.splice(currentIndex + 1, 0, song);
-    queueRef.current = q;
 
-    if (currentPlaylistIdRef.current) {
-      const trackItem = await songToTrackItem(song);
-      PlayerQueue.addTrackToPlaylist(currentPlaylistIdRef.current, trackItem);
-      PlayerQueue.reorderTrackInPlaylist(currentPlaylistIdRef.current, song.id, currentIndex + 1);
-    }
+    // If the removed song was before currentIndex, shift down by 1
+    const adjustedIdx = (removedIdx !== -1 && removedIdx < prevIdx) ? prevIdx - 1 : prevIdx;
+    q.splice(adjustedIdx + 1, 0, song);
+    queueRef.current = q;
+    updateCurrentIndex(adjustedIdx);
+
+    // The "next" track in native queue is now wrong
+    nativeDirtyRef.current = true;
 
     bumpQueue();
   };
@@ -412,22 +523,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const toggleShuffle = async () => {
     if (!shuffleOn) {
       originalQueueRef.current = queueRef.current;
-      const current = queueRef.current[currentIndex];
-      const rest = queueRef.current.filter((_, i) => i !== currentIndex);
+      const current = queueRef.current[currentIndexRef.current];
+      const rest = queueRef.current.filter((_, i) => i !== currentIndexRef.current);
       const shuffled = [current, ...shuffleArray(rest)];
       queueRef.current = shuffled;
-      setCurrentIndex(0);
+      updateCurrentIndex(0);
       setShuffleOn(true);
 
-      await loadPlaylistAndPlay(shuffled, 0);
+      await rebuildNativePlayer(0);
     } else if (originalQueueRef.current) {
       const original = originalQueueRef.current;
       const idx = original.findIndex(s => s.id === currentSong?.id);
       queueRef.current = original;
-      setCurrentIndex(idx);
+      updateCurrentIndex(idx);
       setShuffleOn(false);
 
-      await loadPlaylistAndPlay(original, idx);
+      await rebuildNativePlayer(idx);
     }
     bumpQueue();
   };
@@ -435,7 +546,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const toggleRepeat = () => {
     setRepeatOn(prev => {
       const newVal = !prev;
-      TrackPlayer.setRepeatMode(newVal ? 'Playlist' : 'off');
+      repeatOnRef.current = newVal;
+      // Mark dirty — the "next" track calculation changes with repeat mode
+      nativeDirtyRef.current = true;
       return newVal;
     });
   };
@@ -454,7 +567,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     queueRef.current = [];
     originalQueueRef.current = null;
-    setCurrentIndex(0);
+    nativeDirtyRef.current = false;
+    repeatOnRef.current = false;
+    updateCurrentIndex(0);
     setCurrentSong(null);
     setShuffleOn(false);
     setRepeatOn(false);

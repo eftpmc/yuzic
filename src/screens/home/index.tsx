@@ -13,9 +13,10 @@ import AlbumItem from "./components/Items/AlbumItem";
 import PlaylistItem from './components/Items/PlaylistItem';
 import ArtistItem from './components/Items/ArtistItem';
 import SortBottomSheet from './components/SortBottomSheet';
+import GridSettingsBottomSheet from './components/GridSettingsBottomSheet';
 import AccountBottomSheet from './components/AccountBottomSheet';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { setIsGridView, setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
+import { setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
 import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
 import {
     selectAlbumPlays,
@@ -79,8 +80,9 @@ export default function HomeScreen() {
 
     const accountSheetRef = useRef<BottomSheetModal>(null);
     const sortSheetRef = useRef<BottomSheetModal>(null);
+    const gridSettingsSheetRef = useRef<BottomSheetModal>(null);
 
-    const { gridItemWidth } = useGridLayout();
+    const { gridItemWidth, gridSpacing } = useGridLayout();
 
     const queryClient = useQueryClient();
 
@@ -227,11 +229,11 @@ export default function HomeScreen() {
     const renderItem = ({ item }) => {
         switch (item.type) {
             case 'Album':
-                return <AlbumItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} />;
+                return <AlbumItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} gridSpacing={gridSpacing} />;
             case 'Playlist':
-                return <PlaylistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} />;
+                return <PlaylistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} gridSpacing={gridSpacing} />;
             case 'Artist':
-                return <ArtistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} />;
+                return <ArtistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} gridSpacing={gridSpacing} />;
             default:
                 return null;
         }
@@ -295,7 +297,7 @@ export default function HomeScreen() {
                                 <LibraryListHeader
                                     sortLabel={currentSortLabel}
                                     onSortPress={() => sortSheetRef.current?.present()}
-                                    onToggleView={() => dispatch(setIsGridView(!isGridView))}
+                                    onGridSettingsPress={() => gridSettingsSheetRef.current?.present()}
                                 />
                             }
                         />
@@ -308,6 +310,8 @@ export default function HomeScreen() {
                                 sortSheetRef.current?.dismiss();
                             }}
                         />
+
+                        <GridSettingsBottomSheet ref={gridSettingsSheetRef} />
                     </>
                 ) : (
                     <Animated.View
