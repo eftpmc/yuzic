@@ -135,6 +135,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const lastScrobbledIdRef = useRef<string | null>(null);
   const scrobbleStartTimeRef = useRef<number>(0);
   const lastListenedSecondsRef = useRef<number>(0);
+  const justRebuiltRef = useRef(false);
 
   // Virtual-queue refs — keep native PlayerQueue in sync with at most 2 tracks
   const nativeDirtyRef = useRef(false);
@@ -257,10 +258,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     PlayerQueue.loadPlaylist(playlistId);
     await TrackPlayer.skipToIndex(0);
 
+    justRebuiltRef.current = true;
     setCurrentSong(song);
     await TrackPlayer.play();
 
     nativeDirtyRef.current = false;
+
   }, [songToTrackItem]);
 
   /**
@@ -283,6 +286,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => {
     if (!changedTrack) return;
+
+    const skipAppend = justRebuiltRef.current;
+    if (skipAppend) justRebuiltRef.current = false;
 
     const prev = currentSong;
     if (prev) {
@@ -329,7 +335,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentSong(queueRef.current[newIndex]);
 
     // Preload the next track for gapless playback
-    appendNextToNativePlayer(newIndex);
+    if (!skipAppend) {
+      appendNextToNativePlayer(newIndex);
+    }
   }, [changedTrack?.id]);
 
   const playSong = async (song: Song) => {
