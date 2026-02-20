@@ -51,14 +51,12 @@ Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic 
 
 ## Future
 - Crossfading
-- Carplay & Android auto
 - QuickConnect
 - Apple TV app
 - Apple watch
 - Google casting
 - F-droid
 - Plex
-- EQ
 - Lyrion
 - UPNP or DLNA
 - Ollama
