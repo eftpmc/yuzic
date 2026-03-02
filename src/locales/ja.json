@@ -15,7 +15,8 @@
       "listenBrainz": "ListenBrainz",
       "github": "GitHub",
       "privacyPolicy": "プライバシーポリシー",
-      "termsOfUse": "利用規約"
+      "termsOfUse": "利用規約",
+      "version": "バージョン"
     },
     "profile": {
       "unknownUser": "不明なユーザー",

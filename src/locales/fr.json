@@ -15,7 +15,8 @@
       "listenBrainz": "ListenBrainz",
       "github": "Github",
       "privacyPolicy": "Politique de confidentialité",
-      "termsOfUse": "Conditions d'utilisation"
+      "termsOfUse": "Conditions d'utilisation",
+      "version": "Version"
     },
     "profile": {
       "unknownUser": "Utilisateur inconnu",

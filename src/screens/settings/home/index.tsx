@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +26,7 @@ export default function Settings() {
     const themeColor = useSelector(selectThemeColor);
 
     const { isDarkMode } = useTheme();
+    const appVersion = Constants.expoConfig?.version ?? '—';
 
     if (!activeServer) {
         return null;
@@ -133,6 +135,8 @@ export default function Settings() {
                     {renderLinkRow(t('settings.rows.privacyPolicy'), 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
                     {renderLinkRow(t('settings.rows.termsOfUse'), 'https://eftpmc.github.io/yuzic-web/tos/')}
+                    {renderDivider()}
+                    {renderStaticRow(t('settings.rows.version'), appVersion)}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -179,6 +183,19 @@ export default function Settings() {
                     color={isDarkMode ? '#fff' : '#6E6E73'}
                 />
             </TouchableOpacity>
+        );
+    }
+
+    function renderStaticRow(label: string, value: string) {
+        return (
+            <View style={styles.row}>
+                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                    {label}
+                </Text>
+                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                    {value}
+                </Text>
+            </View>
         );
     }
 
@@ -271,6 +288,13 @@ const styles = StyleSheet.create({
     },
     rowTextDark: {
         color: '#fff',
+    },
+    rowSubtext: {
+        fontSize: 15,
+        color: '#6E6E73',
+    },
+    rowSubtextDark: {
+        color: '#aaa',
     },
 
     divider: {
