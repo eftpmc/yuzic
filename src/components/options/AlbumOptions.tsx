@@ -66,8 +66,8 @@ const AlbumOptions = forwardRef<
 
   const handleAddToQueue = () => {
     if (!album || !songs.length) return;
-    const queue = getQueue();
-    if (queue.length === 0) {
+    const hasQueue = getQueue().length > 0;
+    if (!hasQueue) {
       playSongInCollection(songs[0], album, false);
     } else {
       addCollectionToQueue(album);
@@ -77,8 +77,8 @@ const AlbumOptions = forwardRef<
 
   const handleShuffleToQueue = () => {
     if (!album || !songs.length) return;
-    const queue = getQueue();
-    if (queue.length === 0) {
+    const hasQueue = getQueue().length > 0;
+    if (!hasQueue) {
       playSongInCollection(songs[0], album, true);
     } else {
       shuffleCollectionToQueue(album);

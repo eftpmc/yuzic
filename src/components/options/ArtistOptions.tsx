@@ -110,8 +110,8 @@ const ArtistOptions = forwardRef<
     const songs = await loadSongs();
     if (!songs.length) return;
     const collection = buildCollection(songs);
-    const queue = getQueue();
-    if (queue.length === 0) {
+    const hasQueue = getQueue().length > 0;
+    if (!hasQueue) {
       playSongInCollection(songs[0], collection, false);
     } else {
       addCollectionToQueue(collection);
@@ -124,8 +124,8 @@ const ArtistOptions = forwardRef<
     const songs = await loadSongs();
     if (!songs.length) return;
     const collection = buildCollection(songs);
-    const queue = getQueue();
-    if (queue.length === 0) {
+    const hasQueue = getQueue().length > 0;
+    if (!hasQueue) {
       playSongInCollection(songs[0], collection, true);
     } else {
       shuffleCollectionToQueue(collection);
