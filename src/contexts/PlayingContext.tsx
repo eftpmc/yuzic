@@ -139,6 +139,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => {
     TrackPlayer.configure({
+      androidAutoEnabled: true,
+      carPlayEnabled: true,
       showInNotification: true,
     });
   }, []);
