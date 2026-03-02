@@ -1,0 +1,46 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build Android and upload to Play Closed Testing"
+  lane :ci_android do
+    increment_version_code(
+      gradle_file_path: "android/app/build.gradle"
+    )
+
+    gradle(
+      task: "bundle assemble",
+      build_type: "Release",
+      project_dir: "android"
+    )
+
+    supply(
+      track: "alpha",
+      aab: "android/app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end
+
+platform :ios do
+  desc "Build iOS and upload to App Store Connect"
+  lane :ci_ios do
+    increment_build_number
+
+    match(type: "appstore")
+
+    build_app(
+      scheme: "Yuzic",
+      workspace: "ios/Yuzic.xcworkspace",
+    )
+
+    upload_to_app_store(
+      username: "zackhhi@gmail.com",
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false
+    )
+  end
+end

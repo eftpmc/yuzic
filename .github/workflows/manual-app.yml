@@ -1,0 +1,41 @@
+name: Manual Mobile Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform all
+
+      - name: Android Release + Upload
+        run: fastlane ci_android
+
+      - name: iOS Release + Upload
+        run: fastlane ci_ios
+
+      - name: Upload Android AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload iOS IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ios/build/*.ipa
