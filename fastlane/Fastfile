@@ -27,8 +27,6 @@ end
 platform :ios do
   desc "Build iOS and upload to App Store Connect"
   lane :ci_ios do
-    increment_build_number
-
     match(type: "appstore")
 
     build_app(

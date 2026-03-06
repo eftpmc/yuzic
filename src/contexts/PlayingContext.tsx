@@ -25,9 +25,7 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz'
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
-import { selectOfflineModeEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import type { RootState } from '@/utils/redux/store';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -128,9 +126,21 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const api = useApi();
   const dispatch = useDispatch();
-  const activeServer = useSelector(selectActiveServer);
-  const listenBrainzConfig = useSelector(selectListenBrainzConfig);
-  const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
+  const activeServer = useSelector((state: RootState) => {
+    const { servers, activeServerId } = state.servers;
+    if (!servers || !activeServerId) return null;
+    return servers.find(s => s.id === activeServerId) ?? null;
+  });
+  const listenBrainzConfig = useSelector((state: RootState) => {
+    const activeServerId = state.servers.activeServerId;
+    if (!activeServerId) return null;
+    const entry = state.listenbrainz.byServer[activeServerId];
+    if (!entry?.username || !entry?.token) return null;
+    return { username: entry.username, token: entry.token };
+  });
+  const offlineModeEnabled = useSelector(
+    (state: RootState) => state.settings.offlineModeEnabled
+  );
   const { isTrackDownloaded } = useDownloadedTracks();
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
