@@ -17,12 +17,20 @@ import * as musicbrainz from '@/api/musicbrainz';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
+import { useFullPlaylists } from '@/hooks/playlists';
+import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
 import { useSelector } from 'react-redux';
 import {
   selectOfflineModeEnabled,
   selectSearchScope,
 } from '@/utils/redux/selectors/settingsSelectors';
+import { useDownloadedTracks } from 'react-native-nitro-player';
+import {
+  buildDownloadedTrackIdSet,
+  getFullyDownloadedAlbumIds,
+  isPlaylistFullyDownloaded,
+} from '@/utils/downloads/collectionState';
 
 interface SearchContextType {
   searchResults: SearchResult[];
@@ -67,6 +75,23 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const { albums } = useAlbums();
   const { artists } = useArtists();
   const { playlists } = usePlaylists();
+  const { playlists: fullPlaylists } = useFullPlaylists(playlists);
+  const { tracks } = useTracks();
+  const downloadedState = useDownloadedTracks() as any;
+  const downloadedTrackIds = buildDownloadedTrackIdSet(
+    ((downloadedState?.downloadedTracks ?? []) as any[])
+      .map(track => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
+      .filter(track => track.id)
+  );
+  const downloadedAlbumIds = getFullyDownloadedAlbumIds(
+    tracks.map(track => ({ id: track.id, albumId: track.albumId })),
+    downloadedTrackIds
+  );
+  const downloadedPlaylistIds = new Set(
+    fullPlaylists
+      .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
+      .map(playlist => playlist.id)
+  );
 
   const searchScope = useSelector(selectSearchScope);
   const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
@@ -89,7 +114,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .map((album: AlbumBase) => ({
         ...album,
         type: 'album',
-        isDownloaded: true,
+        isDownloaded: downloadedAlbumIds.has(album.id),
       }));
 
     const artistResults: SearchResult[] = artists
@@ -112,7 +137,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .map((playlist: PlaylistBase) => ({
         ...playlist,
         type: 'playlist',
-        isDownloaded: true,
+        isDownloaded: downloadedPlaylistIds.has(playlist.id),
       }));
 
     return [
@@ -196,7 +221,12 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       const results: SearchResult[] = [];
 
       if (offlineModeEnabled) {
-        results.push(...await searchLibrary(query));
+        const localResults = await searchLibrary(query);
+        results.push(
+          ...localResults.filter(result =>
+            result.type === 'artist' ? true : result.isDownloaded
+          )
+        );
       } else if (searchScope === 'client') {
         results.push(...await searchLibrary(query));
       }

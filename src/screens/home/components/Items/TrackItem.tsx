@@ -16,6 +16,7 @@ import { usePlaying } from "@/contexts/PlayingContext";
 import { Playlist, Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useApi } from "@/api";
+import { toast } from "@backpackapp-io/react-native-toast";
 
 type Props = {
   song: SongBase;
@@ -26,6 +27,7 @@ type Props = {
 };
 
 const SHEET_TRANSITION_DELAY_MS = 180;
+const MAX_VISIBLE_TRACKS_TO_RESOLVE = 80;
 
 const TrackItem: React.FC<Props> = ({
   song,
@@ -40,6 +42,8 @@ const TrackItem: React.FC<Props> = ({
 
   const optionsRef = useRef<BottomSheetModal>(null);
   const playlistRef = useRef<BottomSheetModal>(null);
+  const pressInFlightRef = useRef(false);
+  const longPressInFlightRef = useRef(false);
 
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
@@ -52,8 +56,12 @@ const TrackItem: React.FC<Props> = ({
   };
 
   const resolveVisibleSongs = async (): Promise<Song[]> => {
+    const uniqueIds = [...new Set(visibleTracks.map((track) => track.id))].slice(
+      0,
+      MAX_VISIBLE_TRACKS_TO_RESOLVE
+    );
     const results = await Promise.allSettled(
-      visibleTracks.map((track) => api.tracks.get(track.id))
+      uniqueIds.map((id) => api.tracks.get(id))
     );
 
     const deduped = new Map<string, Song>();
@@ -66,37 +74,55 @@ const TrackItem: React.FC<Props> = ({
   };
 
   const handlePress = async () => {
-    const fullSong = await api.tracks.get(song.id);
-    if (!fullSong) return;
+    if (pressInFlightRef.current) return;
+    pressInFlightRef.current = true;
+    try {
+      const fullSong = await api.tracks.get(song.id);
+      if (!fullSong) return;
 
-    const songs = await resolveVisibleSongs();
-    if (!songs.length) {
-      await playSong(fullSong);
-      return;
+      const songs = await resolveVisibleSongs();
+      if (!songs.length) {
+        await playSong(fullSong);
+        return;
+      }
+
+      if (!songs.some((item) => item.id === fullSong.id)) {
+        songs.unshift(fullSong);
+      }
+
+      const collection: Playlist = {
+        id: `home-tracks-${song.id}`,
+        title: "Tracks",
+        subtext: `Playlist • ${songs.length} songs`,
+        cover: songs[0]?.cover ?? { kind: "none" },
+        changed: new Date(0),
+        created: new Date(0),
+        songs,
+      };
+
+      await playSongInCollection(fullSong, collection);
+    } catch (error) {
+      console.warn("Failed to play home track", error);
+      toast.error("Unable to start playback");
+    } finally {
+      pressInFlightRef.current = false;
     }
-
-    if (!songs.some((item) => item.id === fullSong.id)) {
-      songs.unshift(fullSong);
-    }
-
-    const collection: Playlist = {
-      id: `home-tracks-${song.id}`,
-      title: "Tracks",
-      subtext: `Playlist • ${songs.length} songs`,
-      cover: songs[0]?.cover ?? { kind: "none" },
-      changed: new Date(0),
-      created: new Date(0),
-      songs,
-    };
-
-    await playSongInCollection(fullSong, collection);
   };
 
   const handleLongPress = async () => {
-    const fullSong = await api.tracks.get(song.id);
-    if (!fullSong) return;
-    setSelectedSong(fullSong);
-    optionsRef.current?.present();
+    if (longPressInFlightRef.current) return;
+    longPressInFlightRef.current = true;
+    try {
+      const fullSong = await api.tracks.get(song.id);
+      if (!fullSong) return;
+      setSelectedSong(fullSong);
+      optionsRef.current?.present();
+    } catch (error) {
+      console.warn("Failed to open track options", error);
+      toast.error("Unable to open track options");
+    } finally {
+      longPressInFlightRef.current = false;
+    }
   };
 
   const openPlaylistList = () => {

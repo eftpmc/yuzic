@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-  useDownloadProgress,
   useDownloadedTracks,
   useDownloadStorage,
 } from 'react-native-nitro-player';
@@ -17,6 +16,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useAlbums } from '@/hooks/albums';
 import { useFullPlaylists, usePlaylists } from '@/hooks/playlists';
+import { useTracks } from '@/hooks/tracks';
 import { MediaImage } from '@/components/MediaImage';
 import { useDownload } from '@/contexts/DownloadContext';
 import { DownloadRow } from './downloadsInfo/types';
@@ -33,8 +33,8 @@ const DownloadsInfoScreen: React.FC = () => {
   const { albums = [] } = useAlbums();
   const { playlists = [] } = usePlaylists();
   const { playlists: fullPlaylists = [] } = useFullPlaylists(playlists);
+  const { tracks = [] } = useTracks();
   const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
-  const { progressList } = useDownloadProgress({ activeOnly: false });
   const downloadedState = useDownloadedTracks() as any;
 
   const downloadedTracks = (downloadedState?.downloadedTracks ?? []) as any[];
@@ -44,14 +44,14 @@ const DownloadsInfoScreen: React.FC = () => {
     () =>
       buildDownloadRows({
         albums,
+        tracks,
         playlists,
         fullPlaylists,
         downloadedTracks,
         downloadedPlaylists,
-        progressList: progressList as any[],
         t,
       }),
-    [albums, playlists, fullPlaylists, downloadedTracks, downloadedPlaylists, progressList, t]
+    [albums, tracks, playlists, fullPlaylists, downloadedTracks, downloadedPlaylists, t]
   );
 
   const downloadedAlbumCount = useMemo(

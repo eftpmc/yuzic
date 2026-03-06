@@ -49,6 +49,10 @@ import { LIBRARY_INITIAL_PAGE_SIZE, LIBRARY_PAGE_SIZE } from '@/constants/librar
 import { useTranslation } from 'react-i18next';
 import { SongBase } from '@/types';
 import { useDownloadedTracks } from 'react-native-nitro-player';
+import {
+    getFullyDownloadedAlbumIds,
+    isPlaylistFullyDownloaded,
+} from '@/utils/downloads/collectionState';
 
 export default function HomeScreen() {
     const { t } = useTranslation();
@@ -143,8 +147,8 @@ export default function HomeScreen() {
     );
 
     const downloadedAlbumIds = useMemo(
-        () => new Set(downloadedTracks.map(track => track.albumId)),
-        [downloadedTracks]
+        () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
+        [tracks, downloadedTrackIds]
     );
 
     const downloadedPlaylistIds = useMemo(
@@ -152,7 +156,7 @@ export default function HomeScreen() {
             new Set(
                 fullPlaylists
                     .filter(playlist =>
-                        playlist.songs.some(song => downloadedTrackIds.has(song.id))
+                        isPlaylistFullyDownloaded(playlist, downloadedTrackIds)
                     )
                     .map(playlist => playlist.id)
             ),

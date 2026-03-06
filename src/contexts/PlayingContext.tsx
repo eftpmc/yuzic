@@ -28,6 +28,7 @@ import * as listenbrainz from '@/api/listenbrainz'
 import type { RootState } from '@/utils/redux/store';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
+import { areTrackIdsFullyDownloaded } from '@/utils/downloads/collectionState';
 
 function passesScrobbleThreshold(
   listenedSeconds: number,
@@ -287,6 +288,16 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       .filter((song): song is Song => song !== null);
   }, [actualQueue, trackToSong]);
 
+  const isCollectionFullyDownloaded = useCallback((collection: Album | Playlist): boolean => {
+    const collectionTrackIds = collection.songs
+      .map(song => String(song.id))
+      .filter(Boolean);
+    const downloadedCollectionTrackIds = new Set(
+      collectionTrackIds.filter(trackId => isTrackDownloaded(trackId))
+    );
+    return areTrackIdsFullyDownloaded(collectionTrackIds, downloadedCollectionTrackIds);
+  }, [isTrackDownloaded]);
+
   const runInBatches = useCallback(async (
     playlistId: string,
     songs: Song[],
@@ -311,8 +322,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     startIndex: number,
     opts?: { clearScrobbleState?: boolean; progressive?: boolean }
   ) => {
+    if (!songs.length) {
+      setCurrentSong(null);
+      setCurrentIndex(0);
+      refreshQueue();
+      bumpQueue();
+      return;
+    }
+
     const safeStart = Math.max(0, Math.min(startIndex, Math.max(songs.length - 1, 0)));
     const opToken = ++queueOpTokenRef.current;
+    const isStaleOperation = () => queueOpTokenRef.current !== opToken;
+    const cleanupPlaylistIfStale = (playlistId: string) => {
+      if (!isStaleOperation()) return;
+      try { PlayerQueue.deletePlaylist(playlistId); } catch { /* ignore */ }
+      if (currentPlaylistIdRef.current === playlistId) {
+        currentPlaylistIdRef.current = null;
+      }
+    };
 
     if (opts?.clearScrobbleState) lastScrobbledIdRef.current = null;
     scrobbleStartTimeRef.current = Date.now();
@@ -325,9 +352,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (currentPlaylistIdRef.current) {
       try { PlayerQueue.deletePlaylist(currentPlaylistIdRef.current); } catch { /* ignore */ }
     }
+    if (isStaleOperation()) return;
 
     const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
     currentPlaylistIdRef.current = playlistId;
+    if (isStaleOperation()) {
+      cleanupPlaylistIfStale(playlistId);
+      return;
+    }
 
     const progressive = opts?.progressive ?? false;
     const initialCount = progressive
@@ -335,19 +367,47 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       : songs.length;
     const initialSongs = songs.slice(0, initialCount);
     const initialTracks = await Promise.all(initialSongs.map(songToTrackItem));
+    if (isStaleOperation()) {
+      cleanupPlaylistIfStale(playlistId);
+      return;
+    }
+    if (!initialTracks.length) {
+      setCurrentSong(null);
+      setCurrentIndex(0);
+      refreshQueue();
+      bumpQueue();
+      return;
+    }
     PlayerQueue.addTracksToPlaylist(playlistId, initialTracks);
+    if (isStaleOperation()) {
+      cleanupPlaylistIfStale(playlistId);
+      return;
+    }
 
     PlayerQueue.loadPlaylist(playlistId);
+    if (isStaleOperation()) {
+      cleanupPlaylistIfStale(playlistId);
+      return;
+    }
     await TrackPlayer.skipToIndex(Math.min(safeStart, Math.max(initialSongs.length - 1, 0)));
+    if (isStaleOperation()) {
+      cleanupPlaylistIfStale(playlistId);
+      return;
+    }
     setCurrentSong(songs[safeStart] ?? null);
     setCurrentIndex(safeStart);
     await TrackPlayer.play();
+    if (isStaleOperation()) {
+      cleanupPlaylistIfStale(playlistId);
+      return;
+    }
     refreshQueue();
     bumpQueue();
 
     if (!progressive) return;
     const rest = songs.slice(initialCount);
     if (!rest.length) return;
+    if (isStaleOperation()) return;
     await runInBatches(playlistId, rest, opToken, 50);
   }, [songToTrackItem, refreshQueue, runInBatches]);
 
@@ -390,13 +450,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const selectedSongId = selectedSong.id;
     let index = 0;
 
-    if (offlineModeEnabled) {
-      songs = songs.filter(song => isTrackDownloaded(song.id));
-
-      if (!songs.length) {
-        toast.error(t('common.offline.noDownloadedTracks'));
-        return;
-      }
+    if (offlineModeEnabled && !isCollectionFullyDownloaded(collection)) {
+      toast.error(t('common.offline.noDownloadedTracks'));
+      return;
     }
 
     if (shuffle) {
@@ -417,9 +473,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addCollectionToQueue = async (collection: Album | Playlist) => {
-    const collectionSongs = offlineModeEnabled
-      ? collection.songs.filter(song => isTrackDownloaded(song.id))
-      : collection.songs;
+    if (offlineModeEnabled && !isCollectionFullyDownloaded(collection)) {
+      toast.error(t('common.offline.noDownloadedTracks'));
+      return;
+    }
+    const collectionSongs = collection.songs;
 
     if (!collectionSongs.length) {
       if (offlineModeEnabled) toast.error(t('common.offline.noDownloadedTracks'));
@@ -448,9 +506,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const shuffleCollectionToQueue = async (collection: Album | Playlist) => {
-    const collectionSongs = offlineModeEnabled
-      ? collection.songs.filter(song => isTrackDownloaded(song.id))
-      : collection.songs;
+    if (offlineModeEnabled && !isCollectionFullyDownloaded(collection)) {
+      toast.error(t('common.offline.noDownloadedTracks'));
+      return;
+    }
+    const collectionSongs = collection.songs;
 
     if (!collectionSongs.length) {
       if (offlineModeEnabled) toast.error(t('common.offline.noDownloadedTracks'));
