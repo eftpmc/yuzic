@@ -15,6 +15,7 @@ import {
   useOnChangeTrack,
   useActualQueue,
   useNowPlaying,
+  useDownloadedTracks,
 } from 'react-native-nitro-player';
 import type { TrackItem } from 'react-native-nitro-player';
 import { Album, Playlist, Song } from '@/types';
@@ -26,6 +27,7 @@ import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
+import { selectOfflineModeEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -41,6 +43,12 @@ function passesScrobbleThreshold(
   return listenedSeconds >= threshold;
 }
 
+function isBufferingState(state: unknown): boolean {
+  if (typeof state !== 'string') return false;
+  const normalized = state.toLowerCase();
+  return normalized.includes('buffer') || normalized === 'loading';
+}
+
 export interface PlaybackProgress {
   position: number;
   duration: number;
@@ -50,6 +58,8 @@ export interface PlaybackProgress {
 export interface PlayingContextType {
   currentSong: Song | null;
   isPlaying: boolean;
+  playbackState: string | null;
+  isBuffering: boolean;
   progress: PlaybackProgress;
 
   pauseSong(): Promise<void>;
@@ -103,6 +113,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const { state: playbackState } = useOnPlaybackStateChange();
   const isPlaying = playbackState === 'playing';
+  const isBuffering = isBufferingState(playbackState);
   const { queue: actualQueue, refreshQueue } = useActualQueue();
   const nowPlaying = useNowPlaying();
 
@@ -119,6 +130,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
+  const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
+  const { isTrackDownloaded } = useDownloadedTracks();
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -230,9 +243,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       extraPayload: {
         artistId: song.artistId,
         albumId: song.albumId,
+        serverId: song.sourceServerId ?? activeServer?.id ?? '',
+        serverType: song.sourceServerType ?? activeServer?.type ?? '',
+        coverKind: song.cover?.kind ?? '',
       },
     };
-  }, []);
+  }, [activeServer?.id, activeServer?.type]);
 
   const trackToSong = useCallback((track?: TrackItem | null): Song | null => {
     if (!track) return null;
@@ -247,6 +263,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       duration: String(track.duration ?? 0),
       streamUrl: track.url ?? '',
       albumId: String(track.extraPayload?.albumId ?? ''),
+      sourceServerId: String(track.extraPayload?.serverId ?? '') || undefined,
+      sourceServerType:
+        track.extraPayload?.serverType === 'navidrome' || track.extraPayload?.serverType === 'jellyfin'
+          ? track.extraPayload.serverType
+          : undefined,
     };
   }, []);
 
@@ -340,6 +361,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [changedTrack?.id, trackToSong, scrobbleIfNeeded]);
 
   const playSong = async (song: Song) => {
+    if (offlineModeEnabled && !isTrackDownloaded(song.id)) {
+      toast.error(t('common.offline.downloadRequired'));
+      return;
+    }
+
     originalQueueRef.current = null;
     setShuffleOn(false);
     await replacePlaylist([song], 0, { clearScrobbleState: true, progressive: false });
@@ -351,7 +377,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     shuffle = false
   ) => {
     let songs = [...collection.songs];
+    const selectedSongId = selectedSong.id;
     let index = 0;
+
+    if (offlineModeEnabled) {
+      songs = songs.filter(song => isTrackDownloaded(song.id));
+
+      if (!songs.length) {
+        toast.error(t('common.offline.noDownloadedTracks'));
+        return;
+      }
+    }
 
     if (shuffle) {
       originalQueueRef.current = songs;
@@ -360,7 +396,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       setShuffleOn(true);
     } else {
       originalQueueRef.current = null;
-      index = songs.findIndex(s => s.id === selectedSong.id);
+      index = songs.findIndex(s => s.id === selectedSongId);
       setShuffleOn(false);
     }
 
@@ -371,15 +407,26 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addCollectionToQueue = async (collection: Album | Playlist) => {
+    const collectionSongs = offlineModeEnabled
+      ? collection.songs.filter(song => isTrackDownloaded(song.id))
+      : collection.songs;
+
+    if (!collectionSongs.length) {
+      if (offlineModeEnabled) toast.error(t('common.offline.noDownloadedTracks'));
+      return;
+    }
+
     const playlistId = currentPlaylistIdRef.current;
     if (!playlistId) {
-      const first = collection.songs[0];
-      if (first) await playSongInCollection(first, collection, false);
+      const first = collectionSongs[0];
+      if (first) {
+        await playSongInCollection(first, { ...collection, songs: collectionSongs }, false);
+      }
       return;
     }
 
     const existingIds = new Set(getNativeQueueSongs().map(s => s.id));
-    const toAdd = collection.songs.filter(s => !existingIds.has(s.id));
+    const toAdd = collectionSongs.filter(s => !existingIds.has(s.id));
     if (!toAdd.length) return;
 
     for (const song of toAdd) {
@@ -391,16 +438,27 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const shuffleCollectionToQueue = async (collection: Album | Playlist) => {
+    const collectionSongs = offlineModeEnabled
+      ? collection.songs.filter(song => isTrackDownloaded(song.id))
+      : collection.songs;
+
+    if (!collectionSongs.length) {
+      if (offlineModeEnabled) toast.error(t('common.offline.noDownloadedTracks'));
+      return;
+    }
+
     const playlistId = currentPlaylistIdRef.current;
     if (!playlistId) {
-      const first = collection.songs[0];
-      if (first) await playSongInCollection(first, collection, true);
+      const first = collectionSongs[0];
+      if (first) {
+        await playSongInCollection(first, { ...collection, songs: collectionSongs }, true);
+      }
       return;
     }
 
     const existingIds = new Set(getNativeQueueSongs().map(s => s.id));
     const toAdd = shuffleArray(
-      collection.songs.filter(s => !existingIds.has(s.id))
+      collectionSongs.filter(s => !existingIds.has(s.id))
     );
     if (!toAdd.length) return;
 
@@ -452,6 +510,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addToQueue = async (song: Song) => {
+    if (offlineModeEnabled && !isTrackDownloaded(song.id)) {
+      toast.error(t('common.offline.downloadRequired'));
+      return;
+    }
+
     const playlistId = currentPlaylistIdRef.current;
     if (!playlistId) {
       await playSong(song);
@@ -465,6 +528,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const playNext = async (song: Song) => {
+    if (offlineModeEnabled && !isTrackDownloaded(song.id)) {
+      toast.error(t('common.offline.downloadRequired'));
+      return;
+    }
+
     const playlistId = currentPlaylistIdRef.current;
     if (!playlistId) {
       await playSong(song);
@@ -489,6 +557,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const playSimilar = async (song: Song) => {
+    if (offlineModeEnabled) {
+      toast.error(t('common.offline.similarUnavailable'));
+      return;
+    }
+
     try {
       const similarSongs = await api.similar.getSimilarSongs(song.id);
       const others = similarSongs.filter(s => s.id !== song.id);
@@ -566,6 +639,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       value={{
         currentSong,
         isPlaying,
+        playbackState: typeof playbackState === 'string' ? playbackState : null,
+        isBuffering,
         progress,
         pauseSong,
         resumeSong,

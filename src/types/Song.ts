@@ -1,14 +1,22 @@
 import { CoverSource } from "./Cover";
+import { ServerType } from "./Server";
 
-export interface Song {
+export interface SongBase {
     id: string;
     title: string;
     artist: string;
     artistId: string;
     cover: CoverSource;
     duration: string;
-    streamUrl: string;
     albumId: string;
+}
+
+export interface Song extends SongBase {
+    streamUrl: string;
+    /** Source server ID; omitted when unknown. */
+    sourceServerId?: string;
+    /** Source server provider; omitted when unknown. */
+    sourceServerType?: ServerType;
     /** File path; omitted when not available. */
     filePath?: string;
     /** Bitrate in kbps; omitted when not available. */

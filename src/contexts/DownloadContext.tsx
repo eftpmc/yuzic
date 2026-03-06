@@ -18,6 +18,12 @@ import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { staleTime } from '@/constants/staleTime';
 import { buildCover } from '@/utils/builders/buildCover';
+import {
+    DownloadProviderScope,
+    doesTrackMatchProviderScope,
+    normalizeServerId,
+    normalizeServerType,
+} from '@/utils/downloads/provider';
 
 type DownloadContextType = {
     downloadAlbumById: (albumId: string) => Promise<void>;
@@ -27,7 +33,13 @@ type DownloadContextType = {
     isTrackDownloading: (trackId: string) => boolean;
 
     cancelDownload: (id: string) => Promise<void>;
+    removeDownloadByCollectionId: (
+        id: string,
+        trackIds: string[],
+        scope?: DownloadProviderScope
+    ) => Promise<void>;
     cancelDownloadAll: () => Promise<void>;
+    clearDownloadsForProvider: (scope?: DownloadProviderScope) => Promise<void>;
     clearAllDownloads: () => Promise<void>;
 };
 
@@ -39,7 +51,10 @@ export const useDownload = (): DownloadContextType => {
     return ctx;
 };
 
-function songToTrackItem(song: Song): TrackItem {
+function songToTrackItem(
+    song: Song,
+    opts?: { serverId?: string; serverType?: string | null }
+): TrackItem {
     const cover = buildCover(song.cover, 'grid') || undefined;
     return {
         id: song.id,
@@ -52,6 +67,9 @@ function songToTrackItem(song: Song): TrackItem {
         extraPayload: {
             artistId: song.artistId,
             albumId: song.albumId,
+            serverId: song.sourceServerId ?? opts?.serverId ?? '',
+            serverType: song.sourceServerType ?? opts?.serverType ?? '',
+            coverKind: song.cover?.kind ?? '',
         },
     };
 }
@@ -63,6 +81,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const {
         isTrackDownloaded: isNativeTrackDownloaded,
+        downloadedTracks,
     } = useDownloadedTracks();
 
     useEffect(() => {
@@ -71,7 +90,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
             backgroundDownloadsEnabled: true,
             downloadArtwork: true,
         });
-        DownloadManager.setPlaybackSourcePreference('auto');
+        DownloadManager.setPlaybackSourcePreference('download');
     }, []);
 
     const downloadAlbumById = useCallback(async (albumId: string) => {
@@ -92,7 +111,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (!album) return;
 
-        const trackItems = album.songs.map(songToTrackItem);
+        const trackItems = album.songs.map(song => songToTrackItem(song, {
+            serverId: activeServer?.id,
+            serverType: activeServer?.type ?? null,
+        }));
         await DownloadManager.downloadPlaylist(albumId, trackItems);
     }, [queryClient, activeServer?.id, api]);
 
@@ -114,7 +136,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (!playlist) return;
 
-        const trackItems = playlist.songs.map(songToTrackItem);
+        const trackItems = playlist.songs.map(song => songToTrackItem(song, {
+            serverId: activeServer?.id,
+            serverType: activeServer?.type ?? null,
+        }));
         await DownloadManager.downloadPlaylist(playlistId, trackItems);
     }, [queryClient, activeServer?.id, api]);
 
@@ -136,9 +161,73 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     }, []);
 
+    const removeDownloadByCollectionId = useCallback(async (
+        id: string,
+        trackIds: string[],
+        scope?: DownloadProviderScope
+    ) => {
+        const scopeServerId = normalizeServerId(scope?.serverId);
+        const scopeServerType = normalizeServerType(scope?.serverType);
+
+        // Cancel active downloads tied to this collection first.
+        const activeTasks = DownloadManager.getActiveDownloads();
+        for (const task of activeTasks) {
+            if (task.playlistId === id) {
+                const taskServerId = normalizeServerId((task as any)?.serverId);
+                const taskServerType = normalizeServerType((task as any)?.serverType);
+
+                // Only enforce task scoping when task metadata is present.
+                if (scopeServerId && taskServerId && taskServerId !== scopeServerId) continue;
+                if (scopeServerType && taskServerType && taskServerType !== scopeServerType) continue;
+                await DownloadManager.cancelDownload(task.downloadId);
+            }
+        }
+
+        // Delete local files for tracks that are already downloaded.
+        const scopedTrackIds = new Set(
+            (downloadedTracks as any[])
+                .filter(track => doesTrackMatchProviderScope(track, scope))
+                .map(track => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
+                .filter(Boolean)
+        );
+
+        for (const trackId of new Set(trackIds)) {
+            if (!trackId) continue;
+            if (!scopedTrackIds.has(trackId)) continue;
+            if (isNativeTrackDownloaded(trackId)) {
+                await DownloadManager.deleteDownloadedTrack(trackId);
+            }
+        }
+    }, [downloadedTracks, isNativeTrackDownloaded]);
+
     const cancelDownloadAll = useCallback(async () => {
         await DownloadManager.cancelAllDownloads();
     }, []);
+
+    const clearDownloadsForProvider = useCallback(async (scope?: DownloadProviderScope) => {
+        const scopeServerId = normalizeServerId(scope?.serverId);
+        const scopeServerType = normalizeServerType(scope?.serverType);
+
+        const activeTasks = DownloadManager.getActiveDownloads();
+        for (const task of activeTasks) {
+            const taskServerId = normalizeServerId((task as any)?.serverId);
+            const taskServerType = normalizeServerType((task as any)?.serverType);
+
+            // If task metadata is unavailable, don't cancel blindly.
+            if (scopeServerId && (!taskServerId || taskServerId !== scopeServerId)) continue;
+            if (!scopeServerId && scopeServerType && (!taskServerType || taskServerType !== scopeServerType)) continue;
+            await DownloadManager.cancelDownload(task.downloadId);
+        }
+
+        for (const track of downloadedTracks as any[]) {
+            if (!doesTrackMatchProviderScope(track, scope)) continue;
+            const trackId = String(track?.trackId ?? track?.originalTrack?.id ?? '');
+            if (!trackId) continue;
+            if (isNativeTrackDownloaded(trackId)) {
+                await DownloadManager.deleteDownloadedTrack(trackId);
+            }
+        }
+    }, [downloadedTracks, isNativeTrackDownloaded]);
 
     const clearAllDownloads = useCallback(async () => {
         await DownloadManager.cancelAllDownloads();
@@ -153,7 +242,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
                 isTrackDownloaded,
                 isTrackDownloading,
                 cancelDownload,
+                removeDownloadByCollectionId,
                 cancelDownloadAll,
+                clearDownloadsForProvider,
                 clearAllDownloads,
             }}
         >

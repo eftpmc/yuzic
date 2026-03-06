@@ -333,7 +333,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - NitroPlayer (0.5.7):
+  - NitroPlayer (0.5.8):
     - hermes-engine
     - NitroModules
     - RCTRequired
@@ -2805,7 +2805,7 @@ SPEC CHECKSUMS:
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   NitroModules: 97978583f36f88f7a348d5bf986d94bc4b340d0a
-  NitroPlayer: 81adab84a7ccafbf1122b8c69a37ed87620bb585
+  NitroPlayer: 41f6ec13a26425a028e7f4d12f15965b3c6b9926
   RCTDeprecation: 943572d4be82d480a48f4884f670135ae30bf990
   RCTRequired: 8f3cfc90cc25cf6e420ddb3e7caaaabc57df6043
   RCTTypeSafety: 16a4144ca3f959583ab019b57d5633df10b5e97c

@@ -7,6 +7,7 @@ import {
   StarredApi,
   SimilarApi,
   SongsApi,
+  TracksApi,
   AuthApi,
   LyricsApi,
   SearchApi
@@ -43,6 +44,7 @@ import { getGenres } from "./genres/getGenres";
 
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 import { getSong } from "./songs/getSong";
+import { getTracks } from "./tracks/getTracks";
 import { getSimilarSongs } from "./similar/getSimilarSongs";
 
 import { search as searchNavidrome } from "./search/search";
@@ -168,6 +170,11 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     get: async (id: string) => getSong(client, id),
   };
 
+  const tracks: TracksApi = {
+    list: async () => getTracks(client),
+    get: async (id: string) => getSong(client, id),
+  };
+
   const similar: SimilarApi = {
     getSimilarSongs: async (songId: string) => getSimilarSongs(client, songId),
   };
@@ -188,6 +195,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     playlists,
     starred,
     songs,
+    tracks,
     similar,
     lyrics,
     search

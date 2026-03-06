@@ -19,7 +19,10 @@ import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
 import { useApi } from '@/api';
 import { useSelector } from 'react-redux';
-import { selectSearchScope } from '@/utils/redux/selectors/settingsSelectors';
+import {
+  selectOfflineModeEnabled,
+  selectSearchScope,
+} from '@/utils/redux/selectors/settingsSelectors';
 
 interface SearchContextType {
   searchResults: SearchResult[];
@@ -66,6 +69,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const { playlists } = usePlaylists();
 
   const searchScope = useSelector(selectSearchScope);
+  const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
 
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
@@ -191,22 +195,24 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
       const results: SearchResult[] = [];
 
-      if (searchScope === 'client') {
+      if (offlineModeEnabled) {
+        results.push(...await searchLibrary(query));
+      } else if (searchScope === 'client') {
         results.push(...await searchLibrary(query));
       }
 
-      if (searchScope === 'client+external') {
+      if (!offlineModeEnabled && searchScope === 'client+external') {
         results.push(
           ...await searchLibrary(query),
           ...await searchExternal(query)
         );
       }
 
-      if (searchScope === 'server') {
+      if (!offlineModeEnabled && searchScope === 'server') {
         results.push(...await searchServer(query));
       }
 
-      if (searchScope === 'server+external') {
+      if (!offlineModeEnabled && searchScope === 'server+external') {
         results.push(
           ...await searchServer(query),
           ...await searchExternal(query)

@@ -94,18 +94,53 @@
       },
       "downloads": {
         "title": "ダウンロード",
+        "detailsTitle": "ダウンロード詳細",
+        "moreInfo": "詳細を見る",
         "clearTitle": "ダウンロードを削除しますか？",
         "clearBody": "端末に保存されたダウンロード曲をすべて削除します。",
+        "clearBodyForProvider": "現在のサーバーのダウンロードのみ削除します。",
+        "clearBodyProviderNamed": "{{provider}} のダウンロードのみ削除します。",
+        "clearFailedTitle": "ダウンロードを削除できませんでした",
+        "clearFailedBody": "ローカルファイルの削除中にエラーが発生しました。",
+        "removeTitle": "ダウンロード項目を削除しますか？",
+        "removeBody": "「{{title}}」のダウンロード済みファイルを端末から削除します。",
+        "removeFailedTitle": "ダウンロードを削除できませんでした",
+        "removeFailedBody": "ローカルファイルの削除中にエラーが発生しました。",
+        "provider": {
+          "navidrome": "Navidrome",
+          "jellyfin": "Jellyfin",
+          "unknown": "不明なソース"
+        },
         "status": {
           "downloaded": "ダウンロード済み",
           "downloading": "ダウンロード中",
-          "incomplete": "未完了"
+          "incomplete": "未完了",
+          "pending": "保留中",
+          "paused": "一時停止",
+          "completed": "完了",
+          "failed": "失敗",
+          "cancelled": "キャンセル"
         },
         "type": {
           "album": "アルバム",
           "playlist": "プレイリスト"
         },
         "sizeLabel": "ダウンロード容量",
+        "availableLabel": "空き容量",
+        "unknownTrack": "不明なトラック",
+        "unknownArtist": "不明なアーティスト",
+        "table": {
+          "item": "項目",
+          "status": "状態",
+          "progress": "進行状況",
+          "downloaded": "ダウンロード済み",
+          "size": "サイズ",
+          "updated": "更新日時",
+          "error": "エラー",
+          "empty": "ダウンロード済みの項目はまだありません。",
+          "tracks": "トラック",
+          "playlists": "プレイリスト"
+        },
         "offlineNote": "これらの曲はオフライン再生のため端末に保存されています。"
       },
       "audioQuality": {
@@ -117,6 +152,11 @@
           "high": "高 (192kbps)",
           "original": "オリジナル (圧縮なし)"
         }
+      },
+      "offlineMode": {
+        "title": "オフラインモード",
+        "info": "有効にすると、アプリはダウンロード済みのコンテンツのみを表示します。",
+        "toggle": "ダウンロード済みのみ"
       }
     },
     "player": {
@@ -205,6 +245,11 @@
     "shuffle": "シャッフル",
     "artist": "アーティスト",
     "playlist": "プレイリスト",
+    "offline": {
+      "downloadRequired": "オフラインモードで再生するには、この曲をダウンロードしてください。",
+      "noDownloadedTracks": "この操作に使えるダウンロード済みの曲がありません。",
+      "similarUnavailable": "オフラインモードでは類似曲を利用できません。"
+    },
     "oneSecond": "少々お待ちください。",
     "playingSimilar": "類似の音楽を再生中",
     "error": {
@@ -226,7 +271,12 @@
       "add": "サーバーを追加",
       "active": "使用中",
       "deleteTitle": "サーバーを削除",
-      "deleteBody": "{{server}} を削除しますか？"
+      "deleteBody": "{{server}} を削除しますか？",
+      "switchClearTitle": "サーバーを切り替えてダウンロードを削除しますか？",
+      "switchClearBody": "重複を防ぐため、切り替え時にローカルのダウンロードを削除します。",
+      "switchClearConfirm": "切り替えて削除",
+      "switchClearFailedTitle": "サーバーを切り替えできませんでした",
+      "switchClearFailedBody": "サーバー切り替え前のダウンロード削除に失敗しました。"
     },
     "connect": {
       "title": "サーバーに接続",
@@ -261,7 +311,8 @@
       "all": "すべて",
       "albums": "アルバム",
       "artists": "アーティスト",
-      "playlists": "プレイリスト"
+      "playlists": "プレイリスト",
+      "tracks": "トラック"
     },
     "sort": {
       "alphabetical": "アルファベット順",
@@ -280,7 +331,8 @@
       "signOut": "サインアウト",
       "scanTriggered": "スキャンを開始しました。",
       "scanFailed": "スキャンを開始できませんでした。",
-      "signOutFailed": "サインアウトできませんでした。"
+      "signOutFailed": "サインアウトできませんでした。",
+      "downloadCleanupFailed": "サインアウト中にダウンロードを削除できませんでした。"
     }
   },
   "search": {

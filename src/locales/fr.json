@@ -95,18 +95,53 @@
       },
       "downloads": {
         "title": "Téléchargements",
+        "detailsTitle": "Détails des téléchargements",
+        "moreInfo": "Plus d'infos",
         "clearTitle": "Effacer les téléchargements ?",
         "clearBody": "Cela supprimera tous les morceaux téléchargés de votre appareil.",
+        "clearBodyForProvider": "Cela supprimera les téléchargements du serveur actuel uniquement.",
+        "clearBodyProviderNamed": "Cela supprimera uniquement les téléchargements de {{provider}}.",
+        "clearFailedTitle": "Impossible d'effacer les téléchargements",
+        "clearFailedBody": "Une erreur est survenue lors de la suppression des fichiers locaux.",
+        "removeTitle": "Supprimer cet élément téléchargé ?",
+        "removeBody": "Cela supprimera les fichiers téléchargés de \"{{title}}\" de votre appareil.",
+        "removeFailedTitle": "Impossible de supprimer le téléchargement",
+        "removeFailedBody": "Une erreur est survenue lors de la suppression des fichiers locaux.",
+        "provider": {
+          "navidrome": "Navidrome",
+          "jellyfin": "Jellyfin",
+          "unknown": "Source inconnue"
+        },
         "status": {
           "downloaded": "Téléchargé",
           "downloading": "En cours",
-          "incomplete": "Incomplet"
+          "incomplete": "Incomplet",
+          "pending": "En attente",
+          "paused": "En pause",
+          "completed": "Terminé",
+          "failed": "Échoué",
+          "cancelled": "Annulé"
         },
         "type": {
           "album": "Album",
           "playlist": "Liste de lecture"
         },
         "sizeLabel": "Taille du téléchargement",
+        "availableLabel": "Espace disponible",
+        "unknownTrack": "Piste inconnue",
+        "unknownArtist": "Artiste inconnu",
+        "table": {
+          "item": "Élément",
+          "status": "Statut",
+          "progress": "Progression",
+          "downloaded": "Téléchargé",
+          "size": "Taille",
+          "updated": "Mis à jour",
+          "error": "Erreur",
+          "empty": "Aucun élément téléchargé pour le moment.",
+          "tracks": "Pistes",
+          "playlists": "Listes de lecture"
+        },
         "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne."
       },
       "audioQuality": {
@@ -118,6 +153,11 @@
           "high": "Élevée (192 kbps)",
           "original": "Originale (sans compression)"
         }
+      },
+      "offlineMode": {
+        "title": "Mode hors ligne",
+        "info": "Lorsqu'il est activé, l'application affiche uniquement le contenu téléchargé.",
+        "toggle": "Mode téléchargements uniquement"
       }
     },
     "player": {
@@ -206,6 +246,11 @@
     "shuffle": "Aléatoire",
     "artist": "Artiste",
     "playlist": "Liste de lecture",
+    "offline": {
+      "downloadRequired": "Téléchargez cette piste pour la lire en mode hors ligne.",
+      "noDownloadedTracks": "Aucune piste téléchargée n'est disponible pour cette action.",
+      "similarUnavailable": "Les titres similaires ne sont pas disponibles en mode hors ligne."
+    },
     "oneSecond": "Un instant.",
     "playingSimilar": "Lecture de musique similaire",
     "error": {
@@ -227,7 +272,12 @@
       "add": "Ajouter un serveur",
       "active": "ACTIF",
       "deleteTitle": "Supprimer le serveur",
-      "deleteBody": "Supprimer {{server}} ?"
+      "deleteBody": "Supprimer {{server}} ?",
+      "switchClearTitle": "Changer de serveur et effacer les téléchargements ?",
+      "switchClearBody": "Le changement de serveur effacera les téléchargements locaux pour éviter les chevauchements.",
+      "switchClearConfirm": "Changer et effacer",
+      "switchClearFailedTitle": "Impossible de changer de serveur",
+      "switchClearFailedBody": "Échec de l'effacement des téléchargements avant le changement de serveur."
     },
     "connect": {
       "title": "Connectez-vous à votre serveur",
@@ -262,7 +312,8 @@
       "all": "Tout",
       "albums": "Albums",
       "artists": "Artistes",
-      "playlists": "Listes de lecture"
+      "playlists": "Listes de lecture",
+      "tracks": "Pistes"
     },
     "sort": {
       "alphabetical": "Alphabétique",
@@ -281,7 +332,8 @@
       "signOut": "Se déconnecter",
       "scanTriggered": "Analyse lancée.",
       "scanFailed": "Impossible de lancer l'analyse.",
-      "signOutFailed": "Impossible de se déconnecter correctement."
+      "signOutFailed": "Impossible de se déconnecter correctement.",
+      "downloadCleanupFailed": "Impossible d'effacer les téléchargements pendant la déconnexion."
     }
   },
   "search": {

@@ -7,10 +7,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { usePlaying } from '@/contexts/PlayingContext';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 const Controls: React.FC = () => {
   const {
     isPlaying,
+    isBuffering,
     pauseSong,
     resumeSong,
     skipToNext,
@@ -52,11 +54,15 @@ const Controls: React.FC = () => {
         onPress={isPlaying ? pauseSong : resumeSong}
         hitSlop={HIT_SLOP}
       >
-        <Ionicons
-          name={isPlaying ? 'pause-circle' : 'play-circle'}
-          size={80}
-          color="#fff"
-        />
+        {isBuffering ? (
+          <SpinningLoaderCircle size={56} color="#fff" />
+        ) : (
+          <Ionicons
+            name={isPlaying ? 'pause-circle' : 'play-circle'}
+            size={80}
+            color="#fff"
+          />
+        )}
       </TouchableOpacity>
 
       {/* Next */}
