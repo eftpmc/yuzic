@@ -63,7 +63,17 @@ jobs:
           gem install bundler
           bundle install
 
+      - name: Decode Android keystore
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
+
       - name: Run Fastlane Android build
+        env:
+          ANDROID_KEYSTORE_PATH: android/app/release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: bundle exec fastlane android ci_android
 
       - name: Upload Android artifacts
