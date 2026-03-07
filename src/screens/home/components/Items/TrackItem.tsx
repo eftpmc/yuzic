@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  InteractionManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -26,6 +27,8 @@ type Props = {
 };
 
 const SHEET_TRANSITION_DELAY_MS = 180;
+const PRESS_COOLDOWN_MS = 700;
+const FULL_TRACK_FETCH_TIMEOUT_MS = 3000;
 
 const TrackItem: React.FC<Props> = ({
   song,
@@ -41,6 +44,7 @@ const TrackItem: React.FC<Props> = ({
   const playlistRef = useRef<BottomSheetModal>(null);
   const pressInFlightRef = useRef(false);
   const longPressInFlightRef = useRef(false);
+  const lastPressAtRef = useRef(0);
 
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
@@ -52,12 +56,26 @@ const TrackItem: React.FC<Props> = ({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const getFullSongWithTimeout = async () => {
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), FULL_TRACK_FETCH_TIMEOUT_MS)
+    );
+    return Promise.race([api.tracks.get(song.id), timeoutPromise]);
+  };
+
   const handlePress = async () => {
+    const now = Date.now();
+    if (now - lastPressAtRef.current < PRESS_COOLDOWN_MS) return;
     if (pressInFlightRef.current) return;
+    lastPressAtRef.current = now;
     pressInFlightRef.current = true;
     try {
-      const fullSong = await api.tracks.get(song.id);
+      const fullSong = await getFullSongWithTimeout();
       if (!fullSong) return;
+      // Let press feedback/render settle before starting playback work.
+      await new Promise<void>((resolve) =>
+        InteractionManager.runAfterInteractions(() => resolve())
+      );
       await playSimilar(fullSong);
     } catch (error) {
       console.warn("Failed to play home track", error);

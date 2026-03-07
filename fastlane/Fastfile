@@ -98,6 +98,16 @@ platform :ios do
       is_key_content_base64: true
     )
 
+    increment_version_number(
+      version_number: version_label,
+      xcodeproj: "ios/Yuzic.xcodeproj"
+    )
+
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "ios/Yuzic.xcodeproj"
+    )
+
     build_app(
       scheme: "Yuzic",
       workspace: "ios/Yuzic.xcworkspace",

@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -55,6 +55,7 @@ const SongOptions = forwardRef<
     const snapPoints = useMemo(() => ['55%', '90%'], []);
 
     const { currentSong, addToQueue, playNext, playSimilar } = usePlaying();
+    const instantMixInFlightRef = useRef(false);
 
     const { songs: starredSongs } = useStarredSongs();
     const starSong = useStarSong();
@@ -132,11 +133,14 @@ const SongOptions = forwardRef<
     };
 
     const handleInstantMix = async () => {
+      if (instantMixInFlightRef.current) return;
+      instantMixInFlightRef.current = true;
       try {
         await playSimilar(selectedSong);
       } catch {
         toast.error(t('songOptions.toasts.instantMixFailed'));
       } finally {
+        instantMixInFlightRef.current = false;
         close();
       }
     };

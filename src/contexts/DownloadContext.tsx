@@ -105,7 +105,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     useEffect(() => {
         DownloadManager.configure({
             maxConcurrentDownloads: 3,
-            backgroundDownloadsEnabled: true,
+            backgroundDownloadsEnabled: false,
             downloadArtwork: true,
         });
         DownloadManager.setPlaybackSourcePreference('download');

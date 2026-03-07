@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -25,12 +25,25 @@ export default function RecentSongsSpeedDial() {
   const { width } = useWindowDimensions();
   const { songs, isLoading } = useRecentSongs();
   const { playSimilar } = usePlaying();
+  const inFlightSongIdRef = useRef<string | null>(null);
 
   const contentWidth = width - H_PADDING * 2;
   const totalGaps = (COLS - 1) * GAP;
   const itemSize = (contentWidth - totalGaps) / COLS;
 
   const displaySongs = songs.slice(0, MAX_SONGS);
+
+  const handlePressSong = async (song: typeof displaySongs[number]) => {
+    if (inFlightSongIdRef.current === song.id) return;
+    inFlightSongIdRef.current = song.id;
+    try {
+      await playSimilar(song);
+    } finally {
+      if (inFlightSongIdRef.current === song.id) {
+        inFlightSongIdRef.current = null;
+      }
+    }
+  };
 
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
@@ -53,7 +66,9 @@ export default function RecentSongsSpeedDial() {
                 >
                 <TouchableOpacity
                   style={[styles.item, { width: itemSize, height: itemSize }]}
-                  onPress={() => playSimilar(song)}
+                  onPress={() => {
+                    void handlePressSong(song);
+                  }}
                   activeOpacity={0.7}
                 >
                   <MediaImage

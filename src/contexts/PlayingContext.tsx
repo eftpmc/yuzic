@@ -48,6 +48,10 @@ function isBufferingState(state: unknown): boolean {
   return normalized.includes('buffer') || normalized === 'loading';
 }
 
+const SIMILAR_FETCH_TIMEOUT_MS = 2500;
+const SIMILAR_MAX_SONGS = 80;
+const SIMILAR_PROGRESSIVE_THRESHOLD = 25;
+
 export interface PlaybackProgress {
   position: number;
   duration: number;
@@ -281,6 +285,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
           : undefined,
     };
   }, []);
+
+  const getSimilarWithTimeout = useCallback(async (songId: string): Promise<Song[] | null> => {
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), SIMILAR_FETCH_TIMEOUT_MS);
+    });
+
+    return Promise.race([
+      api.similar.getSimilarSongs(songId),
+      timeoutPromise,
+    ]);
+  }, [api.similar]);
 
   const getNativeQueueSongs = useCallback((): Song[] => {
     return actualQueue
@@ -633,20 +648,27 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
 
     try {
-      const similarSongs = await api.similar.getSimilarSongs(song.id);
-      const others = similarSongs.filter(s => s.id !== song.id);
-      const songs = [song, ...shuffleArray(others)];
-      const collection: Playlist = {
-        id: 'similar',
-        title: 'Similar',
-        subtext: '',
-        cover: { kind: 'none' },
-        changed: new Date(),
-        created: new Date(),
-        songs,
-      };
-      await playSongInCollection(song, collection, false);
-      if (others.length > 0) toast.success(t('common.playingSimilar'));
+      const similarSongs = await getSimilarWithTimeout(song.id);
+      if (!similarSongs) {
+        await playSong(song);
+        return;
+      }
+
+      const others = shuffleArray(
+        similarSongs.filter(s => s.id !== song.id)
+      ).slice(0, Math.max(SIMILAR_MAX_SONGS - 1, 0));
+      const songs = [song, ...others];
+
+      if (songs.length <= 1) {
+        await playSong(song);
+        return;
+      }
+
+      await replacePlaylist(songs, 0, {
+        clearScrobbleState: true,
+        progressive: songs.length > SIMILAR_PROGRESSIVE_THRESHOLD,
+      });
+      toast.success(t('common.playingSimilar'));
     } catch {
       await playSong(song);
     }
