@@ -1,4 +1,4 @@
-git_url("https://github.com/eftpmc/fastlane")
+git_url("git@github.com:eftpmc/fastlane.git")
 
 storage_mode("git")
 
