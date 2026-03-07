@@ -3,9 +3,40 @@ Dotenv.load
 
 default_platform(:android)
 
-# Shared build number so Android and iOS stay consistent
-def build_number
-  @build_number ||= Time.now.to_i
+def resolved_android_version_code
+  raw = ENV["ANDROID_VERSION_CODE"] || ENV["GITHUB_RUN_NUMBER"] || Time.now.to_i.to_s
+  code = raw.to_i
+
+  if code <= 0 || raw.to_s !~ /\A\d+\z/
+    UI.user_error!("Invalid Android version code '#{raw}'. Set ANDROID_VERSION_CODE (positive integer).")
+  end
+
+  UI.important("Using Android version code: #{code}")
+  code
+end
+
+def resolved_version_label
+  raw = ENV["VERSION_LABEL"]&.strip
+  value = raw.nil? || raw.empty? ? "1.1.17" : raw
+
+  unless value.match?(/\A\d+\.\d+\.\d+\z/)
+    UI.user_error!("Invalid version label '#{value}'. Use semantic format like 1.1.17.")
+  end
+
+  UI.important("Using version label: #{value}")
+  value
+end
+
+def resolved_ios_build_number
+  raw = ENV["IOS_BUILD_NUMBER"] || ENV["GITHUB_RUN_NUMBER"] || Time.now.to_i.to_s
+  value = raw.to_i
+
+  if value <= 0 || raw.to_s !~ /\A\d+\z/
+    UI.user_error!("Invalid iOS build number '#{raw}'. Set IOS_BUILD_NUMBER (positive integer).")
+  end
+
+  UI.important("Using iOS build number: #{value}")
+  value
 end
 
 def prepare_build_dirs
@@ -27,7 +58,8 @@ platform :android do
       task: "bundleRelease",
       project_dir: "android",
       properties: {
-        "android.injected.version.code" => build_number
+        "android.injected.version.code" => resolved_android_version_code,
+        "android.injected.version.name" => resolved_version_label
       }
     )
 
@@ -49,31 +81,15 @@ platform :ios do
 
     match(
       type: "appstore",
-      clone_branch_directly: true
+      clone_branch_directly: true,
+      readonly: is_ci
     )
-
-    increment_build_number(
-      build_number: build_number,
-      xcodeproj: "ios/Yuzic.xcodeproj"
-    )
-
-    build_settings = sh(
-      "xcodebuild -workspace ios/Yuzic.xcworkspace -scheme Yuzic -configuration Release -showBuildSettings",
-      log: false
-    )
-    signing_lines = build_settings
-      .lines
-      .select do |line|
-        line.match?(
-          /\b(PRODUCT_BUNDLE_IDENTIFIER|DEVELOPMENT_TEAM|CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|PROVISIONING_PROFILE_SPECIFIER|EXPANDED_CODE_SIGN_IDENTITY_NAME)\b/
-        )
-      end
-    UI.important("Release signing diagnostics:\n#{signing_lines.join}")
 
     build_app(
       scheme: "Yuzic",
       workspace: "ios/Yuzic.xcworkspace",
       export_method: "app-store",
+      xcargs: "CURRENT_PROJECT_VERSION=#{resolved_ios_build_number} MARKETING_VERSION=#{resolved_version_label}",
       output_directory: "build/ios",
       output_name: "Yuzic.ipa",
       include_symbols: false,

@@ -80,6 +80,15 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  * this variant is about 6MiB larger per architecture than default.
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
+def defaultVersionCode = 55
+def resolvedVersionCodeRaw = (findProperty("android.injected.version.code")
+        ?: System.getenv("ANDROID_VERSION_CODE")
+        ?: defaultVersionCode.toString()).toString()
+def resolvedVersionCode = resolvedVersionCodeRaw.isInteger() ? resolvedVersionCodeRaw.toInteger() : defaultVersionCode
+def defaultVersionName = "1.1.17"
+def resolvedVersionName = (findProperty("android.injected.version.name")
+        ?: System.getenv("VERSION_LABEL")
+        ?: defaultVersionName).toString()
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -92,8 +101,8 @@ android {
         applicationId 'com.arinora.rawarr'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 55
-        versionName "1.1.17"
+        versionCode resolvedVersionCode
+        versionName resolvedVersionName
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }

@@ -2,6 +2,19 @@ name: Mobile Build
 
 on:
   workflow_dispatch:
+    inputs:
+      android_version_code:
+        description: "Android versionCode override (optional)"
+        required: false
+        type: string
+      ios_build_number:
+        description: "iOS build number (CURRENT_PROJECT_VERSION)"
+        required: false
+        type: string
+      version_label:
+        description: "Shared version label (e.g. 1.1.17)"
+        required: false
+        type: string
 
 concurrency: mobile-build
 
@@ -34,6 +47,8 @@ jobs:
 
       - name: Run Fastlane iOS build
         env:
+          IOS_BUILD_NUMBER: ${{ github.event.inputs.ios_build_number }}
+          VERSION_LABEL: ${{ github.event.inputs.version_label }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           FASTLANE_USER: ${{ secrets.APPLE_ID }}
           FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
@@ -72,6 +87,8 @@ jobs:
 
       - name: Run Fastlane Android build
         env:
+          ANDROID_VERSION_CODE: ${{ github.event.inputs.android_version_code || github.run_number }}
+          VERSION_LABEL: ${{ github.event.inputs.version_label }}
           ANDROID_KEYSTORE_PATH: release.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
