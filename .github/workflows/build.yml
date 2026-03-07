@@ -1,0 +1,64 @@
+name: Mobile Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build-ios:
+    name: Build iOS
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Install Ruby dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Run Fastlane iOS build
+        run: bundle exec fastlane ios ci_ios
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: build/ios/*.ipa
+
+
+  build-android:
+    name: Build Android
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Install Ruby dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Run Fastlane Android build
+        run: bundle exec fastlane android ci_android
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: |
+            build/android/*.apk
+            build/android/*.aab
