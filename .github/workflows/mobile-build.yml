@@ -44,6 +44,13 @@ jobs:
           cd ios
           pod install --repo-update
 
+      - name: Allow codesign to access keychain
+        run: |
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
       - name: Run Fastlane iOS build
         env:
           IOS_BUILD_NUMBER: ${{ github.event.inputs.ios_build_number }}
