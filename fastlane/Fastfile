@@ -34,6 +34,7 @@ platform :android do
     supply(
       track: "alpha",
       aab: "android/app/build/outputs/bundle/release/app-release.aab",
+      json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"],
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
@@ -56,9 +57,23 @@ platform :ios do
       xcodeproj: "ios/Yuzic.xcodeproj"
     )
 
+    build_settings = sh(
+      "xcodebuild -workspace ios/Yuzic.xcworkspace -scheme Yuzic -configuration Release -showBuildSettings",
+      log: false
+    )
+    signing_lines = build_settings
+      .lines
+      .select do |line|
+        line.match?(
+          /\b(PRODUCT_BUNDLE_IDENTIFIER|DEVELOPMENT_TEAM|CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|PROVISIONING_PROFILE_SPECIFIER|EXPANDED_CODE_SIGN_IDENTITY_NAME)\b/
+        )
+      end
+    UI.important("Release signing diagnostics:\n#{signing_lines.join}")
+
     build_app(
       scheme: "Yuzic",
       workspace: "ios/Yuzic.xcworkspace",
+      export_method: "app-store",
       output_directory: "build/ios",
       output_name: "Yuzic.ipa",
       include_symbols: false,
