@@ -12,7 +12,8 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Use Homebrew Ruby
         run: echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
@@ -32,6 +33,8 @@ jobs:
           pod install
 
       - name: Run Fastlane iOS build
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: bundle exec fastlane ios ci_ios
 
       - name: Upload IPA artifact
@@ -46,7 +49,8 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Use Homebrew Ruby
         run: echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
