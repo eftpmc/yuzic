@@ -1,28 +1,34 @@
 import { AlbumBase } from '@/types/Album';
 import { ArtistBase } from '@/types/Artist';
+import { Song } from '@/types/Song';
 import type { JellyfinClient } from '../client';
 
 export async function search(
   client: JellyfinClient,
   query: string
-): Promise<{ albums: AlbumBase[]; artists: ArtistBase[] }> {
+): Promise<{ albums: AlbumBase[]; artists: ArtistBase[]; songs: Song[] }> {
   if (!query.trim()) {
-    return { albums: [], artists: [] };
+    return { albums: [], artists: [], songs: [] };
   }
 
-  const [albumsData, artistsData] = await Promise.all([
+  const [albumsData, artistsData, songsData] = await Promise.all([
     client.request<any>(
-      `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicAlbum&Recursive=true&Fields=DateCreated,ProviderIds,ArtistItems`,
+      `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicAlbum&Recursive=true&Limit=20&Fields=DateCreated,ProviderIds,ArtistItems`,
       { tokenOnly: true }
     ),
     client.request<any>(
-      `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicArtist&Recursive=true&Fields=ProviderIds`,
+      `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicArtist&Recursive=true&Limit=20&Fields=ProviderIds`,
+      { tokenOnly: true }
+    ),
+    client.request<any>(
+      `/Users/${encodeURIComponent(client.userId)}/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=Audio&Recursive=true&Limit=20&Fields=RunTimeTicks,ArtistItems,AlbumId`,
       { tokenOnly: true }
     ),
   ]);
 
   const albumItems = albumsData.Items ?? [];
   const artistItems = artistsData.Items ?? [];
+  const songItems = songsData.Items ?? [];
 
   const albums: AlbumBase[] = albumItems.map((item: any) => ({
     id: item.Id,
@@ -58,5 +64,23 @@ export async function search(
     mbid: item.ProviderIds?.MusicBrainz ?? null,
   }));
 
-  return { albums, artists };
+  const songs: Song[] = songItems
+    .filter((item: any) => item?.Id)
+    .map((item: any) => {
+      const artistItem = item.ArtistItems?.[0];
+      return {
+        id: item.Id,
+        title: item.Name ?? 'Unknown',
+        artist: artistItem?.Name ?? 'Unknown Artist',
+        artistId: artistItem?.Id ?? '',
+        albumId: item.AlbumId ?? '',
+        cover: item.Id
+          ? { kind: 'jellyfin' as const, itemId: item.Id }
+          : { kind: 'none' as const },
+        duration: String(Math.floor((item.RunTimeTicks ?? 0) / 10_000_000)),
+        streamUrl: client.buildStreamUrl(item.Id),
+      };
+    });
+
+  return { albums, artists, songs };
 }

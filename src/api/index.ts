@@ -58,7 +58,7 @@ export const useApi = (): ApiAdapter => {
         getBySongId: empty,
       },
       search: {
-        search: empty
+        search: async () => ({ albums: [], artists: [], songs: [] })
       }
     };
   }
@@ -117,7 +117,7 @@ export const useApi = (): ApiAdapter => {
       getBySongId: empty
     },
     search: {
-      search: empty
+      search: async () => ({ albums: [], artists: [], songs: [] })
     }
   };
 };

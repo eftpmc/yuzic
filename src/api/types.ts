@@ -22,9 +22,15 @@ export type JellyfinConnectResult =
     message?: string;
   };
 
+export type NavidromeLibrary = {
+  id: string;
+  name: string;
+};
+
 export type NavidromeConnectResult =
   | {
     success: true;
+    libraries?: NavidromeLibrary[];
   }
   | {
     success: false;
@@ -131,5 +137,6 @@ export type SearchApi = {
   search: (query: string) => Promise<{
     albums: AlbumBase[];
     artists: ArtistBase[];
+    songs: Song[];
   }>;
 };

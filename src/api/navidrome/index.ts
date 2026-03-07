@@ -52,7 +52,13 @@ import { search as searchNavidrome } from "./search/search";
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const { serverUrl, username, auth: providerAuth } = server;
   const password = providerAuth?.password as string;
-  const client = createNavidromeClient({ serverUrl, username, password });
+  const musicFolderId = providerAuth?.musicFolderId;
+  const client = createNavidromeClient({
+    serverUrl,
+    username,
+    password,
+    defaultParams: musicFolderId ? { musicFolderId: String(musicFolderId) } : undefined,
+  });
 
   const auth: AuthApi = {
     connect: (serverUrl, username, password) =>

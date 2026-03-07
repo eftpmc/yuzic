@@ -303,6 +303,10 @@
       "subtitle": "Enter your username and password to continue.",
       "usernamePlaceholder": "Username",
       "passwordPlaceholder": "Password",
+      "libraryTitle": "Choose Library",
+      "librarySubtitle": "Select which Navidrome library to use for this server.",
+      "confirmLibrary": "Use Library",
+      "selectLibraryRequired": "Please select a library to continue.",
       "missingCredentials": "Please enter both username and password.",
       "authFailed": "Authentication failed.",
       "apiNotResponding": "Server connected, but API is not responding.",
@@ -341,7 +345,15 @@
   },
   "search": {
     "placeholder": "Search for music, artists, or playlists...",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "chips": {
+      "local": "Local",
+      "external": "External",
+      "song": "Song",
+      "album": "Album",
+      "artist": "Artist",
+      "playlist": "Playlist"
+    }
   },
   "media": {
     "albumNotFound": "Album not found",

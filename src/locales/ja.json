@@ -303,6 +303,10 @@
       "subtitle": "続行するためにユーザー名とパスワードを入力してください。",
       "usernamePlaceholder": "ユーザー名",
       "passwordPlaceholder": "パスワード",
+      "libraryTitle": "ライブラリを選択",
+      "librarySubtitle": "このサーバーで使用する Navidrome ライブラリを選択してください。",
+      "confirmLibrary": "このライブラリを使う",
+      "selectLibraryRequired": "続行するにはライブラリを選択してください。",
       "missingCredentials": "ユーザー名とパスワードを入力してください。",
       "authFailed": "認証に失敗しました。",
       "apiNotResponding": "接続はできましたが、APIが応答しません。",
@@ -341,7 +345,15 @@
   },
   "search": {
     "placeholder": "音楽、アーティスト、プレイリストを検索...",
-    "noResults": "結果が見つかりません"
+    "noResults": "結果が見つかりません",
+    "chips": {
+      "local": "ローカル",
+      "external": "外部",
+      "song": "曲",
+      "album": "アルバム",
+      "artist": "アーティスト",
+      "playlist": "プレイリスト"
+    }
   },
   "media": {
     "albumNotFound": "アルバムが見つかりません",

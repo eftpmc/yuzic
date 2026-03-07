@@ -1,10 +1,12 @@
 import { AlbumBase } from '@/types/Album';
 import { ArtistBase } from '@/types/Artist';
+import { Song } from '@/types/Song';
 import type { NavidromeClient } from '../client';
 
 export type NavidromeSearchResult = {
   albums: AlbumBase[];
   artists: ArtistBase[];
+  songs: Song[];
 };
 
 export async function search(
@@ -12,14 +14,19 @@ export async function search(
   query: string
 ): Promise<NavidromeSearchResult> {
   if (!query.trim()) {
-    return { albums: [], artists: [] };
+    return { albums: [], artists: [], songs: [] };
   }
 
-  const data = await client.request<any>("search3.view", { query });
+  const data = await client.request<any>("search3.view", {
+    query,
+    artistCount: 20,
+    albumCount: 20,
+    songCount: 20,
+  });
 
   const r = data['subsonic-response']?.searchResult3;
   if (!r) {
-    return { albums: [], artists: [] };
+    return { albums: [], artists: [], songs: [] };
   }
 
   const albums: AlbumBase[] = (r.album ?? []).map((a: any) => ({
@@ -51,5 +58,21 @@ export async function search(
       : { kind: "none" as const },
   }));
 
-  return { albums, artists };
+  const songs: Song[] = (r.song ?? []).map((s: any) => ({
+    id: s.id,
+    title: s.title ?? 'Unknown',
+    artist: s.artist ?? 'Unknown Artist',
+    artistId: s.artistId ?? '',
+    albumId: s.albumId ?? '',
+    cover: s.coverArt
+      ? { kind: 'navidrome' as const, coverArtId: s.coverArt }
+      : { kind: 'none' as const },
+    duration: String(s.duration ?? 0),
+    streamUrl: client.buildStreamUrl(s.id),
+    dateReleased: s.year != null ? String(s.year) : undefined,
+    trackNumber: s.track ?? undefined,
+    disc: s.discNumber ?? undefined,
+  }));
+
+  return { albums, artists, songs };
 }

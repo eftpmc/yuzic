@@ -304,6 +304,10 @@
       "subtitle": "Saisissez votre nom d'utilisateur et votre mot de passe pour continuer.",
       "usernamePlaceholder": "Nom d'utilisateur",
       "passwordPlaceholder": "Mot de passe",
+      "libraryTitle": "Choisir la bibliothèque",
+      "librarySubtitle": "Sélectionnez la bibliothèque Navidrome à utiliser pour ce serveur.",
+      "confirmLibrary": "Utiliser la bibliothèque",
+      "selectLibraryRequired": "Veuillez sélectionner une bibliothèque pour continuer.",
       "missingCredentials": "Veuillez saisir le nom d'utilisateur et le mot de passe.",
       "authFailed": "Échec de l'authentification.",
       "apiNotResponding": "Serveur connecté, mais l'API ne répond pas.",
@@ -342,7 +346,15 @@
   },
   "search": {
     "placeholder": "Rechercher de la musique, des artistes ou des listes de lecture...",
-    "noResults": "Aucun résultat trouvé"
+    "noResults": "Aucun résultat trouvé",
+    "chips": {
+      "local": "Local",
+      "external": "Externe",
+      "song": "Morceau",
+      "album": "Album",
+      "artist": "Artiste",
+      "playlist": "Playlist"
+    }
   },
   "media": {
     "albumNotFound": "Album introuvable",

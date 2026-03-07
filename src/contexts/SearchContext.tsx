@@ -11,6 +11,8 @@ import {
   PlaylistBase,
   CoverSource,
   ExternalAlbumBase,
+  Song,
+  SongBase,
 } from '@/types';
 
 import * as musicbrainz from '@/api/musicbrainz';
@@ -50,8 +52,10 @@ export interface SearchResult {
   title: string;
   subtext: string;
   cover: CoverSource;
-  type: 'album' | 'artist' | 'playlist';
+  type: 'song' | 'album' | 'artist' | 'playlist';
+  source: 'local' | 'external';
   isDownloaded: boolean;
+  song?: Song;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(
@@ -114,6 +118,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .map((album: AlbumBase) => ({
         ...album,
         type: 'album',
+        source: 'local',
         isDownloaded: downloadedAlbumIds.has(album.id),
       }));
 
@@ -127,6 +132,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: artist.subtext,
         cover: artist.cover,
         type: 'artist',
+        source: 'local',
         isDownloaded: true,
       }));
 
@@ -137,10 +143,31 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .map((playlist: PlaylistBase) => ({
         ...playlist,
         type: 'playlist',
+        source: 'local',
         isDownloaded: downloadedPlaylistIds.has(playlist.id),
       }));
 
+    const songResults: SearchResult[] = tracks
+      .filter(track => {
+        const title = track.title.toLowerCase();
+        const artist = (track.artist ?? '').toLowerCase();
+        return (
+          title.includes(lowerQuery) ||
+          artist.includes(lowerQuery)
+        );
+      })
+      .map((track: SongBase) => ({
+        id: track.id,
+        title: track.title,
+        subtext: track.artist,
+        cover: track.cover,
+        type: 'song',
+        source: 'local',
+        isDownloaded: downloadedTrackIds.has(track.id),
+      }));
+
     return [
+      ...songResults,
       ...albumResults,
       ...artistResults,
       ...playlistResults,
@@ -152,7 +179,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   ): Promise<SearchResult[]> => {
     if (!api?.search) return [];
 
-    const { albums = [], artists = [] } =
+    const { albums = [], artists = [], songs = [] } =
       await api.search.search(query);
 
     const albumResults: SearchResult[] = albums.map(
@@ -162,6 +189,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: album.subtext,
         cover: album.cover,
         type: 'album',
+        source: 'local',
         isDownloaded: true,
       })
     );
@@ -173,11 +201,25 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: artist.subtext,
         cover: artist.cover,
         type: 'artist',
+        source: 'local',
         isDownloaded: true,
       })
     );
 
-    return [...albumResults, ...artistResults];
+    const songResults: SearchResult[] = songs.map(
+      (song: Song) => ({
+        id: song.id,
+        title: song.title,
+        subtext: song.artist,
+        cover: song.cover,
+        type: 'song',
+        source: 'local',
+        isDownloaded: true,
+        song,
+      })
+    );
+
+    return [...songResults, ...albumResults, ...artistResults];
   };
 
   const searchExternal = async (
@@ -195,6 +237,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: album.subtext,
         cover: album.cover,
         type: 'album',
+        source: 'external',
         isDownloaded: false,
       }));
     } catch {
@@ -203,7 +246,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   };
 
   const resultKey = (r: SearchResult) =>
-    `${r.type}:${r.id}`;
+    `${r.source}:${r.type}:${r.id}`;
 
   const handleSearch = async (query: string) => {
     const requestId = ++searchRequestIdRef.current;
@@ -269,6 +312,14 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       );
 
       uniqueResults.sort((a, b) => {
+        const sourcePriority = (
+          source: SearchResult['source']
+        ) => (source === 'local' ? 1 : 2);
+        const sourceDiff =
+          sourcePriority(a.source) -
+          sourcePriority(b.source);
+        if (sourceDiff !== 0) return sourceDiff;
+
         if (a.isDownloaded && !b.isDownloaded) return -1;
         if (b.isDownloaded && !a.isDownloaded) return 1;
 
@@ -290,11 +341,13 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         const typePriority = (
           type: SearchResult['type']
         ) =>
-          type === 'album'
+          type === 'song'
             ? 1
-            : type === 'artist'
+            : type === 'album'
               ? 2
-              : 3;
+              : type === 'artist'
+                ? 3
+                : 4;
 
         const diff =
           typePriority(a.type) -
