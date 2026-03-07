@@ -10,9 +10,8 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
 import AlbumRow from '@/components/rows/AlbumRow';
@@ -20,21 +19,24 @@ import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
 import PlaylistRow from '@/components/rows/PlaylistRow';
 import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { useApi } from '@/api';
+import { usePlaying } from '@/contexts/PlayingContext';
+import { MediaImage } from '@/components/MediaImage';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const api = useApi();
+  const { playSong } = usePlaying();
 
   const [query, setQuery] = useState('');
   const { searchResults, handleSearch, clearSearch, isLoading } = useSearch();
 
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onSearchChange = (text: string) => {
     setQuery(text);
@@ -54,33 +56,131 @@ const Search = () => {
     }, 300);
   };
 
+  const handleSongPress = async (result: SearchResult) => {
+    try {
+      if (result.song) {
+        await playSong(result.song);
+        return;
+      }
+      const song = await api.songs.get(result.id);
+      if (song) {
+        await playSong(song);
+      }
+    } catch (error) {
+      console.warn('Failed to play searched song', error);
+    }
+  };
+
+  const getTypeLabel = (type: SearchResult['type']) => {
+    if (type === 'song') return t('search.chips.song');
+    if (type === 'album') return t('search.chips.album');
+    if (type === 'artist') return t('search.chips.artist');
+    return t('search.chips.playlist');
+  };
+
+  const getSourceLabel = (source: SearchResult['source']) =>
+    source === 'external'
+      ? t('search.chips.external')
+      : t('search.chips.local');
+
+  const getSectionLabel = (result: SearchResult) =>
+    `${getSourceLabel(result.source)} • ${getTypeLabel(result.type)}`;
+
+  const shouldShowSectionLabel = (
+    result: SearchResult,
+    index: number
+  ) => {
+    if (index === 0) return true;
+    const prev = searchResults[index - 1];
+    return (
+      prev.source !== result.source ||
+      prev.type !== result.type
+    );
+  };
+
+  const shouldShowSeparator = (index: number) => {
+    if (index >= searchResults.length - 1) return false;
+    const current = searchResults[index];
+    const next = searchResults[index + 1];
+    // Keep separators only inside a section, not above/below section labels.
+    return (
+      current.source === next.source &&
+      current.type === next.type
+    );
+  };
+
   const renderResult = (result: SearchResult) => {
+    if (result.type === 'song') {
+      return (
+        <TouchableOpacity
+          style={styles.songRow}
+          onPress={() => handleSongPress(result)}
+        >
+          <MediaImage
+            cover={result.cover}
+            size="thumb"
+            style={styles.songCover}
+          />
+          <View style={styles.songText}>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.songTitle,
+                isDarkMode && styles.songTitleDark,
+              ]}
+            >
+              {result.title}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.songSubtitle,
+                isDarkMode && styles.songSubtitleDark,
+              ]}
+            >
+              {result.subtext}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
     if (result.type === 'album') {
-      return result.isDownloaded ? (
-        <AlbumRow
-          album={{
-            id: result.id,
-            title: result.title,
-            subtext: result.subtext,
-            cover: result.cover,
-          }}
-          onPress={album =>
-            navigation.navigate('albumView', { id: album.id })
-          }
-        />
-      ) : (
+      return result.source === 'external' ? (
         <ExternalAlbumRow
           album={{
             id: result.id,
             title: result.title,
             subtext: result.subtext,
             cover: result.cover,
+            artist: result.subtext,
           }}
           artistName={result.subtext}
           onPress={album =>
-            navigation.navigate('externalAlbumView', {
+            (navigation as any).navigate('externalAlbumView', {
               albumId: album.id
             })
+          }
+        />
+      ) : (
+        <AlbumRow
+          album={{
+            id: result.id,
+            title: result.title,
+            subtext: result.subtext,
+            cover: result.cover,
+            artist: {
+              id: '',
+              name: result.subtext,
+              subtext: '',
+              cover: { kind: 'none' },
+            },
+            year: 0,
+            genres: [],
+            created: new Date(0),
+          }}
+          onPress={album =>
+            (navigation as any).navigate('albumView', { id: album.id })
           }
         />
       );
@@ -96,7 +196,7 @@ const Search = () => {
             cover: result.cover,
           }}
           onPress={() =>
-            navigation.navigate('artistView', { id: result.id })
+            (navigation as any).navigate('artistView', { id: result.id })
           }
         />
       );
@@ -114,7 +214,7 @@ const Search = () => {
             created: new Date(),
           }}
           onPress={() =>
-            navigation.navigate('playlistView', { id: result.id })
+            (navigation as any).navigate('playlistView', { id: result.id })
           }
         />
       );
@@ -181,9 +281,20 @@ const Search = () => {
         {isLoading
           ? [...Array(8)].map((_, i) => <LoadingAlbumRow key={i} />)
           :             searchResults.map((result, index) => (
-              <React.Fragment key={`${result.type}:${result.id}`}>
-                {renderResult(result)}
-                {index < searchResults.length - 1 && (
+              <React.Fragment key={`${result.source}:${result.type}:${result.id}`}>
+                {shouldShowSectionLabel(result, index) && (
+                  <Text
+                    style={[
+                      styles.sectionLabel,
+                      index === 0 && styles.sectionLabelFirst,
+                      isDarkMode && styles.sectionLabelDark,
+                    ]}
+                  >
+                    {getSectionLabel(result)}
+                  </Text>
+                )}
+                <View style={styles.resultBlock}>{renderResult(result)}</View>
+                {shouldShowSeparator(index) && (
                   <View
                     style={[
                       styles.separator,
@@ -269,5 +380,55 @@ const styles = StyleSheet.create({
   },
   separatorDark: {
     backgroundColor: '#333',
+  },
+  resultBlock: {
+    paddingBottom: 0,
+  },
+  songRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  songCover: {
+    width: 64,
+    height: 64,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  songText: {
+    flex: 1,
+  },
+  songTitle: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  songTitleDark: {
+    color: '#fff',
+  },
+  songSubtitle: {
+    color: '#666',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  songSubtitleDark: {
+    color: '#aaa',
+  },
+  sectionLabel: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    marginTop: 12,
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  sectionLabelFirst: {
+    marginTop: 4,
+  },
+  sectionLabelDark: {
+    color: '#9a9a9a',
   },
 });

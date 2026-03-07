@@ -6,12 +6,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useAlbum } from '@/hooks/albums';
@@ -19,11 +17,17 @@ import { useAlbum } from '@/hooks/albums';
 type Props = {
   album: AlbumBase;
   onPress?: (album: AlbumBase) => void;
+  showDownloadedDot?: boolean;
+  isDownloaded?: boolean;
 };
 
-const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
+const AlbumRow: React.FC<Props> = ({
+  album,
+  onPress,
+  showDownloadedDot = false,
+  isDownloaded = false,
+}) => {
   const { isDarkMode } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
   const { album: fullAlbum } = useAlbum(album.id);
 
@@ -34,6 +38,15 @@ const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
           style={styles.albumContent}
           onPress={() => onPress?.(album)}
         >
+          {showDownloadedDot && (
+            <View
+              style={[
+                styles.downloadDot,
+                styles.downloadDotBeforeCover,
+                isDownloaded ? styles.downloadDotVisible : styles.downloadDotHidden,
+              ]}
+            />
+          )}
           <MediaImage
             cover={album.cover}
             size="grid"
@@ -41,15 +54,17 @@ const AlbumRow: React.FC<Props> = ({ album, onPress }) => {
           />
 
           <View style={styles.albumTextContainer}>
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.albumTitle,
-                isDarkMode && styles.albumTitleDark,
-              ]}
-            >
-              {album.title}
-            </Text>
+            <View style={styles.titleRow}>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.albumTitle,
+                  isDarkMode && styles.albumTitleDark,
+                ]}
+              >
+                {album.title}
+              </Text>
+            </View>
 
             <Text
               numberOfLines={1}
@@ -110,6 +125,24 @@ const styles = StyleSheet.create({
   albumTextContainer: {
     flex: 1,
     marginLeft: 12,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downloadDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  downloadDotBeforeCover: {
+    marginRight: 8,
+  },
+  downloadDotVisible: {
+    backgroundColor: '#8e8e93',
+  },
+  downloadDotHidden: {
+    backgroundColor: 'transparent',
   },
   albumTitle: {
     fontSize: 16,

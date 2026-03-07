@@ -11,15 +11,28 @@ import {
   PlaylistBase,
   CoverSource,
   ExternalAlbumBase,
+  Song,
+  SongBase,
 } from '@/types';
 
 import * as musicbrainz from '@/api/musicbrainz';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
+import { useFullPlaylists } from '@/hooks/playlists';
+import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
 import { useSelector } from 'react-redux';
-import { selectSearchScope } from '@/utils/redux/selectors/settingsSelectors';
+import {
+  selectOfflineModeEnabled,
+  selectSearchScope,
+} from '@/utils/redux/selectors/settingsSelectors';
+import { useDownloadedTracks } from 'react-native-nitro-player';
+import {
+  buildDownloadedTrackIdSet,
+  getFullyDownloadedAlbumIds,
+  isPlaylistFullyDownloaded,
+} from '@/utils/downloads/collectionState';
 
 interface SearchContextType {
   searchResults: SearchResult[];
@@ -39,8 +52,10 @@ export interface SearchResult {
   title: string;
   subtext: string;
   cover: CoverSource;
-  type: 'album' | 'artist' | 'playlist';
+  type: 'song' | 'album' | 'artist' | 'playlist';
+  source: 'local' | 'external';
   isDownloaded: boolean;
+  song?: Song;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(
@@ -64,8 +79,26 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const { albums } = useAlbums();
   const { artists } = useArtists();
   const { playlists } = usePlaylists();
+  const { playlists: fullPlaylists } = useFullPlaylists(playlists);
+  const { tracks } = useTracks();
+  const downloadedState = useDownloadedTracks() as any;
+  const downloadedTrackIds = buildDownloadedTrackIdSet(
+    ((downloadedState?.downloadedTracks ?? []) as any[])
+      .map(track => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
+      .filter(track => track.id)
+  );
+  const downloadedAlbumIds = getFullyDownloadedAlbumIds(
+    tracks.map(track => ({ id: track.id, albumId: track.albumId })),
+    downloadedTrackIds
+  );
+  const downloadedPlaylistIds = new Set(
+    fullPlaylists
+      .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
+      .map(playlist => playlist.id)
+  );
 
   const searchScope = useSelector(selectSearchScope);
+  const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
 
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
@@ -85,7 +118,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .map((album: AlbumBase) => ({
         ...album,
         type: 'album',
-        isDownloaded: true,
+        source: 'local',
+        isDownloaded: downloadedAlbumIds.has(album.id),
       }));
 
     const artistResults: SearchResult[] = artists
@@ -98,6 +132,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: artist.subtext,
         cover: artist.cover,
         type: 'artist',
+        source: 'local',
         isDownloaded: true,
       }));
 
@@ -108,10 +143,31 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .map((playlist: PlaylistBase) => ({
         ...playlist,
         type: 'playlist',
-        isDownloaded: true,
+        source: 'local',
+        isDownloaded: downloadedPlaylistIds.has(playlist.id),
+      }));
+
+    const songResults: SearchResult[] = tracks
+      .filter(track => {
+        const title = track.title.toLowerCase();
+        const artist = (track.artist ?? '').toLowerCase();
+        return (
+          title.includes(lowerQuery) ||
+          artist.includes(lowerQuery)
+        );
+      })
+      .map((track: SongBase) => ({
+        id: track.id,
+        title: track.title,
+        subtext: track.artist,
+        cover: track.cover,
+        type: 'song',
+        source: 'local',
+        isDownloaded: downloadedTrackIds.has(track.id),
       }));
 
     return [
+      ...songResults,
       ...albumResults,
       ...artistResults,
       ...playlistResults,
@@ -123,7 +179,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   ): Promise<SearchResult[]> => {
     if (!api?.search) return [];
 
-    const { albums = [], artists = [] } =
+    const { albums = [], artists = [], songs = [] } =
       await api.search.search(query);
 
     const albumResults: SearchResult[] = albums.map(
@@ -133,6 +189,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: album.subtext,
         cover: album.cover,
         type: 'album',
+        source: 'local',
         isDownloaded: true,
       })
     );
@@ -144,11 +201,25 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: artist.subtext,
         cover: artist.cover,
         type: 'artist',
+        source: 'local',
         isDownloaded: true,
       })
     );
 
-    return [...albumResults, ...artistResults];
+    const songResults: SearchResult[] = songs.map(
+      (song: Song) => ({
+        id: song.id,
+        title: song.title,
+        subtext: song.artist,
+        cover: song.cover,
+        type: 'song',
+        source: 'local',
+        isDownloaded: true,
+        song,
+      })
+    );
+
+    return [...songResults, ...albumResults, ...artistResults];
   };
 
   const searchExternal = async (
@@ -166,6 +237,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         subtext: album.subtext,
         cover: album.cover,
         type: 'album',
+        source: 'external',
         isDownloaded: false,
       }));
     } catch {
@@ -174,7 +246,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   };
 
   const resultKey = (r: SearchResult) =>
-    `${r.type}:${r.id}`;
+    `${r.source}:${r.type}:${r.id}`;
 
   const handleSearch = async (query: string) => {
     const requestId = ++searchRequestIdRef.current;
@@ -191,22 +263,29 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
       const results: SearchResult[] = [];
 
-      if (searchScope === 'client') {
+      if (offlineModeEnabled) {
+        const localResults = await searchLibrary(query);
+        results.push(
+          ...localResults.filter(result =>
+            result.type === 'artist' ? true : result.isDownloaded
+          )
+        );
+      } else if (searchScope === 'client') {
         results.push(...await searchLibrary(query));
       }
 
-      if (searchScope === 'client+external') {
+      if (!offlineModeEnabled && searchScope === 'client+external') {
         results.push(
           ...await searchLibrary(query),
           ...await searchExternal(query)
         );
       }
 
-      if (searchScope === 'server') {
+      if (!offlineModeEnabled && searchScope === 'server') {
         results.push(...await searchServer(query));
       }
 
-      if (searchScope === 'server+external') {
+      if (!offlineModeEnabled && searchScope === 'server+external') {
         results.push(
           ...await searchServer(query),
           ...await searchExternal(query)
@@ -233,6 +312,14 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       );
 
       uniqueResults.sort((a, b) => {
+        const sourcePriority = (
+          source: SearchResult['source']
+        ) => (source === 'local' ? 1 : 2);
+        const sourceDiff =
+          sourcePriority(a.source) -
+          sourcePriority(b.source);
+        if (sourceDiff !== 0) return sourceDiff;
+
         if (a.isDownloaded && !b.isDownloaded) return -1;
         if (b.isDownloaded && !a.isDownloaded) return 1;
 
@@ -254,11 +341,13 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         const typePriority = (
           type: SearchResult['type']
         ) =>
-          type === 'album'
+          type === 'song'
             ? 1
-            : type === 'artist'
+            : type === 'album'
               ? 2
-              : 3;
+              : type === 'artist'
+                ? 3
+                : 4;
 
         const diff =
           typePriority(a.type) -

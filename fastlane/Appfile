@@ -1,0 +1,4 @@
+json_key_file(ENV["PLAY_STORE_KEY"])
+package_name("com.arinora.rawarr") # e.g. com.krausefx.app
+app_identifier("com.arinora.rawarr")
+apple_id(ENV["APPLE_ID"])

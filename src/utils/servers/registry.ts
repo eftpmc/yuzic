@@ -10,6 +10,7 @@ import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
 import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 
 import { ServerType } from '@/types';
+import type { NavidromeLibrary } from '@/api/types';
 import i18n from '@/i18n';
 
 export type ProviderAuth = {
@@ -20,6 +21,7 @@ export type ConnectResult = {
   success: boolean;
   message?: string;
   auth?: ProviderAuth;
+  libraries?: NavidromeLibrary[];
 };
 
 export type DemoResult = {
@@ -80,6 +82,7 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
         auth: {
           password
         },
+        libraries: result.libraries ?? [],
       };
     },
     demo: async () => {
@@ -94,7 +97,10 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
         serverUrl,
         username,
         auth: {
-          password
+          password,
+          ...(result.libraries?.[0]?.id
+            ? { musicFolderId: result.libraries[0].id }
+            : {}),
         },
       };
     },

@@ -12,12 +12,18 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import AlbumItem from "./components/Items/AlbumItem";
 import PlaylistItem from './components/Items/PlaylistItem';
 import ArtistItem from './components/Items/ArtistItem';
+import TrackItem from './components/Items/TrackItem';
 import SortBottomSheet from './components/SortBottomSheet';
 import GridSettingsBottomSheet from './components/GridSettingsBottomSheet';
 import AccountBottomSheet from './components/AccountBottomSheet';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice';
-import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors';
+import {
+    selectGridColumns,
+    selectIsGridView,
+    selectLibrarySortOrder,
+    selectOfflineModeEnabled,
+} from '@/utils/redux/selectors/settingsSelectors';
 import {
     selectAlbumPlays,
     selectAlbumLastPlayedAt,
@@ -35,11 +41,17 @@ import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSe
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
-import { usePlaylists } from '@/hooks/playlists';
+import { useFullPlaylists, usePlaylists } from '@/hooks/playlists';
+import { useTracks } from '@/hooks/tracks';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
 import { LIBRARY_INITIAL_PAGE_SIZE, LIBRARY_PAGE_SIZE } from '@/constants/library';
 import { useTranslation } from 'react-i18next';
+import { useDownloadedTracks } from 'react-native-nitro-player';
+import {
+    getFullyDownloadedAlbumIds,
+    isPlaylistFullyDownloaded,
+} from '@/utils/downloads/collectionState';
 
 export default function HomeScreen() {
     const { t } = useTranslation();
@@ -56,11 +68,20 @@ export default function HomeScreen() {
     const { albums, isLoading: albumsLoading } = useAlbums();
     const { artists, isLoading: artistsLoading } = useArtists();
     const { playlists, isLoading: playlistsLoading } = usePlaylists();
-    const isLoading = albumsLoading || artistsLoading || playlistsLoading;
+    const { playlists: fullPlaylists, isLoading: fullPlaylistsLoading } = useFullPlaylists(playlists);
+    const { tracks, isLoading: tracksLoading } = useTracks();
+    const isLoading =
+        albumsLoading ||
+        artistsLoading ||
+        playlistsLoading ||
+        fullPlaylistsLoading ||
+        tracksLoading;
 
     const gridColumns = useSelector(selectGridColumns);
     const isGridView = useSelector(selectIsGridView);
     const sortOrder = useSelector(selectLibrarySortOrder);
+    const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
+    const { isTrackDownloaded } = useDownloadedTracks();
 
     const albumPlays = useSelector(selectAlbumPlays);
     const artistPlays = useSelector(selectArtistPlays);
@@ -68,7 +89,7 @@ export default function HomeScreen() {
     const artistLastPlayedAt = useSelector(selectArtistLastPlayedAt);
 
     const [activeFilter, setActiveFilter] =
-        useState<'all' | 'albums' | 'artists' | 'playlists'>('all');
+        useState<'all' | 'albums' | 'artists' | 'playlists' | 'tracks'>('all');
     const [displayedCount, setDisplayedCount] = useState(LIBRARY_INITIAL_PAGE_SIZE);
 
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
@@ -93,6 +114,7 @@ export default function HomeScreen() {
         queryClient.refetchQueries({ queryKey: [QueryKeys.Albums, serverId] });
         queryClient.refetchQueries({ queryKey: [QueryKeys.Artists, serverId] });
         queryClient.refetchQueries({ queryKey: [QueryKeys.Playlists, serverId] });
+        queryClient.refetchQueries({ queryKey: [QueryKeys.Tracks, serverId] });
     }, [activeServer?.id, activeServer?.isAuthenticated, queryClient]);
 
     useEffect(() => {
@@ -113,9 +135,55 @@ export default function HomeScreen() {
         return () => sub?.remove?.();
     }, []);
 
-    const albumData = useMemo(() => albums.map(a => ({ ...a, type: 'Album' as const })), [albums]);
+    const downloadedTracks = useMemo(
+        () => tracks.filter(track => isTrackDownloaded(track.id)),
+        [tracks, isTrackDownloaded]
+    );
+
+    const downloadedTrackIds = useMemo(
+        () => new Set(downloadedTracks.map(track => track.id)),
+        [downloadedTracks]
+    );
+
+    const downloadedAlbumIds = useMemo(
+        () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
+        [tracks, downloadedTrackIds]
+    );
+
+    const downloadedPlaylistIds = useMemo(
+        () =>
+            new Set(
+                fullPlaylists
+                    .filter(playlist =>
+                        isPlaylistFullyDownloaded(playlist, downloadedTrackIds)
+                    )
+                    .map(playlist => playlist.id)
+            ),
+        [fullPlaylists, downloadedTrackIds]
+    );
+
+    const albumData = useMemo(() => {
+        const source = offlineModeEnabled
+            ? albums.filter(a => downloadedAlbumIds.has(a.id))
+            : albums;
+        return source.map(a => ({ ...a, type: 'Album' as const }));
+    }, [albums, offlineModeEnabled, downloadedAlbumIds]);
+
     const artistData = useMemo(() => artists.map(a => ({ ...a, type: 'Artist' as const })), [artists]);
-    const playlistData = useMemo(() => playlists.map(p => ({ ...p, type: 'Playlist' as const })), [playlists]);
+
+    const playlistData = useMemo(() => {
+        const source = offlineModeEnabled
+            ? playlists.filter(p => downloadedPlaylistIds.has(p.id))
+            : playlists;
+        return source.map(p => ({ ...p, type: 'Playlist' as const }));
+    }, [playlists, offlineModeEnabled, downloadedPlaylistIds]);
+
+    const trackData = useMemo(() => {
+        const source = offlineModeEnabled
+            ? downloadedTracks
+            : tracks;
+        return source.map(t => ({ ...t, type: 'Track' as const }));
+    }, [tracks, offlineModeEnabled, downloadedTracks]);
 
     const allData = useMemo(
         () => [...albumData, ...artistData, ...playlistData],
@@ -130,13 +198,16 @@ export default function HomeScreen() {
                 return artistData;
             case 'playlists':
                 return playlistData;
+            case 'tracks':
+                return trackData;
             default:
                 return allData;
         }
-    }, [activeFilter, albumData, artistData, playlistData, allData]);
+    }, [activeFilter, albumData, artistData, playlistData, trackData, allData]);
 
     const sortedFilteredData = useMemo(() => {
         const data = [...filteredData];
+
         switch (sortOrder) {
             case 'title':
                 data.sort((a, b) => {
@@ -212,21 +283,10 @@ export default function HomeScreen() {
         { label: t('home.filters.albums'), value: 'albums' },
         { label: t('home.filters.artists'), value: 'artists' },
         { label: t('home.filters.playlists'), value: 'playlists' },
+        { label: t('home.filters.tracks'), value: 'tracks' },
     ] as const;
 
-    const currentSortLabel =
-        sortOrder === 'title'
-            ? t('home.sort.alphabetical')
-            : sortOrder === 'recent'
-                ? t('home.sort.mostRecent')
-                : sortOrder === 'userplays'
-                    ? t('home.sort.mostPlayed')
-                    : sortOrder === 'year'
-                        ? t('home.sort.releaseYear')
-                        : t('home.sort.lastModified');
-
-
-    const renderItem = ({ item }) => {
+    const renderItem = ({ item }: { item: any }) => {
         switch (item.type) {
             case 'Album':
                 return <AlbumItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} gridSpacing={gridSpacing} />;
@@ -234,6 +294,15 @@ export default function HomeScreen() {
                 return <PlaylistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} gridSpacing={gridSpacing} />;
             case 'Artist':
                 return <ArtistItem {...item} isGridView={isGridView} gridWidth={gridItemWidth} gridSpacing={gridSpacing} />;
+            case 'Track':
+                return (
+                    <TrackItem
+                        song={item}
+                        isGridView={isGridView}
+                        gridWidth={gridItemWidth}
+                        gridSpacing={gridSpacing}
+                    />
+                );
             default:
                 return null;
         }
@@ -266,7 +335,7 @@ export default function HomeScreen() {
             <HomeHeader
                 title={t('home.title')}
                 username={username}
-                onSearch={() => navigation.navigate('search')}
+                onSearch={() => (navigation as any).navigate('search')}
                 onAccountPress={toggleAccountSheet}
             />
 
@@ -295,7 +364,7 @@ export default function HomeScreen() {
                             renderItem={renderItem}
                             ListHeaderComponent={
                                 <LibraryListHeader
-                                    sortLabel={currentSortLabel}
+                                    sortOrder={sortOrder}
                                     onSortPress={() => sortSheetRef.current?.present()}
                                     onGridSettingsPress={() => gridSettingsSheetRef.current?.present()}
                                 />
@@ -321,7 +390,7 @@ export default function HomeScreen() {
                         ]}
                         pointerEvents={mode === 'explore' ? 'auto' : 'none'}
                     >
-                        <Explore onBack={() => fadeTo('home')} />
+                        <Explore {...({ onBack: () => fadeTo('home') } as any)} />
                     </Animated.View>
                 )}
             </Animated.View>

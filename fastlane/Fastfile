@@ -1,0 +1,84 @@
+require 'dotenv'
+Dotenv.load
+
+default_platform(:android)
+
+# Shared build number so Android and iOS stay consistent
+def build_number
+  @build_number ||= Time.now.to_i
+end
+
+def prepare_build_dirs
+  sh "mkdir -p build/android"
+  sh "mkdir -p build/ios"
+end
+
+platform :android do
+  desc "Build Android and upload to Play Closed Testing"
+  lane :ci_android do
+    prepare_build_dirs
+
+    gradle(
+      task: "clean",
+      project_dir: "android"
+    )
+
+    gradle(
+      task: "assemble",
+      build_type: "Release",
+      project_dir: "android",
+      properties: {
+        "android.injected.version.code" => build_number
+      }
+    )
+
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "android",
+      properties: {
+        "android.injected.version.code" => build_number
+      }
+    )
+
+    sh "cp android/app/build/outputs/apk/release/*.apk build/android/"
+    sh "cp android/app/build/outputs/bundle/release/*.aab build/android/"
+
+    supply(
+      track: "alpha",
+      aab: "android/app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end
+
+platform :ios do
+  desc "Build iOS and upload to App Store Connect"
+  lane :ci_ios do
+    prepare_build_dirs
+
+    match(type: "appstore")
+
+    increment_build_number(
+      build_number: build_number
+    )
+
+    build_app(
+      scheme: "Yuzic",
+      workspace: "ios/Yuzic.xcworkspace",
+      output_directory: "build/ios",
+      output_name: "Yuzic.ipa",
+      include_symbols: false,
+      include_bitcode: false
+    )
+
+    upload_to_app_store(
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false
+    )
+  end
+end

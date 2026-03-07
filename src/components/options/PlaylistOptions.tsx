@@ -57,7 +57,7 @@ const PlaylistOptions = forwardRef<
     getQueue,
   } = usePlaying();
 
-  const { downloadPlaylistById, isTrackDownloaded, isTrackDownloading } =
+  const { downloadPlaylistById, getCollectionDownloadState } =
     useDownload();
 
   const deletePlaylist = useDeletePlaylist();
@@ -69,8 +69,9 @@ const PlaylistOptions = forwardRef<
   };
 
   const songs = playlist?.songs ?? [];
-  const isDownloaded = songs.length > 0 && songs.every(s => isTrackDownloaded(s.id));
-  const isDownloading = !isDownloaded && songs.some(s => isTrackDownloading(s.id));
+  const { isDownloaded, isDownloading } = getCollectionDownloadState(
+    songs.map((song) => song.id)
+  );
 
   const handlePlay = (shuffle: boolean) => {
     if (!playlist || !songs.length) return;
@@ -80,8 +81,8 @@ const PlaylistOptions = forwardRef<
 
   const handleAddToQueue = () => {
     if (!playlist || !songs.length) return;
-    const queue = getQueue();
-    if (queue.length === 0) {
+    const hasQueue = getQueue().length > 0;
+    if (!hasQueue) {
       playSongInCollection(songs[0], playlist, false);
     } else {
       addCollectionToQueue(playlist);
@@ -91,8 +92,8 @@ const PlaylistOptions = forwardRef<
 
   const handleShuffleToQueue = () => {
     if (!playlist || !songs.length) return;
-    const queue = getQueue();
-    if (queue.length === 0) {
+    const hasQueue = getQueue().length > 0;
+    if (!hasQueue) {
       playSongInCollection(songs[0], playlist, true);
     } else {
       shuffleCollectionToQueue(playlist);
@@ -109,7 +110,6 @@ const PlaylistOptions = forwardRef<
   const handleDownload = async () => {
     if (!playlist || isDownloaded || isDownloading) return;
     await downloadPlaylistById(playlist.id);
-    close();
   };
 
   const handleDeletePress = () => {

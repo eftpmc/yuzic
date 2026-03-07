@@ -5,6 +5,7 @@ import {
   ArtistBase,
   Artist,
   Song,
+  SongBase,
   PlaylistBase,
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
@@ -21,9 +22,15 @@ export type JellyfinConnectResult =
     message?: string;
   };
 
+export type NavidromeLibrary = {
+  id: string;
+  name: string;
+};
+
 export type NavidromeConnectResult =
   | {
     success: true;
+    libraries?: NavidromeLibrary[];
   }
   | {
     success: false;
@@ -45,6 +52,11 @@ export interface SongsApi {
   get(id: string): Promise<Song | null>;
 }
 
+export interface TracksApi {
+  list(): Promise<SongBase[]>;
+  get(id: string): Promise<Song | null>;
+}
+
 export interface SimilarApi {
   getSimilarSongs(songId: string): Promise<Song[]>;
 }
@@ -57,6 +69,7 @@ export interface ApiAdapter {
   playlists: PlaylistsApi;
   starred: StarredApi;
   songs: SongsApi;
+  tracks: TracksApi;
   similar: SimilarApi;
   lyrics: LyricsApi;
   search: SearchApi;
@@ -124,5 +137,6 @@ export type SearchApi = {
   search: (query: string) => Promise<{
     albums: AlbumBase[];
     artists: ArtistBase[];
+    songs: Song[];
   }>;
 };

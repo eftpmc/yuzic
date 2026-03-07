@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -14,23 +15,29 @@ import { MediaImage } from '@/components/MediaImage';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
+import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   playlist: Playlist;
 };
 
 const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const { playSongInCollection } = usePlaying();
+  const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
 
   const songs = playlist.songs ?? [];
+  const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
+    getCollectionDownloadState(songs.map((song) => song.id));
 
   const totalDuration = useMemo(() => {
     return songs.reduce((sum, song) => sum + Number(song.duration), 0);
@@ -48,6 +55,19 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
     }
 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  const metadataItems = useMemo(
+    () => [
+      `${songs.length} ${songs.length === 1 ? t('common.song') : t('common.songs')}`,
+      formatDuration(totalDuration),
+    ],
+    [songs.length, totalDuration, t]
+  );
+  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+
+  const toggleDownload = async () => {
+    if (!songs.length || isPlaylistDownloading || isPlaylistDownloaded) return;
+    await downloadPlaylistById(playlist.id);
   };
 
   return (
@@ -93,21 +113,32 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
       </View>
 
       {/* Title + actions */}
-      <View style={styles.titleRow}>
-        <View style={styles.titleInfo}>
-          <Text style={styles.title(isDarkMode)} numberOfLines={1}>
-            {playlist.title}
-          </Text>
+      <View style={styles.titleInfo}>
+        <Text style={[styles.title, themeStyles.title]} numberOfLines={2}>
+          {playlist.title}
+        </Text>
 
-          <Text style={styles.subtext(isDarkMode)}>
-            {songs.length} songs · {formatDuration(totalDuration)}
-          </Text>
+        <View style={styles.metaRow}>
+          {metadataItems.map((item, index) => (
+            <React.Fragment key={`${item}-${index}`}>
+              {index > 0 && (
+                <Text style={[styles.metaDot, themeStyles.subtext]} numberOfLines={1}>
+                  •
+                </Text>
+              )}
+              <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                {item}
+              </Text>
+            </React.Fragment>
+          ))}
         </View>
+      </View>
 
-        {/* Action buttons */}
+      {/* Action buttons */}
+      <View style={styles.actionsRow}>
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.shuffleButton(isDarkMode)}
+            style={[styles.secondaryButton, themeStyles.secondaryButton]}
             onPress={() => {
               if (songs.length > 0) {
                 playSongInCollection(songs[0], playlist, true);
@@ -130,6 +161,24 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             }}
           >
             <Ionicons name="play" size={24} color="#fff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.secondaryButton, themeStyles.secondaryButton]}
+            onPress={() => {
+              void toggleDownload();
+            }}
+            disabled={isPlaylistDownloading}
+          >
+            {isPlaylistDownloading ? (
+              <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+            ) : (
+              <Ionicons
+                name={isPlaylistDownloaded ? 'checkmark' : 'download-outline'}
+                size={18}
+                color={isDarkMode ? '#fff' : '#000'}
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -173,51 +222,80 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
 
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  titleInfo: {
     width: '100%',
     marginBottom: 12,
+    alignItems: 'center',
   },
-
-  titleInfo: {
-    flex: 1,
-    paddingRight: 12,
-  },
-
-  title: (isDark: boolean) => ({
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: isDark ? '#fff' : '#000',
-    marginBottom: 4,
-  }),
-
-  subtext: (isDark: boolean) => ({
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtext: {
     fontSize: 14,
-    color: isDark ? '#aaa' : '#666',
-  }),
-
+  },
+  metaDot: {
+    fontSize: 14,
+    marginHorizontal: 6,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    flexWrap: 'nowrap',
+    maxWidth: '94%',
+    marginTop: 4,
+  },
+  actionsRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-
-  shuffleButton: (isDark: boolean) => ({
+  secondaryButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: isDark ? '#1c1c1e' : '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-  }),
-
+  },
   playButton: {
-    borderRadius: 24,
-    width: 48,
+    borderRadius: 22,
+    width: 112,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+});
+
+const stylesLight = StyleSheet.create({
+  title: {
+    color: '#000',
+  },
+  subtext: {
+    color: '#666',
+  },
+  secondaryButton: {
+    backgroundColor: '#f0f0f0',
+  },
+});
+
+const stylesDark = StyleSheet.create({
+  title: {
+    color: '#fff',
+  },
+  subtext: {
+    color: '#aaa',
+  },
+  secondaryButton: {
+    backgroundColor: '#1c1c1e',
   },
 });
 

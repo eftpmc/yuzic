@@ -16,6 +16,7 @@ import {
   BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import { X } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -139,14 +140,11 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-            <Text
-              style={[
-                styles.cancelText,
-                isDarkMode && styles.textDark,
-              ]}
-            >
-              {t('common.cancel')}
-            </Text>
+            <X
+              size={20}
+              color={isDarkMode ? '#fff' : '#000'}
+              strokeWidth={2.5}
+            />
           </TouchableOpacity>
 
           <Text
@@ -272,10 +270,10 @@ const styles = StyleSheet.create({
   cancelButton: {
     position: 'absolute',
     left: 16,
-  },
-  cancelText: {
-    fontSize: 16,
-    color: '#000',
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 17,

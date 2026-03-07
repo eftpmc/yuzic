@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
@@ -35,7 +34,6 @@ const LoadingArtistHeader: React.FC = () => {
       {/* ARTIST META */}
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
-          {/* Artist name */}
           <Skeleton
             width={180}
             height={28}
@@ -43,17 +41,21 @@ const LoadingArtistHeader: React.FC = () => {
             colorMode={colorMode}
           />
 
-          {/* Bio */}
-          <View style={{ marginTop: 12 }}>
+          <View style={styles.metaRow}>
             <Skeleton
-              width="90%"
+              width={70}
               height={14}
               radius={6}
               colorMode={colorMode}
             />
-            <View style={{ height: 8 }} />
             <Skeleton
-              width="75%"
+              width={8}
+              height={8}
+              radius={4}
+              colorMode={colorMode}
+            />
+            <Skeleton
+              width={70}
               height={14}
               radius={6}
               colorMode={colorMode}
@@ -62,18 +64,24 @@ const LoadingArtistHeader: React.FC = () => {
         </View>
       </View>
 
-      {/* PLAY / SHUFFLE */}
+      {/* SHUFFLE / PLAY / DOWNLOAD */}
       <View style={styles.buttonRow}>
         <Skeleton
-          width={110}
+          width={40}
           height={40}
-          radius={8}
+          radius={20}
           colorMode={colorMode}
         />
         <Skeleton
-          width={110}
+          width={112}
+          height={48}
+          radius={22}
+          colorMode={colorMode}
+        />
+        <Skeleton
+          width={40}
           height={40}
-          radius={8}
+          radius={20}
           colorMode={colorMode}
         />
       </View>
@@ -100,23 +108,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  header: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20,
-    left: 16,
-    zIndex: 20,
-  },
-
   content: {
     alignItems: 'center',
     marginTop: 16,
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  metaRow: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
 
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 24,
   },
 });

@@ -4,6 +4,7 @@ export interface NavidromeClientConfig {
   serverUrl: string;
   username: string;
   password: string;
+  defaultParams?: Record<string, string | number>;
 }
 
 const API_VERSION = "1.16.0";
@@ -44,7 +45,7 @@ function buildParams(
 }
 
 export function createNavidromeClient(config: NavidromeClientConfig) {
-  const { serverUrl, username, password } = config;
+  const { serverUrl, username, password, defaultParams } = config;
   const baseUrl = serverUrl.replace(/\/+$/, "");
 
   async function request<T>(
@@ -53,7 +54,7 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
     options: { method?: "GET" | "POST" } = {}
   ): Promise<T> {
     const auth = buildTokenParams(username, password);
-    const params = buildParams(auth, extraParams);
+    const params = buildParams(auth, { ...(defaultParams ?? {}), ...extraParams });
     const url = `${baseUrl}/rest/${endpoint}?${params}`;
     const res = await fetch(url, { method: options.method ?? "GET" });
     if (!res.ok) {

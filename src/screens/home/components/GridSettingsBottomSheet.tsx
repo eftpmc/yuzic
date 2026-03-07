@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Check, Grid2x2, List } from 'lucide-react-native';
 import Slider from '@react-native-community/slider';
 import { useDispatch, useSelector } from 'react-redux';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -40,12 +40,12 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
       {
         value: false,
         label: t('home.displaySheet.list', { defaultValue: 'List' }),
-        icon: 'list-outline' as const,
+        Icon: List,
       },
       {
         value: true,
         label: t('home.displaySheet.grid', { defaultValue: 'Grid' }),
-        icon: 'grid-outline' as const,
+        Icon: Grid2x2,
       },
     ];
 
@@ -84,8 +84,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                 onPress={() => dispatch(setIsGridView(option.value))}
               >
                 <View style={styles.pickerLeft}>
-                  <Ionicons
-                    name={option.icon}
+                  <option.Icon
                     size={18}
                     color={
                       isSelected
@@ -106,11 +105,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                 </View>
 
                 {isSelected && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={themeColor}
-                  />
+                  <Check size={20} color={themeColor} />
                 )}
               </TouchableOpacity>
             );

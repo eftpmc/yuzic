@@ -47,6 +47,10 @@ export const useApi = (): ApiAdapter => {
       songs: {
         get: async () => null,
       },
+      tracks: {
+        list: async () => [],
+        get: async () => null,
+      },
       similar: {
         getSimilarSongs: async () => [],
       },
@@ -54,7 +58,7 @@ export const useApi = (): ApiAdapter => {
         getBySongId: empty,
       },
       search: {
-        search: empty
+        search: async () => ({ albums: [], artists: [], songs: [] })
       }
     };
   }
@@ -102,6 +106,10 @@ export const useApi = (): ApiAdapter => {
     songs: {
       get: async () => null,
     },
+    tracks: {
+      list: async () => [],
+      get: async () => null,
+    },
     similar: {
       getSimilarSongs: async () => [],
     },
@@ -109,7 +117,7 @@ export const useApi = (): ApiAdapter => {
       getBySongId: empty
     },
     search: {
-      search: empty
+      search: async () => ({ albums: [], artists: [], songs: [] })
     }
   };
 };

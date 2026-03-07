@@ -35,7 +35,30 @@ export async function connect(
     const response = data["subsonic-response"];
 
     if (response?.status === "ok") {
-      return { success: true };
+      const rawFolders = response?.musicFolders?.musicFolder;
+      const folderList = Array.isArray(rawFolders)
+        ? rawFolders
+        : rawFolders
+          ? [rawFolders]
+          : [];
+
+      const libraries = folderList
+        .map((folder: any, index: number) => {
+          const id = String(folder?.id ?? "").trim();
+          const name = String(
+            folder?.name ??
+            folder?.title ??
+            (id ? `Library ${index + 1}` : "")
+          ).trim();
+          if (!id) return null;
+          return {
+            id,
+            name: name || `Library ${index + 1}`,
+          };
+        })
+        .filter(Boolean) as { id: string; name: string }[];
+
+      return { success: true, libraries };
     }
 
     return {

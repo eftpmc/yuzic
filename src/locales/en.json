@@ -15,7 +15,8 @@
       "listenBrainz": "ListenBrainz",
       "github": "Github",
       "privacyPolicy": "Privacy Policy",
-      "termsOfUse": "Terms of Use"
+      "termsOfUse": "Terms of Use",
+      "version": "Version"
     },
     "profile": {
       "unknownUser": "Unknown User",
@@ -93,18 +94,53 @@
       },
       "downloads": {
         "title": "Downloads",
+        "detailsTitle": "Download Details",
+        "moreInfo": "More info",
         "clearTitle": "Clear downloads?",
         "clearBody": "This will remove all downloaded songs from your device.",
+        "clearBodyForProvider": "This will remove downloads for the current server only.",
+        "clearBodyProviderNamed": "This will remove downloads for {{provider}} only.",
+        "clearFailedTitle": "Couldn't clear downloads",
+        "clearFailedBody": "An error occurred while removing local files.",
+        "removeTitle": "Remove downloaded item?",
+        "removeBody": "This will remove downloaded files for \"{{title}}\" from your device.",
+        "removeFailedTitle": "Couldn't remove download",
+        "removeFailedBody": "An error occurred while removing local files.",
+        "provider": {
+          "navidrome": "Navidrome",
+          "jellyfin": "Jellyfin",
+          "unknown": "Unknown source"
+        },
         "status": {
           "downloaded": "Downloaded",
           "downloading": "Downloading",
-          "incomplete": "Incomplete"
+          "incomplete": "Incomplete",
+          "pending": "Pending",
+          "paused": "Paused",
+          "completed": "Completed",
+          "failed": "Failed",
+          "cancelled": "Cancelled"
         },
         "type": {
           "album": "Album",
           "playlist": "Playlist"
         },
         "sizeLabel": "Download Size",
+        "availableLabel": "Available Space",
+        "unknownTrack": "Unknown Track",
+        "unknownArtist": "Unknown Artist",
+        "table": {
+          "item": "Item",
+          "status": "Status",
+          "progress": "Progress",
+          "downloaded": "Downloaded",
+          "size": "Size",
+          "updated": "Updated",
+          "error": "Error",
+          "empty": "No downloaded items yet.",
+          "tracks": "Tracks",
+          "playlists": "Playlists"
+        },
         "offlineNote": "These songs are stored locally for offline playback."
       },
       "audioQuality": {
@@ -116,6 +152,11 @@
           "high": "High (192kbps)",
           "original": "Original (no compression)"
         }
+      },
+      "offlineMode": {
+        "title": "Offline Mode",
+        "info": "When enabled, the app shows downloaded content only.",
+        "toggle": "Downloads-only mode"
       }
     },
     "player": {
@@ -202,8 +243,17 @@
     "back": "Back",
     "play": "Play",
     "shuffle": "Shuffle",
+    "album": "album",
+    "albums": "albums",
+    "song": "song",
+    "songs": "songs",
     "artist": "Artist",
     "playlist": "Playlist",
+    "offline": {
+      "downloadRequired": "Download this track to play it in Offline Mode.",
+      "noDownloadedTracks": "No downloaded tracks are available for this action.",
+      "similarUnavailable": "Similar songs are unavailable in Offline Mode."
+    },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
     "error": {
@@ -225,7 +275,12 @@
       "add": "Add Server",
       "active": "ACTIVE",
       "deleteTitle": "Delete Server",
-      "deleteBody": "Remove {{server}}?"
+      "deleteBody": "Remove {{server}}?",
+      "switchClearTitle": "Switch server and clear downloads?",
+      "switchClearBody": "Switching servers clears local downloads to prevent overlap.",
+      "switchClearConfirm": "Switch & Clear",
+      "switchClearFailedTitle": "Couldn't switch server",
+      "switchClearFailedBody": "Failed to clear downloads before switching servers."
     },
     "connect": {
       "title": "Connect to your Server",
@@ -248,6 +303,10 @@
       "subtitle": "Enter your username and password to continue.",
       "usernamePlaceholder": "Username",
       "passwordPlaceholder": "Password",
+      "libraryTitle": "Choose Library",
+      "librarySubtitle": "Select which Navidrome library to use for this server.",
+      "confirmLibrary": "Use Library",
+      "selectLibraryRequired": "Please select a library to continue.",
       "missingCredentials": "Please enter both username and password.",
       "authFailed": "Authentication failed.",
       "apiNotResponding": "Server connected, but API is not responding.",
@@ -260,7 +319,8 @@
       "all": "All",
       "albums": "Albums",
       "artists": "Artists",
-      "playlists": "Playlists"
+      "playlists": "Playlists",
+      "tracks": "Tracks"
     },
     "sort": {
       "alphabetical": "Alphabetical",
@@ -279,12 +339,21 @@
       "signOut": "Sign Out",
       "scanTriggered": "Scan triggered.",
       "scanFailed": "Could not trigger scan.",
-      "signOutFailed": "Could not sign out cleanly."
+      "signOutFailed": "Could not sign out cleanly.",
+      "downloadCleanupFailed": "Couldn't clear downloads while signing out."
     }
   },
   "search": {
     "placeholder": "Search for music, artists, or playlists...",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "chips": {
+      "local": "Local",
+      "external": "External",
+      "song": "Song",
+      "album": "Album",
+      "artist": "Artist",
+      "playlist": "Playlist"
+    }
   },
   "media": {
     "albumNotFound": "Album not found",
@@ -478,6 +547,9 @@
       "shuffle": "Shuffle",
       "addToQueue": "Add to Queue",
       "shuffleToQueue": "Shuffle to Queue",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded",
       "goToArtist": "Go to Artist",
       "goToExternalArtist": "Go to External Artist",
       "viewExternal": "View External"

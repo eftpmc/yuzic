@@ -30,6 +30,7 @@ import {
 import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import PlaylistList from '@/components/PlaylistList';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 const PlayingBar: React.FC = () => {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ const PlayingBar: React.FC = () => {
   const {
     currentSong,
     isPlaying,
+    isBuffering,
     pauseSong,
     resumeSong,
   } = usePlaying();
@@ -166,11 +168,18 @@ const PlayingBar: React.FC = () => {
                   style={styles.playPauseButton}
                   onPress={handlePlayPause}
                 >
-                  <FontAwesome6
-                    name={isPlaying ? 'pause' : 'play'}
-                    size={20}
-                    color={isDarkMode ? '#fff' : '#000'}
-                  />
+                  {isBuffering ? (
+                    <SpinningLoaderCircle
+                      size={20}
+                      color={isDarkMode ? '#fff' : '#000'}
+                    />
+                  ) : (
+                    <FontAwesome6
+                      name={isPlaying ? 'pause' : 'play'}
+                      size={20}
+                      color={isDarkMode ? '#fff' : '#000'}
+                    />
+                  )}
                 </TouchableOpacity>
               )}
 

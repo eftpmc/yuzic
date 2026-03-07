@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -26,6 +27,7 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { buildCover } from '@/utils/builders/buildCover';
 import { useTheme } from '@/hooks/useTheme';
 import { staleTime } from '@/constants/staleTime';
+import { useDownload } from '@/contexts/DownloadContext';
 
 type Props = {
   artist: Artist;
@@ -41,10 +43,16 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   const { playSongInCollection } = usePlaying();
+  const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const [artistSongs, setArtistSongs] = useState<Song[]>([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const artistAlbumIdsKey = useMemo(
+    () => artist.ownedAlbums.map(album => album.id).join(','),
+    [artist.ownedAlbums]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -85,7 +93,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     return () => {
       cancelled = true;
     };
-  }, [artist.id, activeServer?.id]);
+  }, [artist.id, artistAlbumIdsKey, activeServer?.id, queryClient]);
 
   const playArtist = (shuffle = false) => {
     if (!artistSongs.length) {
@@ -112,6 +120,38 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
       },
       shuffle
     );
+  };
+
+  const metadataItems = useMemo(() => {
+    const albumCount = artist.ownedAlbums.length;
+    const songCount = artistSongs.length;
+    const items = [`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`];
+    if (!loadingSongs) {
+      items.push(`${songCount} ${songCount === 1 ? t('common.song') : t('common.songs')}`);
+    }
+    return items;
+  }, [artist.ownedAlbums.length, artistSongs.length, loadingSongs, t]);
+
+  const {
+    isDownloaded: isArtistFullyDownloaded,
+    isDownloading: isArtistDownloading,
+  } = getCollectionDownloadState(artistSongs.map((song) => song.id));
+
+  const handleDownloadAll = async () => {
+    if (
+      isDownloadingAll ||
+      isArtistDownloading ||
+      isArtistFullyDownloaded ||
+      !artist.ownedAlbums.length
+    ) return;
+    setIsDownloadingAll(true);
+    try {
+      for (const album of artist.ownedAlbums) {
+        await downloadAlbumById(album.id);
+      }
+    } finally {
+      setIsDownloadingAll(false);
+    }
   };
 
   return (
@@ -173,28 +213,55 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           <Text style={[styles.artistName, isDarkMode && styles.artistNameDark]}>
             {artist.name}
           </Text>
+          <View style={styles.metaRow}>
+            {metadataItems.map((item, index) => (
+              <React.Fragment key={`${item}-${index}`}>
+                {index > 0 && (
+                  <Text style={[styles.metaDot, isDarkMode && styles.metaTextDark]}>•</Text>
+                )}
+                <Text
+                  style={[styles.metaText, isDarkMode && styles.metaTextDark]}
+                  numberOfLines={1}
+                >
+                  {item}
+                </Text>
+              </React.Fragment>
+            ))}
+          </View>
         </View>
       </View>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity
-          onPress={() => playArtist(false)}
-          style={[styles.button, isDarkMode && styles.buttonDark]}
+          onPress={() => playArtist(true)}
+          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
-          <Ionicons name="play" size={18} color={themeColor} />
-          <Text style={[styles.buttonText, isDarkMode && styles.buttonTextDark]}>
-            {t('common.play')}
-          </Text>
+          <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => playArtist(true)}
-          style={[styles.button, isDarkMode && styles.buttonDark]}
+          onPress={() => playArtist(false)}
+          style={[styles.playButton, { backgroundColor: themeColor }]}
         >
-          <Ionicons name="shuffle" size={18} color={themeColor} />
-          <Text style={[styles.buttonText, isDarkMode && styles.buttonTextDark]}>
-            {t('common.shuffle')}
-          </Text>
+          <Ionicons name="play" size={24} color="#fff" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            void handleDownloadAll();
+          }}
+          disabled={isDownloadingAll || isArtistDownloading}
+          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+        >
+          {isDownloadingAll || isArtistDownloading ? (
+            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+          ) : (
+            <Ionicons
+              name={isArtistFullyDownloaded ? 'checkmark' : 'download-outline'}
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          )}
         </TouchableOpacity>
       </View>
     </>
@@ -244,7 +311,7 @@ const styles = StyleSheet.create({
   content: {
     alignItems: 'center',
     marginTop: 16,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   artistName: {
     fontSize: 28,
@@ -265,29 +332,48 @@ const styles = StyleSheet.create({
   artistBioDark: {
     color: '#ccc',
   },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+    flexWrap: 'wrap',
+  },
+  metaDot: {
+    fontSize: 14,
+    color: '#666',
+    marginHorizontal: 6,
+  },
+  metaText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  metaTextDark: {
+    color: '#aaa',
+  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 24,
   },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+  secondaryButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  buttonDark: {
+  secondaryButtonDark: {
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  buttonText: {
-    marginLeft: 6,
-    fontWeight: '600',
-    color: '#000',
-  },
-  buttonTextDark: {
-    color: '#fff',
+  playButton: {
+    borderRadius: 22,
+    width: 112,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

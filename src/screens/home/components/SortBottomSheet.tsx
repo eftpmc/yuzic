@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowDownAZ, Calendar, Check, Clock3, Flame } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
@@ -29,10 +29,10 @@ const SortBottomSheet = forwardRef<
   const { isDarkMode } = useTheme();
 
   const sortOptions = [
-    { value: 'title' as const, label: t('home.sort.alphabetical'), icon: 'text-outline' as const },
-    { value: 'year' as const, label: t('home.sort.releaseYear'), icon: 'calendar-outline' as const },
-    { value: 'userplays' as const, label: t('home.sort.mostPlayed'), icon: 'flame-outline' as const },
-    { value: 'recent' as const, label: t('home.sort.mostRecent'), icon: 'time-outline' as const },
+    { value: 'title' as const, label: t('home.sort.alphabetical'), Icon: ArrowDownAZ },
+    { value: 'year' as const, label: t('home.sort.releaseYear'), Icon: Calendar },
+    { value: 'userplays' as const, label: t('home.sort.mostPlayed'), Icon: Flame },
+    { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
   ];
 
   const snapPoints = useMemo(() => ['40%'], []);
@@ -76,8 +76,7 @@ const SortBottomSheet = forwardRef<
               onPress={() => onSelect(option.value)}
             >
               <View style={styles.pickerLeft}>
-                <Ionicons
-                  name={option.icon}
+                <option.Icon
                   size={18}
                   color={
                     isSelected
@@ -100,11 +99,7 @@ const SortBottomSheet = forwardRef<
               </View>
 
               {isSelected && (
-                <Ionicons
-                  name="checkmark"
-                  size={20}
-                  color={themeColor}
-                />
+                <Check size={20} color={themeColor} />
               )}
             </TouchableOpacity>
           );

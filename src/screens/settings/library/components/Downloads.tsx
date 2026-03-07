@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useDownload } from '@/contexts/DownloadContext';
 import {
   DownloadManager,
@@ -17,6 +18,7 @@ import {
 } from 'react-native-nitro-player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
@@ -26,10 +28,12 @@ const Downloads: React.FC = () => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const activeServer = useSelector(selectActiveServer);
+  const router = useRouter();
   const { albums = [] } = useAlbums();
   const { playlists = [] } = usePlaylists();
 
-  const { clearAllDownloads, cancelDownload } = useDownload();
+  const { clearDownloadsForProvider, cancelDownload } = useDownload();
 
   // Nitro-player hooks for storage and download state
   const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
@@ -54,15 +58,30 @@ const Downloads: React.FC = () => {
   }, [albums, playlists, downloadedPlaylists]);
 
   const handleClearDownloads = useCallback(() => {
+    const scope = { serverId: activeServer?.id, serverType: activeServer?.type ?? null };
+
     Alert.alert(
       t('settings.library.downloads.clearTitle'),
-      t('settings.library.downloads.clearBody'),
+      t('settings.library.downloads.clearBodyForProvider'),
       [
         { text: t('common.cancel'), style: 'cancel' },
-        { text: t('common.delete'), style: 'destructive', onPress: clearAllDownloads },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await clearDownloadsForProvider(scope);
+            } catch {
+              Alert.alert(
+                t('settings.library.downloads.clearFailedTitle'),
+                t('settings.library.downloads.clearFailedBody')
+              );
+            }
+          },
+        },
       ]
     );
-  }, [clearAllDownloads]);
+  }, [activeServer?.id, activeServer?.type, clearDownloadsForProvider, t]);
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -170,6 +189,20 @@ const Downloads: React.FC = () => {
           {t('settings.library.downloads.offlineNote')}
         </Text>
       )}
+
+      <TouchableOpacity
+        style={styles.moreInfoRow}
+        onPress={() => router.push('/settings/downloadsInfoView')}
+      >
+        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+          {t('settings.library.downloads.moreInfo')}
+        </Text>
+        <MaterialIcons
+          name="chevron-right"
+          size={22}
+          color={isDarkMode ? '#fff' : '#6E6E73'}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -287,5 +320,12 @@ const styles = StyleSheet.create({
   },
   noteDark: {
     color: '#aaa',
+  },
+  moreInfoRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
   },
 });

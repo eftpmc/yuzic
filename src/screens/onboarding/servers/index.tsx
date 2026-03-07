@@ -34,6 +34,12 @@ export default function Servers() {
     );
 
     const handleSelectServer = (id: string) => {
+        if (id === activeServerId) {
+            dispatch(setActiveServer(id));
+            router.replace('(home)');
+            return;
+        }
+
         dispatch(setActiveServer(id));
         router.replace('(home)');
     };
