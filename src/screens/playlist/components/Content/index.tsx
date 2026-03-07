@@ -24,6 +24,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
     <SongRow
       song={item}
       collection={playlist}
+      showDownloadedDot
     />
   );
 

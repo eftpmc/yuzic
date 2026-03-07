@@ -243,6 +243,10 @@
     "back": "戻る",
     "play": "再生",
     "shuffle": "シャッフル",
+    "album": "アルバム",
+    "albums": "アルバム",
+    "song": "曲",
+    "songs": "曲",
     "artist": "アーティスト",
     "playlist": "プレイリスト",
     "offline": {
@@ -531,6 +535,9 @@
       "shuffle": "シャッフル",
       "addToQueue": "キューに追加",
       "shuffleToQueue": "シャッフルで追加",
+      "download": "ダウンロード",
+      "downloading": "ダウンロード中…",
+      "downloaded": "ダウンロード済み",
       "goToArtist": "アーティストへ",
       "goToExternalArtist": "外部アーティストへ",
       "viewExternal": "外部で表示"

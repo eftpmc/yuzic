@@ -243,6 +243,10 @@
     "back": "Back",
     "play": "Play",
     "shuffle": "Shuffle",
+    "album": "album",
+    "albums": "albums",
+    "song": "song",
+    "songs": "songs",
     "artist": "Artist",
     "playlist": "Playlist",
     "offline": {
@@ -531,6 +535,9 @@
       "shuffle": "Shuffle",
       "addToQueue": "Add to Queue",
       "shuffleToQueue": "Shuffle to Queue",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded",
       "goToArtist": "Go to Artist",
       "goToExternalArtist": "Go to External Artist",
       "viewExternal": "View External"

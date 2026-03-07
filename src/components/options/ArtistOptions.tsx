@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useMemo } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useArtistMbid } from '@/hooks/artists';
 import { staleTime } from '@/constants/staleTime';
 import { useTranslation } from 'react-i18next';
+import { useDownload } from '@/contexts/DownloadContext';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -52,12 +53,21 @@ const ArtistOptions = forwardRef<
     shuffleCollectionToQueue,
     getQueue,
   } = usePlaying();
+  const { downloadAlbumById, isTrackDownloaded, isTrackDownloading } = useDownload();
+  const apiRef = useRef(api);
+  apiRef.current = api;
+  const [artistSongsForDownload, setArtistSongsForDownload] = useState<Song[]>([]);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   const { data: mbid } = useArtistMbid(
     artist ? { id: artist.id, name: artist.name, mbid: artist.mbid } : null
   );
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
+  const artistAlbumIdsKey = useMemo(
+    () => artist?.ownedAlbums?.map(album => album.id).join(',') ?? '',
+    [artist?.ownedAlbums]
+  );
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -69,13 +79,41 @@ const ArtistOptions = forwardRef<
       artist.ownedAlbums.map((a) =>
         queryClient.fetchQuery({
           queryKey: [QueryKeys.Album, activeServer?.id, a.id],
-          queryFn: () => api.albums.get(a.id),
+          queryFn: () => apiRef.current.albums.get(a.id),
           staleTime: staleTime.albums,
         })
       )
     );
     return albums.flatMap((a) => a?.songs ?? []);
-  }, [artist, queryClient, api, activeServer?.id]);
+  }, [artist, queryClient, activeServer?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveArtistSongs = async () => {
+      if (!artist?.ownedAlbums?.length) {
+        if (!cancelled) setArtistSongsForDownload([]);
+        return;
+      }
+
+      try {
+        const songs = await loadSongs();
+        if (!cancelled) {
+          setArtistSongsForDownload(songs);
+        }
+      } catch {
+        if (!cancelled) {
+          setArtistSongsForDownload([]);
+        }
+      }
+    };
+
+    void resolveArtistSongs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [artist?.id, artistAlbumIdsKey, activeServer?.id, loadSongs]);
 
   const buildCollection = useCallback(
     (songs: Song[]) => ({
@@ -157,6 +195,28 @@ const ArtistOptions = forwardRef<
     Linking.openURL(`https://musicbrainz.org/artist/${mbid}`);
   };
 
+  const isDownloaded =
+    artistSongsForDownload.length > 0 &&
+    artistSongsForDownload.every(song => isTrackDownloaded(song.id));
+  const isDownloading =
+    !isDownloaded &&
+    (isDownloadingAll || artistSongsForDownload.some(song => isTrackDownloading(song.id)));
+
+  const handleDownloadAll = async () => {
+    if (!artist || isDownloaded || isDownloading) return;
+
+    setIsDownloadingAll(true);
+    try {
+      for (const album of artist.ownedAlbums) {
+        await downloadAlbumById(album.id);
+      }
+      const refreshedSongs = await loadSongs();
+      setArtistSongsForDownload(refreshedSongs);
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
   if (!artist) {
     return (
       <BottomSheetModal
@@ -220,6 +280,36 @@ const ArtistOptions = forwardRef<
         <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.shuffleToQueue')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => {
+            void handleDownloadAll();
+          }}
+          disabled={isDownloaded || isDownloading}
+        >
+          {isDownloading ? (
+            <ActivityIndicator size="small" color={themeStyles.artist.color} />
+          ) : (
+            <Ionicons
+              name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
+              size={26}
+              color={isDownloaded || isDownloading ? themeStyles.artist.color : themeStyles.icon.color}
+            />
+          )}
+          <Text
+            style={[
+              styles.optionText,
+              themeStyles.optionText,
+              (isDownloaded || isDownloading) && { opacity: 0.6 },
+            ]}
+          >
+            {isDownloading
+              ? t('artistOptions.actions.downloading')
+              : isDownloaded
+                ? t('artistOptions.actions.downloaded')
+                : t('artistOptions.actions.download')}
+          </Text>
         </TouchableOpacity>
 
         {!hideGoToArtist && (

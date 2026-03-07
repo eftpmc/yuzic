@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Appearance } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -43,7 +43,7 @@ export const ThemeColor: React.FC = () => {
         <View style={{ paddingTop: 16 }}>
           <ColorPicker
             value={themeColor}
-            onComplete={c => dispatch(setThemeColor(c.hex))}
+            onCompleteJS={c => dispatch(setThemeColor(c.hex))}
             style={{ height: 240, width: '100%' }}
           >
             <Panel1 />

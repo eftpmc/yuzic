@@ -1,9 +1,10 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +15,7 @@ import { MediaImage } from '@/components/MediaImage';
 import AlbumOptions from '@/components/options/AlbumOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
+import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -29,8 +31,11 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const { playSongInCollection } = usePlaying();
+  const { downloadAlbumById, isTrackDownloaded } = useDownload();
+  const [isTogglingDownload, setIsTogglingDownload] = useState(false);
 
   const songs = album.songs ?? [];
+  const isAlbumDownloaded = songs.length > 0 && songs.every(song => isTrackDownloaded(song.id));
 
   const totalDuration = useMemo(() => {
     return songs.reduce((sum, song) => sum + Number(song.duration), 0);
@@ -49,6 +54,33 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  const metadataItems = useMemo(() => {
+    const items: string[] = [];
+    if (album.artist?.name) items.push(album.artist.name);
+    const genre = album.genres?.[0]?.trim();
+    if (genre) items.push(genre);
+    const year = Number(album.year);
+    if (Number.isFinite(year) && year > 0) items.push(String(year));
+    if (!items.length) {
+      items.push(`${songs.length} songs`);
+      items.push(formatDuration(totalDuration));
+    }
+    return items;
+  }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
+
+  const toggleDownload = async () => {
+    if (!songs.length || isTogglingDownload) return;
+    setIsTogglingDownload(true);
+    try {
+      if (isAlbumDownloaded) return;
+
+      await downloadAlbumById(album.id);
+    } finally {
+      setIsTogglingDownload(false);
+    }
+  };
+  const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
   return (
     <View style={styles.container}>
@@ -92,46 +124,47 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
         />
       </View>
 
-      {/* Title + artist + actions */}
-      <View style={styles.titleRow}>
-        <View style={styles.titleInfo}>
-          <Text style={styles.title(isDarkMode)} numberOfLines={1}>
-            {album.title}
-          </Text>
+      {/* Title + artist/subtext metadata */}
+      <View style={styles.titleInfo}>
+        <Text style={[styles.title, themeStyles.title]} numberOfLines={2}>
+          {album.title}
+        </Text>
 
-          {album.artist && (
-            <TouchableOpacity
-              style={styles.artistRow}
-              onPress={() =>
-                navigation.navigate('artistView', {
-                  id: album.artist.id,
-                })
-              }
-            >
-              <MediaImage
-                cover={album.artist.cover}
-                size="thumb"
-                style={styles.artistImage}
-              />
-
-              <Text
-                style={styles.artistName(isDarkMode)}
-                numberOfLines={1}
-              >
-                {album.artist.name}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          <Text style={styles.subtext(isDarkMode)}>
-            {songs.length} songs · {formatDuration(totalDuration)}
-          </Text>
+        <View style={styles.metaRow}>
+          {metadataItems.map((item, index) => (
+            <React.Fragment key={`${item}-${index}`}>
+              {index > 0 && (
+                <Text style={[styles.metaDot, themeStyles.subtext]} numberOfLines={1}>
+                  •
+                </Text>
+              )}
+              {index === 0 && album.artist ? (
+                <TouchableOpacity
+                  onPress={() =>
+                    (navigation as any).navigate('artistView', {
+                      id: album.artist.id,
+                    })
+                  }
+                >
+                  <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                  {item}
+                </Text>
+              )}
+            </React.Fragment>
+          ))}
         </View>
+      </View>
 
-        {/* Action buttons */}
+      {/* Action buttons */}
+      <View style={styles.actionsRow}>
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.shuffleButton(isDarkMode)}
+            style={[styles.secondaryButton, themeStyles.secondaryButton]}
             onPress={() => {
               if (songs.length > 0) {
                 playSongInCollection(songs[0], album, true);
@@ -157,6 +190,27 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
             }}
           >
             <Ionicons name="play" size={24} color="#fff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.secondaryButton, themeStyles.secondaryButton]}
+            onPress={() => {
+              void toggleDownload();
+            }}
+            disabled={isTogglingDownload}
+          >
+            {isTogglingDownload ? (
+              <ActivityIndicator
+                size="small"
+                color={isDarkMode ? '#fff' : '#000'}
+              />
+            ) : (
+              <Ionicons
+                name={isAlbumDownloaded ? 'checkmark' : 'download-outline'}
+                size={18}
+                color={isDarkMode ? '#fff' : '#000'}
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -197,63 +251,80 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 16,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  titleInfo: {
     width: '100%',
     marginBottom: 12,
+    alignItems: 'center',
   },
-  titleInfo: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  title: (isDark: boolean) => ({
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: isDark ? '#fff' : '#000',
-    marginBottom: 4,
-  }),
-  subtext: (isDark: boolean) => ({
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtext: {
     fontSize: 14,
-    color: isDark ? '#aaa' : '#666',
-  }),
-  artistRow: {
+  },
+  metaDot: {
+    fontSize: 14,
+    marginHorizontal: 6,
+  },
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    flexWrap: 'nowrap',
+    maxWidth: '94%',
     marginTop: 4,
   },
-  artistImage: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    marginRight: 6,
+  actionsRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  artistName: (isDark: boolean) => ({
-    fontSize: 14,
-    color: isDark ? '#fff' : '#333',
-  }),
-
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-
-  shuffleButton: (isDark: boolean) => ({
+  secondaryButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: isDark ? '#1c1c1e' : '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-  }),
-
+  },
   playButton: {
-    borderRadius: 24,
-    width: 48,
+    borderRadius: 22,
+    width: 112,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+});
+
+const stylesLight = StyleSheet.create({
+  title: {
+    color: '#000',
+  },
+  subtext: {
+    color: '#666',
+  },
+  secondaryButton: {
+    backgroundColor: '#f0f0f0',
+  },
+});
+
+const stylesDark = StyleSheet.create({
+  title: {
+    color: '#fff',
+  },
+  subtext: {
+    color: '#aaa',
+  },
+  secondaryButton: {
+    backgroundColor: '#1c1c1e',
   },
 });
 

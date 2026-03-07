@@ -1,5 +1,9 @@
 type TrackIdLike = {
-  id: string;
+  id?: string | number | null;
+  trackId?: string | number | null;
+  originalTrack?: {
+    id?: string | number | null;
+  } | null;
 };
 
 type AlbumTrackLike = {
@@ -15,10 +19,15 @@ type PlaylistLike = {
 export function buildDownloadedTrackIdSet(
   tracks: TrackIdLike[]
 ): Set<string> {
+  const ids = tracks
+    .map(track => {
+      const id = track?.id ?? track?.trackId ?? track?.originalTrack?.id;
+      return String(id ?? '').trim();
+    })
+    .filter(Boolean);
+
   return new Set(
-    tracks
-      .map(track => String(track.id))
-      .filter(Boolean)
+    ids
   );
 }
 

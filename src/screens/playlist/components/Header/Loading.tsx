@@ -41,35 +41,71 @@ const LoadingPlaylistHeader: React.FC = () => {
         />
       </View>
 
-      {/* Title + meta + play */}
-      <View style={styles.titleRow}>
-        <View style={styles.titleInfo}>
-          {/* Playlist title */}
+      {/* Title + metadata */}
+      <View style={styles.titleInfo}>
+        <Skeleton
+          width="72%"
+          height={24}
+          radius={6}
+          colorMode={colorMode}
+        />
+
+        <View style={styles.metaRow}>
           <Skeleton
-            width="75%"
-            height={24}
+            width={58}
+            height={14}
             radius={6}
             colorMode={colorMode}
           />
-
-          {/* Songs count + duration */}
-          <View style={{ marginTop: 8 }}>
-            <Skeleton
-              width={160}
-              height={14}
-              radius={6}
-              colorMode={colorMode}
-            />
-          </View>
+          <Skeleton
+            width={8}
+            height={8}
+            radius={4}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={88}
+            height={14}
+            radius={6}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={8}
+            height={8}
+            radius={4}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={52}
+            height={14}
+            radius={6}
+            colorMode={colorMode}
+          />
         </View>
+      </View>
 
-        {/* Play button */}
-        <Skeleton
-          width={48}
-          height={48}
-          radius={24}
-          colorMode={colorMode}
-        />
+      {/* Controls row */}
+      <View style={styles.actionsRow}>
+        <View style={styles.actions}>
+          <Skeleton
+            width={40}
+            height={40}
+            radius={20}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={112}
+            height={48}
+            radius={22}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={40}
+            height={40}
+            radius={20}
+            colorMode={colorMode}
+          />
+        </View>
       </View>
     </View>
   );
@@ -100,15 +136,27 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     overflow: 'hidden',
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  titleInfo: {
     width: '100%',
     marginBottom: 12,
+    alignItems: 'center',
   },
-  titleInfo: {
-    flex: 1,
-    paddingRight: 12,
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  actionsRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
 });
 

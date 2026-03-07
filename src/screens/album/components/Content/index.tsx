@@ -23,11 +23,13 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
     return <AlbumHeader album={album} />;
   }, [album]);
 
-  const renderItem = ({ item }: { item: Song }) => {
+  const renderItem = ({ item, index }: { item: Song; index: number }) => {
     return (
       <SongRow
         song={item}
         collection={album}
+        variant="albumCompact"
+        trackNumber={index + 1}
       />
     );
   };

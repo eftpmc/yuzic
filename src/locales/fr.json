@@ -244,6 +244,10 @@
     "back": "Retour",
     "play": "Lire",
     "shuffle": "Aléatoire",
+    "album": "album",
+    "albums": "albums",
+    "song": "morceau",
+    "songs": "morceaux",
     "artist": "Artiste",
     "playlist": "Liste de lecture",
     "offline": {
@@ -532,6 +536,9 @@
       "shuffle": "Lecture aléatoire",
       "addToQueue": "Ajouter à la file d'attente",
       "shuffleToQueue": "Ajouter aléatoirement à la file d'attente",
+      "download": "Télécharger",
+      "downloading": "Téléchargement…",
+      "downloaded": "Téléchargé",
       "goToArtist": "Aller à l'artiste",
       "goToExternalArtist": "Aller à l'artiste externe",
       "viewExternal": "Voir externe"
