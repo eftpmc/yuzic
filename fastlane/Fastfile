@@ -60,7 +60,10 @@ platform :ios do
   lane :ci_ios do
     prepare_build_dirs
 
-    match(type: "appstore")
+    match(
+      type: "appstore",
+      clone_branch_directly: true
+      )
 
     increment_build_number(
       build_number: build_number
