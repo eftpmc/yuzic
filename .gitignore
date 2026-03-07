@@ -4,6 +4,8 @@
 *.jks
 *.keystore
 build/
+ios/Pods
+ios/Podfile.lock
 # dependencies
 node_modules/
 

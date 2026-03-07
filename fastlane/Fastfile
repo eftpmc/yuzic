@@ -82,34 +82,22 @@ platform :ios do
   desc "Build iOS and upload to App Store Connect"
   lane :ci_ios do
     prepare_build_dirs
-    bundle_id = "com.arinora.rawarr"
     team_id = resolved_ios_team_id
     build_number = resolved_ios_build_number
     version_label = resolved_version_label
 
-    UI.important("iOS bundle id: #{bundle_id}")
     UI.important("iOS team id: #{team_id}")
     UI.important("iOS build number: #{build_number}")
     UI.important("iOS version label: #{version_label}")
-
-    match(
-      type: "appstore",
-      clone_branch_directly: true,
-      readonly: is_ci
-    )
 
     build_app(
       scheme: "Yuzic",
       workspace: "ios/Yuzic.xcworkspace",
       export_method: "app-store",
       export_team_id: team_id,
-      codesigning_identity: "Apple Distribution",
       xcargs: "CURRENT_PROJECT_VERSION=#{build_number} MARKETING_VERSION=#{version_label}",
       export_options: {
-        signingStyle: "manual",
-        provisioningProfiles: {
-          bundle_id => "match AppStore #{bundle_id}"
-        }
+        signingStyle: "automatic"
       },
       output_directory: "build/ios",
       output_name: "Yuzic.ipa",

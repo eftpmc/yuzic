@@ -41,9 +41,8 @@ jobs:
 
       - name: Install CocoaPods
         run: |
-          gem install cocoapods
           cd ios
-          pod install
+          pod install --repo-update
 
       - name: Run Fastlane iOS build
         env:
