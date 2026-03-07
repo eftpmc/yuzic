@@ -45,7 +45,7 @@ const AlbumOptions = forwardRef<
     getQueue,
   } = usePlaying();
 
-  const { downloadAlbumById, isTrackDownloaded, isTrackDownloading } =
+  const { downloadAlbumById, getCollectionDownloadState } =
     useDownload();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
@@ -55,8 +55,9 @@ const AlbumOptions = forwardRef<
   };
 
   const songs = album?.songs ?? [];
-  const isDownloaded = songs.length > 0 && songs.every(s => isTrackDownloaded(s.id));
-  const isDownloading = !isDownloaded && songs.some(s => isTrackDownloading(s.id));
+  const { isDownloaded, isDownloading } = getCollectionDownloadState(
+    songs.map((song) => song.id)
+  );
 
   const handlePlay = (shuffle: boolean) => {
     if (!album || !songs.length) return;
@@ -122,7 +123,6 @@ const AlbumOptions = forwardRef<
   const handleDownload = async () => {
     if (!album || isDownloaded || isDownloading) return;
     await downloadAlbumById(album.id);
-    close();
   };
 
   if (!album) {

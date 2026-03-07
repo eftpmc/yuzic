@@ -43,7 +43,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const queryClient = useQueryClient();
   const api = useApi();
   const { playSongInCollection } = usePlaying();
-  const { downloadAlbumById, isTrackDownloaded } = useDownload();
+  const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const [artistSongs, setArtistSongs] = useState<Song[]>([]);
@@ -132,13 +132,18 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     return items;
   }, [artist.ownedAlbums.length, artistSongs.length, loadingSongs, t]);
 
-  const isArtistFullyDownloaded = useMemo(() => {
-    if (!artistSongs.length) return false;
-    return artistSongs.every(song => isTrackDownloaded(song.id));
-  }, [artistSongs, isTrackDownloaded]);
+  const {
+    isDownloaded: isArtistFullyDownloaded,
+    isDownloading: isArtistDownloading,
+  } = getCollectionDownloadState(artistSongs.map((song) => song.id));
 
   const handleDownloadAll = async () => {
-    if (isDownloadingAll || isArtistFullyDownloaded || !artist.ownedAlbums.length) return;
+    if (
+      isDownloadingAll ||
+      isArtistDownloading ||
+      isArtistFullyDownloaded ||
+      !artist.ownedAlbums.length
+    ) return;
     setIsDownloadingAll(true);
     try {
       for (const album of artist.ownedAlbums) {
@@ -245,10 +250,10 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           onPress={() => {
             void handleDownloadAll();
           }}
-          disabled={isDownloadingAll}
+          disabled={isDownloadingAll || isArtistDownloading}
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
-          {isDownloadingAll ? (
+          {isDownloadingAll || isArtistDownloading ? (
             <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
           ) : (
             <Ionicons

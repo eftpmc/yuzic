@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -31,11 +31,11 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const { playSongInCollection } = usePlaying();
-  const { downloadAlbumById, isTrackDownloaded } = useDownload();
-  const [isTogglingDownload, setIsTogglingDownload] = useState(false);
+  const { downloadAlbumById, getCollectionDownloadState } = useDownload();
 
   const songs = album.songs ?? [];
-  const isAlbumDownloaded = songs.length > 0 && songs.every(song => isTrackDownloaded(song.id));
+  const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
+    getCollectionDownloadState(songs.map((song) => song.id));
 
   const totalDuration = useMemo(() => {
     return songs.reduce((sum, song) => sum + Number(song.duration), 0);
@@ -70,15 +70,8 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
 
   const toggleDownload = async () => {
-    if (!songs.length || isTogglingDownload) return;
-    setIsTogglingDownload(true);
-    try {
-      if (isAlbumDownloaded) return;
-
-      await downloadAlbumById(album.id);
-    } finally {
-      setIsTogglingDownload(false);
-    }
+    if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
+    await downloadAlbumById(album.id);
   };
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
@@ -197,9 +190,9 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
             onPress={() => {
               void toggleDownload();
             }}
-            disabled={isTogglingDownload}
+            disabled={isAlbumDownloading}
           >
-            {isTogglingDownload ? (
+            {isAlbumDownloading ? (
               <ActivityIndicator
                 size="small"
                 color={isDarkMode ? '#fff' : '#000'}

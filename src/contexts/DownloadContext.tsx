@@ -3,11 +3,13 @@ import React, {
     useContext,
     useEffect,
     useCallback,
+    useMemo,
     ReactNode,
 } from 'react';
 import {
     DownloadManager,
     useDownloadedTracks,
+    useDownloadProgress,
 } from 'react-native-nitro-player';
 import type { TrackItem } from 'react-native-nitro-player';
 import { Song, Playlist, Album } from '@/types';
@@ -31,6 +33,10 @@ type DownloadContextType = {
 
     isTrackDownloaded: (trackId: string) => boolean;
     isTrackDownloading: (trackId: string) => boolean;
+    getCollectionDownloadState: (trackIds: string[]) => {
+        isDownloaded: boolean;
+        isDownloading: boolean;
+    };
 
     cancelDownload: (id: string) => Promise<void>;
     removeDownloadByCollectionId: (
@@ -74,6 +80,17 @@ function songToTrackItem(
     };
 }
 
+function dedupeDownloadTrackItems(trackItems: TrackItem[]): TrackItem[] {
+    const deduped = new Map<string, TrackItem>();
+    for (const item of trackItems) {
+        const trackId = String(item.id ?? '').trim();
+        const url = String(item.url ?? '').trim();
+        if (!trackId || !url) continue;
+        if (!deduped.has(trackId)) deduped.set(trackId, item);
+    }
+    return [...deduped.values()];
+}
+
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const queryClient = useQueryClient();
     const api = useApi();
@@ -83,6 +100,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         isTrackDownloaded: isNativeTrackDownloaded,
         downloadedTracks,
     } = useDownloadedTracks();
+    const { progressList } = useDownloadProgress({ activeOnly: true });
 
     useEffect(() => {
         DownloadManager.configure({
@@ -111,12 +129,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (!album) return;
 
-        const trackItems = album.songs.map(song => songToTrackItem(song, {
+        const trackItems = dedupeDownloadTrackItems(album.songs.map(song => songToTrackItem(song, {
             serverId: activeServer?.id,
             serverType: activeServer?.type ?? null,
-        }));
+        }))).filter(item => !isNativeTrackDownloaded(String(item.id)));
+        if (!trackItems.length) return;
         await DownloadManager.downloadPlaylist(albumId, trackItems);
-    }, [queryClient, activeServer?.id, api]);
+    }, [queryClient, activeServer?.id, activeServer?.type, api, isNativeTrackDownloaded]);
 
     const downloadPlaylistById = useCallback(async (playlistId: string) => {
         let playlist = queryClient.getQueryData<Playlist>([
@@ -136,21 +155,57 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (!playlist) return;
 
-        const trackItems = playlist.songs.map(song => songToTrackItem(song, {
+        const trackItems = dedupeDownloadTrackItems(playlist.songs.map(song => songToTrackItem(song, {
             serverId: activeServer?.id,
             serverType: activeServer?.type ?? null,
-        }));
+        }))).filter(item => !isNativeTrackDownloaded(String(item.id)));
+        if (!trackItems.length) return;
         await DownloadManager.downloadPlaylist(playlistId, trackItems);
-    }, [queryClient, activeServer?.id, api]);
+    }, [queryClient, activeServer?.id, activeServer?.type, api, isNativeTrackDownloaded]);
 
     const isTrackDownloaded = useCallback((trackId: string) => {
         return isNativeTrackDownloaded(trackId);
     }, [isNativeTrackDownloaded]);
 
+    const activeDownloadingTrackIds = useMemo(() => {
+        const ids = new Set<string>();
+
+        for (const progress of progressList) {
+            const task = DownloadManager.getDownloadTask(progress.downloadId);
+            const taskTrackId = String(task?.trackId ?? '').trim();
+            if (taskTrackId) ids.add(taskTrackId);
+        }
+
+        for (const task of DownloadManager.getActiveDownloads()) {
+            const taskTrackId = String(task?.trackId ?? '').trim();
+            if (taskTrackId) ids.add(taskTrackId);
+        }
+
+        return ids;
+    }, [progressList]);
+
     const isTrackDownloading = useCallback((trackId: string) => {
-        const activeTasks = DownloadManager.getActiveDownloads();
-        return activeTasks.some(task => task.trackId === trackId);
-    }, []);
+        if (!trackId) return false;
+        return activeDownloadingTrackIds.has(String(trackId));
+    }, [activeDownloadingTrackIds]);
+
+    const getCollectionDownloadState = useCallback((trackIds: string[]) => {
+        const normalized = [...new Set(trackIds.map(id => String(id ?? '').trim()).filter(Boolean))];
+        if (!normalized.length) {
+            return {
+                isDownloaded: false,
+                isDownloading: false,
+            };
+        }
+
+        const isDownloaded = normalized.every((id) => isNativeTrackDownloaded(id));
+        const isDownloading = !isDownloaded && normalized.some((id) => activeDownloadingTrackIds.has(id));
+
+        return {
+            isDownloaded,
+            isDownloading,
+        };
+    }, [isNativeTrackDownloaded, activeDownloadingTrackIds]);
 
     const cancelDownload = useCallback(async (id: string) => {
         const activeTasks = DownloadManager.getActiveDownloads();
@@ -241,6 +296,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
                 downloadPlaylistById,
                 isTrackDownloaded,
                 isTrackDownloading,
+                getCollectionDownloadState,
                 cancelDownload,
                 removeDownloadByCollectionId,
                 cancelDownloadAll,

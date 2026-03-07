@@ -53,7 +53,7 @@ const ArtistOptions = forwardRef<
     shuffleCollectionToQueue,
     getQueue,
   } = usePlaying();
-  const { downloadAlbumById, isTrackDownloaded, isTrackDownloading } = useDownload();
+  const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const apiRef = useRef(api);
   apiRef.current = api;
   const [artistSongsForDownload, setArtistSongsForDownload] = useState<Song[]>([]);
@@ -195,12 +195,10 @@ const ArtistOptions = forwardRef<
     Linking.openURL(`https://musicbrainz.org/artist/${mbid}`);
   };
 
-  const isDownloaded =
-    artistSongsForDownload.length > 0 &&
-    artistSongsForDownload.every(song => isTrackDownloaded(song.id));
-  const isDownloading =
-    !isDownloaded &&
-    (isDownloadingAll || artistSongsForDownload.some(song => isTrackDownloading(song.id)));
+  const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(
+    artistSongsForDownload.map((song) => song.id)
+  );
+  const isDownloading = isDownloadingAll || isCollectionDownloading;
 
   const handleDownloadAll = async () => {
     if (!artist || isDownloaded || isDownloading) return;

@@ -47,7 +47,6 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
 import { LIBRARY_INITIAL_PAGE_SIZE, LIBRARY_PAGE_SIZE } from '@/constants/library';
 import { useTranslation } from 'react-i18next';
-import { SongBase } from '@/types';
 import { useDownloadedTracks } from 'react-native-nitro-player';
 import {
     getFullyDownloadedAlbumIds,
@@ -287,17 +286,6 @@ export default function HomeScreen() {
         { label: t('home.filters.tracks'), value: 'tracks' },
     ] as const;
 
-    const visibleTracks = useMemo(
-        () =>
-            displayedData
-                .filter((item: any) => item.type === 'Track')
-                .map((item: any) => {
-                    const { type, ...track } = item;
-                    return track as SongBase;
-                }),
-        [displayedData]
-    );
-
     const renderItem = ({ item }: { item: any }) => {
         switch (item.type) {
             case 'Album':
@@ -310,7 +298,6 @@ export default function HomeScreen() {
                 return (
                     <TrackItem
                         song={item}
-                        visibleTracks={visibleTracks}
                         isGridView={isGridView}
                         gridWidth={gridItemWidth}
                         gridSpacing={gridSpacing}

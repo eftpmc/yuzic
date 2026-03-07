@@ -13,32 +13,29 @@ import { MediaImage } from "@/components/MediaImage";
 import SongOptions from "@/components/options/SongOptions";
 import PlaylistList from "@/components/PlaylistList";
 import { usePlaying } from "@/contexts/PlayingContext";
-import { Playlist, Song, SongBase } from "@/types";
+import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useApi } from "@/api";
 import { toast } from "@backpackapp-io/react-native-toast";
 
 type Props = {
   song: SongBase;
-  visibleTracks: SongBase[];
   isGridView: boolean;
   gridWidth: number;
   gridSpacing?: number;
 };
 
 const SHEET_TRANSITION_DELAY_MS = 180;
-const MAX_VISIBLE_TRACKS_TO_RESOLVE = 80;
 
 const TrackItem: React.FC<Props> = ({
   song,
-  visibleTracks,
   isGridView,
   gridWidth,
   gridSpacing = 8,
 }) => {
   const { isDarkMode } = useTheme();
   const api = useApi();
-  const { playSongInCollection, playSong } = usePlaying();
+  const { playSimilar } = usePlaying();
 
   const optionsRef = useRef<BottomSheetModal>(null);
   const playlistRef = useRef<BottomSheetModal>(null);
@@ -55,52 +52,13 @@ const TrackItem: React.FC<Props> = ({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const resolveVisibleSongs = async (): Promise<Song[]> => {
-    const uniqueIds = [...new Set(visibleTracks.map((track) => track.id))].slice(
-      0,
-      MAX_VISIBLE_TRACKS_TO_RESOLVE
-    );
-    const results = await Promise.allSettled(
-      uniqueIds.map((id) => api.tracks.get(id))
-    );
-
-    const deduped = new Map<string, Song>();
-    results.forEach((result) => {
-      if (result.status === "fulfilled" && result.value) {
-        deduped.set(result.value.id, result.value);
-      }
-    });
-    return [...deduped.values()];
-  };
-
   const handlePress = async () => {
     if (pressInFlightRef.current) return;
     pressInFlightRef.current = true;
     try {
       const fullSong = await api.tracks.get(song.id);
       if (!fullSong) return;
-
-      const songs = await resolveVisibleSongs();
-      if (!songs.length) {
-        await playSong(fullSong);
-        return;
-      }
-
-      if (!songs.some((item) => item.id === fullSong.id)) {
-        songs.unshift(fullSong);
-      }
-
-      const collection: Playlist = {
-        id: `home-tracks-${song.id}`,
-        title: "Tracks",
-        subtext: `Playlist • ${songs.length} songs`,
-        cover: songs[0]?.cover ?? { kind: "none" },
-        changed: new Date(0),
-        created: new Date(0),
-        songs,
-      };
-
-      await playSongInCollection(fullSong, collection);
+      await playSimilar(fullSong);
     } catch (error) {
       console.warn("Failed to play home track", error);
       toast.error("Unable to start playback");

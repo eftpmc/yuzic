@@ -1,7 +1,7 @@
 {
   "name": "yuzic",
   "main": "expo-router/entry",
-  "version": "1.1.17",
+  "version": "1.1.18",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -10,8 +10,7 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "postinstall": "patch-package",
-    "postprebuild": "node scripts/fix-gradle-wrapper.js"
+    "postinstall": "patch-package"
   },
   "overrides": {
     "lucide-react-native": {

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -33,11 +33,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
   const { playSongInCollection } = usePlaying();
-  const { downloadPlaylistById, isTrackDownloaded } = useDownload();
-  const [isTogglingDownload, setIsTogglingDownload] = useState(false);
+  const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
 
   const songs = playlist.songs ?? [];
-  const isPlaylistDownloaded = songs.length > 0 && songs.every(song => isTrackDownloaded(song.id));
+  const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
+    getCollectionDownloadState(songs.map((song) => song.id));
 
   const totalDuration = useMemo(() => {
     return songs.reduce((sum, song) => sum + Number(song.duration), 0);
@@ -66,13 +66,8 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
   const toggleDownload = async () => {
-    if (!songs.length || isTogglingDownload || isPlaylistDownloaded) return;
-    setIsTogglingDownload(true);
-    try {
-      await downloadPlaylistById(playlist.id);
-    } finally {
-      setIsTogglingDownload(false);
-    }
+    if (!songs.length || isPlaylistDownloading || isPlaylistDownloaded) return;
+    await downloadPlaylistById(playlist.id);
   };
 
   return (
@@ -173,9 +168,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             onPress={() => {
               void toggleDownload();
             }}
-            disabled={isTogglingDownload}
+            disabled={isPlaylistDownloading}
           >
-            {isTogglingDownload ? (
+            {isPlaylistDownloading ? (
               <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
             ) : (
               <Ionicons
