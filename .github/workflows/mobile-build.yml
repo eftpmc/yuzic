@@ -35,7 +35,8 @@ jobs:
       - name: Run Fastlane iOS build
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        run: bundle exec fastlane ios ci_ios
+          FASTLANE_USER: ${{ secrets.APPLE_ID }}
+        run: bundle exec fastlane ios ci_ios  
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
@@ -70,7 +71,7 @@ jobs:
 
       - name: Run Fastlane Android build
         env:
-          ANDROID_KEYSTORE_PATH: android/app/release.jks
+          ANDROID_KEYSTORE_PATH: release.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
