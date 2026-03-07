@@ -101,5 +101,5 @@ jobs:
         with:
           name: android-build
           path: |
-            build/android/*.apk
-            build/android/*.aab
+            android/app/build/outputs/**/*.apk
+            android/app/build/outputs/**/*.aab
