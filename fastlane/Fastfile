@@ -117,7 +117,8 @@ platform :ios do
       api_key: api_key,
       skip_metadata: true,
       skip_screenshots: true,
-      submit_for_review: false
+      submit_for_review: false,
+      run_precheck_before_submit: false
     )
   end
 end
