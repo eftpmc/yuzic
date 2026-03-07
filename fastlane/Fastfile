@@ -24,30 +24,18 @@ platform :android do
     )
 
     gradle(
-      task: "assemble",
-      build_type: "Release",
+      task: "bundleRelease",
       project_dir: "android",
       properties: {
         "android.injected.version.code" => build_number
       }
     )
 
-    gradle(
-      task: "bundle",
-      build_type: "Release",
-      project_dir: "android",
-      properties: {
-        "android.injected.version.code" => build_number
-      }
-    )
-
-    sh "cp android/app/build/outputs/apk/release/*.apk build/android/"
-    sh "cp android/app/build/outputs/bundle/release/*.aab build/android/"
+    sh "cp android/app/build/outputs/bundle/release/app-release.aab build/android/"
 
     supply(
       track: "alpha",
       aab: "android/app/build/outputs/bundle/release/app-release.aab",
-      skip_upload_apk: true,
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
@@ -63,7 +51,7 @@ platform :ios do
     match(
       type: "appstore",
       clone_branch_directly: true
-      )
+    )
 
     increment_build_number(
       build_number: build_number
