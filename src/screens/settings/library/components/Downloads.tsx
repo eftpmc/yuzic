@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,57 +16,20 @@ import {
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
-import { useAlbums } from '@/hooks/albums';
-import { usePlaylists } from '@/hooks/playlists';
-import { MediaImage } from '@/components/MediaImage';
 
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const router = useRouter();
-  const { albums = [] } = useAlbums();
-  const { playlists = [] } = usePlaylists();
 
   const {
     clearAllDownloads,
-    cancelCollectionDownloads,
-    getCollectionDownloadState,
-    downloadStateVersion,
   } = useDownload();
 
   const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
 
   const trackCount = storageInfo?.trackCount ?? 0;
-
-  const items = useMemo(() => {
-    const collectionItems = [
-      ...albums.map(a => ({ ...a, type: 'album' as const })),
-      ...playlists.map(p => ({ ...p, type: 'playlist' as const })),
-    ];
-
-    return collectionItems
-      .map((item) => {
-        const trackIds = (item.songs ?? []).map((song: any) => String(song?.id ?? '')).filter(Boolean);
-        const state = getCollectionDownloadState(trackIds);
-        if (!state.isDownloaded && !state.isDownloading) return null;
-        return {
-          ...item,
-          trackIds,
-          isDownloaded: state.isDownloaded,
-          isDownloading: state.isDownloading,
-        };
-      })
-      .filter(Boolean) as Array<{
-      id: string;
-      title: string;
-      cover?: any;
-      type: 'album' | 'playlist';
-      trackIds: string[];
-      isDownloaded: boolean;
-      isDownloading: boolean;
-    }>;
-  }, [albums, playlists, getCollectionDownloadState, downloadStateVersion]);
 
   const handleClearDownloads = useCallback(() => {
     Alert.alert(
@@ -112,60 +75,6 @@ const Downloads: React.FC = () => {
         >
           <MaterialIcons name="delete" size={18} color="#fff" />
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.list}>
-        {items.map(item => {
-          const status = item.isDownloaded
-            ? { label: t('settings.library.downloads.status.downloaded'), color: '#22c55e' }
-            : item.isDownloading
-              ? { label: t('settings.library.downloads.status.downloading'), color: themeColor }
-              : { label: t('settings.library.downloads.status.incomplete'), color: '#f97316' };
-
-          return (
-            <View
-              key={item.id}
-              style={[styles.card, isDarkMode && styles.cardDark]}
-            >
-              <MediaImage
-                cover={item.cover ?? { kind: 'none' }}
-                size="thumb"
-                style={styles.downloadCover}
-              />
-
-              <View style={styles.cardInfo}>
-                <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>
-                  {item.title}
-                </Text>
-                <Text style={[styles.cardSub, isDarkMode && styles.cardSubDark]}>
-                  {item.type === 'album' ? t('settings.library.downloads.type.album') : t('settings.library.downloads.type.playlist')}
-                </Text>
-              </View>
-
-              <View style={styles.cardActions}>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: `${status.color}22`,
-                      borderColor: status.color,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: status.color, fontSize: 12, fontWeight: '600' }}>
-                    {status.label}
-                  </Text>
-                </View>
-
-                {item.isDownloading && (
-                  <TouchableOpacity onPress={() => cancelCollectionDownloads(item.id)}>
-                    <MaterialIcons name="cancel" size={18} color={status.color} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          );
-        })}
       </View>
 
       <View style={styles.row}>
@@ -236,65 +145,12 @@ const styles = StyleSheet.create({
   sectionTitleDark: {
     color: '#fff',
   },
-  downloadCover: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
   iconButton: {
     width: 36,
     height: 36,
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  list: {
-    marginTop: 8,
-    gap: 12,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#f7f7f7',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  cardDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  cardInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  cardTitle: {
-    fontSize: 14,
-    color: '#444',
-  },
-  cardTitleDark: {
-    color: '#ccc',
-  },
-  cardSub: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  cardSubDark: {
-    color: '#aaa',
-  },
-  cardActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusBadge: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
   },
   row: {
     flexDirection: 'row',

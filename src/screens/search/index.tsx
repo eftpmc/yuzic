@@ -71,43 +71,13 @@ const Search = () => {
     }
   };
 
-  const getTypeLabel = (type: SearchResult['type']) => {
-    if (type === 'song') return t('search.chips.song');
-    if (type === 'album') return t('search.chips.album');
-    if (type === 'artist') return t('search.chips.artist');
-    return t('search.chips.playlist');
-  };
-
   const getSourceLabel = (source: SearchResult['source']) =>
     source === 'external'
       ? t('search.chips.external')
       : t('search.chips.local');
 
-  const getSectionLabel = (result: SearchResult) =>
-    `${getSourceLabel(result.source)} • ${getTypeLabel(result.type)}`;
-
-  const shouldShowSectionLabel = (
-    result: SearchResult,
-    index: number
-  ) => {
-    if (index === 0) return true;
-    const prev = searchResults[index - 1];
-    return (
-      prev.source !== result.source ||
-      prev.type !== result.type
-    );
-  };
-
-  const shouldShowSeparator = (index: number) => {
-    if (index >= searchResults.length - 1) return false;
-    const current = searchResults[index];
-    const next = searchResults[index + 1];
-    // Keep separators only inside a section, not above/below section labels.
-    return (
-      current.source === next.source &&
-      current.type === next.type
-    );
-  };
+  const localResults = searchResults.filter(result => result.source === 'local');
+  const externalResults = searchResults.filter(result => result.source === 'external');
 
   const renderResult = (result: SearchResult) => {
     if (result.type === 'song') {
@@ -223,6 +193,37 @@ const Search = () => {
     return null;
   };
 
+  const renderSourceSection = (
+    results: SearchResult[],
+    source: SearchResult['source'],
+    isFirstSection: boolean
+  ) => (
+    <React.Fragment>
+      <Text
+        style={[
+          styles.sectionLabel,
+          isFirstSection && styles.sectionLabelFirst,
+          isDarkMode && styles.sectionLabelDark,
+        ]}
+      >
+        {getSourceLabel(source)}
+      </Text>
+      {results.map((result, index) => (
+        <React.Fragment key={`${result.source}:${result.type}:${result.id}`}>
+          <View style={styles.resultBlock}>{renderResult(result)}</View>
+          {index < results.length - 1 && (
+            <View
+              style={[
+                styles.separator,
+                isDarkMode && styles.separatorDark,
+              ]}
+            />
+          )}
+        </React.Fragment>
+      ))}
+    </React.Fragment>
+  );
+
   return (
     <SafeAreaView
       style={[styles.container, isDarkMode && styles.containerDark]}
@@ -280,30 +281,14 @@ const Search = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {isLoading
           ? [...Array(8)].map((_, i) => <LoadingAlbumRow key={i} />)
-          :             searchResults.map((result, index) => (
-              <React.Fragment key={`${result.source}:${result.type}:${result.id}`}>
-                {shouldShowSectionLabel(result, index) && (
-                  <Text
-                    style={[
-                      styles.sectionLabel,
-                      index === 0 && styles.sectionLabelFirst,
-                      isDarkMode && styles.sectionLabelDark,
-                    ]}
-                  >
-                    {getSectionLabel(result)}
-                  </Text>
-                )}
-                <View style={styles.resultBlock}>{renderResult(result)}</View>
-                {shouldShowSeparator(index) && (
-                  <View
-                    style={[
-                      styles.separator,
-                      isDarkMode && styles.separatorDark,
-                    ]}
-                  />
-                )}
-              </React.Fragment>
-            ))}
+          : (
+            <>
+              {localResults.length > 0 &&
+                renderSourceSection(localResults, 'local', true)}
+              {externalResults.length > 0 &&
+                renderSourceSection(externalResults, 'external', localResults.length === 0)}
+            </>
+          )}
 
         {!isLoading && searchResults.length === 0 && (
           <Text
