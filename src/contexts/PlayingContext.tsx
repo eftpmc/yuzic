@@ -255,7 +255,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       lookaheadCount: 5,
     });
 
-    TrackPlayer.onTracksNeedUpdate((tracks, _lookahead) => {
+    const maybeSubscription = (TrackPlayer as any).onTracksNeedUpdate?.((tracks: TrackItem[], _lookahead: number) => {
       const resolved: TrackItem[] = [];
       for (const track of tracks) {
         const song = songByIdRef.current.get(track.id);
@@ -265,6 +265,21 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         TrackPlayer.updateTracks(resolved).catch(() => { /* ignore */ });
       }
     });
+
+    return () => {
+      if (typeof maybeSubscription === 'function') {
+        maybeSubscription();
+        return;
+      }
+      if (
+        maybeSubscription &&
+        typeof maybeSubscription === 'object' &&
+        'remove' in maybeSubscription &&
+        typeof (maybeSubscription as { remove?: unknown }).remove === 'function'
+      ) {
+        (maybeSubscription as { remove: () => void }).remove();
+      }
+    };
   }, [songToFullTrackItem]);
 
   useEffect(() => {

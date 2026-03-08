@@ -147,7 +147,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
             backgroundDownloadsEnabled: false,
             downloadArtwork: true,
         });
-        setPlaybackSourcePreference('download');
+        setPlaybackSourcePreference('auto');
     }, [configure, setPlaybackSourcePreference]);
 
     const downloadTrack = useCallback(async (track: TrackItem, playlistId?: string) => {
