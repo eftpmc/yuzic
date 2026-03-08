@@ -13,7 +13,6 @@ import {
   useOnPlaybackStateChange,
   useOnPlaybackProgressChange,
   useOnChangeTrack,
-  useActualQueue,
   useNowPlaying,
   useDownloadedTracks,
 } from 'react-native-nitro-player';
@@ -50,7 +49,11 @@ function isBufferingState(state: unknown): boolean {
 
 const SIMILAR_FETCH_TIMEOUT_MS = 2500;
 const SIMILAR_MAX_SONGS = 80;
-const SIMILAR_PROGRESSIVE_THRESHOLD = 25;
+const RESOLVE_WINDOW = 10;
+const QUEUE_WINDOW_BEFORE = 5;
+const QUEUE_WINDOW_AFTER = 20;
+const QUEUE_WINDOW_EDGE_BUFFER = 3;
+const PENDING_SELECTION_TIMEOUT_MS = 1500;
 
 export interface PlaybackProgress {
   position: number;
@@ -80,10 +83,14 @@ export interface PlayingContextType {
   shuffleCollectionToQueue(collection: Album | Playlist): Promise<void>;
 
   skipTo(index: number): Promise<void>;
+  selectQueueItem(index: number): Promise<void>;
   skipToNext(): Promise<void>;
   skipToPrevious(): Promise<void>;
 
   getQueue(): Song[];
+  getQueueWindow(): { songs: Song[]; start: number };
+  getQueueWindowStart(): number;
+  getAbsoluteQueueIndex(songId: string): number;
   resetQueue(): Promise<void>;
 
   moveTrack(fromIndex: number, toIndex: number): Promise<void>;
@@ -118,7 +125,6 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const { state: playbackState } = useOnPlaybackStateChange();
   const isPlaying = playbackState === 'playing';
   const isBuffering = isBufferingState(playbackState);
-  const { queue: actualQueue, refreshQueue } = useActualQueue();
   const nowPlaying = useNowPlaying();
 
   const { position: rawPosition, totalDuration: rawDuration } = useOnPlaybackProgressChange();
@@ -161,21 +167,105 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const songByIdRef = useRef<Map<string, Song>>(new Map());
   const queueSongsRef = useRef<Song[]>([]);
   const queueIndexByIdRef = useRef<Map<string, number>>(new Map());
+  const queueWindowStartRef = useRef(0);
+  const queueWindowEndRef = useRef(0);
   const transportQueueRef = useRef<Promise<void>>(Promise.resolve());
   const lastScrobbledIdRef = useRef<string | null>(null);
   const scrobbleStartTimeRef = useRef<number>(0);
   const lastListenedSecondsRef = useRef<number>(0);
   const currentSongRef = useRef<Song | null>(null);
+  const pendingSelectSongIdRef = useRef<string | null>(null);
+  const pendingSelectIndexRef = useRef(-1);
+  const pendingSelectTokenRef = useRef(0);
+  const pendingSelectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bumpQueue = () => setQueueVersion(v => v + 1);
+
+  const clearPendingSelectionGuard = useCallback((token?: number) => {
+    if (typeof token === 'number' && pendingSelectTokenRef.current !== token) return;
+    pendingSelectSongIdRef.current = null;
+    pendingSelectIndexRef.current = -1;
+    if (pendingSelectTimeoutRef.current) {
+      clearTimeout(pendingSelectTimeoutRef.current);
+      pendingSelectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const armPendingSelectionGuard = useCallback((songId: string, index: number) => {
+    const token = pendingSelectTokenRef.current + 1;
+    pendingSelectTokenRef.current = token;
+    pendingSelectSongIdRef.current = songId;
+    pendingSelectIndexRef.current = index;
+    if (pendingSelectTimeoutRef.current) {
+      clearTimeout(pendingSelectTimeoutRef.current);
+      pendingSelectTimeoutRef.current = null;
+    }
+    pendingSelectTimeoutRef.current = setTimeout(() => {
+      if (pendingSelectTokenRef.current === token) {
+        pendingSelectSongIdRef.current = null;
+        pendingSelectIndexRef.current = -1;
+        pendingSelectTimeoutRef.current = null;
+      }
+    }, PENDING_SELECTION_TIMEOUT_MS);
+    return token;
+  }, []);
+
+  const songToFullTrackItem = useCallback((song: Song): TrackItem => {
+    const cover = buildCover(song.cover, 'grid') || undefined;
+    return {
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      album: '',
+      duration: parseFloat(song.duration || '0'),
+      url: song.streamUrl,
+      artwork: cover ?? null,
+      extraPayload: {
+        artistId: song.artistId,
+        albumId: song.albumId,
+        serverId: song.sourceServerId ?? activeServer?.id ?? '',
+        serverType: song.sourceServerType ?? activeServer?.type ?? '',
+        coverKind: song.cover?.kind ?? '',
+      },
+    };
+  }, [activeServer?.id, activeServer?.type]);
+
+  const songToLightTrackItem = useCallback((song: Song): TrackItem => ({
+    id: song.id,
+    title: song.title,
+    artist: song.artist,
+    album: '',
+    duration: parseFloat(song.duration || '0'),
+    url: '',
+    artwork: null,
+    extraPayload: {
+      artistId: song.artistId,
+      albumId: song.albumId,
+      serverId: song.sourceServerId ?? activeServer?.id ?? '',
+      serverType: song.sourceServerType ?? activeServer?.type ?? '',
+      coverKind: song.cover?.kind ?? '',
+    },
+  }), [activeServer?.id, activeServer?.type]);
 
   useEffect(() => {
     TrackPlayer.configure({
       androidAutoEnabled: true,
       carPlayEnabled: true,
       showInNotification: true,
+      lookaheadCount: 5,
     });
-  }, []);
+
+    TrackPlayer.onTracksNeedUpdate((tracks, _lookahead) => {
+      const resolved: TrackItem[] = [];
+      for (const track of tracks) {
+        const song = songByIdRef.current.get(track.id);
+        if (song) resolved.push(songToFullTrackItem(song));
+      }
+      if (resolved.length) {
+        TrackPlayer.updateTracks(resolved).catch(() => { /* ignore */ });
+      }
+    });
+  }, [songToFullTrackItem]);
 
   useEffect(() => {
     if (rawPosition != null && rawPosition > 0) {
@@ -186,6 +276,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => {
     currentSongRef.current = currentSong;
   }, [currentSong]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingSelectTimeoutRef.current) {
+        clearTimeout(pendingSelectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const runTransportCommand = useCallback(async (
     command: () => Promise<void> | void
@@ -256,25 +354,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   }, [activeServer?.id, listenBrainzConfig?.token, dispatch]);
 
-  const songToTrackItem = useCallback(async (song: Song): Promise<TrackItem> => {
-    const cover = buildCover(song.cover, 'grid') || undefined;
-    return {
-      id: song.id,
-      title: song.title,
-      artist: song.artist,
-      album: '',
-      duration: parseFloat(song.duration || '0'),
-      url: song.streamUrl,
-      artwork: cover ?? null,
-      extraPayload: {
-        artistId: song.artistId,
-        albumId: song.albumId,
-        serverId: song.sourceServerId ?? activeServer?.id ?? '',
-        serverType: song.sourceServerType ?? activeServer?.type ?? '',
-        coverKind: song.cover?.kind ?? '',
-      },
-    };
-  }, [activeServer?.id, activeServer?.type]);
+  const rebuildIndexMap = useCallback((songs: Song[]) => {
+    const map = new Map<string, number>();
+    songs.forEach((s, i) => { if (!map.has(s.id)) map.set(s.id, i); });
+    queueIndexByIdRef.current = map;
+  }, []);
+
+  const setJsQueue = useCallback((songs: Song[]) => {
+    queueSongsRef.current = songs;
+    rebuildIndexMap(songs);
+    for (const song of songs) {
+      songByIdRef.current.set(song.id, song);
+    }
+    bumpQueue();
+  }, [rebuildIndexMap]);
 
   const trackToSong = useCallback((track?: TrackItem | null): Song | null => {
     if (!track) return null;
@@ -297,19 +390,6 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
   }, []);
 
-  useEffect(() => {
-    const queueSongs = actualQueue
-      .map(track => trackToSong(track))
-      .filter((song): song is Song => song !== null);
-    queueSongsRef.current = queueSongs;
-    const indexMap = new Map<string, number>();
-    queueSongs.forEach((song, index) => {
-      if (!indexMap.has(song.id)) indexMap.set(song.id, index);
-    });
-    queueIndexByIdRef.current = indexMap;
-    bumpQueue();
-  }, [actualQueue, trackToSong]);
-
   const getSimilarWithTimeout = useCallback(async (songId: string): Promise<Song[] | null> => {
     const timeoutPromise = new Promise<null>((resolve) => {
       setTimeout(() => resolve(null), SIMILAR_FETCH_TIMEOUT_MS);
@@ -329,6 +409,53 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     return queueIndexByIdRef.current.get(songId) ?? -1;
   }, []);
 
+  const getAbsoluteQueueIndex = useCallback((songId: string): number => {
+    if (!songId) return -1;
+    const mapped = queueIndexByIdRef.current.get(songId);
+    if (typeof mapped === 'number' && mapped >= 0) return mapped;
+    return queueSongsRef.current.findIndex(song => song.id === songId);
+  }, []);
+
+  const getQueueWindowRange = useCallback((songs: Song[], centerIndex: number) => {
+    if (!songs.length) return { start: 0, end: 0 };
+    const safeCenter = Math.max(0, Math.min(centerIndex, songs.length - 1));
+    const start = Math.max(0, safeCenter - QUEUE_WINDOW_BEFORE);
+    const end = Math.min(songs.length, safeCenter + QUEUE_WINDOW_AFTER + 1);
+    return { start, end };
+  }, []);
+
+  const updateQueueWindowRefs = useCallback((centerIndex: number): boolean => {
+    const songs = queueSongsRef.current;
+    if (!songs.length) {
+      const changed = queueWindowStartRef.current !== 0 || queueWindowEndRef.current !== 0;
+      queueWindowStartRef.current = 0;
+      queueWindowEndRef.current = 0;
+      return changed;
+    }
+
+    const currentStart = queueWindowStartRef.current;
+    const currentEnd = queueWindowEndRef.current;
+    const hasInitializedWindow = currentEnd > currentStart;
+    if (!hasInitializedWindow) {
+      const { start, end } = getQueueWindowRange(songs, centerIndex);
+      queueWindowStartRef.current = start;
+      queueWindowEndRef.current = end;
+      return true;
+    }
+
+    const safeCenter = Math.max(0, Math.min(centerIndex, songs.length - 1));
+    const leftThreshold = currentStart + QUEUE_WINDOW_EDGE_BUFFER;
+    const rightThreshold = Math.max(currentStart, currentEnd - 1 - QUEUE_WINDOW_EDGE_BUFFER);
+    const shouldShiftWindow = safeCenter < leftThreshold || safeCenter > rightThreshold;
+    if (!shouldShiftWindow) return false;
+
+    const { start, end } = getQueueWindowRange(songs, safeCenter);
+    const changed = start !== currentStart || end !== currentEnd;
+    queueWindowStartRef.current = start;
+    queueWindowEndRef.current = end;
+    return changed;
+  }, [getQueueWindowRange]);
+
   const isCollectionFullyDownloaded = useCallback((collection: Album | Playlist): boolean => {
     const collectionTrackIds = collection.songs
       .map(song => String(song.id))
@@ -339,37 +466,43 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     return areTrackIdsFullyDownloaded(collectionTrackIds, downloadedCollectionTrackIds);
   }, [isTrackDownloaded]);
 
-  const runInBatches = useCallback(async (
+  const resolveNearbyTracks = useCallback(async (songs: Song[], center: number) => {
+    const start = Math.max(0, center - 1);
+    const end = Math.min(songs.length, center + RESOLVE_WINDOW + 1);
+    const window = songs.slice(start, end);
+    if (!window.length) return;
+    const resolved = window.map(songToFullTrackItem);
+    try { await TrackPlayer.updateTracks(resolved); } catch { /* ignore */ }
+  }, [songToFullTrackItem]);
+
+  const pushLightItemsToNative = useCallback(async (
     playlistId: string,
     songs: Song[],
     opToken: number,
-    batchSize = 50
+    batchSize = 200
   ) => {
     for (let i = 0; i < songs.length; i += batchSize) {
       if (queueOpTokenRef.current !== opToken) return;
       const batch = songs.slice(i, i + batchSize);
       if (!batch.length) continue;
-      const trackItems = await Promise.all(batch.map(songToTrackItem));
-      if (queueOpTokenRef.current !== opToken) return;
-      PlayerQueue.addTracksToPlaylist(playlistId, trackItems);
-      if ((i / batchSize) % 4 === 3 || i + batchSize >= songs.length) {
-        refreshQueue();
-        bumpQueue();
+      const items = batch.map(songToLightTrackItem);
+      PlayerQueue.addTracksToPlaylist(playlistId, items);
+      if (i + batchSize < songs.length) {
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
-      await new Promise(resolve => setTimeout(resolve, 0));
     }
-  }, [songToTrackItem, refreshQueue]);
+  }, [songToLightTrackItem]);
 
   const replacePlaylist = useCallback(async (
     songs: Song[],
     startIndex: number,
-    opts?: { clearScrobbleState?: boolean; progressive?: boolean }
+    opts?: { clearScrobbleState?: boolean }
   ) => {
     if (!songs.length) {
+      clearPendingSelectionGuard();
+      setJsQueue([]);
       setCurrentSong(null);
       setCurrentIndex(0);
-      refreshQueue();
-      bumpQueue();
       return;
     }
 
@@ -392,10 +525,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (opts?.clearScrobbleState) lastScrobbledIdRef.current = null;
     scrobbleStartTimeRef.current = Date.now();
     lastListenedSecondsRef.current = 0;
+    const pendingToken = armPendingSelectionGuard(songs[safeStart].id, safeStart);
 
-    for (const song of songs) {
-      songByIdRef.current.set(song.id, song);
-    }
+    setJsQueue(songs);
+    setCurrentSong(songs[safeStart] ?? null);
+    setCurrentIndex(safeStart);
 
     if (currentPlaylistIdRef.current) {
       try { PlayerQueue.deletePlaylist(currentPlaylistIdRef.current); } catch { /* ignore */ }
@@ -409,24 +543,19 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    const progressive = opts?.progressive ?? false;
-    const initialCount = progressive
-      ? Math.max(25, safeStart + 1)
-      : songs.length;
-    const initialSongs = songs.slice(0, initialCount);
-    const initialTracks = await Promise.all(initialSongs.map(songToTrackItem));
+    const lightTracks = songs.map(songToLightTrackItem);
+    PlayerQueue.addTracksToPlaylist(playlistId, lightTracks);
     if (isStaleOperation()) {
       cleanupPlaylistIfStale(playlistId);
       return;
     }
-    if (!initialTracks.length) {
-      setCurrentSong(null);
-      setCurrentIndex(0);
-      refreshQueue();
-      bumpQueue();
-      return;
+
+    const windowStart = Math.max(0, safeStart - 1);
+    const windowEnd = Math.min(songs.length, safeStart + RESOLVE_WINDOW + 1);
+    const windowTracks = songs.slice(windowStart, windowEnd).map(songToFullTrackItem);
+    if (windowTracks.length) {
+      try { await TrackPlayer.updateTracks(windowTracks); } catch { /* ignore */ }
     }
-    PlayerQueue.addTracksToPlaylist(playlistId, initialTracks);
     if (isStaleOperation()) {
       cleanupPlaylistIfStale(playlistId);
       return;
@@ -438,25 +567,23 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       if (isStaleOperation()) return;
       PlayerQueue.loadPlaylist(playlistId);
       if (isStaleOperation()) return;
-      await TrackPlayer.skipToIndex(Math.min(safeStart, Math.max(initialSongs.length - 1, 0)));
+      await TrackPlayer.skipToIndex(safeStart);
       if (isStaleOperation()) return;
       await TrackPlayer.play();
     });
     if (isStaleOperation()) {
+      clearPendingSelectionGuard(pendingToken);
       cleanupPlaylistIfStale(playlistId);
-      return;
     }
-    setCurrentSong(songs[safeStart] ?? null);
-    setCurrentIndex(safeStart);
-    refreshQueue();
-    bumpQueue();
-
-    if (!progressive) return;
-    const rest = songs.slice(initialCount);
-    if (!rest.length) return;
-    if (isStaleOperation()) return;
-    await runInBatches(playlistId, rest, opToken, 50);
-  }, [songToTrackItem, refreshQueue, runInBatches, runTransportCommand, t]);
+  }, [
+    armPendingSelectionGuard,
+    clearPendingSelectionGuard,
+    songToLightTrackItem,
+    songToFullTrackItem,
+    setJsQueue,
+    runTransportCommand,
+    t,
+  ]);
 
   useEffect(() => {
     const prev = currentSongRef.current;
@@ -467,15 +594,56 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     }
 
+    const pendingSongId = pendingSelectSongIdRef.current;
+    const pendingIndex = pendingSelectIndexRef.current;
+
     if (!changedTrack) {
+      if (pendingSongId) return;
       setCurrentSong(null);
       return;
     }
 
+    if (pendingSongId) {
+      const changedId = changedTrack.id;
+      const changedIndex = queueIndexByIdRef.current.get(changedId) ?? -1;
+      const matchesPending =
+        changedId === pendingSongId ||
+        (pendingIndex >= 0 && changedIndex === pendingIndex);
+      if (!matchesPending) return;
+      clearPendingSelectionGuard();
+    }
+
     scrobbleStartTimeRef.current = Date.now();
     lastListenedSecondsRef.current = 0;
-    setCurrentSong(trackToSong(changedTrack));
-  }, [changedTrack?.id, trackToSong, scrobbleIfNeeded]);
+
+    const jsSong = songByIdRef.current.get(changedTrack.id);
+    setCurrentSong(jsSong ?? trackToSong(changedTrack));
+
+    if (!changedTrack.url || changedTrack.url === '') {
+      if (jsSong) {
+        TrackPlayer.updateTracks([songToFullTrackItem(jsSong)]).catch(() => { /* ignore */ });
+      }
+    }
+
+    const idx = queueIndexByIdRef.current.get(changedTrack.id) ?? -1;
+    if (idx >= 0) {
+      setCurrentIndex(idx);
+      resolveNearbyTracks(queueSongsRef.current, idx).catch(() => { /* ignore */ });
+    }
+  }, [
+    changedTrack?.id,
+    clearPendingSelectionGuard,
+    trackToSong,
+    scrobbleIfNeeded,
+    songToFullTrackItem,
+    resolveNearbyTracks,
+  ]);
+
+  useEffect(() => {
+    if (updateQueueWindowRefs(currentIndex)) {
+      bumpQueue();
+    }
+  }, [currentIndex, updateQueueWindowRefs]);
 
   const playSong = async (song: Song) => {
     if (offlineModeEnabled && !isTrackDownloaded(song.id)) {
@@ -485,7 +653,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     originalQueueRef.current = null;
     setShuffleOn(false);
-    await replacePlaylist([song], 0, { clearScrobbleState: true, progressive: false });
+    await replacePlaylist([song], 0, { clearScrobbleState: true });
   };
 
   const playSongInCollection = async (
@@ -522,10 +690,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    await replacePlaylist(songs, index, {
-      clearScrobbleState: true,
-      progressive: songs.length > 120,
-    });
+    await replacePlaylist(songs, index, { clearScrobbleState: true });
   };
 
   const addCollectionToQueue = async (collection: Album | Playlist) => {
@@ -549,16 +714,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    const existingIds = new Set(getNativeQueueSongs().map(s => s.id));
+    const existingIds = new Set(queueSongsRef.current.map(s => s.id));
     const toAdd = collectionSongs.filter(s => !existingIds.has(s.id));
     if (!toAdd.length) return;
 
-    for (const song of toAdd) {
-      songByIdRef.current.set(song.id, song);
-    }
+    const newQueue = [...queueSongsRef.current, ...toAdd];
+    setJsQueue(newQueue);
 
     const opToken = ++queueOpTokenRef.current;
-    await runInBatches(playlistId, toAdd, opToken, 50);
+    await pushLightItemsToNative(playlistId, toAdd, opToken);
   };
 
   const shuffleCollectionToQueue = async (collection: Album | Playlist) => {
@@ -582,38 +746,61 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    const existingIds = new Set(getNativeQueueSongs().map(s => s.id));
+    const existingIds = new Set(queueSongsRef.current.map(s => s.id));
     const toAdd = shuffleArray(
       collectionSongs.filter(s => !existingIds.has(s.id))
     );
     if (!toAdd.length) return;
 
-    for (const song of toAdd) {
-      songByIdRef.current.set(song.id, song);
-    }
+    const newQueue = [...queueSongsRef.current, ...toAdd];
+    setJsQueue(newQueue);
 
     const opToken = ++queueOpTokenRef.current;
-    await runInBatches(playlistId, toAdd, opToken, 50);
+    await pushLightItemsToNative(playlistId, toAdd, opToken);
   };
 
   const skipToNext = async () => {
+    const nextIdx = currentIndex + 1;
+    const queue = queueSongsRef.current;
+    if (nextIdx < queue.length) {
+      await resolveNearbyTracks(queue, nextIdx);
+    }
     await runTransportCommand(async () => {
       await TrackPlayer.skipToNext();
     });
   };
 
   const skipToPrevious = async () => {
+    const prevIdx = currentIndex - 1;
+    const queue = queueSongsRef.current;
+    if (prevIdx >= 0) {
+      await resolveNearbyTracks(queue, prevIdx);
+    }
     await runTransportCommand(async () => {
       await TrackPlayer.skipToPrevious();
     });
   };
 
   const skipTo = async (index: number) => {
-    const queue = getNativeQueueSongs();
+    const queue = queueSongsRef.current;
     if (!queue[index]) return;
+    await resolveNearbyTracks(queue, index);
     await runTransportCommand(async () => {
       await TrackPlayer.skipToIndex(index);
     });
+  };
+
+  const selectQueueItem = async (index: number) => {
+    const queue = queueSongsRef.current;
+    if (!queue[index]) return;
+    const targetSong = queue[index];
+    const activeIndex = typeof nowPlaying?.currentIndex === 'number'
+      ? nowPlaying.currentIndex
+      : currentIndex;
+    const activeSongId = currentSongRef.current?.id ?? currentSong?.id ?? '';
+    if (activeIndex === index && activeSongId === targetSong.id) return;
+
+    await replacePlaylist([...queue], index);
   };
 
   const pauseSong = async () => {
@@ -628,21 +815,37 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   };
 
-  const getQueue = () => getNativeQueueSongs();
+  const getQueueWindow = () => {
+    const songs = getNativeQueueSongs();
+    const { start, end } = getQueueWindowRange(songs, currentIndex);
+    queueWindowStartRef.current = start;
+    queueWindowEndRef.current = end;
+    return {
+      songs: songs.slice(start, end),
+      start,
+    };
+  };
+
+  const getQueue = () => {
+    return getQueueWindow().songs;
+  };
+
+  const getQueueWindowStart = () => {
+    return getQueueWindow().start;
+  };
 
   const moveTrack = async (from: number, to: number) => {
     if (from === to) return;
     const playlistId = currentPlaylistIdRef.current;
     if (!playlistId) return;
 
-    const q = getNativeQueueSongs();
+    const q = [...queueSongsRef.current];
     if (!q[from] || !q[to]) return;
     const [item] = q.splice(from, 1);
     q.splice(to, 0, item);
+    setJsQueue(q);
 
     PlayerQueue.reorderTrackInPlaylist(playlistId, item.id, to);
-    refreshQueue();
-    bumpQueue();
   };
 
   const addToQueue = async (song: Song) => {
@@ -656,11 +859,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       await playSong(song);
       return;
     }
-    if (getNativeQueueSongs().some(s => s.id === song.id)) return;
-    songByIdRef.current.set(song.id, song);
-    PlayerQueue.addTrackToPlaylist(playlistId, await songToTrackItem(song));
-    refreshQueue();
-    bumpQueue();
+    if (queueSongsRef.current.some(s => s.id === song.id)) return;
+
+    setJsQueue([...queueSongsRef.current, song]);
+    PlayerQueue.addTrackToPlaylist(playlistId, songToFullTrackItem(song));
   };
 
   const playNext = async (song: Song) => {
@@ -674,7 +876,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       await playSong(song);
       return;
     }
-    const queue = getNativeQueueSongs();
+    const queue = [...queueSongsRef.current];
     if (!queue.length) {
       await playSong(song);
       return;
@@ -683,13 +885,21 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const currentIdx = idx >= 0 ? idx : currentIndex;
     const targetIdx = Math.min(currentIdx + 1, queue.length);
 
-    songByIdRef.current.set(song.id, song);
-    if (!queue.some(s => s.id === song.id)) {
-      PlayerQueue.addTrackToPlaylist(playlistId, await songToTrackItem(song));
+    const alreadyInQueue = queue.some(s => s.id === song.id);
+    if (!alreadyInQueue) {
+      queue.splice(targetIdx, 0, song);
+    } else {
+      const oldIdx = queue.findIndex(s => s.id === song.id);
+      queue.splice(oldIdx, 1);
+      const insertAt = Math.min(targetIdx, queue.length);
+      queue.splice(insertAt, 0, song);
+    }
+    setJsQueue(queue);
+
+    if (!alreadyInQueue) {
+      PlayerQueue.addTrackToPlaylist(playlistId, songToFullTrackItem(song));
     }
     PlayerQueue.reorderTrackInPlaylist(playlistId, song.id, targetIdx);
-    refreshQueue();
-    bumpQueue();
   };
 
   const playSimilar = async (song: Song) => {
@@ -715,10 +925,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         return;
       }
 
-      await replacePlaylist(songs, 0, {
-        clearScrobbleState: true,
-        progressive: songs.length > SIMILAR_PROGRESSIVE_THRESHOLD,
-      });
+      await replacePlaylist(songs, 0, { clearScrobbleState: true });
       toast.success(t('common.playingSimilar'));
     } catch {
       await playSong(song);
@@ -726,24 +933,23 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const toggleShuffle = async () => {
-    const queue = getNativeQueueSongs();
+    const queue = queueSongsRef.current;
     if (!queue.length) return;
 
     if (!shuffleOn) {
-      originalQueueRef.current = queue;
+      originalQueueRef.current = [...queue];
       const current = queue.find(s => s.id === currentSong?.id) ?? queue[currentIndex] ?? queue[0];
       const rest = queue.filter(s => s.id !== current.id);
       const shuffled = [current, ...shuffleArray(rest)];
       setShuffleOn(true);
-      await replacePlaylist(shuffled, 0, { progressive: shuffled.length > 120 });
+      await replacePlaylist(shuffled, 0);
     } else if (originalQueueRef.current) {
       const original = originalQueueRef.current;
       const idx = original.findIndex(s => s.id === currentSong?.id);
       setShuffleOn(false);
-      await replacePlaylist(original, Math.max(idx, 0), { progressive: original.length > 120 });
+      await replacePlaylist(original, Math.max(idx, 0));
       originalQueueRef.current = null;
     }
-    bumpQueue();
   };
 
   const toggleRepeat = () => {
@@ -770,12 +976,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
 
     originalQueueRef.current = null;
+    songByIdRef.current.clear();
+    queueSongsRef.current = [];
+    queueIndexByIdRef.current = new Map();
     setCurrentIndex(0);
     setCurrentSong(null);
     setShuffleOn(false);
     setRepeatOn(false);
     TrackPlayer.setRepeatMode('off');
-    refreshQueue();
     bumpQueue();
   };
 
@@ -799,8 +1007,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         skipToNext,
         skipToPrevious,
         getQueue,
+        getQueueWindow,
+        getQueueWindowStart,
+        getAbsoluteQueueIndex,
         resetQueue,
         skipTo,
+        selectQueueItem,
         toggleShuffle,
         repeatOn,
         toggleRepeat,
