@@ -80,6 +80,7 @@ platform :android do
       track: "alpha",
       aab: "android/app/build/outputs/bundle/release/app-release.aab",
       json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"],
+      skip_upload_apk: true,
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
