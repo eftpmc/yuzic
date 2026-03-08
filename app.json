@@ -14,7 +14,8 @@
       "bundleIdentifier": "com.arinora.rawarr",
       "infoPlist": {
         "UIBackgroundModes": [
-          "audio"
+          "audio",
+          "fetch"
         ],
         "UISupportsCarPlay": true,
         "NSAppTransportSecurity": {
