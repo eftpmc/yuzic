@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { Song } from '@/types';
 import { useApi } from '@/api';
+import { useTracks } from '@/hooks/tracks';
+import shuffleArray from '@/utils/shuffleArray';
 import {
   selectSongLastPlayedAt,
   selectSongPlayCounts,
@@ -11,6 +13,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
 
 const MAX_RECENT = 12;
+const MIN_DIAL_SONGS = 6;
 
 type UseRecentSongsResult = {
   songs: Song[];
@@ -19,6 +22,7 @@ type UseRecentSongsResult = {
 
 export function useRecentSongs(): UseRecentSongsResult {
   const api = useApi();
+  const { tracks } = useTracks();
   const songLastPlayedAt = useSelector(selectSongLastPlayedAt);
   const songPlayCounts = useSelector(selectSongPlayCounts);
   const activeServer = useSelector(selectActiveServer);
@@ -43,8 +47,23 @@ export function useRecentSongs(): UseRecentSongsResult {
         merged.push(id);
       }
     }
+    if (merged.length < MIN_DIAL_SONGS) {
+      const fallbackTrackIds = shuffleArray(
+        tracks
+          .map(track => String(track.id ?? '').trim())
+          .filter(Boolean)
+          .filter(id => !seen.has(id))
+      );
+
+      for (const id of fallbackTrackIds) {
+        merged.push(id);
+        seen.add(id);
+        if (merged.length >= MIN_DIAL_SONGS) break;
+      }
+    }
+
     return merged.slice(0, MAX_RECENT);
-  }, [songLastPlayedAt, songPlayCounts]);
+  }, [songLastPlayedAt, songPlayCounts, tracks]);
 
   const query = useQuery<Song[]>({
     queryKey: [QueryKeys.RecentSongs, activeServer?.id, songIds],
