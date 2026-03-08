@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       android_version_code:
-        description: "Android versionCode override (optional)"
+        description: "Android versionCode"
         required: false
         type: string
       ios_build_number:
-        description: "iOS build number (CURRENT_PROJECT_VERSION)"
+        description: "iOS build number"
         required: false
         type: string
       version_label:
-        description: "Shared version label (e.g. 1.1.17)"
+        description: "Shared version label"
         required: false
         type: string
 
@@ -64,7 +64,7 @@ jobs:
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
+          name: yuzic-ios
           path: build/ios/*.ipa
 
 
@@ -106,7 +106,7 @@ jobs:
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: android-build
+          name: yuzic-android
           path: |
             android/app/build/outputs/**/*.apk
             android/app/build/outputs/**/*.aab

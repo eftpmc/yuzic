@@ -59,6 +59,15 @@ platform :android do
     )
 
     gradle(
+      task: "assembleRelease",
+      project_dir: "android",
+      properties: {
+        "android.injected.version.code" => resolved_android_version_code,
+        "android.injected.version.name" => resolved_version_label
+      }
+    )
+
+    gradle(
       task: "bundleRelease",
       project_dir: "android",
       properties: {
