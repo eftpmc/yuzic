@@ -72,7 +72,8 @@ export interface PlayingContextType {
   playSongInCollection(
     selectedSong: Song,
     collection: Album | Playlist,
-    shuffle?: boolean
+    shuffle?: boolean,
+    selectedIndex?: number
   ): Promise<void>;
 
   addCollectionToQueue(collection: Album | Playlist): Promise<void>;
@@ -158,6 +159,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const currentPlaylistIdRef = useRef<string | null>(null);
   const queueOpTokenRef = useRef(0);
   const songByIdRef = useRef<Map<string, Song>>(new Map());
+  const queueSongsRef = useRef<Song[]>([]);
+  const queueIndexByIdRef = useRef<Map<string, number>>(new Map());
+  const transportQueueRef = useRef<Promise<void>>(Promise.resolve());
   const lastScrobbledIdRef = useRef<string | null>(null);
   const scrobbleStartTimeRef = useRef<number>(0);
   const lastListenedSecondsRef = useRef<number>(0);
@@ -183,9 +187,16 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     currentSongRef.current = currentSong;
   }, [currentSong]);
 
-  useEffect(() => {
-    bumpQueue();
-  }, [actualQueue]);
+  const runTransportCommand = useCallback(async (
+    command: () => Promise<void> | void
+  ) => {
+    transportQueueRef.current = transportQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        await command();
+      });
+    await transportQueueRef.current;
+  }, []);
 
   useEffect(() => {
     if (typeof nowPlaying?.currentIndex === 'number' && nowPlaying.currentIndex >= 0) {
@@ -286,6 +297,19 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
   }, []);
 
+  useEffect(() => {
+    const queueSongs = actualQueue
+      .map(track => trackToSong(track))
+      .filter((song): song is Song => song !== null);
+    queueSongsRef.current = queueSongs;
+    const indexMap = new Map<string, number>();
+    queueSongs.forEach((song, index) => {
+      if (!indexMap.has(song.id)) indexMap.set(song.id, index);
+    });
+    queueIndexByIdRef.current = indexMap;
+    bumpQueue();
+  }, [actualQueue, trackToSong]);
+
   const getSimilarWithTimeout = useCallback(async (songId: string): Promise<Song[] | null> => {
     const timeoutPromise = new Promise<null>((resolve) => {
       setTimeout(() => resolve(null), SIMILAR_FETCH_TIMEOUT_MS);
@@ -298,10 +322,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [api.similar]);
 
   const getNativeQueueSongs = useCallback((): Song[] => {
-    return actualQueue
-      .map(track => trackToSong(track))
-      .filter((song): song is Song => song !== null);
-  }, [actualQueue, trackToSong]);
+    return queueSongsRef.current;
+  }, []);
+
+  const getQueueIndexBySongId = useCallback((songId: string): number => {
+    return queueIndexByIdRef.current.get(songId) ?? -1;
+  }, []);
 
   const isCollectionFullyDownloaded = useCallback((collection: Album | Playlist): boolean => {
     const collectionTrackIds = collection.songs
@@ -326,8 +352,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       const trackItems = await Promise.all(batch.map(songToTrackItem));
       if (queueOpTokenRef.current !== opToken) return;
       PlayerQueue.addTracksToPlaylist(playlistId, trackItems);
-      refreshQueue();
-      bumpQueue();
+      if ((i / batchSize) % 4 === 3 || i + batchSize >= songs.length) {
+        refreshQueue();
+        bumpQueue();
+      }
       await new Promise(resolve => setTimeout(resolve, 0));
     }
   }, [songToTrackItem, refreshQueue]);
@@ -345,7 +373,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    const safeStart = Math.max(0, Math.min(startIndex, Math.max(songs.length - 1, 0)));
+    if (startIndex < 0 || startIndex >= songs.length) {
+      toast.error(t('common.error.unexpected'));
+      return;
+    }
+
+    const safeStart = startIndex;
     const opToken = ++queueOpTokenRef.current;
     const isStaleOperation = () => queueOpTokenRef.current !== opToken;
     const cleanupPlaylistIfStale = (playlistId: string) => {
@@ -399,23 +432,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    PlayerQueue.loadPlaylist(playlistId);
-    if (isStaleOperation()) {
-      cleanupPlaylistIfStale(playlistId);
-      return;
-    }
-    await TrackPlayer.skipToIndex(Math.min(safeStart, Math.max(initialSongs.length - 1, 0)));
+    await runTransportCommand(async () => {
+      if (isStaleOperation()) return;
+      await TrackPlayer.pause();
+      if (isStaleOperation()) return;
+      PlayerQueue.loadPlaylist(playlistId);
+      if (isStaleOperation()) return;
+      await TrackPlayer.skipToIndex(Math.min(safeStart, Math.max(initialSongs.length - 1, 0)));
+      if (isStaleOperation()) return;
+      await TrackPlayer.play();
+    });
     if (isStaleOperation()) {
       cleanupPlaylistIfStale(playlistId);
       return;
     }
     setCurrentSong(songs[safeStart] ?? null);
     setCurrentIndex(safeStart);
-    await TrackPlayer.play();
-    if (isStaleOperation()) {
-      cleanupPlaylistIfStale(playlistId);
-      return;
-    }
     refreshQueue();
     bumpQueue();
 
@@ -424,7 +456,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (!rest.length) return;
     if (isStaleOperation()) return;
     await runInBatches(playlistId, rest, opToken, 50);
-  }, [songToTrackItem, refreshQueue, runInBatches]);
+  }, [songToTrackItem, refreshQueue, runInBatches, runTransportCommand, t]);
 
   useEffect(() => {
     const prev = currentSongRef.current;
@@ -459,10 +491,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const playSongInCollection = async (
     selectedSong: Song,
     collection: Album | Playlist,
-    shuffle = false
+    shuffle = false,
+    selectedIndex?: number
   ) => {
     let songs = [...collection.songs];
-    const selectedSongId = selectedSong.id;
     let index = 0;
 
     if (offlineModeEnabled && !isCollectionFullyDownloaded(collection)) {
@@ -477,11 +509,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       setShuffleOn(true);
     } else {
       originalQueueRef.current = null;
-      index = songs.findIndex(s => s.id === selectedSongId);
+      if (typeof selectedIndex === 'number') {
+        index = selectedIndex;
+      } else {
+        index = songs.findIndex(s => s.id === selectedSong.id);
+      }
       setShuffleOn(false);
     }
 
-    await replacePlaylist(songs, Math.max(index, 0), {
+    if (index < 0 || index >= songs.length) {
+      toast.error(t('common.error.unexpected'));
+      return;
+    }
+
+    await replacePlaylist(songs, index, {
       clearScrobbleState: true,
       progressive: songs.length > 120,
     });
@@ -556,25 +597,35 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const skipToNext = async () => {
-    TrackPlayer.skipToNext();
+    await runTransportCommand(async () => {
+      await TrackPlayer.skipToNext();
+    });
   };
 
   const skipToPrevious = async () => {
-    TrackPlayer.skipToPrevious();
+    await runTransportCommand(async () => {
+      await TrackPlayer.skipToPrevious();
+    });
   };
 
   const skipTo = async (index: number) => {
     const queue = getNativeQueueSongs();
     if (!queue[index]) return;
-    await TrackPlayer.skipToIndex(index);
+    await runTransportCommand(async () => {
+      await TrackPlayer.skipToIndex(index);
+    });
   };
 
   const pauseSong = async () => {
-    TrackPlayer.pause();
+    await runTransportCommand(async () => {
+      await TrackPlayer.pause();
+    });
   };
 
   const resumeSong = async () => {
-    TrackPlayer.play();
+    await runTransportCommand(async () => {
+      await TrackPlayer.play();
+    });
   };
 
   const getQueue = () => getNativeQueueSongs();
@@ -628,7 +679,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       await playSong(song);
       return;
     }
-    const idx = queue.findIndex(s => s.id === (currentSong?.id ?? ''));
+    const idx = getQueueIndexBySongId(currentSong?.id ?? '');
     const currentIdx = idx >= 0 ? idx : currentIndex;
     const targetIdx = Math.min(currentIdx + 1, queue.length);
 
@@ -709,7 +760,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     lastListenedSecondsRef.current = 0;
 
     ++queueOpTokenRef.current;
-    TrackPlayer.pause();
+    await runTransportCommand(async () => {
+      await TrackPlayer.pause();
+    });
 
     if (currentPlaylistIdRef.current) {
       try { PlayerQueue.deletePlaylist(currentPlaylistIdRef.current); } catch { /* ignore */ }

@@ -20,6 +20,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 type Props = {
   song: Song;
   collection?: any;
+  selectedIndex?: number;
   onPress?: () => void;
   variant?: 'default' | 'albumCompact';
   trackNumber?: number;
@@ -29,6 +30,7 @@ type Props = {
 const SongRow: React.FC<Props> = ({
   song,
   collection,
+  selectedIndex,
   onPress,
   variant = 'default',
   trackNumber,
@@ -53,7 +55,7 @@ const SongRow: React.FC<Props> = ({
     }
 
     if (collection) {
-      playSongInCollection(song, collection);
+      playSongInCollection(song, collection, false, selectedIndex);
     }
   };
 

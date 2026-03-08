@@ -63,7 +63,11 @@ export default function LibraryContent<T>({
       estimatedItemSize={estimatedItemSize}
       key={isGridView ? `grid-${gridColumns}` : 'list'}
       numColumns={isGridView ? gridColumns : 1}
-      keyExtractor={(item: any) => item.id}
+      keyExtractor={(item: any, index) => {
+        const rawId = item?.id != null ? String(item.id) : `idx-${index}`;
+        const rawType = item?.type ?? item?.entityType ?? item?.kind ?? 'item';
+        return `${String(rawType)}:${rawId}`;
+      }}
       contentContainerStyle={{ paddingBottom: 150, paddingHorizontal: 8 }}
       ListHeaderComponent={ListHeaderComponent}
       renderItem={renderItem}

@@ -20,20 +20,21 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
     return <Header playlist={playlist} />;
   }, [playlist]);
 
-  const renderItem = ({ item }: { item: Song }) => (
+  const renderItem = ({ item, index }: { item: Song; index: number }) => (
     <SongRow
       song={item}
       collection={playlist}
+      selectedIndex={index}
       showDownloadedDot
     />
   );
 
   return (
-    <FlashList
+    <FlashList<Song>
       data={songs}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item, index) => `${item.id}:${index}`}
       renderItem={renderItem}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
+      {...({ estimatedItemSize: ESTIMATED_ROW_HEIGHT } as any)}
       ListHeaderComponent={header}
       ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
       contentContainerStyle={{ paddingBottom: 140 }}

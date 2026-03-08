@@ -134,14 +134,21 @@ export function buildDownloadRows({
 
     const downloadedTrackIdsForCollection =
       item.type === 'album'
-        ? downloadedTracks
-            .filter(track => String(track?.originalTrack?.extraPayload?.albumId ?? '') === id)
-            .map(track => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
-            .filter(Boolean)
+        ? (() => {
+            const fromLibraryTracks = tracks
+              .filter(track => String(track?.albumId ?? '') === id)
+              .map(track => String(track?.id ?? '').trim())
+              .filter((trackId: string) => Boolean(trackId) && downloadedTrackIds.has(trackId));
+            if (fromLibraryTracks.length) return fromLibraryTracks;
+            return downloadedTracks
+              .filter(track => String(track?.originalTrack?.extraPayload?.albumId ?? '') === id)
+              .map(track => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
+              .filter(Boolean);
+          })()
         : (
-            fullPlaylists.find((playlist: any) => playlist.id === id)?.songs
-              .map((song: any) => song.id)
-              .filter((songId: string) => downloadedTrackIds.has(songId)) ??
+            fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs
+              .map((song: any) => String(song.id ?? '').trim())
+              .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) ??
             (downloaded?.downloadedTracks ?? [])
               .map((track: any) => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
               .filter(Boolean)

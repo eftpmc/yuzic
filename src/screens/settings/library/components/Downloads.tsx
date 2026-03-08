@@ -11,14 +11,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useDownload } from '@/contexts/DownloadContext';
 import {
-  DownloadManager,
   useDownloadStorage,
-  useDownloadedTracks,
-  useDownloadProgress,
 } from 'react-native-nitro-player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
@@ -28,41 +24,54 @@ const Downloads: React.FC = () => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const activeServer = useSelector(selectActiveServer);
   const router = useRouter();
   const { albums = [] } = useAlbums();
   const { playlists = [] } = usePlaylists();
 
-  const { clearDownloadsForProvider, cancelDownload } = useDownload();
+  const {
+    clearAllDownloads,
+    cancelCollectionDownloads,
+    getCollectionDownloadState,
+    downloadStateVersion,
+  } = useDownload();
 
-  // Nitro-player hooks for storage and download state
   const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
-  const { downloadedPlaylists, isPlaylistDownloaded } = useDownloadedTracks();
-  const { progressList } = useDownloadProgress({ activeOnly: true });
 
   const trackCount = storageInfo?.trackCount ?? 0;
 
-  // Build list of downloaded/downloading items from DownloadManager playlists
   const items = useMemo(() => {
-    const downloadedIds = new Set(downloadedPlaylists.map(dp => dp.playlistId));
+    const collectionItems = [
+      ...albums.map(a => ({ ...a, type: 'album' as const })),
+      ...playlists.map(p => ({ ...p, type: 'playlist' as const })),
+    ];
 
-    const albumItems = albums
-      .filter(a => downloadedIds.has(a.id))
-      .map(a => ({ ...a, type: 'album' as const }));
-
-    const playlistItems = playlists
-      .filter(p => downloadedIds.has(p.id))
-      .map(p => ({ ...p, type: 'playlist' as const }));
-
-    return [...albumItems, ...playlistItems];
-  }, [albums, playlists, downloadedPlaylists]);
+    return collectionItems
+      .map((item) => {
+        const trackIds = (item.songs ?? []).map((song: any) => String(song?.id ?? '')).filter(Boolean);
+        const state = getCollectionDownloadState(trackIds);
+        if (!state.isDownloaded && !state.isDownloading) return null;
+        return {
+          ...item,
+          trackIds,
+          isDownloaded: state.isDownloaded,
+          isDownloading: state.isDownloading,
+        };
+      })
+      .filter(Boolean) as Array<{
+      id: string;
+      title: string;
+      cover?: any;
+      type: 'album' | 'playlist';
+      trackIds: string[];
+      isDownloaded: boolean;
+      isDownloading: boolean;
+    }>;
+  }, [albums, playlists, getCollectionDownloadState, downloadStateVersion]);
 
   const handleClearDownloads = useCallback(() => {
-    const scope = { serverId: activeServer?.id, serverType: activeServer?.type ?? null };
-
     Alert.alert(
       t('settings.library.downloads.clearTitle'),
-      t('settings.library.downloads.clearBodyForProvider'),
+      t('settings.library.downloads.clearBody'),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
@@ -70,7 +79,7 @@ const Downloads: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await clearDownloadsForProvider(scope);
+              await clearAllDownloads();
             } catch {
               Alert.alert(
                 t('settings.library.downloads.clearFailedTitle'),
@@ -81,7 +90,7 @@ const Downloads: React.FC = () => {
         },
       ]
     );
-  }, [activeServer?.id, activeServer?.type, clearDownloadsForProvider, t]);
+  }, [clearAllDownloads, t]);
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -107,16 +116,9 @@ const Downloads: React.FC = () => {
 
       <View style={styles.list}>
         {items.map(item => {
-          const downloaded = isPlaylistDownloaded(item.id);
-
-          const downloading = progressList.some(p => {
-            const task = DownloadManager.getDownloadTask(p.downloadId);
-            return task?.playlistId === item.id;
-          });
-
-          const status = downloaded
+          const status = item.isDownloaded
             ? { label: t('settings.library.downloads.status.downloaded'), color: '#22c55e' }
-            : downloading
+            : item.isDownloading
               ? { label: t('settings.library.downloads.status.downloading'), color: themeColor }
               : { label: t('settings.library.downloads.status.incomplete'), color: '#f97316' };
 
@@ -155,8 +157,8 @@ const Downloads: React.FC = () => {
                   </Text>
                 </View>
 
-                {downloading && (
-                  <TouchableOpacity onPress={() => cancelDownload(item.id)}>
+                {item.isDownloading && (
+                  <TouchableOpacity onPress={() => cancelCollectionDownloads(item.id)}>
                     <MaterialIcons name="cancel" size={18} color={status.color} />
                   </TouchableOpacity>
                 )}

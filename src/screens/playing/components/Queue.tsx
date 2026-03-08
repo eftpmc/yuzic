@@ -89,10 +89,17 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   const insets = useSafeAreaInsets();
 
   const [queue, setQueue] = useState<Song[]>([]);
+  const latestQueue = useMemo(() => getQueue(), [getQueue, queueVersion]);
 
   useEffect(() => {
-    setQueue(getQueue());
-  }, [queueVersion]);
+    setQueue((prev) => {
+      if (prev.length === latestQueue.length) {
+        const sameOrder = prev.every((song, index) => song.id === latestQueue[index]?.id);
+        if (sameOrder) return prev;
+      }
+      return latestQueue;
+    });
+  }, [latestQueue]);
 
   const currentAlbum = useMemo(
     () =>
@@ -122,7 +129,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
       item,
       getIndex,
       drag,
-      isActive,
+      isActive: _isActive,
     }: {
       item: Song;
       getIndex: () => number | undefined;
@@ -212,7 +219,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
       {/* List */}
       <DraggableFlatList
         data={queue}
-        keyExtractor={item => item.id}
+        keyExtractor={(item, index) => `${item.id}:${index}`}
         onDragEnd={handleDragEnd}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}

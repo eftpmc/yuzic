@@ -28,7 +28,7 @@ const DownloadsInfoScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
-  const { removeDownloadByCollectionId, clearDownloadsForProvider } = useDownload();
+  const { removeDownloadByCollectionId, clearDownloadsForProvider, downloadStateVersion } = useDownload();
   const [removingId, setRemovingId] = useState<string | null>(null);
   const { albums = [] } = useAlbums();
   const { playlists = [] } = usePlaylists();
@@ -51,7 +51,7 @@ const DownloadsInfoScreen: React.FC = () => {
         downloadedPlaylists,
         t,
       }),
-    [albums, tracks, playlists, fullPlaylists, downloadedTracks, downloadedPlaylists, t]
+    [albums, tracks, playlists, fullPlaylists, downloadedTracks, downloadedPlaylists, downloadStateVersion, t]
   );
 
   const downloadedAlbumCount = useMemo(
