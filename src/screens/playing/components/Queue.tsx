@@ -72,8 +72,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 }) => {
   const { t } = useTranslation();
   const {
-    getQueueWindow,
-    getAbsoluteQueueIndex,
+    getQueue,
     currentSong,
     selectQueueItem,
     moveTrack,
@@ -81,74 +80,46 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
     pauseSong,
     resumeSong,
     skipToNext,
-    queueVersion,
   } = usePlaying();
 
   const { albums } = useAlbums();
   const insets = useSafeAreaInsets();
 
   const [queue, setQueue] = useState<Song[]>([]);
-  const [queueWindowStart, setQueueWindowStart] = useState(0);
   const keyBySongRef = useRef<WeakMap<Song, string>>(new WeakMap());
   const keyCounterRef = useRef(0);
-  const latestQueueWindow = useMemo(
-    () => getQueueWindow(),
-    [getQueueWindow, queueVersion]
-  );
+
+  const latestQueue = useMemo(() => getQueue(), [getQueue]);
 
   useEffect(() => {
     setQueue((prev) => {
-      if (prev.length === latestQueueWindow.songs.length) {
-        const sameOrder = prev.every((song, index) => song.id === latestQueueWindow.songs[index]?.id);
+      if (prev.length === latestQueue.length) {
+        const sameOrder = prev.every((song, index) => song.id === latestQueue[index]?.id);
         if (sameOrder) return prev;
       }
-      return latestQueueWindow.songs;
+      return latestQueue;
     });
-    setQueueWindowStart(latestQueueWindow.start);
-  }, [latestQueueWindow]);
+  }, [latestQueue]);
 
   const currentAlbum = useMemo(
-    () =>
-      albums.find(
-        album => album.id === currentSong?.albumId
-      ),
+    () => albums.find(album => album.id === currentSong?.albumId),
     [albums, currentSong?.albumId]
   );
 
   const handleSongClick = useCallback(
-    (absoluteIndex: number) => {
-      if (absoluteIndex < 0) return;
-      selectQueueItem(absoluteIndex);
+    (index: number) => {
+      if (index < 0) return;
+      selectQueueItem(index);
     },
     [selectQueueItem]
-  );
-
-  const resolveAbsoluteIndexForPress = useCallback(
-    (item: Song, getIndex: () => number | undefined) => {
-      const bySongId = getAbsoluteQueueIndex(item.id);
-      if (bySongId >= 0) return bySongId;
-
-      const liveIndex = getIndex();
-      if (typeof liveIndex === 'number' && liveIndex >= 0) {
-        return queueWindowStart + liveIndex;
-      }
-
-      const byIdentity = queue.findIndex(song => song === item);
-      if (byIdentity >= 0) return queueWindowStart + byIdentity;
-
-      const byId = queue.findIndex(song => song.id === item.id);
-      if (byId >= 0) return queueWindowStart + byId;
-      return -1;
-    },
-    [getAbsoluteQueueIndex, queue, queueWindowStart]
   );
 
   const handleDragEnd = useCallback(
     ({ data, from, to }: { data: Song[]; from: number; to: number }) => {
       setQueue(data);
-      moveTrack(queueWindowStart + from, queueWindowStart + to);
+      moveTrack(from, to);
     },
-    [moveTrack, queueWindowStart]
+    [moveTrack]
   );
 
   const renderItem = useCallback(
@@ -168,16 +139,21 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           item={item}
           isCurrent={item.id === currentSong?.id}
           onPress={() => {
-            const resolvedIndex = resolveAbsoluteIndexForPress(item, getIndex);
-            if (resolvedIndex >= 0) {
-              handleSongClick(resolvedIndex);
+            const idx = getIndex();
+            if (typeof idx === 'number' && idx >= 0) {
+              handleSongClick(idx);
+              return;
+            }
+            const byIdentity = queue.findIndex(song => song === item);
+            if (byIdentity >= 0) {
+              handleSongClick(byIdentity);
             }
           }}
           onLongPress={drag}
         />
       );
     },
-    [currentSong?.id, handleSongClick, resolveAbsoluteIndexForPress]
+    [currentSong?.id, handleSongClick, queue]
   );
 
   const keyExtractor = useCallback((item: Song) => {
@@ -189,9 +165,8 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   }, []);
 
   return (
-    <View style={[styles.container, { width }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+    <View style={[styles.container, { width }]}> 
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}> 
         <TouchableOpacity
           onPress={onBack}
           style={styles.backButton}
@@ -254,7 +229,6 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           : t('playing.queue.playingFromQueue')}
       </Text>
 
-      {/* List */}
       <DraggableFlatList
         data={queue}
         keyExtractor={keyExtractor}
@@ -276,7 +250,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingBottom: 32
+    paddingBottom: 32,
   },
 
   header: {
