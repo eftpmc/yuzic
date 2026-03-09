@@ -390,9 +390,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       );
 
       PlayerQueue.loadPlaylist(playlistId);
+
+      // Ensure initial target track is immediately playable on cold boot.
+      try {
+        await TrackPlayer.updateTracks([songToResolvedTrackItem(songs[startIndex])]);
+      } catch {
+        // ignore and continue with native lazy path
+      }
+
       await TrackPlayer.playSong(songs[startIndex].id, playlistId);
+      await TrackPlayer.play();
     },
-    [deleteCurrentPlaylist, primeSongs, songToLazyTrackItem]
+    [deleteCurrentPlaylist, primeSongs, songToLazyTrackItem, songToResolvedTrackItem]
   );
 
   const ensureTrackAllowed = useCallback(
@@ -535,10 +544,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     async (index: number) => {
       const queue = getQueue();
       const song = queue[index];
+      if (!song) return;
       const playlistId = playlistIdRef.current;
-
-      if (!song || !playlistId) return;
+      if (!playlistId) return;
       await TrackPlayer.playSong(song.id, playlistId);
+      await TrackPlayer.play();
     },
     [getQueue]
   );
