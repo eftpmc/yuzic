@@ -33,6 +33,7 @@ import { areTrackIdsFullyDownloaded } from '@/utils/downloads/collectionState';
 
 const SIMILAR_FETCH_TIMEOUT_MS = 2500;
 const SIMILAR_MAX_SONGS = 80;
+const LOOKAHEAD_COUNT = 5;
 
 export interface PlaybackProgress {
   position: number;
@@ -106,6 +107,10 @@ function isBufferingState(state: unknown): boolean {
   return normalized.includes('buffer') || normalized === 'loading';
 }
 
+function waitForNextTick(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -165,7 +170,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     [rawPosition, rawDuration]
   );
 
-  const isPlaying = playbackState === 'playing';
+  const isPlaying =
+    playbackState === 'playing' || nowPlaying.currentState === 'playing';
   const isBuffering = isBufferingState(playbackState);
 
   const primeSongs = useCallback((songs: Song[]) => {
@@ -227,15 +233,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, []);
 
-  const getQueue = useCallback((): Song[] => {
+  const queueSongs = useMemo(() => {
     return actualQueue
       .map(track => trackToSong(track))
       .filter((song): song is Song => song != null);
   }, [actualQueue, trackToSong]);
 
+  const getQueue = useCallback((): Song[] => queueSongs, [queueSongs]);
+
   const currentSong = useMemo(() => {
     if (changedTrack?.id) {
       return songByIdRef.current.get(changedTrack.id) ?? trackToSong(changedTrack);
+    }
+
+    if (nowPlaying.currentTrack?.id) {
+      return (
+        songByIdRef.current.get(nowPlaying.currentTrack.id) ??
+        trackToSong(nowPlaying.currentTrack)
+      );
     }
 
     if (
@@ -247,24 +262,39 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     return null;
-  }, [actualQueue, changedTrack, nowPlaying?.currentIndex, trackToSong]);
+  }, [
+    actualQueue,
+    changedTrack,
+    nowPlaying.currentIndex,
+    nowPlaying.currentTrack,
+    trackToSong,
+  ]);
 
   useEffect(() => {
     TrackPlayer.configure({
       androidAutoEnabled: true,
       carPlayEnabled: true,
       showInNotification: true,
-      lookaheadCount: 5,
+      lookaheadCount: LOOKAHEAD_COUNT,
     });
 
-    const subscription = (TrackPlayer as any).onTracksNeedUpdate?.(
-      async (tracks: TrackItem[]) => {
+    const subscription = TrackPlayer.onTracksNeedUpdate?.(
+      async (tracks: TrackItem[], lookahead?: number) => {
+        const neededCount =
+          typeof lookahead === 'number' && lookahead > 0
+            ? Math.min(lookahead, tracks.length)
+            : tracks.length;
+
         const updates: TrackItem[] = [];
 
-        for (const track of tracks) {
+        for (const track of tracks.slice(0, neededCount)) {
           const song = songByIdRef.current.get(track.id);
-          if (!song) continue;
-          updates.push(songToResolvedTrackItem(song));
+          if (!song?.streamUrl) continue;
+
+          updates.push({
+            ...track,
+            url: song.streamUrl,
+          });
         }
 
         if (!updates.length) return;
@@ -292,7 +322,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
         (subscription as { remove: () => void }).remove();
       }
     };
-  }, [songToResolvedTrackItem]);
+  }, []);
 
   useEffect(() => {
     if (!currentSong) return;
@@ -377,25 +407,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     async (songs: Song[], startIndex: number) => {
       if (!songs.length || !songs[startIndex]) return;
 
-      primeSongs(songs);
-
       deleteCurrentPlaylist();
+      songByIdRef.current.clear();
+      primeSongs(songs);
 
       const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
       playlistIdRef.current = playlistId;
 
-      PlayerQueue.addTracksToPlaylist(
-        playlistId,
-        songs.map(song => songToLazyTrackItem(song))
-      );
+      const tracks = songs.map(song => songToLazyTrackItem(song));
 
+      PlayerQueue.addTracksToPlaylist(playlistId, tracks);
       PlayerQueue.loadPlaylist(playlistId);
 
-      // Ensure initial target track is immediately playable on cold boot.
+      await waitForNextTick();
+
       try {
         await TrackPlayer.updateTracks([songToResolvedTrackItem(songs[startIndex])]);
-      } catch {
-        // ignore and continue with native lazy path
+      } catch (error) {
+        console.warn('Failed to prime initial track', error);
       }
 
       await TrackPlayer.playSong(songs[startIndex].id, playlistId);
@@ -489,7 +518,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      const existingIds = new Set(getQueue().map(song => song.id));
+      const existingIds = new Set(queueSongs.map(song => song.id));
       const toAdd = songs.filter(song => !existingIds.has(song.id));
       if (!toAdd.length) return;
 
@@ -501,9 +530,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     },
     [
       ensureCollectionAllowed,
-      getQueue,
       playSongInCollection,
       primeSongs,
+      queueSongs,
       songToLazyTrackItem,
     ]
   );
@@ -521,7 +550,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      const existingIds = new Set(getQueue().map(song => song.id));
+      const existingIds = new Set(queueSongs.map(song => song.id));
       const toAdd = shuffleArray(songs.filter(song => !existingIds.has(song.id)));
       if (!toAdd.length) return;
 
@@ -533,24 +562,31 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     },
     [
       ensureCollectionAllowed,
-      getQueue,
       playSongInCollection,
       primeSongs,
+      queueSongs,
       songToLazyTrackItem,
     ]
   );
 
   const selectQueueItem = useCallback(
     async (index: number) => {
-      const queue = getQueue();
-      const song = queue[index];
+      const song = queueSongs[index];
       if (!song) return;
+
       const playlistId = playlistIdRef.current;
       if (!playlistId) return;
+
+      try {
+        await TrackPlayer.updateTracks([songToResolvedTrackItem(song)]);
+      } catch {
+        // ignore
+      }
+
       await TrackPlayer.playSong(song.id, playlistId);
       await TrackPlayer.play();
     },
-    [getQueue]
+    [queueSongs, songToResolvedTrackItem]
   );
 
   const skipToNext = useCallback(async () => {
@@ -576,13 +612,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       const playlistId = playlistIdRef.current;
       if (!playlistId) return;
 
-      const queue = getQueue();
-      const item = queue[fromIndex];
-      if (!item || !queue[toIndex]) return;
+      const item = queueSongs[fromIndex];
+      if (!item || !queueSongs[toIndex]) return;
 
       PlayerQueue.reorderTrackInPlaylist(playlistId, item.id, toIndex);
     },
-    [getQueue]
+    [queueSongs]
   );
 
   const addToQueue = useCallback(
@@ -595,12 +630,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      if (getQueue().some(item => item.id === song.id)) return;
+      if (queueSongs.some(item => item.id === song.id)) return;
 
       primeSongs([song]);
       PlayerQueue.addTrackToPlaylist(playlistId, songToLazyTrackItem(song));
     },
-    [ensureTrackAllowed, getQueue, playSong, primeSongs, songToLazyTrackItem]
+    [ensureTrackAllowed, playSong, primeSongs, queueSongs, songToLazyTrackItem]
   );
 
   const playNext = useCallback(
@@ -608,20 +643,23 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       if (!ensureTrackAllowed(song)) return;
 
       const playlistId = playlistIdRef.current;
-      const queue = getQueue();
-
-      const currentIndex =
-        typeof nowPlaying?.currentIndex === 'number' && nowPlaying.currentIndex >= 0
-          ? nowPlaying.currentIndex
-          : queue.findIndex(item => item.id === currentSong?.id);
-
-      if (!playlistId || !queue.length || currentIndex < 0) {
+      if (!playlistId) {
         await playSong(song);
         return;
       }
 
-      const targetIndex = Math.min(currentIndex + 1, queue.length);
-      const alreadyInQueue = queue.some(item => item.id === song.id);
+      const currentIndex =
+        typeof nowPlaying?.currentIndex === 'number' && nowPlaying.currentIndex >= 0
+          ? nowPlaying.currentIndex
+          : queueSongs.findIndex(item => item.id === currentSong?.id);
+
+      if (currentIndex < 0) {
+        await playSong(song);
+        return;
+      }
+
+      const targetIndex = Math.min(currentIndex + 1, queueSongs.length);
+      const alreadyInQueue = queueSongs.some(item => item.id === song.id);
 
       primeSongs([song]);
 
@@ -634,10 +672,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     [
       currentSong?.id,
       ensureTrackAllowed,
-      getQueue,
       nowPlaying?.currentIndex,
       playSong,
       primeSongs,
+      queueSongs,
       songToLazyTrackItem,
     ]
   );
@@ -700,7 +738,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const toggleShuffle = useCallback(async () => {
-    const queue = getQueue();
+    const queue = queueSongs;
     if (!queue.length) return;
 
     if (!shuffleOn) {
@@ -731,8 +769,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   }, [
     createAndLoadPlaylist,
     currentSong?.id,
-    getQueue,
     nowPlaying?.currentIndex,
+    queueSongs,
     shuffleOn,
   ]);
 
