@@ -101,16 +101,6 @@ function passesScrobbleThreshold(
   return listenedSeconds >= threshold;
 }
 
-function isBufferingState(state: unknown): boolean {
-  if (typeof state !== 'string') return false;
-  const normalized = state.toLowerCase();
-  return normalized.includes('buffer') || normalized === 'loading';
-}
-
-function waitForNextTick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0));
-}
-
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -155,6 +145,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   const scrobbleStartRef = useRef<number>(0);
   const lastScrobbledIdRef = useRef<string | null>(null);
 
+  const loadingPlaylistRef = useRef(false);
+
   const progress: PlaybackProgress = useMemo(
     () => ({
       position:
@@ -170,9 +162,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     [rawPosition, rawDuration]
   );
 
-  const isPlaying =
-    playbackState === 'playing' || nowPlaying.currentState === 'playing';
-  const isBuffering = isBufferingState(playbackState);
+  const isPlaying = playbackState === 'playing';
+  const isBuffering =
+    typeof playbackState === 'string' &&
+    playbackState.includes('buffer');
 
   const primeSongs = useCallback((songs: Song[]) => {
     for (const song of songs) {
@@ -212,6 +205,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
 
     const known = songByIdRef.current.get(track.id);
     if (known) return known;
+    if (!track.url) return null;
 
     return {
       id: track.id,
@@ -227,48 +221,28 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       sourceServerId: String(track.extraPayload?.serverId ?? '') || undefined,
       sourceServerType:
         track.extraPayload?.serverType === 'navidrome' ||
-        track.extraPayload?.serverType === 'jellyfin'
+          track.extraPayload?.serverType === 'jellyfin'
           ? track.extraPayload.serverType
           : undefined,
     };
   }, []);
 
-  const queueSongs = useMemo(() => {
-    return actualQueue
-      .map(track => trackToSong(track))
-      .filter((song): song is Song => song != null);
-  }, [actualQueue, trackToSong]);
+  const queueSongs = useMemo(
+    () =>
+      actualQueue
+        .map(trackToSong)
+        .filter((song): song is Song => song != null),
+    [actualQueue, trackToSong]
+  );
 
   const getQueue = useCallback((): Song[] => queueSongs, [queueSongs]);
 
   const currentSong = useMemo(() => {
-    if (changedTrack?.id) {
-      return songByIdRef.current.get(changedTrack.id) ?? trackToSong(changedTrack);
-    }
+    const track = changedTrack ?? nowPlaying.currentTrack;
+    if (!track) return null;
 
-    if (nowPlaying.currentTrack?.id) {
-      return (
-        songByIdRef.current.get(nowPlaying.currentTrack.id) ??
-        trackToSong(nowPlaying.currentTrack)
-      );
-    }
-
-    if (
-      typeof nowPlaying?.currentIndex === 'number' &&
-      nowPlaying.currentIndex >= 0 &&
-      nowPlaying.currentIndex < actualQueue.length
-    ) {
-      return trackToSong(actualQueue[nowPlaying.currentIndex]);
-    }
-
-    return null;
-  }, [
-    actualQueue,
-    changedTrack,
-    nowPlaying.currentIndex,
-    nowPlaying.currentTrack,
-    trackToSong,
-  ]);
+    return songByIdRef.current.get(track.id) ?? trackToSong(track);
+  }, [changedTrack, nowPlaying.currentTrack, trackToSong]);
 
   useEffect(() => {
     TrackPlayer.configure({
@@ -307,21 +281,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       }
     );
 
-    return () => {
-      if (typeof subscription === 'function') {
-        subscription();
-        return;
-      }
-
-      if (
-        subscription &&
-        typeof subscription === 'object' &&
-        'remove' in subscription &&
-        typeof (subscription as { remove?: unknown }).remove === 'function'
-      ) {
-        (subscription as { remove: () => void }).remove();
-      }
-    };
+    return () => subscription?.();
   }, []);
 
   useEffect(() => {
@@ -405,30 +365,33 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
 
   const createAndLoadPlaylist = useCallback(
     async (songs: Song[], startIndex: number) => {
-      if (!songs.length || !songs[startIndex]) return;
-
-      deleteCurrentPlaylist();
-      songByIdRef.current.clear();
-      primeSongs(songs);
-
-      const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
-      playlistIdRef.current = playlistId;
-
-      const tracks = songs.map(song => songToLazyTrackItem(song));
-
-      PlayerQueue.addTracksToPlaylist(playlistId, tracks);
-      PlayerQueue.loadPlaylist(playlistId);
-
-      await waitForNextTick();
+      if (loadingPlaylistRef.current) return;
+      loadingPlaylistRef.current = true;
 
       try {
-        await TrackPlayer.updateTracks([songToResolvedTrackItem(songs[startIndex])]);
-      } catch (error) {
-        console.warn('Failed to prime initial track', error);
-      }
+        if (!songs.length || !songs[startIndex]) return;
 
-      await TrackPlayer.playSong(songs[startIndex].id, playlistId);
-      await TrackPlayer.play();
+        deleteCurrentPlaylist();
+        songByIdRef.current.clear();
+        primeSongs(songs);
+
+        const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
+        playlistIdRef.current = playlistId;
+
+        const tracks = songs.map((song, i) =>
+          i < LOOKAHEAD_COUNT
+            ? songToResolvedTrackItem(song)
+            : songToLazyTrackItem(song)
+        );
+
+        PlayerQueue.addTracksToPlaylist(playlistId, tracks);
+        PlayerQueue.loadPlaylist(playlistId);
+
+        await TrackPlayer.playSong(songs[startIndex].id, playlistId);
+        await TrackPlayer.play();
+      } finally {
+        loadingPlaylistRef.current = false;
+      }
     },
     [deleteCurrentPlaylist, primeSongs, songToLazyTrackItem, songToResolvedTrackItem]
   );
