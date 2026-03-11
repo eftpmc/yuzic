@@ -33,7 +33,6 @@ import { areTrackIdsFullyDownloaded } from '@/utils/downloads/collectionState';
 
 const SIMILAR_FETCH_TIMEOUT_MS = 2500;
 const SIMILAR_MAX_SONGS = 80;
-const LOOKAHEAD_COUNT = 5;
 
 export interface PlaybackProgress {
   position: number;
@@ -140,12 +139,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   const playlistIdRef = useRef<string | null>(null);
   const songByIdRef = useRef<Map<string, Song>>(new Map());
   const originalQueueRef = useRef<Song[] | null>(null);
+  const configuredRef = useRef(false);
 
+  // Scrobble refs
   const scrobbleSongRef = useRef<Song | null>(null);
   const scrobbleStartRef = useRef<number>(0);
   const lastScrobbledIdRef = useRef<string | null>(null);
-
-  const loadingPlaylistRef = useRef(false);
+  const playCountIncrementedIdRef = useRef<string | null>(null);
 
   const progress: PlaybackProgress = useMemo(
     () => ({
@@ -164,8 +164,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
 
   const isPlaying = playbackState === 'playing';
   const isBuffering =
-    typeof playbackState === 'string' &&
-    playbackState.includes('buffer');
+    typeof playbackState === 'string' && playbackState.includes('buffer');
 
   const primeSongs = useCallback((songs: Song[]) => {
     for (const song of songs) {
@@ -173,14 +172,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  const songToLazyTrackItem = useCallback(
+  const songToTrackItem = useCallback(
     (song: Song): TrackItem => ({
       id: song.id,
       title: song.title,
       artist: song.artist,
       album: '',
       duration: parseFloat(song.duration || '0'),
-      url: '',
+      url: song.streamUrl,
       artwork: buildCover(song.cover, 'grid') || null,
       extraPayload: {
         artistId: song.artistId,
@@ -192,19 +191,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     [activeServer?.id, activeServer?.type]
   );
 
-  const songToResolvedTrackItem = useCallback(
-    (song: Song): TrackItem => ({
-      ...songToLazyTrackItem(song),
-      url: song.streamUrl,
-    }),
-    [songToLazyTrackItem]
-  );
-
   const trackToSong = useCallback((track?: TrackItem | null): Song | null => {
     if (!track) return null;
 
     const known = songByIdRef.current.get(track.id);
     if (known) return known;
+
     if (!track.url) return null;
 
     return {
@@ -221,7 +213,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       sourceServerId: String(track.extraPayload?.serverId ?? '') || undefined,
       sourceServerType:
         track.extraPayload?.serverType === 'navidrome' ||
-          track.extraPayload?.serverType === 'jellyfin'
+        track.extraPayload?.serverType === 'jellyfin'
           ? track.extraPayload.serverType
           : undefined,
     };
@@ -245,99 +237,115 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   }, [changedTrack, nowPlaying.currentTrack, trackToSong]);
 
   useEffect(() => {
+    if (configuredRef.current) return;
+
     TrackPlayer.configure({
       androidAutoEnabled: true,
       carPlayEnabled: true,
       showInNotification: true,
-      lookaheadCount: LOOKAHEAD_COUNT,
     });
 
-    const subscription = TrackPlayer.onTracksNeedUpdate?.(
-      async (tracks: TrackItem[], lookahead?: number) => {
-        const neededCount =
-          typeof lookahead === 'number' && lookahead > 0
-            ? Math.min(lookahead, tracks.length)
-            : tracks.length;
-
-        const updates: TrackItem[] = [];
-
-        for (const track of tracks.slice(0, neededCount)) {
-          const song = songByIdRef.current.get(track.id);
-          if (!song?.streamUrl) continue;
-
-          updates.push({
-            ...track,
-            url: song.streamUrl,
-          });
-        }
-
-        if (!updates.length) return;
-
-        try {
-          await TrackPlayer.updateTracks(updates);
-        } catch (error) {
-          console.warn('Failed to update lazy tracks', error);
-        }
-      }
-    );
-
-    return () => subscription?.();
+    configuredRef.current = true;
   }, []);
 
+  // Handle scrobbling and play increments when track changes away from previous track
+  const maybeFinalizePreviousSong = useCallback(
+    async (previousSong: Song | null, listenedSeconds: number) => {
+      if (!previousSong) return;
+
+      const alreadyScrobbled =
+        lastScrobbledIdRef.current === previousSong.id;
+      const alreadyIncremented =
+        playCountIncrementedIdRef.current === previousSong.id;
+
+      const passed = passesScrobbleThreshold(
+        listenedSeconds,
+        Number(previousSong.duration) || 0
+      );
+
+      if (!passed) return;
+
+      if (!alreadyIncremented && activeServer?.id) {
+        playCountIncrementedIdRef.current = previousSong.id;
+        dispatch(
+          incrementPlay({
+            serverId: activeServer.id,
+            songId: previousSong.id,
+            albumId: previousSong.albumId,
+            artistId: previousSong.artistId,
+          })
+        );
+      }
+
+      if (!alreadyScrobbled && listenBrainzConfig?.token) {
+        lastScrobbledIdRef.current = previousSong.id;
+
+        const listenedAt = Math.floor(scrobbleStartRef.current / 1000);
+
+        try {
+          await listenbrainz.submitScrobble(listenBrainzConfig, {
+            artist: previousSong.artist,
+            track: previousSong.title,
+            listenedAt,
+            durationSeconds:
+              Number(previousSong.duration) > 0
+                ? Number(previousSong.duration)
+                : undefined,
+            durationPlayedSeconds: listenedSeconds,
+          });
+        } catch (err) {
+          console.warn('ListenBrainz scrobble failed', err);
+        }
+      }
+    },
+    [activeServer?.id, dispatch, listenBrainzConfig]
+  );
+
+  // Track-change driven scrobble finalization
+  useEffect(() => {
+    const newSong = currentSong;
+    const previousSong = scrobbleSongRef.current;
+
+    if (!newSong) return;
+
+    if (previousSong && previousSong.id !== newSong.id) {
+      const listenedSeconds = Math.floor(progress.position || 0);
+      void maybeFinalizePreviousSong(previousSong, listenedSeconds);
+    }
+
+    if (!previousSong || previousSong.id !== newSong.id) {
+      scrobbleSongRef.current = newSong;
+      scrobbleStartRef.current = Date.now();
+    }
+  }, [currentSong, progress.position, maybeFinalizePreviousSong]);
+
+  // Fallback: if a song reaches threshold while still playing, increment once immediately
   useEffect(() => {
     if (!currentSong) return;
 
-    const previousSong = scrobbleSongRef.current;
+    const listenedSeconds = Math.floor(progress.position || 0);
+    const passed = passesScrobbleThreshold(
+      listenedSeconds,
+      Number(currentSong.duration) || 0
+    );
 
-    if (previousSong && previousSong.id !== currentSong.id) {
-      const listenedSeconds = Math.floor(progress.position || 0);
+    if (!passed) return;
 
-      if (
-        lastScrobbledIdRef.current !== previousSong.id &&
-        passesScrobbleThreshold(
-          listenedSeconds,
-          Number(previousSong.duration) || 0
-        )
-      ) {
-        lastScrobbledIdRef.current = previousSong.id;
-
-        if (activeServer?.id) {
-          dispatch(
-            incrementPlay({
-              serverId: activeServer.id,
-              songId: previousSong.id,
-              albumId: previousSong.albumId,
-              artistId: previousSong.artistId,
-            })
-          );
-        }
-
-        if (listenBrainzConfig?.token) {
-          const listenedAt = Math.floor(scrobbleStartRef.current / 1000);
-
-          listenbrainz
-            .submitScrobble(listenBrainzConfig, {
-              artist: previousSong.artist,
-              track: previousSong.title,
-              listenedAt,
-              durationSeconds:
-                Number(previousSong.duration) > 0
-                  ? Number(previousSong.duration)
-                  : undefined,
-              durationPlayedSeconds: listenedSeconds,
-            })
-            .catch(err => {
-              console.warn('ListenBrainz scrobble failed', err);
-            });
-        }
-      }
+    if (
+      playCountIncrementedIdRef.current !== currentSong.id &&
+      activeServer?.id
+    ) {
+      playCountIncrementedIdRef.current = currentSong.id;
+      dispatch(
+        incrementPlay({
+          serverId: activeServer.id,
+          songId: currentSong.id,
+          albumId: currentSong.albumId,
+          artistId: currentSong.artistId,
+        })
+      );
     }
-
-    if (!scrobbleSongRef.current || scrobbleSongRef.current.id !== currentSong.id) {
-      scrobbleSongRef.current = currentSong;
-      scrobbleStartRef.current = Date.now();
-    }
-  }, [currentSong, progress.position, activeServer?.id, dispatch, listenBrainzConfig]);
+  }, [currentSong, progress.position, activeServer?.id, dispatch]);
 
   const isCollectionFullyDownloaded = useCallback(
     (collection: Album | Playlist): boolean => {
@@ -365,35 +373,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
 
   const createAndLoadPlaylist = useCallback(
     async (songs: Song[], startIndex: number) => {
-      if (loadingPlaylistRef.current) return;
-      loadingPlaylistRef.current = true;
+      if (!songs.length || !songs[startIndex]) return;
 
-      try {
-        if (!songs.length || !songs[startIndex]) return;
+      deleteCurrentPlaylist();
+      songByIdRef.current.clear();
+      primeSongs(songs);
 
-        deleteCurrentPlaylist();
-        songByIdRef.current.clear();
-        primeSongs(songs);
+      const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
+      playlistIdRef.current = playlistId;
 
-        const playlistId = PlayerQueue.createPlaylist('Now Playing', '', '');
-        playlistIdRef.current = playlistId;
+      const tracks = songs.map(songToTrackItem);
 
-        const tracks = songs.map((song, i) =>
-          i < LOOKAHEAD_COUNT
-            ? songToResolvedTrackItem(song)
-            : songToLazyTrackItem(song)
-        );
+      PlayerQueue.addTracksToPlaylist(playlistId, tracks);
+      PlayerQueue.loadPlaylist(playlistId);
 
-        PlayerQueue.addTracksToPlaylist(playlistId, tracks);
-        PlayerQueue.loadPlaylist(playlistId);
-
-        await TrackPlayer.playSong(songs[startIndex].id, playlistId);
-        await TrackPlayer.play();
-      } finally {
-        loadingPlaylistRef.current = false;
-      }
+      await TrackPlayer.playSong(songs[startIndex].id, playlistId);
+      await TrackPlayer.play();
     },
-    [deleteCurrentPlaylist, primeSongs, songToLazyTrackItem, songToResolvedTrackItem]
+    [deleteCurrentPlaylist, primeSongs, songToTrackItem]
   );
 
   const ensureTrackAllowed = useCallback(
@@ -416,17 +413,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     [isCollectionFullyDownloaded, offlineModeEnabled, t]
   );
 
+  const resetScrobbleTrackingForNewSession = useCallback(() => {
+    lastScrobbledIdRef.current = null;
+    playCountIncrementedIdRef.current = null;
+  }, []);
+
   const playSong = useCallback(
     async (song: Song) => {
       if (!ensureTrackAllowed(song)) return;
 
       originalQueueRef.current = null;
-      lastScrobbledIdRef.current = null;
+      resetScrobbleTrackingForNewSession();
       setShuffleOn(false);
 
       await createAndLoadPlaylist([song], 0);
     },
-    [createAndLoadPlaylist, ensureTrackAllowed]
+    [createAndLoadPlaylist, ensureTrackAllowed, resetScrobbleTrackingForNewSession]
   );
 
   const playSongInCollection = useCallback(
@@ -462,10 +464,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
         setShuffleOn(false);
       }
 
-      lastScrobbledIdRef.current = null;
+      resetScrobbleTrackingForNewSession();
       await createAndLoadPlaylist(songs, index);
     },
-    [createAndLoadPlaylist, ensureCollectionAllowed, t]
+    [
+      createAndLoadPlaylist,
+      ensureCollectionAllowed,
+      resetScrobbleTrackingForNewSession,
+      t,
+    ]
   );
 
   const addCollectionToQueue = useCallback(
@@ -488,7 +495,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       primeSongs(toAdd);
       PlayerQueue.addTracksToPlaylist(
         playlistId,
-        toAdd.map(song => songToLazyTrackItem(song))
+        toAdd.map(songToTrackItem)
       );
     },
     [
@@ -496,7 +503,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       playSongInCollection,
       primeSongs,
       queueSongs,
-      songToLazyTrackItem,
+      songToTrackItem,
     ]
   );
 
@@ -520,7 +527,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       primeSongs(toAdd);
       PlayerQueue.addTracksToPlaylist(
         playlistId,
-        toAdd.map(song => songToLazyTrackItem(song))
+        toAdd.map(songToTrackItem)
       );
     },
     [
@@ -528,7 +535,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       playSongInCollection,
       primeSongs,
       queueSongs,
-      songToLazyTrackItem,
+      songToTrackItem,
     ]
   );
 
@@ -540,32 +547,26 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       const playlistId = playlistIdRef.current;
       if (!playlistId) return;
 
-      try {
-        await TrackPlayer.updateTracks([songToResolvedTrackItem(song)]);
-      } catch {
-        // ignore
-      }
-
       await TrackPlayer.playSong(song.id, playlistId);
       await TrackPlayer.play();
     },
-    [queueSongs, songToResolvedTrackItem]
+    [queueSongs]
   );
 
   const skipToNext = useCallback(async () => {
-    TrackPlayer.skipToNext();
+    await TrackPlayer.skipToNext();
   }, []);
 
   const skipToPrevious = useCallback(async () => {
-    TrackPlayer.skipToPrevious();
+    await TrackPlayer.skipToPrevious();
   }, []);
 
   const pauseSong = useCallback(async () => {
-    TrackPlayer.pause();
+    await TrackPlayer.pause();
   }, []);
 
   const resumeSong = useCallback(async () => {
-    TrackPlayer.play();
+    await TrackPlayer.play();
   }, []);
 
   const moveTrack = useCallback(
@@ -596,9 +597,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       if (queueSongs.some(item => item.id === song.id)) return;
 
       primeSongs([song]);
-      PlayerQueue.addTrackToPlaylist(playlistId, songToLazyTrackItem(song));
+      PlayerQueue.addTrackToPlaylist(playlistId, songToTrackItem(song));
     },
-    [ensureTrackAllowed, playSong, primeSongs, queueSongs, songToLazyTrackItem]
+    [ensureTrackAllowed, playSong, primeSongs, queueSongs, songToTrackItem]
   );
 
   const playNext = useCallback(
@@ -611,6 +612,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
+      // Keep queue dedupe behavior consistent with your previous logic.
+      // If already in queue, move it after current; otherwise add it then move it.
       const currentIndex =
         typeof nowPlaying?.currentIndex === 'number' && nowPlaying.currentIndex >= 0
           ? nowPlaying.currentIndex
@@ -627,7 +630,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       primeSongs([song]);
 
       if (!alreadyInQueue) {
-        PlayerQueue.addTrackToPlaylist(playlistId, songToLazyTrackItem(song));
+        PlayerQueue.addTrackToPlaylist(playlistId, songToTrackItem(song));
       }
 
       PlayerQueue.reorderTrackInPlaylist(playlistId, song.id, targetIndex);
@@ -639,7 +642,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       playSong,
       primeSongs,
       queueSongs,
-      songToLazyTrackItem,
+      songToTrackItem,
     ]
   );
 
@@ -683,7 +686,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
 
         originalQueueRef.current = null;
         setShuffleOn(false);
-        lastScrobbledIdRef.current = null;
+        resetScrobbleTrackingForNewSession();
 
         await createAndLoadPlaylist(songs, 0);
         toast.success(t('common.playingSimilar'));
@@ -696,6 +699,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
       getSimilarWithTimeout,
       offlineModeEnabled,
       playSong,
+      resetScrobbleTrackingForNewSession,
       t,
     ]
   );
@@ -746,11 +750,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const resetQueue = useCallback(async () => {
-    lastScrobbledIdRef.current = null;
+    // Finalize current song before reset if it qualifies
+    if (scrobbleSongRef.current) {
+      const listenedSeconds = Math.floor(progress.position || 0);
+      await maybeFinalizePreviousSong(scrobbleSongRef.current, listenedSeconds);
+    }
+
     scrobbleSongRef.current = null;
     scrobbleStartRef.current = 0;
+    lastScrobbledIdRef.current = null;
+    playCountIncrementedIdRef.current = null;
 
-    TrackPlayer.pause();
+    await TrackPlayer.pause();
     deleteCurrentPlaylist();
 
     originalQueueRef.current = null;
@@ -758,7 +769,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({
     setShuffleOn(false);
     setRepeatOn(false);
     TrackPlayer.setRepeatMode('off');
-  }, [deleteCurrentPlaylist]);
+  }, [deleteCurrentPlaylist, maybeFinalizePreviousSong, progress.position]);
 
   return (
     <PlayingContext.Provider
