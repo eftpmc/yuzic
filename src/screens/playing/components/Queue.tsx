@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -10,6 +10,7 @@ import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GripVertical } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlbums } from '@/hooks/albums';
@@ -17,8 +18,9 @@ import { Song } from '@/types';
 
 type QueueItemProps = {
   item: Song;
+  index: number;
   isCurrent: boolean;
-  onPress: () => void;
+  onPress: (index: number) => void;
   onLongPress: () => void;
 };
 
@@ -27,15 +29,16 @@ function queueItemPropsAreEqual(prev: QueueItemProps, next: QueueItemProps) {
     prev.item.id === next.item.id &&
     prev.item.title === next.item.title &&
     prev.item.artist === next.item.artist &&
+    prev.index === next.index &&
     prev.isCurrent === next.isCurrent &&
     prev.onPress === next.onPress
   );
 }
 
 const QueueItem = memo(
-  ({ item, isCurrent, onPress, onLongPress }: QueueItemProps) => (
+  ({ item, index, isCurrent, onPress, onLongPress }: QueueItemProps) => (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => onPress(index)}
       onLongPress={onLongPress}
       style={[
         styles.queueItem,
@@ -74,44 +77,39 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   const {
     getQueue,
     currentSong,
-    selectQueueItem,
+    skipTo,
     moveTrack,
     isPlaying,
     pauseSong,
     resumeSong,
     skipToNext,
+    queueVersion,
   } = usePlaying();
 
   const { albums } = useAlbums();
   const insets = useSafeAreaInsets();
 
   const [queue, setQueue] = useState<Song[]>([]);
-  const keyBySongRef = useRef<WeakMap<Song, string>>(new WeakMap());
-  const keyCounterRef = useRef(0);
 
-  const latestQueue = useMemo(() => getQueue(), [getQueue]);
-
-  useEffect(() => {
-    setQueue((prev) => {
-      if (prev.length === latestQueue.length) {
-        const sameOrder = prev.every((song, index) => song.id === latestQueue[index]?.id);
-        if (sameOrder) return prev;
-      }
-      return latestQueue;
-    });
-  }, [latestQueue]);
+  useFocusEffect(
+    useCallback(() => {
+      setQueue(getQueue());
+    }, [queueVersion])
+  );
 
   const currentAlbum = useMemo(
-    () => albums.find(album => album.id === currentSong?.albumId),
+    () =>
+      albums.find(
+        album => album.id === currentSong?.albumId
+      ),
     [albums, currentSong?.albumId]
   );
 
   const handleSongClick = useCallback(
     (index: number) => {
-      if (index < 0) return;
-      selectQueueItem(index);
+      skipTo(index);
     },
-    [selectQueueItem]
+    [skipTo]
   );
 
   const handleDragEnd = useCallback(
@@ -127,46 +125,31 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
       item,
       getIndex,
       drag,
-      isActive: _isActive,
+      isActive,
     }: {
       item: Song;
       getIndex: () => number | undefined;
       drag: () => void;
       isActive: boolean;
     }) => {
+      const index = getIndex() ?? 0;
       return (
         <QueueItem
           item={item}
+          index={index}
           isCurrent={item.id === currentSong?.id}
-          onPress={() => {
-            const idx = getIndex();
-            if (typeof idx === 'number' && idx >= 0) {
-              handleSongClick(idx);
-              return;
-            }
-            const byIdentity = queue.findIndex(song => song === item);
-            if (byIdentity >= 0) {
-              handleSongClick(byIdentity);
-            }
-          }}
+          onPress={handleSongClick}
           onLongPress={drag}
         />
       );
     },
-    [currentSong?.id, handleSongClick, queue]
+    [currentSong?.id, handleSongClick]
   );
 
-  const keyExtractor = useCallback((item: Song) => {
-    const existingKey = keyBySongRef.current.get(item);
-    if (existingKey) return existingKey;
-    const nextKey = `${item.id}:${keyCounterRef.current++}`;
-    keyBySongRef.current.set(item, nextKey);
-    return nextKey;
-  }, []);
-
   return (
-    <View style={[styles.container, { width }]}> 
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}> 
+    <View style={[styles.container, { width }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity
           onPress={onBack}
           style={styles.backButton}
@@ -229,9 +212,10 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           : t('playing.queue.playingFromQueue')}
       </Text>
 
+      {/* List */}
       <DraggableFlatList
         data={queue}
-        keyExtractor={keyExtractor}
+        keyExtractor={item => item.id}
         onDragEnd={handleDragEnd}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -250,7 +234,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingBottom: 32
   },
 
   header: {

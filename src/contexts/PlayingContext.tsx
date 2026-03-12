@@ -55,6 +55,7 @@ export interface PlaybackProgress {
 export interface PlayingContextType {
   currentSong: Song | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   progress: PlaybackProgress;
 
   pauseSong(): Promise<void>;
@@ -108,6 +109,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const { state: playbackState } = useOnPlaybackStateChange();
   const isPlaying = playbackState === 'playing';
+  const isBuffering =
+    typeof playbackState === 'string' &&
+    playbackState.includes('buffer');
 
   const { position: rawPosition, totalDuration: rawDuration } = useOnPlaybackProgressChange();
   const progress: PlaybackProgress = {
@@ -591,6 +595,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       value={{
         currentSong,
         isPlaying,
+        isBuffering,
         progress,
         pauseSong,
         resumeSong,
