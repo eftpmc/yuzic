@@ -1,5 +1,12 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { memo } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -12,41 +19,52 @@ type Props = {
   onPress?: () => void;
 };
 
-const MediaTile = React.memo(
-  ({ cover, title, subtitle, size, radius, onPress }: Props) => {
-    const Wrapper = onPress ? TouchableOpacity : View;
-    const { isDarkMode } = useTheme();
+function MediaTile({ cover, title, subtitle, size, radius, onPress }: Props) {
+  const { isDarkMode } = useTheme();
 
-    return (
-      <Wrapper onPress={onPress} style={{ width: size }}>
-        <MediaImage
-          cover={cover}
-          size="thumb"
-          style={{
-            width: size,
-            height: size,
-            borderRadius: radius,
-            overflow: 'hidden',
-          }}
-        />
-        <Text
-          numberOfLines={1}
-          style={[styles.title, isDarkMode && styles.titleDark]}
-        >
-          {title}
-        </Text>
-        <Text
-          numberOfLines={1}
-          style={[styles.subtitle, isDarkMode && styles.subtitleDark]}
-        >
-          {subtitle}
-        </Text>
-      </Wrapper>
-    );
-  }
-);
+  const Wrapper: React.ComponentType<any> = onPress ? TouchableOpacity : View;
 
-export default MediaTile;
+  const containerStyle: StyleProp<ViewStyle> = {
+    width: size,
+  };
+
+  const imageStyle: StyleProp<ViewStyle> = {
+    width: size,
+    height: size,
+    borderRadius: radius,
+    overflow: 'hidden',
+  };
+
+  return (
+    <Wrapper
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : undefined}
+      style={containerStyle}
+    >
+      <MediaImage
+        cover={cover}
+        size="thumb"
+        style={imageStyle}
+      />
+
+      <Text
+        numberOfLines={1}
+        style={[styles.title, isDarkMode && styles.titleDark]}
+      >
+        {title}
+      </Text>
+
+      <Text
+        numberOfLines={1}
+        style={[styles.subtitle, isDarkMode && styles.subtitleDark]}
+      >
+        {subtitle}
+      </Text>
+    </Wrapper>
+  );
+}
+
+export default memo(MediaTile);
 
 const styles = StyleSheet.create({
   title: {

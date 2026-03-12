@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  useWindowDimensions,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useRecentSongs } from '@/hooks/songs';
@@ -14,7 +13,6 @@ import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 
 const H_PADDING = 12;
-const GAP = 8; // match home grid (useGridLayout GRID_GAP / AlbumItem marginHorizontal)
 const ROW_GAP = 8;
 const COLS = 3;
 const MAX_SONGS = 6;
@@ -22,20 +20,18 @@ const MAX_SONGS = 6;
 export default function RecentSongsSpeedDial() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const { width } = useWindowDimensions();
   const { songs, isLoading } = useRecentSongs();
   const { playSimilar } = usePlaying();
-  const inFlightSongIdRef = useRef<string | null>(null);
 
-  const contentWidth = width - H_PADDING * 2;
-  const totalGaps = (COLS - 1) * GAP;
-  const itemSize = (contentWidth - totalGaps) / COLS;
+  const inFlightSongIdRef = useRef<string | null>(null);
 
   const displaySongs = songs.slice(0, MAX_SONGS);
 
   const handlePressSong = async (song: typeof displaySongs[number]) => {
     if (inFlightSongIdRef.current === song.id) return;
+
     inFlightSongIdRef.current = song.id;
+
     try {
       await playSimilar(song);
     } finally {
@@ -51,43 +47,45 @@ export default function RecentSongsSpeedDial() {
         <Text style={[styles.title, isDarkMode && styles.titleDark]}>
           {t('explore.sections.dial')}
         </Text>
+
         {isLoading ? null : displaySongs.length === 0 ? (
           <SectionEmptyState message={t('explore.empty.recentSongs')} />
         ) : (
-        <View style={styles.grid}>
-          {Array.from(
-            { length: Math.ceil(displaySongs.length / COLS) },
-            (_, row) => (
-            <View key={row} style={styles.row}>
-              {displaySongs.slice(row * COLS, (row + 1) * COLS).map((song) => (
-                <View
-                  key={song.id}
-                  style={[styles.slot, { width: itemSize }]}
-                >
-                <TouchableOpacity
-                  style={[styles.item, { width: itemSize, height: itemSize }]}
-                  onPress={() => {
-                    void handlePressSong(song);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <MediaImage
-                    cover={song.cover}
-                    size="grid"
-                    style={[styles.cover, { width: itemSize, height: itemSize }]}
-                  />
-                  <Text
-                    style={styles.songTitle}
-                    numberOfLines={2}
-                  >
-                    {song.title}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              ))}
-            </View>
-          ))}
-        </View>
+          <View style={styles.grid}>
+            {Array.from(
+              { length: Math.ceil(displaySongs.length / COLS) },
+              (_, row) => (
+                <View key={row} style={styles.row}>
+                  {displaySongs
+                    .slice(row * COLS, (row + 1) * COLS)
+                    .map((song) => (
+                      <View key={song.id} style={styles.slot}>
+                        <TouchableOpacity
+                          style={styles.item}
+                          onPress={() => {
+                            void handlePressSong(song);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <MediaImage
+                            cover={song.cover}
+                            size="grid"
+                            style={styles.cover}
+                          />
+
+                          <Text
+                            style={styles.songTitle}
+                            numberOfLines={2}
+                          >
+                            {song.title}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                </View>
+              )
+            )}
+          </View>
         )}
       </View>
     </View>
@@ -99,10 +97,13 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
+
   containerDark: {},
+
   padded: {
     paddingHorizontal: H_PADDING,
   },
+
   title: {
     fontSize: 13,
     fontWeight: '600',
@@ -111,31 +112,38 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+
   titleDark: {
     color: '#888',
   },
+
   grid: {
     width: '100%',
-    rowGap: ROW_GAP,
   },
+
   row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: '100%',
-    gap: GAP,
+    justifyContent: 'space-between',
+    marginBottom: ROW_GAP,
   },
-  slot: {},
+
+  slot: {
+    width: '32%',
+  },
+
   item: {
+    width: '100%',
+    aspectRatio: 1,
     borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
   },
+
   cover: {
     borderRadius: 8,
-    position: 'absolute',
-    top: 0,
-    left: 0,
+    ...StyleSheet.absoluteFillObject,
   },
+
   songTitle: {
     position: 'absolute',
     bottom: 8,
