@@ -42,7 +42,6 @@ const PlayingBar: React.FC = () => {
     const {
         currentSong,
         isPlaying,
-        isBuffering,
         pauseSong,
         resumeSong,
     } = usePlaying();
@@ -171,18 +170,11 @@ const PlayingBar: React.FC = () => {
                                         onPress={handlePlayPause}
                                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                                     >
-                                        {isBuffering ? (
-                                            <SpinningLoaderCircle
-                                                size={20}
-                                                color={isDarkMode ? '#fff' : '#000'}
-                                            />
-                                        ) : (
                                             <FontAwesome6
                                                 name={isPlaying ? 'pause' : 'play'}
                                                 size={20}
                                                 color={isDarkMode ? '#fff' : '#000'}
                                             />
-                                        )}
                                     </TouchableOpacity>
                                 )}
 
