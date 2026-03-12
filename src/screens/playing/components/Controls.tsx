@@ -12,7 +12,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 const Controls: React.FC = () => {
   const {
     isPlaying,
-    isBuffering,
     pauseSong,
     resumeSong,
     skipToNext,
@@ -54,15 +53,11 @@ const Controls: React.FC = () => {
         onPress={isPlaying ? pauseSong : resumeSong}
         hitSlop={HIT_SLOP}
       >
-        {isBuffering ? (
-          <SpinningLoaderCircle size={56} color="#fff" />
-        ) : (
-          <Ionicons
-            name={isPlaying ? 'pause-circle' : 'play-circle'}
-            size={80}
-            color="#fff"
-          />
-        )}
+        <Ionicons
+          name={isPlaying ? 'pause-circle' : 'play-circle'}
+          size={80}
+          color="#fff"
+        />
       </TouchableOpacity>
 
       {/* Next */}
