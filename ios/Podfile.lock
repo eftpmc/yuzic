@@ -291,8 +291,9 @@ PODS:
   - hermes-engine (0.81.5):
     - hermes-engine/Pre-built (= 0.81.5)
   - hermes-engine/Pre-built (0.81.5)
-  - ImageColors (2.5.1):
+  - ImageColors (2.6.0):
     - ExpoModulesCore
+    - SwiftDraw (~> 0.27)
   - libavif/core (1.0.0)
   - libavif/libdav1d (1.0.0):
     - libavif/core
@@ -2422,6 +2423,9 @@ PODS:
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
+  - SwiftDraw (0.27.0):
+    - SwiftDrawDOM (~> 0.27.0)
+  - SwiftDrawDOM (0.27.0)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2546,6 +2550,8 @@ SPEC REPOS:
     - SDWebImageAVIFCoder
     - SDWebImageSVGCoder
     - SDWebImageWebPCoder
+    - SwiftDraw
+    - SwiftDrawDOM
 
 EXTERNAL SOURCES:
   BVLinearGradient:
@@ -2800,7 +2806,7 @@ SPEC CHECKSUMS:
   EXUpdatesInterface: 5adf50cb41e079c861da6d9b4b954c3db9a50734
   FBLazyVector: e95a291ad2dadb88e42b06e0c5fb8262de53ec12
   hermes-engine: 9f4dfe93326146a1c99eb535b1cb0b857a3cd172
-  ImageColors: e12eb73e29bc1feaa3c228db8c174a1b25acb59d
+  ImageColors: 3019b37809023d67795162135628e367d70e1766
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -2887,6 +2893,8 @@ SPEC CHECKSUMS:
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
+  SwiftDraw: c3fb77c08081f1255f33bcc0fd3c2e00fbc9bd46
+  SwiftDrawDOM: 8e7d9812af1ef6e06230e72769e97838e6c7c765
   Yoga: 5934998fbeaef7845dbf698f698518695ab4cd1a
 
 PODFILE CHECKSUM: 175f574c11e1299833e40dcfc3d22250585c6d35
