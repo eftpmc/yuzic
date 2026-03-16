@@ -96,17 +96,25 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   return (
     <>
       <View style={styles.container}>
-        <View style={styles.headerRow}>
+        <View style={[styles.headerRow, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
           >
             <Ionicons
-              name="arrow-back"
+              name="chevron-back"
               size={24}
-              color={isDarkMode ? '#fff' : '#000'}
+              color={isDarkMode ? '#fff' : '#1C1C1E'}
             />
           </TouchableOpacity>
+
+          <View pointerEvents="none" style={styles.headerTitleWrapper}>
+            <Text style={[styles.headerNavTitle, isDarkMode && styles.headerNavTitleDark]} numberOfLines={1}>
+              {album.title}
+            </Text>
+          </View>
+
+          <View style={styles.headerButton} />
         </View>
 
         <View style={styles.coverWrapper}>
@@ -214,19 +222,32 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 60,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     alignItems: 'center',
   },
   headerRow: {
-    position: 'absolute',
-    top: 16,
-    left: 0,
-    right: 0,
-    zIndex: 10,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    width: '100%',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerTitleWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  headerNavTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    maxWidth: '60%',
+  },
+  headerNavTitleDark: {
+    color: '#fff',
   },
   headerButton: {
     padding: 6,

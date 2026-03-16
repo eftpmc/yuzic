@@ -313,8 +313,11 @@
       "connectError": "An error occurred while connecting."
     }
   },
+  "library": {
+    "title": "Library"
+  },
   "home": {
-    "title": "yuzic",
+    "title": "Home",
     "filters": {
       "all": "All",
       "albums": "Albums",

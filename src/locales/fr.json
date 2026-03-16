@@ -314,8 +314,11 @@
       "connectError": "Une erreur s'est produite lors de la connexion."
     }
   },
+  "library": {
+    "title": "Bibliothèque"
+  },
   "home": {
-    "title": "yuzic",
+    "title": "Accueil",
     "filters": {
       "all": "Tout",
       "albums": "Albums",

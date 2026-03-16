@@ -313,8 +313,11 @@
       "connectError": "接続中にエラーが発生しました。"
     }
   },
+  "library": {
+    "title": "ライブラリ"
+  },
   "home": {
-    "title": "yuzic",
+    "title": "ホーム",
     "filters": {
       "all": "すべて",
       "albums": "アルバム",
