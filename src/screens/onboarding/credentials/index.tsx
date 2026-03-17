@@ -15,9 +15,9 @@ import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
+import type { Library } from '@/utils/servers/registry';
 import { ServerType } from '@/types';
 import { useTranslation } from 'react-i18next';
-import type { NavidromeLibrary } from '@/api/types';
 
 export default function Credentials() {
     const { t } = useTranslation();
@@ -35,12 +35,11 @@ export default function Credentials() {
     const [localPassword, setLocalPassword] = useState('');
     const [isTesting, setIsTesting] = useState(false);
     const [pendingAuth, setPendingAuth] = useState<ProviderAuth | null>(null);
-    const [availableLibraries, setAvailableLibraries] = useState<NavidromeLibrary[]>([]);
+    const [availableLibraries, setAvailableLibraries] = useState<Library[]>([]);
     const [selectedLibraryId, setSelectedLibraryId] = useState('');
 
     const passwordRef = useRef<TextInput>(null);
     const isSelectingLibrary =
-        type === 'navidrome' &&
         !!pendingAuth &&
         availableLibraries.length > 0;
 
@@ -114,7 +113,7 @@ export default function Credentials() {
                 return;
             }
 
-            if (type === 'navidrome' && result.libraries?.length) {
+            if (result.libraries?.length) {
                 setPendingAuth(result.auth);
                 setAvailableLibraries(result.libraries);
                 setSelectedLibraryId(result.libraries[0].id);

@@ -251,13 +251,13 @@ export default function CategoryListScreen() {
       edges={['top']}
       style={[styles.container, isDarkMode && styles.containerDark]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={styles.backButton}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#000'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#1C1C1E'} />
         </TouchableOpacity>
         <View pointerEvents="none" style={styles.titleWrapper}>
           <Text style={[styles.title, isDarkMode && styles.titleDark]}>
@@ -311,13 +311,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingTop: 12,
-    paddingBottom: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -328,9 +327,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1C1C1E',
   },
   titleDark: {
     color: '#fff',

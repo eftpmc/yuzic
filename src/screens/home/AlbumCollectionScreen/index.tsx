@@ -1,20 +1,25 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { useTheme } from '@/hooks/useTheme'
 import { useGridLayout } from '@/hooks/useGridLayout'
 import { useAlbums } from '@/hooks/albums'
 import { useStarredSongs } from '@/hooks/starred'
 import { selectAlbumLastPlayedAt } from '@/utils/redux/selectors/statsSelectors'
-import { selectGridColumns, selectIsGridView } from '@/utils/redux/selectors/settingsSelectors'
+import { selectGridColumns, selectIsGridView, selectLibrarySortOrder } from '@/utils/redux/selectors/settingsSelectors'
+import { setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice'
 
 import AlbumItem from '@/screens/home/components/Items/AlbumItem'
 import LibraryContent from '@/screens/home/components/Content'
+import LibraryListHeader from '@/screens/home/components/Content/Header'
+import SortBottomSheet from '@/screens/home/components/SortBottomSheet'
+import GridSettingsBottomSheet from '@/screens/home/components/GridSettingsBottomSheet'
 
 type CollectionType = 'recentlyPlayed' | 'recentlyAdded' | 'favoriteAlbums' | 'randomAlbums'
 
@@ -37,13 +42,18 @@ const TITLE_KEYS: Record<CollectionType, string> = {
 export default function AlbumCollectionScreen() {
   const { type } = useLocalSearchParams<{ type: CollectionType }>()
   const router = useRouter()
+  const dispatch = useDispatch()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const { gridItemWidth, gridSpacing } = useGridLayout()
 
   const gridColumns = useSelector(selectGridColumns)
   const isGridView = useSelector(selectIsGridView)
+  const sortOrder = useSelector(selectLibrarySortOrder)
   const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt)
+
+  const sortSheetRef = useRef<BottomSheetModal>(null)
+  const gridSettingsSheetRef = useRef<BottomSheetModal>(null)
 
   const { albums, isLoading } = useAlbums()
   const { songs: starredSongs } = useStarredSongs()
@@ -123,7 +133,24 @@ export default function AlbumCollectionScreen() {
         gridItemWidth={gridItemWidth}
         estimatedItemSize={302}
         renderItem={renderItem}
+        ListHeaderComponent={
+          <LibraryListHeader
+            sortOrder={sortOrder}
+            onSortPress={() => sortSheetRef.current?.present()}
+            onGridSettingsPress={() => gridSettingsSheetRef.current?.present()}
+          />
+        }
       />
+
+      <SortBottomSheet
+        ref={sortSheetRef}
+        sortOrder={sortOrder}
+        onSelect={value => {
+          dispatch(setLibrarySortOrder(value))
+          sortSheetRef.current?.dismiss()
+        }}
+      />
+      <GridSettingsBottomSheet ref={gridSettingsSheetRef} />
     </SafeAreaView>
   )
 }

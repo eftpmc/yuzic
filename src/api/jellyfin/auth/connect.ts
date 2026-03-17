@@ -1,10 +1,12 @@
-import { JellyfinConnectResult } from "@/api/types";
+type ConnectResult =
+  | { success: true; token: string; userId: string }
+  | { success: false; message?: string };
 
 export async function connect(
   serverUrl: string,
   username: string,
   password: string
-): Promise<JellyfinConnectResult> {
+): Promise<ConnectResult> {
   try {
     const res = await fetch(`${serverUrl}/Users/AuthenticateByName`, {
       method: "POST",

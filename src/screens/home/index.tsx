@@ -53,7 +53,7 @@ export default function HomeScreen() {
   const [pagerHeight, setPagerHeight] = useState(0)
   const [isMounted, setIsMounted] = useState(false)
   const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0) // 0 = explore (default)
+  const [currentPage, setCurrentPage] = useState(0)
 
   const accountSheetRef = useRef<BottomSheetModal>(null)
   const scrollViewRef = useRef<ScrollView>(null)
@@ -89,7 +89,6 @@ export default function HomeScreen() {
     return () => sub?.remove?.()
   }, [])
 
-  // Counts for LibraryNav
   const downloadedTracks = useMemo(
     () => tracks.filter(track => isTrackDownloaded(track.id)),
     [tracks, isTrackDownloaded]

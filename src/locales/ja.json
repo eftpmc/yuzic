@@ -61,7 +61,9 @@
         "title": "言語",
         "subtitle": "アプリの言語",
         "english": "英語",
-        "japanese": "日本語"
+        "japanese": "日本語",
+        "french": "フランス語",
+        "chinese": "中国語"
       }
     },
     "library": {

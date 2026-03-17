@@ -61,7 +61,9 @@
         "title": "Language",
         "subtitle": "App language",
         "english": "English",
-        "japanese": "Japanese"
+        "japanese": "Japanese",
+        "french": "French",
+        "chinese": "Chinese"
       }
     },
     "library": {

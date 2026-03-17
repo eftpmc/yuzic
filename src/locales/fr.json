@@ -62,7 +62,8 @@
         "subtitle": "Langue de l'application",
         "english": "Anglais",
         "japanese": "Japonais",
-        "french": "Français"
+        "french": "Français",
+        "chinese": "Chinois"
       }
     },
     "library": {

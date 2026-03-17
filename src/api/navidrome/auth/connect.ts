@@ -1,14 +1,17 @@
-import { NavidromeConnectResult } from "@/api/types";
 import { buildTokenParams } from "../client";
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
 
+type ConnectResult =
+  | { success: true; libraries: { id: string; name: string }[] }
+  | { success: false; message?: string };
+
 export async function connect(
   serverUrl: string,
   username: string,
   password: string
-): Promise<NavidromeConnectResult> {
+): Promise<ConnectResult> {
   if (!serverUrl || !username || !password) {
     return { success: false, message: "Missing credentials or server URL." };
   }

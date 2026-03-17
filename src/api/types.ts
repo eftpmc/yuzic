@@ -11,42 +11,11 @@ import {
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
 
-export type JellyfinConnectResult =
-  | {
-    success: true;
-    token: string;
-    userId: string;
-  }
-  | {
-    success: false;
-    message?: string;
-  };
-
-export type NavidromeLibrary = {
+export type Library = {
   id: string;
   name: string;
 };
 
-export type NavidromeConnectResult =
-  | {
-    success: true;
-    libraries?: NavidromeLibrary[];
-  }
-  | {
-    success: false;
-    message?: string;
-  };
-
-
-export type AuthFailure = {
-  success: false;
-  message?: string;
-};
-
-export type AuthResult =
-  | NavidromeConnectResult
-  | JellyfinConnectResult
-  | AuthFailure;
 
 export interface SongsApi {
   get(id: string): Promise<Song | null>;
@@ -80,7 +49,7 @@ export interface AuthApi {
     serverUrl: string,
     username: string,
     password: string
-  ): Promise<AuthResult>;
+  ): Promise<{ success: boolean; message?: string }>;
   ping(): Promise<boolean>;
   testUrl(url: string): Promise<{ success: boolean; message?: string }>;
   startScan(): Promise<{ success: boolean; message?: string }>;

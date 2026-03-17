@@ -1,0 +1,569 @@
+{
+  "settings": {
+    "title": "设置",
+    "sections": {
+      "general": "通用",
+      "plugins": "插件",
+      "about": "关于"
+    },
+    "rows": {
+      "server": "服务器",
+      "library": "媒体库",
+      "player": "播放器",
+      "appearance": "外观",
+      "downloaders": "下载管理",
+      "listenBrainz": "ListenBrainz",
+      "github": "Github",
+      "privacyPolicy": "隐私政策",
+      "termsOfUse": "使用条款",
+      "version": "版本"
+    },
+    "profile": {
+      "unknownUser": "未知用户",
+      "connectedTo": "已连接至 {{server}} 上的 {{type}}",
+      "noServer": "无服务器"
+    },
+    "links": {
+      "cantOpen": "无法打开 {{url}}"
+    },
+    "server": {
+      "title": "服务器",
+      "serverUrl": "服务器地址",
+      "username": "用户名",
+      "notSet": "未设置",
+      "connectivity": "连接状态",
+      "searchScopeHelp": "选择搜索结果的来源",
+      "searchScope": {
+        "client": "本地设备",
+        "clientExternal": "设备 + 外部",
+        "server": "服务器",
+        "serverExternal": "服务器 + 外部"
+      }
+    },
+    "appearance": {
+      "title": "外观",
+      "theme": {
+        "title": "主题",
+        "subtitle": "浅色、深色或跟随系统"
+      },
+      "color": {
+        "info": "自定义应用的主色调",
+        "change": "修改主题颜色"
+      },
+      "playingBarAction": {
+        "info": "选择播放栏显示的操作按钮"
+      },
+      "columns": {
+        "info": "设置网格视图的列数",
+        "count": "{{count}} 列"
+      },
+      "language": {
+        "title": "语言",
+        "subtitle": "应用显示语言",
+        "english": "英语",
+        "japanese": "日语",
+        "french": "法语",
+        "chinese": "中文"
+      }
+    },
+    "library": {
+      "title": "媒体库",
+      "discovery": {
+        "title": "发现",
+        "info": "发现功能会从你的媒体库中为你推荐歌手和专辑。",
+        "about": "关于发现功能"
+      },
+      "stats": {
+        "title": "媒体库",
+        "refreshTitle": "刷新媒体库？",
+        "refreshBody": "此操作将重新获取媒体库数据并清除缓存记录。",
+        "refreshCancel": "取消",
+        "refreshConfirm": "刷新",
+        "summary": {
+          "albums": "专辑",
+          "artists": "歌手",
+          "playlists": "播放列表"
+        },
+        "status": {
+          "cached": "已缓存",
+          "fresh": "更新 {{count}}",
+          "freshStale": "更新 {{fresh}}，失效 {{stale}}",
+          "errors": "{{count}} 个错误",
+          "errors_plural": "{{count}} 个错误"
+        },
+        "errorsTitle": "错误",
+        "unknownError": "未知错误"
+      },
+      "downloads": {
+        "title": "下载管理",
+        "detailsTitle": "下载详情",
+        "moreInfo": "更多信息",
+        "clearTitle": "清空下载内容？",
+        "clearBody": "此操作将删除设备上所有已下载的曲目。",
+        "clearBodyForProvider": "此操作仅删除当前服务器的下载内容。",
+        "clearBodyProviderNamed": "此操作仅删除 {{provider}} 的下载内容。",
+        "clearFailedTitle": "无法清空下载内容",
+        "clearFailedBody": "删除本地文件时发生错误。",
+        "removeTitle": "删除该下载项？",
+        "removeBody": "此操作将删除设备上「{{title}}」的已下载文件。",
+        "removeFailedTitle": "无法删除该下载项",
+        "removeFailedBody": "删除本地文件时发生错误。",
+        "provider": {
+          "navidrome": "Navidrome",
+          "jellyfin": "Jellyfin",
+          "unknown": "未知来源"
+        },
+        "status": {
+          "downloaded": "已下载",
+          "downloading": "下载中",
+          "incomplete": "未完成",
+          "pending": "等待中",
+          "paused": "已暂停",
+          "completed": "已完成",
+          "failed": "失败",
+          "cancelled": "已取消"
+        },
+        "type": {
+          "album": "专辑",
+          "playlist": "播放列表"
+        },
+        "sizeLabel": "下载大小",
+        "availableLabel": "可用空间",
+        "unknownTrack": "未知曲目",
+        "unknownArtist": "未知歌手",
+        "table": {
+          "item": "项目",
+          "status": "状态",
+          "progress": "进度",
+          "downloaded": "已下载",
+          "size": "大小",
+          "updated": "更新时间",
+          "error": "错误",
+          "empty": "暂无已下载项目。",
+          "tracks": "曲目",
+          "playlists": "播放列表"
+        },
+        "offlineNote": "这些曲目已存储在本地，可离线播放。"
+      },
+      "audioQuality": {
+        "info": "设置离线下载的首选音频质量。",
+        "label": "音频质量：{{value}}",
+        "options": {
+          "low": "低（64 kbps）",
+          "medium": "中（128 kbps）",
+          "high": "高（192 kbps）",
+          "original": "原始音质（无压缩）"
+        }
+      },
+      "offlineMode": {
+        "title": "离线模式",
+        "info": "启用后，应用仅显示已下载的内容。",
+        "toggle": "仅显示已下载内容"
+      }
+    },
+    "player": {
+      "title": "播放器",
+      "nothingPlaying": "当前无播放内容",
+      "unknownArtist": "—",
+      "equalizer": {
+        "title": "均衡器",
+        "reset": "重置",
+        "presets": "预设"
+      }
+    },
+    "listenBrainz": {
+      "title": "ListenBrainz",
+      "username": "用户名",
+      "userToken": "用户令牌",
+      "usernamePlaceholder": "ListenBrainz 用户名",
+      "tokenPlaceholder": "ListenBrainz 用户令牌",
+      "connectivity": "连接状态",
+      "helperText": "ListenBrainz 用于记录播放记录和个性化发现。MusicBrainz 提供歌手、专辑、流派和发行信息等元数据。未经你的许可，不会发送任何播放数据。",
+      "disconnect": "断开连接",
+      "missingCredentials": "请先输入用户名和令牌。",
+      "connectionSuccessful": "成功连接至 ListenBrainz。",
+      "connectionFailed": "连接失败。",
+      "connectFailed": "无法连接至 ListenBrainz。",
+      "disconnected": "已断开与 ListenBrainz 的连接。"
+    },
+    "downloaders": {
+      "title": "下载管理",
+      "connected": "已连接",
+      "notConnected": "未连接",
+      "serverUrl": "服务器地址",
+      "apiKey": "API 密钥",
+      "apiKeyPlaceholder": "API 密钥",
+      "connectivity": "连接状态",
+      "queue": "任务队列",
+      "emptyQueue": "暂无下载任务。",
+      "disconnect": "断开连接",
+      "downloadComplete": "下载完成！",
+      "unknown": "未知",
+      "unknownAlbum": "未知专辑",
+      "tracks": "曲目",
+      "tracks_plural": "曲目",
+      "files": "文件",
+      "files_plural": "文件",
+      "serverUrlPlaceholder": {
+        "lidarr": "http://node:8686",
+        "slskd": "http://slskd:5030"
+      },
+      "lidarr": {
+        "title": "Lidarr",
+        "connectionFailed": "连接 Lidarr 失败",
+        "disconnected": "已断开与 Lidarr 的连接。"
+      },
+      "slskd": {
+        "title": "slskd",
+        "connectionFailed": "连接 slskd 失败",
+        "disconnected": "已断开与 slskd 的连接。"
+      }
+    },
+    "discovery": {
+      "title": "发现",
+      "sections": {
+        "about": {
+          "title": "发现",
+          "body": "「发现」标签页会根据你的媒体库推荐歌手和专辑。你可以在这里看到相似的歌手、你可能喜欢的专辑，以及这些歌手的最新发行作品。"
+        },
+        "how": {
+          "title": "工作原理",
+          "body": "我们通过 MusicBrainz 和 ListenBrainz，根据你媒体库中的歌手找到风格相似的歌手。然后获取这些歌手的专辑和最新发行作品，并在「探索」页面随机展示。"
+        },
+        "sync": {
+          "title": "同步与刷新",
+          "body": "连接服务器时，发现功能会自动同步。在「发现」页面下拉刷新仅会重新随机展示已加载的内容，不会重新获取新数据。若同步失败，会显示提示消息，你可点击「重试」重新操作。"
+        }
+      }
+    }
+  },
+  "common": {
+    "cancel": "取消",
+    "delete": "删除",
+    "next": "下一步",
+    "done": "完成",
+    "back": "返回",
+    "play": "播放",
+    "shuffle": "随机播放",
+    "album": "专辑",
+    "albums": "专辑",
+    "song": "曲目",
+    "songs": "曲目",
+    "artist": "歌手",
+    "playlist": "播放列表",
+    "offline": {
+      "downloadRequired": "需下载此曲目才能在离线模式下播放。",
+      "noDownloadedTracks": "此操作无可用的已下载曲目。",
+      "similarUnavailable": "离线模式下无法使用相似曲目功能。"
+    },
+    "oneSecond": "稍等片刻。",
+    "playingSimilar": "正在播放相似音乐",
+    "error": {
+      "unexpected": "发生意外错误",
+      "details": "错误：{{name}} {{message}}",
+      "restart": "重启"
+    }
+  },
+  "onboarding": {
+    "home": {
+      "subtitle": "你的个人音乐库。随时随地从自有服务器流式播放。",
+      "getStarted": "开始使用",
+      "terms": "继续使用即表示你已阅读并同意我们的《使用条款》和《隐私政策》"
+    },
+    "servers": {
+      "title": "你的服务器",
+      "subtitle": "选择一个服务器继续，或添加新服务器。",
+      "empty": "暂未添加任何服务器。",
+      "add": "添加服务器",
+      "active": "当前使用",
+      "deleteTitle": "删除服务器",
+      "deleteBody": "是否删除 {{server}}？",
+      "switchClearTitle": "切换服务器并清空下载内容？",
+      "switchClearBody": "切换服务器会清空本地下载内容，以避免数据冲突。",
+      "switchClearConfirm": "切换并清空",
+      "switchClearFailedTitle": "无法切换服务器",
+      "switchClearFailedBody": "切换服务器前，清空下载内容失败。"
+    },
+    "connect": {
+      "title": "连接至你的服务器",
+      "subtitle": "输入服务器地址（http/https）",
+      "urlPlaceholder": "https://your-server.example.com",
+      "selectTypeFirst": "请先选择服务器类型。",
+      "enterUrl": "请输入有效的服务器地址。",
+      "demoUnavailableProvider": "该服务商暂不提供演示环境。",
+      "connectError": "连接时发生错误。",
+      "useDemo": "使用 {{provider}} 演示环境",
+      "demoUnavailable": "演示环境不可用",
+      "demoFailed": "演示环境连接失败",
+      "providerDescription": {
+        "navidrome": "轻量级自托管音乐服务器。",
+        "jellyfin": "全功能媒体服务器，支持音乐、电影和电视节目。"
+      }
+    },
+    "credentials": {
+      "title": "输入你的凭证",
+      "subtitle": "输入用户名和密码以继续。",
+      "usernamePlaceholder": "用户名",
+      "passwordPlaceholder": "密码",
+      "libraryTitle": "选择媒体库",
+      "librarySubtitle": "选择此服务器要使用的 Navidrome 媒体库。",
+      "confirmLibrary": "使用该媒体库",
+      "selectLibraryRequired": "请选择媒体库以继续。",
+      "missingCredentials": "请同时输入用户名和密码。",
+      "authFailed": "认证失败。",
+      "apiNotResponding": "服务器已连接，但 API 无响应。",
+      "connectError": "连接时发生错误。"
+    }
+  },
+  "library": {
+    "title": "媒体库"
+  },
+  "home": {
+    "title": "首页",
+    "filters": {
+      "all": "全部",
+      "albums": "专辑",
+      "artists": "歌手",
+      "playlists": "播放列表",
+      "tracks": "曲目"
+    },
+    "sort": {
+      "alphabetical": "按字母顺序",
+      "mostRecent": "最新添加",
+      "mostPlayed": "播放最多",
+      "releaseYear": "发行年份",
+      "lastModified": "最后修改时间"
+    },
+    "sortSheet": {
+      "title": "排序方式"
+    },
+    "empty": "暂无可用内容。",
+    "account": {
+      "settings": "设置",
+      "triggerScan": "开始扫描",
+      "signOut": "退出登录",
+      "scanTriggered": "扫描中。",
+      "scanFailed": "无法扫描。",
+      "signOutFailed": "无法正常退出登录。",
+      "downloadCleanupFailed": "退出登录时，无法清空下载内容。"
+    }
+  },
+  "search": {
+    "placeholder": "搜索音乐、歌手或播放列表...",
+    "noResults": "未找到结果",
+    "chips": {
+      "local": "本地",
+      "external": "外部",
+      "song": "曲目",
+      "album": "专辑",
+      "artist": "歌手",
+      "playlist": "播放列表"
+    }
+  },
+  "media": {
+    "albumNotFound": "未找到专辑",
+    "artistNotFound": "未找到歌手。",
+    "playlistNotFound": "未找到播放列表。"
+  },
+  "explore": {
+    "sections": {
+      "dial": "推荐",
+      "recentlyPlayed": "最近播放",
+      "recentlyAdded": "最近添加",
+      "favoriteAlbums": "收藏专辑",
+      "randomAlbums": "随机专辑"
+    },
+    "empty": {
+      "recentSongs": "播放音乐后将显示在此处",
+      "recentlyPlayed": "播放专辑后将显示在此处",
+      "recentlyAdded": "媒体库中暂无专辑",
+      "favoriteAlbums": "收藏曲目可将专辑添加至此",
+      "randomAlbums": "媒体库中暂无专辑"
+    }
+  },
+  "playing": {
+    "queue": {
+      "title": "播放队列",
+      "playingFromAlbum": "正在播放 {{album}} 中的曲目",
+      "playingFromQueue": "正在播放队列中的曲目"
+    },
+    "lyrics": {
+      "title": "歌词"
+    },
+    "aboutArtist": {
+      "header": "歌手",
+      "subtext": "歌手"
+    },
+    "bar": {
+      "noSong": "当前无播放曲目",
+      "selectTrack": "选择曲目开始播放"
+    },
+    "actions": {
+      "addedToFavorites": "{{title}} 已加入收藏。",
+      "removedFromFavorites": "{{title}} 已移出收藏。",
+      "updateFavoritesFailed": "更新收藏失败。",
+      "randomAlbum": "正在播放随机专辑：{{title}}",
+      "loadAlbumFailed": "加载专辑失败。"
+    }
+  },
+  "playlist": {
+    "favoritesTitle": "收藏",
+    "subtext": "播放列表 • {{count}} 首曲目",
+    "subtext_plural": "播放列表 • {{count}} 首曲目"
+  },
+  "playlistList": {
+    "title": "添加至播放列表",
+    "searchPlaceholder": "搜索播放列表",
+    "newPlaceholder": "新建播放列表名称",
+    "updated": "播放列表已更新"
+  },
+  "songOptions": {
+    "unknownArtist": "未知",
+    "actions": {
+      "favorite": "加入收藏",
+      "unfavorite": "移出收藏",
+      "addToQueue": "添加至队列",
+      "addToEnd": "添加至队尾",
+      "addToPlaylist": "添加至播放列表",
+      "instantMix": "即时混音"
+    },
+    "sections": {
+      "media": "媒体信息",
+      "track": "曲目信息",
+      "dates": "日期信息",
+      "other": "其他信息"
+    },
+    "media": {
+      "duration": "时长",
+      "bitrate": "比特率",
+      "sampleRate": "采样率",
+      "bitsPerSample": "采样位数",
+      "format": "格式",
+      "kbps": "{{value}} kbps",
+      "hz": "{{value}} Hz"
+    },
+    "track": {
+      "disc": "碟片",
+      "track": "曲目编号"
+    },
+    "dates": {
+      "released": "发行日期",
+      "added": "添加日期"
+    },
+    "other": {
+      "bpm": "BPM",
+      "genres": "流派",
+      "filePath": "文件路径"
+    },
+    "toasts": {
+      "removedFromFavorites": "{{title}} 已移出收藏。",
+      "addedToFavorites": "{{title}} 已加入收藏。",
+      "updateFavoritesFailed": "更新收藏失败。",
+      "nothingPlaying": "当前无播放内容。",
+      "alreadyPlaying": "{{title}} 正在播放中。",
+      "addedToQueue": "{{title}} 已添加至队列。",
+      "addToQueueFailed": "添加至队列失败。",
+      "playNext": "{{title}} 将作为下一曲播放。",
+      "playNextFailed": "无法将曲目加入下一曲播放队列。",
+      "instantMixFailed": "启动即时混音失败"
+    }
+  },
+  "externalAlbum": {
+    "menu": {
+      "title": "外部专辑",
+      "downloadToServer": "下载至服务器"
+    },
+    "download": {
+      "noDownloader": "未连接可用的下载工具。",
+      "addedToLidarr": "专辑已添加至 Lidarr！",
+      "addedToSlskd": "专辑已添加至 slskd 队列！",
+      "failed": "下载失败。",
+      "startFailed": "启动下载失败。"
+    },
+    "header": {
+      "songs": "{{count}} 首曲目",
+      "songs_plural": "{{count}} 首曲目",
+      "externalMetadata": "外部元数据"
+    },
+    "info": {
+      "title": "关于外部专辑",
+      "body": "此专辑的信息由 MusicBrainz 提供。曲目列表、时长、封面或发行详情可能不完整，或与你的本地文件存在差异。"
+    }
+  },
+  "albumOptions": {
+    "actions": {
+      "play": "播放",
+      "shuffle": "随机播放",
+      "addToQueue": "添加至队列",
+      "shuffleToQueue": "随机添加至队列",
+      "goToAlbum": "前往专辑页面",
+      "goToExternalAlbum": "前往外部专辑页面",
+      "goToExternalArtist": "前往外部歌手页面",
+      "viewExternal": "查看外部信息",
+      "download": "下载",
+      "downloading": "下载中…",
+      "downloaded": "已下载"
+    },
+    "sections": {
+      "albumInfo": "专辑信息"
+    },
+    "info": {
+      "artist": "歌手",
+      "year": "发行年份",
+      "genres": "流派",
+      "songs": "曲目数",
+      "unknown": "—"
+    }
+  },
+  "playlistOptions": {
+    "playlistLabel": "播放列表",
+    "actions": {
+      "play": "播放",
+      "shuffle": "随机播放",
+      "addToQueue": "添加至队列",
+      "shuffleToQueue": "随机添加至队列",
+      "goToPlaylist": "前往播放列表页面",
+      "download": "下载",
+      "downloading": "下载中…",
+      "downloaded": "已下载",
+      "delete": "删除播放列表"
+    },
+    "sections": {
+      "info": "播放列表信息"
+    },
+    "info": {
+      "lastChanged": "最后修改时间",
+      "created": "创建时间",
+      "songs": "曲目数"
+    },
+    "delete": {
+      "title": "删除播放列表",
+      "body": "「{{title}}」将被永久删除，此操作不可撤销。"
+    },
+    "toasts": {
+      "deleted": "播放列表已删除",
+      "deleteFailed": "无法删除播放列表"
+    }
+  },
+  "artistOptions": {
+    "artistLabel": "歌手",
+    "actions": {
+      "play": "播放",
+      "shuffle": "随机播放",
+      "addToQueue": "添加至队列",
+      "shuffleToQueue": "随机添加至队列",
+      "download": "下载",
+      "downloading": "下载中…",
+      "downloaded": "已下载",
+      "goToArtist": "前往歌手页面",
+      "goToExternalArtist": "前往外部歌手页面",
+      "viewExternal": "查看外部信息"
+    },
+    "sections": {
+      "info": "歌手信息"
+    },
+    "info": {
+      "albums": "专辑数"
+    }
+  }
+}

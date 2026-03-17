@@ -87,7 +87,7 @@ const LanguageBottomSheet = forwardRef<
                     { fontWeight: isSelected ? '600' : '400' },
                   ]}
                 >
-                  {lang.nativeName}
+                  {t(lang.translationKey)}
                 </Text>
               </View>
 
