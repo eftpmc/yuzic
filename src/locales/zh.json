@@ -75,24 +75,15 @@
       },
       "stats": {
         "title": "媒体库",
-        "refreshTitle": "刷新媒体库？",
-        "refreshBody": "此操作将重新获取媒体库数据并清除缓存记录。",
-        "refreshCancel": "取消",
-        "refreshConfirm": "刷新",
-        "summary": {
-          "albums": "专辑",
-          "artists": "歌手",
-          "playlists": "播放列表"
-        },
-        "status": {
-          "cached": "已缓存",
-          "fresh": "更新 {{count}}",
-          "freshStale": "更新 {{fresh}}，失效 {{stale}}",
-          "errors": "{{count}} 个错误",
-          "errors_plural": "{{count}} 个错误"
-        },
-        "errorsTitle": "错误",
-        "unknownError": "未知错误"
+        "neverSynced": "从未同步",
+        "justNow": "刚刚",
+        "minsAgo": "{{count}} 分钟前",
+        "minsAgo_plural": "{{count}} 分钟前",
+        "hoursAgo": "{{count}} 小时前",
+        "hoursAgo_plural": "{{count}} 小时前",
+        "daysAgo": "{{count}} 天前",
+        "daysAgo_plural": "{{count}} 天前",
+        "lastSynced": "上次同步"
       },
       "downloads": {
         "title": "下载管理",

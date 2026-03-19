@@ -254,8 +254,7 @@ export default function CategoryListScreen() {
       <View style={[styles.header, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
         <TouchableOpacity
           onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          style={styles.backButton}
+          style={styles.headerButton}
         >
           <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#1C1C1E'} />
         </TouchableOpacity>
@@ -264,7 +263,7 @@ export default function CategoryListScreen() {
             {t(titleKey)}
           </Text>
         </View>
-        <View style={styles.backButton} />
+        <View style={styles.headerButton} />
       </View>
 
       <LibraryContent
@@ -315,10 +314,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backButton: {
-    width: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerButton: {
+    padding: 6,
   },
   titleWrapper: {
     position: 'absolute',

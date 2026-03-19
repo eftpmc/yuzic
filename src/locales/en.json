@@ -75,24 +75,15 @@
       },
       "stats": {
         "title": "Library",
-        "refreshTitle": "Refresh Library?",
-        "refreshBody": "This will re-fetch library data and invalidate cached entries.",
-        "refreshCancel": "Cancel",
-        "refreshConfirm": "Refresh",
-        "summary": {
-          "albums": "Albums",
-          "artists": "Artists",
-          "playlists": "Playlists"
-        },
-        "status": {
-          "cached": "Cached",
-          "fresh": "{{count}} fresh",
-          "freshStale": "{{fresh}} fresh, {{stale}} stale",
-          "errors": "{{count}} error",
-          "errors_plural": "{{count}} errors"
-        },
-        "errorsTitle": "Errors",
-        "unknownError": "Unknown error"
+        "neverSynced": "Never synced",
+        "justNow": "Just now",
+        "minsAgo": "{{count}} min ago",
+        "minsAgo_plural": "{{count}} mins ago",
+        "hoursAgo": "{{count}} hr ago",
+        "hoursAgo_plural": "{{count}} hrs ago",
+        "daysAgo": "{{count}} day ago",
+        "daysAgo_plural": "{{count}} days ago",
+        "lastSynced": "Last synced"
       },
       "downloads": {
         "title": "Downloads",

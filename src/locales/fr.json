@@ -75,24 +75,15 @@
       },
       "stats": {
         "title": "Bibliothèque",
-        "refreshTitle": "Actualiser la bibliothèque ?",
-        "refreshBody": "Cela va récupérer à nouveau les données de la bibliothèque et invalider les entrées en cache.",
-        "refreshCancel": "Annuler",
-        "refreshConfirm": "Actualiser",
-        "summary": {
-          "albums": "Albums",
-          "artists": "Artistes",
-          "playlists": "Listes de lecture"
-        },
-        "status": {
-          "cached": "En cache",
-          "fresh": "{{count}} à jour",
-          "freshStale": "{{fresh}} à jour, {{stale}} obsolètes",
-          "errors": "{{count}} erreur",
-          "errors_plural": "{{count}} erreurs"
-        },
-        "errorsTitle": "Erreurs",
-        "unknownError": "Erreur inconnue"
+        "neverSynced": "Jamais synchronisé",
+        "justNow": "À l'instant",
+        "minsAgo": "Il y a {{count}} min",
+        "minsAgo_plural": "Il y a {{count}} min",
+        "hoursAgo": "Il y a {{count}} h",
+        "hoursAgo_plural": "Il y a {{count}} h",
+        "daysAgo": "Il y a {{count}} jour",
+        "daysAgo_plural": "Il y a {{count}} jours",
+        "lastSynced": "Dernière synchro"
       },
       "downloads": {
         "title": "Téléchargements",

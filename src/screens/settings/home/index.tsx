@@ -41,7 +41,7 @@ export default function Settings() {
             style={[styles.container, isDarkMode && styles.containerDark]}
         >
             <View style={[styles.headerContainer, isDarkMode && styles.headerContainerDark]}>
-                <TouchableOpacity onPress={() => router.back()}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
                     <Ionicons
                         name="chevron-back"
                         size={24}
@@ -55,7 +55,7 @@ export default function Settings() {
                     </Text>
                 </View>
 
-                <View style={{ width: 24 }} />
+                <View style={styles.headerButton} />
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -226,6 +226,9 @@ const styles = StyleSheet.create({
     headerContainerDark: {
         backgroundColor: '#000',
         borderBottomColor: '#1C1C1E',
+    },
+    headerButton: {
+        padding: 6,
     },
     headerTitle: {
         fontSize: 18,

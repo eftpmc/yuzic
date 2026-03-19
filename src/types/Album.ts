@@ -24,6 +24,7 @@ export interface ExternalAlbumBase {
     title: string;
     cover: CoverSource;
     artist: string;
+    artistMbid?: string | null;
     subtext: string;
     releaseDate?: string
 }

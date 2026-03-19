@@ -4,6 +4,7 @@ export type ReleaseGroup = {
   id: string;
   title: string;
   artist: string;
+  artistMbid: string | null;
 };
 
 export async function getReleaseGroup(
@@ -25,6 +26,7 @@ export async function getReleaseGroup(
       artist:
         rg['artist-credit']?.[0]?.name ??
         'Unknown Artist',
+      artistMbid: rg['artist-credit']?.[0]?.artist?.id ?? null,
     };
   } catch (err) {
     console.warn(

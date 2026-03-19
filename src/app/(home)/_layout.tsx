@@ -1,8 +1,23 @@
 import { Stack } from 'expo-router';
-import {View} from "react-native";
+import { useEffect, useRef } from 'react';
+import { AppState, View } from 'react-native';
 import PlayingBarHolder from "@/screens/playing/playingBar/PlayingBarHolder";
+import { useSync } from '@/hooks/useSync';
 
 export default function HomeLayout() {
+    const { sync } = useSync()
+    const appState = useRef(AppState.currentState)
+
+    useEffect(() => {
+        const sub = AppState.addEventListener('change', nextState => {
+            if (appState.current.match(/inactive|background/) && nextState === 'active') {
+                sync()
+            }
+            appState.current = nextState
+        })
+        return () => sub.remove()
+    }, [sync])
+
     return (
         <View style={{flex: 1}}>
         <Stack>

@@ -78,6 +78,7 @@ export function useExternalAlbum(
         id: group.id,
         title: group.title,
         artist: group.artist,
+        artistMbid: group.artistMbid,
         subtext: group.artist,
         cover: { kind: 'musicbrainz', releaseGroupId: group.id },
         songs: tracks,

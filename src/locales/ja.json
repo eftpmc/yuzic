@@ -75,24 +75,15 @@
       },
       "stats": {
         "title": "ライブラリ",
-        "refreshTitle": "ライブラリを更新しますか？",
-        "refreshBody": "ライブラリデータを再取得し、キャッシュを無効化します。",
-        "refreshCancel": "キャンセル",
-        "refreshConfirm": "更新",
-        "summary": {
-          "albums": "アルバム",
-          "artists": "アーティスト",
-          "playlists": "プレイリスト"
-        },
-        "status": {
-          "cached": "キャッシュ済み",
-          "fresh": "最新 {{count}}",
-          "freshStale": "最新 {{fresh}}、古い {{stale}}",
-          "errors": "{{count}} 件のエラー",
-          "errors_plural": "{{count}} 件のエラー"
-        },
-        "errorsTitle": "エラー",
-        "unknownError": "不明なエラー"
+        "neverSynced": "未同期",
+        "justNow": "たった今",
+        "minsAgo": "{{count}} 分前",
+        "minsAgo_plural": "{{count}} 分前",
+        "hoursAgo": "{{count}} 時間前",
+        "hoursAgo_plural": "{{count}} 時間前",
+        "daysAgo": "{{count}} 日前",
+        "daysAgo_plural": "{{count}} 日前",
+        "lastSynced": "最終同期"
       },
       "downloads": {
         "title": "ダウンロード",

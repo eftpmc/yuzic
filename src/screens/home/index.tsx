@@ -13,8 +13,7 @@ import { useAlbums } from '@/hooks/albums'
 import { useArtists } from '@/hooks/artists'
 import { useFullPlaylists, usePlaylists } from '@/hooks/playlists'
 import { useTracks } from '@/hooks/tracks'
-import { QueryKeys } from '@/enums/queryKeys'
-import { useQueryClient } from '@tanstack/react-query'
+import { useSync } from '@/hooks/useSync'
 import { useTranslation } from 'react-i18next'
 import { useDownloadedTracks } from 'react-native-nitro-player'
 import {
@@ -60,16 +59,11 @@ export default function HomeScreen() {
   const layoutDone = useRef(false)
   const scrollX = useRef(new Animated.Value(0)).current
 
-  const queryClient = useQueryClient()
+  const { sync } = useSync()
 
   useEffect(() => {
-    if (!activeServer?.isAuthenticated || !activeServer?.id) return
-    const serverId = activeServer.id
-    queryClient.refetchQueries({ queryKey: [QueryKeys.Albums, serverId] })
-    queryClient.refetchQueries({ queryKey: [QueryKeys.Artists, serverId] })
-    queryClient.refetchQueries({ queryKey: [QueryKeys.Playlists, serverId] })
-    queryClient.refetchQueries({ queryKey: [QueryKeys.Tracks, serverId] })
-  }, [activeServer?.id, activeServer?.isAuthenticated, queryClient])
+    sync()
+  }, [activeServer?.id, activeServer?.isAuthenticated])
 
   useEffect(() => {
     setIsMounted(true)

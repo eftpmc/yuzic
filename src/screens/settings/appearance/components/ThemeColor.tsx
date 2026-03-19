@@ -8,6 +8,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 
+const DEFAULT_COLOR = '#ff7f7f';
+
+const PRESET_COLORS = [
+  DEFAULT_COLOR,
+  '#ff9f43',
+  '#ffd32a',
+  '#0be881',
+  '#54a0ff',
+  '#5f27cd',
+];
+
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -20,6 +31,20 @@ export const ThemeColor: React.FC = () => {
       <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
         {t('settings.appearance.color.info')}
       </Text>
+
+      <View style={styles.presets}>
+        {PRESET_COLORS.map(color => (
+          <TouchableOpacity
+            key={color}
+            onPress={() => dispatch(setThemeColor(color))}
+            style={[
+              styles.preset,
+              { backgroundColor: color },
+              themeColor === color && styles.presetSelected,
+            ]}
+          />
+        ))}
+      </View>
 
       <TouchableOpacity
         style={[styles.optionButton, isDarkMode && styles.optionButtonDark]}
@@ -92,6 +117,26 @@ const styles = StyleSheet.create({
   leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  presets: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  preset: {
+    flex: 1,
+    height: 28,
+    borderRadius: 6,
+  },
+  presetSelected: {
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   colorPreview: {
     width: 20,

@@ -44,10 +44,6 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const slskdConfig = useSelector(selectSlskdConfig);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
   const isSlskdActive = useSelector(selectIsSlskdActive);
-
-  const showDownload =
-    (isLidarrActive && isLidarrConnected) ||
-    (isSlskdActive && isSlskdConnected);
   const [downloading, setDownloading] = useState(false);
 
   const infoSheetRef = useRef<BottomSheetModal>(null);
@@ -56,36 +52,34 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const songs = album.songs ?? [];
 
   const handleDownload = async () => {
-    if (!album.title || !album.artist || downloading) return;
+    if (downloading || !album.title || !album.artist) return;
+    const hasDownloader =
+      (isLidarrActive && isLidarrConnected) ||
+      (isSlskdActive && isSlskdConnected);
+    if (!hasDownloader) {
+      toast.error(t('externalAlbum.download.noDownloader'));
+      return;
+    }
     setDownloading(true);
     try {
       if (isLidarrActive && isLidarrConnected) {
-        const result = await lidarr.downloadAlbum(
-          lidarrConfig,
-          album.title,
-          album.artist
+        const result = await lidarr.downloadAlbum(lidarrConfig, album.title, album.artist);
+        toast[result.success ? 'success' : 'error'](
+          result.success
+            ? t('externalAlbum.download.addedToLidarr')
+            : (result.message ?? t('externalAlbum.download.failed'))
         );
-        if (result.success) {
-          toast.success(t('externalAlbum.download.addedToLidarr'));
-        } else {
-          toast.error(result.message ?? t('externalAlbum.download.failed'));
-        }
         return;
       }
       if (isSlskdActive && isSlskdConnected) {
-        const result = await slskd.downloadAlbum(
-          slskdConfig,
-          album.title,
-          album.artist
+        const result = await slskd.downloadAlbum(slskdConfig, album.title, album.artist);
+        toast[result.success ? 'success' : 'error'](
+          result.success
+            ? t('externalAlbum.download.addedToSlskd')
+            : (result.message ?? t('externalAlbum.download.failed'))
         );
-        if (result.success) {
-          toast.success(t('externalAlbum.download.addedToSlskd'));
-        } else {
-          toast.error(result.message ?? t('externalAlbum.download.failed'));
-        }
         return;
       }
-      toast.error(t('externalAlbum.download.noDownloader'));
     } catch {
       toast.error(t('externalAlbum.download.startFailed'));
     } finally {
@@ -93,95 +87,84 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
     }
   };
 
+  const metadataItems = useMemo(() => {
+    const items: string[] = [];
+    if (album.artist) items.push(album.artist);
+    if (songs.length > 0) items.push(t('externalAlbum.header.songs', { count: songs.length }));
+    return items;
+  }, [album.artist, songs.length, t]);
+
+  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+
   return (
     <>
       <View style={styles.container}>
+        {/* Header nav */}
         <View style={[styles.headerRow, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.headerButton}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color={isDarkMode ? '#fff' : '#1C1C1E'}
-            />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#1C1C1E'} />
           </TouchableOpacity>
 
           <View pointerEvents="none" style={styles.headerTitleWrapper}>
-            <Text style={[styles.headerNavTitle, isDarkMode && styles.headerNavTitleDark]} numberOfLines={1}>
+            <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
               {album.title}
             </Text>
           </View>
 
-          <View style={styles.headerButton} />
+          <TouchableOpacity onPress={() => infoSheetRef.current?.present()} style={styles.headerButton}>
+            <Ionicons name="information-circle-outline" size={24} color={isDarkMode ? '#fff' : '#1C1C1E'} />
+          </TouchableOpacity>
         </View>
 
+        {/* Cover */}
         <View style={styles.coverWrapper}>
-          <MediaImage
-            cover={album.cover}
-            size="detail"
-            style={styles.coverImage}
-          />
+          <MediaImage cover={album.cover} size="detail" style={styles.coverImage} />
         </View>
 
-        <View style={styles.titleRow}>
-          <View style={styles.titleInfo}>
-            <Text style={styles.title(isDarkMode)} numberOfLines={1}>
-              {album.title}
-            </Text>
-
-            <Text style={styles.artistName(isDarkMode)} numberOfLines={1}>
-              {album.artist}
-            </Text>
-
-            <View style={styles.subRow}>
-              <Text style={styles.subtext(isDarkMode)}>
-                {t('externalAlbum.header.songs', { count: songs.length })}
-              </Text>
-
-              <TouchableOpacity
-                style={[
-                  styles.badge,
-                  isDarkMode && styles.badgeDark,
-                ]}
-                onPress={() => infoSheetRef.current?.present()}
-              >
-                <Ionicons
-                  name="information-circle-outline"
-                  size={14}
-                  color={isDarkMode ? '#ccc' : '#555'}
-                />
-                <Text
-                  style={[
-                    styles.badgeText,
-                    isDarkMode && styles.badgeTextDark,
-                  ]}
-                >
-                  {t('externalAlbum.header.externalMetadata')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {showDownload ? (
-            <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.playButton, { backgroundColor: themeColor }]}
-                onPress={handleDownload}
-                disabled={downloading}
-              >
-                {downloading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <LucideDownload
-                    size={24}
-                    color="#fff"
-                  />
+        {/* Title + metadata */}
+        <View style={styles.titleInfo}>
+          <Text style={[styles.title, themeStyles.title]} numberOfLines={2}>
+            {album.title}
+          </Text>
+          <View style={styles.metaRow}>
+            {metadataItems.map((item, index) => (
+              <React.Fragment key={`${item}-${index}`}>
+                {index > 0 && (
+                  <Text style={[styles.metaDot, themeStyles.subtext]}>•</Text>
                 )}
-              </TouchableOpacity>
-            </View>
-          ) : null}
+                {index === 0 && album.artist ? (
+                  <TouchableOpacity
+                    onPress={() =>
+                      (navigation as any).navigate('externalArtistView', { mbid: album.artistMbid, name: album.artist })
+                    }
+                  >
+                    <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                    {item}
+                  </Text>
+                )}
+              </React.Fragment>
+            ))}
+          </View>
+        </View>
+
+        {/* Actions */}
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={[styles.downloadButton, { backgroundColor: themeColor }]}
+            onPress={handleDownload}
+            disabled={downloading}
+          >
+            {downloading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <LucideDownload size={24} color="#fff" />
+            )}
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -189,29 +172,14 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
         ref={infoSheetRef}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
-        backgroundStyle={{
-          backgroundColor: isDarkMode ? '#1c1c1e' : '#f9f9f9',
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: isDarkMode ? '#555' : '#ccc',
-        }}
+        backgroundStyle={{ backgroundColor: isDarkMode ? '#1c1c1e' : '#f9f9f9' }}
+        handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
       >
         <BottomSheetView style={styles.sheetContainer}>
-          <Text
-            style={[
-              styles.sheetTitle,
-              isDarkMode && styles.sheetTitleDark,
-            ]}
-          >
+          <Text style={[styles.sheetTitle, isDarkMode && styles.sheetTitleDark]}>
             {t('externalAlbum.info.title')}
           </Text>
-
-          <Text
-            style={[
-              styles.sheetBody,
-              isDarkMode && styles.sheetBodyDark,
-            ]}
-          >
+          <Text style={[styles.sheetBody, isDarkMode && styles.sheetBodyDark]}>
             {t('externalAlbum.info.body')}
           </Text>
         </BottomSheetView>
@@ -220,9 +188,10 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   );
 };
 
+export default ExternalAlbumHeader;
+
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 0,
     alignItems: 'center',
   },
   headerRow: {
@@ -240,13 +209,13 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
-  headerNavTitle: {
+  headerTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1C1C1E',
     maxWidth: '60%',
   },
-  headerNavTitleDark: {
+  headerTitleDark: {
     color: '#fff',
   },
   headerButton: {
@@ -265,63 +234,40 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 16,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  titleInfo: {
     width: '100%',
     marginBottom: 12,
+    alignItems: 'center',
   },
-  titleInfo: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  title: (isDark: boolean) => ({
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: isDark ? '#fff' : '#000',
-    marginBottom: 4,
-  }),
-  artistName: (isDark: boolean) => ({
-    fontSize: 14,
-    color: isDark ? '#fff' : '#333',
     marginBottom: 6,
-  }),
-  subRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    textAlign: 'center',
   },
-  subtext: (isDark: boolean) => ({
+  subtext: {
     fontSize: 14,
-    color: isDark ? '#aaa' : '#666',
-  }),
-  badge: {
+  },
+  metaDot: {
+    fontSize: 14,
+    marginHorizontal: 6,
+  },
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.06)',
-    gap: 4,
+    justifyContent: 'center',
+    flexWrap: 'nowrap',
+    maxWidth: '94%',
+    marginTop: 4,
   },
-  badgeDark: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  badgeText: {
-    fontSize: 12,
-    color: '#555',
-  },
-  badgeTextDark: {
-    color: '#ccc',
-  },
-  actions: {
-    flexDirection: 'row',
+  actionsRow: {
+    width: '100%',
     alignItems: 'center',
-    marginLeft: 12,
+    marginBottom: 12,
   },
-  playButton: {
-    borderRadius: 24,
-    width: 48,
+  downloadButton: {
+    borderRadius: 22,
+    width: 112,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
@@ -349,4 +295,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ExternalAlbumHeader;
+const stylesLight = StyleSheet.create({
+  title: { color: '#000' },
+  subtext: { color: '#666' },
+});
+
+const stylesDark = StyleSheet.create({
+  title: { color: '#fff' },
+  subtext: { color: '#aaa' },
+});

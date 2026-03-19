@@ -35,7 +35,10 @@ export interface SettingsState {
   /* Audio */
   audioQuality: AudioQuality;
 
-  language: AppLanguage
+  language: AppLanguage;
+
+  /* Sync */
+  lastSyncedAt: number | null;
 }
 
 const initialState: SettingsState = {
@@ -53,7 +56,9 @@ const initialState: SettingsState = {
 
   audioQuality: 'medium',
 
-  language: DEFAULT_LANGUAGE
+  language: DEFAULT_LANGUAGE,
+
+  lastSyncedAt: null,
 };
 
 const settingsSlice = createSlice({
@@ -109,6 +114,10 @@ const settingsSlice = createSlice({
       state.language = action.payload;
     },
 
+    setLastSyncedAt(state, action: PayloadAction<number | null>) {
+      state.lastSyncedAt = action.payload;
+    },
+
     resetSettings: () => initialState,
   },
 });
@@ -126,6 +135,7 @@ export const {
   setHasSeenGetStarted,
   setAudioQuality,
   setLanguage,
+  setLastSyncedAt,
   resetSettings,
 } = settingsSlice.actions;
 

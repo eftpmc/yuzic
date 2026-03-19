@@ -24,6 +24,11 @@ export async function getReleaseWithDetails(
       rg['artist-credit']?.[0]?.name ??
       'Unknown Artist';
 
+    const artistMbid: string | null =
+      release['artist-credit']?.[0]?.artist?.id ??
+      rg['artist-credit']?.[0]?.artist?.id ??
+      null;
+
     const media = release.media ?? [];
     const songs = media.flatMap((m: any) =>
       (m.tracks ?? []).map((t: any) => ({
@@ -40,6 +45,7 @@ export async function getReleaseWithDetails(
       id: rg.id,
       title: rg.title ?? release.title,
       artist,
+      artistMbid,
       subtext: artist,
       cover: { kind: 'musicbrainz', releaseGroupId: rg.id },
       songs,

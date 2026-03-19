@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useTranslation } from 'react-i18next'
+
 import { MediaImage } from '@/components/MediaImage'
 import { buildCover } from '@/utils/builders/buildCover'
 import { useTheme } from '@/hooks/useTheme'
@@ -20,9 +22,21 @@ type Props = {
 }
 
 export default function ExternalArtistHeader({ artist }: Props) {
+  const { t } = useTranslation()
   const navigation = useNavigation()
   const { isDarkMode } = useTheme()
+
   const bgUri = buildCover(artist.cover, 'background')
+
+  const metadataItems = useMemo(() => {
+    const items: string[] = []
+    const albumCount = artist.albums?.length ?? 0
+    if (albumCount > 0) {
+      items.push(`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`)
+    }
+    if (artist.subtext) items.push(artist.subtext)
+    return items
+  }, [artist.albums?.length, artist.subtext, t])
 
   return (
     <>
@@ -43,49 +57,45 @@ export default function ExternalArtistHeader({ artist }: Props) {
             ]}
           />
         )}
+
         <LinearGradient
           colors={
             isDarkMode
               ? ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,1)']
-              : [
-                  'rgba(255,255,255,0)',
-                  'rgba(255,255,255,0.7)',
-                  'rgba(255,255,255,1)',
-                ]
+              : ['rgba(255,255,255,0)', 'rgba(255,255,255,0.7)', 'rgba(255,255,255,1)']
           }
           style={StyleSheet.absoluteFill}
         />
+
         <View style={styles.centeredCoverContainer}>
-          <MediaImage
-            cover={artist.cover}
-            size="detail"
-            style={styles.centeredCover}
-          />
+          <MediaImage cover={artist.cover} size="detail" style={styles.centeredCover} />
         </View>
+
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
+          <View style={styles.backButton} />
         </View>
       </View>
+
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
-          <Text
-            style={[styles.artistName, isDarkMode && styles.artistNameDark]}
-          >
+          <Text style={[styles.artistName, isDarkMode && styles.artistNameDark]}>
             {artist.name}
           </Text>
-          {artist.subtext ? (
-            <Text
-              style={[styles.subtext, isDarkMode && styles.subtextDark]}
-              numberOfLines={1}
-            >
-              {artist.subtext}
-            </Text>
-          ) : null}
+          <View style={styles.metaRow}>
+            {metadataItems.map((item, index) => (
+              <React.Fragment key={`${item}-${index}`}>
+                {index > 0 && (
+                  <Text style={[styles.metaDot, isDarkMode && styles.metaTextDark]}>•</Text>
+                )}
+                <Text style={[styles.metaText, isDarkMode && styles.metaTextDark]} numberOfLines={1}>
+                  {item}
+                </Text>
+              </React.Fragment>
+            ))}
+          </View>
         </View>
       </View>
     </>
@@ -119,7 +129,12 @@ const styles = StyleSheet.create({
   header: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 20 : 50,
-    left: 16,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     zIndex: 20,
   },
   backButton: {
@@ -139,13 +154,23 @@ const styles = StyleSheet.create({
   artistNameDark: {
     color: '#fff',
   },
-  subtext: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+    flexWrap: 'wrap',
+  },
+  metaDot: {
     fontSize: 14,
     color: '#666',
-    textAlign: 'center',
-    marginTop: 4,
+    marginHorizontal: 6,
   },
-  subtextDark: {
+  metaText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  metaTextDark: {
     color: '#aaa',
   },
 })

@@ -36,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({
         <View style={[styles.container, isDarkMode && styles.containerDark]}>
             <TouchableOpacity
                 onPress={handleBack}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 style={styles.backButton}
             >
                 <Ionicons
@@ -46,15 +45,17 @@ const Header: React.FC<HeaderProps> = ({
                 />
             </TouchableOpacity>
 
-            <Text
-                style={[
-                    styles.title,
-                    isDarkMode && styles.titleDark,
-                ]}
-                numberOfLines={1}
-            >
-                {title}
-            </Text>
+            <View pointerEvents="none" style={styles.titleWrapper}>
+                <Text
+                    style={[
+                        styles.title,
+                        isDarkMode && styles.titleDark,
+                    ]}
+                    numberOfLines={1}
+                >
+                    {title}
+                </Text>
+            </View>
 
             <View style={styles.rightSlot}>
                 {rightAction ?? null}
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 12,
         borderBottomWidth: StyleSheet.hairlineWidth,
         borderBottomColor: '#D1D1D6',
     },
@@ -78,23 +79,25 @@ const styles = StyleSheet.create({
         borderBottomColor: '#1C1C1E',
     },
     backButton: {
-        width: 44,
-        height: 44,
-        justifyContent: 'center',
+        padding: 6,
+    },
+    titleWrapper: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
         alignItems: 'center',
     },
     title: {
-        flex: 1,
         fontSize: 18,
         fontWeight: '700',
         color: '#000',
-        marginLeft: 8,
+        maxWidth: '60%',
     },
     titleDark: {
         color: '#fff',
     },
     rightSlot: {
-        minWidth: 44,
+        minWidth: 36,
         alignItems: 'flex-end',
         justifyContent: 'center',
     },
