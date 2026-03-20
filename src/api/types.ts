@@ -1,12 +1,9 @@
 import {
   Playlist,
-  AlbumBase,
   Album,
-  ArtistBase,
   Artist,
   Song,
   SongBase,
-  PlaylistBase,
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
@@ -57,12 +54,12 @@ export interface AuthApi {
 }
 
 export interface AlbumsApi {
-  list(): Promise<AlbumBase[]>;
+  list(): Promise<Album[]>;
   get(id: string): Promise<Album>;
 }
 
 export interface ArtistsApi {
-  list(): Promise<ArtistBase[]>;
+  list(): Promise<Artist[]>;
   get(id: string): Promise<Artist>;
 }
 
@@ -71,7 +68,7 @@ export interface GenresApi {
 }
 
 export interface PlaylistsApi {
-  list(): Promise<PlaylistBase[]>;
+  list(): Promise<Playlist[]>;
   get(id: string): Promise<Playlist>;
   create(name: string): Promise<string>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
@@ -104,8 +101,8 @@ export type LyricsResult = {
 
 export type SearchApi = {
   search: (query: string) => Promise<{
-    albums: AlbumBase[];
-    artists: ArtistBase[];
+    albums: Album[];
+    artists: Artist[];
     songs: Song[];
   }>;
 };

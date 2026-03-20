@@ -14,6 +14,7 @@ import { useArtists } from '@/hooks/artists'
 import { useFullPlaylists, usePlaylists } from '@/hooks/playlists'
 import { useTracks } from '@/hooks/tracks'
 import { useSync } from '@/hooks/useSync'
+import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
 import { useTranslation } from 'react-i18next'
 import { useDownloadedTracks } from 'react-native-nitro-player'
 import {
@@ -60,9 +61,10 @@ export default function HomeScreen() {
   const scrollX = useRef(new Animated.Value(0)).current
 
   const { sync } = useSync()
+  const syncOnAppStart = useSelector(selectSyncOnAppStart)
 
   useEffect(() => {
-    sync()
+    if (syncOnAppStart) sync(true)
   }, [activeServer?.id, activeServer?.isAuthenticated])
 
   useEffect(() => {

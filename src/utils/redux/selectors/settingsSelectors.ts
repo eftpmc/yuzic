@@ -59,3 +59,6 @@ export const selectAudioQuality = (
 
 export const selectLastSyncedAt = (state: RootState): number | null =>
   state.settings.lastSyncedAt;
+
+export const selectSyncOnAppStart = (state: RootState): boolean =>
+  state.settings.syncOnAppStart ?? false;

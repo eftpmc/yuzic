@@ -1,17 +1,14 @@
-import { AlbumBase, ExternalAlbumBase } from "./Album";
+import { Album, ExternalAlbumBase } from "./Album";
 import { CoverSource } from "./Cover";
 
-export interface ArtistBase {
+export interface Artist {
     id: string;
     cover: CoverSource;
     name: string;
     subtext: string;
     /** MusicBrainz ID when available from server (Navidrome, Jellyfin) */
     mbid?: string | null;
-}
-
-export interface Artist extends ArtistBase {
-    ownedAlbums: AlbumBase[];
+    ownedAlbums: Album[];
 }
 
 export interface ExternalArtistBase {

@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useApi } from '@/api';
-import { ArtistBase, Artist } from '@/types';
+import { Artist } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
@@ -20,8 +20,8 @@ import { staleTime } from '@/constants/staleTime';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
-  artist: ArtistBase;
-  onPress?: (artist: ArtistBase) => void;
+  artist: Artist;
+  onPress?: (artist: Artist) => void;
 };
 
 const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {

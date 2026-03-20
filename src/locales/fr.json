@@ -83,7 +83,8 @@
         "hoursAgo_plural": "Il y a {{count}} h",
         "daysAgo": "Il y a {{count}} jour",
         "daysAgo_plural": "Il y a {{count}} jours",
-        "lastSynced": "Dernière synchro"
+        "lastSynced": "Dernière synchro",
+        "syncOnAppStart": "Synchroniser au démarrage"
       },
       "downloads": {
         "title": "Téléchargements",

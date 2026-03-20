@@ -5,6 +5,7 @@ import { SongBase } from "@/types";
 import { useApi } from "@/api";
 import { staleTime } from "@/constants/staleTime";
 import { selectActiveServer } from "@/utils/redux/selectors/serversSelectors";
+import { useLibrary } from "@/contexts/LibraryContext";
 
 type UseTracksResult = {
   tracks: SongBase[];
@@ -15,6 +16,7 @@ type UseTracksResult = {
 export function useTracks(): UseTracksResult {
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
+  const { tracks: libraryTracks } = useLibrary();
 
   const query = useQuery<SongBase[], Error>({
     queryKey: [QueryKeys.Tracks, activeServer?.id],
@@ -24,8 +26,8 @@ export function useTracks(): UseTracksResult {
   });
 
   return {
-    tracks: query.data ?? [],
-    isLoading: query.isLoading,
+    tracks: query.data ?? libraryTracks,
+    isLoading: query.isLoading && libraryTracks.length === 0,
     error: query.error ?? null,
   };
 }

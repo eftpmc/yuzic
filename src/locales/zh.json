@@ -83,7 +83,8 @@
         "hoursAgo_plural": "{{count}} 小时前",
         "daysAgo": "{{count}} 天前",
         "daysAgo_plural": "{{count}} 天前",
-        "lastSynced": "上次同步"
+        "lastSynced": "上次同步",
+        "syncOnAppStart": "启动时同步"
       },
       "downloads": {
         "title": "下载管理",

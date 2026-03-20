@@ -1,22 +1,18 @@
-import { ArtistBase } from "./Artist";
 import { CoverSource } from "./Cover";
 import { ExternalSong, Song } from "./Song";
 
-export interface AlbumBase {
+export interface Album {
     id: string;
     title: string;
     cover: CoverSource;
     subtext: string;
-    artist: ArtistBase;
+    artist: { id: string; name: string; cover: CoverSource; subtext: string; mbid?: string | null };
     year: number;
     genres: string[];
     created: Date;
     /** MusicBrainz ID (release or release-group) when available from server */
     mbid?: string | null;
-}
-
-export interface Album extends AlbumBase {
-    songs: Song[]
+    songs: Song[];
 }
 
 export interface ExternalAlbumBase {

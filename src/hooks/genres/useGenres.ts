@@ -4,6 +4,7 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useLibrary } from '@/contexts/LibraryContext';
 
 type UseGenresResult = {
   genres: string[];
@@ -14,6 +15,7 @@ type UseGenresResult = {
 export function useGenres(): UseGenresResult {
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
+  const { genres: libraryGenres } = useLibrary();
 
   const query = useQuery<string[], Error>({
     queryKey: [QueryKeys.Genres, activeServer?.id],
@@ -23,8 +25,8 @@ export function useGenres(): UseGenresResult {
   });
 
   return {
-    genres: query.data ?? [],
-    isLoading: query.isLoading,
+    genres: query.data ?? libraryGenres,
+    isLoading: query.isLoading && libraryGenres.length === 0,
     error: query.error ?? null,
   };
 }

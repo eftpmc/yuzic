@@ -10,8 +10,10 @@ import {
 import { useTranslation, TFunction } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
-import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { Check, X } from 'lucide-react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectThemeColor, selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
+import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useSync } from '@/hooks/useSync';
 
@@ -27,8 +29,10 @@ function formatLastSynced(ts: number | null, t: TFunction): string {
 
 const Stats: React.FC = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const syncOnAppStart = useSelector(selectSyncOnAppStart);
   const { sync, isSyncing, lastSyncedAt } = useSync();
 
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -66,7 +70,7 @@ const Stats: React.FC = () => {
         </Text>
 
         <TouchableOpacity
-          onPress={sync}
+          onPress={() => sync(true)}
           disabled={isSyncing}
           style={[
             styles.refreshButton,
@@ -90,6 +94,50 @@ const Stats: React.FC = () => {
         <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
           {formatLastSynced(lastSyncedAt, t)}
         </Text>
+      </View>
+
+      <View style={[styles.row, styles.rowBorder, isDarkMode && styles.rowBorderDark]}>
+        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+          {t('settings.library.stats.syncOnAppStart')}
+        </Text>
+        <View style={styles.toggleGrid}>
+          <TouchableOpacity
+            onPress={() => dispatch(setSyncOnAppStart(false))}
+            style={[
+              styles.gridButton,
+              isDarkMode && styles.gridButtonDark,
+              !syncOnAppStart && {
+                backgroundColor: themeColor,
+                borderColor: themeColor,
+              },
+            ]}
+            activeOpacity={0.8}
+          >
+            <X
+              size={18}
+              color={!syncOnAppStart ? '#fff' : isDarkMode ? '#ccc' : '#666'}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => dispatch(setSyncOnAppStart(true))}
+            style={[
+              styles.gridButton,
+              styles.gridButtonSpaced,
+              isDarkMode && styles.gridButtonDark,
+              syncOnAppStart && {
+                backgroundColor: themeColor,
+                borderColor: themeColor,
+              },
+            ]}
+            activeOpacity={0.8}
+          >
+            <Check
+              size={18}
+              color={syncOnAppStart ? '#fff' : isDarkMode ? '#ccc' : '#666'}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -132,11 +180,21 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
+  },
+  rowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  rowBorderDark: {
+    borderTopColor: '#222',
   },
   rowText: {
     fontSize: 16,
-    color: '#000',
+    color: '#1C1C1E',
+    flex: 1,
+    marginRight: 12,
   },
   rowTextDark: {
     color: '#fff',
@@ -147,5 +205,26 @@ const styles = StyleSheet.create({
   },
   rowValueDark: {
     color: '#aaa',
+  },
+  toggleGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gridButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f1f1',
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  gridButtonDark: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#333',
+  },
+  gridButtonSpaced: {
+    marginLeft: 8,
   },
 });

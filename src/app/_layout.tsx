@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { SearchProvider } from '@/contexts/SearchContext';
+import { LibraryProvider } from '@/contexts/LibraryContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider, useSelector } from 'react-redux';
@@ -139,7 +140,9 @@ export default function RootLayout() {
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <AppShell />
+          <LibraryProvider>
+            <AppShell />
+          </LibraryProvider>
         </PersistGate>
       </Provider>
     </PersistQueryClientProvider>

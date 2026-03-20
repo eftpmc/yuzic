@@ -83,7 +83,8 @@
         "hoursAgo_plural": "{{count}} hrs ago",
         "daysAgo": "{{count}} day ago",
         "daysAgo_plural": "{{count}} days ago",
-        "lastSynced": "Last synced"
+        "lastSynced": "Last synced",
+        "syncOnAppStart": "Sync on app start"
       },
       "downloads": {
         "title": "Downloads",

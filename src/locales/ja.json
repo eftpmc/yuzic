@@ -83,7 +83,8 @@
         "hoursAgo_plural": "{{count}} 時間前",
         "daysAgo": "{{count}} 日前",
         "daysAgo_plural": "{{count}} 日前",
-        "lastSynced": "最終同期"
+        "lastSynced": "最終同期",
+        "syncOnAppStart": "起動時に同期"
       },
       "downloads": {
         "title": "ダウンロード",

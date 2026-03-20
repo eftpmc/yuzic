@@ -6,9 +6,9 @@ import React, {
   useRef,
 } from 'react';
 import {
-  AlbumBase,
-  ArtistBase,
-  PlaylistBase,
+  Album,
+  Artist,
+  Playlist,
   CoverSource,
   ExternalAlbumBase,
   Song,
@@ -115,7 +115,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .filter(a =>
         a.title.toLowerCase().includes(lowerQuery)
       )
-      .map((album: AlbumBase) => ({
+      .map((album: Album) => ({
         ...album,
         type: 'album',
         source: 'local',
@@ -126,7 +126,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .filter(a =>
         a.name.toLowerCase().includes(lowerQuery)
       )
-      .map((artist: ArtistBase) => ({
+      .map((artist: Artist) => ({
         id: artist.id,
         title: artist.name,
         subtext: artist.subtext,
@@ -140,7 +140,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       .filter(p =>
         p.title.toLowerCase().includes(lowerQuery)
       )
-      .map((playlist: PlaylistBase) => ({
+      .map((playlist: Playlist) => ({
         ...playlist,
         type: 'playlist',
         source: 'local',
@@ -183,7 +183,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       await api.search.search(query);
 
     const albumResults: SearchResult[] = albums.map(
-      (album: AlbumBase) => ({
+      (album: Album) => ({
         id: album.id,
         title: album.title,
         subtext: album.subtext,
@@ -195,7 +195,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     );
 
     const artistResults: SearchResult[] = artists.map(
-      (artist: ArtistBase) => ({
+      (artist: Artist) => ({
         id: artist.id,
         title: artist.name,
         subtext: artist.subtext,

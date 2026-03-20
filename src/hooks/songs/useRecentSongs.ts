@@ -11,6 +11,7 @@ import {
 } from '@/utils/redux/selectors/statsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useLibrary } from '@/contexts/LibraryContext';
 
 const MAX_RECENT = 12;
 const MIN_DIAL_SONGS = 6;
@@ -23,9 +24,20 @@ type UseRecentSongsResult = {
 export function useRecentSongs(): UseRecentSongsResult {
   const api = useApi();
   const { tracks } = useTracks();
+  const { albums: libraryAlbums } = useLibrary();
   const songLastPlayedAt = useSelector(selectSongLastPlayedAt);
   const songPlayCounts = useSelector(selectSongPlayCounts);
   const activeServer = useSelector(selectActiveServer);
+
+  const librarySongMap = useMemo(() => {
+    const map = new Map<string, Song>();
+    for (const album of libraryAlbums) {
+      for (const song of album.songs ?? []) {
+        map.set(song.id, song);
+      }
+    }
+    return map;
+  }, [libraryAlbums]);
 
   const songIds = useMemo(() => {
     const recentIds = Object.entries(songLastPlayedAt)
@@ -65,6 +77,12 @@ export function useRecentSongs(): UseRecentSongsResult {
     return merged.slice(0, MAX_RECENT);
   }, [songLastPlayedAt, songPlayCounts, tracks]);
 
+  const reduxFallback = useMemo(() => {
+    return songIds
+      .map(id => librarySongMap.get(id))
+      .filter((s): s is Song => !!s);
+  }, [songIds, librarySongMap]);
+
   const query = useQuery<Song[]>({
     queryKey: [QueryKeys.RecentSongs, activeServer?.id, songIds],
     queryFn: async () => {
@@ -84,7 +102,7 @@ export function useRecentSongs(): UseRecentSongsResult {
   });
 
   return {
-    songs: query.data ?? [],
-    isLoading: query.isLoading,
+    songs: query.data ?? reduxFallback,
+    isLoading: query.isLoading && reduxFallback.length === 0,
   };
 }
