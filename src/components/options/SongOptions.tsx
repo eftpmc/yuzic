@@ -19,6 +19,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { ListEnd, ListStart, PlusCircle, Radio } from 'lucide-react-native';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -150,6 +151,8 @@ const SongOptions = forwardRef<
         ref={ref}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? '#555' : '#ccc',
         }}

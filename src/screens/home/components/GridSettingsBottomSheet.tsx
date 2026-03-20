@@ -23,6 +23,7 @@ import {
 } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
   (_, ref) => {
@@ -54,6 +55,8 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
         ref={ref}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         backgroundStyle={{
           backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
         }}

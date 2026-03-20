@@ -21,6 +21,7 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useTheme } from '@/hooks/useTheme';
 import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -138,6 +139,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         snapPoints={['90%']}
         enableDynamicSizing={false}
         enablePanDownToClose
+        backdropComponent={renderBackdrop}
         stackBehavior="push"
         onDismiss={onClose}
         backgroundStyle={{

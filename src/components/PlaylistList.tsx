@@ -32,6 +32,7 @@ import {
   useFullPlaylists,
 } from '@/hooks/playlists';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -125,6 +126,8 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         snapPoints={snapPoints}
         onDismiss={onClose}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         stackBehavior="push"
         handleComponent={null}
         backgroundStyle={{

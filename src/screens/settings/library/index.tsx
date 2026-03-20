@@ -3,14 +3,9 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    View,
-    Text,
-    TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { MaterialIcons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
 
@@ -23,7 +18,6 @@ import { useTheme } from '@/hooks/useTheme';
 const LibrarySettings: React.FC = () => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
-    const router = useRouter();
 
     return (
         <SafeAreaView
@@ -40,43 +34,6 @@ const LibrarySettings: React.FC = () => {
                 <AudioQuality />
                 <OfflineMode />
                 <Downloads />
-
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    <Text
-                        style={[
-                            styles.sectionTitle,
-                            isDarkMode && styles.sectionTitleDark,
-                        ]}
-                    >
-                        {t('settings.library.discovery.title')}
-                    </Text>
-                    <Text
-                        style={[
-                            styles.infoText,
-                            isDarkMode && styles.infoTextDark,
-                        ]}
-                    >
-                        {t('settings.library.discovery.info')}
-                    </Text>
-                    <TouchableOpacity
-                        style={styles.row}
-                        onPress={() => router.push('/settings/discoveryView')}
-                    >
-                        <Text
-                            style={[
-                                styles.rowText,
-                                isDarkMode && styles.rowTextDark,
-                            ]}
-                        >
-                            {t('settings.library.discovery.about')}
-                        </Text>
-                        <MaterialIcons
-                            name="chevron-right"
-                            size={24}
-                            color={isDarkMode ? '#fff' : '#6E6E73'}
-                        />
-                    </TouchableOpacity>
-                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -95,45 +52,5 @@ const styles = StyleSheet.create({
     scrollContent: {
         padding: 16,
         paddingBottom: 100,
-    },
-    section: {
-        marginBottom: 24,
-        paddingVertical: 20,
-        paddingHorizontal: 16,
-        borderRadius: 10,
-        backgroundColor: '#fff',
-    },
-    sectionDark: {
-        backgroundColor: '#111',
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        marginBottom: 10,
-    },
-    sectionTitleDark: {
-        color: '#fff',
-    },
-    infoText: {
-        fontSize: 13,
-        color: '#555',
-        marginBottom: 12,
-    },
-    infoTextDark: {
-        color: '#aaa',
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 4,
-    },
-    rowText: {
-        fontSize: 16,
-        color: '#1C1C1E',
-    },
-    rowTextDark: {
-        color: '#fff',
     },
 });

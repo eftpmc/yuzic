@@ -25,6 +25,7 @@ import {
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 interface ExternalAlbumOptionsProps {
   selectedAlbumTitle: string;
@@ -124,6 +125,8 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
         ref={bottomSheetRef}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? '#555' : '#ccc',
         }}

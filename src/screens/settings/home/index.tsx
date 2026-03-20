@@ -135,9 +135,11 @@ export default function Settings() {
                     {renderLinkRow(t('settings.rows.privacyPolicy'), 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
                     {renderLinkRow(t('settings.rows.termsOfUse'), 'https://eftpmc.github.io/yuzic-web/tos/')}
-                    {renderDivider()}
-                    {renderStaticRow(t('settings.rows.version'), appVersion)}
                 </View>
+
+                <Text style={[styles.versionText, isDarkMode && styles.versionTextDark]}>
+                    Yuzic {appVersion}
+                </Text>
             </ScrollView>
         </SafeAreaView>
     );
@@ -242,7 +244,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 16,
         paddingVertical: 24,
-        paddingBottom: 150,
+        paddingBottom: 120,
     },
 
     sectionTitle: {
@@ -350,5 +352,16 @@ const styles = StyleSheet.create({
     },
     profileSubtextDark: {
         color: '#aaa',
+    },
+
+    versionText: {
+        textAlign: 'center',
+        marginTop: 40,
+        marginBottom: 60,
+        fontSize: 13,
+        color: '#aaa',
+    },
+    versionTextDark: {
+        color: '#555',
     },
 });
