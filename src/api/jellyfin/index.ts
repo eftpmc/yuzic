@@ -44,8 +44,8 @@ import { search as searchJellyfin } from "./search/search";
 
 export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   const { serverUrl, auth: providerAuth } = server;
-  const { token, userId } = providerAuth as { token: string; userId: string };
-  const client = createJellyfinClient({ serverUrl, token, userId });
+  const { token, userId, parentId } = providerAuth as { token: string; userId: string; parentId?: string };
+  const client = createJellyfinClient({ serverUrl, token, userId, parentId });
 
   const auth: AuthApi = {
     connect: async (serverUrl, username, password) => {

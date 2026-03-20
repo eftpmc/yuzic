@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { FlashList } from '@shopify/flash-list'
 import LoadingExternalArtistHeader from '../Header/Loading'
-import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading'
+import LoadingExternalAlbumRow from '@/components/rows/ExternalAlbumRow/Loading'
 
 const ESTIMATED_ROW_HEIGHT = 80
 const PLACEHOLDER_ROWS = 6
@@ -18,7 +18,7 @@ export default function LoadingExternalArtistContent() {
       keyExtractor={(_, i) => `external-artist-loading-${i}`}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<LoadingExternalArtistHeader />}
-      renderItem={() => <LoadingAlbumRow />}
+      renderItem={() => <LoadingExternalAlbumRow />}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 140 }}
     />

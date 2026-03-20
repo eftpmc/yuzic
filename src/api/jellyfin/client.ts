@@ -2,6 +2,7 @@ export interface JellyfinClientConfig {
   serverUrl: string;
   token: string;
   userId: string;
+  parentId?: string;
 }
 
 const CLIENT_HEADERS = 'MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"';
@@ -9,7 +10,7 @@ const CLIENT_HEADERS = 'MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="
 export type JellyfinClient = ReturnType<typeof createJellyfinClient>;
 
 export function createJellyfinClient(config: JellyfinClientConfig) {
-  const { serverUrl, token, userId } = config;
+  const { serverUrl, token, userId, parentId } = config;
   const baseUrl = serverUrl.replace(/\/$/, "");
 
   const defaultHeaders: Record<string, string> = {
@@ -72,6 +73,7 @@ export function createJellyfinClient(config: JellyfinClientConfig) {
     serverUrl: baseUrl,
     token,
     userId,
+    parentId,
     buildStreamUrl,
   };
 }

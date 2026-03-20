@@ -68,6 +68,10 @@
     },
     "library": {
       "title": "媒体库",
+      "librarySelect": {
+        "info": "选择要使用的音乐库",
+        "all": "所有库"
+      },
       "discovery": {
         "title": "发现",
         "info": "发现功能会从你的媒体库中为你推荐歌手和专辑。",

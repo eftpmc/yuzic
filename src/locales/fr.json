@@ -68,6 +68,10 @@
     },
     "library": {
       "title": "Bibliothèque",
+      "librarySelect": {
+        "info": "Choisissez la bibliothèque musicale à utiliser",
+        "all": "Toutes les bibliothèques"
+      },
       "discovery": {
         "title": "Découverte",
         "info": "Comment la découverte suggère des artistes et albums de votre bibliothèque.",

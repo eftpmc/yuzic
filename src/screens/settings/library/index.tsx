@@ -13,6 +13,7 @@ import Stats from './components/Stats';
 import AudioQuality from './components/AudioQuality';
 import Downloads from './components/Downloads';
 import OfflineMode from './components/OfflineMode';
+import LibrarySelect from './components/LibrarySelect';
 import { useTheme } from '@/hooks/useTheme';
 
 const LibrarySettings: React.FC = () => {
@@ -31,6 +32,7 @@ const LibrarySettings: React.FC = () => {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Stats />
+                <LibrarySelect />
                 <AudioQuality />
                 <OfflineMode />
                 <Downloads />

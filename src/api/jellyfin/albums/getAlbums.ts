@@ -59,7 +59,8 @@ export async function getAlbums(
 
     const path =
       `/Items?${baseParams}` +
-      (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "");
+      (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "") +
+      (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
     const raw = await client.request(path);
     const items = raw?.Items ?? [];

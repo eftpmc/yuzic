@@ -25,7 +25,8 @@ export async function getTracks(client: JellyfinClient): Promise<SongBase[]> {
       `?IncludeItemTypes=Audio` +
       `&Recursive=true` +
       `&SortBy=SortName` +
-      `&Fields=RunTimeTicks,ArtistItems,AlbumId`;
+      `&Fields=RunTimeTicks,ArtistItems,AlbumId` +
+      (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
     const raw = await client.request<any>(path);
     const items = raw?.Items ?? [];

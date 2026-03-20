@@ -23,8 +23,8 @@ export const searchAlbums = async (
     const res = await request<{
       'release-groups'?: any[];
     }>('release-group', {
-      query,
-      limit: '25',
+      query: `releasegroup:${query}`,
+      limit: '50',
     });
 
     return Array.isArray(res['release-groups'])

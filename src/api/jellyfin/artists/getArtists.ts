@@ -10,7 +10,8 @@ export async function getArtists(client: JellyfinClient): Promise<GetArtistsResu
       `?IncludeItemTypes=MusicArtist` +
       `&Recursive=true` +
       `&SortBy=SortName` +
-      `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds`;
+      `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds` +
+      (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
     const raw = await client.request<any>(path);
     const items = raw?.Items ?? [];

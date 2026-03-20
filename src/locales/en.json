@@ -68,6 +68,10 @@
     },
     "library": {
       "title": "Library",
+      "librarySelect": {
+        "info": "Choose which music library to use",
+        "all": "All Libraries"
+      },
       "discovery": {
         "title": "Discovery",
         "info": "How Discovery suggests artists and albums from your library.",

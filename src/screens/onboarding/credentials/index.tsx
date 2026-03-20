@@ -15,7 +15,6 @@ import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
-import type { Library } from '@/utils/servers/registry';
 import { ServerType } from '@/types';
 import { useTranslation } from 'react-i18next';
 
@@ -34,26 +33,14 @@ export default function Credentials() {
     const [localUsername, setLocalUsername] = useState('');
     const [localPassword, setLocalPassword] = useState('');
     const [isTesting, setIsTesting] = useState(false);
-    const [pendingAuth, setPendingAuth] = useState<ProviderAuth | null>(null);
-    const [availableLibraries, setAvailableLibraries] = useState<Library[]>([]);
-    const [selectedLibraryId, setSelectedLibraryId] = useState('');
 
     const passwordRef = useRef<TextInput>(null);
-    const isSelectingLibrary =
-        !!pendingAuth &&
-        availableLibraries.length > 0;
 
     useEffect(() => {
         if (!type || !serverUrl) {
             router.replace('/(onboarding)/servers');
         }
     }, [type, serverUrl]);
-
-    const resetLibrarySelection = () => {
-        setPendingAuth(null);
-        setAvailableLibraries([]);
-        setSelectedLibraryId('');
-    };
 
     const saveServer = (auth: ProviderAuth) => {
         const id = nanoid();
@@ -73,18 +60,6 @@ export default function Credentials() {
 
     const handleNext = async () => {
         if (!type || !serverUrl) return;
-
-        if (isSelectingLibrary) {
-            if (!selectedLibraryId || !pendingAuth) {
-                toast.error(t('onboarding.credentials.selectLibraryRequired'));
-                return;
-            }
-            saveServer({
-                ...pendingAuth,
-                musicFolderId: selectedLibraryId,
-            });
-            return;
-        }
 
         if (!localUsername || !localPassword) {
             toast.error(t('onboarding.credentials.missingCredentials'));
@@ -113,13 +88,6 @@ export default function Credentials() {
                 return;
             }
 
-            if (result.libraries?.length) {
-                setPendingAuth(result.auth);
-                setAvailableLibraries(result.libraries);
-                setSelectedLibraryId(result.libraries[0].id);
-                return;
-            }
-
             saveServer(result.auth);
         } catch (err) {
             toast.error(t('onboarding.credentials.connectError'));
@@ -129,10 +97,6 @@ export default function Credentials() {
     };
 
     const handleBack = () => {
-        if (isSelectingLibrary) {
-            resetLibrarySelection();
-            return;
-        }
         router.back();
     };
 
@@ -140,81 +104,41 @@ export default function Credentials() {
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
                 <View style={styles.mainContent}>
-                    {isSelectingLibrary ? (
-                        <>
-                            <Text style={styles.title}>{t('onboarding.credentials.libraryTitle')}</Text>
-                            <Text style={styles.subtitle}>
-                                {t('onboarding.credentials.librarySubtitle')}
-                            </Text>
+                    <Text style={styles.title}>{t('onboarding.credentials.title')}</Text>
 
-                            <View style={styles.libraryList}>
-                                {availableLibraries.map(library => {
-                                    const isSelected = selectedLibraryId === library.id;
-                                    return (
-                                        <TouchableOpacity
-                                            key={library.id}
-                                            style={[
-                                                styles.libraryOption,
-                                                isSelected && styles.libraryOptionSelected,
-                                            ]}
-                                            onPress={() => setSelectedLibraryId(library.id)}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.libraryOptionText,
-                                                    isSelected && styles.libraryOptionTextSelected,
-                                                ]}
-                                                numberOfLines={1}
-                                            >
-                                                {library.name}
-                                            </Text>
-                                            {isSelected && (
-                                                <AntDesign name="check" size={16} color="#000" />
-                                            )}
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </View>
-                        </>
-                    ) : (
-                        <>
-                            <Text style={styles.title}>{t('onboarding.credentials.title')}</Text>
+                    <Text style={styles.subtitle}>
+                        {t('onboarding.credentials.subtitle')}
+                    </Text>
 
-                            <Text style={styles.subtitle}>
-                                {t('onboarding.credentials.subtitle')}
-                            </Text>
+                    <View style={styles.inputWrapper}>
+                        <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t('onboarding.credentials.usernamePlaceholder')}
+                            placeholderTextColor="#888"
+                            value={localUsername}
+                            onChangeText={setLocalUsername}
+                            autoCapitalize="none"
+                            returnKeyType="next"
+                            onSubmitEditing={() => passwordRef.current?.focus()}
+                        />
+                    </View>
 
-                            <View style={styles.inputWrapper}>
-                                <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder={t('onboarding.credentials.usernamePlaceholder')}
-                                    placeholderTextColor="#888"
-                                    value={localUsername}
-                                    onChangeText={setLocalUsername}
-                                    autoCapitalize="none"
-                                    returnKeyType="next"
-                                    onSubmitEditing={() => passwordRef.current?.focus()}
-                                />
-                            </View>
-
-                            <View style={styles.inputWrapper}>
-                                <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
-                                <TextInput
-                                    ref={passwordRef}
-                                    style={styles.input}
-                                    placeholder={t('onboarding.credentials.passwordPlaceholder')}
-                                    placeholderTextColor="#888"
-                                    secureTextEntry
-                                    value={localPassword}
-                                    onChangeText={setLocalPassword}
-                                    autoCapitalize="none"
-                                    returnKeyType="done"
-                                    onSubmitEditing={handleNext}
-                                />
-                            </View>
-                        </>
-                    )}
+                    <View style={styles.inputWrapper}>
+                        <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
+                        <TextInput
+                            ref={passwordRef}
+                            style={styles.input}
+                            placeholder={t('onboarding.credentials.passwordPlaceholder')}
+                            placeholderTextColor="#888"
+                            secureTextEntry
+                            value={localPassword}
+                            onChangeText={setLocalPassword}
+                            autoCapitalize="none"
+                            returnKeyType="done"
+                            onSubmitEditing={handleNext}
+                        />
+                    </View>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -226,11 +150,7 @@ export default function Credentials() {
                         {isTesting ? (
                             <ActivityIndicator size="small" color="#000" />
                         ) : (
-                            <Text style={styles.nextButtonText}>
-                                {isSelectingLibrary
-                                    ? t('onboarding.credentials.confirmLibrary')
-                                    : t('common.done')}
-                            </Text>
+                            <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                         )}
                     </TouchableOpacity>
 
@@ -290,34 +210,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#888',
         marginBottom: 20,
-    },
-    libraryList: {
-        gap: 10,
-    },
-    libraryOption: {
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#555',
-        backgroundColor: '#222',
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    libraryOptionSelected: {
-        borderColor: '#fff',
-        backgroundColor: '#fff',
-    },
-    libraryOptionText: {
-        color: '#fff',
-        fontSize: 15,
-        flex: 1,
-        paddingRight: 10,
-    },
-    libraryOptionTextSelected: {
-        color: '#000',
-        fontWeight: '600',
     },
     nextButton: {
         backgroundColor: '#fff',

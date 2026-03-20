@@ -10,6 +10,7 @@ function normalizeGenreItems(raw: any): GetGenresResult {
 }
 
 export async function getGenres(client: JellyfinClient): Promise<GetGenresResult> {
-  const raw = await client.request<any>("/Genres");
+  const path = `/Genres` + (client.parentId ? `?ParentId=${encodeURIComponent(client.parentId)}` : "");
+  const raw = await client.request<any>(path);
   return normalizeGenreItems(raw);
 }

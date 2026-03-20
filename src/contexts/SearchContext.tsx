@@ -270,26 +270,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
             result.type === 'artist' ? true : result.isDownloaded
           )
         );
-      } else if (searchScope === 'client') {
-        results.push(...await searchLibrary(query));
-      }
-
-      if (!offlineModeEnabled && searchScope === 'client+external') {
-        results.push(
-          ...await searchLibrary(query),
-          ...await searchExternal(query)
-        );
-      }
-
-      if (!offlineModeEnabled && searchScope === 'server') {
-        results.push(...await searchServer(query));
-      }
-
-      if (!offlineModeEnabled && searchScope === 'server+external') {
-        results.push(
-          ...await searchServer(query),
-          ...await searchExternal(query)
-        );
+      } else {
+        if (searchScope.includes('client')) results.push(...await searchLibrary(query));
+        if (searchScope.includes('server')) results.push(...await searchServer(query));
+        if (searchScope.includes('external')) results.push(...await searchExternal(query));
       }
       const uniqueMap = new Map<string, SearchResult>();
 
@@ -360,7 +344,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       if (requestId !== searchRequestIdRef.current)
         return;
 
-      setSearchResults(uniqueResults.slice(0, 25));
+      setSearchResults(uniqueResults.slice(0, 50));
     } finally {
       if (requestId === searchRequestIdRef.current) {
         setIsLoading(false);
