@@ -86,7 +86,9 @@ const Search = () => {
       }
       if (song) {
         setSelectedSong(song);
-        songOptionsRef.current?.present();
+        requestAnimationFrame(() => {
+          songOptionsRef.current?.present();
+        });
       }
     } catch (error) {
       console.warn('Failed to open song options', error);

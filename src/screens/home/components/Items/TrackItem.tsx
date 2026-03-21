@@ -92,7 +92,9 @@ const TrackItem: React.FC<Props> = ({
       const fullSong = await api.tracks.get(song.id);
       if (!fullSong) return;
       setSelectedSong(fullSong);
-      optionsRef.current?.present();
+      requestAnimationFrame(() => {
+        optionsRef.current?.present();
+      });
     } catch (error) {
       console.warn("Failed to open track options", error);
       toast.error("Unable to open track options");

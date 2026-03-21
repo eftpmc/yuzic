@@ -4,7 +4,9 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource, Playlist } from '@/types';
@@ -88,6 +90,19 @@ const PlaylistItem: React.FC<ItemProps> = ({
             {subtext}
           </Text>
         </View>
+
+        {!isGridView && (
+          <TouchableOpacity
+            onPress={handleLongPress}
+            hitSlop={10}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+        )}
       </Pressable>
 
       <PlaylistOptions
@@ -119,6 +134,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 16,

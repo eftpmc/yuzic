@@ -4,7 +4,9 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
@@ -102,6 +104,19 @@ const ArtistItem: React.FC<ItemProps> = ({
             {subtext}
           </Text>
         </View>
+
+        {!isGridView && (
+          <TouchableOpacity
+            onPress={() => { void handleLongPress(); }}
+            hitSlop={10}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+        )}
       </Pressable>
 
       <ArtistOptions
@@ -133,6 +148,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 16,

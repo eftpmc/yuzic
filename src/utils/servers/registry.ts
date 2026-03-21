@@ -1,7 +1,7 @@
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 
-import { createNavidromeClient } from '@/api/navidrome/client';
+import { createNavidromeClient, buildTokenParams } from '@/api/navidrome/client';
 import { ping as pingNavidrome } from '@/api/navidrome/auth/ping';
 import { connect as connectNavidrome } from '@/api/navidrome/auth/connect';
 import { createNavidromeAdapter } from '@/api/navidrome';
@@ -59,6 +59,18 @@ export type ServerProviderConfig = {
   demo?: () => Promise<DemoResult>;
 };
 
+// Cache token params per credential key so cover URLs are stable across renders
+// (expo-image caches by URL — a new random salt on every render = cache miss every time)
+const coverTokenCache = new Map<string, { u: string; t: string; s: string }>();
+
+function getCoverTokenParams(username: string, password: string) {
+  const key = `${username}:${password}`;
+  if (!coverTokenCache.has(key)) {
+    coverTokenCache.set(key, buildTokenParams(username, password));
+  }
+  return coverTokenCache.get(key)!;
+}
+
 export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
   navidrome: {
     type: 'navidrome',
@@ -96,7 +108,9 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       if (cover.kind !== 'navidrome') return null;
       const password = server.auth?.password as string | undefined;
       if (!server.serverUrl || !server.username || !password) return null;
-      return `${server.serverUrl}/rest/getCoverArt.view?id=${encodeURIComponent(cover.coverArtId)}&size=${px}&u=${encodeURIComponent(server.username)}&p=${encodeURIComponent(password)}&v=1.16.0&c=Yuzic`;
+      const { u, t, s } = getCoverTokenParams(server.username, password);
+      const params = new URLSearchParams({ id: cover.coverArtId, size: String(px), u, t, s, v: '1.16.0', c: 'Yuzic' });
+      return `${server.serverUrl}/rest/getCoverArt.view?${params}`;
     },
     demo: async () => {
       const serverUrl = 'https://demo.navidrome.org';
