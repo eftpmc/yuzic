@@ -32,11 +32,6 @@ export const selectLibrarySortOrder = (
 ): LibrarySortOrder =>
   state.settings.librarySortOrder;
 
-export const selectOfflineModeEnabled = (
-  state: RootState
-): boolean =>
-  state.settings.offlineModeEnabled;
-
 export const selectSearchScope = (
   state: RootState
 ): SearchScope =>

@@ -10,9 +10,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useGridLayout } from '@/hooks/useGridLayout'
 import { useAlbums } from '@/hooks/albums'
 import { useArtists } from '@/hooks/artists'
-import { useFullPlaylists, usePlaylists } from '@/hooks/playlists'
+import { usePlaylists } from '@/hooks/playlists'
 import { useTracks } from '@/hooks/tracks'
-import { useDownloadedTracks } from 'react-native-nitro-player'
 import { useTranslation } from 'react-i18next'
 
 import AlbumItem from '@/screens/home/components/Items/AlbumItem'
@@ -28,7 +27,6 @@ import {
   selectGridColumns,
   selectIsGridView,
   selectLibrarySortOrder,
-  selectOfflineModeEnabled,
 } from '@/utils/redux/selectors/settingsSelectors'
 import {
   selectAlbumLastPlayedAt,
@@ -38,7 +36,6 @@ import {
 } from '@/utils/redux/selectors/statsSelectors'
 import { setLibrarySortOrder } from '@/utils/redux/slices/settingsSlice'
 import { LIBRARY_INITIAL_PAGE_SIZE, LIBRARY_PAGE_SIZE } from '@/constants/library'
-import { getFullyDownloadedAlbumIds, isPlaylistFullyDownloaded } from '@/utils/downloads/collectionState'
 
 type FilterType = 'albums' | 'artists' | 'playlists' | 'tracks'
 
@@ -53,14 +50,11 @@ export default function CategoryListScreen() {
   const { albums, isLoading: albumsLoading } = useAlbums()
   const { artists, isLoading: artistsLoading } = useArtists()
   const { playlists, isLoading: playlistsLoading } = usePlaylists()
-  const { playlists: fullPlaylists } = useFullPlaylists(playlists)
   const { tracks, isLoading: tracksLoading } = useTracks()
-  const { isTrackDownloaded } = useDownloadedTracks()
 
   const gridColumns = useSelector(selectGridColumns)
   const isGridView = useSelector(selectIsGridView)
   const sortOrder = useSelector(selectLibrarySortOrder)
-  const offlineModeEnabled = useSelector(selectOfflineModeEnabled)
   const albumPlays = useSelector(selectAlbumPlays)
   const artistPlays = useSelector(selectArtistPlays)
   const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt)
@@ -77,52 +71,20 @@ export default function CategoryListScreen() {
     (type === 'playlists' && playlistsLoading) ||
     (type === 'tracks' && tracksLoading)
 
-  const downloadedTracks = useMemo(
-    () => tracks.filter(t => isTrackDownloaded(t.id)),
-    [tracks, isTrackDownloaded]
-  )
-  const downloadedTrackIds = useMemo(
-    () => new Set(downloadedTracks.map(t => t.id)),
-    [downloadedTracks]
-  )
-  const downloadedAlbumIds = useMemo(
-    () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
-    [tracks, downloadedTrackIds]
-  )
-  const downloadedPlaylistIds = useMemo(
-    () =>
-      new Set(
-        fullPlaylists
-          .filter(p => isPlaylistFullyDownloaded(p, downloadedTrackIds))
-          .map(p => p.id)
-      ),
-    [fullPlaylists, downloadedTrackIds]
-  )
-
   const filteredData = useMemo(() => {
     switch (type) {
-      case 'albums': {
-        const source = offlineModeEnabled
-          ? albums.filter(a => downloadedAlbumIds.has(a.id))
-          : albums
-        return source.map(a => ({ ...a, type: 'Album' as const }))
-      }
+      case 'albums':
+        return albums.map(a => ({ ...a, type: 'Album' as const }))
       case 'artists':
         return artists.map(a => ({ ...a, type: 'Artist' as const }))
-      case 'playlists': {
-        const source = offlineModeEnabled
-          ? playlists.filter(p => downloadedPlaylistIds.has(p.id))
-          : playlists
-        return source.map(p => ({ ...p, type: 'Playlist' as const }))
-      }
-      case 'tracks': {
-        const source = offlineModeEnabled ? downloadedTracks : tracks
-        return source.map(t => ({ ...t, type: 'Track' as const }))
-      }
+      case 'playlists':
+        return playlists.map(p => ({ ...p, type: 'Playlist' as const }))
+      case 'tracks':
+        return tracks.map(t => ({ ...t, type: 'Track' as const }))
       default:
         return []
     }
-  }, [type, albums, artists, playlists, tracks, offlineModeEnabled, downloadedAlbumIds, downloadedPlaylistIds, downloadedTracks])
+  }, [type, albums, artists, playlists, tracks])
 
   const sortedData = useMemo(() => {
     const data = [...filteredData]

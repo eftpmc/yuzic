@@ -7,20 +7,14 @@ import { useSelector } from 'react-redux'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
-import { selectOfflineModeEnabled, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
+import { selectThemeColor, selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
 import { useTheme } from '@/hooks/useTheme'
 import { useAlbums } from '@/hooks/albums'
 import { useArtists } from '@/hooks/artists'
-import { useFullPlaylists, usePlaylists } from '@/hooks/playlists'
+import { usePlaylists } from '@/hooks/playlists'
 import { useTracks } from '@/hooks/tracks'
 import { useSync } from '@/hooks/useSync'
-import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
 import { useTranslation } from 'react-i18next'
-import { useDownloadedTracks } from 'react-native-nitro-player'
-import {
-  getFullyDownloadedAlbumIds,
-  isPlaylistFullyDownloaded,
-} from '@/utils/downloads/collectionState'
 
 import HomeHeader from './components/Header'
 import AccountBottomSheet from './components/AccountBottomSheet'
@@ -41,11 +35,8 @@ export default function HomeScreen() {
   const { albums, isLoading: albumsLoading } = useAlbums()
   const { artists, isLoading: artistsLoading } = useArtists()
   const { playlists, isLoading: playlistsLoading } = usePlaylists()
-  const { playlists: fullPlaylists } = useFullPlaylists(playlists)
   const { tracks, isLoading: tracksLoading } = useTracks()
-  const { isTrackDownloaded } = useDownloadedTracks()
 
-  const offlineModeEnabled = useSelector(selectOfflineModeEnabled)
   const themeColor = useSelector(selectThemeColor)
   const isLoading = albumsLoading || artistsLoading || playlistsLoading || tracksLoading
 
@@ -85,40 +76,14 @@ export default function HomeScreen() {
     return () => sub?.remove?.()
   }, [])
 
-  const downloadedTracks = useMemo(
-    () => tracks.filter(track => isTrackDownloaded(track.id)),
-    [tracks, isTrackDownloaded]
-  )
-  const downloadedTrackIds = useMemo(
-    () => new Set(downloadedTracks.map(t => t.id)),
-    [downloadedTracks]
-  )
-  const downloadedAlbumIds = useMemo(
-    () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
-    [tracks, downloadedTrackIds]
-  )
-  const downloadedPlaylistIds = useMemo(
-    () =>
-      new Set(
-        fullPlaylists
-          .filter(p => isPlaylistFullyDownloaded(p, downloadedTrackIds))
-          .map(p => p.id)
-      ),
-    [fullPlaylists, downloadedTrackIds]
-  )
-
   const counts = useMemo(
     () => ({
-      albums: offlineModeEnabled
-        ? albums.filter(a => downloadedAlbumIds.has(a.id)).length
-        : albums.length,
+      albums: albums.length,
       artists: artists.length,
-      playlists: offlineModeEnabled
-        ? playlists.filter(p => downloadedPlaylistIds.has(p.id)).length
-        : playlists.length,
-      tracks: offlineModeEnabled ? downloadedTracks.length : tracks.length,
+      playlists: playlists.length,
+      tracks: tracks.length,
     }),
-    [albums, artists, playlists, tracks, offlineModeEnabled, downloadedAlbumIds, downloadedPlaylistIds, downloadedTracks]
+    [albums, artists, playlists, tracks]
   )
 
   const toggleAccountSheet = () => {

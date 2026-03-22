@@ -151,11 +151,6 @@
           "original": "Original (no compression)"
         }
       },
-      "offlineMode": {
-        "title": "Offline Mode",
-        "info": "When enabled, the app shows downloaded content only.",
-        "toggle": "Downloads-only mode"
-      }
     },
     "player": {
       "title": "Player",
@@ -312,7 +307,12 @@
     }
   },
   "library": {
-    "title": "Library"
+    "title": "Library",
+    "shuffle": {
+      "all": "Shuffle All",
+      "favorites": "Shuffle Favorites",
+      "downloaded": "Shuffle Downloaded"
+    }
   },
   "home": {
     "title": "Home",
@@ -321,7 +321,8 @@
       "albums": "Albums",
       "artists": "Artists",
       "playlists": "Playlists",
-      "tracks": "Tracks"
+      "tracks": "Tracks",
+      "downloaded": "Downloaded"
     },
     "sort": {
       "alphabetical": "Alphabetical",

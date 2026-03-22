@@ -24,7 +24,6 @@ export interface SettingsState {
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
-  offlineModeEnabled: boolean;
 
   /* Search */
   searchScope: SearchScope;
@@ -51,7 +50,6 @@ const initialState: SettingsState = {
   playingBarAction: 'skip',
 
   librarySortOrder: 'title',
-  offlineModeEnabled: false,
   searchScope: 'client+external',
   hasSeenGetStarted: false,
 
@@ -94,9 +92,6 @@ const settingsSlice = createSlice({
     setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
       state.librarySortOrder = action.payload;
     },
-    setOfflineModeEnabled(state, action: PayloadAction<boolean>) {
-      state.offlineModeEnabled = action.payload;
-    },
 
     setSearchScope(state, action: PayloadAction<SearchScope>) {
       state.searchScope = action.payload;
@@ -135,7 +130,6 @@ export const {
   setIsGridView,
   setPlayingBarAction,
   setLibrarySortOrder,
-  setOfflineModeEnabled,
   setSearchScope,
   setHasSeenGetStarted,
   setAudioQuality,

@@ -4,7 +4,7 @@ import { useDispatch, useSelector, useStore } from 'react-redux'
 import { RootState } from '@/utils/redux/store'
 import { QueryKeys } from '@/enums/queryKeys'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
-import { selectLastSyncedAt, selectOfflineModeEnabled } from '@/utils/redux/selectors/settingsSelectors'
+import { selectLastSyncedAt } from '@/utils/redux/selectors/settingsSelectors'
 import { setLastSyncedAt } from '@/utils/redux/slices/settingsSlice'
 import {
   setLibraryAlbums,
@@ -25,14 +25,13 @@ export function useSync() {
   const api = useApi()
   const activeServer = useSelector(selectActiveServer)
   const lastSyncedAt = useSelector(selectLastSyncedAt)
-  const offlineModeEnabled = useSelector(selectOfflineModeEnabled)
   const store = useStore()
   const [isSyncing, setIsSyncing] = useState(false)
 
   const isConnected = !!activeServer?.id && !!activeServer?.isAuthenticated
 
   const syncPlaylists = useCallback(async (overwrite = false) => {
-    if (!isConnected || offlineModeEnabled) return
+    if (!isConnected) return
     const serverId = activeServer!.id
     await Promise.allSettled([
       queryClient.refetchQueries({ queryKey: [QueryKeys.Playlists, serverId] }),
@@ -58,10 +57,10 @@ export function useSync() {
         dispatch(setLibraryPlaylists(fulfilled))
       }
     }
-  }, [isConnected, activeServer?.id, offlineModeEnabled, queryClient, dispatch, api, store])
+  }, [isConnected, activeServer?.id, queryClient, dispatch, api, store])
 
   const sync = useCallback(async (force = false, overwrite = false) => {
-    if (!isConnected || offlineModeEnabled) return
+    if (!isConnected) return
     const now = Date.now()
     if (!force && lastSyncedAt !== null && now - lastSyncedAt < SYNC_THROTTLE_MS) return
     const serverId = activeServer!.id
@@ -151,7 +150,7 @@ export function useSync() {
     } finally {
       setIsSyncing(false)
     }
-  }, [isConnected, activeServer?.id, lastSyncedAt, offlineModeEnabled, queryClient, dispatch, api, store])
+  }, [isConnected, activeServer?.id, lastSyncedAt, queryClient, dispatch, api, store])
 
   return { sync, syncPlaylists, isSyncing, lastSyncedAt }
 }

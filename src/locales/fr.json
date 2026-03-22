@@ -151,11 +151,6 @@
           "original": "Originale (sans compression)"
         }
       },
-      "offlineMode": {
-        "title": "Mode hors ligne",
-        "info": "Lorsqu'il est activé, l'application affiche uniquement le contenu téléchargé.",
-        "toggle": "Mode téléchargements uniquement"
-      }
     },
     "player": {
       "title": "Lecteur",
@@ -312,7 +307,12 @@
     }
   },
   "library": {
-    "title": "Bibliothèque"
+    "title": "Bibliothèque",
+    "shuffle": {
+      "all": "Tout mélanger",
+      "favorites": "Mélanger les favoris",
+      "downloaded": "Mélanger les téléchargements"
+    }
   },
   "home": {
     "title": "Accueil",
@@ -321,7 +321,8 @@
       "albums": "Albums",
       "artists": "Artistes",
       "playlists": "Listes de lecture",
-      "tracks": "Pistes"
+      "tracks": "Pistes",
+      "downloaded": "Téléchargés"
     },
     "sort": {
       "alphabetical": "Alphabétique",

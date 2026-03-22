@@ -32,6 +32,7 @@ export default function HomeLayout() {
             <Stack.Screen name="settings" options={{ headerShown: false }} />
             <Stack.Screen name="categoryList" options={{ headerShown: false }} />
             <Stack.Screen name="albumCollection" options={{ headerShown: false }} />
+            <Stack.Screen name="downloadedList" options={{ headerShown: false }} />
         </Stack>
             <PlayingBarHolder />
         </View>

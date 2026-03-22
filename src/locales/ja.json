@@ -151,11 +151,6 @@
           "original": "オリジナル (圧縮なし)"
         }
       },
-      "offlineMode": {
-        "title": "オフラインモード",
-        "info": "有効にすると、アプリはダウンロード済みのコンテンツのみを表示します。",
-        "toggle": "ダウンロード済みのみ"
-      }
     },
     "player": {
       "title": "プレーヤー",
@@ -312,7 +307,12 @@
     }
   },
   "library": {
-    "title": "ライブラリ"
+    "title": "ライブラリ",
+    "shuffle": {
+      "all": "すべてシャッフル",
+      "favorites": "お気に入りをシャッフル",
+      "downloaded": "ダウンロード済みをシャッフル"
+    }
   },
   "home": {
     "title": "ホーム",
@@ -321,7 +321,8 @@
       "albums": "アルバム",
       "artists": "アーティスト",
       "playlists": "プレイリスト",
-      "tracks": "トラック"
+      "tracks": "トラック",
+      "downloaded": "ダウンロード済み"
     },
     "sort": {
       "alphabetical": "アルファベット順",

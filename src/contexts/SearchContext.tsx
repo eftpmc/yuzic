@@ -24,7 +24,6 @@ import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
 import { useSelector } from 'react-redux';
 import {
-  selectOfflineModeEnabled,
   selectSearchScope,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { useDownloadedTracks } from 'react-native-nitro-player';
@@ -98,7 +97,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   );
 
   const searchScope = useSelector(selectSearchScope);
-  const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
 
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
@@ -263,18 +261,9 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
       const results: SearchResult[] = [];
 
-      if (offlineModeEnabled) {
-        const localResults = await searchLibrary(query);
-        results.push(
-          ...localResults.filter(result =>
-            result.type === 'artist' ? true : result.isDownloaded
-          )
-        );
-      } else {
-        if (searchScope.includes('client')) results.push(...await searchLibrary(query));
-        if (searchScope.includes('server')) results.push(...await searchServer(query));
-        if (searchScope.includes('external')) results.push(...await searchExternal(query));
-      }
+      if (searchScope.includes('client')) results.push(...await searchLibrary(query));
+      if (searchScope.includes('server')) results.push(...await searchServer(query));
+      if (searchScope.includes('external')) results.push(...await searchExternal(query));
       const uniqueMap = new Map<string, SearchResult>();
 
       for (const result of results) {

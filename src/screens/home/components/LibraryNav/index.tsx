@@ -13,7 +13,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useSelector } from 'react-redux'
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
 import { useTranslation } from 'react-i18next'
-import { Disc3, Users, ListMusic, Music2, Clock, Heart, Dices } from 'lucide-react-native'
+import { Disc3, Users, ListMusic, Music2, Clock, Heart, Dices, Download } from 'lucide-react-native'
 
 export type LibraryCounts = {
   albums: number
@@ -31,8 +31,8 @@ type NavItem = {
   key: string
   labelKey: string
   renderIcon: (color: string) => React.ReactNode
-  route: '/(home)/categoryList' | '/(home)/albumCollection'
-  param: string
+  route: '/(home)/categoryList' | '/(home)/albumCollection' | '/(home)/downloadedList'
+  param?: string
   countKey?: keyof LibraryCounts
 }
 
@@ -41,6 +41,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: 'artists',        labelKey: 'home.filters.artists',            renderIcon: (c) => <Users      size={20} color={c} />, route: '/(home)/categoryList',    param: 'artists',         countKey: 'artists' },
   { key: 'playlists',      labelKey: 'home.filters.playlists',          renderIcon: (c) => <ListMusic  size={20} color={c} />, route: '/(home)/categoryList',    param: 'playlists',       countKey: 'playlists' },
   { key: 'tracks',         labelKey: 'home.filters.tracks',             renderIcon: (c) => <Music2     size={20} color={c} />, route: '/(home)/categoryList',    param: 'tracks',          countKey: 'tracks' },
+  { key: 'downloaded',     labelKey: 'home.filters.downloaded',         renderIcon: (c) => <Download   size={20} color={c} />, route: '/(home)/downloadedList' },
   { key: 'recentlyPlayed', labelKey: 'explore.sections.recentlyPlayed', renderIcon: (c) => <Clock      size={20} color={c} />, route: '/(home)/albumCollection', param: 'recentlyPlayed' },
   { key: 'recentlyAdded',  labelKey: 'explore.sections.recentlyAdded',  renderIcon: (c) => <Clock      size={20} color={c} />, route: '/(home)/albumCollection', param: 'recentlyAdded' },
   { key: 'favoriteAlbums', labelKey: 'explore.sections.favoriteAlbums', renderIcon: (c) => <Heart      size={20} color={c} />, route: '/(home)/albumCollection', param: 'favoriteAlbums' },
@@ -61,8 +62,8 @@ export default function LibraryNav({ counts, isLoading }: Props) {
     >
       {NAV_ITEMS.map((item, index) => {
         const isLastInGroup =
-          index === 3 || index === NAV_ITEMS.length - 1
-        const isGroupDivider = index === 3
+          index === 4 || index === NAV_ITEMS.length - 1
+        const isGroupDivider = index === 4
 
         return (
           <React.Fragment key={item.key}>
@@ -75,7 +76,7 @@ export default function LibraryNav({ counts, isLoading }: Props) {
               onPress={() =>
                 router.push({
                   pathname: item.route,
-                  params: { type: item.param },
+                  ...(item.param ? { params: { type: item.param } } : {}),
                 })
               }
               activeOpacity={0.7}
