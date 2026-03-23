@@ -322,7 +322,8 @@
       "artists": "歌手",
       "playlists": "播放列表",
       "tracks": "曲目",
-      "downloaded": "已下载"
+      "downloaded": "已下载",
+      "genres": "流派"
     },
     "sort": {
       "alphabetical": "按字母顺序",

@@ -56,7 +56,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (syncOnAppStart) sync(true)
-  }, [activeServer?.id, activeServer?.isAuthenticated])
+  }, [activeServer?.id, activeServer?.isAuthenticated, sync, syncOnAppStart])
 
   useEffect(() => {
     setIsMounted(true)

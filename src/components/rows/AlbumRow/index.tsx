@@ -105,7 +105,7 @@ export default AlbumRow;
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
   },
   cover: {
     width: 64,

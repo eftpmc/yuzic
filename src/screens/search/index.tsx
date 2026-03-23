@@ -41,6 +41,7 @@ const Search = () => {
 
   const [query, setQuery] = useState('');
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const { searchResults, handleSearch, clearSearch, isLoading } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,11 +55,13 @@ const Search = () => {
 
     if (!text.trim()) {
       clearSearch();
+      setHasSearched(false);
       return;
     }
 
     typingTimeoutRef.current = setTimeout(async () => {
       clearSearch();
+      setHasSearched(true);
       await handleSearch(text);
     }, 300);
   };
@@ -304,6 +307,7 @@ const Search = () => {
               onPress={() => {
                 setQuery('');
                 clearSearch();
+                setHasSearched(false);
               }}
             >
               <MaterialIcons
@@ -328,7 +332,7 @@ const Search = () => {
             </>
           )}
 
-        {!isLoading && searchResults.length === 0 && (
+        {hasSearched && !isLoading && searchResults.length === 0 && (
           <Text
             style={[styles.noResults, isDarkMode && styles.noResultsDark]}
           >

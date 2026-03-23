@@ -322,7 +322,8 @@
       "artists": "Artistes",
       "playlists": "Listes de lecture",
       "tracks": "Pistes",
-      "downloaded": "Téléchargés"
+      "downloaded": "Téléchargés",
+      "genres": "Genres"
     },
     "sort": {
       "alphabetical": "Alphabétique",

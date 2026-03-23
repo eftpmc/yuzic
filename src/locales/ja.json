@@ -322,7 +322,8 @@
       "artists": "アーティスト",
       "playlists": "プレイリスト",
       "tracks": "トラック",
-      "downloaded": "ダウンロード済み"
+      "downloaded": "ダウンロード済み",
+      "genres": "ジャンル"
     },
     "sort": {
       "alphabetical": "アルファベット順",

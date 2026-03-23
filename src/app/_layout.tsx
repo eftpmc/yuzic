@@ -20,6 +20,7 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useTheme } from '@/hooks/useTheme';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
 import i18n from '@/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -60,6 +61,7 @@ function AppShell() {
         <PlayingProvider>
           <SearchProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
+              <ErrorBoundary>
               <BottomSheetModalProvider>
                 <Stack>
                   <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
@@ -95,6 +97,7 @@ function AppShell() {
                   }}
                 />
               </BottomSheetModalProvider>
+              </ErrorBoundary>
             </GestureHandlerRootView>
           </SearchProvider>
         </PlayingProvider>

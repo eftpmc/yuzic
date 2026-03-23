@@ -311,7 +311,7 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
-  - NitroModules (0.33.9):
+  - NitroModules (0.35.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -334,7 +334,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - NitroPlayer (0.5.8):
+  - NitroPlayer (0.7.0):
     - hermes-engine
     - NitroModules
     - RCTRequired
@@ -2341,7 +2341,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets (0.5.0):
+  - RNWorklets (0.7.3):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2363,9 +2363,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNWorklets/worklets (= 0.5.0)
+    - RNWorklets/worklets (= 0.7.3)
     - Yoga
-  - RNWorklets/worklets (0.5.0):
+  - RNWorklets/worklets (0.7.3):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2387,9 +2387,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNWorklets/worklets/apple (= 0.5.0)
+    - RNWorklets/worklets/apple (= 0.7.3)
     - Yoga
-  - RNWorklets/worklets/apple (0.5.0):
+  - RNWorklets/worklets/apple (0.7.3):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2810,8 +2810,8 @@ SPEC CHECKSUMS:
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
-  NitroModules: 97978583f36f88f7a348d5bf986d94bc4b340d0a
-  NitroPlayer: 41f6ec13a26425a028e7f4d12f15965b3c6b9926
+  NitroModules: 76063cb7bc1a21cf46d11b25abfcf1759bf0be47
+  NitroPlayer: 9ed2453c0da681120c6a0e984b07592b03761469
   RCTDeprecation: 943572d4be82d480a48f4884f670135ae30bf990
   RCTRequired: 8f3cfc90cc25cf6e420ddb3e7caaaabc57df6043
   RCTTypeSafety: 16a4144ca3f959583ab019b57d5633df10b5e97c
@@ -2888,7 +2888,7 @@ SPEC CHECKSUMS:
   RNReanimated: e5c702a3e24cc1c68b2de67671713f35461678f4
   RNScreens: d8d6f1792f6e7ac12b0190d33d8d390efc0c1845
   RNSVG: 31d6639663c249b7d5abc9728dde2041eb2a3c34
-  RNWorklets: dbe3b38c156d691a161ab2296859d3dec47cee45
+  RNWorklets: 9f996b65ea2510225270067ebc89ee6ec06df8cf
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
