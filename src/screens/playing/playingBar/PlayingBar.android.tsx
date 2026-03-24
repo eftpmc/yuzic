@@ -259,7 +259,7 @@ const PlayingBar: React.FC = () => {
 const styles = StyleSheet.create({
   wrapper: {
     margin: 12,
-    marginBottom: 24,
+    marginBottom: 8,
     borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#000',

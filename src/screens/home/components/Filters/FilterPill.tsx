@@ -8,6 +8,7 @@ type Props<T extends string> = {
   activeBackgroundColor: string;
   activeTextColor: string;
   inactiveTextColor: string;
+  inactiveBackgroundColor?: string;
   onPress: (value: T) => void;
 };
 
@@ -18,13 +19,18 @@ export function FilterPill<T extends string>({
   activeBackgroundColor,
   activeTextColor,
   inactiveTextColor,
+  inactiveBackgroundColor,
   onPress,
 }: Props<T>) {
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        active && { backgroundColor: activeBackgroundColor },
+        active
+          ? { backgroundColor: activeBackgroundColor }
+          : inactiveBackgroundColor
+            ? { backgroundColor: inactiveBackgroundColor }
+            : undefined,
       ]}
       onPress={() => onPress(value)}
     >
@@ -46,7 +52,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 999,
+    borderRadius: 8,
   },
   text: {
     fontSize: 14,
