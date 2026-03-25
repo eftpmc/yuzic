@@ -24,6 +24,8 @@ export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
             cover: song.cover,
             duration: song.duration,
             albumId: song.albumId,
+            year: song.dateReleased ? parseInt(song.dateReleased, 10) : undefined,
+            dateAdded: song.dateAdded,
           });
         }
       }

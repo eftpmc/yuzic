@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import { Album, Artist, Playlist } from '@/types';
 import { SongBase, Song } from '@/types';
@@ -39,8 +39,12 @@ export const LibraryProvider: React.FC<{ children: ReactNode }> = ({ children })
   const genres = useSelector(selectLibraryGenres);
   const starred = useSelector(selectLibraryStarred);
 
+  const value = useMemo(
+    () => ({ albums, artists, playlists, tracks, genres, starred }),
+    [albums, artists, playlists, tracks, genres, starred],
+  );
   return (
-    <LibraryContext.Provider value={{ albums, artists, playlists, tracks, genres, starred }}>
+    <LibraryContext.Provider value={value}>
       {children}
     </LibraryContext.Provider>
   );

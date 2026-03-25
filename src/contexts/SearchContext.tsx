@@ -26,7 +26,7 @@ import { useSelector } from 'react-redux';
 import {
   selectSearchScope,
 } from '@/utils/redux/selectors/settingsSelectors';
-import { useDownloadedTracks } from 'react-native-nitro-player';
+import { useDownload } from '@/contexts/DownloadContext';
 import {
   buildDownloadedTrackIdSet,
   getFullyDownloadedAlbumIds,
@@ -147,11 +147,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const playlistsForDownloadCheck = searchScope.includes('client') ? playlists : [];
   const { playlists: fullPlaylists } = useFullPlaylists(playlistsForDownloadCheck);
 
-  const downloadedState = useDownloadedTracks() as any;
+  const { getAllDownloadedTracks } = useDownload();
   const downloadedTrackIds = buildDownloadedTrackIdSet(
-    ((downloadedState?.downloadedTracks ?? []) as any[])
-      .map(track => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
-      .filter(track => track.id)
+    (getAllDownloadedTracks() as any[])
+      .map((track: any) => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
+      .filter((track: any) => track.id)
   );
   const downloadedAlbumIds = getFullyDownloadedAlbumIds(
     tracks.map(track => ({ id: track.id, albumId: track.albumId })),

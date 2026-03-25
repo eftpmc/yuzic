@@ -1,19 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   Dimensions,
-  FlatList,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated'
+import { FlashList } from '@shopify/flash-list'
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
@@ -34,6 +29,14 @@ import {
   selectGridColumns,
   selectGridSpacing,
 } from '@/utils/redux/selectors/settingsSelectors'
+import {
+  selectSongLastPlayedAt,
+  selectSongPlayCounts,
+  selectAlbumLastPlayedAt,
+  selectAlbumPlayCounts,
+  selectArtistLastPlayedAt,
+  selectArtistPlayCounts,
+} from '@/utils/redux/selectors/statsSelectors'
 import type { Album, Artist, Playlist, SongBase } from '@/types'
 
 import HomeHeader from '@/screens/home/components/Header'
@@ -57,28 +60,52 @@ type LibraryItem =
 
 const LIST_PADDING = 12
 
-function sortItems(items: LibraryItem[], order: SortOrder): LibraryItem[] {
-  if (order === 'userplays') return items
+const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
+
+type StatsMap = Record<string, number>
+
+interface SortStats {
+  songLastPlayed: StatsMap
+  songPlays: StatsMap
+  albumLastPlayed: StatsMap
+  albumPlays: StatsMap
+  artistLastPlayed: StatsMap
+  artistPlays: StatsMap
+}
+
+function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): LibraryItem[] {
   return [...items].sort((a, b) => {
     if (order === 'title') {
       const aName = a.kind === 'artist' ? a.data.name : (a.data as any).title ?? ''
       const bName = b.kind === 'artist' ? b.data.name : (b.data as any).title ?? ''
-      return aName.localeCompare(bName)
+      return collator.compare(aName, bName)
     }
     if (order === 'year') {
-      const aY = a.kind === 'album' ? (a.data.year ?? 0) : 0
-      const bY = b.kind === 'album' ? (b.data.year ?? 0) : 0
-      return bY - aY
+      const getYear = (x: LibraryItem) => {
+        if (x.kind === 'album') return x.data.year ?? 0
+        if (x.kind === 'track') return x.data.year ?? 0
+        return 0
+      }
+      return getYear(b) - getYear(a)
     }
     if (order === 'recent') {
       const toMs = (d: any) => d ? new Date(d).getTime() : 0
-      const aD =
-        a.kind === 'album' ? toMs(a.data.created) :
-        a.kind === 'playlist' ? toMs(a.data.changed) : 0
-      const bD =
-        b.kind === 'album' ? toMs(b.data.created) :
-        b.kind === 'playlist' ? toMs(b.data.changed) : 0
-      return bD - aD
+      const getMs = (x: LibraryItem) => {
+        if (x.kind === 'album') return toMs(x.data.created)
+        if (x.kind === 'playlist') return toMs(x.data.changed)
+        if (x.kind === 'track') return toMs(x.data.dateAdded)
+        return 0
+      }
+      return getMs(b) - getMs(a)
+    }
+    if (order === 'userplays') {
+      const getPlays = (x: LibraryItem) => {
+        if (x.kind === 'track') return stats.songPlays[x.data.id] ?? 0
+        if (x.kind === 'album') return stats.albumPlays[x.data.id] ?? 0
+        if (x.kind === 'artist') return stats.artistPlays[x.data.id] ?? 0
+        return 0
+      }
+      return getPlays(b) - getPlays(a)
     }
     return 0
   })
@@ -97,16 +124,22 @@ export default function LibraryScreen() {
 
   const [filter, setFilter] = useState<Filter>(null)
   const [listFilter, setListFilter] = useState<Filter>(null)
-  const [sortOrder, setSortOrder] = useState<SortOrder>('title')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
+  const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
 
   const listOpacity = useSharedValue(1)
   const animatedListStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }))
-  const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
-  const isMounted = useRef(false)
 
   const accountSheetRef = useRef<BottomSheetModal>(null)
   const sortSheetRef = useRef<BottomSheetModal>(null)
   const gridSheetRef = useRef<BottomSheetModal>(null)
+
+  const songLastPlayed = useSelector(selectSongLastPlayedAt)
+  const songPlays = useSelector(selectSongPlayCounts)
+  const albumLastPlayed = useSelector(selectAlbumLastPlayedAt)
+  const albumPlays = useSelector(selectAlbumPlayCounts)
+  const artistLastPlayed = useSelector(selectArtistLastPlayedAt)
+  const artistPlays = useSelector(selectArtistPlayCounts)
 
   const { albums } = useAlbums()
   const { artists } = useArtists()
@@ -117,83 +150,67 @@ export default function LibraryScreen() {
   const screenWidth = Dimensions.get('window').width
   const gridWidth = (screenWidth - LIST_PADDING * 2 - (gridColumns + 1) * gridSpacing) / gridColumns
 
-  useEffect(() => {
-    if (!isMounted.current) { isMounted.current = true; return }
-    const raf = requestAnimationFrame(() => {
-      listOpacity.value = withTiming(1, { duration: 150 })
+  const stats = useMemo<SortStats>(
+    () => ({ songLastPlayed, songPlays, albumLastPlayed, albumPlays, artistLastPlayed, artistPlays }),
+    [songLastPlayed, songPlays, albumLastPlayed, albumPlays, artistLastPlayed, artistPlays],
+  )
+
+  const sortedAll = useMemo(() => sortItems([
+    ...playlists.map(p => ({ kind: 'playlist' as const, data: p })),
+    ...albums.map(a => ({ kind: 'album' as const, data: a })),
+    ...artists.map(a => ({ kind: 'artist' as const, data: a })),
+  ], sortOrder, stats), [sortOrder, stats, albums, artists, playlists])
+
+  const sortedByFilter = useMemo(() => ({
+    playlists:  sortItems(playlists.map(p => ({ kind: 'playlist'  as const, data: p })), sortOrder, stats),
+    albums:     sortItems(albums.map(a => ({ kind: 'album'        as const, data: a })), sortOrder, stats),
+    artists:    sortItems(artists.map(a => ({ kind: 'artist'       as const, data: a })), sortOrder, stats),
+    tracks:     sortItems(tracks.map(tr => ({ kind: 'track'        as const, data: tr })), sortOrder, stats),
+    downloaded: sortItems(tracks.filter(tr => isTrackDownloaded(tr.id)).map(tr => ({ kind: 'track' as const, data: tr })), sortOrder, stats),
+  }), [sortOrder, stats, albums, artists, playlists, tracks, isTrackDownloaded])
+
+  const items = useMemo(
+    () => listFilter ? sortedByFilter[listFilter] : sortedAll,
+    [listFilter, sortedAll, sortedByFilter],
+  )
+
+  const applyFilterAndFadeIn = useCallback((newFilter: Filter) => {
+    setListFilter(newFilter)
+    requestAnimationFrame(() => {
+      listOpacity.value = withTiming(1, { duration: 220, easing: Easing.out(Easing.ease) })
     })
-    return () => cancelAnimationFrame(raf)
-  }, [listFilter]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [listOpacity])
 
-  const items = useMemo((): LibraryItem[] => {
-    let raw: LibraryItem[]
-    if (!listFilter) {
-      raw = [
-        ...playlists.map(p => ({ kind: 'playlist' as const, data: p })),
-        ...albums.map(a => ({ kind: 'album' as const, data: a })),
-        ...artists.map(a => ({ kind: 'artist' as const, data: a })),
-        ...tracks.map(tr => ({ kind: 'track' as const, data: tr })),
-      ]
-    } else switch (listFilter) {
-      case 'playlists':
-        raw = playlists.map(p => ({ kind: 'playlist', data: p }))
-        break
-      case 'albums':
-        raw = albums.map(a => ({ kind: 'album', data: a }))
-        break
-      case 'artists':
-        raw = artists.map(a => ({ kind: 'artist', data: a }))
-        break
-      case 'tracks':
-        raw = tracks.map(tr => ({ kind: 'track', data: tr }))
-        break
-      case 'downloaded':
-        raw = tracks.filter(tr => isTrackDownloaded(tr.id)).map(tr => ({ kind: 'track', data: tr }))
-        break
-    }
-    return sortItems(raw, sortOrder)
-  }, [listFilter, sortOrder, albums, artists, playlists, tracks, isTrackDownloaded])
-
-  const handleFilterPress = (val: NonNullable<Filter>) => {
-    const newFilter = filter === val ? null : val
-    setFilter(newFilter)
-    listOpacity.value = withTiming(0, { duration: 150 }, (finished) => {
-      'worklet'
-      if (finished) runOnJS(setListFilter)(newFilter)
-    })
-  }
-
-  const toggleAccountSheet = () => {
+  const toggleAccountSheet = useCallback(() => {
     if (isAccountSheetOpen) {
       accountSheetRef.current?.dismiss()
     } else {
       setIsAccountSheetOpen(true)
       accountSheetRef.current?.present()
     }
-  }
+  }, [isAccountSheetOpen])
 
-  const FILTERS: { value: NonNullable<Filter>; label: string }[] = [
-    { value: 'playlists',  label: t('home.filters.playlists') },
-    { value: 'albums',     label: t('home.filters.albums') },
-    { value: 'artists',    label: t('home.filters.artists') },
-    { value: 'tracks',     label: t('home.filters.tracks') },
-    { value: 'downloaded', label: t('home.filters.downloaded') },
-  ]
+  const FILTERS = useMemo(() => [
+    { value: 'playlists'  as const, label: t('home.filters.playlists') },
+    { value: 'albums'     as const, label: t('home.filters.albums') },
+    { value: 'artists'    as const, label: t('home.filters.artists') },
+    { value: 'tracks'     as const, label: t('home.filters.tracks') },
+    { value: 'downloaded' as const, label: t('home.filters.downloaded') },
+  ], [t])
 
-  const SORT_LABELS: Record<SortOrder, string> = {
+  const SORT_LABELS = useMemo((): Record<SortOrder, string> => ({
+    recent:    t('home.sort.mostRecent'),
     title:     t('home.sort.alphabetical'),
     year:      t('home.sort.releaseYear'),
     userplays: t('home.sort.mostPlayed'),
-    recent:    t('home.sort.mostRecent'),
-  }
+  }), [t])
 
   const secondaryColor = isDarkMode ? '#aaa' : '#666'
   const titleColor = isDarkMode ? '#e6e6e6' : '#000'
-
-const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
+  const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
   const activeTextColor = isDarkMode ? '#000' : '#fff'
 
-  const renderItem = ({ item }: { item: LibraryItem }) => {
+  const renderItem = useCallback(({ item }: { item: LibraryItem }) => {
     switch (item.kind) {
       case 'album':
         return (
@@ -205,6 +222,7 @@ const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
             isGridView={isGridView}
             gridWidth={gridWidth}
             gridSpacing={gridSpacing}
+            serverId={activeServer?.id}
           />
         )
       case 'artist':
@@ -217,6 +235,7 @@ const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
             isGridView={isGridView}
             gridWidth={gridWidth}
             gridSpacing={gridSpacing}
+            serverId={activeServer?.id}
           />
         )
       case 'playlist':
@@ -241,7 +260,7 @@ const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
           />
         )
     }
-  }
+  }, [isGridView, gridWidth, gridSpacing])
 
   return (
     <SafeAreaView
@@ -259,7 +278,7 @@ const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterScroll}
+          contentContainerStyle={styles.pillRow}
         >
           {FILTERS.map(f => (
             <FilterPill
@@ -271,47 +290,56 @@ const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
               inactiveBackgroundColor={isDarkMode ? '#1C1C1E' : '#F2F2F7'}
               activeTextColor={activeTextColor}
               inactiveTextColor={secondaryColor}
-              onPress={handleFilterPress}
+              onPress={(val) => {
+                const newFilter = filter === val ? null : val
+                setFilter(newFilter)
+                listOpacity.value = withTiming(0, { duration: 120, easing: Easing.in(Easing.ease) }, (finished) => {
+                  'worklet'
+                  if (finished) runOnJS(applyFilterAndFadeIn)(newFilter)
+                })
+              }}
             />
           ))}
         </ScrollView>
       </View>
 
       <Animated.View style={[{ flex: 1 }, animatedListStyle]}>
-        <FlatList
-          key={isGridView ? `grid-${gridColumns}` : 'list'}
-          data={items}
-          keyExtractor={item => `${item.kind}-${item.data.id}`}
-          renderItem={renderItem}
-          numColumns={isGridView ? gridColumns : 1}
-          ListHeaderComponent={
-            <View style={[styles.sortRow, { borderBottomColor: borderColor, backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
-              <TouchableOpacity
-                style={styles.sortButton}
-                onPress={() => sortSheetRef.current?.present()}
-              >
-                <ArrowUpDown size={17} color={titleColor} />
-                <Text style={[styles.sortLabel, { color: titleColor }]}>
-                  {SORT_LABELS[sortOrder]}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.gridButton}
-                onPress={() => gridSheetRef.current?.present()}
-              >
-                {isGridView
-                  ? <List size={17} color={titleColor} />
-                  : <Grid2x2 size={17} color={titleColor} />
-                }
-              </TouchableOpacity>
-            </View>
-          }
-          contentContainerStyle={[
-            styles.list,
-            isGridView && { paddingHorizontal: LIST_PADDING },
-          ]}
-          showsVerticalScrollIndicator={false}
-        />
+      <FlashList
+        key={`${isGridView ? `grid-${gridColumns}` : 'list'}`}
+        data={items}
+        keyExtractor={item => `${item.kind}-${item.data.id}`}
+        renderItem={renderItem}
+        numColumns={isGridView ? gridColumns : 1}
+        estimatedItemSize={isGridView ? gridWidth + 30 : 64}
+        getItemType={item => item.kind}
+        ListHeaderComponent={
+          <View style={[styles.sortRow, { borderBottomColor: borderColor, backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={() => sortSheetRef.current?.present()}
+            >
+              <ArrowUpDown size={17} color={titleColor} />
+              <Text style={[styles.sortLabel, { color: titleColor }]}>
+                {SORT_LABELS[sortOrder]}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.gridButton}
+              onPress={() => gridSheetRef.current?.present()}
+            >
+              {isGridView
+                ? <List size={17} color={titleColor} />
+                : <Grid2x2 size={17} color={titleColor} />
+              }
+            </TouchableOpacity>
+          </View>
+        }
+        contentContainerStyle={[
+          styles.list,
+          isGridView && { paddingHorizontal: LIST_PADDING },
+        ]}
+        showsVerticalScrollIndicator={false}
+      />
       </Animated.View>
 
       <AccountBottomSheet
@@ -341,7 +369,7 @@ const styles = StyleSheet.create({
   filterRow: {
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  filterScroll: {
+  pillRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,

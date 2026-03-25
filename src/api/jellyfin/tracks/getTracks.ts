@@ -15,6 +15,8 @@ function normalizeTrack(item: any): SongBase {
     albumId: item.AlbumId ?? "",
     cover,
     duration: String(Math.floor((item.RunTimeTicks ?? 0) / 10_000_000)),
+    year: item.ProductionYear ?? undefined,
+    dateAdded: item.DateCreated ?? undefined,
   };
 }
 
@@ -25,7 +27,7 @@ export async function getTracks(client: JellyfinClient): Promise<SongBase[]> {
       `?IncludeItemTypes=Audio` +
       `&Recursive=true` +
       `&SortBy=SortName` +
-      `&Fields=RunTimeTicks,ArtistItems,AlbumId` +
+      `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated` +
       (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
     const raw = await client.request<any>(path);

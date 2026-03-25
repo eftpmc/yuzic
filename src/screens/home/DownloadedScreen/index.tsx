@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
-import { useDownloadedTracks } from 'react-native-nitro-player'
+import { useDownload } from '@/contexts/DownloadContext'
 import { useTranslation } from 'react-i18next'
 
 import { useTheme } from '@/hooks/useTheme'
@@ -34,7 +34,7 @@ export default function DownloadedScreen() {
   const { gridItemWidth, gridSpacing } = useGridLayout()
 
   const { tracks, isLoading } = useTracks()
-  const { isTrackDownloaded } = useDownloadedTracks()
+  const { isTrackDownloaded } = useDownload()
 
   const gridColumns = useSelector(selectGridColumns)
   const isGridView = useSelector(selectIsGridView)

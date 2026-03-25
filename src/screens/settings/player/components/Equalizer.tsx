@@ -3,12 +3,10 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,
     ScrollView,
+    TouchableOpacity,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { useEqualizer } from 'react-native-nitro-player';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -24,42 +22,24 @@ const PRESETS = [
     { name: 'Jazz', gains: [3, 1, -1, 2, 4] },
 ];
 
+const STATIC_BANDS = [
+    { index: 0, gainDb: 0, frequencyLabel: '60 Hz' },
+    { index: 1, gainDb: 0, frequencyLabel: '230 Hz' },
+    { index: 2, gainDb: 0, frequencyLabel: '910 Hz' },
+    { index: 3, gainDb: 0, frequencyLabel: '3.6 kHz' },
+    { index: 4, gainDb: 0, frequencyLabel: '14 kHz' },
+];
+
 const Equalizer: React.FC = () => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
     const themeColor = useSelector(selectThemeColor);
 
-    const {
-        isEnabled,
-        setEnabled,
-        bands,
-        setBandGain,
-        setAllBandGains,
-        reset,
-    } = useEqualizer();
+    // Equalizer is permanently disabled — no nitro-player available
+    const isEnabled = false;
+    const disabledOpacity = 0.4;
 
-    const [activePreset, setActivePreset] = useState<string | null>(null);
-
-    const handlePreset = (preset: typeof PRESETS[number]) => {
-        setAllBandGains(preset.gains);
-        setActivePreset(preset.name);
-    };
-
-    const handleBandChange = (index: number, value: number) => {
-        setBandGain(index, value);
-        setActivePreset(null);
-    };
-
-    const handleReset = () => {
-        reset();
-        setActivePreset('Flat');
-    };
-
-    const handleToggle = () => {
-        setEnabled(!isEnabled);
-    };
-
-    const disabledOpacity = isEnabled ? 1 : 0.4;
+    const [activePreset] = useState<string | null>(null);
 
     return (
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -68,31 +48,6 @@ const Equalizer: React.FC = () => {
                 <Text style={[styles.title, isDarkMode && styles.titleDark]}>
                     {t('settings.player.equalizer.title')}
                 </Text>
-
-                <TouchableOpacity
-                    onPress={handleToggle}
-                    style={[
-                        styles.toggleButton,
-                        {
-                            backgroundColor: isEnabled
-                                ? themeColor
-                                : isDarkMode
-                                    ? '#222'
-                                    : '#eee',
-                            borderColor: isEnabled
-                                ? themeColor
-                                : isDarkMode
-                                    ? '#444'
-                                    : '#ccc',
-                        },
-                    ]}
-                >
-                    <MaterialIcons
-                        name="equalizer"
-                        size={20}
-                        color={isEnabled ? '#fff' : isDarkMode ? '#888' : '#999'}
-                    />
-                </TouchableOpacity>
             </View>
 
             {/* Presets */}
@@ -112,8 +67,7 @@ const Equalizer: React.FC = () => {
                         return (
                             <TouchableOpacity
                                 key={preset.name}
-                                onPress={() => handlePreset(preset)}
-                                disabled={!isEnabled}
+                                disabled={true}
                                 style={[
                                     styles.presetPill,
                                     {
@@ -153,14 +107,12 @@ const Equalizer: React.FC = () => {
 
             {/* Band Sliders */}
             <View style={[styles.bandsContainer, { opacity: disabledOpacity }]}>
-                {bands.map(band => (
+                {STATIC_BANDS.map(band => (
                     <View key={band.index} style={styles.bandColumn}>
                         <Text
                             style={[
                                 styles.dbLabel,
-                                {
-                                    color: isDarkMode ? '#ccc' : '#333',
-                                },
+                                { color: isDarkMode ? '#ccc' : '#333' },
                             ]}
                         >
                             {band.gainDb > 0 ? '+' : ''}
@@ -174,14 +126,9 @@ const Equalizer: React.FC = () => {
                                 maximumValue={12}
                                 step={0.5}
                                 value={band.gainDb}
-                                onSlidingComplete={(value) =>
-                                    handleBandChange(band.index, value)
-                                }
-                                disabled={!isEnabled}
+                                disabled={true}
                                 minimumTrackTintColor={themeColor}
-                                maximumTrackTintColor={
-                                    isDarkMode ? '#333' : '#ddd'
-                                }
+                                maximumTrackTintColor={isDarkMode ? '#333' : '#ddd'}
                                 thumbTintColor={themeColor}
                             />
                         </View>
@@ -200,15 +147,9 @@ const Equalizer: React.FC = () => {
 
             {/* Reset */}
             <TouchableOpacity
-                onPress={handleReset}
-                disabled={!isEnabled}
+                disabled={true}
                 style={[styles.resetButton, { opacity: disabledOpacity }]}
             >
-                <MaterialIcons
-                    name="refresh"
-                    size={16}
-                    color={isDarkMode ? '#aaa' : '#555'}
-                />
                 <Text style={[styles.resetText, isDarkMode && styles.resetTextDark]}>
                     {t('settings.player.equalizer.reset')}
                 </Text>
@@ -243,14 +184,6 @@ const styles = StyleSheet.create({
     },
     titleDark: {
         color: '#fff',
-    },
-    toggleButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 10,
-        borderWidth: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     label: {
         fontSize: 13,

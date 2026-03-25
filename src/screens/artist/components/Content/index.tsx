@@ -1,7 +1,7 @@
 import React from 'react'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
-import { useDownloadedTracks } from 'react-native-nitro-player'
+import { useDownload } from '@/contexts/DownloadContext'
 import type { Artist } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
 import ListSeparator from '@/components/ListSeparator'
@@ -22,11 +22,11 @@ export default function ArtistContent({ artist }: Props) {
   const navigation = useNavigation()
   const { isDarkMode } = useTheme()
   const { tracks } = useTracks()
-  const downloadedState = useDownloadedTracks() as any
+  const { getAllDownloadedTracks } = useDownload()
 
   const downloadedTrackIds = React.useMemo(
-    () => buildDownloadedTrackIdSet(downloadedState?.downloadedTracks ?? []),
-    [downloadedState?.downloadedTracks]
+    () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
+    []
   )
   const downloadedAlbumIds = React.useMemo(
     () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),

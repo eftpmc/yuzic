@@ -10,9 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
 import { Album, CoverSource } from '@/types';
@@ -29,6 +27,7 @@ interface ItemProps {
   isGridView: boolean;
   gridWidth: number;
   gridSpacing?: number;
+  serverId?: string;
 }
 
 const AlbumItem: React.FC<ItemProps> = ({
@@ -39,23 +38,23 @@ const AlbumItem: React.FC<ItemProps> = ({
   isGridView,
   gridWidth,
   gridSpacing = 8,
+  serverId,
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
   const api = useApi();
   const queryClient = useQueryClient();
-  const activeServer = useSelector(selectActiveServer);
 
   const sheetRef = useRef<BottomSheetModal>(null);
   const [albumForSheet, setAlbumForSheet] = useState<Album | null>(null);
 
   const fetchAlbum = useCallback(async () => {
     return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Album, activeServer?.id, id],
+      queryKey: [QueryKeys.Album, serverId, id],
       queryFn: () => api.albums.get(id),
       staleTime: staleTime.albums,
     });
-  }, [api, queryClient, activeServer?.id, id]);
+  }, [api, queryClient, serverId, id]);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('albumView', { id });

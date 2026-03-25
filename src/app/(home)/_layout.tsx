@@ -1,5 +1,5 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -17,7 +17,7 @@ export default function HomeLayout() {
     const pathname = usePathname()
     const { isDarkMode } = useTheme()
     const themeColor = useSelector(selectThemeColor)
-    const [tabRowHeight, setTabRowHeight] = useState(0)
+    const tabRowHeight = 37 + Math.max(insets.bottom, 8)
 
     useEffect(() => {
         const sub = AppState.addEventListener('change', nextState => {
@@ -40,8 +40,7 @@ export default function HomeLayout() {
     return (
         <View style={{ flex: 1 }}>
             <Stack style={{ flex: 1 }}>
-                <Stack.Screen name="index" options={{ headerShown: false, animation: 'none' }} />
-                <Stack.Screen name="library" options={{ headerShown: false, animation: 'none' }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
                 <Stack.Screen name="search" options={{ headerShown: false, animation: "fade", animationDuration: 150 }} />
                 <Stack.Screen name="albumView" options={{ headerShown: false }} />
                 <Stack.Screen name="externalAlbumView" options={{ headerShown: false }} />
@@ -59,7 +58,6 @@ export default function HomeLayout() {
             {/* Tab row — solid background, sits at the bottom */}
             <View
                 style={[styles.tabRow, { backgroundColor: barBg, borderTopColor: borderColor, paddingBottom: Math.max(insets.bottom, 8) }]}
-                onLayout={e => setTabRowHeight(e.nativeEvent.layout.height)}
             >
                 <TouchableOpacity style={styles.tab} onPress={() => router.navigate('/')}>
                     <Home size={24} color={isHome ? activeColor : inactiveColor} />

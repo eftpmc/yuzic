@@ -5,11 +5,6 @@ import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import {
-  useDownloadedTracks,
-  useDownloadStorage,
-} from 'react-native-nitro-player';
-
 import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -34,11 +29,10 @@ const DownloadsInfoScreen: React.FC = () => {
   const { playlists = [] } = usePlaylists();
   const { playlists: fullPlaylists = [] } = useFullPlaylists(playlists);
   const { tracks = [] } = useTracks();
-  const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
-  const downloadedState = useDownloadedTracks() as any;
-
-  const downloadedTracks = (downloadedState?.downloadedTracks ?? []) as any[];
-  const downloadedPlaylists = (downloadedState?.downloadedPlaylists ?? []) as any[];
+  const formattedSize = '0 B';
+  const formattedAvailable = '—';
+  const downloadedTracks: any[] = [];
+  const downloadedPlaylists: any[] = [];
 
   const rows = useMemo(
     () =>
@@ -176,7 +170,7 @@ const DownloadsInfoScreen: React.FC = () => {
             {t('settings.library.downloads.table.tracks')}
           </Text>
           <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {String(storageInfo?.trackCount ?? downloadedTracks.length)}
+            {String(downloadedTracks.length)}
           </Text>
         </View>
       </View>

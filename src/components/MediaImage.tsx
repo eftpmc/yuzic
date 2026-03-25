@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { useSelector } from 'react-redux';
@@ -21,8 +21,8 @@ export function MediaImage({
   // Subscribe so we re-render when active server becomes available or changes.
   // buildCover() reads from the store; without this, URLs stay null until
   // some other state (e.g. list data) causes a re-render.
-  useSelector(selectActiveServer);
-  const uri = buildCover(cover, size);
+  const activeServer = useSelector(selectActiveServer);
+  const uri = useMemo(() => buildCover(cover, size), [cover, size, activeServer]);
 
   if (uri === 'heart-icon') {
     return (

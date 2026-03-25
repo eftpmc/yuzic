@@ -10,9 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useDownload } from '@/contexts/DownloadContext';
-import {
-  useDownloadStorage,
-} from 'react-native-nitro-player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -27,9 +24,9 @@ const Downloads: React.FC = () => {
     clearAllDownloads,
   } = useDownload();
 
-  const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
-
-  const trackCount = storageInfo?.trackCount ?? 0;
+  const formattedSize = '0 B';
+  const formattedAvailable = '—';
+  const trackCount = 0;
 
   const handleClearDownloads = useCallback(() => {
     Alert.alert(

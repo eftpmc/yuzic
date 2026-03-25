@@ -30,10 +30,10 @@ const SortBottomSheet = forwardRef<
   const { isDarkMode } = useTheme();
 
   const sortOptions = [
+    { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
     { value: 'title' as const, label: t('home.sort.alphabetical'), Icon: ArrowDownAZ },
     { value: 'year' as const, label: t('home.sort.releaseYear'), Icon: Calendar },
     { value: 'userplays' as const, label: t('home.sort.mostPlayed'), Icon: Flame },
-    { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
   ];
 
   const snapPoints = useMemo(() => ['40%'], []);

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
-import { useDownloadedTracks } from 'react-native-nitro-player'
+import { useDownload } from '@/contexts/DownloadContext'
 
 import { Album } from '@/types'
 import { useTheme } from '@/hooks/useTheme'
@@ -25,11 +25,11 @@ export default function GenreContent({ genre, albums }: Props) {
   const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
   const { tracks } = useTracks()
-  const downloadedState = useDownloadedTracks() as any
+  const { getAllDownloadedTracks } = useDownload()
 
   const downloadedTrackIds = React.useMemo(
-    () => buildDownloadedTrackIdSet(downloadedState?.downloadedTracks ?? []),
-    [downloadedState?.downloadedTracks]
+    () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
+    []
   )
   const downloadedAlbumIds = React.useMemo(
     () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),

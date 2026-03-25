@@ -8,7 +8,7 @@ import {
 import { Shuffle, Heart, Download } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { useDownloadedTracks } from 'react-native-nitro-player'
+import { useDownload } from '@/contexts/DownloadContext'
 
 import { useTheme } from '@/hooks/useTheme'
 import { useLibrary } from '@/contexts/LibraryContext'
@@ -38,7 +38,7 @@ export default function ShuffleCards() {
   const { playSongInCollection } = usePlaying()
 
   const { albums, starred: starredSongs } = useLibrary()
-  const { isTrackDownloaded } = useDownloadedTracks()
+  const { isTrackDownloaded } = useDownload()
 
   const inFlightRef = useRef<string | null>(null)
 

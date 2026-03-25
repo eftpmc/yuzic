@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { TrackPlayer } from 'react-native-nitro-player';
+import TrackPlayer from 'react-native-track-player';
 import { Image } from 'expo-image';
 
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -46,7 +46,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
     buildCover({ kind: 'none' } as CoverSource, 'detail');
 
   const handleSeek = (positionSeconds: number) => {
-    TrackPlayer.seek(positionSeconds);
+    TrackPlayer.seekTo(positionSeconds);
   };
 
   return (
