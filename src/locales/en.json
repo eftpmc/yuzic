@@ -249,6 +249,7 @@
     },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
+    "playbackError": "Unable to play track",
     "error": {
       "unexpected": "Unexpected error occurred",
       "details": "Error: {{name}} {{message}}",

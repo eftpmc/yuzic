@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -17,22 +17,46 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { DownloadRow } from './downloadsInfo/types';
 import { buildDownloadRows } from './downloadsInfo/buildRows';
 import { styles } from './downloadsInfo/styles';
+import { Paths } from 'expo-file-system';
+import { formatBytes } from '@/utils/downloads/downloadStore';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
-  const { removeDownloadByCollectionId, clearDownloadsForProvider, downloadStateVersion } = useDownload();
+  const {
+    removeDownloadByCollectionId,
+    clearDownloadsForProvider,
+    downloadStateVersion,
+    getAllDownloadedTracks,
+    getAllDownloadedCollections,
+    totalDownloadedBytes,
+    downloadedTrackCount,
+  } = useDownload();
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [freeBytes, setFreeBytes] = useState<number | null>(null);
   const { albums = [] } = useAlbums();
   const { playlists = [] } = usePlaylists();
   const { playlists: fullPlaylists = [] } = useFullPlaylists(playlists);
   const { tracks = [] } = useTracks();
-  const formattedSize = '0 B';
-  const formattedAvailable = '—';
-  const downloadedTracks: any[] = [];
-  const downloadedPlaylists: any[] = [];
+
+  useEffect(() => {
+    setFreeBytes(Paths.availableDiskSpace);
+  }, [downloadStateVersion]);
+
+  const downloadedTracks = useMemo(() => getAllDownloadedTracks(), [getAllDownloadedTracks, downloadStateVersion]);
+  const downloadedCollections = useMemo(() => getAllDownloadedCollections(), [getAllDownloadedCollections, downloadStateVersion]);
+
+  const formattedSize = formatBytes(totalDownloadedBytes);
+  const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
+
+  const downloadedPlaylists = useMemo(
+    () => downloadedCollections
+      .filter(c => c.type === 'playlist')
+      .map(c => ({ playlistId: c.id, downloadedAt: c.downloadedAt })),
+    [downloadedCollections]
+  );
 
   const rows = useMemo(
     () =>
@@ -170,7 +194,7 @@ const DownloadsInfoScreen: React.FC = () => {
             {t('settings.library.downloads.table.tracks')}
           </Text>
           <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {String(downloadedTracks.length)}
+            {String(downloadedTrackCount)}
           </Text>
         </View>
       </View>

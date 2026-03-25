@@ -14,6 +14,7 @@ import { MediaImage } from "@/components/MediaImage";
 import SongOptions from "@/components/options/SongOptions";
 import PlaylistList from "@/components/PlaylistList";
 import { usePlaying } from "@/contexts/PlayingContext";
+import { useDownload } from "@/contexts/DownloadContext";
 import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useApi } from "@/api";
@@ -38,7 +39,8 @@ const TrackItem: React.FC<Props> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const api = useApi();
-  const { playSimilar } = usePlaying();
+  const { playSimilar, playSong } = usePlaying();
+  const { getLocalPath } = useDownload();
 
   const optionsRef = useRef<BottomSheetModal>(null);
   const playlistRef = useRef<BottomSheetModal>(null);
@@ -70,6 +72,11 @@ const TrackItem: React.FC<Props> = ({
     lastPressAtRef.current = now;
     pressInFlightRef.current = true;
     try {
+      const localPath = getLocalPath(song.id);
+      if (localPath) {
+        await playSong({ ...song, streamUrl: localPath } as Song);
+        return;
+      }
       const fullSong = await getFullSongWithTimeout();
       if (!fullSong) return;
       // Let press feedback/render settle before starting playback work.

@@ -27,8 +27,8 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
-        "backgroundColor": "#000000"
+        "foregroundImage": "./assets/images/splash.png",
+        "backgroundColor": "#1c1c1e"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",

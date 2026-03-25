@@ -64,7 +64,7 @@ export function createJellyfinClient(config: JellyfinClientConfig) {
   }
 
   function buildStreamUrl(songId: string): string {
-    return `${baseUrl}/Audio/${songId}/stream.mp3?static=true&X-Emby-Token=${token}`;
+    return `${baseUrl}/Audio/${songId}/stream.mp3?X-Emby-Token=${token}`;
   }
 
   return {

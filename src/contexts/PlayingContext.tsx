@@ -27,8 +27,16 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
+import { useDownload } from '@/contexts/DownloadContext';
+import { Paths, File } from 'expo-file-system';
 
 const WINDOW = 10;
+
+const getFileFromUri = (uri: string) => {
+  const dir = Paths.dirname(uri);
+  const name = Paths.basename(uri);
+  return new File(dir, name);
+};
 
 function passesScrobbleThreshold(
   listenedSeconds: number,
@@ -113,6 +121,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const api = useApi();
+  const { getLocalPath } = useDownload();
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
@@ -225,19 +234,31 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const songToTrack = useCallback((song: Song): Track => {
     const cover = buildCover(song.cover, 'grid') || undefined;
+    const localPath = getLocalPath(song.id);
+
+    let finalUrl = song.streamUrl;
+
+    if (localPath) {
+      try {
+        const file = getFileFromUri(localPath);
+        if (file.exists) {
+          finalUrl = localPath;
+        }
+      } catch {}
+    }
+
     return {
       id: song.id,
       title: song.title,
       artist: song.artist,
       album: '',
       duration: parseFloat(song.duration || '0'),
-      url: song.streamUrl,
+      url: finalUrl,
       artwork: cover,
-      // Custom fields for artist/album navigation
       artistId: song.artistId,
       albumId: song.albumId,
     } as Track;
-  }, []);
+  }, [getLocalPath]);
 
   const rebuildWindow = useCallback(async (virtualIdx: number) => {
     windowStartRef.current = virtualIdx;
@@ -252,7 +273,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     await TrackPlayer.play();
   }, [songToTrack]);
 
-  useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async (event) => {
+  useTrackPlayerEvents([Event.PlaybackActiveTrackChanged, Event.PlaybackError, Event.PlaybackState], async (event) => {
+    if (event.type === Event.PlaybackError) {
+      console.error('[PlayingContext] PlaybackError:', JSON.stringify(event));
+      toast.error(t('common.playbackError'));
+      const nextIdx = currentIndexRef.current + 1;
+      if (nextIdx < queueRef.current.length) {
+        updateCurrentIndex(nextIdx);
+        updateCurrentSong(queueRef.current[nextIdx]);
+        await rebuildWindow(nextIdx);
+      }
+      return;
+    }
+    if (event.type === Event.PlaybackState) {
+      console.log('[PlayingContext] PlaybackState:', event.state);
+      return;
+    }
     const nativeIdx = event.index ?? 0;
     const virtualIdx = windowStartRef.current + nativeIdx;
 

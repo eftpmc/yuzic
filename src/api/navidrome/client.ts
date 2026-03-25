@@ -64,10 +64,10 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
   }
 
   function buildStreamUrl(songId: string): string {
-  const auth = buildTokenParams(username, password);
-  const params = buildParams(auth, { id: songId }, { format: null });
-  return `${baseUrl}/rest/stream.view?${params}`;
-}
+    const auth = buildTokenParams(username, password);
+    const params = buildParams(auth, { id: songId, format: 'mp3' }, { format: null });
+    return `${baseUrl}/rest/stream.view?${params}`;
+  }
 
   return {
     request,

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { Paths } from 'expo-file-system';
+import { formatBytes } from '@/utils/downloads/downloadStore';
 
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
@@ -22,11 +24,20 @@ const Downloads: React.FC = () => {
 
   const {
     clearAllDownloads,
+    totalDownloadedBytes,
+    downloadedTrackCount,
+    downloadStateVersion,
   } = useDownload();
 
-  const formattedSize = '0 B';
-  const formattedAvailable = '—';
-  const trackCount = 0;
+  const [freeBytes, setFreeBytes] = useState<number | null>(null);
+
+  useEffect(() => {
+    setFreeBytes(Paths.availableDiskSpace);
+  }, [downloadStateVersion]);
+
+  const formattedSize = formatBytes(totalDownloadedBytes);
+  const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
+  const trackCount = downloadedTrackCount;
 
   const handleClearDownloads = useCallback(() => {
     Alert.alert(
