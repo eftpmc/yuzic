@@ -4,10 +4,38 @@ import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { Home, Library } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSync } from '@/hooks/useSync';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
+
+function TabIcon({ onPress, active, activeColor, inactiveColor, activeIndicatorBg, children }: {
+    onPress: () => void;
+    active: boolean;
+    activeColor: string;
+    inactiveColor: string;
+    activeIndicatorBg: string;
+    children: (color: string) => React.ReactNode;
+}) {
+    const opacity = useSharedValue(active ? 1 : 0);
+
+    useEffect(() => {
+        opacity.value = withTiming(active ? 1 : 0, { duration: 200 });
+    }, [active]);
+
+    const indicatorStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+    }));
+
+    return (
+        <TouchableOpacity style={styles.tab} onPress={onPress}>
+            <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg }, indicatorStyle]} />
+            {children(active ? activeColor : inactiveColor)}
+        </TouchableOpacity>
+    );
+}
 
 export default function HomeLayout() {
     const { sync, syncPlaylists } = useSync()
@@ -17,7 +45,7 @@ export default function HomeLayout() {
     const pathname = usePathname()
     const { isDarkMode } = useTheme()
     const themeColor = useSelector(selectThemeColor)
-    const tabRowHeight = 37 + Math.max(insets.bottom, 8)
+    const tabRowHeight = 44 + Math.max(insets.bottom, 8)
 
     useEffect(() => {
         const sub = AppState.addEventListener('change', nextState => {
@@ -34,8 +62,8 @@ export default function HomeLayout() {
     const isHome = !isLibrary
     const activeColor = themeColor
     const inactiveColor = isDarkMode ? '#555' : '#aaa'
-    const barBg = isDarkMode ? '#000' : '#fff'
     const borderColor = isDarkMode ? '#1C1C1E' : '#E5E5E5'
+    const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
 
     return (
         <View style={{ flex: 1 }}>
@@ -55,19 +83,37 @@ export default function HomeLayout() {
                 <Stack.Screen name="genreView" options={{ headerShown: false }} />
             </Stack>
 
-            {/* Tab row — solid background, sits at the bottom */}
-            <View
-                style={[styles.tabRow, { backgroundColor: barBg, borderTopColor: borderColor, paddingBottom: Math.max(insets.bottom, 8) }]}
-            >
-                <TouchableOpacity style={styles.tab} onPress={() => router.navigate('/')}>
-                    <Home size={24} color={isHome ? activeColor : inactiveColor} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.tab} onPress={() => router.navigate('/library')}>
-                    <Library size={24} color={isLibrary ? activeColor : inactiveColor} />
-                </TouchableOpacity>
+            <View style={[styles.tabRow, { paddingBottom: Math.max(insets.bottom, 8), backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+                {!isDarkMode && (
+                    <BlurView
+                        intensity={100}
+                        tint="light"
+                        style={[StyleSheet.absoluteFill, styles.tabBorder, { borderTopColor: borderColor }]}
+                    />
+                )}
+                {isDarkMode && (
+                    <View style={[StyleSheet.absoluteFill, styles.tabBorder, { borderTopColor: borderColor }]} />
+                )}
+                <TabIcon
+                    onPress={() => router.navigate('/')}
+                    active={isHome}
+                    activeColor={activeColor}
+                    inactiveColor={inactiveColor}
+                    activeIndicatorBg={activeIndicatorBg}
+                >
+                    {color => <Home size={24} color={color} />}
+                </TabIcon>
+                <TabIcon
+                    onPress={() => router.navigate('/library')}
+                    active={isLibrary}
+                    activeColor={activeColor}
+                    inactiveColor={inactiveColor}
+                    activeIndicatorBg={activeIndicatorBg}
+                >
+                    {color => <Library size={24} color={color} />}
+                </TabIcon>
             </View>
 
-            {/* Playing bar — absolutely positioned above the tab row, blurs screen content */}
             <View style={[styles.playingBarHolder, { bottom: tabRowHeight }]}>
                 <PlayingBar />
             </View>
@@ -78,13 +124,23 @@ export default function HomeLayout() {
 const styles = StyleSheet.create({
     tabRow: {
         flexDirection: 'row',
-        paddingTop: 4,
+        paddingTop: 12,
+    },
+    tabBorder: {
         borderTopWidth: StyleSheet.hairlineWidth,
     },
     tab: {
         flex: 1,
         alignItems: 'center',
         paddingVertical: 4,
+        justifyContent: 'center',
+    },
+    activeIndicator: {
+        position: 'absolute',
+        width: 64,
+        height: 36,
+        borderRadius: 8,
+        alignSelf: 'center',
     },
     playingBarHolder: {
         position: 'absolute',

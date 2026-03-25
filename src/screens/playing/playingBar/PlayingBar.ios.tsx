@@ -266,8 +266,9 @@ const PlayingBar: React.FC = () => {
 
 const styles = StyleSheet.create({
     wrapper: {
-        margin: 12,
-        marginBottom: 8,
+        marginHorizontal: 12,
+        marginTop: 12,
+        marginBottom: 0,
         borderRadius: 14,
         overflow: 'hidden',
         shadowColor: '#000',
@@ -276,26 +277,26 @@ const styles = StyleSheet.create({
     },
     container: {
         flexDirection: 'column',
-        padding: 10,
-        paddingBottom: 6,
-        paddingHorizontal: 16,
+        padding: 8,
+        paddingBottom: 0,
+        paddingHorizontal: 12,
         borderRadius: 14,
     },
     topRowWrapper: {
-        height: 50,
+        height: 40,
         justifyContent: 'center',
     },
     topRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        minHeight: 50,
+        minHeight: 40,
         paddingRight: 4,
     },
     coverArt: {
-        width: 45,
-        height: 45,
+        width: 42,
+        height: 42,
         borderRadius: 5,
-        marginRight: 12,
+        marginRight: 10,
     },
     details: {
         flex: 1,
@@ -321,11 +322,11 @@ const styles = StyleSheet.create({
         color: '#aaa',
     },
     progressBarContainer: {
-        height: 4,
+        height: 3,
         backgroundColor: '#666',
         borderRadius: 2,
         overflow: 'hidden',
-        marginTop: 8,
+        marginTop: 6,
     },
     progressBar: {
         height: '100%',
