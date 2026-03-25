@@ -18,7 +18,7 @@ export default function Explore() {
         styles.container,
         isDarkMode && styles.containerDark,
       ]}
-      contentContainerStyle={[styles.content, { paddingBottom: 150 }]}
+      contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
       showsVerticalScrollIndicator={false}
     >
       <RecentSongsSpeedDial/>

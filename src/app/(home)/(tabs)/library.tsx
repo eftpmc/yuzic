@@ -337,6 +337,7 @@ export default function LibraryScreen() {
         contentContainerStyle={[
           styles.list,
           isGridView && { paddingHorizontal: LIST_PADDING },
+          { paddingBottom: 180 },
         ]}
         showsVerticalScrollIndicator={false}
       />

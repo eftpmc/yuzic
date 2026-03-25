@@ -4,7 +4,7 @@ import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { Home, Library } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSync } from '@/hooks/useSync';
 import { useTheme } from '@/hooks/useTheme';
@@ -83,35 +83,35 @@ export default function HomeLayout() {
                 <Stack.Screen name="genreView" options={{ headerShown: false }} />
             </Stack>
 
-            <View style={[styles.tabRow, { paddingBottom: Math.max(insets.bottom, 8), backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
-                {!isDarkMode && (
-                    <BlurView
-                        intensity={100}
-                        tint="light"
-                        style={[StyleSheet.absoluteFill, styles.tabBorder, { borderTopColor: borderColor }]}
-                    />
-                )}
-                {isDarkMode && (
-                    <View style={[StyleSheet.absoluteFill, styles.tabBorder, { borderTopColor: borderColor }]} />
-                )}
-                <TabIcon
-                    onPress={() => router.navigate('/')}
-                    active={isHome}
-                    activeColor={activeColor}
-                    inactiveColor={inactiveColor}
-                    activeIndicatorBg={activeIndicatorBg}
-                >
-                    {color => <Home size={24} color={color} />}
-                </TabIcon>
-                <TabIcon
-                    onPress={() => router.navigate('/library')}
-                    active={isLibrary}
-                    activeColor={activeColor}
-                    inactiveColor={inactiveColor}
-                    activeIndicatorBg={activeIndicatorBg}
-                >
-                    {color => <Library size={24} color={color} />}
-                </TabIcon>
+            <View style={[styles.tabGradientContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+                <LinearGradient
+                    colors={isDarkMode
+                        ? ['#00000000', '#000000F0', '#000000F0', '#000000']
+                        : ['#ffffff00', '#fffffff0', '#fffffff0', '#ffffff']}
+                    locations={[0, 0.2, 0.45, 0.6]}
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents="none"
+                />
+                <View style={styles.tabRow}>
+                    <TabIcon
+                        onPress={() => router.navigate('/')}
+                        active={isHome}
+                        activeColor={activeColor}
+                        inactiveColor={inactiveColor}
+                        activeIndicatorBg={activeIndicatorBg}
+                    >
+                        {color => <Home size={24} color={color} />}
+                    </TabIcon>
+                    <TabIcon
+                        onPress={() => router.navigate('/library')}
+                        active={isLibrary}
+                        activeColor={activeColor}
+                        inactiveColor={inactiveColor}
+                        activeIndicatorBg={activeIndicatorBg}
+                    >
+                        {color => <Library size={24} color={color} />}
+                    </TabIcon>
+                </View>
             </View>
 
             <View style={[styles.playingBarHolder, { bottom: tabRowHeight }]}>
@@ -122,12 +122,17 @@ export default function HomeLayout() {
 }
 
 const styles = StyleSheet.create({
+    tabGradientContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: 140,
+        justifyContent: 'flex-end',
+    },
     tabRow: {
         flexDirection: 'row',
         paddingTop: 12,
-    },
-    tabBorder: {
-        borderTopWidth: StyleSheet.hairlineWidth,
     },
     tab: {
         flex: 1,
