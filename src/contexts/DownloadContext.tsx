@@ -82,7 +82,7 @@ export const useDownload = (): DownloadContextType => {
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const api = useApi();
 
-  const storeRef = useRef<PersistedDownloadStore>({ tracks: {}, collections: {} });
+  const storeRef = useRef<PersistedDownloadStore>({ tracks: {}, collections: {}, pending: {} });
   const activeDownloadsRef = useRef<Map<string, any>>(new Map());
   const [, setProgressMap] = useState<Record<string, number>>({});
   const [downloadStateVersion, setDownloadStateVersion] = useState(0);
@@ -96,7 +96,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       const validTracks: typeof store.tracks = {};
       for (const [id, entry] of Object.entries(store.tracks)) {
         try {
-          if (new File(entry.localPath).exists) {
+          const dir = Paths.dirname(entry.localPath);
+          const name = Paths.basename(entry.localPath);
+          if (new File(dir, name).exists) {
             validTracks[id] = entry;
           }
         } catch {}
@@ -114,12 +116,32 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       } catch {}
 
       bumpVersion();
+
+      // Resume any downloads that were requested but didn't complete
+      const pendingEntries = Object.values(store.pending);
+      if (pendingEntries.length > 0) {
+        for (const entry of pendingEntries) {
+          downloadSong(entry.song as Song, entry.collectionId).catch(() => {});
+        }
+      }
     })();
-  }, [bumpVersion]);
+  }, [bumpVersion, downloadSong]);
 
   const downloadSong = useCallback(async (song: Song, _collectionId?: string) => {
     if (storeRef.current.tracks[song.id]) return;
     if (activeDownloadsRef.current.has(song.id)) return;
+
+    // Persist the request so it survives an app restart
+    if (!storeRef.current.pending[song.id]) {
+      storeRef.current = {
+        ...storeRef.current,
+        pending: {
+          ...storeRef.current.pending,
+          [song.id]: { song, collectionId: _collectionId, requestedAt: Date.now() },
+        },
+      };
+      await saveStore(storeRef.current);
+    }
 
     const tmpFile = new File(Paths.document, 'yuzic-downloads', song.id + '.tmp');
     const tmpPath = tmpFile.uri;
@@ -162,15 +184,18 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         coverKind: song.cover.kind,
       };
 
+      const { [song.id]: _removedPending, ...remainingPending } = storeRef.current.pending;
       storeRef.current = {
         ...storeRef.current,
         tracks: { ...storeRef.current.tracks, [song.id]: entry },
+        pending: remainingPending,
       };
 
       await saveStore(storeRef.current);
       bumpVersion();
     } catch (err) {
       console.warn('[DownloadContext] Download error', err);
+      // Leave in pending so it's retried on next launch
     } finally {
       try { tmpFile.delete(); } catch {}
       activeDownloadsRef.current.delete(song.id);
@@ -229,6 +254,12 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (task) {
       await task.cancelAsync().catch(() => {});
       activeDownloadsRef.current.delete(id);
+    }
+    // Remove from pending so it's not resumed on next launch
+    if (storeRef.current.pending[id]) {
+      const { [id]: _removed, ...remainingPending } = storeRef.current.pending;
+      storeRef.current = { ...storeRef.current, pending: remainingPending };
+      await saveStore(storeRef.current);
     }
   };
 

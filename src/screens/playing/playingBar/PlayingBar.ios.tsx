@@ -133,12 +133,13 @@ const PlayingBar: React.FC = () => {
                                         style={styles.coverArt}
                                     />
                                 ) : (
-                                    <Ionicons
-                                        name="musical-notes"
-                                        size={40}
-                                        style={styles.coverArt}
-                                        color={isDarkMode ? '#fff' : '#333'}
-                                    />
+                                    <View style={[styles.coverArt, styles.iconPlaceholder]}>
+                                        <Ionicons
+                                            name="musical-notes"
+                                            size={32}
+                                            color={isDarkMode ? '#fff' : '#333'}
+                                        />
+                                    </View>
                                 )}
 
                                 <View style={styles.details}>
@@ -321,6 +322,10 @@ const styles = StyleSheet.create({
     textDarkSecondary: {
         color: '#aaa',
     },
+    iconPlaceholder: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     progressBarContainer: {
         height: 3,
         backgroundColor: '#666',
@@ -338,9 +343,9 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     fabButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         marginLeft: 12,
         justifyContent: 'center',
         alignItems: 'center',

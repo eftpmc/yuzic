@@ -21,18 +21,30 @@ export type DownloadedCollectionEntry = {
   downloadedAt: number;
 };
 
+export type PendingDownloadEntry = {
+  song: any; // Song — stored as plain JSON
+  collectionId?: string;
+  requestedAt: number;
+};
+
 export type PersistedDownloadStore = {
   tracks: Record<string, DownloadedTrackEntry>;
   collections: Record<string, DownloadedCollectionEntry>;
+  pending: Record<string, PendingDownloadEntry>;
 };
 
 export async function loadStore(): Promise<PersistedDownloadStore> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!raw) return { tracks: {}, collections: {} };
-    return JSON.parse(raw) as PersistedDownloadStore;
+    if (!raw) return { tracks: {}, collections: {}, pending: {} };
+    const parsed = JSON.parse(raw) as any;
+    return {
+      tracks: parsed.tracks ?? {},
+      collections: parsed.collections ?? {},
+      pending: parsed.pending ?? {},
+    };
   } catch {
-    return { tracks: {}, collections: {} };
+    return { tracks: {}, collections: {}, pending: {} };
   }
 }
 
