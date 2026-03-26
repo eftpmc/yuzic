@@ -34,41 +34,61 @@ const LoadingExternalAlbumHeader: React.FC = () => {
         />
       </View>
 
-      <View style={styles.titleRow}>
-        <View style={styles.titleInfo}>
-          {/* Album title */}
+      <View style={styles.titleInfo}>
+        <Skeleton
+          width="70%"
+          height={24}
+          radius={6}
+          colorMode={colorMode}
+        />
+
+        <View style={styles.metaRow}>
+          <View style={styles.artistRow}>
+            <Skeleton
+              width={20}
+              height={20}
+              radius={10}
+              colorMode={colorMode}
+            />
+            <View style={{ width: 8 }} />
+            <Skeleton
+              width={120}
+              height={14}
+              radius={6}
+              colorMode={colorMode}
+            />
+          </View>
+          <View style={{ width: 8 }} />
           <Skeleton
-            width="80%"
-            height={24}
+            width={150}
+            height={14}
             radius={6}
             colorMode={colorMode}
           />
-
-          <View style={{ marginTop: 6 }}>
-            <Skeleton
-              width="50%"
-              height={14}
-              radius={6}
-              colorMode={colorMode}
-            />
-          </View>
-
-          <View style={{ marginTop: 6 }}>
-            <Skeleton
-              width={160}
-              height={14}
-              radius={6}
-              colorMode={colorMode}
-            />
-          </View>
         </View>
+      </View>
 
-        <Skeleton
-          width={48}
-          height={48}
-          radius={24}
-          colorMode={colorMode}
-        />
+      <View style={styles.actionsRow}>
+        <View style={styles.actions}>
+          <Skeleton
+            width={40}
+            height={40}
+            radius={20}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={112}
+            height={48}
+            radius={22}
+            colorMode={colorMode}
+          />
+          <Skeleton
+            width={40}
+            height={40}
+            radius={20}
+            colorMode={colorMode}
+          />
+        </View>
       </View>
     </View>
   );
@@ -101,14 +121,29 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     overflow: 'hidden',
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  titleInfo: {
     width: '100%',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  titleInfo: {
-    flex: 1,
-    paddingRight: 12,
+  artistRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+  },
+  actionsRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
 });

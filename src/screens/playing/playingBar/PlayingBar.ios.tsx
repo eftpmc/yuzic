@@ -303,11 +303,11 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     title: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '600',
     },
     artist: {
-        fontSize: 14,
+        fontSize: 13,
         marginTop: 2,
     },
     textLight: {

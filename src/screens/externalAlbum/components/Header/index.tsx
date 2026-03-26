@@ -4,8 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -160,7 +160,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
             disabled={downloading}
           >
             {downloading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <SpinningLoaderCircle size={24} color="#fff" />
             ) : (
               <LucideDownload size={24} color="#fff" />
             )}

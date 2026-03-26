@@ -6,17 +6,15 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    Animated,
-    Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
-import { MaterialIcons } from '@expo/vector-icons';
+import { CheckCircle, XCircle } from 'lucide-react-native';
 
 import Header from '../components/Header';
-import Loader from '@/components/Loader';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import {
@@ -39,18 +37,6 @@ const ServerSettings: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const spinAnim = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-        Animated.loop(
-            Animated.timing(spinAnim, {
-                toValue: 1,
-                duration: 1000,
-                easing: Easing.linear,
-                useNativeDriver: true,
-            })
-        ).start();
-    }, []);
 
     if (!activeServer) {
         return null;
@@ -135,32 +121,11 @@ const ServerSettings: React.FC = () => {
 
                         <View style={styles.iconSlot}>
                             {isLoading ? (
-                                <Animated.View
-                                    style={{
-                                        transform: [
-                                            {
-                                                rotate: spinAnim.interpolate({
-                                                    inputRange: [0, 1],
-                                                    outputRange: ['0deg', '360deg'],
-                                                }),
-                                            },
-                                        ],
-                                    }}
-                                >
-                                    <Loader />
-                                </Animated.View>
+                                <SpinningLoaderCircle size={ICON_SIZE} color={themeColor} />
+                            ) : isAuthenticated ? (
+                                <CheckCircle size={ICON_SIZE} color={themeColor} />
                             ) : (
-                                <MaterialIcons
-                                    name={
-                                        isAuthenticated
-                                            ? 'check-circle'
-                                            : 'cancel'
-                                    }
-                                    size={ICON_SIZE}
-                                    color={
-                                        isAuthenticated ? 'green' : 'red'
-                                    }
-                                />
+                                <XCircle size={ICON_SIZE} color="red" />
                             )}
                         </View>
                     </View>

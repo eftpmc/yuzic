@@ -1,10 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export const STORAGE_KEY = 'yuzic_downloads_v1';
-
 export type DownloadedTrackEntry = {
   trackId: string;
-  localPath: string;
   fileSize: number;
   downloadedAt: number;
   albumId: string;
@@ -22,52 +17,19 @@ export type DownloadedCollectionEntry = {
 };
 
 export type PendingDownloadEntry = {
-  song: any; // Song — stored as plain JSON
+  trackId: string;
+  streamUrl: string;
+  albumId?: string;
+  artistId?: string;
+  serverId?: string;
+  serverType?: string;
+  coverKind?: string;
   collectionId?: string;
   requestedAt: number;
 };
 
-export type PersistedDownloadStore = {
-  tracks: Record<string, DownloadedTrackEntry>;
-  collections: Record<string, DownloadedCollectionEntry>;
-  pending: Record<string, PendingDownloadEntry>;
-};
-
-export async function loadStore(): Promise<PersistedDownloadStore> {
-  try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!raw) return { tracks: {}, collections: {}, pending: {} };
-    const parsed = JSON.parse(raw) as any;
-    return {
-      tracks: parsed.tracks ?? {},
-      collections: parsed.collections ?? {},
-      pending: parsed.pending ?? {},
-    };
-  } catch {
-    return { tracks: {}, collections: {}, pending: {} };
-  }
-}
-
-export async function saveStore(store: PersistedDownloadStore): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-}
-
-const MIME_TO_EXT: Record<string, string> = {
-  'audio/flac': '.flac',
-  'audio/mpeg': '.mp3',
-  'audio/mp3': '.mp3',
-  'audio/aac': '.aac',
-  'audio/ogg': '.ogg',
-  'audio/opus': '.opus',
-  'audio/mp4': '.m4a',
-  'audio/x-m4a': '.m4a',
-  'audio/wav': '.wav',
-  'audio/webm': '.webm',
-};
-
-export function mimeTypeToExt(mimeType?: string | null): string {
-  if (!mimeType) return '.mp3';
-  return MIME_TO_EXT[mimeType.toLowerCase().split(';')[0].trim()] ?? '.mp3';
+export function normalizeId(id: unknown): string {
+  return String(id ?? '').trim();
 }
 
 export function formatBytes(bytes: number): string {

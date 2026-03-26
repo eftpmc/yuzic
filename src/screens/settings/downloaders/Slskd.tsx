@@ -14,7 +14,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Loader2 } from 'lucide-react-native';
+import { CheckCircle, XCircle } from 'lucide-react-native';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import Header from '../components/Header';
@@ -252,15 +253,11 @@ const SlskdView: React.FC = () => {
             </Text>
 
             {isLoading ? (
-              <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <Loader2 size={20} color={themeColor} />
-              </Animated.View>
+              <SpinningLoaderCircle size={20} color={themeColor} />
+            ) : isAuthenticated ? (
+              <CheckCircle size={20} color={themeColor} />
             ) : (
-              <MaterialIcons
-                name={isAuthenticated ? 'check-circle' : 'cancel'}
-                size={20}
-                color={isAuthenticated ? 'green' : 'red'}
-              />
+              <XCircle size={20} color="red" />
             )}
           </View>
         </View>

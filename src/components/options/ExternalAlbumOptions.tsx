@@ -1,10 +1,11 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import {
   BottomSheetModal,
   BottomSheetView,
@@ -42,6 +43,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['25%'], []);
+  const [downloading, setDownloading] = useState(false);
 
   const lidarrConfig = useSelector(selectLidarrConfig);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -59,14 +61,14 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
   };
 
   const handleDownloadAlbum = async () => {
-    if (!selectedAlbumTitle || !selectedAlbumArtist) return;
-    close();
+    if (!selectedAlbumTitle || !selectedAlbumArtist || downloading) return;
 
     if (!canDownload) {
       toast.error(t('externalAlbum.download.noDownloader'));
       return;
     }
 
+    setDownloading(true);
     try {
       if (isLidarrActive && isLidarrConnected) {
         const result = await lidarr.downloadAlbum(
@@ -74,11 +76,12 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           selectedAlbumTitle,
           selectedAlbumArtist
         );
-        if (result.success) {
-          toast.success(t('externalAlbum.download.addedToLidarr'));
-        } else {
-          toast.error(result.message ?? t('externalAlbum.download.failed'));
-        }
+        toast[result.success ? 'success' : 'error'](
+          result.success
+            ? t('externalAlbum.download.addedToLidarr')
+            : (result.message ?? t('externalAlbum.download.failed'))
+        );
+        close();
         return;
       }
 
@@ -88,17 +91,20 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
           selectedAlbumTitle,
           selectedAlbumArtist
         );
-        if (result.success) {
-          toast.success(t('externalAlbum.download.addedToSlskd'));
-        } else {
-          toast.error(result.message ?? t('externalAlbum.download.failed'));
-        }
+        toast[result.success ? 'success' : 'error'](
+          result.success
+            ? t('externalAlbum.download.addedToSlskd')
+            : (result.message ?? t('externalAlbum.download.failed'))
+        );
+        close();
         return;
       }
 
       toast.error(t('externalAlbum.download.noDownloader'));
     } catch (e) {
       toast.error(t('externalAlbum.download.startFailed'));
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -157,12 +163,16 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({
 
           <View style={styles.divider} />
 
-          <TouchableOpacity style={styles.option} onPress={handleDownloadAlbum}>
-            <Ionicons
-              name="arrow-down-circle"
-              size={26}
-              color={themeStyles.icon.color}
-            />
+          <TouchableOpacity style={styles.option} onPress={handleDownloadAlbum} disabled={downloading}>
+            {downloading ? (
+              <SpinningLoaderCircle size={26} color={themeStyles.icon.color} />
+            ) : (
+              <Ionicons
+                name="arrow-down-circle"
+                size={26}
+                color={themeStyles.icon.color}
+              />
+            )}
             <Text style={[styles.optionText, themeStyles.optionText]}>
               {t('externalAlbum.menu.downloadToServer')}
             </Text>

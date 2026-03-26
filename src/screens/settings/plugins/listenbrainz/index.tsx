@@ -7,13 +7,12 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Animated,
-  Easing,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Loader2 } from 'lucide-react-native';
+import { CheckCircle, XCircle } from 'lucide-react-native';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import Header from '../../components/Header';
@@ -54,23 +53,6 @@ const ListenBrainzView: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const spinAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    ).start();
-  }, []);
-
-  const spin = spinAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   useEffect(() => {
     if (!username || !token) {
@@ -183,15 +165,11 @@ const ListenBrainzView: React.FC = () => {
             </Text>
 
             {isLoading ? (
-              <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <Loader2 size={20} color={themeColor} />
-              </Animated.View>
+              <SpinningLoaderCircle size={20} color={themeColor} />
+            ) : isAuthenticated ? (
+              <CheckCircle size={20} color={themeColor} />
             ) : (
-              <MaterialIcons
-                name={isAuthenticated ? 'check-circle' : 'cancel'}
-                size={20}
-                color={isAuthenticated ? 'green' : 'red'}
-              />
+              <XCircle size={20} color="red" />
             )}
           </View>
         </View>

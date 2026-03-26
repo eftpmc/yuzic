@@ -1,5 +1,5 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -45,7 +45,7 @@ export default function HomeLayout() {
     const pathname = usePathname()
     const { isDarkMode } = useTheme()
     const themeColor = useSelector(selectThemeColor)
-    const tabRowHeight = 44 + Math.max(insets.bottom, 8)
+    const tabRowHeight = 52 + Math.max(insets.bottom, 8)
 
     useEffect(() => {
         const sub = AppState.addEventListener('change', nextState => {
@@ -58,11 +58,24 @@ export default function HomeLayout() {
         return () => sub.remove()
     }, [sync, syncPlaylists])
 
-    const isLibrary = pathname === '/library'
-    const isHome = !isLibrary
+    const [activeTab, setActiveTab] = useState<'home' | 'library'>('home')
+    const afterDismissTarget = useRef<string | null>(null)
+
+    useEffect(() => {
+        if (pathname !== '/' && pathname !== '/library') return
+        setActiveTab(pathname === '/library' ? 'library' : 'home')
+        const target = afterDismissTarget.current
+        afterDismissTarget.current = null
+        if (target && target !== pathname) {
+            requestAnimationFrame(() => router.replace(target as any))
+        }
+    }, [pathname])
+
+    const isInChild = pathname !== '/' && pathname !== '/library'
+    const isLibrary = activeTab === 'library'
+    const isHome = activeTab === 'home'
     const activeColor = themeColor
     const inactiveColor = isDarkMode ? '#555' : '#aaa'
-    const borderColor = isDarkMode ? '#1C1C1E' : '#E5E5E5'
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
 
     return (
@@ -94,7 +107,12 @@ export default function HomeLayout() {
                 />
                 <View style={styles.tabRow}>
                     <TabIcon
-                        onPress={() => router.navigate('/')}
+                        onPress={() => {
+                            if (pathname === '/') return
+                            if (!isInChild) { router.navigate('/'); return }
+                            afterDismissTarget.current = '/'
+                            router.dismissAll()
+                        }}
                         active={isHome}
                         activeColor={activeColor}
                         inactiveColor={inactiveColor}
@@ -103,7 +121,12 @@ export default function HomeLayout() {
                         {color => <Home size={24} color={color} />}
                     </TabIcon>
                     <TabIcon
-                        onPress={() => router.navigate('/library')}
+                        onPress={() => {
+                            if (pathname === '/library') return
+                            if (!isInChild) { router.navigate('/library'); return }
+                            afterDismissTarget.current = '/library'
+                            router.dismissAll()
+                        }}
                         active={isLibrary}
                         activeColor={activeColor}
                         inactiveColor={inactiveColor}
@@ -137,7 +160,7 @@ const styles = StyleSheet.create({
     tab: {
         flex: 1,
         alignItems: 'center',
-        paddingVertical: 4,
+        paddingVertical: 8,
         justifyContent: 'center',
     },
     activeIndicator: {

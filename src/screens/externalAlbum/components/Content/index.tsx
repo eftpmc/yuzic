@@ -19,8 +19,8 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
     return <ExternalAlbumHeader album={album} />;
   }, [album]);
 
-  const renderItem = ({ item }: { item: ExternalSong }) => {
-    return <ExternalSongRow song={item} />;
+  const renderItem = ({ item, index }: { item: ExternalSong; index: number }) => {
+    return <ExternalSongRow song={item} trackNumber={index + 1} />;
   };
 
   return (

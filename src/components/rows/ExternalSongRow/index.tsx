@@ -7,39 +7,32 @@ import {
 } from 'react-native';
 
 import { ExternalSong } from '@/types';
-import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
   song: ExternalSong;
+  trackNumber?: number;
   onPress?: () => void;
 };
 
-const ExternalSongRow: React.FC<Props> = ({ song, onPress }) => {
+const ExternalSongRow: React.FC<Props> = ({ song, trackNumber, onPress }) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
-  const formatDuration = (duration?: string | number) => {
-    if (!duration) return '';
-    const total = Number(duration);
-    const minutes = Math.floor(total / 60);
-    const seconds = Math.floor(total % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
   return (
-    <TouchableOpacity
-      style={styles.row}
-      onPress={onPress}
-      disabled={!onPress}
-      activeOpacity={onPress ? 0.6 : 1}
-    >
-      <View style={styles.songInfo}>
-        <MediaImage
-          cover={song.cover}
-          size="thumb"
-          style={styles.cover}
-        />
+    <View style={styles.row}>
+      <TouchableOpacity
+        style={styles.songInfo}
+        onPress={onPress}
+        disabled={!onPress}
+        activeOpacity={onPress ? 0.6 : 1}
+      >
+        <View style={styles.leadingMeta}>
+          <Text style={[styles.trackNumber, themeStyles.trackNumber]}>
+            {String(trackNumber ?? '')}
+          </Text>
+        </View>
 
         <View style={styles.textContainer}>
           <Text
@@ -48,16 +41,15 @@ const ExternalSongRow: React.FC<Props> = ({ song, onPress }) => {
           >
             {song.title}
           </Text>
-
-          <Text
-            style={[styles.subtitle, themeStyles.subtitle]}
-            numberOfLines={1}
-          >
-            {song.artist} • {formatDuration(song.duration)}
-          </Text>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+
+      <Ionicons
+        name="ellipsis-horizontal"
+        size={18}
+        color={isDarkMode ? '#fff' : '#000'}
+      />
+    </View>
   );
 };
 
@@ -67,29 +59,31 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 13,
     paddingHorizontal: 16,
   },
   songInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-  },
-  cover: {
-    width: 44,
-    height: 44,
-    borderRadius: 6,
     marginRight: 12,
+  },
+  leadingMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 44,
+    marginRight: 4,
+  },
+  trackNumber: {
+    fontSize: 13,
+    minWidth: 16,
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '400',
-  },
-  subtitle: {
-    fontSize: 13,
   },
 });
 
@@ -97,7 +91,7 @@ const stylesLight = StyleSheet.create({
   title: {
     color: '#000',
   },
-  subtitle: {
+  trackNumber: {
     color: '#666',
   },
 });
@@ -106,7 +100,7 @@ const stylesDark = StyleSheet.create({
   title: {
     color: '#fff',
   },
-  subtitle: {
+  trackNumber: {
     color: '#aaa',
   },
 });
