@@ -210,11 +210,11 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       };
 
       dispatch(trackDownloaded(entry));
-      dispatch(pendingRemoved(trackId));
       setDownloadedIds(prev => new Set([...prev, trackId]));
     } catch (err) {
       console.warn('[DownloadContext] Download error', err);
     } finally {
+      dispatch(pendingRemoved(trackId));
       FileSystem.deleteAsync(tmpPath, { idempotent: true }).catch(() => {});
       activeDownloadsRef.current.delete(trackId);
       setProgressTick(n => n + 1);
@@ -303,10 +303,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const getCollectionDownloadState = useCallback((trackIds: string[]) => {
     if (trackIds.length === 0) return { isDownloaded: false, isDownloading: false };
     return {
-      isDownloaded: trackIds.every(id => downloadedIdsRef.current.has(normalizeId(id))),
+      isDownloaded: trackIds.every(id => downloadedIds.has(normalizeId(id))),
       isDownloading: trackIds.some(id => activeDownloadsRef.current.has(normalizeId(id))),
     };
-  }, []);
+  }, [downloadedIds]);
 
   const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
     const col = collectionsRef.current[collectionId];
@@ -370,7 +370,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     cancelDownloadAll,
     clearDownloadsForProvider,
     clearAllDownloads,
-    downloadStateVersion: downloadedIds.size + Object.keys(pending).length,
+    downloadStateVersion: downloadedIds.size,
     getLocalPath,
     getSongLocalUri,
     getAllDownloadedCollections: () => Object.values(collections),

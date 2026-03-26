@@ -56,18 +56,22 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   };
 
   const metadataItems = useMemo(() => {
-    const items: string[] = [];
-    if (album.artist?.name) items.push(album.artist.name);
+    const items: { label: string; type: 'artist' | 'genre' | 'info' }[] = [];
+    if (album.artist?.name) items.push({ label: album.artist.name, type: 'artist' });
     const genre = album.genres?.[0]?.trim();
-    if (genre) items.push(genre);
+    if (genre) items.push({ label: genre, type: 'genre' });
     const year = Number(album.year);
-    if (Number.isFinite(year) && year > 0) items.push(String(year));
+    if (Number.isFinite(year) && year > 0) items.push({ label: String(year), type: 'info' });
     if (!items.length) {
-      items.push(`${songs.length} songs`);
-      items.push(formatDuration(totalDuration));
+      items.push({ label: `${songs.length} songs`, type: 'info' });
+      items.push({ label: formatDuration(totalDuration), type: 'info' });
     }
     return items;
   }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
+
+  const handleGenrePress = (genre: string) => {
+    (navigation as any).navigate('genreView', { genre });
+  };
 
   const toggleDownload = async () => {
     if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
@@ -131,13 +135,13 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
 
         <View style={styles.metaRow}>
           {metadataItems.map((item, index) => (
-            <React.Fragment key={`${item}-${index}`}>
+            <React.Fragment key={`${item.label}-${index}`}>
               {index > 0 && (
                 <Text style={[styles.metaDot, themeStyles.subtext]} numberOfLines={1}>
                   •
                 </Text>
               )}
-              {index === 0 && album.artist ? (
+              {item.type === 'artist' && album.artist ? (
                 <TouchableOpacity
                   onPress={() =>
                     (navigation as any).navigate('artistView', {
@@ -146,12 +150,18 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
                   }
                 >
                   <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
-                    {item}
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ) : item.type === 'genre' ? (
+                <TouchableOpacity onPress={() => handleGenrePress(item.label)}>
+                  <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                    {item.label}
                   </Text>
                 </TouchableOpacity>
               ) : (
                 <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
-                  {item}
+                  {item.label}
                 </Text>
               )}
             </React.Fragment>

@@ -9,22 +9,19 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/jellyfin/auth/getMusicLibraries';
+import { Ionicons } from '@expo/vector-icons';
 
 type Library = { id: string; name: string };
-
-const ALL_LIBRARIES_ID = '';
 
 const LibrarySelect: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
-  const themeColor = useSelector(selectThemeColor);
 
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,22 +38,7 @@ const LibrarySelect: React.FC = () => {
         } else if (activeServer.type === 'jellyfin') {
           result = await getMusicLibraries(activeServer);
         }
-        if (!cancelled) {
-          setLibraries(result);
-          // Auto-select the first library if nothing is stored yet
-          const hasSelection = activeServer.type === 'navidrome'
-            ? !!activeServer.auth?.musicFolderId
-            : !!activeServer.auth?.parentId;
-          if (!hasSelection && result.length > 0) {
-            const authPatch = activeServer.type === 'navidrome'
-              ? { musicFolderId: result[0].id }
-              : { parentId: result[0].id };
-            dispatch(updateServer({
-              id: activeServer.id,
-              patch: { auth: { ...activeServer.auth, ...authPatch } },
-            }));
-          }
-        }
+        if (!cancelled) setLibraries(result);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -67,63 +49,94 @@ const LibrarySelect: React.FC = () => {
 
   if (!activeServer) return null;
 
-  const rawSelection = activeServer.type === 'navidrome'
-    ? activeServer.auth?.musicFolderId
-    : activeServer.auth?.parentId;
-  const selectedId = rawSelection != null ? String(rawSelection) : ALL_LIBRARIES_ID;
+  const selectedIds: string[] = (() => {
+    if (activeServer.type === 'navidrome') {
+      const v = activeServer.auth?.musicFolderIds;
+      if (Array.isArray(v)) return v as string[];
+      const old = activeServer.auth?.musicFolderId;
+      return old ? [String(old)] : [];
+    } else {
+      const v = activeServer.auth?.parentIds;
+      if (Array.isArray(v)) return v as string[];
+      const old = (activeServer.auth as any)?.parentId;
+      return old ? [String(old)] : [];
+    }
+  })();
 
-  const handleSelect = (id: string) => {
+  const isAll = selectedIds.length === 0;
+
+  const toggle = (id: string) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter(s => s !== id)
+      : [...selectedIds, id];
     const authPatch = activeServer.type === 'navidrome'
-      ? { musicFolderId: id || undefined }
-      : { parentId: id || undefined };
+      ? { musicFolderIds: next }
+      : { parentIds: next };
     dispatch(updateServer({
       id: activeServer.id,
       patch: { auth: { ...activeServer.auth, ...authPatch } },
     }));
   };
 
-  const options: Library[] = [
-    { id: ALL_LIBRARIES_ID, name: t('settings.library.librarySelect.all') },
-    ...libraries,
-  ];
+  const selectAll = () => {
+    const authPatch = activeServer.type === 'navidrome'
+      ? { musicFolderIds: [] }
+      : { parentIds: [] };
+    dispatch(updateServer({
+      id: activeServer.id,
+      patch: { auth: { ...activeServer.auth, ...authPatch } },
+    }));
+  };
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-      <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
+      <Text style={[styles.infoText, { color: colors.subtext }]}>
         {t('settings.library.librarySelect.info')}
       </Text>
 
       {isLoading ? (
-        <ActivityIndicator size="small" color={themeColor} style={styles.loader} />
+        <ActivityIndicator size="small" color={colors.themeColor} style={styles.loader} />
       ) : (
         <View style={styles.optionList}>
-          {options.map(option => {
-            const selected = selectedId === option.id;
+          <TouchableOpacity
+            onPress={selectAll}
+            style={[styles.optionRow, {
+              backgroundColor: colors.muted,
+              borderColor: isAll ? colors.themeColor : colors.border,
+            }]}
+          >
+            <View style={[styles.checkbox,
+              isAll
+                ? { backgroundColor: colors.themeColor, borderColor: colors.themeColor }
+                : { borderColor: colors.border },
+            ]}>
+              {isAll && <Ionicons name="checkmark" size={14} color="#fff" />}
+            </View>
+            <Text style={[styles.optionText, { color: colors.text }]}>
+              {t('settings.library.librarySelect.all')}
+            </Text>
+          </TouchableOpacity>
+
+          {libraries.map(lib => {
+            const selected = selectedIds.includes(lib.id);
             return (
               <TouchableOpacity
-                key={option.id === ALL_LIBRARIES_ID ? '__all__' : option.id}
-                onPress={() => handleSelect(option.id)}
-                style={[
-                  styles.optionButton,
-                  {
-                    backgroundColor: selected
-                      ? themeColor
-                      : isDarkMode ? '#1a1a1a' : '#f1f1f1',
-                    borderColor: selected
-                      ? themeColor
-                      : isDarkMode ? '#333' : '#ddd',
-                  },
-                ]}
+                key={lib.id}
+                onPress={() => toggle(lib.id)}
+                style={[styles.optionRow, {
+                  backgroundColor: colors.muted,
+                  borderColor: selected ? colors.themeColor : colors.border,
+                }]}
               >
-                <Text
-                  style={{
-                    color: selected ? '#fff' : isDarkMode ? '#ccc' : '#333',
-                    fontWeight: selected ? '600' : '400',
-                    fontSize: 15,
-                  }}
-                  numberOfLines={1}
-                >
-                  {option.name}
+                <View style={[styles.checkbox,
+                  selected
+                    ? { backgroundColor: colors.themeColor, borderColor: colors.themeColor }
+                    : { borderColor: colors.border },
+                ]}>
+                  {selected && <Ionicons name="checkmark" size={14} color="#fff" />}
+                </View>
+                <Text style={[styles.optionText, { color: colors.text }]} numberOfLines={1}>
+                  {lib.name}
                 </Text>
               </TouchableOpacity>
             );
@@ -141,19 +154,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-  },
-  sectionDark: {
-    backgroundColor: '#111',
+    borderRadius: 12,
   },
   infoText: {
     fontSize: 13,
-    color: '#555',
     marginBottom: 12,
-  },
-  infoTextDark: {
-    color: '#aaa',
   },
   loader: {
     marginTop: 4,
@@ -161,10 +166,25 @@ const styles = StyleSheet.create({
   optionList: {
     gap: 6,
   },
-  optionButton: {
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
+    gap: 10,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionText: {
+    fontSize: 15,
+    flex: 1,
   },
 });

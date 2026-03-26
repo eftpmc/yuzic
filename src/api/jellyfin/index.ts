@@ -44,8 +44,28 @@ import { search as searchJellyfin } from "./search/search";
 
 export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   const { serverUrl, auth: providerAuth } = server;
-  const { token, userId, parentId } = providerAuth as { token: string; userId: string; parentId?: string };
-  const client = createJellyfinClient({ serverUrl, token, userId, parentId });
+  const { token, userId } = providerAuth as { token: string; userId: string };
+
+  // Support new array format (parentIds) and old single-value format (parentId)
+  const parentIds: string[] =
+    Array.isArray(providerAuth?.parentIds) ? (providerAuth.parentIds as string[]) :
+    (providerAuth as any)?.parentId ? [String((providerAuth as any).parentId)] :
+    [];
+
+  const client = createJellyfinClient({ serverUrl, token, userId });
+
+  const clientFor = (pid: string) =>
+    createJellyfinClient({ serverUrl, token, userId, parentId: pid });
+
+  async function fromParents<T extends { id: string }>(
+    fn: (c: ReturnType<typeof createJellyfinClient>) => Promise<T[]>
+  ): Promise<T[]> {
+    if (parentIds.length === 0) return fn(client);
+    if (parentIds.length === 1) return fn(clientFor(parentIds[0]));
+    const all = (await Promise.all(parentIds.map(id => fn(clientFor(id))))).flat();
+    const seen = new Set<string>();
+    return all.filter(item => !seen.has(item.id) && (seen.add(item.id), true));
+  }
 
   const auth: AuthApi = {
     connect: async (serverUrl, username, password) => {
@@ -61,7 +81,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   };
 
   const albums: AlbumsApi = {
-    list: async () => getAlbums(client),
+    list: async () => fromParents(c => getAlbums(c)),
     get: async (id: string) => {
       const album = await getAlbum(client, id);
       if (!album) throw new Error("Album not found");
@@ -70,7 +90,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   };
 
   const artists: ArtistsApi = {
-    list: async () => getArtists(client),
+    list: async () => fromParents(c => getArtists(c)),
     get: async (id: string) => {
       const artist = await getArtist(client, id);
       if (!artist) throw new Error("Artist not found");
@@ -79,7 +99,12 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   };
 
   const genres: GenresApi = {
-    list: async () => getGenres(client),
+    list: async () => {
+      if (parentIds.length === 0) return getGenres(client);
+      if (parentIds.length === 1) return getGenres(clientFor(parentIds[0]));
+      const all = (await Promise.all(parentIds.map(id => getGenres(clientFor(id))))).flat();
+      return [...new Set(all)];
+    },
   };
 
   const playlists: PlaylistsApi = {
@@ -149,7 +174,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   };
 
   const tracks: TracksApi = {
-    list: async () => getTracks(client),
+    list: async () => fromParents(c => getTracks(c)),
     get: async (id: string) => getSong(client, id),
   };
 

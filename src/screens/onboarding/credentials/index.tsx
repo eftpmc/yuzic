@@ -55,7 +55,7 @@ export default function Credentials() {
             })
         );
         dispatch(setActiveServer(id));
-        router.replace('/(home)');
+        router.replace(`/(onboarding)/libraries?serverId=${id}`);
     };
 
     const handleNext = async () => {

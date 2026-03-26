@@ -1,7 +1,7 @@
 export type ServerType = "navidrome" | "jellyfin";
 
 export type ProviderAuth = {
-  [key: string]: string | number | boolean | null;
+  [key: string]: string | number | boolean | null | string[];
 };
 
 

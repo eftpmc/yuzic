@@ -6,15 +6,18 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
+    TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
 import { CheckCircle, XCircle } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import LibrarySelect from '../library/components/LibrarySelect';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import {
@@ -26,7 +29,7 @@ import { setSearchScope } from '@/utils/redux/slices/settingsSlice';
 const ICON_SIZE = 20;
 
 const ServerSettings: React.FC = () => {
-    const { isDarkMode } = useTheme();
+    const { isDarkMode, colors } = useTheme();
     const { t } = useTranslation();
     const api = useApi();
     const dispatch = useDispatch();
@@ -131,69 +134,48 @@ const ServerSettings: React.FC = () => {
                     </View>
                 </View>
 
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    <Text
-                        style={[
-                            styles.infoText,
-                            isDarkMode && styles.infoTextDark,
-                        ]}
-                    >
+                <View style={[styles.section, { backgroundColor: colors.card }]}>
+                    <Text style={[styles.infoText, { color: colors.subtext }]}>
                         {t('settings.server.searchScopeHelp')}
                     </Text>
 
-                    <View style={styles.scopeRow}>
+                    <View style={styles.optionList}>
                         {[
                             { key: 'client', label: t('settings.server.searchScope.client') },
                             { key: 'client+external', label: t('settings.server.searchScope.clientExternal') },
                             { key: 'server', label: t('settings.server.searchScope.server') },
-                            {
-                                key: 'server+external',
-                                label: t('settings.server.searchScope.serverExternal'),
-                            },
+                            { key: 'server+external', label: t('settings.server.searchScope.serverExternal') },
                         ].map(option => {
                             const active = searchScope === option.key;
-
                             return (
-                                <View
+                                <TouchableOpacity
                                     key={option.key}
+                                    onPress={() => dispatch(setSearchScope(option.key as any))}
                                     style={[
-                                        styles.columnButton,
+                                        styles.optionRow,
                                         {
-                                            backgroundColor: active
-                                                ? themeColor
-                                                : isDarkMode
-                                                ? '#222'
-                                                : '#eee',
-                                            borderColor: isDarkMode
-                                                ? '#444'
-                                                : '#ccc',
+                                            backgroundColor: colors.muted,
+                                            borderColor: active ? themeColor : colors.border,
                                         },
                                     ]}
-                                    onTouchEnd={() =>
-                                        dispatch(
-                                            setSearchScope(option.key as any)
-                                        )
-                                    }
                                 >
-                                    <Text
-                                        style={{
-                                            color: active
-                                                ? '#fff'
-                                                : isDarkMode
-                                                ? '#ccc'
-                                                : '#000',
-                                            fontWeight: active ? '600' : '400',
-                                            fontSize: 13,
-                                            textAlign: 'center',
-                                        }}
-                                    >
+                                    <View style={[
+                                        styles.checkbox,
+                                        active
+                                            ? { backgroundColor: themeColor, borderColor: themeColor }
+                                            : { borderColor: colors.border },
+                                    ]}>
+                                        {active && <Ionicons name="checkmark" size={14} color="#fff" />}
+                                    </View>
+                                    <Text style={[styles.optionText, { color: colors.text }]}>
                                         {option.label}
                                     </Text>
-                                </View>
+                                </TouchableOpacity>
                             );
                         })}
                     </View>
                 </View>
+                <LibrarySelect />
             </ScrollView>
         </SafeAreaView>
     );
@@ -263,17 +245,28 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     infoTextDark: { color: '#aaa' },
-    scopeRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+    optionList: {
+        gap: 6,
     },
-    columnButton: {
-        flexBasis: '48%',
+    optionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: 10,
         paddingHorizontal: 12,
         borderRadius: 8,
         borderWidth: 1,
-        marginBottom: 12,
+        gap: 10,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    optionText: {
+        fontSize: 15,
+        flex: 1,
     },
 });
