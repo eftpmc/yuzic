@@ -16,7 +16,6 @@ import {
 import {
   DownloadedCollectionEntry,
   DownloadedTrackEntry,
-  PendingDownloadEntry,
   normalizeId,
 } from '@/utils/downloads/downloadStore';
 import {
