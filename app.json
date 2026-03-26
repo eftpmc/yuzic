@@ -56,7 +56,7 @@
         {
           "android": {
             "kotlinVersion": "2.0.21",
-            "javaVersion": "17",
+            "javaVersion": "21",
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "usesCleartextTraffic": true
