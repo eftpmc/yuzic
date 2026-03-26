@@ -89,11 +89,11 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
       return getYear(b) - getYear(a)
     }
     if (order === 'recent') {
-      const toMs = (d: any) => d ? new Date(d).getTime() : 0
-      const getMs = (x: LibraryItem) => {
-        if (x.kind === 'album') return toMs(x.data.created)
-        if (x.kind === 'playlist') return toMs(x.data.changed)
-        if (x.kind === 'track') return toMs(x.data.dateAdded)
+      const getMs = (x: LibraryItem): number => {
+        if (x.kind === 'album') return stats.albumLastPlayed[x.data.id] ?? 0
+        if (x.kind === 'track') return stats.songLastPlayed[x.data.id] ?? 0
+        if (x.kind === 'artist') return stats.artistLastPlayed[x.data.id] ?? 0
+        if (x.kind === 'playlist') return (x.data as any).changed ? new Date((x.data as any).changed).getTime() : 0
         return 0
       }
       return getMs(b) - getMs(a)

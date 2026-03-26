@@ -95,16 +95,16 @@ const TrackItem: React.FC<Props> = ({
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
+    // Show sheet immediately with base data, then hydrate with full song in background
+    setSelectedSong(song as unknown as Song);
+    requestAnimationFrame(() => {
+      optionsRef.current?.present();
+    });
     try {
       const fullSong = await api.tracks.get(song.id);
-      if (!fullSong) return;
-      setSelectedSong(fullSong);
-      requestAnimationFrame(() => {
-        optionsRef.current?.present();
-      });
+      if (fullSong) setSelectedSong(fullSong);
     } catch (error) {
-      console.warn("Failed to open track options", error);
-      toast.error("Unable to open track options");
+      console.warn("Failed to fetch full track data", error);
     } finally {
       longPressInFlightRef.current = false;
     }

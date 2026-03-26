@@ -59,19 +59,12 @@ export default function HomeLayout() {
     }, [sync, syncPlaylists])
 
     const [activeTab, setActiveTab] = useState<'home' | 'library'>('home')
-    const afterDismissTarget = useRef<string | null>(null)
 
     useEffect(() => {
-        if (pathname !== '/' && pathname !== '/library') return
-        setActiveTab(pathname === '/library' ? 'library' : 'home')
-        const target = afterDismissTarget.current
-        afterDismissTarget.current = null
-        if (target && target !== pathname) {
-            requestAnimationFrame(() => router.replace(target as any))
-        }
+        if (pathname === '/') setActiveTab('home')
+        else if (pathname === '/library') setActiveTab('library')
     }, [pathname])
 
-    const isInChild = pathname !== '/' && pathname !== '/library'
     const isLibrary = activeTab === 'library'
     const isHome = activeTab === 'home'
     const activeColor = themeColor
@@ -109,9 +102,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return
-                            if (!isInChild) { router.navigate('/'); return }
-                            afterDismissTarget.current = '/'
-                            router.dismissAll()
+                            router.replace('/')
                         }}
                         active={isHome}
                         activeColor={activeColor}
@@ -123,9 +114,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/library') return
-                            if (!isInChild) { router.navigate('/library'); return }
-                            afterDismissTarget.current = '/library'
-                            router.dismissAll()
+                            router.replace('/library')
                         }}
                         active={isLibrary}
                         activeColor={activeColor}

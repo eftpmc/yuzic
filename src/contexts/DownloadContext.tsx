@@ -175,15 +175,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const tmpPath = getTmpPath(trackId);
     const finalPath = getTrackPath(trackId);
 
-    const progressCb = ({ totalBytesWritten, totalBytesExpectedToWrite }: any) => {
-      const pct = totalBytesExpectedToWrite > 0
-        ? totalBytesWritten / totalBytesExpectedToWrite
-        : 0;
-      activeDownloadsRef.current.set(trackId, { ...activeDownloadsRef.current.get(trackId), pct });
-      setProgressTick(n => n + 1);
-    };
-
-    const task = FileSystem.createDownloadResumable(song.streamUrl, tmpPath, {}, progressCb);
+    const task = FileSystem.createDownloadResumable(song.streamUrl, tmpPath);
     activeDownloadsRef.current.set(trackId, task);
 
     try {
