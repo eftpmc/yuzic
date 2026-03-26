@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -6,9 +6,9 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectAudioQuality, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectAudioQuality } from '@/utils/redux/selectors/settingsSelectors';
 import { setAudioQuality } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -22,85 +22,41 @@ const QUALITY_OPTIONS = [
 const AudioQuality: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const themeColor = useSelector(selectThemeColor);
     const audioQuality = useSelector(selectAudioQuality);
-    const { isDarkMode } = useTheme();
-    const [expanded, setExpanded] = useState(false);
+    const { colors } = useTheme();
 
     return (
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-            <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+            <Text style={[styles.infoText, { color: colors.subtext }]}>
                 {t('settings.library.audioQuality.info')}
             </Text>
 
-            <TouchableOpacity
-                style={[styles.optionButton, isDarkMode && styles.optionButtonDark]}
-                onPress={() => setExpanded(prev => !prev)}
-            >
-                <View style={styles.leftGroup}>
-                    <MaterialIcons
-                        name="graphic-eq"
-                        size={20}
-                        color={isDarkMode ? '#ccc' : '#666'}
-                        style={{ marginRight: 12 }}
-                    />
-                    <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                        {t('settings.library.audioQuality.label', { value: t(`settings.library.audioQuality.options.${audioQuality}`) })}
-                    </Text>
-                </View>
-
-                <MaterialIcons
-                    name={expanded ? 'expand-less' : 'expand-more'}
-                    size={20}
-                    color={isDarkMode ? '#ccc' : '#666'}
-                />
-            </TouchableOpacity>
-
-            {expanded && (
-                <View style={styles.qualityList}>
-                    {QUALITY_OPTIONS.map(option => {
-                        const selected = audioQuality === option.key;
-
-                        return (
-                            <TouchableOpacity
-                                key={option.key}
-                                onPress={() => {
-                                    dispatch(setAudioQuality(option.key));
-                                    setExpanded(false);
-                                }}
-                                style={[
-                                    styles.qualityItem,
-                                    {
-                                        backgroundColor: selected
-                                            ? themeColor
-                                            : isDarkMode
-                                                ? '#1a1a1a'
-                                                : '#f1f1f1',
-                                        borderColor: selected
-                                            ? themeColor
-                                            : isDarkMode
-                                                ? '#333'
-                                                : '#ddd',
-                                    },
-                                ]}
-                            >
-                                <Text
-                                    style={{
-                                        color: selected
-                                            ? '#fff'
-                                            : isDarkMode
-                                                ? '#ccc'
-                                                : '#333',
-                                        fontWeight: selected ? '600' : '400',
-                                    }}
-                                >
-                                    {t(option.labelKey)}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
-            )}
+            <View style={styles.optionList}>
+                {QUALITY_OPTIONS.map(option => {
+                    const selected = audioQuality === option.key;
+                    return (
+                        <TouchableOpacity
+                            key={option.key}
+                            onPress={() => dispatch(setAudioQuality(option.key))}
+                            style={[styles.optionRow, {
+                                backgroundColor: colors.muted,
+                                borderColor: selected ? colors.themeColor : colors.border,
+                            }]}
+                        >
+                            <View style={[styles.checkbox,
+                                selected
+                                    ? { backgroundColor: colors.themeColor, borderColor: colors.themeColor }
+                                    : { borderColor: colors.border },
+                            ]}>
+                                {selected && <Ionicons name="checkmark" size={14} color="#fff" />}
+                            </View>
+                            <Text style={[styles.optionText, { color: colors.text }]}>
+                                {t(option.labelKey)}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
         </View>
     );
 };
@@ -112,54 +68,34 @@ const styles = StyleSheet.create({
         marginBottom: 24,
         paddingVertical: 20,
         paddingHorizontal: 16,
-        borderRadius: 10,
-        backgroundColor: '#fff',
-    },
-    sectionDark: {
-        backgroundColor: '#111',
+        borderRadius: 12,
     },
     infoText: {
         fontSize: 13,
-        color: '#555',
         marginBottom: 12,
     },
-    infoTextDark: {
-        color: '#aaa',
+    optionList: {
+        gap: 6,
     },
-    optionButton: {
+    optionRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#f1f1f1',
-        paddingVertical: 12,
-        paddingHorizontal: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#ddd',
+        gap: 10,
     },
-    optionButtonDark: {
-        backgroundColor: '#1a1a1a',
-        borderColor: '#333',
-    },
-    leftGroup: {
-        flexDirection: 'row',
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1.5,
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    rowText: {
-        fontSize: 16,
-        color: '#000',
-    },
-    rowTextDark: {
-        color: '#fff',
-    },
-    qualityList: {
-        marginTop: 12,
-    },
-    qualityItem: {
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        borderRadius: 6,
-        marginBottom: 6,
-        borderWidth: 1,
+    optionText: {
+        fontSize: 15,
+        flex: 1,
     },
 });

@@ -17,7 +17,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import LibrarySelect from '../library/components/LibrarySelect';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import {
@@ -175,7 +174,6 @@ const ServerSettings: React.FC = () => {
                         })}
                     </View>
                 </View>
-                <LibrarySelect />
             </ScrollView>
         </SafeAreaView>
     );

@@ -12,6 +12,7 @@ import Header from '../components/Header';
 import Stats from './components/Stats';
 import AudioQuality from './components/AudioQuality';
 import Downloads from './components/Downloads';
+import LibrarySelect from './components/LibrarySelect';
 import { useTheme } from '@/hooks/useTheme';
 
 const LibrarySettings: React.FC = () => {
@@ -30,8 +31,9 @@ const LibrarySettings: React.FC = () => {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Stats />
-                <AudioQuality />
+                <LibrarySelect />
                 <Downloads />
+                <AudioQuality />
             </ScrollView>
         </SafeAreaView>
     );

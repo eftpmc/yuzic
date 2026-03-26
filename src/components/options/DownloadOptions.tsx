@@ -2,11 +2,9 @@ import React from 'react';
 import {
     TouchableOpacity,
     StyleSheet,
-    useColorScheme,
-    View,
     ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Check, Download } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 interface DownloadOptionsProps {
@@ -17,6 +15,7 @@ interface DownloadOptionsProps {
 
 const DownloadOptions: React.FC<DownloadOptionsProps> = ({ onDownload, isDownloaded, isLoading = false }) => {
     const { isDarkMode } = useTheme();
+    const iconColor = isDarkMode ? '#fff' : '#000';
 
     return (
         <TouchableOpacity
@@ -27,13 +26,11 @@ const DownloadOptions: React.FC<DownloadOptionsProps> = ({ onDownload, isDownloa
             disabled={isDownloaded || isLoading}
         >
             {isLoading ? (
-                <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+                <ActivityIndicator size="small" color={iconColor} />
+            ) : isDownloaded ? (
+                <Check size={22} color={iconColor} />
             ) : (
-                <Ionicons
-                    name={isDownloaded ? 'checkmark-done' : 'download-outline'}
-                    size={22}
-                    color={isDarkMode ? '#fff' : '#000'}
-                />
+                <Download size={22} color={iconColor} />
             )}
         </TouchableOpacity>
     );
