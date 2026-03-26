@@ -1,4 +1,5 @@
 import React from 'react'
+import { Platform } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { useDownload } from '@/contexts/DownloadContext'
@@ -52,7 +53,7 @@ export default function ArtistContent({ artist }: Props) {
       ItemSeparatorComponent={ListSeparator}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom: 140,
+        paddingBottom: Platform.OS === 'android' ? 220 : 140,
         backgroundColor: isDarkMode ? '#000' : '#fff',
       }}
     />

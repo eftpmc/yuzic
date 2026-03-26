@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
 import { Playlist, Song } from '@/types';
@@ -37,7 +38,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
       {...({ estimatedItemSize: ESTIMATED_ROW_HEIGHT } as any)}
       ListHeaderComponent={header}
       ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
-      contentContainerStyle={{ paddingBottom: 140 }}
+      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 220 : 140 }}
       showsVerticalScrollIndicator={false}
     />
   );
