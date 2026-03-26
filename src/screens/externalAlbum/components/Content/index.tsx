@@ -32,7 +32,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
-      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 220 : 140 }}
+      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />
   );

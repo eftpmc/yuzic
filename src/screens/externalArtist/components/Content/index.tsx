@@ -38,7 +38,7 @@ export default function ExternalArtistContent({ artist }: Props) {
       ItemSeparatorComponent={ListSeparator}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom: Platform.OS === 'android' ? 220 : 140,
+        paddingBottom: Platform.OS === 'android' ? 180 : 140,
         backgroundColor: isDarkMode ? '#000' : '#fff',
       }}
     />
