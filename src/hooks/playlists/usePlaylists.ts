@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { QueryKeys } from '@/enums/queryKeys';
 import { Playlist } from '@/types';
@@ -32,28 +32,3 @@ export function usePlaylists(): UsePlaylistsResult {
     };
 }
 
-
-export function useFullPlaylists(playlists: Playlist[]) {
-  const api = useApi();
-  const activeServer = useSelector(selectActiveServer);
-
-  const queries = useQueries({
-    queries: playlists.map(p => ({
-      queryKey: [QueryKeys.Playlist, activeServer?.id, p.id],
-      queryFn: () => api.playlists.get(p.id),
-      enabled: !!activeServer?.id && !!p.id,
-      staleTime: staleTime.playlists,
-    })),
-  });
-
-  const fullPlaylists = queries
-    .map(q => q.data)
-    .filter(Boolean) as Playlist[];
-
-  const isLoading = queries.some(q => q.isLoading);
-
-  return {
-    playlists: fullPlaylists,
-    isLoading,
-  };
-}

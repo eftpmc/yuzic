@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useAlbums } from '@/hooks/albums';
-import { useFullPlaylists, usePlaylists } from '@/hooks/playlists';
+import { usePlaylists } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { MediaImage } from '@/components/MediaImage';
 import { useDownload } from '@/contexts/DownloadContext';
@@ -37,8 +37,7 @@ const DownloadsInfoScreen: React.FC = () => {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [freeBytes, setFreeBytes] = useState<number | null>(null);
   const { albums = [] } = useAlbums();
-  const { playlists = [] } = usePlaylists();
-  const { playlists: fullPlaylists = [] } = useFullPlaylists(playlists);
+  const { playlists: fullPlaylists = [] } = usePlaylists();
   const { tracks = [] } = useTracks();
 
   useEffect(() => {
@@ -69,7 +68,7 @@ const DownloadsInfoScreen: React.FC = () => {
         downloadedPlaylists,
         t,
       }),
-    [albums, tracks, playlists, fullPlaylists, downloadedTracks, downloadedPlaylists, downloadStateVersion, t]
+    [albums, tracks, fullPlaylists, downloadedTracks, downloadedPlaylists, downloadStateVersion, t]
   );
 
   const downloadedAlbumCount = useMemo(

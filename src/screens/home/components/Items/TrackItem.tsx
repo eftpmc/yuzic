@@ -18,6 +18,8 @@ import { useDownload } from "@/contexts/DownloadContext";
 import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useApi } from "@/api";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/utils/redux/store";
 import { toast } from "@backpackapp-io/react-native-toast";
 
 type Props = {
@@ -41,6 +43,13 @@ const TrackItem: React.FC<Props> = ({
   const api = useApi();
   const { playSimilar, playSong } = usePlaying();
   const { getLocalPath } = useDownload();
+  const cachedSong = useSelector((state: RootState) => {
+    for (const album of state.library.albums) {
+      const found = album.songs?.find(s => s.id === song.id);
+      if (found) return found;
+    }
+    return null;
+  });
 
   const optionsRef = useRef<BottomSheetModal>(null);
   const playlistRef = useRef<BottomSheetModal>(null);
@@ -77,7 +86,7 @@ const TrackItem: React.FC<Props> = ({
         await playSong({ ...song, streamUrl: localPath } as Song);
         return;
       }
-      const fullSong = await getFullSongWithTimeout();
+      const fullSong = cachedSong ?? await getFullSongWithTimeout();
       if (!fullSong) return;
       // Let press feedback/render settle before starting playback work.
       await new Promise<void>((resolve) =>
@@ -95,14 +104,16 @@ const TrackItem: React.FC<Props> = ({
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
-    // Show sheet immediately with base data, then hydrate with full song in background
-    setSelectedSong(song as unknown as Song);
+    // Show sheet immediately — use cached Redux data if available, else base data
+    setSelectedSong(cachedSong ?? (song as unknown as Song));
     requestAnimationFrame(() => {
       optionsRef.current?.present();
     });
     try {
-      const fullSong = await api.tracks.get(song.id);
-      if (fullSong) setSelectedSong(fullSong);
+      if (!cachedSong) {
+        const fullSong = await api.tracks.get(song.id);
+        if (fullSong) setSelectedSong(fullSong);
+      }
     } catch (error) {
       console.warn("Failed to fetch full track data", error);
     } finally {

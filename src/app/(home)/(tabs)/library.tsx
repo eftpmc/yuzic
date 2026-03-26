@@ -222,7 +222,6 @@ export default function LibraryScreen() {
             isGridView={isGridView}
             gridWidth={gridWidth}
             gridSpacing={gridSpacing}
-            serverId={activeServer?.id}
           />
         )
       case 'artist':
@@ -235,7 +234,6 @@ export default function LibraryScreen() {
             isGridView={isGridView}
             gridWidth={gridWidth}
             gridSpacing={gridSpacing}
-            serverId={activeServer?.id}
           />
         )
       case 'playlist':

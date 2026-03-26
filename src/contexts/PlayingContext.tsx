@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from 'react';
 import TrackPlayer, {
   Capability,
@@ -49,7 +50,6 @@ export interface PlaybackProgress {
 export interface PlayingContextType {
   currentSong: Song | null;
   isPlaying: boolean;
-  progress: PlaybackProgress;
 
   pauseSong(): Promise<void>;
   resumeSong(): Promise<void>;
@@ -90,6 +90,7 @@ export interface PlayingContextType {
 }
 
 const PlayingContext = createContext<PlayingContextType | undefined>(undefined);
+const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, duration: 0, buffered: 0 });
 
 function normalizeProgress(raw: ReturnType<typeof useProgress>): PlaybackProgress {
   return {
@@ -104,6 +105,8 @@ export const usePlaying = () => {
   if (!ctx) throw new Error('usePlaying must be used within PlayingProvider');
   return ctx;
 };
+
+export const usePlayingProgress = () => useContext(PlayingProgressContext);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
@@ -458,37 +461,39 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     bumpQueue();
   };
 
+  const stableValue = useMemo<PlayingContextType>(() => ({
+    currentSong,
+    isPlaying,
+    pauseSong,
+    resumeSong,
+    currentIndex,
+    queueVersion,
+    setCurrentSong,
+    playSong,
+    playSongInCollection,
+    addCollectionToQueue,
+    shuffleCollectionToQueue,
+    skipToNext,
+    skipToPrevious,
+    getQueue,
+    resetQueue,
+    skipTo,
+    toggleShuffle,
+    repeatOn,
+    toggleRepeat,
+    shuffleOn,
+    moveTrack,
+    addToQueue,
+    playNext,
+    playSimilar,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [currentSong, isPlaying, currentIndex, queueVersion, shuffleOn, repeatOn]);
+
   return (
-    <PlayingContext.Provider
-      value={{
-        currentSong,
-        isPlaying,
-        progress,
-        pauseSong,
-        resumeSong,
-        currentIndex,
-        queueVersion,
-        setCurrentSong,
-        playSong,
-        playSongInCollection,
-        addCollectionToQueue,
-        shuffleCollectionToQueue,
-        skipToNext,
-        skipToPrevious,
-        getQueue,
-        resetQueue,
-        skipTo,
-        toggleShuffle,
-        repeatOn,
-        toggleRepeat,
-        shuffleOn,
-        moveTrack,
-        addToQueue,
-        playNext,
-        playSimilar,
-      }}
-    >
-      {children}
-    </PlayingContext.Provider>
+    <PlayingProgressContext.Provider value={progress}>
+      <PlayingContext.Provider value={stableValue}>
+        {children}
+      </PlayingContext.Provider>
+    </PlayingProgressContext.Provider>
   );
 };

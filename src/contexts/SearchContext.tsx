@@ -19,7 +19,7 @@ import * as musicbrainz from '@/api/musicbrainz';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
-import { useFullPlaylists } from '@/hooks/playlists';
+
 import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
 import { useSelector } from 'react-redux';
@@ -143,10 +143,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchScope = useSelector(selectSearchScope);
 
-  // Only fetch full playlist data (N+1) when the client scope is active
-  const playlistsForDownloadCheck = searchScope.includes('client') ? playlists : [];
-  const { playlists: fullPlaylists } = useFullPlaylists(playlistsForDownloadCheck);
-
   const { getAllDownloadedTracks } = useDownload();
   const downloadedTrackIds = buildDownloadedTrackIdSet(
     (getAllDownloadedTracks() as any[])
@@ -158,7 +154,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     downloadedTrackIds
   );
   const downloadedPlaylistIds = new Set(
-    fullPlaylists
+    playlists
       .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
       .map(playlist => playlist.id)
   );

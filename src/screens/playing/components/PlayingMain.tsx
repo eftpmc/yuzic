@@ -8,7 +8,7 @@ import {
 import TrackPlayer from 'react-native-track-player';
 import { Image } from 'expo-image';
 
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
@@ -33,7 +33,8 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressOptions,
   onPressAdd
 }) => {
-  const { currentSong, progress } = usePlaying();
+  const { currentSong } = usePlaying();
+  const progress = usePlayingProgress();
   const position = progress.position;
   const duration = currentSong ? Number(currentSong.duration) : 1;
 

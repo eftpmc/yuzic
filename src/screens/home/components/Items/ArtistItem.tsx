@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/api';
-import { CoverSource, Artist } from '@/types';
-import { QueryKeys } from '@/enums/queryKeys';
+import { useSelector } from 'react-redux';
+import { CoverSource } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
+import type { RootState } from '@/utils/redux/store';
 
 interface ItemProps {
   id: string;
@@ -26,7 +24,6 @@ interface ItemProps {
   isGridView: boolean;
   gridWidth: number;
   gridSpacing?: number;
-  serverId?: string;
 }
 
 const ArtistItem: React.FC<ItemProps> = ({
@@ -37,34 +34,20 @@ const ArtistItem: React.FC<ItemProps> = ({
   isGridView,
   gridWidth,
   gridSpacing = 8,
-  serverId,
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const queryClient = useQueryClient();
-  const api = useApi();
+  const artist = useSelector((state: RootState) => state.library.artists.find(a => a.id === id) ?? null);
 
   const sheetRef = useRef<BottomSheetModal>(null);
-  const [artistForSheet, setArtistForSheet] = useState<Artist | null>(null);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('artistView', { id });
   }, [navigation, id]);
 
-  const fetchArtist = useCallback(async () => {
-    return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Artist, serverId, id],
-      queryFn: () => api.artists.get(id),
-      staleTime: staleTime.artists,
-    });
-  }, [api, queryClient, serverId, id]);
-
-  const handleLongPress = useCallback(async () => {
-    const artist = await fetchArtist();
-    if (!artist) return;
-    setArtistForSheet(artist);
+  const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
-  }, [fetchArtist]);
+  }, []);
 
   return (
     <>
@@ -120,7 +103,7 @@ const ArtistItem: React.FC<ItemProps> = ({
 
       <ArtistOptions
         ref={sheetRef}
-        artist={artistForSheet}
+        artist={artist}
         hideGoToArtist={false}
       />
     </>

@@ -29,7 +29,6 @@ import {
   useCreatePlaylist,
   useAddSongToPlaylist,
   useRemoveSongFromPlaylist,
-  useFullPlaylists,
 } from '@/hooks/playlists';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -46,8 +45,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
 
-    const { playlists: basePlaylists } = usePlaylists();
-    const { playlists: fullPlaylists } = useFullPlaylists(basePlaylists);
+    const { playlists: fullPlaylists } = usePlaylists();
     const createPlaylist = useCreatePlaylist();
     const addSongToPlaylist = useAddSongToPlaylist();
     const removeSongFromPlaylist = useRemoveSongFromPlaylist();

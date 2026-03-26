@@ -82,10 +82,6 @@ export default function HomeLayout() {
                 <Stack.Screen name="artistView" options={{ headerShown: false }} />
                 <Stack.Screen name="playlistView" options={{ headerShown: false }} />
                 <Stack.Screen name="settings" options={{ headerShown: false }} />
-                <Stack.Screen name="categoryList" options={{ headerShown: false }} />
-                <Stack.Screen name="albumCollection" options={{ headerShown: false }} />
-                <Stack.Screen name="downloadedList" options={{ headerShown: false }} />
-                <Stack.Screen name="genreList" options={{ headerShown: false }} />
                 <Stack.Screen name="genreView" options={{ headerShown: false }} />
             </Stack>
 

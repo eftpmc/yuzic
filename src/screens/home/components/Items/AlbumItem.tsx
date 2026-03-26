@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/api';
-import { QueryKeys } from '@/enums/queryKeys';
+import { useSelector } from 'react-redux';
 import { MediaImage } from '@/components/MediaImage';
-import { Album, CoverSource } from '@/types';
+import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import AlbumOptions from '@/components/options/AlbumOptions';
+import type { RootState } from '@/utils/redux/store';
 
 interface ItemProps {
   id: string;
@@ -27,7 +24,6 @@ interface ItemProps {
   isGridView: boolean;
   gridWidth: number;
   gridSpacing?: number;
-  serverId?: string;
 }
 
 const AlbumItem: React.FC<ItemProps> = ({
@@ -38,34 +34,20 @@ const AlbumItem: React.FC<ItemProps> = ({
   isGridView,
   gridWidth,
   gridSpacing = 8,
-  serverId,
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const api = useApi();
-  const queryClient = useQueryClient();
+  const album = useSelector((state: RootState) => state.library.albums.find(a => a.id === id) ?? null);
 
   const sheetRef = useRef<BottomSheetModal>(null);
-  const [albumForSheet, setAlbumForSheet] = useState<Album | null>(null);
-
-  const fetchAlbum = useCallback(async () => {
-    return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Album, serverId, id],
-      queryFn: () => api.albums.get(id),
-      staleTime: staleTime.albums,
-    });
-  }, [api, queryClient, serverId, id]);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('albumView', { id });
   }, [navigation, id]);
 
-  const handleLongPress = useCallback(async () => {
-    const album = await fetchAlbum();
-    if (!album) return;
-    setAlbumForSheet(album);
+  const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
-  }, [fetchAlbum]);
+  }, []);
 
   return (
     <>
@@ -123,7 +105,7 @@ const AlbumItem: React.FC<ItemProps> = ({
 
       <AlbumOptions
         ref={sheetRef}
-        album={albumForSheet}
+        album={album}
         hideGoToAlbum={false}
       />
     </>
