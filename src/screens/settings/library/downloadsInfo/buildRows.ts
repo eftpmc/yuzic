@@ -7,9 +7,8 @@ import {
 } from '@/utils/downloads/provider';
 import {
   buildDownloadedTrackIdSet,
-  getFullyDownloadedAlbumIds,
-  isPlaylistFullyDownloaded,
 } from '@/utils/downloads/collectionState';
+import { DownloadedCollectionEntry } from '@/utils/downloads/downloadStore';
 import { DownloadRow } from './types';
 
 type BuildDownloadRowsArgs = {
@@ -18,7 +17,7 @@ type BuildDownloadRowsArgs = {
   playlists: any[];
   fullPlaylists: any[];
   downloadedTracks: any[];
-  downloadedPlaylists: any[];
+  downloadedCollections: DownloadedCollectionEntry[];
   t: TFunction;
 };
 
@@ -48,7 +47,7 @@ export function buildDownloadRows({
   playlists,
   fullPlaylists,
   downloadedTracks,
-  downloadedPlaylists,
+  downloadedCollections,
   t,
 }: BuildDownloadRowsArgs): DownloadRow[] {
   const downloadedTrackIds = buildDownloadedTrackIdSet(
@@ -58,45 +57,19 @@ export function buildDownloadRows({
       }))
       .filter(track => track.id)
   );
-  const downloadedAlbumIds = getFullyDownloadedAlbumIds(
-    tracks.map(track => ({
-      id: String(track?.id ?? ''),
-      albumId: String(track?.albumId ?? ''),
-    })),
-    downloadedTrackIds
-  );
-  const downloadedBytesByTrackId = new Map<string, number>();
-  const downloadedBytesByAlbumId = new Map<string, number>();
 
+  // fileSize keyed by trackId — used to sum bytes for each collection
+  const downloadedBytesByTrackId = new Map<string, number>();
   for (const track of downloadedTracks) {
     const trackId = String(track?.trackId ?? track?.originalTrack?.id ?? '');
-    const albumId = String(track?.originalTrack?.extraPayload?.albumId ?? '');
     const fileSize = Number(track?.fileSize ?? 0);
-    if (trackId && fileSize > 0) downloadedBytesByTrackId.set(trackId, fileSize);
-    if (albumId && fileSize > 0) {
-      downloadedBytesByAlbumId.set(
-        albumId,
-        Number(downloadedBytesByAlbumId.get(albumId) ?? 0) + fileSize
-      );
-    }
+    if (trackId) downloadedBytesByTrackId.set(trackId, fileSize);
   }
 
-  const downloadedPlaylistIds = new Set<string>();
-  const downloadedBytesByPlaylistId = new Map<string, number>();
-  for (const playlist of fullPlaylists) {
-    if (!isPlaylistFullyDownloaded(playlist, downloadedTrackIds)) continue;
-    downloadedPlaylistIds.add(playlist.id);
-    const playlistDownloadedBytes = playlist.songs.reduce((sum: number, song: any) => {
-      return sum + Number(downloadedBytesByTrackId.get(song.id) ?? 0);
-    }, 0);
-    if (playlistDownloadedBytes > 0) {
-      downloadedBytesByPlaylistId.set(String(playlist.id), playlistDownloadedBytes);
-    }
-  }
-
-  const downloadedMap = new Map<string, any>();
-  for (const item of downloadedPlaylists) {
-    downloadedMap.set(String(item.playlistId), item);
+  // Build a unified lookup map for both album and playlist collection entries
+  const downloadedMap = new Map<string, DownloadedCollectionEntry>();
+  for (const col of downloadedCollections) {
+    downloadedMap.set(String(col.id), col);
   }
 
   const allItems = [
@@ -104,32 +77,16 @@ export function buildDownloadRows({
     ...playlists.map(item => ({ ...item, type: 'playlist' as const })),
   ];
 
-  const filtered = allItems.filter(item => {
-    const id = String(item.id);
-
-    if (item.type === 'album') {
-      return downloadedAlbumIds.has(id);
-    }
-
-    return downloadedPlaylistIds.has(id);
-  });
+  const filtered = allItems.filter(item => downloadedMap.has(String(item.id)));
 
   const normalized: DownloadRow[] = filtered.map(item => {
     const id = String(item.id);
     const downloaded = downloadedMap.get(id);
-    const downloadedBytes = item.type === 'album'
-      ? downloadedBytesByAlbumId.get(id) ??
-        downloaded?.totalSize ??
-        downloaded?.downloadedTracks?.reduce((sum: number, track: any) => {
-          return sum + Number(track?.fileSize ?? 0);
-        }, 0)
-      : downloadedBytesByPlaylistId.get(id) ??
-        downloaded?.totalSize ??
-        downloaded?.downloadedTracks?.reduce((sum: number, track: any) => {
-          return sum + Number(track?.fileSize ?? 0);
-        }, 0);
-
-    const totalBytes = downloaded?.totalSize ?? downloadedBytes;
+    // Sum bytes using the collection's stored trackIds — avoids albumId mapping issues
+    const downloadedBytes = (downloaded?.trackIds ?? []).reduce(
+      (sum, tid) => sum + (downloadedBytesByTrackId.get(tid) ?? 0),
+      0
+    );
     const updatedAtRaw = downloaded?.downloadedAt;
 
     const downloadedTrackIdsForCollection =
@@ -141,7 +98,7 @@ export function buildDownloadRows({
               .filter((trackId: string) => Boolean(trackId) && downloadedTrackIds.has(trackId));
             if (fromLibraryTracks.length) return fromLibraryTracks;
             return downloadedTracks
-              .filter(track => String(track?.originalTrack?.extraPayload?.albumId ?? '') === id)
+              .filter(track => String(track?.albumId ?? track?.originalTrack?.extraPayload?.albumId ?? '') === id)
               .map(track => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
               .filter(Boolean);
           })()
@@ -149,14 +106,12 @@ export function buildDownloadRows({
             fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs
               .map((song: any) => String(song.id ?? '').trim())
               .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) ??
-            (downloaded?.downloadedTracks ?? [])
-              .map((track: any) => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
-              .filter(Boolean)
+            (downloaded?.trackIds ?? []).filter((id: string) => downloadedTrackIds.has(id))
           );
 
     const downloadTracksForRow =
       item.type === 'album'
-        ? downloadedTracks.filter(track => String(track?.originalTrack?.extraPayload?.albumId ?? '') === id)
+        ? downloadedTracks.filter(track => String(track?.albumId ?? track?.originalTrack?.extraPayload?.albumId ?? '') === id)
         : downloadedTracks.filter(track => downloadedTrackIdsForCollection.includes(String(track?.trackId ?? track?.originalTrack?.id ?? '')));
 
     const provider: DownloadProviderType = (
@@ -181,7 +136,7 @@ export function buildDownloadRows({
           : t('settings.library.downloads.type.playlist'),
       trackIds: downloadedTrackIdsForCollection,
       downloaded: toBytesLabel(downloadedBytes),
-      size: toBytesLabel(totalBytes),
+      size: toBytesLabel(downloadedBytes),
       updatedAt: toTimestamp(updatedAtRaw),
     };
   });

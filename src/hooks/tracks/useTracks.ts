@@ -25,8 +25,12 @@ export function useTracks(): UseTracksResult {
     staleTime: staleTime.tracks,
   });
 
+  // Prefer query data only when non-empty so a failed fetch that returns []
+  // doesn't mask persisted library tracks.
+  const tracks = (query.data && query.data.length > 0) ? query.data : libraryTracks;
+
   return {
-    tracks: query.data ?? libraryTracks,
+    tracks,
     isLoading: query.isLoading && libraryTracks.length === 0,
     error: query.error ?? null,
   };

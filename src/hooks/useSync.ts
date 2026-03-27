@@ -127,6 +127,13 @@ export function useSync() {
           )
           fullAlbums.forEach(a => fullAlbumMap.set(a.id, a))
           dispatch(setLibraryAlbums(fullAlbums))
+
+          // Derive tracks from enriched album songs so the tracks/downloaded
+          // library filters are always populated after Phase 2, even if the
+          // QueryKeys.Tracks query hasn't run yet (no active subscriber).
+          const allSongs: SongBase[] = []
+          fullAlbums.forEach(album => album.songs.forEach(song => allSongs.push(song)))
+          if (allSongs.length > 0) dispatch(setLibraryTracks(allSongs))
         }
 
         const artists = queryClient.getQueryData<Artist[]>([QueryKeys.Artists, serverId])

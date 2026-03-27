@@ -50,13 +50,6 @@ const DownloadsInfoScreen: React.FC = () => {
   const formattedSize = formatBytes(totalDownloadedBytes);
   const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
 
-  const downloadedPlaylists = useMemo(
-    () => downloadedCollections
-      .filter(c => c.type === 'playlist')
-      .map(c => ({ playlistId: c.id, downloadedAt: c.downloadedAt })),
-    [downloadedCollections]
-  );
-
   const rows = useMemo(
     () =>
       buildDownloadRows({
@@ -65,10 +58,10 @@ const DownloadsInfoScreen: React.FC = () => {
         playlists: fullPlaylists,
         fullPlaylists,
         downloadedTracks,
-        downloadedPlaylists,
+        downloadedCollections,
         t,
       }),
-    [albums, tracks, fullPlaylists, downloadedTracks, downloadedPlaylists, downloadStateVersion, t]
+    [albums, tracks, fullPlaylists, downloadedTracks, downloadedCollections, downloadStateVersion, t]
   );
 
   const downloadedAlbumCount = useMemo(

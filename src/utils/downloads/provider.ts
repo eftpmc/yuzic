@@ -7,6 +7,11 @@ export type DownloadProviderScope = {
 };
 
 type DownloadTrackLike = {
+  // Flat shape (DownloadedTrackEntry)
+  serverId?: unknown;
+  serverType?: unknown;
+  coverKind?: unknown;
+  // Legacy nested shape
   originalTrack?: {
     extraPayload?: {
       serverId?: unknown;
@@ -33,14 +38,14 @@ export function normalizeServerId(value: unknown): string | null {
 }
 
 export function getDownloadedTrackServerId(track: DownloadTrackLike): string | null {
-  return normalizeServerId(track?.originalTrack?.extraPayload?.serverId);
+  return normalizeServerId(track?.serverId ?? track?.originalTrack?.extraPayload?.serverId);
 }
 
 export function getDownloadedTrackServerType(track: DownloadTrackLike): ServerType | null {
   const payload = track?.originalTrack?.extraPayload;
   return (
-    normalizeServerType(payload?.serverType) ??
-    inferServerTypeFromCoverKind(payload?.coverKind) ??
+    normalizeServerType(track?.serverType ?? payload?.serverType) ??
+    inferServerTypeFromCoverKind(track?.coverKind ?? payload?.coverKind) ??
     null
   );
 }

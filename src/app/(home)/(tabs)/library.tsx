@@ -145,7 +145,7 @@ export default function LibraryScreen() {
   const { artists } = useArtists()
   const { playlists } = usePlaylists()
   const { tracks } = useTracks()
-  const { isTrackDownloaded } = useDownload()
+  const { getAllDownloadedCollections, downloadStateVersion } = useDownload()
 
   const screenWidth = Dimensions.get('window').width
   const gridWidth = (screenWidth - LIST_PADDING * 2 - (gridColumns + 1) * gridSpacing) / gridColumns
@@ -161,13 +161,22 @@ export default function LibraryScreen() {
     ...artists.map(a => ({ kind: 'artist' as const, data: a })),
   ], sortOrder, stats), [sortOrder, stats, albums, artists, playlists])
 
+  const downloadedCollectionIds = useMemo(() => {
+    const ids = new Set<string>()
+    getAllDownloadedCollections().forEach(c => ids.add(c.id))
+    return ids
+  }, [getAllDownloadedCollections, downloadStateVersion])
+
   const sortedByFilter = useMemo(() => ({
     playlists:  sortItems(playlists.map(p => ({ kind: 'playlist'  as const, data: p })), sortOrder, stats),
     albums:     sortItems(albums.map(a => ({ kind: 'album'        as const, data: a })), sortOrder, stats),
     artists:    sortItems(artists.map(a => ({ kind: 'artist'       as const, data: a })), sortOrder, stats),
     tracks:     sortItems(tracks.map(tr => ({ kind: 'track'        as const, data: tr })), sortOrder, stats),
-    downloaded: sortItems(tracks.filter(tr => isTrackDownloaded(tr.id)).map(tr => ({ kind: 'track' as const, data: tr })), sortOrder, stats),
-  }), [sortOrder, stats, albums, artists, playlists, tracks, isTrackDownloaded])
+    downloaded: sortItems([
+      ...albums.filter(a => downloadedCollectionIds.has(a.id)).map(a => ({ kind: 'album' as const, data: a })),
+      ...playlists.filter(p => downloadedCollectionIds.has(p.id)).map(p => ({ kind: 'playlist' as const, data: p })),
+    ], sortOrder, stats),
+  }), [sortOrder, stats, albums, artists, playlists, tracks, downloadedCollectionIds])
 
   const items = useMemo(
     () => listFilter ? sortedByFilter[listFilter] : sortedAll,
