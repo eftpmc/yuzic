@@ -70,7 +70,7 @@ const Stats: React.FC = () => {
         </Text>
 
         <TouchableOpacity
-          onPress={() => sync(true, true)}
+          onPress={() => sync(true)}
           disabled={isSyncing}
           style={[
             styles.refreshButton,
