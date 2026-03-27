@@ -202,7 +202,12 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       };
 
       dispatch(trackDownloaded(entry));
-      setDownloadedIds(prev => new Set([...prev, trackId]));
+      setDownloadedIds(prev => {
+        const next = new Set<string>();
+        prev.forEach(id => next.add(id));
+        next.add(trackId);
+        return next;
+      });
     } catch (err) {
       console.warn('[DownloadContext] Download error', err);
     } finally {

@@ -98,9 +98,14 @@ export const ExploreProvider: React.FC<Props> = ({ children }) => {
         )
       ).flat();
 
-      const artistMbids = Array.from(
-        new Set(similar.map(a => a.artist_mbid))
-      );
+      const seenMbids = new Set<string>();
+      const artistMbids: string[] = [];
+      similar.forEach(a => {
+        if (!seenMbids.has(a.artist_mbid)) {
+          seenMbids.add(a.artist_mbid);
+          artistMbids.push(a.artist_mbid);
+        }
+      });
 
       InteractionManager.runAfterInteractions(async () => {
         const discoveredArtists: ExternalArtistBase[] = [];
@@ -200,7 +205,9 @@ function mergeArtists(
   const map = new Map<string, ExternalArtistBase>();
   prev.forEach(a => map.set(a.id, a));
   next.forEach(a => map.set(a.id, a));
-  return Array.from(map.values());
+  const result: ExternalArtistBase[] = [];
+  map.forEach(v => result.push(v));
+  return result;
 }
 
 function mergeAlbums(
@@ -214,5 +221,7 @@ function mergeAlbums(
   next.forEach(a =>
     map.set(`${a.artist}-${a.title}`, a)
   );
-  return Array.from(map.values());
+  const result: ExternalAlbumBase[] = [];
+  map.forEach(v => result.push(v));
+  return result;
 }

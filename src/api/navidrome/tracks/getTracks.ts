@@ -31,7 +31,9 @@ export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
       }
     }
 
-    return [...deduped.values()];
+    const result: SongBase[] = [];
+    deduped.forEach(v => result.push(v));
+    return result;
   } catch (error) {
     console.error("Failed to fetch Navidrome tracks:", error);
     return [];
