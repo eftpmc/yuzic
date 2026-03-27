@@ -8,13 +8,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
 import { CoverSource } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import { selectArtistsById } from '@/utils/redux/selectors/librarySelectors';
+import { useArtists } from '@/hooks/artists';
 
 interface ItemProps {
   id: string;
@@ -37,8 +36,8 @@ const ArtistItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const artistsById = useSelector(selectArtistsById);
-  const artist = artistsById.get(id) ?? null;
+  const { artists } = useArtists();
+  const artist = artists.find(a => a.id === id) ?? null;
 
   const sheetRef = useRef<BottomSheetModal>(null);
 
