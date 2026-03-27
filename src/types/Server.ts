@@ -5,11 +5,17 @@ export type ProviderAuth = {
 };
 
 
+export interface BasicAuth {
+  username: string;
+  password: string;
+}
+
 export interface Server {
   id: string;
   type: ServerType;
   serverUrl: string;
   username: string;
   auth?: ProviderAuth;
+  basicAuth?: BasicAuth;
   isAuthenticated: boolean;
 }

@@ -8,8 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const H_PADDING = 12;
 const GAP = 12;
-const ITEM_MARGIN = 4;
-const VISIBLE_ITEMS = 2.08; // 2 full + sliver of third
+const VISIBLE_ITEMS = 2.5;
 const MAX_ALBUMS = 12;
 
 function shuffle<T>(arr: T[]): T[] {
@@ -23,8 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 const getItemWidth = (width: number) => {
   const availableWidth = width - H_PADDING * 2;
-  const slotWidth = (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
-  return slotWidth - ITEM_MARGIN * 2;
+  return (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
 };
 
 export default function RandomAlbums() {
@@ -33,7 +31,6 @@ export default function RandomAlbums() {
   const { width } = useWindowDimensions();
   const { albums } = useAlbums();
   const gridItemWidth = getItemWidth(width);
-  const slotWidth = gridItemWidth + ITEM_MARGIN * 2;
 
   const randomAlbums = useMemo(() => {
     if (albums.length === 0) return [];
@@ -55,7 +52,7 @@ export default function RandomAlbums() {
         contentContainerStyle={styles.scrollContent}
       >
         {randomAlbums.map((album) => (
-          <View key={album.id} style={[styles.item, { width: slotWidth }]}>
+          <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
             <AlbumItem
               id={album.id}
               title={album.title}
@@ -63,6 +60,7 @@ export default function RandomAlbums() {
               cover={album.cover}
               isGridView
               gridWidth={gridItemWidth}
+              gridSpacing={0}
             />
           </View>
         ))}

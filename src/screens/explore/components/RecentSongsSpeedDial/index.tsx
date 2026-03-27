@@ -4,90 +4,102 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
-import { useRecentSongs } from '@/hooks/songs';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
+import { useQuickAccessItems, QuickAccessItem } from '@/hooks/useQuickAccessItems';
 import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
+import { Song } from '@/types';
 
 const H_PADDING = 12;
-const ROW_GAP = 8;
-const COLS = 3;
-const MAX_SONGS = 6;
+const COL_GAP = 6;
+const ROW_GAP = 5;
+const IMG_SIZE = 42;
+const COLS = 2;
 
 export default function RecentSongsSpeedDial() {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
-  const { songs, isLoading } = useRecentSongs();
+  const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const navigation = useNavigation<any>();
   const { playSimilar } = usePlaying();
+  const items = useQuickAccessItems();
 
-  const inFlightSongIdRef = useRef<string | null>(null);
+  const inFlightRef = useRef<string | null>(null);
 
-  const displaySongs = songs.slice(0, MAX_SONGS);
+  const cardWidth = (width - H_PADDING * 2 - COL_GAP) / COLS;
 
-  const handlePressSong = async (song: typeof displaySongs[number]) => {
-    if (inFlightSongIdRef.current === song.id) return;
-
-    inFlightSongIdRef.current = song.id;
-
+  const handlePress = async (item: QuickAccessItem) => {
+    const key = `${item.kind}:${item.data.id}`;
+    if (inFlightRef.current === key) return;
+    inFlightRef.current = key;
     try {
-      await playSimilar(song);
-    } finally {
-      if (inFlightSongIdRef.current === song.id) {
-        inFlightSongIdRef.current = null;
+      switch (item.kind) {
+        case 'album':
+          navigation.navigate('albumView', { id: item.data.id });
+          break;
+        case 'artist':
+          navigation.navigate('artistView', { id: item.data.id });
+          break;
+        case 'playlist':
+          navigation.navigate('playlistView', { id: item.data.id });
+          break;
+        case 'track':
+          await playSimilar(item.data as Song);
+          break;
       }
+    } finally {
+      inFlightRef.current = null;
     }
   };
 
+  const rows: QuickAccessItem[][] = [];
+  for (let i = 0; i < items.length; i += COLS) {
+    rows.push(items.slice(i, i + COLS));
+  }
+
   return (
-    <View style={[styles.container, isDarkMode && styles.containerDark]}>
-      <View style={styles.padded}>
-        <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-          {t('explore.sections.dial')}
-        </Text>
-
-        {isLoading ? null : displaySongs.length === 0 ? (
-          <SectionEmptyState message={t('explore.empty.recentSongs')} />
-        ) : (
-          <View style={styles.grid}>
-            {Array.from(
-              { length: Math.ceil(displaySongs.length / COLS) },
-              (_, row) => (
-                <View key={row} style={styles.row}>
-                  {displaySongs
-                    .slice(row * COLS, (row + 1) * COLS)
-                    .map((song) => (
-                      <View key={song.id} style={styles.slot}>
-                        <TouchableOpacity
-                          style={styles.item}
-                          onPress={() => {
-                            void handlePressSong(song);
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <MediaImage
-                            cover={song.cover}
-                            size="grid"
-                            style={styles.cover}
-                          />
-
-                          <Text
-                            style={styles.songTitle}
-                            numberOfLines={2}
-                          >
-                            {song.title}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                </View>
-              )
-            )}
-          </View>
-        )}
-      </View>
+    <View style={styles.container}>
+      {items.length === 0 ? (
+        <SectionEmptyState message={t('explore.empty.recentSongs')} />
+      ) : (
+        <View style={styles.grid}>
+          {rows.map((row, rowIdx) => (
+            <View key={rowIdx} style={styles.row}>
+              {row.map(item => (
+                <TouchableOpacity
+                  key={`${item.kind}:${item.data.id}`}
+                  style={[
+                    styles.card,
+                    { width: cardWidth, backgroundColor: colors.muted },
+                  ]}
+                  onPress={() => { void handlePress(item); }}
+                  activeOpacity={0.7}
+                >
+                  <MediaImage
+                    cover={item.data.cover}
+                    size="thumb"
+                    style={[
+                      styles.image,
+                      item.kind === 'artist' && styles.imageCircle,
+                    ]}
+                  />
+                  <Text
+                    style={[styles.title, { color: colors.text }]}
+                    numberOfLines={1}
+                  >
+                    {item.kind === 'artist' ? item.data.name : item.data.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -95,65 +107,36 @@ export default function RecentSongsSpeedDial() {
 const styles = StyleSheet.create({
   container: {
     paddingTop: 12,
-    paddingBottom: 8,
-  },
-
-  containerDark: {},
-
-  padded: {
+    paddingBottom: 4,
     paddingHorizontal: H_PADDING,
   },
-
-  title: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-
-  titleDark: {
-    color: '#888',
-  },
-
   grid: {
-    width: '100%',
+    gap: ROW_GAP,
   },
-
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: ROW_GAP,
+    gap: COL_GAP,
   },
-
-  slot: {
-    width: '32%',
-  },
-
-  item: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 8,
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 6,
     overflow: 'hidden',
-    position: 'relative',
+    height: IMG_SIZE,
   },
-
-  cover: {
-    borderRadius: 8,
-    ...StyleSheet.absoluteFillObject,
+  image: {
+    width: IMG_SIZE,
+    height: IMG_SIZE,
+    borderRadius: 0,
+    flexShrink: 0,
   },
-
-  songTitle: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 8,
-    fontSize: 13,
+  imageCircle: {
+    borderRadius: IMG_SIZE / 2,
+  },
+  title: {
+    flex: 1,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    paddingHorizontal: 8,
   },
 });

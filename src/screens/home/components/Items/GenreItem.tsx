@@ -90,11 +90,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
     alignItems: 'flex-start',
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 4,

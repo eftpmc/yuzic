@@ -19,7 +19,7 @@ import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useApi } from "@/api";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/utils/redux/store";
+import { selectSongsById } from "@/utils/redux/selectors/librarySelectors";
 import { toast } from "@backpackapp-io/react-native-toast";
 
 type Props = {
@@ -43,13 +43,8 @@ const TrackItem: React.FC<Props> = ({
   const api = useApi();
   const { playSimilar, playSong } = usePlaying();
   const { getLocalPath } = useDownload();
-  const cachedSong = useSelector((state: RootState) => {
-    for (const album of state.library.albums) {
-      const found = album.songs?.find(s => s.id === song.id);
-      if (found) return found;
-    }
-    return null;
-  });
+  const songsById = useSelector(selectSongsById);
+  const cachedSong = songsById.get(song.id) ?? null;
 
   const optionsRef = useRef<BottomSheetModal>(null);
   const playlistRef = useRef<BottomSheetModal>(null);
@@ -217,11 +212,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
     alignItems: "flex-start",
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 4,

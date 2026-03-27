@@ -11,7 +11,7 @@ import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
 import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 import { createJellyfinAdapter } from '@/api/jellyfin';
 
-import { ServerType, Server, CoverSource } from '@/types';
+import { ServerType, Server, CoverSource, BasicAuth } from '@/types';
 import type { Library, ApiAdapter } from '@/api/types';
 import i18n from '@/i18n';
 
@@ -47,12 +47,14 @@ export type ServerProviderConfig = {
   ping: (
     url: string,
     username: string,
-    auth: ProviderAuth
+    auth: ProviderAuth,
+    basicAuth?: BasicAuth
   ) => Promise<boolean>;
   connect: (
     url: string,
     username: string,
-    password: string
+    password: string,
+    basicAuth?: BasicAuth
   ) => Promise<ConnectResult>;
   createAdapter: (server: Server) => ApiAdapter;
   buildCoverUrl: (server: Server, cover: CoverSource, px: number) => string | null;
@@ -80,14 +82,14 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: true,
     },
-    ping: async (url, username, auth) => {
+    ping: async (url, username, auth, basicAuth) => {
       const password = auth.password as string;
       if (!username || !password) return false;
-      const client = createNavidromeClient({ serverUrl: url, username, password });
+      const client = createNavidromeClient({ serverUrl: url, username, password, basicAuth });
       return pingNavidrome(client);
     },
-    connect: async (url, username, password) => {
-      const result = await connectNavidrome(url, username, password);
+    connect: async (url, username, password, basicAuth) => {
+      const result = await connectNavidrome(url, username, password, basicAuth);
       if (!result.success) {
         return {
           success: false,
@@ -141,15 +143,15 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: false,
     },
-    ping: async (url, username, auth) => {
+    ping: async (url, username, auth, basicAuth) => {
       const token = auth.token as string;
       const userId = auth.userId as string;
       if (!token || !userId) return false;
-      const client = createJellyfinClient({ serverUrl: url, token, userId });
+      const client = createJellyfinClient({ serverUrl: url, token, userId, basicAuth });
       return pingJellyfin(client);
     },
-    connect: async (url, username, password) => {
-      const result = await connectJellyfin(url, username, password);
+    connect: async (url, username, password, basicAuth) => {
+      const result = await connectJellyfin(url, username, password, basicAuth);
       if (!result.success) {
         return {
           success: false,

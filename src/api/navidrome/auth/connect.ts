@@ -10,7 +10,8 @@ type ConnectResult =
 export async function connect(
   serverUrl: string,
   username: string,
-  password: string
+  password: string,
+  basicAuth?: { username: string; password: string }
 ): Promise<ConnectResult> {
   if (!serverUrl || !username || !password) {
     return { success: false, message: "Missing credentials or server URL." };
@@ -27,9 +28,12 @@ export async function connect(
     f: "json",
   });
   const url = `${cleanUrl}/rest/getMusicFolders.view?${params}`;
+  const headers: Record<string, string> = basicAuth
+    ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) }
+    : {};
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { headers });
     if (!res.ok) {
       return { success: false, message: `Navidrome returned ${res.status}` };
     }

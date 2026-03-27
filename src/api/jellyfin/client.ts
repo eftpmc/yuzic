@@ -3,6 +3,7 @@ export interface JellyfinClientConfig {
   token: string;
   userId: string;
   parentId?: string;
+  basicAuth?: { username: string; password: string };
 }
 
 const CLIENT_HEADERS = 'MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"';
@@ -10,16 +11,21 @@ const CLIENT_HEADERS = 'MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="
 export type JellyfinClient = ReturnType<typeof createJellyfinClient>;
 
 export function createJellyfinClient(config: JellyfinClientConfig) {
-  const { serverUrl, token, userId, parentId } = config;
+  const { serverUrl, token, userId, parentId, basicAuth } = config;
   const baseUrl = serverUrl.replace(/\/$/, "");
+  const proxyHeader: Record<string, string> = basicAuth
+    ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) }
+    : {};
 
   const defaultHeaders: Record<string, string> = {
     "X-Emby-Token": token,
     "X-Emby-Authorization": `${CLIENT_HEADERS}, Token="${token}"`,
+    ...proxyHeader,
   };
 
   const tokenOnlyHeaders: Record<string, string> = {
     "X-Emby-Token": token,
+    ...proxyHeader,
   };
 
   async function request<T>(

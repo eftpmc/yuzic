@@ -137,6 +137,11 @@ export const ExploreProvider: React.FC<Props> = ({ children }) => {
     [clear]
   );
 
+  const artistSeedKey = useMemo(
+    () => artists.slice(0, 5).map(a => a.id).join(','),
+    [artists]
+  );
+
   useEffect(() => {
     if (!artists.length) {
       clear();
@@ -152,7 +157,8 @@ export const ExploreProvider: React.FC<Props> = ({ children }) => {
       }));
 
     refreshInternal(seeds);
-  }, [artists.map(a => a.id).join(',')]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artistSeedKey]);
 
   const isLoading =
     isRefreshing ||

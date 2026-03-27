@@ -47,6 +47,16 @@ export const selectArtistPlayCounts = createSelector(
   (map, serverId) => filterByServer(map, serverId)
 );
 
+export const selectPlaylistPlayCounts = createSelector(
+  [(s: RootState) => s.stats.playlistPlays, (s: RootState) => s.servers.activeServerId],
+  (map, serverId) => filterByServer(map, serverId)
+);
+
+export const selectPlaylistLastPlayedAt = createSelector(
+  [(s: RootState) => s.stats.playlistLastPlayedAt, (s: RootState) => s.servers.activeServerId],
+  (map, serverId) => filterByServer(map, serverId)
+);
+
 export const selectSongPlayCount =
   (songId: string) =>
   (state: RootState): number => {

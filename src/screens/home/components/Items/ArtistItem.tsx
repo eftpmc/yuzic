@@ -14,7 +14,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import type { RootState } from '@/utils/redux/store';
+import { selectArtistsById } from '@/utils/redux/selectors/librarySelectors';
 
 interface ItemProps {
   id: string;
@@ -37,7 +37,8 @@ const ArtistItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const artist = useSelector((state: RootState) => state.library.artists.find(a => a.id === id) ?? null);
+  const artistsById = useSelector(selectArtistsById);
+  const artist = artistsById.get(id) ?? null;
 
   const sheetRef = useRef<BottomSheetModal>(null);
 
@@ -118,11 +119,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
     alignItems: 'flex-start',
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 4,

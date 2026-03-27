@@ -2,6 +2,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useMemo,
   ReactNode,
   useRef,
 } from 'react';
@@ -143,20 +144,33 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchScope = useSelector(selectSearchScope);
 
-  const { getAllDownloadedTracks } = useDownload();
-  const downloadedTrackIds = buildDownloadedTrackIdSet(
-    (getAllDownloadedTracks() as any[])
-      .map((track: any) => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
-      .filter((track: any) => track.id)
+  const { getAllDownloadedTracks, downloadStateVersion } = useDownload();
+
+  const downloadedTrackIds = useMemo(
+    () => buildDownloadedTrackIdSet(
+      (getAllDownloadedTracks() as any[])
+        .map((track: any) => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
+        .filter((track: any) => track.id)
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [downloadStateVersion]
   );
-  const downloadedAlbumIds = getFullyDownloadedAlbumIds(
-    tracks.map(track => ({ id: track.id, albumId: track.albumId })),
-    downloadedTrackIds
+
+  const downloadedAlbumIds = useMemo(
+    () => getFullyDownloadedAlbumIds(
+      tracks.map(track => ({ id: track.id, albumId: track.albumId })),
+      downloadedTrackIds
+    ),
+    [tracks, downloadedTrackIds]
   );
-  const downloadedPlaylistIds = new Set(
-    playlists
-      .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
-      .map(playlist => playlist.id)
+
+  const downloadedPlaylistIds = useMemo(
+    () => new Set(
+      playlists
+        .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
+        .map(playlist => playlist.id)
+    ),
+    [playlists, downloadedTrackIds]
   );
 
   const [searchResults, setSearchResults] =

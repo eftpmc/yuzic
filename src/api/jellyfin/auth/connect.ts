@@ -5,7 +5,8 @@ type ConnectResult =
 export async function connect(
   serverUrl: string,
   username: string,
-  password: string
+  password: string,
+  basicAuth?: { username: string; password: string }
 ): Promise<ConnectResult> {
   try {
     const res = await fetch(`${serverUrl}/Users/AuthenticateByName`, {
@@ -14,6 +15,7 @@ export async function connect(
         "Content-Type": "application/json",
         "X-Emby-Authorization":
           `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"`,
+        ...(basicAuth ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) } : {}),
       },
       body: JSON.stringify({ Username: username, Pw: password }),
     });

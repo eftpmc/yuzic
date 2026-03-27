@@ -16,8 +16,10 @@ import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 
@@ -32,6 +34,8 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
+  const dispatch = useDispatch();
+  const activeServer = useSelector(selectActiveServer);
   const { playSongInCollection } = usePlaying();
   const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
 
@@ -148,6 +152,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             onPress={() => {
               if (songs.length > 0) {
                 playSongInCollection(songs[0], playlist, true);
+                if (activeServer) {
+                  dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
+                }
               }
             }}
           >
@@ -163,6 +170,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             onPress={() => {
               if (songs.length > 0) {
                 playSongInCollection(songs[0], playlist);
+                if (activeServer) {
+                  dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
+                }
               }
             }}
           >

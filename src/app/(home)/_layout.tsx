@@ -98,7 +98,8 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return
-                            router.replace('/')
+                            setActiveTab('home')
+                            router.navigate('/')
                         }}
                         active={isHome}
                         activeColor={activeColor}
@@ -110,7 +111,8 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/library') return
-                            router.replace('/library')
+                            setActiveTab('library')
+                            router.navigate('/library')
                         }}
                         active={isLibrary}
                         activeColor={activeColor}

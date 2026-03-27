@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import TrackPlayer, {
   Capability,
   State,
@@ -112,8 +113,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const { t } = useTranslation();
   const playbackState = usePlaybackState();
   const isPlaying = playbackState.state === State.Playing;
-  const rawProgress = useProgress(250);
-  const progress = normalizeProgress(rawProgress);
+  const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', setAppState);
+    return () => sub.remove();
+  }, []);
+
+  const rawProgress = useProgress(500);
+  const progress = useMemo(
+    () => appState === 'active' ? normalizeProgress(rawProgress) : { position: 0, duration: 0, buffered: 0 },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [appState, rawProgress.position, rawProgress.duration, rawProgress.buffered]
+  );
 
   const api = useApi();
   const { getSongLocalUri } = useDownload();

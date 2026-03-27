@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -7,7 +7,7 @@ import {
     StyleSheet,
     ActivityIndicator,
 } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -15,8 +15,9 @@ import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
-import { ServerType } from '@/types';
+import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 export default function Credentials() {
     const { t } = useTranslation();
@@ -34,13 +35,30 @@ export default function Credentials() {
     const [localPassword, setLocalPassword] = useState('');
     const [isTesting, setIsTesting] = useState(false);
 
+    const [proxyExpanded, setProxyExpanded] = useState(false);
+    const [proxyUsername, setProxyUsername] = useState('');
+    const [proxyPassword, setProxyPassword] = useState('');
+
     const passwordRef = useRef<TextInput>(null);
+    const proxyUsernameRef = useRef<TextInput>(null);
+    const proxyPasswordRef = useRef<TextInput>(null);
+
+    const insecureWithProxy =
+        proxyUsername.trim().length > 0 &&
+        typeof serverUrl === 'string' &&
+        serverUrl.startsWith('http://');
 
     useEffect(() => {
         if (!type || !serverUrl) {
             router.replace('/(onboarding)/servers');
         }
     }, [type, serverUrl]);
+
+    const buildBasicAuth = (): BasicAuth | undefined => {
+        const u = proxyUsername.trim();
+        const p = proxyPassword.trim();
+        return u && p ? { username: u, password: p } : undefined;
+    };
 
     const saveServer = (auth: ProviderAuth) => {
         const id = nanoid();
@@ -51,11 +69,12 @@ export default function Credentials() {
                 serverUrl,
                 username: localUsername,
                 auth,
+                basicAuth: buildBasicAuth(),
                 isAuthenticated: true,
             })
         );
         dispatch(setActiveServer(id));
-        router.replace(`/(onboarding)/libraries?serverId=${id}`);
+        router.push(`/(onboarding)/libraries?serverId=${id}`);
     };
 
     const handleNext = async () => {
@@ -67,13 +86,15 @@ export default function Credentials() {
         }
 
         const provider = SERVER_PROVIDERS[type];
+        const basicAuth = buildBasicAuth();
         setIsTesting(true);
 
         try {
             const result = await provider.connect(
                 serverUrl,
                 localUsername,
-                localPassword
+                localPassword,
+                basicAuth
             );
 
             if (!result.success || !result.auth) {
@@ -81,7 +102,7 @@ export default function Credentials() {
                 return;
             }
 
-            const pingOk = await provider.ping(serverUrl, localUsername, result.auth);
+            const pingOk = await provider.ping(serverUrl, localUsername, result.auth, basicAuth);
 
             if (!pingOk) {
                 toast.error(t('onboarding.credentials.apiNotResponding'));
@@ -139,6 +160,70 @@ export default function Credentials() {
                             onSubmitEditing={handleNext}
                         />
                     </View>
+
+                    {/* Reverse proxy auth */}
+                    <TouchableOpacity
+                        style={styles.proxyToggle}
+                        onPress={() => setProxyExpanded(v => !v)}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons
+                            name="shield-outline"
+                            size={16}
+                            color="#666"
+                            style={styles.proxyToggleIcon}
+                        />
+                        <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
+                        <Ionicons
+                            name={proxyExpanded ? 'chevron-up' : 'chevron-down'}
+                            size={16}
+                            color="#666"
+                        />
+                    </TouchableOpacity>
+
+                    {proxyExpanded && (
+                        <View style={styles.proxySection}>
+                            {insecureWithProxy && (
+                                <View style={styles.warningRow}>
+                                    <Ionicons name="warning-outline" size={15} color="#f59e0b" />
+                                    <Text style={styles.warningText}>
+                                        Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
+                                    </Text>
+                                </View>
+                            )}
+
+                            <View style={styles.inputWrapper}>
+                                <AntDesign name="user" size={20} color="#555" style={styles.inputIcon} />
+                                <TextInput
+                                    ref={proxyUsernameRef}
+                                    style={styles.input}
+                                    placeholder="Proxy username"
+                                    placeholderTextColor="#555"
+                                    value={proxyUsername}
+                                    onChangeText={setProxyUsername}
+                                    autoCapitalize="none"
+                                    returnKeyType="next"
+                                    onSubmitEditing={() => proxyPasswordRef.current?.focus()}
+                                />
+                            </View>
+
+                            <View style={styles.inputWrapper}>
+                                <AntDesign name="lock" size={20} color="#555" style={styles.inputIcon} />
+                                <TextInput
+                                    ref={proxyPasswordRef}
+                                    style={styles.input}
+                                    placeholder="Proxy password"
+                                    placeholderTextColor="#555"
+                                    secureTextEntry
+                                    value={proxyPassword}
+                                    onChangeText={setProxyPassword}
+                                    autoCapitalize="none"
+                                    returnKeyType="done"
+                                    onSubmitEditing={handleNext}
+                                />
+                            </View>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -210,6 +295,42 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#888',
         marginBottom: 20,
+    },
+    proxyToggle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginBottom: 4,
+    },
+    proxyToggleIcon: {
+        marginRight: 7,
+    },
+    proxyToggleText: {
+        flex: 1,
+        fontSize: 14,
+        color: '#666',
+    },
+    proxySection: {
+        marginTop: 4,
+        marginBottom: 8,
+    },
+    warningRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#1c1400',
+        borderWidth: 1,
+        borderColor: '#78450a',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 14,
+        gap: 8,
+    },
+    warningText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#f59e0b',
+        lineHeight: 18,
     },
     nextButton: {
         backgroundColor: '#fff',

@@ -43,7 +43,7 @@ import { getInstantMix } from "./instantMix/getInstantMix";
 import { search as searchJellyfin } from "./search/search";
 
 export const createJellyfinAdapter = (server: Server): ApiAdapter => {
-  const { serverUrl, auth: providerAuth } = server;
+  const { serverUrl, auth: providerAuth, basicAuth } = server;
   const { token, userId } = providerAuth as { token: string; userId: string };
 
   // Support new array format (parentIds) and old single-value format (parentId)
@@ -52,10 +52,10 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
     (providerAuth as any)?.parentId ? [String((providerAuth as any).parentId)] :
     [];
 
-  const client = createJellyfinClient({ serverUrl, token, userId });
+  const client = createJellyfinClient({ serverUrl, token, userId, basicAuth });
 
   const clientFor = (pid: string) =>
-    createJellyfinClient({ serverUrl, token, userId, parentId: pid });
+    createJellyfinClient({ serverUrl, token, userId, parentId: pid, basicAuth });
 
   async function fromParents<T extends { id: string }>(
     fn: (c: ReturnType<typeof createJellyfinClient>) => Promise<T[]>

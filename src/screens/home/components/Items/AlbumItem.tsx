@@ -14,7 +14,7 @@ import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import type { RootState } from '@/utils/redux/store';
+import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 
 interface ItemProps {
   id: string;
@@ -37,7 +37,8 @@ const AlbumItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const album = useSelector((state: RootState) => state.library.albums.find(a => a.id === id) ?? null);
+  const albumsById = useSelector(selectAlbumsById);
+  const album = albumsById.get(id) ?? null;
 
   const sheetRef = useRef<BottomSheetModal>(null);
 
@@ -67,8 +68,8 @@ const AlbumItem: React.FC<ItemProps> = ({
           size={isGridView ? 'grid' : 'thumb'}
           style={
             isGridView
-              ? { width: gridWidth, aspectRatio: 1, borderRadius: 10 }
-              : { width: 52, height: 52, borderRadius: 8, marginRight: 12 }
+              ? { width: gridWidth, aspectRatio: 1, borderRadius: 6 }
+              : { width: 52, height: 52, borderRadius: 4, marginRight: 12 }
           }
         />
 
@@ -120,10 +121,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 6,
