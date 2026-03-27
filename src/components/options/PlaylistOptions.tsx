@@ -24,6 +24,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useDeletePlaylist } from '@/hooks/playlists';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 export type PlaylistOptionsProps = {
   playlist: Playlist | null;
@@ -145,6 +146,8 @@ const PlaylistOptions = forwardRef<
         ref={ref}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? '#555' : '#ccc',
         }}
@@ -162,6 +165,8 @@ const PlaylistOptions = forwardRef<
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
       handleIndicatorStyle={{
         backgroundColor: isDarkMode ? '#555' : '#ccc',
       }}

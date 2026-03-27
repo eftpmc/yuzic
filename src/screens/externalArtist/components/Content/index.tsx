@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { Platform } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import type { ExternalArtist } from '@/types'
@@ -37,7 +38,7 @@ export default function ExternalArtistContent({ artist }: Props) {
       ItemSeparatorComponent={ListSeparator}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom: 140,
+        paddingBottom: Platform.OS === 'android' ? 180 : 140,
         backgroundColor: isDarkMode ? '#000' : '#fff',
       }}
     />

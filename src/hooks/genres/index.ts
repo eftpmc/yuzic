@@ -1,1 +1,0 @@
-export { useGenres} from './useGenres'

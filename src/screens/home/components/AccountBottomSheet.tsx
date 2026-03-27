@@ -21,6 +21,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 type Props = {
   onDismiss?: () => void;
@@ -82,13 +83,15 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
         ref={ref}
         onDismiss={onDismiss}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         backgroundStyle={{
           backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
         }}
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? '#555' : '#ccc',
         }}
-        enableDynamicSizing={false}
       >
         <BottomSheetView style={styles.sheetContainer}>
           <View style={styles.headerContainer}>

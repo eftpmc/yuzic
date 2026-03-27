@@ -1,7 +1,7 @@
-import { CoverSource, PlaylistBase } from "@/types";
+import { CoverSource, Playlist } from "@/types";
 import type { JellyfinClient } from "../client";
 
-export type GetPlaylistsResult = PlaylistBase[];
+export type GetPlaylistsResult = Playlist[];
 
 async function fetchGetPlaylists(client: JellyfinClient) {
   const path =
@@ -12,7 +12,7 @@ async function fetchGetPlaylists(client: JellyfinClient) {
   return client.request<any>(path);
 }
 
-function normalizePlaylistEntry(p: any): PlaylistBase {
+function normalizePlaylistEntry(p: any): Playlist {
   const id = p.Id;
 
   const cover: CoverSource = id
@@ -25,7 +25,8 @@ function normalizePlaylistEntry(p: any): PlaylistBase {
     title: p.Name ?? "Playlist",
     subtext: "Playlist",
     changed: new Date(p.DateLastMediaAdded),
-    created: new Date(p.DateCreated)
+    created: new Date(p.DateCreated),
+    songs: [],
   };
 }
 

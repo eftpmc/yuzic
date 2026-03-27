@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,76 +6,39 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  Alert,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, TFunction } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
-import { useSelector } from 'react-redux';
-import { useQueryClient } from '@tanstack/react-query';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { QueryKeys } from '@/enums/queryKeys';
+import { Check, X } from 'lucide-react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectThemeColor, selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
+import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
+import { useSync } from '@/hooks/useSync';
 
-type QuerySummary = {
-  label: string;
-  fresh: number;
-  stale: number;
-  errored: number;
-};
+function formatLastSynced(ts: number | null, t: TFunction): string {
+  if (ts === null) return t('settings.library.stats.neverSynced')
+  const mins = Math.floor((Date.now() - ts) / 60000)
+  if (mins < 1) return t('settings.library.stats.justNow')
+  if (mins < 60) return t('settings.library.stats.minsAgo', { count: mins })
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return t('settings.library.stats.hoursAgo', { count: hrs })
+  return t('settings.library.stats.daysAgo', { count: Math.floor(hrs / 24) })
+}
 
 const Stats: React.FC = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-
-  const queryClient = useQueryClient();
-
-  const isLoading = queryClient.isFetching() > 0;
-
-  const refreshLibrary = () => {
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.Albums], exact: false });
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.Artists], exact: false });
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlists], exact: false });
-  };
-
-  const { summaries, errors } = useMemo(() => {
-    const cache = queryClient.getQueryCache();
-
-    const collect = (key: QueryKeys, label: string): QuerySummary => {
-      const queries = cache.findAll({ queryKey: [key] });
-
-      const withData = queries.filter(q => q.state.data !== undefined);
-      const fresh = withData.filter(q => !q.isStale()).length;
-      const stale = withData.filter(q => q.isStale()).length;
-      const errored = queries.filter(q => q.state.status === 'error').length;
-
-      return { label, fresh, stale, errored };
-    };
-
-    const errorQueries = cache
-      .findAll()
-      .filter(q => q.state.status === 'error')
-      .map(q => ({
-        key: q.queryKey.join(' / '),
-        message:
-          (q.state.error as Error | null)?.message ?? t('settings.library.stats.unknownError'),
-      }));
-
-    return {
-      summaries: [
-        collect(QueryKeys.Albums, t('settings.library.stats.summary.albums')),
-        collect(QueryKeys.Artists, t('settings.library.stats.summary.artists')),
-        collect(QueryKeys.Playlists, t('settings.library.stats.summary.playlists')),
-      ],
-      errors: errorQueries,
-    };
-  }, [queryClient, t]);
+  const syncOnAppStart = useSelector(selectSyncOnAppStart);
+  const { sync, isSyncing, lastSyncedAt } = useSync();
 
   const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isSyncing) {
       spinValue.stopAnimation();
       spinValue.setValue(0);
       return;
@@ -92,27 +55,12 @@ const Stats: React.FC = () => {
 
     loop.start();
     return () => loop.stop();
-  }, [isLoading, spinValue]);
+  }, [isSyncing, spinValue]);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
-
-  const handleRefresh = () => {
-    Alert.alert(
-      t('settings.library.stats.refreshTitle'),
-      t('settings.library.stats.refreshBody'),
-      [
-        { text: t('settings.library.stats.refreshCancel'), style: 'cancel' },
-        {
-          text: t('settings.library.stats.refreshConfirm'),
-          style: 'destructive',
-          onPress: refreshLibrary,
-        },
-      ]
-    );
-  };
 
   return (
     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -122,14 +70,14 @@ const Stats: React.FC = () => {
         </Text>
 
         <TouchableOpacity
-          onPress={handleRefresh}
-          disabled={isLoading}
+          onPress={() => sync(true)}
+          disabled={isSyncing}
           style={[
             styles.refreshButton,
-            { backgroundColor: themeColor, opacity: isLoading ? 0.6 : 1 },
+            { backgroundColor: themeColor, opacity: isSyncing ? 0.6 : 1 },
           ]}
         >
-          {isLoading ? (
+          {isSyncing ? (
             <Animated.View style={{ transform: [{ rotate: spin }] }}>
               <Loader2 size={16} color="#fff" />
             </Animated.View>
@@ -139,45 +87,58 @@ const Stats: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {summaries.map((stat, index) => (
-        <View key={stat.label}>
-          {index !== 0 && (
-            <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
-          )}
-          <View style={styles.row}>
-            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-              {stat.label}
-            </Text>
-            <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
-              {stat.errored > 0
-                ? t('settings.library.stats.status.errors', { count: stat.errored })
-                : stat.stale > 0
-                  ? t('settings.library.stats.status.freshStale', { fresh: stat.fresh, stale: stat.stale })
-                  : stat.fresh > 0
-                    ? t('settings.library.stats.status.fresh', { count: stat.fresh })
-                    : t('settings.library.stats.status.cached')}
-            </Text>
-          </View>
+      <View style={styles.row}>
+        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+          {t('settings.library.stats.lastSynced')}
+        </Text>
+        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
+          {formatLastSynced(lastSyncedAt, t)}
+        </Text>
+      </View>
+
+      <View style={[styles.row, styles.rowBorder, isDarkMode && styles.rowBorderDark]}>
+        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+          {t('settings.library.stats.syncOnAppStart')}
+        </Text>
+        <View style={styles.toggleGrid}>
+          <TouchableOpacity
+            onPress={() => dispatch(setSyncOnAppStart(false))}
+            style={[
+              styles.gridButton,
+              isDarkMode && styles.gridButtonDark,
+              !syncOnAppStart && {
+                backgroundColor: themeColor,
+                borderColor: themeColor,
+              },
+            ]}
+            activeOpacity={0.8}
+          >
+            <X
+              size={18}
+              color={!syncOnAppStart ? '#fff' : isDarkMode ? '#ccc' : '#666'}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => dispatch(setSyncOnAppStart(true))}
+            style={[
+              styles.gridButton,
+              styles.gridButtonSpaced,
+              isDarkMode && styles.gridButtonDark,
+              syncOnAppStart && {
+                backgroundColor: themeColor,
+                borderColor: themeColor,
+              },
+            ]}
+            activeOpacity={0.8}
+          >
+            <Check
+              size={18}
+              color={syncOnAppStart ? '#fff' : isDarkMode ? '#ccc' : '#666'}
+            />
+          </TouchableOpacity>
         </View>
-      ))}
-
-      {errors.length > 0 && (
-        <>
-          <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
-          <Text style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>
-            {t('settings.library.stats.errorsTitle')}
-          </Text>
-
-          {errors.map((err, i) => (
-            <Text
-              key={`${err.key}-${i}`}
-              style={[styles.errorItem, isDarkMode && styles.errorItemDark]}
-            >
-              • {err.key}: {err.message}
-            </Text>
-          ))}
-        </>
-      )}
+      </View>
     </View>
   );
 };
@@ -219,11 +180,21 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
+  },
+  rowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  rowBorderDark: {
+    borderTopColor: '#222',
   },
   rowText: {
     fontSize: 16,
-    color: '#000',
+    color: '#1C1C1E',
+    flex: 1,
+    marginRight: 12,
   },
   rowTextDark: {
     color: '#fff',
@@ -235,29 +206,25 @@ const styles = StyleSheet.create({
   rowValueDark: {
     color: '#aaa',
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#e5e5e5',
-    marginVertical: 4,
+  toggleGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  dividerDark: {
-    backgroundColor: '#333',
+  gridButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f1f1',
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
-  errorTitle: {
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#b00020',
+  gridButtonDark: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#333',
   },
-  errorTitleDark: {
-    color: '#ff6b6b',
-  },
-  errorItem: {
-    fontSize: 12,
-    color: '#b00020',
-    marginTop: 4,
-  },
-  errorItemDark: {
-    color: '#ff6b6b',
+  gridButtonSpaced: {
+    marginLeft: 8,
   },
 });

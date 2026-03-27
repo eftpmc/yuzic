@@ -5,6 +5,7 @@ import { Playlist } from '@/types';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useLibrary } from '@/contexts/LibraryContext';
 
 type UsePlaylistResult = {
   playlist: Playlist | null;
@@ -15,6 +16,8 @@ type UsePlaylistResult = {
 export function usePlaylist(id: string): UsePlaylistResult {
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
+  const { playlists } = useLibrary();
+  const cachedPlaylist = playlists.find(p => p.id === id) ?? null;
 
   const query = useQuery<Playlist, Error>({
     queryKey: [QueryKeys.Playlist, activeServer?.id, id],
@@ -24,8 +27,8 @@ export function usePlaylist(id: string): UsePlaylistResult {
   });
 
   return {
-    playlist: query.data ?? null,
-    isLoading: query.isLoading,
+    playlist: query.data ?? cachedPlaylist,
+    isLoading: query.isLoading && cachedPlaylist === null,
     error: query.error ?? null,
   };
 }

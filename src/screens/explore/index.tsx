@@ -9,7 +9,6 @@ import RecentlyAdded from './components/RecentlyAdded'
 import FavoriteAlbums from './components/FavoriteAlbums'
 import RandomAlbums from './components/RandomAlbums'
 import RecentSongsSpeedDial from './components/RecentSongsSpeedDial'
-
 export default function Explore() {
   const { isDarkMode } = useTheme()
 
@@ -19,7 +18,7 @@ export default function Explore() {
         styles.container,
         isDarkMode && styles.containerDark,
       ]}
-      contentContainerStyle={[styles.content, { paddingBottom: 150 }]}
+      contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
       showsVerticalScrollIndicator={false}
     >
       <RecentSongsSpeedDial/>

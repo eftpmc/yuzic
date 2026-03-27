@@ -17,10 +17,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingProgress } from '@/contexts/PlayingContext';
 import { useTheme } from '@/hooks/useTheme';
 import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -78,7 +79,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
   ({ lyrics, onClose }, ref) => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
-    const { progress } = usePlaying();
+    const progress = usePlayingProgress();
     const insets = useSafeAreaInsets();
     const scrollRef = useRef<BottomSheetScrollView>(null);
     const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
@@ -138,6 +139,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         snapPoints={['90%']}
         enableDynamicSizing={false}
         enablePanDownToClose
+        backdropComponent={renderBackdrop}
         stackBehavior="push"
         onDismiss={onClose}
         backgroundStyle={{

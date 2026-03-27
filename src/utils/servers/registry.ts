@@ -1,17 +1,21 @@
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 
-import { createNavidromeClient } from '@/api/navidrome/client';
+import { createNavidromeClient, buildTokenParams } from '@/api/navidrome/client';
 import { ping as pingNavidrome } from '@/api/navidrome/auth/ping';
 import { connect as connectNavidrome } from '@/api/navidrome/auth/connect';
+import { createNavidromeAdapter } from '@/api/navidrome';
 
 import { createJellyfinClient } from '@/api/jellyfin/client';
 import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
 import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
+import { createJellyfinAdapter } from '@/api/jellyfin';
 
-import { ServerType } from '@/types';
-import type { NavidromeLibrary } from '@/api/types';
+import { ServerType, Server, CoverSource, BasicAuth } from '@/types';
+import type { Library, ApiAdapter } from '@/api/types';
 import i18n from '@/i18n';
+
+export type { Library };
 
 export type ProviderAuth = {
   [key: string]: string | number | boolean | null;
@@ -21,7 +25,7 @@ export type ConnectResult = {
   success: boolean;
   message?: string;
   auth?: ProviderAuth;
-  libraries?: NavidromeLibrary[];
+  libraries?: Library[];
 };
 
 export type DemoResult = {
@@ -43,15 +47,31 @@ export type ServerProviderConfig = {
   ping: (
     url: string,
     username: string,
-    auth: ProviderAuth
+    auth: ProviderAuth,
+    basicAuth?: BasicAuth
   ) => Promise<boolean>;
   connect: (
     url: string,
     username: string,
-    password: string
+    password: string,
+    basicAuth?: BasicAuth
   ) => Promise<ConnectResult>;
+  createAdapter: (server: Server) => ApiAdapter;
+  buildCoverUrl: (server: Server, cover: CoverSource, px: number) => string | null;
   demo?: () => Promise<DemoResult>;
 };
+
+// Cache token params per credential key so cover URLs are stable across renders
+// (expo-image caches by URL — a new random salt on every render = cache miss every time)
+const coverTokenCache = new Map<string, { u: string; t: string; s: string }>();
+
+function getCoverTokenParams(username: string, password: string) {
+  const key = `${username}:${password}`;
+  if (!coverTokenCache.has(key)) {
+    coverTokenCache.set(key, buildTokenParams(username, password));
+  }
+  return coverTokenCache.get(key)!;
+}
 
 export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
   navidrome: {
@@ -62,14 +82,14 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: true,
     },
-    ping: async (url, username, auth) => {
+    ping: async (url, username, auth, basicAuth) => {
       const password = auth.password as string;
       if (!username || !password) return false;
-      const client = createNavidromeClient({ serverUrl: url, username, password });
+      const client = createNavidromeClient({ serverUrl: url, username, password, basicAuth });
       return pingNavidrome(client);
     },
-    connect: async (url, username, password) => {
-      const result = await connectNavidrome(url, username, password);
+    connect: async (url, username, password, basicAuth) => {
+      const result = await connectNavidrome(url, username, password, basicAuth);
       if (!result.success) {
         return {
           success: false,
@@ -84,6 +104,15 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
         },
         libraries: result.libraries ?? [],
       };
+    },
+    createAdapter: (server) => createNavidromeAdapter(server),
+    buildCoverUrl: (server, cover, px) => {
+      if (cover.kind !== 'navidrome') return null;
+      const password = server.auth?.password as string | undefined;
+      if (!server.serverUrl || !server.username || !password) return null;
+      const { u, t, s } = getCoverTokenParams(server.username, password);
+      const params = new URLSearchParams({ id: cover.coverArtId, size: String(px), u, t, s, v: '1.16.0', c: 'Yuzic' });
+      return `${server.serverUrl}/rest/getCoverArt.view?${params}`;
     },
     demo: async () => {
       const serverUrl = 'https://demo.navidrome.org';
@@ -114,15 +143,15 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: false,
     },
-    ping: async (url, username, auth) => {
+    ping: async (url, username, auth, basicAuth) => {
       const token = auth.token as string;
       const userId = auth.userId as string;
       if (!token || !userId) return false;
-      const client = createJellyfinClient({ serverUrl: url, token, userId });
+      const client = createJellyfinClient({ serverUrl: url, token, userId, basicAuth });
       return pingJellyfin(client);
     },
-    connect: async (url, username, password) => {
-      const result = await connectJellyfin(url, username, password);
+    connect: async (url, username, password, basicAuth) => {
+      const result = await connectJellyfin(url, username, password, basicAuth);
       if (!result.success) {
         return {
           success: false,
@@ -137,6 +166,14 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
           userId: result.userId,
         },
       };
+    },
+    createAdapter: (server) => createJellyfinAdapter(server),
+    buildCoverUrl: (server, cover, px) => {
+      if (cover.kind !== 'jellyfin') return null;
+      const token = server.auth?.token as string | undefined;
+      if (!server.serverUrl || !token) return null;
+      const params = new URLSearchParams({ quality: '90', maxWidth: String(px), maxHeight: String(px), 'X-Emby-Token': token });
+      return `${server.serverUrl}/Items/${cover.itemId}/Images/Primary?${params}`;
     },
   },
 };

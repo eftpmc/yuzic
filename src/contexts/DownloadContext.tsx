@@ -1,442 +1,383 @@
 import React, {
-    createContext,
-    useContext,
-    useEffect,
-    useCallback,
-    useMemo,
-    useState,
-    ReactNode,
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
 } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as FileSystem from 'expo-file-system/legacy';
 import {
-    DownloadManager,
-    useDownloadedTracks,
-    useDownloadProgress,
-} from 'react-native-nitro-player';
-import type { TrackItem } from 'react-native-nitro-player';
-import { Song, Playlist, Album } from '@/types';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { useSelector } from 'react-redux';
-import { useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/api';
-import { QueryKeys } from '@/enums/queryKeys';
-import { staleTime } from '@/constants/staleTime';
-import { buildCover } from '@/utils/builders/buildCover';
-import {
-    DownloadProviderScope,
-    doesTrackMatchProviderScope,
-    normalizeServerId,
-    normalizeServerType,
+  DownloadProviderScope,
+  doesTrackMatchProviderScope,
 } from '@/utils/downloads/provider';
+import {
+  DownloadedCollectionEntry,
+  DownloadedTrackEntry,
+  normalizeId,
+} from '@/utils/downloads/downloadStore';
+import {
+  trackDownloaded,
+  trackRemoved,
+  staleTracksRemoved,
+  collectionAdded,
+  collectionRemoved,
+  collectionsUpdated,
+  pendingAdded,
+  pendingRemoved,
+  allCleared,
+} from '@/utils/redux/slices/downloadsSlice';
+import type { RootState } from '@/utils/redux/store';
+import { Song } from '@/types';
+import { useApi } from '@/api';
+
+const SONGS_DIR = `${FileSystem.documentDirectory}yuzic-downloads`;
+const getTrackPath = (trackId: string) => `${SONGS_DIR}/${trackId}.mp3`;
+const getTmpPath = (trackId: string) => `${SONGS_DIR}/${trackId}.tmp`;
 
 type DownloadContextType = {
-    configure: (config: Record<string, unknown>) => void;
-    downloadTrack: (track: TrackItem, playlistId?: string) => Promise<string | void>;
-    downloadPlaylist: (playlistId: string, tracks: TrackItem[]) => Promise<void>;
-    pauseDownload: (downloadId: string) => Promise<void>;
-    resumeDownload: (downloadId: string) => Promise<void>;
-    cancelDownload: (downloadId: string) => Promise<void>;
-    isTrackDownloaded: (trackId: string) => boolean;
-    getAllDownloadedTracks: () => any[];
-    deleteDownloadedTrack: (trackId: string) => Promise<void>;
-    getStorageInfo: () => Promise<any>;
-    setPlaybackSourcePreference: (pref: 'auto' | 'download' | 'network') => void;
-
-    downloadAlbumById: (albumId: string) => Promise<void>;
-    downloadPlaylistById: (playlistId: string) => Promise<void>;
-    isTrackDownloading: (trackId: string) => boolean;
-    getCollectionDownloadState: (trackIds: string[]) => {
-        isDownloaded: boolean;
-        isDownloading: boolean;
-    };
-
-    cancelCollectionDownloads: (collectionId: string) => Promise<void>;
-    removeDownloadByCollectionId: (
-        id: string,
-        trackIds: string[],
-        scope?: DownloadProviderScope
-    ) => Promise<void>;
-    cancelDownloadAll: () => Promise<void>;
-    clearDownloadsForProvider: (scope?: DownloadProviderScope) => Promise<void>;
-    clearAllDownloads: () => Promise<void>;
-    downloadStateVersion: number;
+  configure: (config: Record<string, unknown>) => void;
+  downloadTrack: (track: Song, playlistId?: string) => Promise<void>;
+  downloadPlaylist: (playlistId: string, tracks: Song[]) => Promise<void>;
+  pauseDownload: (downloadId: string) => Promise<void>;
+  resumeDownload: (downloadId: string) => Promise<void>;
+  cancelDownload: (downloadId: string) => Promise<void>;
+  isTrackDownloaded: (trackId: string) => boolean;
+  getAllDownloadedTracks: () => any[];
+  deleteDownloadedTrack: (trackId: string) => Promise<void>;
+  getStorageInfo: () => Promise<any>;
+  setPlaybackSourcePreference: (pref: 'auto' | 'download' | 'network') => void;
+  downloadAlbumById: (albumId: string) => Promise<void>;
+  downloadPlaylistById: (playlistId: string) => Promise<void>;
+  isTrackDownloading: (trackId: string) => boolean;
+  getCollectionDownloadState: (trackIds: string[]) => {
+    isDownloaded: boolean;
+    isDownloading: boolean;
+  };
+  cancelCollectionDownloads: (collectionId: string) => Promise<void>;
+  removeDownloadByCollectionId: (
+    id: string,
+    trackIds: string[],
+    scope?: DownloadProviderScope
+  ) => Promise<void>;
+  cancelDownloadAll: () => Promise<void>;
+  clearDownloadsForProvider: (scope?: DownloadProviderScope) => Promise<void>;
+  clearAllDownloads: () => Promise<void>;
+  downloadStateVersion: number;
+  getLocalPath: (trackId: string) => string | null;
+  getSongLocalUri: (songId: string) => Promise<string | null>;
+  getAllDownloadedCollections: () => DownloadedCollectionEntry[];
+  totalDownloadedBytes: number;
+  downloadedTrackCount: number;
 };
 
 const DownloadContext = createContext<DownloadContextType | undefined>(undefined);
 
 export const useDownload = (): DownloadContextType => {
-    const ctx = useContext(DownloadContext);
-    if (!ctx) throw new Error('useDownload must be used within DownloadProvider');
-    return ctx;
+  const ctx = useContext(DownloadContext);
+  if (!ctx) throw new Error('useDownload must be used within DownloadProvider');
+  return ctx;
 };
 
-function songToTrackItem(
-    song: Song,
-    opts?: { serverId?: string; serverType?: string | null }
-): TrackItem {
-    const cover = buildCover(song.cover, 'grid') || undefined;
-    return {
-        id: song.id,
-        title: song.title,
-        artist: song.artist,
-        album: '',
-        duration: parseFloat(song.duration || '0'),
-        url: song.streamUrl,
-        artwork: cover ?? null,
-        extraPayload: {
-            artistId: song.artistId,
-            albumId: song.albumId,
-            serverId: song.sourceServerId ?? opts?.serverId ?? '',
-            serverType: song.sourceServerType ?? opts?.serverType ?? '',
-            coverKind: song.cover?.kind ?? '',
-        },
-    };
-}
-
-function dedupeDownloadTrackItems(trackItems: TrackItem[]): TrackItem[] {
-    const deduped = new Map<string, TrackItem>();
-    for (const item of trackItems) {
-        const trackId = String(item.id ?? '').trim();
-        const url = String(item.url ?? '').trim();
-        if (!trackId || !url) continue;
-        if (!deduped.has(trackId)) deduped.set(trackId, item);
-    }
-    return [...deduped.values()];
-}
-
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const queryClient = useQueryClient();
-    const api = useApi();
-    const activeServer = useSelector(selectActiveServer);
+  const api = useApi();
+  const dispatch = useDispatch();
 
-    const {
-        isTrackDownloaded: isNativeTrackDownloaded,
-        downloadedTracks,
-        refresh: refreshDownloadedTracks,
-    } = useDownloadedTracks();
-    const { progressList } = useDownloadProgress({ activeOnly: true });
-    const [downloadStateVersion, setDownloadStateVersion] = useState(0);
+  const tracks = useSelector((state: RootState) => state.downloads.tracks);
+  const collections = useSelector((state: RootState) => state.downloads.collections);
+  const pending = useSelector((state: RootState) => state.downloads.pending);
 
-    const bumpDownloadStateVersion = useCallback(() => {
-        setDownloadStateVersion((v) => v + 1);
-    }, []);
+  const tracksRef = useRef(tracks);
+  const collectionsRef = useRef(collections);
+  const pendingRef = useRef(pending);
+  useEffect(() => { tracksRef.current = tracks; }, [tracks]);
+  useEffect(() => { collectionsRef.current = collections; }, [collections]);
+  useEffect(() => { pendingRef.current = pending; }, [pending]);
 
-    const normalizeTrackId = useCallback((value: unknown): string => {
-        return String(value ?? '').trim();
-    }, []);
+  // Pre-populate from persisted Redux tracks so getLocalPath works immediately on mount,
+  // before the async filesystem scan completes.
+  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(
+    () => new Set(Object.keys(tracks))
+  );
+  const downloadedIdsRef = useRef(downloadedIds);
+  useEffect(() => { downloadedIdsRef.current = downloadedIds; }, [downloadedIds]);
 
-    const refreshDownloadState = useCallback(async () => {
-        try {
-            await refreshDownloadedTracks?.();
-        } catch {
-            // ignore and continue with local version bump
+  const activeDownloadsRef = useRef<Map<string, any>>(new Map());
+  const [, setProgressTick] = useState(0);
+
+  // On startup: scan filesystem — source of truth for what files exist
+  useEffect(() => {
+    const init = async () => {
+      await FileSystem.makeDirectoryAsync(SONGS_DIR, { intermediates: true }).catch(() => {});
+
+      const files = await FileSystem.readDirectoryAsync(SONGS_DIR).catch(() => [] as string[]);
+      const presentIds = new Set(
+        files.filter(f => f.endsWith('.mp3')).map(f => f.replace('.mp3', ''))
+      );
+
+      setDownloadedIds(presentIds);
+
+      // Remove Redux entries whose files no longer exist
+      const staleIds = Object.keys(tracksRef.current).filter(id => !presentIds.has(id));
+      if (staleIds.length > 0) dispatch(staleTracksRemoved(staleIds));
+
+      // Resume interrupted downloads
+      for (const entry of Object.values(pendingRef.current)) {
+        if (presentIds.has(entry.trackId)) {
+          dispatch(pendingRemoved(entry.trackId));
+          continue;
         }
-        bumpDownloadStateVersion();
-    }, [refreshDownloadedTracks, bumpDownloadStateVersion]);
-
-    const configure = useCallback((config: Record<string, unknown>) => {
-        DownloadManager.configure(config as any);
-    }, []);
-
-    const setPlaybackSourcePreference = useCallback((pref: 'auto' | 'download' | 'network') => {
-        DownloadManager.setPlaybackSourcePreference(pref);
-    }, []);
-
-    useEffect(() => {
-        configure({
-            maxConcurrentDownloads: 1,
-            backgroundDownloadsEnabled: false,
-            downloadArtwork: true,
-        });
-        setPlaybackSourcePreference('auto');
-    }, [configure, setPlaybackSourcePreference]);
-
-    const downloadTrack = useCallback(async (track: TrackItem, playlistId?: string) => {
-        const downloadId = await DownloadManager.downloadTrack(track, playlistId);
-        await refreshDownloadState();
-        return downloadId;
-    }, [refreshDownloadState]);
-
-    const downloadPlaylist = useCallback(async (playlistId: string, tracks: TrackItem[]) => {
-        const validTracks = dedupeDownloadTrackItems(tracks);
-        if (!validTracks.length) return;
-        await DownloadManager.downloadPlaylist(playlistId, validTracks);
-        await refreshDownloadState();
-    }, [refreshDownloadState]);
-
-    const pauseDownload = useCallback(async (downloadId: string) => {
-        await DownloadManager.pauseDownload(downloadId);
-        bumpDownloadStateVersion();
-    }, [bumpDownloadStateVersion]);
-
-    const resumeDownload = useCallback(async (downloadId: string) => {
-        await DownloadManager.resumeDownload(downloadId);
-        bumpDownloadStateVersion();
-    }, [bumpDownloadStateVersion]);
-
-    const cancelDownload = useCallback(async (downloadId: string) => {
-        await DownloadManager.cancelDownload(downloadId);
-        await refreshDownloadState();
-    }, [refreshDownloadState]);
-
-    const downloadAlbumById = useCallback(async (albumId: string) => {
-        let album = queryClient.getQueryData<Album>([
-            QueryKeys.Album,
-            activeServer?.id,
-            albumId,
-        ]);
-
-        if (!album) {
-            album = await queryClient.fetchQuery({
-                queryKey: [QueryKeys.Album, activeServer?.id, albumId],
-                queryFn: () => api.albums.get(albumId),
-                staleTime: staleTime.albums,
-                networkMode: 'offlineFirst',
-            });
-        }
-
-        if (!album) return;
-
-        const trackItems = dedupeDownloadTrackItems(album.songs.map(song => songToTrackItem(song, {
-            serverId: activeServer?.id,
-            serverType: activeServer?.type ?? null,
-        }))).filter(item => !isNativeTrackDownloaded(String(item.id)));
-        if (!trackItems.length) return;
-        await downloadPlaylist(albumId, trackItems);
-    }, [queryClient, activeServer?.id, activeServer?.type, api, isNativeTrackDownloaded, downloadPlaylist]);
-
-    const downloadPlaylistById = useCallback(async (playlistId: string) => {
-        let playlist = queryClient.getQueryData<Playlist>([
-            QueryKeys.Playlist,
-            activeServer?.id,
-            playlistId,
-        ]);
-
-        if (!playlist) {
-            playlist = await queryClient.fetchQuery({
-                queryKey: [QueryKeys.Playlist, activeServer?.id, playlistId],
-                queryFn: () => api.playlists.get(playlistId),
-                staleTime: staleTime.playlists,
-                networkMode: 'offlineFirst',
-            });
-        }
-
-        if (!playlist) return;
-
-        const trackItems = dedupeDownloadTrackItems(playlist.songs.map(song => songToTrackItem(song, {
-            serverId: activeServer?.id,
-            serverType: activeServer?.type ?? null,
-        }))).filter(item => !isNativeTrackDownloaded(String(item.id)));
-        if (!trackItems.length) return;
-        await downloadPlaylist(playlistId, trackItems);
-    }, [queryClient, activeServer?.id, activeServer?.type, api, isNativeTrackDownloaded, downloadPlaylist]);
-
-    const isTrackDownloaded = useCallback((trackId: string) => {
-        const normalizedTrackId = normalizeTrackId(trackId);
-        if (!normalizedTrackId) return false;
-        return isNativeTrackDownloaded(normalizedTrackId);
-    }, [isNativeTrackDownloaded, normalizeTrackId]);
-
-    const getActiveDownloads = useCallback(() => {
-        return DownloadManager.getActiveDownloads() ?? [];
-    }, []);
-
-    const getDownloadTaskTrackId = useCallback((task: any): string => {
-        return String(
-            task?.trackId ??
-            task?.originalTrack?.id ??
-            task?.track?.id ??
-            ''
-        ).trim();
-    }, []);
-
-    const activeDownloadingTrackIds = useMemo(() => {
-        const ids = new Set<string>();
-        const activeTasks = getActiveDownloads();
-        const activeDownloadIds = new Set<string>();
-
-        for (const task of activeTasks) {
-            const downloadId = String(task?.downloadId ?? '').trim();
-            if (downloadId) activeDownloadIds.add(downloadId);
-            const taskTrackId = getDownloadTaskTrackId(task);
-            if (taskTrackId) ids.add(taskTrackId);
-        }
-
-        for (const progress of progressList) {
-            const progressDownloadId = String(progress?.downloadId ?? '').trim();
-            if (!progressDownloadId || !activeDownloadIds.has(progressDownloadId)) continue;
-            const task = DownloadManager.getDownloadTask(progress.downloadId);
-            const taskTrackId = getDownloadTaskTrackId(task);
-            if (taskTrackId) ids.add(taskTrackId);
-        }
-
-        return ids;
-    }, [progressList, getActiveDownloads, getDownloadTaskTrackId]);
-
-    const isTrackDownloading = useCallback((trackId: string) => {
-        if (!trackId) return false;
-        return activeDownloadingTrackIds.has(String(trackId));
-    }, [activeDownloadingTrackIds]);
-
-    const getCollectionDownloadState = useCallback((trackIds: string[]) => {
-        const normalized = [...new Set(trackIds.map(id => normalizeTrackId(id)).filter(Boolean))];
-        if (!normalized.length) {
-            return {
-                isDownloaded: false,
-                isDownloading: false,
-            };
-        }
-
-        const isDownloaded = normalized.every((id) => {
-            return isNativeTrackDownloaded(id);
-        });
-        const isDownloading = !isDownloaded && normalized.some((id) => activeDownloadingTrackIds.has(id));
-
-        return {
-            isDownloaded,
-            isDownloading,
+        const partialSong: Song = {
+          id: entry.trackId,
+          streamUrl: entry.streamUrl,
+          albumId: entry.albumId ?? '',
+          artistId: entry.artistId ?? '',
+          sourceServerId: entry.serverId,
+          sourceServerType: entry.serverType as any,
+          cover: { kind: (entry.coverKind ?? 'none') as any },
+          title: '',
+          artist: '',
+          duration: '',
         };
-    }, [isNativeTrackDownloaded, activeDownloadingTrackIds, normalizeTrackId]);
+        downloadSong(partialSong, entry.collectionId).catch(() => {});
+      }
+    };
 
-    const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
-        const activeTasks = getActiveDownloads();
-        let cancelled = false;
-        for (const task of activeTasks) {
-            if (task.playlistId === collectionId) {
-                await DownloadManager.cancelDownload(task.downloadId);
-                cancelled = true;
-            }
-        }
-        if (cancelled) await refreshDownloadState();
-    }, [getActiveDownloads, refreshDownloadState]);
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const removeDownloadByCollectionId = useCallback(async (
-        id: string,
-        trackIds: string[],
-        scope?: DownloadProviderScope
-    ) => {
-        const normalizedTrackIds = [...new Set(
-            trackIds
-                .map(trackId => String(trackId ?? '').trim())
-                .filter(Boolean)
-        )];
-        const scopeServerId = normalizeServerId(scope?.serverId);
-        const scopeServerType = normalizeServerType(scope?.serverType);
+  const downloadSong = useCallback(async (song: Song, _collectionId?: string) => {
+    const trackId = normalizeId(song.id);
 
-        const activeTasks = getActiveDownloads();
-        let changed = false;
-        for (const task of activeTasks) {
-            if (task.playlistId === id) {
-                const taskServerId = normalizeServerId((task as any)?.serverId);
-                const taskServerType = normalizeServerType((task as any)?.serverType);
-                if (scopeServerId && taskServerId && taskServerId !== scopeServerId) continue;
-                if (scopeServerType && taskServerType && taskServerType !== scopeServerType) continue;
-                await DownloadManager.cancelDownload(task.downloadId);
-                changed = true;
-            }
-        }
+    if (downloadedIdsRef.current.has(trackId)) return;
+    if (activeDownloadsRef.current.has(trackId)) return;
 
-        for (const trackId of normalizedTrackIds) {
-            if (!trackId) continue;
-            const isDownloaded = isNativeTrackDownloaded(trackId);
-            if (!isDownloaded) continue;
-            if (scope) {
-                const track = (downloadedTracks as any[]).find(
-                    item => String(item?.trackId ?? item?.originalTrack?.id ?? '') === trackId
-                );
-                if (!track || !doesTrackMatchProviderScope(track, scope)) continue;
-            }
-            await DownloadManager.deleteDownloadedTrack(trackId);
-            changed = true;
-        }
-        if (changed) {
-            await refreshDownloadState();
-        }
-    }, [downloadedTracks, getActiveDownloads, isNativeTrackDownloaded, refreshDownloadState]);
+    if (!pendingRef.current[trackId]) {
+      dispatch(pendingAdded({
+        id: trackId,
+        entry: {
+          trackId,
+          streamUrl: song.streamUrl,
+          albumId: song.albumId,
+          artistId: song.artistId,
+          serverId: song.sourceServerId,
+          serverType: song.sourceServerType,
+          coverKind: song.cover?.kind,
+          collectionId: _collectionId,
+          requestedAt: Date.now(),
+        },
+      }));
+    }
 
-    const cancelDownloadAll = useCallback(async () => {
-        await DownloadManager.cancelAllDownloads();
-        await refreshDownloadState();
-    }, [refreshDownloadState]);
+    const tmpPath = getTmpPath(trackId);
+    const finalPath = getTrackPath(trackId);
 
-    const clearDownloadsForProvider = useCallback(async (scope?: DownloadProviderScope) => {
-        const scopeServerId = normalizeServerId(scope?.serverId);
-        const scopeServerType = normalizeServerType(scope?.serverType);
-        const activeTasks = getActiveDownloads();
-        let changed = false;
-        for (const task of activeTasks) {
-            const taskServerId = normalizeServerId((task as any)?.serverId);
-            const taskServerType = normalizeServerType((task as any)?.serverType);
-            if (scopeServerId && (!taskServerId || taskServerId !== scopeServerId)) continue;
-            if (!scopeServerId && scopeServerType && (!taskServerType || taskServerType !== scopeServerType)) continue;
-            await DownloadManager.cancelDownload(task.downloadId);
-            changed = true;
-        }
+    const task = FileSystem.createDownloadResumable(song.streamUrl, tmpPath);
+    activeDownloadsRef.current.set(trackId, task);
 
-        for (const track of downloadedTracks as any[]) {
-            if (!doesTrackMatchProviderScope(track, scope)) continue;
-            const trackId = String(track?.trackId ?? track?.originalTrack?.id ?? '');
-            if (!trackId) continue;
-            if (isNativeTrackDownloaded(trackId)) {
-                await DownloadManager.deleteDownloadedTrack(trackId);
-                changed = true;
-            }
-        }
-        if (changed) {
-            await refreshDownloadState();
-        }
-    }, [downloadedTracks, getActiveDownloads, isNativeTrackDownloaded, refreshDownloadState]);
+    try {
+      const result = await task.downloadAsync();
+      if (!result || result.status !== 200) return;
 
-    const clearAllDownloads = useCallback(async () => {
-        await DownloadManager.cancelAllDownloads();
-        await DownloadManager.deleteAllDownloads();
-        await refreshDownloadState();
-    }, [refreshDownloadState]);
+      const tmpInfo = await FileSystem.getInfoAsync(tmpPath);
+      if (!tmpInfo.exists) return;
 
-    const getAllDownloadedTracks = useCallback(() => {
-        return (downloadedTracks ?? []) as any[];
-    }, [downloadedTracks]);
+      await FileSystem.moveAsync({ from: tmpPath, to: finalPath });
 
-    const deleteDownloadedTrack = useCallback(async (trackId: string) => {
-        if (!trackId) return;
-        await DownloadManager.deleteDownloadedTrack(trackId);
-        await refreshDownloadState();
-    }, [refreshDownloadState]);
+      const finalInfo = await FileSystem.getInfoAsync(finalPath);
+      if (!finalInfo.exists) return;
 
-    const getStorageInfo = useCallback(async () => {
-        const getter = (DownloadManager as any)?.getStorageInfo;
-        if (typeof getter === 'function') {
-            return getter();
-        }
-        return null;
-    }, []);
+      const entry: DownloadedTrackEntry = {
+        trackId,
+        fileSize: (finalInfo as any).size ?? 0,
+        downloadedAt: Date.now(),
+        albumId: song.albumId ?? '',
+        artistId: song.artistId ?? '',
+        serverId: song.sourceServerId ?? '',
+        serverType: song.sourceServerType ?? '',
+        coverKind: song.cover?.kind ?? 'none',
+      };
 
-    return (
-        <DownloadContext.Provider
-            value={{
-                configure,
-                downloadTrack,
-                downloadPlaylist,
-                pauseDownload,
-                resumeDownload,
-                cancelDownload,
-                getAllDownloadedTracks,
-                deleteDownloadedTrack,
-                getStorageInfo,
-                setPlaybackSourcePreference,
-                downloadAlbumById,
-                downloadPlaylistById,
-                isTrackDownloaded,
-                isTrackDownloading,
-                getCollectionDownloadState,
-                cancelCollectionDownloads,
-                removeDownloadByCollectionId,
-                cancelDownloadAll,
-                clearDownloadsForProvider,
-                clearAllDownloads,
-                downloadStateVersion,
-            }}
-        >
-            {children}
-        </DownloadContext.Provider>
+      dispatch(trackDownloaded(entry));
+      setDownloadedIds(prev => {
+        const next = new Set<string>();
+        prev.forEach(id => next.add(id));
+        next.add(trackId);
+        return next;
+      });
+    } catch (err) {
+      console.warn('[DownloadContext] Download error', err);
+    } finally {
+      dispatch(pendingRemoved(trackId));
+      FileSystem.deleteAsync(tmpPath, { idempotent: true }).catch(() => {});
+      activeDownloadsRef.current.delete(trackId);
+      setProgressTick(n => n + 1);
+    }
+  }, [dispatch]);
+
+  const downloadAlbumById = useCallback(async (albumId: string) => {
+    const album = await api.albums.get(albumId);
+    const songs = album.songs ?? [];
+    for (const song of songs) await downloadSong(song, albumId);
+    dispatch(collectionAdded({
+      id: albumId,
+      type: 'album',
+      trackIds: songs.map(s => s.id),
+      downloadedAt: Date.now(),
+    }));
+  }, [api, downloadSong, dispatch]);
+
+  const downloadPlaylistById = useCallback(async (playlistId: string) => {
+    const playlist = await api.playlists.get(playlistId);
+    const songs = playlist.songs ?? [];
+    for (const song of songs) await downloadSong(song, playlistId);
+    dispatch(collectionAdded({
+      id: playlistId,
+      type: 'playlist',
+      trackIds: songs.map(s => s.id),
+      downloadedAt: Date.now(),
+    }));
+  }, [api, downloadSong, dispatch]);
+
+  const isTrackDownloaded = useCallback(
+    (id: string) => downloadedIds.has(normalizeId(id)),
+    [downloadedIds]
+  );
+
+  const isTrackDownloading = (id: string) =>
+    activeDownloadsRef.current.has(normalizeId(id));
+
+  const getLocalPath = useCallback(
+    (id: string) => {
+      const nid = normalizeId(id);
+      return downloadedIds.has(nid) ? getTrackPath(nid) : null;
+    },
+    [downloadedIds]
+  );
+
+  const getSongLocalUri = useCallback(async (id: string): Promise<string | null> => {
+    const path = getTrackPath(normalizeId(id));
+    const info = await FileSystem.getInfoAsync(path);
+    return info.exists ? path : null;
+  }, []);
+
+  const deleteDownloadedTrack = useCallback(async (trackId: string) => {
+    await FileSystem.deleteAsync(getTrackPath(trackId), { idempotent: true }).catch(() => {});
+    dispatch(trackRemoved(trackId));
+    setDownloadedIds(prev => {
+      const next = new Set(prev);
+      next.delete(trackId);
+      return next;
+    });
+  }, [dispatch]);
+
+  const cancelDownload = useCallback(async (id: string) => {
+    const task = activeDownloadsRef.current.get(id);
+    if (task?.cancelAsync) {
+      await task.cancelAsync().catch(() => {});
+      activeDownloadsRef.current.delete(id);
+    }
+    dispatch(pendingRemoved(id));
+  }, [dispatch]);
+
+  const removeDownloadByCollectionId = useCallback(async (
+    id: string,
+    trackIds: string[],
+    scope?: DownloadProviderScope
+  ) => {
+    for (const trackId of trackIds) {
+      const entry = tracksRef.current[trackId];
+      if (!entry) continue;
+      if (scope && !doesTrackMatchProviderScope(entry, scope)) continue;
+      await deleteDownloadedTrack(trackId);
+    }
+    dispatch(collectionRemoved(id));
+  }, [deleteDownloadedTrack, dispatch]);
+
+  const getCollectionDownloadState = useCallback((trackIds: string[]) => {
+    if (trackIds.length === 0) return { isDownloaded: false, isDownloading: false };
+    return {
+      isDownloaded: trackIds.every(id => downloadedIds.has(normalizeId(id))),
+      isDownloading: trackIds.some(id => activeDownloadsRef.current.has(normalizeId(id))),
+    };
+  }, [downloadedIds]);
+
+  const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
+    const col = collectionsRef.current[collectionId];
+    if (!col) return;
+    for (const trackId of col.trackIds) await cancelDownload(trackId);
+  }, [cancelDownload]);
+
+  const cancelDownloadAll = useCallback(async () => {
+    for (const [, task] of activeDownloadsRef.current) {
+      if (task?.cancelAsync) await task.cancelAsync().catch(() => {});
+    }
+    activeDownloadsRef.current.clear();
+  }, []);
+
+  const clearDownloadsForProvider = useCallback(async (scope?: DownloadProviderScope) => {
+    const tracksToDelete = Object.values(tracksRef.current).filter(
+      entry => !scope || doesTrackMatchProviderScope(entry, scope)
     );
+    for (const entry of tracksToDelete) await deleteDownloadedTrack(entry.trackId);
+
+    const deletedIds = new Set(tracksToDelete.map(e => e.trackId));
+    const remaining: Record<string, DownloadedCollectionEntry> = {};
+    for (const [colId, col] of Object.entries(collectionsRef.current)) {
+      const kept = col.trackIds.filter(id => !deletedIds.has(id));
+      if (kept.length > 0) remaining[colId] = { ...col, trackIds: kept };
+    }
+    dispatch(collectionsUpdated(remaining));
+  }, [deleteDownloadedTrack, dispatch]);
+
+  const clearAllDownloads = useCallback(async () => {
+    await cancelDownloadAll();
+    await FileSystem.deleteAsync(SONGS_DIR, { idempotent: true }).catch(() => {});
+    await FileSystem.makeDirectoryAsync(SONGS_DIR, { intermediates: true }).catch(() => {});
+    dispatch(allCleared());
+    setDownloadedIds(new Set());
+  }, [cancelDownloadAll, dispatch]);
+
+  const totalDownloadedBytes = Object.values(tracks).reduce((sum, t) => sum + t.fileSize, 0);
+  const downloadedTrackCount = downloadedIds.size;
+
+  const value: DownloadContextType = {
+    configure: () => {},
+    downloadTrack: downloadSong,
+    downloadPlaylist: async (playlistId, trackList) => {
+      for (const t of trackList) await downloadSong(t, playlistId);
+    },
+    pauseDownload: async () => {},
+    resumeDownload: async () => {},
+    cancelDownload,
+    isTrackDownloaded,
+    getAllDownloadedTracks: () => Object.values(tracks),
+    deleteDownloadedTrack,
+    getStorageInfo: async () => null,
+    setPlaybackSourcePreference: () => {},
+    downloadAlbumById,
+    downloadPlaylistById,
+    isTrackDownloading,
+    getCollectionDownloadState,
+    cancelCollectionDownloads,
+    removeDownloadByCollectionId,
+    cancelDownloadAll,
+    clearDownloadsForProvider,
+    clearAllDownloads,
+    downloadStateVersion: downloadedIds.size,
+    getLocalPath,
+    getSongLocalUri,
+    getAllDownloadedCollections: () => Object.values(collections),
+    totalDownloadedBytes,
+    downloadedTrackCount,
+  };
+
+  return (
+    <DownloadContext.Provider value={value}>
+      {children}
+    </DownloadContext.Provider>
+  );
 };

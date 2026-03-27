@@ -1,13 +1,14 @@
 export type ServerType = "navidrome" | "jellyfin";
 
 export type ProviderAuth = {
-  [key: string]: string | number | boolean | null;
+  [key: string]: string | number | boolean | null | string[];
 };
 
-export type NavidromeServerAuth = ProviderAuth & {
-  password?: string;
-  musicFolderId?: string;
-};
+
+export interface BasicAuth {
+  username: string;
+  password: string;
+}
 
 export interface Server {
   id: string;
@@ -15,5 +16,6 @@ export interface Server {
   serverUrl: string;
   username: string;
   auth?: ProviderAuth;
+  basicAuth?: BasicAuth;
   isAuthenticated: boolean;
 }

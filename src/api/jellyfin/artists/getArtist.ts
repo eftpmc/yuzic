@@ -1,4 +1,4 @@
-import { AlbumBase, Artist, CoverSource } from "@/types";
+import { Album, Artist, CoverSource } from "@/types";
 import type { JellyfinClient } from "../client";
 import { getAlbums } from "../albums/getAlbums";
 
@@ -31,7 +31,7 @@ export async function getArtist(
 
   const mbid = artistRaw.ProviderIds?.MusicBrainz ?? null;
 
-  const ownedAlbums: AlbumBase[] = await getAlbums(client, artistId);
+  const ownedAlbums: Album[] = await getAlbums(client, artistId);
 
   return {
     id: artistRaw.Id,

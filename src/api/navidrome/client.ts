@@ -5,6 +5,7 @@ export interface NavidromeClientConfig {
   username: string;
   password: string;
   defaultParams?: Record<string, string | number>;
+  basicAuth?: { username: string; password: string };
 }
 
 const API_VERSION = "1.16.0";
@@ -45,8 +46,11 @@ function buildParams(
 }
 
 export function createNavidromeClient(config: NavidromeClientConfig) {
-  const { serverUrl, username, password, defaultParams } = config;
+  const { serverUrl, username, password, defaultParams, basicAuth } = config;
   const baseUrl = serverUrl.replace(/\/+$/, "");
+  const proxyHeader: Record<string, string> = basicAuth
+    ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) }
+    : {};
 
   async function request<T>(
     endpoint: string,
@@ -56,7 +60,7 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
     const auth = buildTokenParams(username, password);
     const params = buildParams(auth, { ...(defaultParams ?? {}), ...extraParams });
     const url = `${baseUrl}/rest/${endpoint}?${params}`;
-    const res = await fetch(url, { method: options.method ?? "GET" });
+    const res = await fetch(url, { method: options.method ?? "GET", headers: proxyHeader });
     if (!res.ok) {
       throw new Error(`Navidrome API error (${res.status}): ${await res.text()}`);
     }
@@ -64,10 +68,10 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
   }
 
   function buildStreamUrl(songId: string): string {
-  const auth = buildTokenParams(username, password);
-  const params = buildParams(auth, { id: songId }, { format: null });
-  return `${baseUrl}/rest/stream.view?${params}`;
-}
+    const auth = buildTokenParams(username, password);
+    const params = buildParams(auth, { id: songId, format: 'mp3' }, { format: null });
+    return `${baseUrl}/rest/stream.view?${params}`;
+  }
 
   return {
     request,

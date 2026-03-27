@@ -16,8 +16,10 @@ import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 
@@ -32,6 +34,8 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useRef<BottomSheetModal>(null);
 
+  const dispatch = useDispatch();
+  const activeServer = useSelector(selectActiveServer);
   const { playSongInCollection } = usePlaying();
   const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
 
@@ -73,17 +77,23 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   return (
     <View style={styles.container}>
       {/* Header buttons */}
-      <View style={styles.headerRow}>
+      <View style={[styles.headerRow, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
         >
           <Ionicons
-            name="arrow-back"
+            name="chevron-back"
             size={24}
-            color={isDarkMode ? '#fff' : '#000'}
+            color={isDarkMode ? '#fff' : '#1C1C1E'}
           />
         </TouchableOpacity>
+
+        <View pointerEvents="none" style={styles.headerTitleWrapper}>
+          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
+            {playlist.title}
+          </Text>
+        </View>
 
         <TouchableOpacity
           onPress={() => optionsSheetRef.current?.present()}
@@ -92,7 +102,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           <Ionicons
             name="ellipsis-horizontal"
             size={24}
-            color={isDarkMode ? '#fff' : '#000'}
+            color={isDarkMode ? '#fff' : '#1C1C1E'}
           />
         </TouchableOpacity>
       </View>
@@ -142,6 +152,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             onPress={() => {
               if (songs.length > 0) {
                 playSongInCollection(songs[0], playlist, true);
+                if (activeServer) {
+                  dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
+                }
               }
             }}
           >
@@ -157,6 +170,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             onPress={() => {
               if (songs.length > 0) {
                 playSongInCollection(songs[0], playlist);
+                if (activeServer) {
+                  dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
+                }
               }
             }}
           >
@@ -188,21 +204,33 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 60,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     alignItems: 'center',
   },
 
   headerRow: {
-    position: 'absolute',
-    top: 16,
-    left: 0,
-    right: 0,
-    zIndex: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    width: '100%',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerTitleWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    maxWidth: '60%',
+  },
+  headerTitleDark: {
+    color: '#fff',
   },
   headerButton: {
     padding: 6,

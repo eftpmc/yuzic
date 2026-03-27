@@ -12,6 +12,7 @@ import {
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
 import AlbumRow from '@/components/rows/AlbumRow';
@@ -24,9 +25,14 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
+import SongOptions from '@/components/options/SongOptions';
+import PlaylistList from '@/components/PlaylistList';
+import { Song } from '@/types';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
+  const songOptionsRef = useRef<BottomSheetModal>(null);
+  const playlistListRef = useRef<BottomSheetModal>(null);
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
@@ -34,6 +40,8 @@ const Search = () => {
   const { playSong } = usePlaying();
 
   const [query, setQuery] = useState('');
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const { searchResults, handleSearch, clearSearch, isLoading } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,11 +55,13 @@ const Search = () => {
 
     if (!text.trim()) {
       clearSearch();
+      setHasSearched(false);
       return;
     }
 
     typingTimeoutRef.current = setTimeout(async () => {
       clearSearch();
+      setHasSearched(true);
       await handleSearch(text);
     }, 300);
   };
@@ -71,6 +81,23 @@ const Search = () => {
     }
   };
 
+  const handleSongOptions = async (result: SearchResult) => {
+    try {
+      let song: Song | null = result.song ?? null;
+      if (!song) {
+        song = await api.songs.get(result.id);
+      }
+      if (song) {
+        setSelectedSong(song);
+        requestAnimationFrame(() => {
+          songOptionsRef.current?.present();
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to open song options', error);
+    }
+  };
+
   const getSourceLabel = (source: SearchResult['source']) =>
     source === 'external'
       ? t('search.chips.external')
@@ -82,36 +109,50 @@ const Search = () => {
   const renderResult = (result: SearchResult) => {
     if (result.type === 'song') {
       return (
-        <TouchableOpacity
-          style={styles.songRow}
-          onPress={() => handleSongPress(result)}
-        >
-          <MediaImage
-            cover={result.cover}
-            size="thumb"
-            style={styles.songCover}
-          />
-          <View style={styles.songText}>
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.songTitle,
-                isDarkMode && styles.songTitleDark,
-              ]}
+        <View style={styles.songWrapper}>
+          <View style={styles.songRow}>
+            <TouchableOpacity
+              style={styles.songInfo}
+              onPress={() => handleSongPress(result)}
             >
-              {result.title}
-            </Text>
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.songSubtitle,
-                isDarkMode && styles.songSubtitleDark,
-              ]}
+              <MediaImage
+                cover={result.cover}
+                size="thumb"
+                style={styles.songCover}
+              />
+              <View style={styles.songText}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.songTitle,
+                    isDarkMode && styles.songTitleDark,
+                  ]}
+                >
+                  {result.title}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.songSubtitle,
+                    isDarkMode && styles.songSubtitleDark,
+                  ]}
+                >
+                  {result.subtext}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.songOptionsButton}
+              onPress={() => handleSongOptions(result)}
             >
-              {result.subtext}
-            </Text>
+              <Ionicons
+                name="ellipsis-horizontal"
+                size={24}
+                color={isDarkMode ? '#fff' : '#000'}
+              />
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
       );
     }
 
@@ -266,6 +307,7 @@ const Search = () => {
               onPress={() => {
                 setQuery('');
                 clearSearch();
+                setHasSearched(false);
               }}
             >
               <MaterialIcons
@@ -290,7 +332,7 @@ const Search = () => {
             </>
           )}
 
-        {!isLoading && searchResults.length === 0 && (
+        {hasSearched && !isLoading && searchResults.length === 0 && (
           <Text
             style={[styles.noResults, isDarkMode && styles.noResultsDark]}
           >
@@ -298,6 +340,19 @@ const Search = () => {
           </Text>
         )}
       </ScrollView>
+
+      {selectedSong && (
+        <SongOptions
+          ref={songOptionsRef}
+          selectedSong={selectedSong}
+          onAddToPlaylist={() => playlistListRef.current?.present()}
+        />
+      )}
+      <PlaylistList
+        ref={playlistListRef}
+        selectedSong={selectedSong}
+        onClose={() => playlistListRef.current?.dismiss()}
+      />
     </SafeAreaView>
   );
 };
@@ -369,20 +424,27 @@ const styles = StyleSheet.create({
   resultBlock: {
     paddingBottom: 0,
   },
+  songWrapper: {
+    paddingHorizontal: 16,
+  },
   songRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
     marginBottom: 16,
+  },
+  songInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   songCover: {
     width: 64,
     height: 64,
     borderRadius: 6,
-    marginRight: 12,
   },
   songText: {
     flex: 1,
+    marginLeft: 12,
   },
   songTitle: {
     color: '#000',
@@ -399,6 +461,9 @@ const styles = StyleSheet.create({
   },
   songSubtitleDark: {
     color: '#aaa',
+  },
+  songOptionsButton: {
+    padding: 8,
   },
   sectionLabel: {
     paddingHorizontal: 16,

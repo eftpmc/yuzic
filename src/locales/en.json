@@ -61,11 +61,17 @@
         "title": "Language",
         "subtitle": "App language",
         "english": "English",
-        "japanese": "Japanese"
+        "japanese": "Japanese",
+        "french": "French",
+        "chinese": "Chinese"
       }
     },
     "library": {
       "title": "Library",
+      "librarySelect": {
+        "info": "Choose which music library to use",
+        "all": "All Libraries"
+      },
       "discovery": {
         "title": "Discovery",
         "info": "How Discovery suggests artists and albums from your library.",
@@ -73,24 +79,16 @@
       },
       "stats": {
         "title": "Library",
-        "refreshTitle": "Refresh Library?",
-        "refreshBody": "This will re-fetch library data and invalidate cached entries.",
-        "refreshCancel": "Cancel",
-        "refreshConfirm": "Refresh",
-        "summary": {
-          "albums": "Albums",
-          "artists": "Artists",
-          "playlists": "Playlists"
-        },
-        "status": {
-          "cached": "Cached",
-          "fresh": "{{count}} fresh",
-          "freshStale": "{{fresh}} fresh, {{stale}} stale",
-          "errors": "{{count}} error",
-          "errors_plural": "{{count}} errors"
-        },
-        "errorsTitle": "Errors",
-        "unknownError": "Unknown error"
+        "neverSynced": "Never synced",
+        "justNow": "Just now",
+        "minsAgo": "{{count}} min ago",
+        "minsAgo_plural": "{{count}} mins ago",
+        "hoursAgo": "{{count}} hr ago",
+        "hoursAgo_plural": "{{count}} hrs ago",
+        "daysAgo": "{{count}} day ago",
+        "daysAgo_plural": "{{count}} days ago",
+        "lastSynced": "Last synced",
+        "syncOnAppStart": "Sync on app start"
       },
       "downloads": {
         "title": "Downloads",
@@ -153,11 +151,6 @@
           "original": "Original (no compression)"
         }
       },
-      "offlineMode": {
-        "title": "Offline Mode",
-        "info": "When enabled, the app shows downloaded content only.",
-        "toggle": "Downloads-only mode"
-      }
     },
     "player": {
       "title": "Player",
@@ -256,6 +249,7 @@
     },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
+    "playbackError": "Unable to play track",
     "error": {
       "unexpected": "Unexpected error occurred",
       "details": "Error: {{name}} {{message}}",
@@ -313,14 +307,24 @@
       "connectError": "An error occurred while connecting."
     }
   },
+  "library": {
+    "title": "Library",
+    "shuffle": {
+      "all": "Shuffle All",
+      "favorites": "Shuffle Favorites",
+      "downloaded": "Shuffle Downloaded"
+    }
+  },
   "home": {
-    "title": "yuzic",
+    "title": "Home",
     "filters": {
       "all": "All",
       "albums": "Albums",
       "artists": "Artists",
       "playlists": "Playlists",
-      "tracks": "Tracks"
+      "tracks": "Tracks",
+      "downloaded": "Downloaded",
+      "genres": "Genres"
     },
     "sort": {
       "alphabetical": "Alphabetical",

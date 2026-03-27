@@ -1,11 +1,11 @@
-import { AlbumBase } from '@/types/Album';
-import { ArtistBase } from '@/types/Artist';
+import { Album } from '@/types/Album';
+import { Artist } from '@/types/Artist';
 import { Song } from '@/types/Song';
 import type { NavidromeClient } from '../client';
 
 export type NavidromeSearchResult = {
-  albums: AlbumBase[];
-  artists: ArtistBase[];
+  albums: Album[];
+  artists: Artist[];
   songs: Song[];
 };
 
@@ -29,7 +29,7 @@ export async function search(
     return { albums: [], artists: [], songs: [] };
   }
 
-  const albums: AlbumBase[] = (r.album ?? []).map((a: any) => ({
+  const albums: Album[] = (r.album ?? []).map((a: any) => ({
     id: a.id,
     title: a.name,
     subtext: a.artist,
@@ -47,15 +47,17 @@ export async function search(
     year: a.year ?? 0,
     genres: a.genre ? [a.genre] : [],
     created: a.created ? new Date(a.created) : new Date(0),
+    songs: [],
   }));
 
-  const artists: ArtistBase[] = (r.artist ?? []).map((a: any) => ({
+  const artists: Artist[] = (r.artist ?? []).map((a: any) => ({
     id: a.id,
     name: a.name,
     subtext: "Artist",
     cover: a.coverArt
       ? { kind: "navidrome" as const, coverArtId: a.coverArt }
       : { kind: "none" as const },
+    ownedAlbums: [],
   }));
 
   const songs: Song[] = (r.song ?? []).map((s: any) => ({

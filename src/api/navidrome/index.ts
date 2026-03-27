@@ -50,15 +50,29 @@ import { getSimilarSongs } from "./similar/getSimilarSongs";
 import { search as searchNavidrome } from "./search/search";
 
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
-  const { serverUrl, username, auth: providerAuth } = server;
+  const { serverUrl, username, auth: providerAuth, basicAuth } = server;
   const password = providerAuth?.password as string;
-  const musicFolderId = providerAuth?.musicFolderId;
-  const client = createNavidromeClient({
-    serverUrl,
-    username,
-    password,
-    defaultParams: musicFolderId ? { musicFolderId: String(musicFolderId) } : undefined,
-  });
+
+  // Support new array format (musicFolderIds) and old single-value format (musicFolderId)
+  const musicFolderIds: string[] =
+    Array.isArray(providerAuth?.musicFolderIds) ? (providerAuth.musicFolderIds as string[]) :
+    providerAuth?.musicFolderId ? [String(providerAuth.musicFolderId)] :
+    [];
+
+  const client = createNavidromeClient({ serverUrl, username, password, basicAuth });
+
+  const clientFor = (folderId: string) =>
+    createNavidromeClient({ serverUrl, username, password, defaultParams: { musicFolderId: folderId }, basicAuth });
+
+  async function fromFolders<T extends { id: string }>(
+    fn: (c: ReturnType<typeof createNavidromeClient>) => Promise<T[]>
+  ): Promise<T[]> {
+    if (musicFolderIds.length === 0) return fn(client);
+    if (musicFolderIds.length === 1) return fn(clientFor(musicFolderIds[0]));
+    const all = (await Promise.all(musicFolderIds.map(id => fn(clientFor(id))))).flat();
+    const seen = new Set<string>();
+    return all.filter(item => !seen.has(item.id) && (seen.add(item.id), true));
+  }
 
   const auth: AuthApi = {
     connect: (serverUrl, username, password) =>
@@ -72,7 +86,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const albums: AlbumsApi = {
     list: async () => {
       const [baseAlbums, starred] = await Promise.all([
-        getAlbumList(client),
+        fromFolders(c => getAlbumList(c)),
         getStarredItems(client),
       ]);
       const baseIds = new Set(baseAlbums.map((a) => a.id));
@@ -100,7 +114,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   };
 
   const artists: ArtistsApi = {
-    list: async () => getArtists(client),
+    list: async () => fromFolders(c => getArtists(c)),
     get: async (id: string) => {
       const artist = await getArtist(client, id);
       if (!artist) throw new Error("Artist not found");
@@ -177,7 +191,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   };
 
   const tracks: TracksApi = {
-    list: async () => getTracks(client),
+    list: async () => fromFolders(c => getTracks(c)),
     get: async (id: string) => getSong(client, id),
   };
 

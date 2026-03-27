@@ -8,15 +8,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
-import { AlbumBase } from '@/types';
+import { Album } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useAlbum } from '@/hooks/albums';
 
 type Props = {
-  album: AlbumBase;
-  onPress?: (album: AlbumBase) => void;
+  album: Album;
+  onPress?: (album: Album) => void;
   showDownloadedDot?: boolean;
   isDownloaded?: boolean;
 };
@@ -105,7 +105,7 @@ export default AlbumRow;
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
   },
   cover: {
     width: 64,

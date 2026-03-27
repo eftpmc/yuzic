@@ -24,7 +24,6 @@ export interface SettingsState {
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
-  offlineModeEnabled: boolean;
 
   /* Search */
   searchScope: SearchScope;
@@ -35,7 +34,11 @@ export interface SettingsState {
   /* Audio */
   audioQuality: AudioQuality;
 
-  language: AppLanguage
+  language: AppLanguage;
+
+  /* Sync */
+  lastSyncedAt: number | null;
+  syncOnAppStart: boolean;
 }
 
 const initialState: SettingsState = {
@@ -47,13 +50,15 @@ const initialState: SettingsState = {
   playingBarAction: 'skip',
 
   librarySortOrder: 'title',
-  offlineModeEnabled: false,
   searchScope: 'client+external',
   hasSeenGetStarted: false,
 
   audioQuality: 'medium',
 
-  language: DEFAULT_LANGUAGE
+  language: DEFAULT_LANGUAGE,
+
+  lastSyncedAt: null,
+  syncOnAppStart: false,
 };
 
 const settingsSlice = createSlice({
@@ -87,9 +92,6 @@ const settingsSlice = createSlice({
     setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
       state.librarySortOrder = action.payload;
     },
-    setOfflineModeEnabled(state, action: PayloadAction<boolean>) {
-      state.offlineModeEnabled = action.payload;
-    },
 
     setSearchScope(state, action: PayloadAction<SearchScope>) {
       state.searchScope = action.payload;
@@ -109,6 +111,13 @@ const settingsSlice = createSlice({
       state.language = action.payload;
     },
 
+    setLastSyncedAt(state, action: PayloadAction<number | null>) {
+      state.lastSyncedAt = action.payload;
+    },
+    setSyncOnAppStart(state, action: PayloadAction<boolean>) {
+      state.syncOnAppStart = action.payload;
+    },
+
     resetSettings: () => initialState,
   },
 });
@@ -121,11 +130,12 @@ export const {
   setIsGridView,
   setPlayingBarAction,
   setLibrarySortOrder,
-  setOfflineModeEnabled,
   setSearchScope,
   setHasSeenGetStarted,
   setAudioQuality,
   setLanguage,
+  setLastSyncedAt,
+  setSyncOnAppStart,
   resetSettings,
 } = settingsSlice.actions;
 

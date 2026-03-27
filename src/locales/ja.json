@@ -61,11 +61,17 @@
         "title": "言語",
         "subtitle": "アプリの言語",
         "english": "英語",
-        "japanese": "日本語"
+        "japanese": "日本語",
+        "french": "フランス語",
+        "chinese": "中国語"
       }
     },
     "library": {
       "title": "ライブラリ",
+      "librarySelect": {
+        "info": "使用する音楽ライブラリを選択",
+        "all": "すべてのライブラリ"
+      },
       "discovery": {
         "title": "ディスカバリー",
         "info": "ディスカバリーがライブラリからアーティストとアルバムを提案する方法です。",
@@ -73,24 +79,16 @@
       },
       "stats": {
         "title": "ライブラリ",
-        "refreshTitle": "ライブラリを更新しますか？",
-        "refreshBody": "ライブラリデータを再取得し、キャッシュを無効化します。",
-        "refreshCancel": "キャンセル",
-        "refreshConfirm": "更新",
-        "summary": {
-          "albums": "アルバム",
-          "artists": "アーティスト",
-          "playlists": "プレイリスト"
-        },
-        "status": {
-          "cached": "キャッシュ済み",
-          "fresh": "最新 {{count}}",
-          "freshStale": "最新 {{fresh}}、古い {{stale}}",
-          "errors": "{{count}} 件のエラー",
-          "errors_plural": "{{count}} 件のエラー"
-        },
-        "errorsTitle": "エラー",
-        "unknownError": "不明なエラー"
+        "neverSynced": "未同期",
+        "justNow": "たった今",
+        "minsAgo": "{{count}} 分前",
+        "minsAgo_plural": "{{count}} 分前",
+        "hoursAgo": "{{count}} 時間前",
+        "hoursAgo_plural": "{{count}} 時間前",
+        "daysAgo": "{{count}} 日前",
+        "daysAgo_plural": "{{count}} 日前",
+        "lastSynced": "最終同期",
+        "syncOnAppStart": "起動時に同期"
       },
       "downloads": {
         "title": "ダウンロード",
@@ -153,11 +151,6 @@
           "original": "オリジナル (圧縮なし)"
         }
       },
-      "offlineMode": {
-        "title": "オフラインモード",
-        "info": "有効にすると、アプリはダウンロード済みのコンテンツのみを表示します。",
-        "toggle": "ダウンロード済みのみ"
-      }
     },
     "player": {
       "title": "プレーヤー",
@@ -313,14 +306,24 @@
       "connectError": "接続中にエラーが発生しました。"
     }
   },
+  "library": {
+    "title": "ライブラリ",
+    "shuffle": {
+      "all": "すべてシャッフル",
+      "favorites": "お気に入りをシャッフル",
+      "downloaded": "ダウンロード済みをシャッフル"
+    }
+  },
   "home": {
-    "title": "yuzic",
+    "title": "ホーム",
     "filters": {
       "all": "すべて",
       "albums": "アルバム",
       "artists": "アーティスト",
       "playlists": "プレイリスト",
-      "tracks": "トラック"
+      "tracks": "トラック",
+      "downloaded": "ダウンロード済み",
+      "genres": "ジャンル"
     },
     "sort": {
       "alphabetical": "アルファベット順",

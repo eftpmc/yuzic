@@ -22,6 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
 import { getAlbumMbidUrl } from '@/utils/musicbrainz/getAlbumMbidUrl';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 export type AlbumOptionsProps = {
   album: Album | null;
@@ -131,6 +132,8 @@ const AlbumOptions = forwardRef<
         ref={ref}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? '#555' : '#ccc',
         }}
@@ -148,6 +151,8 @@ const AlbumOptions = forwardRef<
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
       handleIndicatorStyle={{
         backgroundColor: isDarkMode ? '#555' : '#ccc',
       }}

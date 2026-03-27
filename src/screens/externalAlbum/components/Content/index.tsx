@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
 import { ExternalAlbum, ExternalSong } from '@/types';
@@ -19,8 +20,8 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
     return <ExternalAlbumHeader album={album} />;
   }, [album]);
 
-  const renderItem = ({ item }: { item: ExternalSong }) => {
-    return <ExternalSongRow song={item} />;
+  const renderItem = ({ item, index }: { item: ExternalSong; index: number }) => {
+    return <ExternalSongRow song={item} trackNumber={index + 1} />;
   };
 
   return (
@@ -31,7 +32,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
-      contentContainerStyle={{ paddingBottom: 140 }}
+      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />
   );

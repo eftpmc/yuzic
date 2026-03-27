@@ -1,57 +1,67 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import {
-  useDownloadedTracks,
-  useDownloadStorage,
-} from 'react-native-nitro-player';
-
 import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useAlbums } from '@/hooks/albums';
-import { useFullPlaylists, usePlaylists } from '@/hooks/playlists';
+import { usePlaylists } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { MediaImage } from '@/components/MediaImage';
 import { useDownload } from '@/contexts/DownloadContext';
 import { DownloadRow } from './downloadsInfo/types';
 import { buildDownloadRows } from './downloadsInfo/buildRows';
 import { styles } from './downloadsInfo/styles';
+import { Paths } from 'expo-file-system';
+import { formatBytes } from '@/utils/downloads/downloadStore';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
-  const { removeDownloadByCollectionId, clearDownloadsForProvider, downloadStateVersion } = useDownload();
+  const {
+    removeDownloadByCollectionId,
+    clearDownloadsForProvider,
+    downloadStateVersion,
+    getAllDownloadedTracks,
+    getAllDownloadedCollections,
+    totalDownloadedBytes,
+    downloadedTrackCount,
+  } = useDownload();
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [freeBytes, setFreeBytes] = useState<number | null>(null);
   const { albums = [] } = useAlbums();
-  const { playlists = [] } = usePlaylists();
-  const { playlists: fullPlaylists = [] } = useFullPlaylists(playlists);
+  const { playlists: fullPlaylists = [] } = usePlaylists();
   const { tracks = [] } = useTracks();
-  const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
-  const downloadedState = useDownloadedTracks() as any;
 
-  const downloadedTracks = (downloadedState?.downloadedTracks ?? []) as any[];
-  const downloadedPlaylists = (downloadedState?.downloadedPlaylists ?? []) as any[];
+  useEffect(() => {
+    setFreeBytes(Paths.availableDiskSpace);
+  }, [downloadStateVersion]);
+
+  const downloadedTracks = useMemo(() => getAllDownloadedTracks(), [getAllDownloadedTracks, downloadStateVersion]);
+  const downloadedCollections = useMemo(() => getAllDownloadedCollections(), [getAllDownloadedCollections, downloadStateVersion]);
+
+  const formattedSize = formatBytes(totalDownloadedBytes);
+  const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
 
   const rows = useMemo(
     () =>
       buildDownloadRows({
         albums,
         tracks,
-        playlists,
+        playlists: fullPlaylists,
         fullPlaylists,
         downloadedTracks,
-        downloadedPlaylists,
+        downloadedCollections,
         t,
       }),
-    [albums, tracks, playlists, fullPlaylists, downloadedTracks, downloadedPlaylists, downloadStateVersion, t]
+    [albums, tracks, fullPlaylists, downloadedTracks, downloadedCollections, downloadStateVersion, t]
   );
 
   const downloadedAlbumCount = useMemo(
@@ -176,7 +186,7 @@ const DownloadsInfoScreen: React.FC = () => {
             {t('settings.library.downloads.table.tracks')}
           </Text>
           <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {String(storageInfo?.trackCount ?? downloadedTracks.length)}
+            {String(downloadedTrackCount)}
           </Text>
         </View>
       </View>

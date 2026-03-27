@@ -1,23 +1,19 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import { useApi } from '@/api';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
-import { Album, CoverSource } from '@/types';
+import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import AlbumOptions from '@/components/options/AlbumOptions';
+import { useAlbums } from '@/hooks/albums';
 
 interface ItemProps {
   id: string;
@@ -40,31 +36,18 @@ const AlbumItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const api = useApi();
-  const queryClient = useQueryClient();
-  const activeServer = useSelector(selectActiveServer);
+  const { albums } = useAlbums();
+  const album = albums.find(a => a.id === id) ?? null;
 
   const sheetRef = useRef<BottomSheetModal>(null);
-  const [albumForSheet, setAlbumForSheet] = useState<Album | null>(null);
-
-  const fetchAlbum = useCallback(async () => {
-    return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Album, activeServer?.id, id],
-      queryFn: () => api.albums.get(id),
-      staleTime: staleTime.albums,
-    });
-  }, [api, queryClient, activeServer?.id, id]);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('albumView', { id });
   }, [navigation, id]);
 
-  const handleLongPress = useCallback(async () => {
-    const album = await fetchAlbum();
-    if (!album) return;
-    setAlbumForSheet(album);
+  const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
-  }, [fetchAlbum]);
+  }, []);
 
   return (
     <>
@@ -84,8 +67,8 @@ const AlbumItem: React.FC<ItemProps> = ({
           size={isGridView ? 'grid' : 'thumb'}
           style={
             isGridView
-              ? { width: gridWidth, aspectRatio: 1, borderRadius: 10 }
-              : { width: 52, height: 52, borderRadius: 8, marginRight: 12 }
+              ? { width: gridWidth, aspectRatio: 1, borderRadius: 6 }
+              : { width: 52, height: 52, borderRadius: 4, marginRight: 12 }
           }
         />
 
@@ -105,11 +88,24 @@ const AlbumItem: React.FC<ItemProps> = ({
             {subtext}
           </Text>
         </View>
+
+        {!isGridView && (
+          <TouchableOpacity
+            onPress={() => { void handleLongPress(); }}
+            hitSlop={10}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+        )}
       </Pressable>
 
       <AlbumOptions
         ref={sheetRef}
-        album={albumForSheet}
+        album={album}
         hideGoToAlbum={false}
       />
     </>
@@ -124,10 +120,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 6,
@@ -135,6 +131,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 15,

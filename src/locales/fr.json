@@ -62,11 +62,16 @@
         "subtitle": "Langue de l'application",
         "english": "Anglais",
         "japanese": "Japonais",
-        "french": "Français"
+        "french": "Français",
+        "chinese": "Chinois"
       }
     },
     "library": {
       "title": "Bibliothèque",
+      "librarySelect": {
+        "info": "Choisissez la bibliothèque musicale à utiliser",
+        "all": "Toutes les bibliothèques"
+      },
       "discovery": {
         "title": "Découverte",
         "info": "Comment la découverte suggère des artistes et albums de votre bibliothèque.",
@@ -74,24 +79,16 @@
       },
       "stats": {
         "title": "Bibliothèque",
-        "refreshTitle": "Actualiser la bibliothèque ?",
-        "refreshBody": "Cela va récupérer à nouveau les données de la bibliothèque et invalider les entrées en cache.",
-        "refreshCancel": "Annuler",
-        "refreshConfirm": "Actualiser",
-        "summary": {
-          "albums": "Albums",
-          "artists": "Artistes",
-          "playlists": "Listes de lecture"
-        },
-        "status": {
-          "cached": "En cache",
-          "fresh": "{{count}} à jour",
-          "freshStale": "{{fresh}} à jour, {{stale}} obsolètes",
-          "errors": "{{count}} erreur",
-          "errors_plural": "{{count}} erreurs"
-        },
-        "errorsTitle": "Erreurs",
-        "unknownError": "Erreur inconnue"
+        "neverSynced": "Jamais synchronisé",
+        "justNow": "À l'instant",
+        "minsAgo": "Il y a {{count}} min",
+        "minsAgo_plural": "Il y a {{count}} min",
+        "hoursAgo": "Il y a {{count}} h",
+        "hoursAgo_plural": "Il y a {{count}} h",
+        "daysAgo": "Il y a {{count}} jour",
+        "daysAgo_plural": "Il y a {{count}} jours",
+        "lastSynced": "Dernière synchro",
+        "syncOnAppStart": "Synchroniser au démarrage"
       },
       "downloads": {
         "title": "Téléchargements",
@@ -154,11 +151,6 @@
           "original": "Originale (sans compression)"
         }
       },
-      "offlineMode": {
-        "title": "Mode hors ligne",
-        "info": "Lorsqu'il est activé, l'application affiche uniquement le contenu téléchargé.",
-        "toggle": "Mode téléchargements uniquement"
-      }
     },
     "player": {
       "title": "Lecteur",
@@ -314,14 +306,24 @@
       "connectError": "Une erreur s'est produite lors de la connexion."
     }
   },
+  "library": {
+    "title": "Bibliothèque",
+    "shuffle": {
+      "all": "Tout mélanger",
+      "favorites": "Mélanger les favoris",
+      "downloaded": "Mélanger les téléchargements"
+    }
+  },
   "home": {
-    "title": "yuzic",
+    "title": "Accueil",
     "filters": {
       "all": "Tout",
       "albums": "Albums",
       "artists": "Artistes",
       "playlists": "Listes de lecture",
-      "tracks": "Pistes"
+      "tracks": "Pistes",
+      "downloaded": "Téléchargés",
+      "genres": "Genres"
     },
     "sort": {
       "alphabetical": "Alphabétique",

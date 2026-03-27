@@ -9,18 +9,22 @@ interface StatsState {
   songPlays: PlayMap;
   albumPlays: PlayMap;
   artistPlays: PlayMap;
+  playlistPlays: PlayMap;
   songLastPlayedAt: LastPlayedMap;
   albumLastPlayedAt: LastPlayedMap;
   artistLastPlayedAt: LastPlayedMap;
+  playlistLastPlayedAt: LastPlayedMap;
 }
 
 const initialState: StatsState = {
   songPlays: {},
   albumPlays: {},
   artistPlays: {},
+  playlistPlays: {},
   songLastPlayedAt: {},
   albumLastPlayedAt: {},
   artistLastPlayedAt: {},
+  playlistLastPlayedAt: {},
 };
 
 const statsSlice = createSlice({
@@ -34,9 +38,10 @@ const statsSlice = createSlice({
         songId: string;
         albumId?: string;
         artistId?: string;
+        playlistId?: string;
       }>
     ) {
-      const { serverId, songId, albumId, artistId } = action.payload;
+      const { serverId, songId, albumId, artistId, playlistId } = action.payload;
       const now = Date.now();
 
       if (songId) {
@@ -53,6 +58,11 @@ const statsSlice = createSlice({
         const k = key(serverId, artistId);
         state.artistPlays[k] = (state.artistPlays[k] ?? 0) + 1;
         state.artistLastPlayedAt[k] = now;
+      }
+      if (playlistId) {
+        const k = key(serverId, playlistId);
+        state.playlistPlays[k] = (state.playlistPlays[k] ?? 0) + 1;
+        state.playlistLastPlayedAt[k] = now;
       }
     },
   },

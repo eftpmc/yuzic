@@ -14,9 +14,12 @@ import { MediaImage } from "@/components/MediaImage";
 import SongOptions from "@/components/options/SongOptions";
 import PlaylistList from "@/components/PlaylistList";
 import { usePlaying } from "@/contexts/PlayingContext";
+import { useDownload } from "@/contexts/DownloadContext";
 import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useApi } from "@/api";
+import { useSelector } from "react-redux";
+import { selectSongsById } from "@/utils/redux/selectors/librarySelectors";
 import { toast } from "@backpackapp-io/react-native-toast";
 
 type Props = {
@@ -38,7 +41,10 @@ const TrackItem: React.FC<Props> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const api = useApi();
-  const { playSimilar } = usePlaying();
+  const { playSimilar, playSong } = usePlaying();
+  const { getLocalPath } = useDownload();
+  const songsById = useSelector(selectSongsById);
+  const cachedSong = songsById.get(song.id) ?? null;
 
   const optionsRef = useRef<BottomSheetModal>(null);
   const playlistRef = useRef<BottomSheetModal>(null);
@@ -70,7 +76,12 @@ const TrackItem: React.FC<Props> = ({
     lastPressAtRef.current = now;
     pressInFlightRef.current = true;
     try {
-      const fullSong = await getFullSongWithTimeout();
+      const localPath = getLocalPath(song.id);
+      if (localPath) {
+        await playSong({ ...song, streamUrl: localPath } as Song);
+        return;
+      }
+      const fullSong = cachedSong ?? await getFullSongWithTimeout();
       if (!fullSong) return;
       // Let press feedback/render settle before starting playback work.
       await new Promise<void>((resolve) =>
@@ -88,14 +99,18 @@ const TrackItem: React.FC<Props> = ({
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
-    try {
-      const fullSong = await api.tracks.get(song.id);
-      if (!fullSong) return;
-      setSelectedSong(fullSong);
+    // Show sheet immediately — use cached Redux data if available, else base data
+    setSelectedSong(cachedSong ?? (song as unknown as Song));
+    requestAnimationFrame(() => {
       optionsRef.current?.present();
+    });
+    try {
+      if (!cachedSong) {
+        const fullSong = await api.tracks.get(song.id);
+        if (fullSong) setSelectedSong(fullSong);
+      }
     } catch (error) {
-      console.warn("Failed to open track options", error);
-      toast.error("Unable to open track options");
+      console.warn("Failed to fetch full track data", error);
     } finally {
       longPressInFlightRef.current = false;
     }
@@ -197,11 +212,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
     alignItems: "flex-start",
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 4,

@@ -1,16 +1,13 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import { Song } from '@/types';
-import { useApi } from '@/api';
+import { Song, SongBase } from '@/types';
 import { useTracks } from '@/hooks/tracks';
 import shuffleArray from '@/utils/shuffleArray';
 import {
   selectSongLastPlayedAt,
   selectSongPlayCounts,
 } from '@/utils/redux/selectors/statsSelectors';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { QueryKeys } from '@/enums/queryKeys';
+import { useLibrary } from '@/contexts/LibraryContext';
 
 const MAX_RECENT = 12;
 const MIN_DIAL_SONGS = 6;
@@ -21,11 +18,27 @@ type UseRecentSongsResult = {
 };
 
 export function useRecentSongs(): UseRecentSongsResult {
-  const api = useApi();
   const { tracks } = useTracks();
+  const { albums: libraryAlbums } = useLibrary();
   const songLastPlayedAt = useSelector(selectSongLastPlayedAt);
   const songPlayCounts = useSelector(selectSongPlayCounts);
-  const activeServer = useSelector(selectActiveServer);
+
+  const librarySongMap = useMemo(() => {
+    const map = new Map<string, Song>();
+    // Prefer full Song objects from albums (have streamUrl)
+    for (const album of libraryAlbums) {
+      for (const song of album.songs ?? []) {
+        map.set(song.id, song);
+      }
+    }
+    // Fall back to SongBase from tracks for any IDs not covered by albums
+    for (const track of tracks) {
+      if (!map.has(track.id)) {
+        map.set(track.id, track as unknown as Song);
+      }
+    }
+    return map;
+  }, [libraryAlbums, tracks]);
 
   const songIds = useMemo(() => {
     const recentIds = Object.entries(songLastPlayedAt)
@@ -65,26 +78,11 @@ export function useRecentSongs(): UseRecentSongsResult {
     return merged.slice(0, MAX_RECENT);
   }, [songLastPlayedAt, songPlayCounts, tracks]);
 
-  const query = useQuery<Song[]>({
-    queryKey: [QueryKeys.RecentSongs, activeServer?.id, songIds],
-    queryFn: async () => {
-      const results = await Promise.allSettled(
-        songIds.map((id) => api.songs.get(id))
-      );
-      const songs: Song[] = [];
-      for (let i = 0; i < songIds.length; i++) {
-        const r = results[i];
-        if (r.status === 'fulfilled' && r.value) {
-          songs.push(r.value);
-        }
-      }
-      return songs;
-    },
-    enabled: !!activeServer?.id && songIds.length > 0,
-  });
+  const songs = useMemo(() => {
+    return songIds
+      .map(id => librarySongMap.get(id))
+      .filter((s): s is Song => !!s);
+  }, [songIds, librarySongMap]);
 
-  return {
-    songs: query.data ?? [],
-    isLoading: query.isLoading,
-  };
+  return { songs, isLoading: false };
 }

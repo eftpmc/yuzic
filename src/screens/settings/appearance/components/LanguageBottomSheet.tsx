@@ -13,6 +13,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -34,6 +35,8 @@ const LanguageBottomSheet = forwardRef<
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
       backgroundStyle={{
         backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
       }}
@@ -87,7 +90,7 @@ const LanguageBottomSheet = forwardRef<
                     { fontWeight: isSelected ? '600' : '400' },
                   ]}
                 >
-                  {lang.nativeName}
+                  {t(lang.translationKey)}
                 </Text>
               </View>
 

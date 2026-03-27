@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,11 @@ import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useDownload } from '@/contexts/DownloadContext';
-import {
-  useDownloadStorage,
-} from 'react-native-nitro-player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { Paths } from 'expo-file-system';
+import { formatBytes } from '@/utils/downloads/downloadStore';
 
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
@@ -25,11 +24,20 @@ const Downloads: React.FC = () => {
 
   const {
     clearAllDownloads,
+    totalDownloadedBytes,
+    downloadedTrackCount,
+    downloadStateVersion,
   } = useDownload();
 
-  const { storageInfo, formattedSize, formattedAvailable } = useDownloadStorage();
+  const [freeBytes, setFreeBytes] = useState<number | null>(null);
 
-  const trackCount = storageInfo?.trackCount ?? 0;
+  useEffect(() => {
+    setFreeBytes(Paths.availableDiskSpace);
+  }, [downloadStateVersion]);
+
+  const formattedSize = formatBytes(totalDownloadedBytes);
+  const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
+  const trackCount = downloadedTrackCount;
 
   const handleClearDownloads = useCallback(() => {
     Alert.alert(

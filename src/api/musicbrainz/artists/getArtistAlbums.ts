@@ -68,7 +68,8 @@ function scoreReleaseGroup(rg: any): number {
 
 const normalizeReleaseGroup = (
   rg: any,
-  artistName: string
+  artistName: string,
+  artistMbid: string
 ): ExternalAlbumBase => {
   const releaseDate = rg['first-release-date']
 
@@ -76,6 +77,7 @@ const normalizeReleaseGroup = (
     id: rg.id,
     title: rg.title,
     artist: artistName,
+    artistMbid,
     subtext: artistName,
     cover: {
       kind: 'musicbrainz',
@@ -122,7 +124,7 @@ export async function getArtistAlbums(
 
     return filtered
       .slice(0, limit)
-      .map(rg => normalizeReleaseGroup(rg, artistName))
+      .map(rg => normalizeReleaseGroup(rg, artistName, artistMbid))
   } catch (err) {
     console.warn(
       `MusicBrainz getArtistAlbums failed for ${artistMbid}`,

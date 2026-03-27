@@ -1,22 +1,19 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import { useApi } from '@/api';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { CoverSource, Artist } from '@/types';
-import { QueryKeys } from '@/enums/queryKeys';
+import { CoverSource } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
+import { useArtists } from '@/hooks/artists';
 
 interface ItemProps {
   id: string;
@@ -39,31 +36,18 @@ const ArtistItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const queryClient = useQueryClient();
-  const api = useApi();
-  const activeServer = useSelector(selectActiveServer);
+  const { artists } = useArtists();
+  const artist = artists.find(a => a.id === id) ?? null;
 
   const sheetRef = useRef<BottomSheetModal>(null);
-  const [artistForSheet, setArtistForSheet] = useState<Artist | null>(null);
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('artistView', { id });
   }, [navigation, id]);
 
-  const fetchArtist = useCallback(async () => {
-    return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Artist, activeServer?.id, id],
-      queryFn: () => api.artists.get(id),
-      staleTime: staleTime.artists,
-    });
-  }, [api, queryClient, activeServer?.id, id]);
-
-  const handleLongPress = useCallback(async () => {
-    const artist = await fetchArtist();
-    if (!artist) return;
-    setArtistForSheet(artist);
+  const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
-  }, [fetchArtist]);
+  }, []);
 
   return (
     <>
@@ -102,11 +86,24 @@ const ArtistItem: React.FC<ItemProps> = ({
             {subtext}
           </Text>
         </View>
+
+        {!isGridView && (
+          <TouchableOpacity
+            onPress={() => { void handleLongPress(); }}
+            hitSlop={10}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+        )}
       </Pressable>
 
       <ArtistOptions
         ref={sheetRef}
-        artist={artistForSheet}
+        artist={artist}
         hideGoToArtist={false}
       />
     </>
@@ -121,11 +118,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   gridItemContainer: {
     alignItems: 'flex-start',
-    borderRadius: 14,
+    borderRadius: 8,
   },
   gridTextContainer: {
     marginTop: 4,
@@ -133,6 +130,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 16,

@@ -24,12 +24,16 @@ export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
             cover: song.cover,
             duration: song.duration,
             albumId: song.albumId,
+            year: song.dateReleased ? parseInt(song.dateReleased, 10) : undefined,
+            dateAdded: song.dateAdded,
           });
         }
       }
     }
 
-    return [...deduped.values()];
+    const result: SongBase[] = [];
+    deduped.forEach(v => result.push(v));
+    return result;
   } catch (error) {
     console.error("Failed to fetch Navidrome tracks:", error);
     return [];

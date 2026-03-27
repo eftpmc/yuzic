@@ -9,6 +9,8 @@ export interface SongBase {
     cover: CoverSource;
     duration: string;
     albumId: string;
+    year?: number;
+    dateAdded?: string;
 }
 
 export interface Song extends SongBase {

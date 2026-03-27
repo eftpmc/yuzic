@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -7,7 +7,7 @@ import {
     StyleSheet,
     ActivityIndicator,
 } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -15,9 +15,9 @@ import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
-import { ServerType } from '@/types';
+import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
-import type { NavidromeLibrary } from '@/api/types';
+import { useEffect } from 'react';
 
 export default function Credentials() {
     const { t } = useTranslation();
@@ -34,15 +34,19 @@ export default function Credentials() {
     const [localUsername, setLocalUsername] = useState('');
     const [localPassword, setLocalPassword] = useState('');
     const [isTesting, setIsTesting] = useState(false);
-    const [pendingAuth, setPendingAuth] = useState<ProviderAuth | null>(null);
-    const [availableLibraries, setAvailableLibraries] = useState<NavidromeLibrary[]>([]);
-    const [selectedLibraryId, setSelectedLibraryId] = useState('');
+
+    const [proxyExpanded, setProxyExpanded] = useState(false);
+    const [proxyUsername, setProxyUsername] = useState('');
+    const [proxyPassword, setProxyPassword] = useState('');
 
     const passwordRef = useRef<TextInput>(null);
-    const isSelectingLibrary =
-        type === 'navidrome' &&
-        !!pendingAuth &&
-        availableLibraries.length > 0;
+    const proxyUsernameRef = useRef<TextInput>(null);
+    const proxyPasswordRef = useRef<TextInput>(null);
+
+    const insecureWithProxy =
+        proxyUsername.trim().length > 0 &&
+        typeof serverUrl === 'string' &&
+        serverUrl.startsWith('http://');
 
     useEffect(() => {
         if (!type || !serverUrl) {
@@ -50,10 +54,10 @@ export default function Credentials() {
         }
     }, [type, serverUrl]);
 
-    const resetLibrarySelection = () => {
-        setPendingAuth(null);
-        setAvailableLibraries([]);
-        setSelectedLibraryId('');
+    const buildBasicAuth = (): BasicAuth | undefined => {
+        const u = proxyUsername.trim();
+        const p = proxyPassword.trim();
+        return u && p ? { username: u, password: p } : undefined;
     };
 
     const saveServer = (auth: ProviderAuth) => {
@@ -65,27 +69,16 @@ export default function Credentials() {
                 serverUrl,
                 username: localUsername,
                 auth,
+                basicAuth: buildBasicAuth(),
                 isAuthenticated: true,
             })
         );
         dispatch(setActiveServer(id));
-        router.replace('/(home)');
+        router.push(`/(onboarding)/libraries?serverId=${id}`);
     };
 
     const handleNext = async () => {
         if (!type || !serverUrl) return;
-
-        if (isSelectingLibrary) {
-            if (!selectedLibraryId || !pendingAuth) {
-                toast.error(t('onboarding.credentials.selectLibraryRequired'));
-                return;
-            }
-            saveServer({
-                ...pendingAuth,
-                musicFolderId: selectedLibraryId,
-            });
-            return;
-        }
 
         if (!localUsername || !localPassword) {
             toast.error(t('onboarding.credentials.missingCredentials'));
@@ -93,13 +86,15 @@ export default function Credentials() {
         }
 
         const provider = SERVER_PROVIDERS[type];
+        const basicAuth = buildBasicAuth();
         setIsTesting(true);
 
         try {
             const result = await provider.connect(
                 serverUrl,
                 localUsername,
-                localPassword
+                localPassword,
+                basicAuth
             );
 
             if (!result.success || !result.auth) {
@@ -107,17 +102,10 @@ export default function Credentials() {
                 return;
             }
 
-            const pingOk = await provider.ping(serverUrl, localUsername, result.auth);
+            const pingOk = await provider.ping(serverUrl, localUsername, result.auth, basicAuth);
 
             if (!pingOk) {
                 toast.error(t('onboarding.credentials.apiNotResponding'));
-                return;
-            }
-
-            if (type === 'navidrome' && result.libraries?.length) {
-                setPendingAuth(result.auth);
-                setAvailableLibraries(result.libraries);
-                setSelectedLibraryId(result.libraries[0].id);
                 return;
             }
 
@@ -130,10 +118,6 @@ export default function Credentials() {
     };
 
     const handleBack = () => {
-        if (isSelectingLibrary) {
-            resetLibrarySelection();
-            return;
-        }
         router.back();
     };
 
@@ -141,80 +125,104 @@ export default function Credentials() {
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
                 <View style={styles.mainContent}>
-                    {isSelectingLibrary ? (
-                        <>
-                            <Text style={styles.title}>{t('onboarding.credentials.libraryTitle')}</Text>
-                            <Text style={styles.subtitle}>
-                                {t('onboarding.credentials.librarySubtitle')}
-                            </Text>
+                    <Text style={styles.title}>{t('onboarding.credentials.title')}</Text>
 
-                            <View style={styles.libraryList}>
-                                {availableLibraries.map(library => {
-                                    const isSelected = selectedLibraryId === library.id;
-                                    return (
-                                        <TouchableOpacity
-                                            key={library.id}
-                                            style={[
-                                                styles.libraryOption,
-                                                isSelected && styles.libraryOptionSelected,
-                                            ]}
-                                            onPress={() => setSelectedLibraryId(library.id)}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.libraryOptionText,
-                                                    isSelected && styles.libraryOptionTextSelected,
-                                                ]}
-                                                numberOfLines={1}
-                                            >
-                                                {library.name}
-                                            </Text>
-                                            {isSelected && (
-                                                <AntDesign name="check" size={16} color="#000" />
-                                            )}
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </View>
-                        </>
-                    ) : (
-                        <>
-                            <Text style={styles.title}>{t('onboarding.credentials.title')}</Text>
+                    <Text style={styles.subtitle}>
+                        {t('onboarding.credentials.subtitle')}
+                    </Text>
 
-                            <Text style={styles.subtitle}>
-                                {t('onboarding.credentials.subtitle')}
-                            </Text>
+                    <View style={styles.inputWrapper}>
+                        <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t('onboarding.credentials.usernamePlaceholder')}
+                            placeholderTextColor="#888"
+                            value={localUsername}
+                            onChangeText={setLocalUsername}
+                            autoCapitalize="none"
+                            returnKeyType="next"
+                            onSubmitEditing={() => passwordRef.current?.focus()}
+                        />
+                    </View>
+
+                    <View style={styles.inputWrapper}>
+                        <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
+                        <TextInput
+                            ref={passwordRef}
+                            style={styles.input}
+                            placeholder={t('onboarding.credentials.passwordPlaceholder')}
+                            placeholderTextColor="#888"
+                            secureTextEntry
+                            value={localPassword}
+                            onChangeText={setLocalPassword}
+                            autoCapitalize="none"
+                            returnKeyType="done"
+                            onSubmitEditing={handleNext}
+                        />
+                    </View>
+
+                    {/* Reverse proxy auth */}
+                    <TouchableOpacity
+                        style={styles.proxyToggle}
+                        onPress={() => setProxyExpanded(v => !v)}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons
+                            name="shield-outline"
+                            size={16}
+                            color="#666"
+                            style={styles.proxyToggleIcon}
+                        />
+                        <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
+                        <Ionicons
+                            name={proxyExpanded ? 'chevron-up' : 'chevron-down'}
+                            size={16}
+                            color="#666"
+                        />
+                    </TouchableOpacity>
+
+                    {proxyExpanded && (
+                        <View style={styles.proxySection}>
+                            {insecureWithProxy && (
+                                <View style={styles.warningRow}>
+                                    <Ionicons name="warning-outline" size={15} color="#f59e0b" />
+                                    <Text style={styles.warningText}>
+                                        Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
+                                    </Text>
+                                </View>
+                            )}
 
                             <View style={styles.inputWrapper}>
-                                <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
+                                <AntDesign name="user" size={20} color="#555" style={styles.inputIcon} />
                                 <TextInput
+                                    ref={proxyUsernameRef}
                                     style={styles.input}
-                                    placeholder={t('onboarding.credentials.usernamePlaceholder')}
-                                    placeholderTextColor="#888"
-                                    value={localUsername}
-                                    onChangeText={setLocalUsername}
+                                    placeholder="Proxy username"
+                                    placeholderTextColor="#555"
+                                    value={proxyUsername}
+                                    onChangeText={setProxyUsername}
                                     autoCapitalize="none"
                                     returnKeyType="next"
-                                    onSubmitEditing={() => passwordRef.current?.focus()}
+                                    onSubmitEditing={() => proxyPasswordRef.current?.focus()}
                                 />
                             </View>
 
                             <View style={styles.inputWrapper}>
-                                <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
+                                <AntDesign name="lock" size={20} color="#555" style={styles.inputIcon} />
                                 <TextInput
-                                    ref={passwordRef}
+                                    ref={proxyPasswordRef}
                                     style={styles.input}
-                                    placeholder={t('onboarding.credentials.passwordPlaceholder')}
-                                    placeholderTextColor="#888"
+                                    placeholder="Proxy password"
+                                    placeholderTextColor="#555"
                                     secureTextEntry
-                                    value={localPassword}
-                                    onChangeText={setLocalPassword}
+                                    value={proxyPassword}
+                                    onChangeText={setProxyPassword}
                                     autoCapitalize="none"
                                     returnKeyType="done"
                                     onSubmitEditing={handleNext}
                                 />
                             </View>
-                        </>
+                        </View>
                     )}
                 </View>
 
@@ -227,11 +235,7 @@ export default function Credentials() {
                         {isTesting ? (
                             <ActivityIndicator size="small" color="#000" />
                         ) : (
-                            <Text style={styles.nextButtonText}>
-                                {isSelectingLibrary
-                                    ? t('onboarding.credentials.confirmLibrary')
-                                    : t('common.done')}
-                            </Text>
+                            <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                         )}
                     </TouchableOpacity>
 
@@ -292,33 +296,41 @@ const styles = StyleSheet.create({
         color: '#888',
         marginBottom: 20,
     },
-    libraryList: {
-        gap: 10,
-    },
-    libraryOption: {
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#555',
-        backgroundColor: '#222',
-        paddingVertical: 12,
-        paddingHorizontal: 14,
+    proxyToggle: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginBottom: 4,
     },
-    libraryOptionSelected: {
-        borderColor: '#fff',
-        backgroundColor: '#fff',
+    proxyToggleIcon: {
+        marginRight: 7,
     },
-    libraryOptionText: {
-        color: '#fff',
-        fontSize: 15,
+    proxyToggleText: {
         flex: 1,
-        paddingRight: 10,
+        fontSize: 14,
+        color: '#666',
     },
-    libraryOptionTextSelected: {
-        color: '#000',
-        fontWeight: '600',
+    proxySection: {
+        marginTop: 4,
+        marginBottom: 8,
+    },
+    warningRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#1c1400',
+        borderWidth: 1,
+        borderColor: '#78450a',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 14,
+        gap: 8,
+    },
+    warningText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#f59e0b',
+        lineHeight: 18,
     },
     nextButton: {
         backgroundColor: '#fff',

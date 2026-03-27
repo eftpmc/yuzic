@@ -15,7 +15,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Loader2 } from 'lucide-react-native';
+import { CheckCircle, Loader2, XCircle } from 'lucide-react-native';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import Header from '../components/Header';
@@ -46,9 +47,7 @@ const LidarrView: React.FC = () => {
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
   const activeServer = useSelector(selectActiveServer);
-
-  if (!activeServer) return null;
-  const serverId = activeServer.id;
+  const serverId = activeServer?.id ?? '';
 
   const serverUrl = useSelector(selectLidarrServerUrl);
   const apiKey = useSelector(selectLidarrApiKey);
@@ -247,6 +246,8 @@ const LidarrView: React.FC = () => {
     );
   };
 
+  if (!activeServer) return null;
+
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
       <Header title={t('settings.downloaders.lidarr.title')} />
@@ -282,15 +283,11 @@ const LidarrView: React.FC = () => {
             </Text>
 
             {isLoading ? (
-              <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <Loader2 size={20} color={themeColor} />
-              </Animated.View>
+              <SpinningLoaderCircle size={20} color={themeColor} />
+            ) : isAuthenticated ? (
+              <CheckCircle size={20} color={themeColor} />
             ) : (
-              <MaterialIcons
-                name={isAuthenticated ? 'check-circle' : 'cancel'}
-                size={20}
-                color={isAuthenticated ? 'green' : 'red'}
-              />
+              <XCircle size={20} color="red" />
             )}
           </View>
         </View>

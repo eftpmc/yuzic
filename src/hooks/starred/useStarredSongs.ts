@@ -5,6 +5,7 @@ import { Song } from '@/types';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useLibrary } from '@/contexts/LibraryContext';
 
 type UseStarredSongsResult = {
   songs: Song[];
@@ -15,6 +16,7 @@ type UseStarredSongsResult = {
 export function useStarredSongs(): UseStarredSongsResult {
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
+  const { starred: libraryStarred } = useLibrary();
 
   const query = useQuery<{ songs: Song[] }, Error>({
     queryKey: [QueryKeys.Starred, activeServer?.id],
@@ -24,8 +26,8 @@ export function useStarredSongs(): UseStarredSongsResult {
   });
 
   return {
-    songs: query.data?.songs ?? [],
-    isLoading: query.isLoading,
+    songs: query.data?.songs ?? libraryStarred,
+    isLoading: query.isLoading && libraryStarred.length === 0,
     error: query.error ?? null,
   };
 }

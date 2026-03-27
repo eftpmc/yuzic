@@ -41,7 +41,7 @@ export default function Settings() {
             style={[styles.container, isDarkMode && styles.containerDark]}
         >
             <View style={[styles.headerContainer, isDarkMode && styles.headerContainerDark]}>
-                <TouchableOpacity onPress={() => router.back()}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
                     <Ionicons
                         name="chevron-back"
                         size={24}
@@ -55,7 +55,7 @@ export default function Settings() {
                     </Text>
                 </View>
 
-                <View style={{ width: 24 }} />
+                <View style={styles.headerButton} />
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -135,9 +135,11 @@ export default function Settings() {
                     {renderLinkRow(t('settings.rows.privacyPolicy'), 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     {renderDivider()}
                     {renderLinkRow(t('settings.rows.termsOfUse'), 'https://eftpmc.github.io/yuzic-web/tos/')}
-                    {renderDivider()}
-                    {renderStaticRow(t('settings.rows.version'), appVersion)}
                 </View>
+
+                <Text style={[styles.versionText, isDarkMode && styles.versionTextDark]}>
+                    Yuzic {appVersion}
+                </Text>
             </ScrollView>
         </SafeAreaView>
     );
@@ -227,6 +229,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         borderBottomColor: '#1C1C1E',
     },
+    headerButton: {
+        padding: 6,
+    },
     headerTitle: {
         fontSize: 18,
         fontWeight: '700',
@@ -239,7 +244,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 16,
         paddingVertical: 24,
-        paddingBottom: 150,
+        paddingBottom: 120,
     },
 
     sectionTitle: {
@@ -347,5 +352,16 @@ const styles = StyleSheet.create({
     },
     profileSubtextDark: {
         color: '#aaa',
+    },
+
+    versionText: {
+        textAlign: 'center',
+        marginTop: 40,
+        marginBottom: 60,
+        fontSize: 13,
+        color: '#aaa',
+    },
+    versionTextDark: {
+        color: '#555',
     },
 });

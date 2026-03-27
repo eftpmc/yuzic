@@ -9,13 +9,11 @@ import { useTranslation } from 'react-i18next';
 
 const H_PADDING = 12;
 const GAP = 12;
-const ITEM_MARGIN = 4;
-const VISIBLE_ITEMS = 2.08; // 2 full + sliver of third
+const VISIBLE_ITEMS = 2.5;
 
 const getItemWidth = (width: number) => {
   const availableWidth = width - H_PADDING * 2;
-  const slotWidth = (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
-  return slotWidth - ITEM_MARGIN * 2;
+  return (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
 };
 
 export default function FavoriteAlbums() {
@@ -25,7 +23,6 @@ export default function FavoriteAlbums() {
   const { albums } = useAlbums();
   const { songs: starredSongs } = useStarredSongs();
   const gridItemWidth = getItemWidth(width);
-  const slotWidth = gridItemWidth + ITEM_MARGIN * 2;
 
   const favoriteAlbums = useMemo(() => {
     const albumFavoriteCount = new Map<string, number>();
@@ -63,7 +60,7 @@ export default function FavoriteAlbums() {
         contentContainerStyle={styles.scrollContent}
       >
         {favoriteAlbums.map((album) => (
-          <View key={album.id} style={[styles.item, { width: slotWidth }]}>
+          <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
             <AlbumItem
               id={album.id}
               title={album.title}
@@ -71,6 +68,7 @@ export default function FavoriteAlbums() {
               cover={album.cover}
               isGridView
               gridWidth={gridItemWidth}
+              gridSpacing={0}
             />
           </View>
         ))}

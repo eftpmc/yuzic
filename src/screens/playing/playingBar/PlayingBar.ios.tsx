@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { BlurView } from 'expo-blur';
-import { useOnPlaybackProgressChange } from 'react-native-nitro-player';
+import { useProgress } from 'react-native-track-player';
 import { BottomSheetModal, useBottomSheetTimingConfigs } from '@gorhom/bottom-sheet';
 import { useSelector } from 'react-redux';
 import { Easing, useSharedValue } from 'react-native-reanimated';
@@ -94,7 +94,7 @@ const PlayingBar: React.FC = () => {
         if (uri) extractColors(uri);
     }, [currentSong?.id]);
 
-    const { position: progressPosition } = useOnPlaybackProgressChange();
+    const { position: progressPosition } = useProgress();
     const position = appState === 'active' ? (progressPosition ?? 0) : 0;
     const duration = currentSong ? Number(currentSong.duration) : 1;
     const progress = duration > 0 ? position / duration : 0;
@@ -133,12 +133,13 @@ const PlayingBar: React.FC = () => {
                                         style={styles.coverArt}
                                     />
                                 ) : (
-                                    <Ionicons
-                                        name="musical-notes"
-                                        size={40}
-                                        style={styles.coverArt}
-                                        color={isDarkMode ? '#fff' : '#333'}
-                                    />
+                                    <View style={[styles.coverArt, styles.iconPlaceholder]}>
+                                        <Ionicons
+                                            name="musical-notes"
+                                            size={32}
+                                            color={isDarkMode ? '#fff' : '#333'}
+                                        />
+                                    </View>
                                 )}
 
                                 <View style={styles.details}>
@@ -266,8 +267,9 @@ const PlayingBar: React.FC = () => {
 
 const styles = StyleSheet.create({
     wrapper: {
-        margin: 12,
-        marginBottom: 24,
+        marginHorizontal: 12,
+        marginTop: 12,
+        marginBottom: 0,
         borderRadius: 14,
         overflow: 'hidden',
         shadowColor: '#000',
@@ -276,36 +278,36 @@ const styles = StyleSheet.create({
     },
     container: {
         flexDirection: 'column',
-        padding: 10,
-        paddingBottom: 6,
-        paddingHorizontal: 16,
+        padding: 8,
+        paddingBottom: 0,
+        paddingHorizontal: 12,
         borderRadius: 14,
     },
     topRowWrapper: {
-        height: 50,
+        height: 40,
         justifyContent: 'center',
     },
     topRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        minHeight: 50,
+        minHeight: 40,
         paddingRight: 4,
     },
     coverArt: {
-        width: 45,
-        height: 45,
+        width: 42,
+        height: 42,
         borderRadius: 5,
-        marginRight: 12,
+        marginRight: 10,
     },
     details: {
         flex: 1,
     },
     title: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '600',
     },
     artist: {
-        fontSize: 14,
+        fontSize: 13,
         marginTop: 2,
     },
     textLight: {
@@ -320,12 +322,16 @@ const styles = StyleSheet.create({
     textDarkSecondary: {
         color: '#aaa',
     },
+    iconPlaceholder: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     progressBarContainer: {
-        height: 4,
+        height: 3,
         backgroundColor: '#666',
         borderRadius: 2,
         overflow: 'hidden',
-        marginTop: 8,
+        marginTop: 6,
     },
     progressBar: {
         height: '100%',
@@ -337,9 +343,9 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     fabButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         marginLeft: 12,
         justifyContent: 'center',
         alignItems: 'center',

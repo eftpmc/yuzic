@@ -2,13 +2,14 @@ import React, {
   createContext,
   useContext,
   useState,
+  useMemo,
   ReactNode,
   useRef,
 } from 'react';
 import {
-  AlbumBase,
-  ArtistBase,
-  PlaylistBase,
+  Album,
+  Artist,
+  Playlist,
   CoverSource,
   ExternalAlbumBase,
   Song,
@@ -19,15 +20,14 @@ import * as musicbrainz from '@/api/musicbrainz';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
-import { useFullPlaylists } from '@/hooks/playlists';
+
 import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
 import { useSelector } from 'react-redux';
 import {
-  selectOfflineModeEnabled,
   selectSearchScope,
 } from '@/utils/redux/selectors/settingsSelectors';
-import { useDownloadedTracks } from 'react-native-nitro-player';
+import { useDownload } from '@/contexts/DownloadContext';
 import {
   buildDownloadedTrackIdSet,
   getFullyDownloadedAlbumIds,
@@ -58,6 +58,67 @@ export interface SearchResult {
   song?: Song;
 }
 
+// --- result mapping helpers ---
+
+function albumToResult(
+  album: { id: string; title: string; subtext: string; cover: CoverSource },
+  source: SearchResult['source'],
+  isDownloaded: boolean
+): SearchResult {
+  return {
+    id: album.id,
+    title: album.title,
+    subtext: album.subtext,
+    cover: album.cover,
+    type: 'album',
+    source,
+    isDownloaded,
+  };
+}
+
+function artistToResult(artist: Artist, isDownloaded = true): SearchResult {
+  return {
+    id: artist.id,
+    title: artist.name,
+    subtext: artist.subtext,
+    cover: artist.cover,
+    type: 'artist',
+    source: 'local',
+    isDownloaded,
+  };
+}
+
+function songToResult(
+  song: { id: string; title: string; artist: string; cover: CoverSource },
+  isDownloaded: boolean,
+  fullSong?: Song
+): SearchResult {
+  return {
+    id: song.id,
+    title: song.title,
+    subtext: song.artist,
+    cover: song.cover,
+    type: 'song',
+    source: 'local',
+    isDownloaded,
+    ...(fullSong ? { song: fullSong } : {}),
+  };
+}
+
+function playlistToResult(playlist: Playlist, isDownloaded: boolean): SearchResult {
+  return {
+    id: playlist.id,
+    title: playlist.title,
+    subtext: playlist.subtext,
+    cover: playlist.cover,
+    type: 'playlist',
+    source: 'local',
+    isDownloaded,
+  };
+}
+
+// ---
+
 const SearchContext = createContext<SearchContextType | undefined>(
   undefined
 );
@@ -79,26 +140,38 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const { albums } = useAlbums();
   const { artists } = useArtists();
   const { playlists } = usePlaylists();
-  const { playlists: fullPlaylists } = useFullPlaylists(playlists);
   const { tracks } = useTracks();
-  const downloadedState = useDownloadedTracks() as any;
-  const downloadedTrackIds = buildDownloadedTrackIdSet(
-    ((downloadedState?.downloadedTracks ?? []) as any[])
-      .map(track => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
-      .filter(track => track.id)
-  );
-  const downloadedAlbumIds = getFullyDownloadedAlbumIds(
-    tracks.map(track => ({ id: track.id, albumId: track.albumId })),
-    downloadedTrackIds
-  );
-  const downloadedPlaylistIds = new Set(
-    fullPlaylists
-      .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
-      .map(playlist => playlist.id)
-  );
 
   const searchScope = useSelector(selectSearchScope);
-  const offlineModeEnabled = useSelector(selectOfflineModeEnabled);
+
+  const { getAllDownloadedTracks, downloadStateVersion } = useDownload();
+
+  const downloadedTrackIds = useMemo(
+    () => buildDownloadedTrackIdSet(
+      (getAllDownloadedTracks() as any[])
+        .map((track: any) => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
+        .filter((track: any) => track.id)
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [downloadStateVersion]
+  );
+
+  const downloadedAlbumIds = useMemo(
+    () => getFullyDownloadedAlbumIds(
+      tracks.map(track => ({ id: track.id, albumId: track.albumId })),
+      downloadedTrackIds
+    ),
+    [tracks, downloadedTrackIds]
+  );
+
+  const downloadedPlaylistIds = useMemo(
+    () => new Set(
+      playlists
+        .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
+        .map(playlist => playlist.id)
+    ),
+    [playlists, downloadedTrackIds]
+  );
 
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
@@ -111,60 +184,31 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   ): Promise<SearchResult[]> => {
     const lowerQuery = query.toLowerCase();
 
-    const albumResults: SearchResult[] = albums
-      .filter(a =>
-        a.title.toLowerCase().includes(lowerQuery)
-      )
-      .map((album: AlbumBase) => ({
-        ...album,
-        type: 'album',
-        source: 'local',
-        isDownloaded: downloadedAlbumIds.has(album.id),
-      }));
+    const albumResults = albums
+      .filter(a => a.title.toLowerCase().includes(lowerQuery))
+      .map((album: Album) =>
+        albumToResult(album, 'local', downloadedAlbumIds.has(album.id))
+      );
 
-    const artistResults: SearchResult[] = artists
-      .filter(a =>
-        a.name.toLowerCase().includes(lowerQuery)
-      )
-      .map((artist: ArtistBase) => ({
-        id: artist.id,
-        title: artist.name,
-        subtext: artist.subtext,
-        cover: artist.cover,
-        type: 'artist',
-        source: 'local',
-        isDownloaded: true,
-      }));
+    const artistResults = artists
+      .filter(a => a.name.toLowerCase().includes(lowerQuery))
+      .map((artist: Artist) => artistToResult(artist));
 
-    const playlistResults: SearchResult[] = playlists
-      .filter(p =>
-        p.title.toLowerCase().includes(lowerQuery)
-      )
-      .map((playlist: PlaylistBase) => ({
-        ...playlist,
-        type: 'playlist',
-        source: 'local',
-        isDownloaded: downloadedPlaylistIds.has(playlist.id),
-      }));
+    const playlistResults = playlists
+      .filter(p => p.title.toLowerCase().includes(lowerQuery))
+      .map((playlist: Playlist) =>
+        playlistToResult(playlist, downloadedPlaylistIds.has(playlist.id))
+      );
 
-    const songResults: SearchResult[] = tracks
+    const songResults = tracks
       .filter(track => {
         const title = track.title.toLowerCase();
         const artist = (track.artist ?? '').toLowerCase();
-        return (
-          title.includes(lowerQuery) ||
-          artist.includes(lowerQuery)
-        );
+        return title.includes(lowerQuery) || artist.includes(lowerQuery);
       })
-      .map((track: SongBase) => ({
-        id: track.id,
-        title: track.title,
-        subtext: track.artist,
-        cover: track.cover,
-        type: 'song',
-        source: 'local',
-        isDownloaded: downloadedTrackIds.has(track.id),
-      }));
+      .map((track: SongBase) =>
+        songToResult(track, downloadedTrackIds.has(track.id))
+      );
 
     return [
       ...songResults,
@@ -182,44 +226,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     const { albums = [], artists = [], songs = [] } =
       await api.search.search(query);
 
-    const albumResults: SearchResult[] = albums.map(
-      (album: AlbumBase) => ({
-        id: album.id,
-        title: album.title,
-        subtext: album.subtext,
-        cover: album.cover,
-        type: 'album',
-        source: 'local',
-        isDownloaded: true,
-      })
-    );
-
-    const artistResults: SearchResult[] = artists.map(
-      (artist: ArtistBase) => ({
-        id: artist.id,
-        title: artist.name,
-        subtext: artist.subtext,
-        cover: artist.cover,
-        type: 'artist',
-        source: 'local',
-        isDownloaded: true,
-      })
-    );
-
-    const songResults: SearchResult[] = songs.map(
-      (song: Song) => ({
-        id: song.id,
-        title: song.title,
-        subtext: song.artist,
-        cover: song.cover,
-        type: 'song',
-        source: 'local',
-        isDownloaded: true,
-        song,
-      })
-    );
-
-    return [...songResults, ...albumResults, ...artistResults];
+    return [
+      ...songs.map((song: Song) => songToResult(song, true, song)),
+      ...albums.map((album: Album) => albumToResult(album, 'local', true)),
+      ...artists.map((artist: Artist) => artistToResult(artist)),
+    ];
   };
 
   const searchExternal = async (
@@ -231,15 +242,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       const results: ExternalAlbumBase[] =
         await musicbrainz.searchAlbums(query);
 
-      return results.map(album => ({
-        id: album.id,
-        title: album.title,
-        subtext: album.subtext,
-        cover: album.cover,
-        type: 'album',
-        source: 'external',
-        isDownloaded: false,
-      }));
+      return results.map(album => albumToResult(album, 'external', false));
     } catch {
       return [];
     }
@@ -260,37 +263,24 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
     try {
       const lowerQuery = query.toLowerCase();
-
       const results: SearchResult[] = [];
 
-      if (offlineModeEnabled) {
-        const localResults = await searchLibrary(query);
-        results.push(
-          ...localResults.filter(result =>
-            result.type === 'artist' ? true : result.isDownloaded
-          )
-        );
-      } else if (searchScope === 'client') {
+      if (searchScope.includes('client')) {
         results.push(...await searchLibrary(query));
       }
+      // Early exit if a newer search has started
+      if (requestId !== searchRequestIdRef.current) return;
 
-      if (!offlineModeEnabled && searchScope === 'client+external') {
-        results.push(
-          ...await searchLibrary(query),
-          ...await searchExternal(query)
-        );
-      }
-
-      if (!offlineModeEnabled && searchScope === 'server') {
+      if (searchScope.includes('server')) {
         results.push(...await searchServer(query));
       }
+      if (requestId !== searchRequestIdRef.current) return;
 
-      if (!offlineModeEnabled && searchScope === 'server+external') {
-        results.push(
-          ...await searchServer(query),
-          ...await searchExternal(query)
-        );
+      if (searchScope.includes('external')) {
+        results.push(...await searchExternal(query));
       }
+      if (requestId !== searchRequestIdRef.current) return;
+
       const uniqueMap = new Map<string, SearchResult>();
 
       for (const result of results) {
@@ -299,25 +289,18 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
         if (!existing) {
           uniqueMap.set(key, result);
-        } else if (
-          !existing.isDownloaded &&
-          result.isDownloaded
-        ) {
+        } else if (!existing.isDownloaded && result.isDownloaded) {
           uniqueMap.set(key, result);
         }
       }
 
-      const uniqueResults = Array.from(
-        uniqueMap.values()
-      );
+      const uniqueResults = Array.from(uniqueMap.values());
 
       uniqueResults.sort((a, b) => {
-        const sourcePriority = (
-          source: SearchResult['source']
-        ) => (source === 'local' ? 1 : 2);
+        const sourcePriority = (source: SearchResult['source']) =>
+          source === 'local' ? 1 : 2;
         const sourceDiff =
-          sourcePriority(a.source) -
-          sourcePriority(b.source);
+          sourcePriority(a.source) - sourcePriority(b.source);
         if (sourceDiff !== 0) return sourceDiff;
 
         if (a.isDownloaded && !b.isDownloaded) return -1;
@@ -328,39 +311,23 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
         const aExact = aTitle === lowerQuery;
         const bExact = bTitle === lowerQuery;
-
         if (aExact && !bExact) return -1;
         if (bExact && !aExact) return 1;
 
         const aIncludes = aTitle.includes(lowerQuery);
         const bIncludes = bTitle.includes(lowerQuery);
-
         if (aIncludes && !bIncludes) return -1;
         if (bIncludes && !aIncludes) return 1;
 
-        const typePriority = (
-          type: SearchResult['type']
-        ) =>
-          type === 'song'
-            ? 1
-            : type === 'album'
-              ? 2
-              : type === 'artist'
-                ? 3
-                : 4;
-
-        const diff =
-          typePriority(a.type) -
-          typePriority(b.type);
+        const typePriority = (type: SearchResult['type']) =>
+          type === 'song' ? 1 : type === 'album' ? 2 : type === 'artist' ? 3 : 4;
+        const diff = typePriority(a.type) - typePriority(b.type);
         if (diff !== 0) return diff;
 
         return aTitle.localeCompare(bTitle);
       });
 
-      if (requestId !== searchRequestIdRef.current)
-        return;
-
-      setSearchResults(uniqueResults.slice(0, 25));
+      setSearchResults(uniqueResults.slice(0, 50));
     } finally {
       if (requestId === searchRequestIdRef.current) {
         setIsLoading(false);

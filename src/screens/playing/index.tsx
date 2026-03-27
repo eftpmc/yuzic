@@ -9,7 +9,7 @@ import {
     InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
@@ -77,10 +77,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 }) => {
     const router = useRouter();
     const { isDarkMode } = useTheme();
-    const {
-        currentSong,
-        progress,
-    } = usePlaying();
+    const { currentSong } = usePlaying();
+    const progress = usePlayingProgress();
     const api = useApi();
     const insets = useSafeAreaInsets();
     const { album } = useAlbum(currentSong?.albumId ?? '');

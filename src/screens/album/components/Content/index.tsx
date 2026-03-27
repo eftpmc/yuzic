@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
 import { Album, Song } from '@/types';
@@ -42,7 +43,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
-      contentContainerStyle={{ paddingBottom: 140 }}
+      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />
   );

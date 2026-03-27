@@ -8,15 +8,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
-import { PlaylistBase, Playlist } from '@/types';
+import { Playlist } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaylist } from '@/hooks/playlists';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 type Props = {
-  playlist: PlaylistBase;
-  onPress?: (playlist: PlaylistBase) => void;
+  playlist: Playlist;
+  onPress?: (playlist: Playlist) => void;
 };
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {

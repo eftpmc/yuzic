@@ -1,5 +1,8 @@
+import TrackPlayer from 'react-native-track-player';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+
+TrackPlayer.registerPlaybackService(() => require('../service').default);
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -9,6 +12,7 @@ import 'react-native-reanimated';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { SearchProvider } from '@/contexts/SearchContext';
+import { LibraryProvider } from '@/contexts/LibraryContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider, useSelector } from 'react-redux';
@@ -19,6 +23,7 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useTheme } from '@/hooks/useTheme';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
 import i18n from '@/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -59,6 +64,7 @@ function AppShell() {
         <PlayingProvider>
           <SearchProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
+              <ErrorBoundary>
               <BottomSheetModalProvider>
                 <Stack>
                   <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
@@ -94,6 +100,7 @@ function AppShell() {
                   }}
                 />
               </BottomSheetModalProvider>
+              </ErrorBoundary>
             </GestureHandlerRootView>
           </SearchProvider>
         </PlayingProvider>
@@ -139,7 +146,9 @@ export default function RootLayout() {
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <AppShell />
+          <LibraryProvider>
+            <AppShell />
+          </LibraryProvider>
         </PersistGate>
       </Provider>
     </PersistQueryClientProvider>

@@ -1,7 +1,7 @@
-import { ArtistBase, CoverSource } from "@/types";
+import { Artist, CoverSource } from "@/types";
 import type { JellyfinClient } from "../client";
 
-export type GetArtistsResult = ArtistBase[];
+export type GetArtistsResult = Artist[];
 
 export async function getArtists(client: JellyfinClient): Promise<GetArtistsResult> {
   try {
@@ -10,7 +10,8 @@ export async function getArtists(client: JellyfinClient): Promise<GetArtistsResu
       `?IncludeItemTypes=MusicArtist` +
       `&Recursive=true` +
       `&SortBy=SortName` +
-      `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds`;
+      `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds` +
+      (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
     const raw = await client.request<any>(path);
     const items = raw?.Items ?? [];
@@ -27,7 +28,8 @@ export async function getArtists(client: JellyfinClient): Promise<GetArtistsResu
         name: a.Name ?? "Unknown Artist",
         cover,
         subtext: "Artist",
-        mbid
+        mbid,
+        ownedAlbums: [],
       };
     });
   } catch (error) {

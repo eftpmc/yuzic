@@ -1,52 +1,18 @@
 import {
   Playlist,
-  AlbumBase,
   Album,
-  ArtistBase,
   Artist,
   Song,
   SongBase,
-  PlaylistBase,
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
 
-export type JellyfinConnectResult =
-  | {
-    success: true;
-    token: string;
-    userId: string;
-  }
-  | {
-    success: false;
-    message?: string;
-  };
-
-export type NavidromeLibrary = {
+export type Library = {
   id: string;
   name: string;
 };
 
-export type NavidromeConnectResult =
-  | {
-    success: true;
-    libraries?: NavidromeLibrary[];
-  }
-  | {
-    success: false;
-    message?: string;
-  };
-
-
-export type AuthFailure = {
-  success: false;
-  message?: string;
-};
-
-export type AuthResult =
-  | NavidromeConnectResult
-  | JellyfinConnectResult
-  | AuthFailure;
 
 export interface SongsApi {
   get(id: string): Promise<Song | null>;
@@ -80,7 +46,7 @@ export interface AuthApi {
     serverUrl: string,
     username: string,
     password: string
-  ): Promise<AuthResult>;
+  ): Promise<{ success: boolean; message?: string }>;
   ping(): Promise<boolean>;
   testUrl(url: string): Promise<{ success: boolean; message?: string }>;
   startScan(): Promise<{ success: boolean; message?: string }>;
@@ -88,12 +54,12 @@ export interface AuthApi {
 }
 
 export interface AlbumsApi {
-  list(): Promise<AlbumBase[]>;
+  list(): Promise<Album[]>;
   get(id: string): Promise<Album>;
 }
 
 export interface ArtistsApi {
-  list(): Promise<ArtistBase[]>;
+  list(): Promise<Artist[]>;
   get(id: string): Promise<Artist>;
 }
 
@@ -102,7 +68,7 @@ export interface GenresApi {
 }
 
 export interface PlaylistsApi {
-  list(): Promise<PlaylistBase[]>;
+  list(): Promise<Playlist[]>;
   get(id: string): Promise<Playlist>;
   create(name: string): Promise<string>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
@@ -135,8 +101,8 @@ export type LyricsResult = {
 
 export type SearchApi = {
   search: (query: string) => Promise<{
-    albums: AlbumBase[];
-    artists: ArtistBase[];
+    albums: Album[];
+    artists: Artist[];
     songs: Song[];
   }>;
 };

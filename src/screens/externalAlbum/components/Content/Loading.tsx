@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { FlashList } from '@shopify/flash-list';
 
 import LoadingAlbumHeader from '../Header/Loading';
-import LoadingSongRow from '@/components/rows/SongRow/Loading';
+import LoadingExternalSongRow from '@/components/rows/ExternalSongRow/Loading';
 
 const ESTIMATED_ROW_HEIGHT = 72;
 const PLACEHOLDER_ROWS = 8;
@@ -17,7 +17,7 @@ const LoadingExternalAlbumContent: React.FC = () => {
     <FlashList
       data={data}
       keyExtractor={(_, index) => `skeleton-${index}`}
-      renderItem={() => <LoadingSongRow />}
+      renderItem={() => <LoadingExternalSongRow />}
       estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<LoadingAlbumHeader />}
       contentContainerStyle={{ paddingBottom: 140 }}

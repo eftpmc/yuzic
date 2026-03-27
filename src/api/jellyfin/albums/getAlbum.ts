@@ -1,4 +1,4 @@
-import { Album, ArtistBase, CoverSource } from "@/types";
+import { Album, CoverSource } from "@/types";
 import type { JellyfinClient } from "../client";
 import { getAlbumSongs } from "./getAlbumSongs";
 
@@ -24,12 +24,12 @@ function normalizeAlbum(raw: any): Album | null {
     ? { kind: "jellyfin", itemId: a.Id }
     : { kind: "none" };
 
-  const artist: ArtistBase = {
+  const artist = {
     id: artistItem.Id,
     name: artistItem.Name ?? "Unknown Artist",
     cover: artistItem.Id
-      ? { kind: "jellyfin", itemId: artistItem.Id }
-      : { kind: "none" },
+      ? { kind: "jellyfin" as const, itemId: artistItem.Id }
+      : { kind: "none" as const },
     subtext: "Artist",
     mbid: artistItem.ProviderIds?.MusicBrainz ?? null,
   };

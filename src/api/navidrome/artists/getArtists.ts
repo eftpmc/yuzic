@@ -1,10 +1,9 @@
-import { ArtistBase, CoverSource } from "@/types";
+import { Artist, CoverSource } from "@/types";
 import type { NavidromeClient } from "../client";
 
-export type GetArtistResult = ArtistBase;
-export type GetArtistsResult = ArtistBase[];
+export type GetArtistsResult = Artist[];
 
-function normalizeArtistEntry(a: any): GetArtistResult {
+function normalizeArtistEntry(a: any): Artist {
   const cover: CoverSource = a.coverArt
     ? { kind: "navidrome", coverArtId: a.coverArt }
     : { kind: "none" };
@@ -13,6 +12,7 @@ function normalizeArtistEntry(a: any): GetArtistResult {
     cover,
     name: a.name,
     subtext: "Artist",
+    ownedAlbums: [],
   };
 }
 

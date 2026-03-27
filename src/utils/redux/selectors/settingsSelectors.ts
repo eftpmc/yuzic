@@ -32,11 +32,6 @@ export const selectLibrarySortOrder = (
 ): LibrarySortOrder =>
   state.settings.librarySortOrder;
 
-export const selectOfflineModeEnabled = (
-  state: RootState
-): boolean =>
-  state.settings.offlineModeEnabled;
-
 export const selectSearchScope = (
   state: RootState
 ): SearchScope =>
@@ -56,3 +51,9 @@ export const selectAudioQuality = (
   state: RootState
 ): AudioQuality =>
   state.settings.audioQuality;
+
+export const selectLastSyncedAt = (state: RootState): number | null =>
+  state.settings.lastSyncedAt;
+
+export const selectSyncOnAppStart = (state: RootState): boolean =>
+  state.settings.syncOnAppStart ?? false;

@@ -1,12 +1,12 @@
-import { AlbumBase } from '@/types/Album';
-import { ArtistBase } from '@/types/Artist';
+import { Album } from '@/types/Album';
+import { Artist } from '@/types/Artist';
 import { Song } from '@/types/Song';
 import type { JellyfinClient } from '../client';
 
 export async function search(
   client: JellyfinClient,
   query: string
-): Promise<{ albums: AlbumBase[]; artists: ArtistBase[]; songs: Song[] }> {
+): Promise<{ albums: Album[]; artists: Artist[]; songs: Song[] }> {
   if (!query.trim()) {
     return { albums: [], artists: [], songs: [] };
   }
@@ -30,7 +30,7 @@ export async function search(
   const artistItems = artistsData.Items ?? [];
   const songItems = songsData.Items ?? [];
 
-  const albums: AlbumBase[] = albumItems.map((item: any) => ({
+  const albums: Album[] = albumItems.map((item: any) => ({
     id: item.Id,
     title: item.Name,
     subtext: item.Artists?.[0] ?? '',
@@ -52,9 +52,10 @@ export async function search(
     genres: item.Genres ?? [],
     created: item.DateCreated ? new Date(item.DateCreated) : new Date(0),
     mbid: item.ProviderIds?.MusicBrainzAlbum ?? item.ProviderIds?.MusicBrainz ?? null,
+    songs: [],
   }));
 
-  const artists: ArtistBase[] = artistItems.map((item: any) => ({
+  const artists: Artist[] = artistItems.map((item: any) => ({
     id: item.Id,
     name: item.Name ?? 'Unknown Artist',
     subtext: 'Artist',
@@ -62,6 +63,7 @@ export async function search(
       ? { kind: 'jellyfin' as const, itemId: item.Id }
       : { kind: 'none' as const },
     mbid: item.ProviderIds?.MusicBrainz ?? null,
+    ownedAlbums: [],
   }));
 
   const songs: Song[] = songItems

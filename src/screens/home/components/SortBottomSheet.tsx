@@ -12,6 +12,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year';
 
@@ -29,10 +30,10 @@ const SortBottomSheet = forwardRef<
   const { isDarkMode } = useTheme();
 
   const sortOptions = [
+    { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
     { value: 'title' as const, label: t('home.sort.alphabetical'), Icon: ArrowDownAZ },
     { value: 'year' as const, label: t('home.sort.releaseYear'), Icon: Calendar },
     { value: 'userplays' as const, label: t('home.sort.mostPlayed'), Icon: Flame },
-    { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
   ];
 
   const snapPoints = useMemo(() => ['40%'], []);
@@ -42,6 +43,8 @@ const SortBottomSheet = forwardRef<
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
       backgroundStyle={{
         backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
       }}

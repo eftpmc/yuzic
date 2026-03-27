@@ -28,6 +28,7 @@ import { useArtistMbid } from '@/hooks/artists';
 import { staleTime } from '@/constants/staleTime';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
+import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -221,6 +222,8 @@ const ArtistOptions = forwardRef<
         ref={ref}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? '#555' : '#ccc',
         }}
@@ -238,6 +241,8 @@ const ArtistOptions = forwardRef<
       ref={ref}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
       handleIndicatorStyle={{
         backgroundColor: isDarkMode ? '#555' : '#ccc',
       }}
