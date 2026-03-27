@@ -14,7 +14,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CheckCircle, XCircle } from 'lucide-react-native';
+import { CheckCircle, Loader2, XCircle } from 'lucide-react-native';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { toast } from '@backpackapp-io/react-native-toast';
 
@@ -46,9 +46,7 @@ const SlskdView: React.FC = () => {
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
   const activeServer = useSelector(selectActiveServer);
-
-  if (!activeServer) return null;
-  const serverId = activeServer.id;
+  const serverId = activeServer?.id ?? '';
 
   const serverUrl = useSelector(selectSlskdServerUrl);
   const apiKey = useSelector(selectSlskdApiKey);
@@ -217,6 +215,8 @@ const SlskdView: React.FC = () => {
       </View>
     );
   };
+
+  if (!activeServer) return null;
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>

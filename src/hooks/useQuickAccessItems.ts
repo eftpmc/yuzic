@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Album, Artist, Playlist, Song } from '@/types';
-import { useLibrary } from '@/contexts/LibraryContext';
+import { Album, Playlist, Song } from '@/types';
+import { useAlbums } from '@/hooks/albums';
+import { usePlaylists } from '@/hooks/playlists';
 import {
   selectAlbumLastPlayedAt,
   selectArtistLastPlayedAt,
@@ -13,13 +14,12 @@ import {
   selectPlaylistLastPlayedAt,
 } from '@/utils/redux/selectors/statsSelectors';
 import {
-  selectAlbumsById,
-  selectArtistsById,
   selectSongsById,
 } from '@/utils/redux/selectors/librarySelectors';
 import shuffleArray from '@/utils/shuffleArray';
 
-const MAX_ITEMS = 6;
+const TRACK_SLOTS = 3;
+const PLAYLIST_SLOTS = 3;
 const DECAY_MS = 14 * 24 * 60 * 60 * 1000; // 14-day half-life
 
 export type QuickAccessItem =
@@ -35,9 +35,8 @@ function score(ts: number, playCount: number, now: number): number {
 }
 
 export function useQuickAccessItems(): QuickAccessItem[] {
-  const { albums, playlists } = useLibrary();
-  const albumsById = useSelector(selectAlbumsById);
-  const artistsById = useSelector(selectArtistsById);
+  const { albums } = useAlbums();
+  const { playlists } = usePlaylists();
   const songsById = useSelector(selectSongsById);
   const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt);
   const artistLastPlayedAt = useSelector(selectArtistLastPlayedAt);
@@ -50,68 +49,69 @@ export function useQuickAccessItems(): QuickAccessItem[] {
 
   return useMemo(() => {
     const now = Date.now();
-    const candidates: (QuickAccessItem & { score: number })[] = [];
 
-    for (const [id, ts] of Object.entries(albumLastPlayedAt)) {
-      const data = albumsById.get(id);
-      if (data) candidates.push({ kind: 'album', data, ts, score: score(ts, albumPlayCounts[id] ?? 0, now) });
-    }
+    // --- Tracks: scored by play history, fallback to random library songs ---
+    type Scored<T> = { item: T; score: number; ts: number };
 
-    for (const [id, ts] of Object.entries(artistLastPlayedAt)) {
-      const data = artistsById.get(id);
-      if (data) candidates.push({ kind: 'artist', data, ts, score: score(ts, artistPlayCounts[id] ?? 0, now) });
-    }
-
-    // Tracks only appear if they've been played at least once
+    const scoredTracks: Scored<Song>[] = [];
     for (const [id, ts] of Object.entries(songLastPlayedAt)) {
       if (ts <= 0) continue;
       const data = songsById.get(id);
-      if (data) candidates.push({ kind: 'track', data, ts, score: score(ts, songPlayCounts[id] ?? 0, now) });
+      if (data) scoredTracks.push({ item: data, ts, score: score(ts, songPlayCounts[id] ?? 0, now) });
+    }
+    scoredTracks.sort((a, b) => b.score - a.score);
+
+    const pickedTracks: QuickAccessItem[] = [];
+    const usedTrackIds = new Set<string>();
+    for (const { item, ts } of scoredTracks) {
+      if (pickedTracks.length >= TRACK_SLOTS) break;
+      usedTrackIds.add(item.id);
+      pickedTracks.push({ kind: 'track', data: item, ts });
     }
 
-    for (const playlist of playlists) {
+    if (pickedTracks.length < TRACK_SLOTS) {
+      const allSongs: Song[] = [];
+      songsById.forEach(s => allSongs.push(s));
+      const random = shuffleArray(allSongs.filter(s => !usedTrackIds.has(s.id)));
+      for (const data of random) {
+        if (pickedTracks.length >= TRACK_SLOTS) break;
+        usedTrackIds.add(data.id);
+        pickedTracks.push({ kind: 'track', data, ts: 0 });
+      }
+    }
+
+    // --- Playlists: all scored (score 0 if no history), sorted, pick top slots ---
+    const scoredPlaylists: Scored<Playlist>[] = playlists.map(playlist => {
       const changedTs = playlist.changed ? new Date(playlist.changed).getTime() : 0;
       const playedTs = playlistLastPlayedAt[playlist.id] ?? 0;
       const ts = Math.max(changedTs, playedTs);
-      if (ts <= 0) continue;
-      const s = score(ts, playlistPlayCounts[playlist.id] ?? 0, now);
-      candidates.push({ kind: 'playlist', data: playlist, ts, score: s });
+      return { item: playlist, ts, score: score(ts, playlistPlayCounts[playlist.id] ?? 0, now) };
+    });
+    scoredPlaylists.sort((a, b) => b.score - a.score);
+
+    const pickedPlaylists: QuickAccessItem[] = [];
+    const usedPlaylistIds = new Set<string>();
+    for (const { item, ts } of scoredPlaylists) {
+      if (pickedPlaylists.length >= PLAYLIST_SLOTS) break;
+      usedPlaylistIds.add(item.id);
+      pickedPlaylists.push({ kind: 'playlist', data: item, ts });
     }
 
-    candidates.sort((a, b) => b.score - a.score);
-
+    // --- Interleave: [playlist, track, playlist, track, …] ---
     const result: QuickAccessItem[] = [];
-    const usedIds = new Set<string>();
-
-    for (const item of candidates) {
-      if (result.length >= MAX_ITEMS) break;
-      const key = `${item.kind}:${item.data.id}`;
-      if (!usedIds.has(key)) {
-        usedIds.add(key);
-        result.push({ kind: item.kind, data: item.data, ts: item.ts } as QuickAccessItem);
-      }
+    const len = Math.max(pickedPlaylists.length, pickedTracks.length);
+    for (let i = 0; i < len; i++) {
+      if (pickedPlaylists[i]) result.push(pickedPlaylists[i]);
+      if (pickedTracks[i]) result.push(pickedTracks[i]);
     }
 
-    // Fill remainder with most-played albums, then random (no tracks in fallback)
-    if (result.length < MAX_ITEMS) {
-      const byPlayCount = Object.entries(albumPlayCounts)
-        .filter(([, count]) => count > 0)
-        .sort(([, a], [, b]) => b - a)
-        .map(([id]) => albumsById.get(id))
-        .filter((a): a is Album => !!a && !usedIds.has(`album:${a.id}`));
-
-      for (const data of byPlayCount) {
-        if (result.length >= MAX_ITEMS) break;
-        usedIds.add(`album:${data.id}`);
+    // Final fallback: fill any remaining slots with random albums so the dial is never empty
+    if (result.length < TRACK_SLOTS + PLAYLIST_SLOTS) {
+      const usedAlbumIds = new Set<string>();
+      const random = shuffleArray(albums.filter(a => !usedAlbumIds.has(a.id)));
+      for (const data of random) {
+        if (result.length >= TRACK_SLOTS + PLAYLIST_SLOTS) break;
         result.push({ kind: 'album', data, ts: 0 });
-      }
-
-      if (result.length < MAX_ITEMS) {
-        const random = shuffleArray(albums.filter(a => !usedIds.has(`album:${a.id}`)));
-        for (const data of random) {
-          if (result.length >= MAX_ITEMS) break;
-          result.push({ kind: 'album', data, ts: 0 });
-        }
       }
     }
 
@@ -120,6 +120,6 @@ export function useQuickAccessItems(): QuickAccessItem[] {
     albumLastPlayedAt, artistLastPlayedAt, songLastPlayedAt,
     albumPlayCounts, artistPlayCounts, songPlayCounts,
     playlistPlayCounts, playlistLastPlayedAt,
-    albumsById, artistsById, songsById, albums, playlists,
+    songsById, albums, playlists,
   ]);
 }

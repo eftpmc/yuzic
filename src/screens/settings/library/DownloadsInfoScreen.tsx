@@ -62,7 +62,7 @@ const DownloadsInfoScreen: React.FC = () => {
       buildDownloadRows({
         albums,
         tracks,
-        playlists,
+        playlists: fullPlaylists,
         fullPlaylists,
         downloadedTracks,
         downloadedPlaylists,
