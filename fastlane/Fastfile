@@ -54,22 +54,9 @@ platform :android do
     prepare_build_dirs
 
     gradle(
-      task: "clean",
-      project_dir: "android"
-    )
-
-    gradle(
-      task: "assembleRelease",
+      tasks: ["clean", "bundleRelease"],
       project_dir: "android",
-      properties: {
-        "android.injected.version.code" => resolved_android_version_code,
-        "android.injected.version.name" => resolved_version_label
-      }
-    )
-
-    gradle(
-      task: "bundleRelease",
-      project_dir: "android",
+      flags: "--no-daemon",
       properties: {
         "android.injected.version.code" => resolved_android_version_code,
         "android.injected.version.name" => resolved_version_label
