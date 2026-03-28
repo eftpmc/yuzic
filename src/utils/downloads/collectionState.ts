@@ -71,11 +71,11 @@ export function getFullyDownloadedAlbumIds(
   }
 
   const fullyDownloadedAlbumIds = new Set<string>();
-  for (const [albumId, total] of totalsByAlbumId.entries()) {
+  totalsByAlbumId.forEach((total, albumId) => {
     if (total > 0 && (downloadedByAlbumId.get(albumId) ?? 0) === total) {
       fullyDownloadedAlbumIds.add(albumId);
     }
-  }
+  });
 
   return fullyDownloadedAlbumIds;
 }

@@ -1,5 +1,5 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
+import { persistStore, persistReducer, createMigrate } from 'redux-persist';
 import storage from '@react-native-async-storage/async-storage';
 
 import serversReducer from './slices/serversSlice';
@@ -10,13 +10,68 @@ import listenbrainzReducer from './slices/listenbrainzSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
 
+// ─── Migrations ───────────────────────────────────────────────────────────────
+// Version 1: normalize state shapes that changed during the redesign.
+// library  — always safe to reset; it re-syncs from the server on launch.
+// downloads — keep tracks/collections if they already look like Records;
+//             otherwise reset to empty so the app doesn't crash on iteration.
+// stats    — all fields must be plain objects (Records), sanitize if needed.
+
+const libraryMigrations: Record<number, (s: any) => any> = {
+  1: () => ({ albums: [], artists: [], playlists: [], tracks: [], genres: [], starred: [] }),
+};
+
+const downloadsMigrations: Record<number, (s: any) => any> = {
+  1: (state: any) => ({
+    tracks:
+      state?.tracks && !Array.isArray(state.tracks) && typeof state.tracks === 'object'
+        ? state.tracks
+        : {},
+    collections:
+      state?.collections && !Array.isArray(state.collections) && typeof state.collections === 'object'
+        ? state.collections
+        : {},
+    pending: {},
+  }),
+};
+
+const statsMigrations: Record<number, (s: any) => any> = {
+  1: (state: any) => ({
+    songPlays: state?.songPlays && typeof state.songPlays === 'object' ? state.songPlays : {},
+    albumPlays: state?.albumPlays && typeof state.albumPlays === 'object' ? state.albumPlays : {},
+    artistPlays: state?.artistPlays && typeof state.artistPlays === 'object' ? state.artistPlays : {},
+    playlistPlays: state?.playlistPlays && typeof state.playlistPlays === 'object' ? state.playlistPlays : {},
+    songLastPlayedAt: state?.songLastPlayedAt && typeof state.songLastPlayedAt === 'object' ? state.songLastPlayedAt : {},
+    albumLastPlayedAt: state?.albumLastPlayedAt && typeof state.albumLastPlayedAt === 'object' ? state.albumLastPlayedAt : {},
+    artistLastPlayedAt: state?.artistLastPlayedAt && typeof state.artistLastPlayedAt === 'object' ? state.artistLastPlayedAt : {},
+    playlistLastPlayedAt: state?.playlistLastPlayedAt && typeof state.playlistLastPlayedAt === 'object' ? state.playlistLastPlayedAt : {},
+  }),
+};
+// ──────────────────────────────────────────────────────────────────────────────
+
 const serversPersistConfig = { key: 'servers', storage };
 const downloadersPersistConfig = { key: 'downloaders', storage };
 const settingsPersistConfig = { key: 'settings', storage };
-const downloadsPersistConfig = { key: 'downloads', storage };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
-const statsPersistConfig = { key: 'stats', storage };
-const libraryPersistConfig = { key: 'library', storage };
+
+const downloadsPersistConfig = {
+  key: 'downloads',
+  storage,
+  version: 1,
+  migrate: createMigrate(downloadsMigrations, { debug: false }),
+};
+const statsPersistConfig = {
+  key: 'stats',
+  storage,
+  version: 1,
+  migrate: createMigrate(statsMigrations, { debug: false }),
+};
+const libraryPersistConfig = {
+  key: 'library',
+  storage,
+  version: 1,
+  migrate: createMigrate(libraryMigrations, { debug: false }),
+};
 
 export const rootReducer = combineReducers({
     servers: serversReducer,

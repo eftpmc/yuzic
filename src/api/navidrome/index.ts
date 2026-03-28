@@ -90,13 +90,14 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
         getStarredItems(client),
       ]);
       const baseIds = new Set(baseAlbums.map((a) => a.id));
-      const albumIdsFromStarred = [
-        ...new Set(
-          (starred.songs ?? [])
-            .map((s) => s.albumId)
-            .filter((id): id is string => !!id)
-        ),
-      ].filter((id) => !baseIds.has(id));
+      const seenStarredIds = new Set<string>();
+      const albumIdsFromStarred: string[] = [];
+      for (const s of starred.songs ?? []) {
+        if (s.albumId && !seenStarredIds.has(s.albumId)) {
+          seenStarredIds.add(s.albumId);
+          if (!baseIds.has(s.albumId)) albumIdsFromStarred.push(s.albumId);
+        }
+      }
       const extraAlbums = await Promise.all(
         albumIdsFromStarred.map((id) => getAlbum(client, id))
       );

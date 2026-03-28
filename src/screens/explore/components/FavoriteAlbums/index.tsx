@@ -34,9 +34,8 @@ export default function FavoriteAlbums() {
         );
       }
     }
-    const favoriteAlbumIds = new Set(albumFavoriteCount.keys());
     return [...albums]
-      .filter((a) => favoriteAlbumIds.has(a.id))
+      .filter((a) => albumFavoriteCount.has(a.id))
       .sort((a, b) => {
         const countA = albumFavoriteCount.get(a.id) ?? 0;
         const countB = albumFavoriteCount.get(b.id) ?? 0;

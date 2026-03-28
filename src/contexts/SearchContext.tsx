@@ -294,7 +294,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         }
       }
 
-      const uniqueResults = Array.from(uniqueMap.values());
+      const uniqueResults: typeof results = [];
+      uniqueMap.forEach(v => uniqueResults.push(v));
 
       uniqueResults.sort((a, b) => {
         const sourcePriority = (source: SearchResult['source']) =>
