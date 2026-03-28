@@ -54,7 +54,7 @@ platform :android do
     prepare_build_dirs
 
     gradle(
-      tasks: ["clean", "bundleRelease"],
+      tasks: ["clean", "assembleRelease", "bundleRelease"],
       project_dir: "android",
       flags: "--no-daemon",
       properties: {
