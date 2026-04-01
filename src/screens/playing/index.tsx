@@ -21,7 +21,6 @@ import Animated, {
 import { CoverSource } from '@/types';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
-import { useTheme } from '@/hooks/useTheme';
 import { useAlbum } from '@/hooks/albums';
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import PlaylistList from '@/components/PlaylistList';
@@ -76,7 +75,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     onClose,
 }) => {
     const router = useRouter();
-    const { isDarkMode } = useTheme();
     const { currentSong } = usePlaying();
     const progress = usePlayingProgress();
     const api = useApi();
@@ -162,7 +160,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 <View style={styles.playerArea}>
 
                     <StatusBar
-                        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                        barStyle="light-content"
                         backgroundColor="transparent"
                         translucent
                     />
