@@ -18,7 +18,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
   const songs = album.songs ?? [];
 
   /**
-   * Memoized header so FlashList doesn’t recreate it unnecessarily
+   * Memoized header so FlashList doesn't recreate it unnecessarily
    */
   const header = useMemo(() => {
     return <AlbumHeader album={album} />;

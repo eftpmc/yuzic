@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Song } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
+import { useSelector } from 'react-redux';
+import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
@@ -57,6 +59,7 @@ const SongOptions = forwardRef<
 
     const { currentSong, addToQueue, playNext, playSimilar } = usePlaying();
     const instantMixInFlightRef = useRef(false);
+    const playCount = useSelector(selectSongPlayCount(selectedSong.id));
 
     const { songs: starredSongs } = useStarredSongs();
     const starSong = useStarSong();
@@ -274,6 +277,10 @@ const SongOptions = forwardRef<
             <Text style={[styles.infoValue, themeStyles.title]}>
               {formatDuration(selectedSong.duration)}
             </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.plays')}</Text>
+            <Text style={[styles.infoValue, themeStyles.title]}>{playCount}</Text>
           </View>
           {selectedSong.bitrate != null && (
             <View style={styles.infoRow}>
