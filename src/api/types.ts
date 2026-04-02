@@ -16,6 +16,7 @@ export type Library = {
 
 export interface SongsApi {
   get(id: string): Promise<Song | null>;
+  scrobble(songId: string, timestamp: number): Promise<void>;
 }
 
 export interface TracksApi {

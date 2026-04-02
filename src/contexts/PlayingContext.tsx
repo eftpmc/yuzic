@@ -189,6 +189,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         artistId: song.artistId,
       }));
     }
+    try {
+      await api.songs.scrobble(song.id, opts.startTime);
+    } catch {
+      // server scrobble is best-effort; never block playback
+    }
     if (!listenBrainzConfig?.token) return;
     try {
       await listenbrainz.submitScrobble(listenBrainzConfig, {
@@ -201,7 +206,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (err) {
       console.warn('ListenBrainz scrobble failed', err);
     }
-  }, [activeServer?.id, listenBrainzConfig?.token, dispatch]);
+  }, [activeServer?.id, listenBrainzConfig?.token, dispatch, api]);
 
   // Load a song into the player: reset, add, play. Checks local file right before playing.
   const loadAndPlay = useCallback(async (song: Song, opts?: { clearScrobbleState?: boolean }) => {

@@ -16,6 +16,8 @@ import { ListEnd } from 'lucide-react-native';
 
 import { Album } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
+import { useSelector } from 'react-redux';
+import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
@@ -50,6 +52,7 @@ const AlbumOptions = forwardRef<
     useDownload();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
+  const playCount = useSelector(selectAlbumPlayCount(album?.id ?? ''));
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -286,6 +289,10 @@ const AlbumOptions = forwardRef<
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.songs')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]}>{songs.length}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('albumOptions.info.plays')}</Text>
+          <Text style={[styles.infoValue, themeStyles.title]}>{playCount}</Text>
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>

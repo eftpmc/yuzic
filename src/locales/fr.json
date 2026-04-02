@@ -433,6 +433,7 @@
     },
     "media": {
       "duration": "Durée",
+      "plays": "Lectures",
       "bitrate": "Débit binaire",
       "sampleRate": "Fréquence d'échantillonnage",
       "bitsPerSample": "Bits par échantillon",
@@ -510,6 +511,7 @@
       "year": "Année",
       "genres": "Genres",
       "songs": "Morceaux",
+      "plays": "Lectures",
       "unknown": "—"
     }
   },
@@ -561,7 +563,8 @@
       "info": "Informations sur l'artiste"
     },
     "info": {
-      "albums": "Albums"
+      "albums": "Albums",
+      "plays": "Lectures"
     }
   }
 }
