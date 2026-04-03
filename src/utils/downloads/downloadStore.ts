@@ -16,22 +16,6 @@ export type DownloadedCollectionEntry = {
   downloadedAt: number;
 };
 
-export type PendingDownloadEntry = {
-  trackId: string;
-  streamUrl: string;
-  albumId?: string;
-  artistId?: string;
-  serverId?: string;
-  serverType?: string;
-  coverKind?: string;
-  collectionId?: string;
-  requestedAt: number;
-};
-
-export function normalizeId(id: unknown): string {
-  return String(id ?? '').trim();
-}
-
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${Math.round(bytes)} B`;
   const units = ['KB', 'MB', 'GB'];

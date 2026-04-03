@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, type GestureResponderEvent } from 'react-native';
 
 type SeekableProgressBarProps = {
@@ -19,11 +19,15 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
   style,
 }) => {
   const trackRef = useRef<View>(null);
+  const durationRef = useRef(duration);
+  const onSeekRef = useRef(onSeek);
 
-  const positionToRatio = (position: number) =>
-    duration > 0 ? Math.max(0, Math.min(1, position / duration)) : 0;
+  useEffect(() => { durationRef.current = duration; }, [duration]);
+  useEffect(() => { onSeekRef.current = onSeek; }, [onSeek]);
 
-  const ratio = positionToRatio(value);
+  const ratio = durationRef.current > 0
+    ? Math.max(0, Math.min(1, value / durationRef.current))
+    : 0;
 
   const handleTouch = (evt: GestureResponderEvent) => {
     const { pageX } = evt.nativeEvent;
@@ -31,7 +35,7 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
       if (viewWidth <= 0) return;
       const x = pageX - viewX;
       const r = Math.max(0, Math.min(1, x / viewWidth));
-      onSeek(r * duration);
+      onSeekRef.current(r * durationRef.current);
     });
   };
 
@@ -69,7 +73,7 @@ const styles = StyleSheet.create({
   touchTarget: {
     minHeight: 44,
     justifyContent: 'center',
-    marginVertical: -20, /* extends hit area without adding visible space */
+    marginVertical: -20,
   },
   track: {
     height: 4,

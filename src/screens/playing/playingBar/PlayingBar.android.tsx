@@ -11,7 +11,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { BlurView } from 'expo-blur';
-import { useProgress } from 'react-native-track-player';
 import { BottomSheetModal, useBottomSheetTimingConfigs } from '@gorhom/bottom-sheet';
 import { useSelector } from 'react-redux';
 import { Easing, useSharedValue } from 'react-native-reanimated';
@@ -19,7 +18,7 @@ import ImageColors from 'react-native-image-colors';
 
 import PlayingScreen from '@/screens/playing';
 import PlayingBackground from '@/screens/playing/components/PlayingBackground';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useTheme } from '@/hooks/useTheme';
 import { MediaImage } from '../../../components/MediaImage';
 import { buildCover } from '@/utils/builders/buildCover';
@@ -95,8 +94,8 @@ const PlayingBar: React.FC = () => {
     if (uri) extractColors(uri);
   }, [currentSong?.id]);
 
-  const { position: progressPosition } = useProgress();
-  const position = appState === 'active' ? (progressPosition ?? 0) : 0;
+  const { position: progressPosition } = usePlayingProgress();
+  const position = progressPosition;
   const duration = currentSong ? Number(currentSong.duration) : 1;
   const progress = duration > 0 ? position / duration : 0;
 

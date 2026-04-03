@@ -29,7 +29,7 @@ export default function GenreContent({ genre, albums }: Props) {
 
   const downloadedTrackIds = React.useMemo(
     () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
-    []
+    [getAllDownloadedTracks]
   )
   const downloadedAlbumIds = React.useMemo(
     () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),

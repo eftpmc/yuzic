@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -6,40 +6,32 @@ import {
     ScrollView,
     TouchableOpacity,
 } from 'react-native';
+import { X, Check } from 'lucide-react-native';
 import Slider from '@react-native-community/slider';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-
-const PRESETS = [
-    { name: 'Flat', gains: [0, 0, 0, 0, 0] },
-    { name: 'Bass Boost', gains: [6, 4, 0, 0, 0] },
-    { name: 'Treble Boost', gains: [0, 0, 0, 4, 6] },
-    { name: 'Vocal', gains: [-2, 0, 4, 4, 0] },
-    { name: 'Rock', gains: [4, 2, -1, 3, 5] },
-    { name: 'Pop', gains: [-1, 2, 4, 2, -1] },
-    { name: 'Jazz', gains: [3, 1, -1, 2, 4] },
-];
-
-const STATIC_BANDS = [
-    { index: 0, gainDb: 0, frequencyLabel: '60 Hz' },
-    { index: 1, gainDb: 0, frequencyLabel: '230 Hz' },
-    { index: 2, gainDb: 0, frequencyLabel: '910 Hz' },
-    { index: 3, gainDb: 0, frequencyLabel: '3.6 kHz' },
-    { index: 4, gainDb: 0, frequencyLabel: '14 kHz' },
-];
+import { useEqualizer, useEqualizerPresets } from 'react-native-nitro-player';
 
 const Equalizer: React.FC = () => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
     const themeColor = useSelector(selectThemeColor);
 
-    // Equalizer is permanently disabled — no nitro-player available
-    const isEnabled = false;
-    const disabledOpacity = 0.4;
+    const {
+        isEnabled,
+        bands: allBands,
+        setEnabled,
+        setBandGain,
+        reset,
+        gainRange,
+    } = useEqualizer();
 
-    const [activePreset] = useState<string | null>(null);
+    // Show 5 evenly-spread bands: ~60Hz, ~250Hz, ~1kHz, ~4kHz, ~16kHz
+    const bands = allBands.filter(b => [1, 3, 5, 7, 9].includes(b.index));
+
+    const { builtInPresets, currentPreset, applyPreset } = useEqualizerPresets();
 
     return (
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
@@ -48,10 +40,35 @@ const Equalizer: React.FC = () => {
                 <Text style={[styles.title, isDarkMode && styles.titleDark]}>
                     {t('settings.player.equalizer.title')}
                 </Text>
+                <View style={styles.toggleGrid}>
+                    <TouchableOpacity
+                        onPress={() => setEnabled(false)}
+                        style={[
+                            styles.gridButton,
+                            isDarkMode && styles.gridButtonDark,
+                            !isEnabled && { backgroundColor: themeColor, borderColor: themeColor },
+                        ]}
+                        activeOpacity={0.8}
+                    >
+                        <X size={18} color={!isEnabled ? '#fff' : isDarkMode ? '#ccc' : '#666'} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setEnabled(true)}
+                        style={[
+                            styles.gridButton,
+                            styles.gridButtonSpaced,
+                            isDarkMode && styles.gridButtonDark,
+                            isEnabled && { backgroundColor: themeColor, borderColor: themeColor },
+                        ]}
+                        activeOpacity={0.8}
+                    >
+                        <Check size={18} color={isEnabled ? '#fff' : isDarkMode ? '#ccc' : '#666'} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Presets */}
-            <View style={{ opacity: disabledOpacity }}>
+            <View style={{ opacity: isEnabled ? 1 : 0.4 }}>
                 <Text style={[styles.label, isDarkMode && styles.labelDark]}>
                     {t('settings.player.equalizer.presets')}
                 </Text>
@@ -62,12 +79,13 @@ const Equalizer: React.FC = () => {
                     style={styles.presetScroll}
                     contentContainerStyle={styles.presetRow}
                 >
-                    {PRESETS.map(preset => {
-                        const active = activePreset === preset.name;
+                    {builtInPresets.map(preset => {
+                        const active = currentPreset === preset.name;
                         return (
                             <TouchableOpacity
                                 key={preset.name}
-                                disabled={true}
+                                disabled={!isEnabled}
+                                onPress={() => applyPreset(preset.name)}
                                 style={[
                                     styles.presetPill,
                                     {
@@ -106,8 +124,8 @@ const Equalizer: React.FC = () => {
             </View>
 
             {/* Band Sliders */}
-            <View style={[styles.bandsContainer, { opacity: disabledOpacity }]}>
-                {STATIC_BANDS.map(band => (
+            <View style={[styles.bandsContainer, { opacity: isEnabled ? 1 : 0.4 }]}>
+                {bands.map(band => (
                     <View key={band.index} style={styles.bandColumn}>
                         <Text
                             style={[
@@ -122,11 +140,12 @@ const Equalizer: React.FC = () => {
                         <View style={styles.sliderWrapper}>
                             <Slider
                                 style={styles.slider}
-                                minimumValue={-12}
-                                maximumValue={12}
+                                minimumValue={gainRange.min}
+                                maximumValue={gainRange.max}
                                 step={0.5}
                                 value={band.gainDb}
-                                disabled={true}
+                                disabled={!isEnabled}
+                                onSlidingComplete={(value) => setBandGain(band.index, value)}
                                 minimumTrackTintColor={themeColor}
                                 maximumTrackTintColor={isDarkMode ? '#333' : '#ddd'}
                                 thumbTintColor={themeColor}
@@ -147,8 +166,9 @@ const Equalizer: React.FC = () => {
 
             {/* Reset */}
             <TouchableOpacity
-                disabled={true}
-                style={[styles.resetButton, { opacity: disabledOpacity }]}
+                disabled={!isEnabled}
+                onPress={reset}
+                style={[styles.resetButton, { opacity: isEnabled ? 1 : 0.4 }]}
             >
                 <Text style={[styles.resetText, isDarkMode && styles.resetTextDark]}>
                     {t('settings.player.equalizer.reset')}
@@ -236,6 +256,7 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: '#555',
         marginTop: 8,
+        textAlign: 'center',
     },
     freqLabelDark: {
         color: '#aaa',
@@ -253,5 +274,26 @@ const styles = StyleSheet.create({
     },
     resetTextDark: {
         color: '#aaa',
+    },
+    toggleGrid: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    gridButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f1f1f1',
+        borderColor: '#ddd',
+        borderWidth: 1,
+    },
+    gridButtonDark: {
+        backgroundColor: '#1a1a1a',
+        borderColor: '#333',
+    },
+    gridButtonSpaced: {
+        marginLeft: 8,
     },
 });

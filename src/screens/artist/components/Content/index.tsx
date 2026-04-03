@@ -27,7 +27,7 @@ export default function ArtistContent({ artist }: Props) {
 
   const downloadedTrackIds = React.useMemo(
     () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
-    []
+    [getAllDownloadedTracks]
   )
   const downloadedAlbumIds = React.useMemo(
     () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),

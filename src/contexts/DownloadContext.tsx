@@ -2,40 +2,24 @@ import React, {
   createContext,
   useContext,
   ReactNode,
-  useState,
-  useRef,
   useEffect,
+  useRef,
+  useState,
   useCallback,
+  useMemo,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import * as FileSystem from 'expo-file-system/legacy';
+import {
+  DownloadManager,
+} from 'react-native-nitro-player';
+import type { DownloadedTrack } from 'react-native-nitro-player';
 import {
   DownloadProviderScope,
   doesTrackMatchProviderScope,
 } from '@/utils/downloads/provider';
-import {
-  DownloadedCollectionEntry,
-  DownloadedTrackEntry,
-  normalizeId,
-} from '@/utils/downloads/downloadStore';
-import {
-  trackDownloaded,
-  trackRemoved,
-  staleTracksRemoved,
-  collectionAdded,
-  collectionRemoved,
-  collectionsUpdated,
-  pendingAdded,
-  pendingRemoved,
-  allCleared,
-} from '@/utils/redux/slices/downloadsSlice';
-import type { RootState } from '@/utils/redux/store';
+import { DownloadedCollectionEntry } from '@/utils/downloads/downloadStore';
 import { Song } from '@/types';
 import { useApi } from '@/api';
-
-const SONGS_DIR = `${FileSystem.documentDirectory}yuzic-downloads`;
-const getTrackPath = (trackId: string) => `${SONGS_DIR}/${trackId}.mp3`;
-const getTmpPath = (trackId: string) => `${SONGS_DIR}/${trackId}.tmp`;
+import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 
 type DownloadContextType = {
   configure: (config: Record<string, unknown>) => void;
@@ -73,6 +57,15 @@ type DownloadContextType = {
   downloadedTrackCount: number;
 };
 
+// Configure before any hook calls so getAllDownloadedTracks/Playlists don't
+// race against an uninitialised native module on first mount.
+DownloadManager.configure({
+  maxConcurrentDownloads: 3,
+  backgroundDownloadsEnabled: true,
+  downloadArtwork: true,
+});
+DownloadManager.setPlaybackSourcePreference('auto');
+
 const DownloadContext = createContext<DownloadContextType | undefined>(undefined);
 
 export const useDownload = (): DownloadContextType => {
@@ -83,205 +76,157 @@ export const useDownload = (): DownloadContextType => {
 
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const api = useApi();
-  const dispatch = useDispatch();
+  const isMountedRef = useRef(true);
 
-  const tracks = useSelector((state: RootState) => state.downloads.tracks);
-  const collections = useSelector((state: RootState) => state.downloads.collections);
-  const pending = useSelector((state: RootState) => state.downloads.pending);
+  // Own state — avoids useDownloadedTracks which calls getAllDownloadedPlaylists()
+  // (broken: requires PlaylistManager to know download collection IDs, which it never does)
+  const [downloadedTracks, setDownloadedTracks] = useState<DownloadedTrack[]>([]);
 
-  const tracksRef = useRef(tracks);
-  const collectionsRef = useRef(collections);
-  const pendingRef = useRef(pending);
-  useEffect(() => { tracksRef.current = tracks; }, [tracks]);
-  useEffect(() => { collectionsRef.current = collections; }, [collections]);
-  useEffect(() => { pendingRef.current = pending; }, [pending]);
-
-  // Pre-populate from persisted Redux tracks so getLocalPath works immediately on mount,
-  // before the async filesystem scan completes.
-  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(
-    () => new Set(Object.keys(tracks))
-  );
-  const downloadedIdsRef = useRef(downloadedIds);
-  useEffect(() => { downloadedIdsRef.current = downloadedIds; }, [downloadedIds]);
-
-  const activeDownloadsRef = useRef<Map<string, any>>(new Map());
-  const [, setProgressTick] = useState(0);
-
-  // On startup: scan filesystem — source of truth for what files exist
-  useEffect(() => {
-    const init = async () => {
-      await FileSystem.makeDirectoryAsync(SONGS_DIR, { intermediates: true }).catch(() => {});
-
-      const files = await FileSystem.readDirectoryAsync(SONGS_DIR).catch(() => [] as string[]);
-      const presentIds = new Set(
-        files.filter(f => f.endsWith('.mp3')).map(f => f.replace('.mp3', ''))
-      );
-
-      setDownloadedIds(presentIds);
-
-      // Remove Redux entries whose files no longer exist
-      const staleIds = Object.keys(tracksRef.current).filter(id => !presentIds.has(id));
-      if (staleIds.length > 0) dispatch(staleTracksRemoved(staleIds));
-
-      // Resume interrupted downloads
-      for (const entry of Object.values(pendingRef.current)) {
-        if (presentIds.has(entry.trackId)) {
-          dispatch(pendingRemoved(entry.trackId));
-          continue;
-        }
-        const partialSong: Song = {
-          id: entry.trackId,
-          streamUrl: entry.streamUrl,
-          albumId: entry.albumId ?? '',
-          artistId: entry.artistId ?? '',
-          sourceServerId: entry.serverId,
-          sourceServerType: entry.serverType as any,
-          cover: { kind: (entry.coverKind ?? 'none') as any },
-          title: '',
-          artist: '',
-          duration: '',
-        };
-        downloadSong(partialSong, entry.collectionId).catch(() => {});
+  const refreshDownloads = useCallback(async () => {
+    try {
+      const tracks = await DownloadManager.getAllDownloadedTracks();
+      if (isMountedRef.current) {
+        setDownloadedTracks(tracks);
       }
-    };
-
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {
+      // silently ignore — state stays as-is
+    }
   }, []);
 
-  const downloadSong = useCallback(async (song: Song, _collectionId?: string) => {
-    const trackId = normalizeId(song.id);
+  useEffect(() => {
+    isMountedRef.current = true;
 
-    if (downloadedIdsRef.current.has(trackId)) return;
-    if (activeDownloadsRef.current.has(trackId)) return;
+    DownloadManager.syncDownloads().catch(() => {});
+    refreshDownloads();
 
-    if (!pendingRef.current[trackId]) {
-      dispatch(pendingAdded({
-        id: trackId,
-        entry: {
-          trackId,
-          streamUrl: song.streamUrl,
-          albumId: song.albumId,
-          artistId: song.artistId,
-          serverId: song.sourceServerId,
-          serverType: song.sourceServerType,
-          coverKind: song.cover?.kind,
-          collectionId: _collectionId,
-          requestedAt: Date.now(),
-        },
-      }));
+    // Re-fetch when a track finishes downloading
+    DownloadManager.onDownloadComplete(() => {
+      refreshDownloads();
+    });
+
+    // Also re-fetch on any state change to 'completed' (covers edge cases)
+    DownloadManager.onDownloadStateChange((_downloadId, _trackId, state) => {
+      if (state === 'completed') refreshDownloads();
+    });
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [refreshDownloads]);
+
+  // Reactive maps derived from downloadedTracks
+  const trackMap = useMemo(
+    () => new Map(downloadedTracks.map(t => [t.trackId, t])),
+    [downloadedTracks]
+  );
+
+  const hookIsTrackDownloaded = useCallback(
+    (trackId: string) => trackMap.has(trackId),
+    [trackMap]
+  );
+
+  const hookGetDownloadedTrack = useCallback(
+    (trackId: string) => trackMap.get(trackId),
+    [trackMap]
+  );
+
+  // Build a sync trackId→localPath map so getLocalPath works without async
+  const localPathMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    downloadedTracks.forEach(t => { map[t.trackId] = t.localPath; });
+    return map;
+  }, [downloadedTracks]);
+
+  // Reconstruct collection entries from track extraPayload — native
+  // getAllDownloadedPlaylists() is unreliable because it requires PlaylistManager
+  // to have registered the collection ID, which download paths never do.
+  const getAllDownloadedCollections = useCallback((): DownloadedCollectionEntry[] => {
+    const albumsById = new Map<string, { trackIds: string[]; downloadedAt: number }>();
+    const playlistsById = new Map<string, { trackIds: string[]; downloadedAt: number }>();
+
+    for (const dt of downloadedTracks) {
+      const ep = dt.originalTrack?.extraPayload as any;
+
+      const albumId = ep?.albumId;
+      if (albumId) {
+        const entry = albumsById.get(albumId) ?? { trackIds: [], downloadedAt: dt.downloadedAt };
+        entry.trackIds.push(dt.trackId);
+        if (dt.downloadedAt < entry.downloadedAt) entry.downloadedAt = dt.downloadedAt;
+        albumsById.set(albumId, entry);
+      }
+
+      const playlistId = ep?.playlistId;
+      if (playlistId) {
+        const entry = playlistsById.get(playlistId) ?? { trackIds: [], downloadedAt: dt.downloadedAt };
+        entry.trackIds.push(dt.trackId);
+        if (dt.downloadedAt < entry.downloadedAt) entry.downloadedAt = dt.downloadedAt;
+        playlistsById.set(playlistId, entry);
+      }
     }
 
-    const tmpPath = getTmpPath(trackId);
-    const finalPath = getTrackPath(trackId);
+    const albumEntries = Array.from(albumsById.entries()).map(([id, { trackIds, downloadedAt }]) => ({
+      id, type: 'album' as const, trackIds, downloadedAt,
+    }));
+    const playlistEntries = Array.from(playlistsById.entries()).map(([id, { trackIds, downloadedAt }]) => ({
+      id, type: 'playlist' as const, trackIds, downloadedAt,
+    }));
 
-    const task = FileSystem.createDownloadResumable(song.streamUrl, tmpPath);
-    activeDownloadsRef.current.set(trackId, task);
+    return [...albumEntries, ...playlistEntries];
+  }, [downloadedTracks]);
 
-    try {
-      const result = await task.downloadAsync();
-      if (!result || result.status !== 200) return;
+  const downloadTrack = useCallback(async (track: Song, playlistId?: string) => {
+    await DownloadManager.downloadTrack(buildTrackItem(track), playlistId);
+  }, []);
 
-      const tmpInfo = await FileSystem.getInfoAsync(tmpPath);
-      if (!tmpInfo.exists) return;
-
-      await FileSystem.moveAsync({ from: tmpPath, to: finalPath });
-
-      const finalInfo = await FileSystem.getInfoAsync(finalPath);
-      if (!finalInfo.exists) return;
-
-      const entry: DownloadedTrackEntry = {
-        trackId,
-        fileSize: (finalInfo as any).size ?? 0,
-        downloadedAt: Date.now(),
-        albumId: song.albumId ?? '',
-        artistId: song.artistId ?? '',
-        serverId: song.sourceServerId ?? '',
-        serverType: song.sourceServerType ?? '',
-        coverKind: song.cover?.kind ?? 'none',
-      };
-
-      dispatch(trackDownloaded(entry));
-      setDownloadedIds(prev => {
-        const next = new Set<string>();
-        prev.forEach(id => next.add(id));
-        next.add(trackId);
-        return next;
-      });
-    } catch (err) {
-      console.warn('[DownloadContext] Download error', err);
-    } finally {
-      dispatch(pendingRemoved(trackId));
-      FileSystem.deleteAsync(tmpPath, { idempotent: true }).catch(() => {});
-      activeDownloadsRef.current.delete(trackId);
-      setProgressTick(n => n + 1);
-    }
-  }, [dispatch]);
+  const downloadPlaylistTracks = useCallback(async (playlistId: string, tracks: Song[]) => {
+    await DownloadManager.downloadPlaylist(playlistId, tracks.map(buildTrackItem));
+  }, []);
 
   const downloadAlbumById = useCallback(async (albumId: string) => {
     const album = await api.albums.get(albumId);
     const songs = album.songs ?? [];
-    for (const song of songs) await downloadSong(song, albumId);
-    dispatch(collectionAdded({
-      id: albumId,
-      type: 'album',
-      trackIds: songs.map(s => s.id),
-      downloadedAt: Date.now(),
-    }));
-  }, [api, downloadSong, dispatch]);
+    if (songs.length > 0) {
+      await DownloadManager.downloadPlaylist(albumId, songs.map(buildTrackItem));
+    }
+  }, [api]);
 
   const downloadPlaylistById = useCallback(async (playlistId: string) => {
     const playlist = await api.playlists.get(playlistId);
     const songs = playlist.songs ?? [];
-    for (const song of songs) await downloadSong(song, playlistId);
-    dispatch(collectionAdded({
-      id: playlistId,
-      type: 'playlist',
-      trackIds: songs.map(s => s.id),
-      downloadedAt: Date.now(),
-    }));
-  }, [api, downloadSong, dispatch]);
-
-  const isTrackDownloaded = useCallback(
-    (id: string) => downloadedIds.has(normalizeId(id)),
-    [downloadedIds]
-  );
-
-  const isTrackDownloading = (id: string) =>
-    activeDownloadsRef.current.has(normalizeId(id));
-
-  const getLocalPath = useCallback(
-    (id: string) => {
-      const nid = normalizeId(id);
-      return downloadedIds.has(nid) ? getTrackPath(nid) : null;
-    },
-    [downloadedIds]
-  );
-
-  const getSongLocalUri = useCallback(async (id: string): Promise<string | null> => {
-    const path = getTrackPath(normalizeId(id));
-    const info = await FileSystem.getInfoAsync(path);
-    return info.exists ? path : null;
-  }, []);
+    if (songs.length > 0) {
+      await DownloadManager.downloadPlaylist(playlistId, songs.map(song => buildTrackItem(song, playlistId)));
+    }
+  }, [api]);
 
   const deleteDownloadedTrack = useCallback(async (trackId: string) => {
-    await FileSystem.deleteAsync(getTrackPath(trackId), { idempotent: true }).catch(() => {});
-    dispatch(trackRemoved(trackId));
-    setDownloadedIds(prev => {
-      const next = new Set(prev);
-      next.delete(trackId);
-      return next;
-    });
-  }, [dispatch]);
+    await DownloadManager.deleteDownloadedTrack(trackId);
+    await refreshDownloads();
+  }, [refreshDownloads]);
 
-  const cancelDownload = useCallback(async (id: string) => {
-    const task = activeDownloadsRef.current.get(id);
-    if (task?.cancelAsync) {
-      await task.cancelAsync().catch(() => {});
-      activeDownloadsRef.current.delete(id);
+  const cancelDownload = useCallback(async (downloadId: string) => {
+    await DownloadManager.cancelDownload(downloadId);
+  }, []);
+
+  const isTrackDownloading = useCallback((trackId: string) => {
+    return DownloadManager.isDownloading(trackId);
+  }, []);
+
+  const getCollectionDownloadState = useCallback((trackIds: string[]) => {
+    if (trackIds.length === 0) return { isDownloaded: false, isDownloading: false };
+    return {
+      isDownloaded: trackIds.every(id => hookIsTrackDownloaded(id)),
+      isDownloading: trackIds.some(id => DownloadManager.isDownloading(id)),
+    };
+  }, [hookIsTrackDownloaded]);
+
+  const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
+    const activeTasks = DownloadManager.getActiveDownloads();
+    for (const task of activeTasks) {
+      if (task.playlistId === collectionId) {
+        await DownloadManager.cancelDownload(task.downloadId).catch(() => {});
+      }
     }
-    dispatch(pendingRemoved(id));
-  }, [dispatch]);
+  }, []);
 
   const removeDownloadByCollectionId = useCallback(async (
     id: string,
@@ -289,75 +234,59 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     scope?: DownloadProviderScope
   ) => {
     for (const trackId of trackIds) {
-      const entry = tracksRef.current[trackId];
-      if (!entry) continue;
-      if (scope && !doesTrackMatchProviderScope(entry, scope)) continue;
-      await deleteDownloadedTrack(trackId);
+      const track = hookGetDownloadedTrack(trackId);
+      if (scope && track && !doesTrackMatchProviderScope(track, scope)) continue;
+      await DownloadManager.deleteDownloadedTrack(trackId).catch(() => {});
     }
-    dispatch(collectionRemoved(id));
-  }, [deleteDownloadedTrack, dispatch]);
-
-  const getCollectionDownloadState = useCallback((trackIds: string[]) => {
-    if (trackIds.length === 0) return { isDownloaded: false, isDownloading: false };
-    return {
-      isDownloaded: trackIds.every(id => downloadedIds.has(normalizeId(id))),
-      isDownloading: trackIds.some(id => activeDownloadsRef.current.has(normalizeId(id))),
-    };
-  }, [downloadedIds]);
-
-  const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
-    const col = collectionsRef.current[collectionId];
-    if (!col) return;
-    for (const trackId of col.trackIds) await cancelDownload(trackId);
-  }, [cancelDownload]);
+    // Best-effort remove the playlist entry
+    await DownloadManager.deleteDownloadedPlaylist(id).catch(() => {});
+    await refreshDownloads();
+  }, [hookGetDownloadedTrack, refreshDownloads]);
 
   const cancelDownloadAll = useCallback(async () => {
-    for (const [, task] of activeDownloadsRef.current) {
-      if (task?.cancelAsync) await task.cancelAsync().catch(() => {});
-    }
-    activeDownloadsRef.current.clear();
+    await DownloadManager.cancelAllDownloads();
   }, []);
 
   const clearDownloadsForProvider = useCallback(async (scope?: DownloadProviderScope) => {
-    const tracksToDelete = Object.values(tracksRef.current).filter(
-      entry => !scope || doesTrackMatchProviderScope(entry, scope)
-    );
-    for (const entry of tracksToDelete) await deleteDownloadedTrack(entry.trackId);
-
-    const deletedIds = new Set(tracksToDelete.map(e => e.trackId));
-    const remaining: Record<string, DownloadedCollectionEntry> = {};
-    for (const [colId, col] of Object.entries(collectionsRef.current)) {
-      const kept = col.trackIds.filter(id => !deletedIds.has(id));
-      if (kept.length > 0) remaining[colId] = { ...col, trackIds: kept };
+    const allTracks = await DownloadManager.getAllDownloadedTracks();
+    for (const track of allTracks) {
+      if (!scope || doesTrackMatchProviderScope(track, scope)) {
+        await DownloadManager.deleteDownloadedTrack(track.trackId).catch(() => {});
+      }
     }
-    dispatch(collectionsUpdated(remaining));
-  }, [deleteDownloadedTrack, dispatch]);
+    await refreshDownloads();
+  }, [refreshDownloads]);
 
   const clearAllDownloads = useCallback(async () => {
-    await cancelDownloadAll();
-    await FileSystem.deleteAsync(SONGS_DIR, { idempotent: true }).catch(() => {});
-    await FileSystem.makeDirectoryAsync(SONGS_DIR, { intermediates: true }).catch(() => {});
-    dispatch(allCleared());
-    setDownloadedIds(new Set());
-  }, [cancelDownloadAll, dispatch]);
+    await DownloadManager.deleteAllDownloads();
+    await refreshDownloads();
+  }, [refreshDownloads]);
 
-  const totalDownloadedBytes = Object.values(tracks).reduce((sum, t) => sum + t.fileSize, 0);
-  const downloadedTrackCount = downloadedIds.size;
+  const getSongLocalUri = useCallback(async (songId: string): Promise<string | null> => {
+    return DownloadManager.getLocalPath(songId);
+  }, []);
+
+  const getLocalPath = useCallback((trackId: string): string | null => {
+    return localPathMap[trackId] ?? null;
+  }, [localPathMap]);
+
+  const getAllDownloadedTracks = useCallback(() => downloadedTracks, [downloadedTracks]);
+
+  const totalDownloadedBytes = downloadedTracks.reduce((sum, t) => sum + t.fileSize, 0);
+  const downloadedTrackCount = downloadedTracks.length;
 
   const value: DownloadContextType = {
     configure: () => {},
-    downloadTrack: downloadSong,
-    downloadPlaylist: async (playlistId, trackList) => {
-      for (const t of trackList) await downloadSong(t, playlistId);
-    },
-    pauseDownload: async () => {},
-    resumeDownload: async () => {},
+    downloadTrack,
+    downloadPlaylist: downloadPlaylistTracks,
+    pauseDownload: async (id) => DownloadManager.pauseDownload(id),
+    resumeDownload: async (id) => DownloadManager.resumeDownload(id),
     cancelDownload,
-    isTrackDownloaded,
-    getAllDownloadedTracks: () => Object.values(tracks),
+    isTrackDownloaded: hookIsTrackDownloaded,
+    getAllDownloadedTracks,
     deleteDownloadedTrack,
-    getStorageInfo: async () => null,
-    setPlaybackSourcePreference: () => {},
+    getStorageInfo: () => DownloadManager.getStorageInfo(),
+    setPlaybackSourcePreference: (pref) => DownloadManager.setPlaybackSourcePreference(pref),
     downloadAlbumById,
     downloadPlaylistById,
     isTrackDownloading,
@@ -367,10 +296,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     cancelDownloadAll,
     clearDownloadsForProvider,
     clearAllDownloads,
-    downloadStateVersion: downloadedIds.size,
+    downloadStateVersion: downloadedTrackCount,
     getLocalPath,
     getSongLocalUri,
-    getAllDownloadedCollections: () => Object.values(collections),
+    getAllDownloadedCollections,
     totalDownloadedBytes,
     downloadedTrackCount,
   };

@@ -8,20 +8,17 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
-import TrackPlayer, {
-  Capability,
-  State,
-  Event,
-  usePlaybackState,
-  useProgress,
-  useTrackPlayerEvents,
-} from 'react-native-track-player';
+import {
+  TrackPlayer,
+  PlayerQueue,
+  useOnPlaybackStateChange,
+  useOnPlaybackProgressChange,
+  useOnChangeTrack,
+} from 'react-native-nitro-player';
 import { Album, Playlist, Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
-import { useDownload } from '@/contexts/DownloadContext';
 import { useApi } from '@/api';
-import { buildCover } from '@/utils/builders/buildCover';
+import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
@@ -93,14 +90,6 @@ export interface PlayingContextType {
 const PlayingContext = createContext<PlayingContextType | undefined>(undefined);
 const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, duration: 0, buffered: 0 });
 
-function normalizeProgress(raw: ReturnType<typeof useProgress>): PlaybackProgress {
-  return {
-    position: typeof raw?.position === 'number' && !Number.isNaN(raw.position) ? raw.position : 0,
-    duration: typeof raw?.duration === 'number' && !Number.isNaN(raw.duration) ? raw.duration : 0,
-    buffered: typeof raw?.buffered === 'number' && !Number.isNaN(raw.buffered) ? raw.buffered : 0,
-  };
-}
-
 export const usePlaying = () => {
   const ctx = useContext(PlayingContext);
   if (!ctx) throw new Error('usePlaying must be used within PlayingProvider');
@@ -111,23 +100,17 @@ export const usePlayingProgress = () => useContext(PlayingProgressContext);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
-  const playbackState = usePlaybackState();
-  const isPlaying = playbackState.state === State.Playing;
-  const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', setAppState);
-    return () => sub.remove();
-  }, []);
+  const { state: playbackState } = useOnPlaybackStateChange();
+  const isPlaying = playbackState === 'playing';
 
-  const rawProgress = useProgress(500);
-  const progress = useMemo(
-    () => appState === 'active' ? normalizeProgress(rawProgress) : { position: 0, duration: 0, buffered: 0 },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [appState, rawProgress.position, rawProgress.duration, rawProgress.buffered]
-  );
+  const { position: rawPosition, totalDuration: rawDuration } = useOnPlaybackProgressChange();
+  const progress = useMemo<PlaybackProgress>(() => ({
+    position: typeof rawPosition === 'number' && !Number.isNaN(rawPosition) ? rawPosition : 0,
+    duration: typeof rawDuration === 'number' && !Number.isNaN(rawDuration) ? rawDuration : 0,
+    buffered: 0,
+  }), [rawPosition, rawDuration]);
 
   const api = useApi();
-  const { getSongLocalUri } = useDownload();
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
@@ -146,31 +129,28 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const currentIndexRef = useRef(0);
   const currentSongRef = useRef<Song | null>(null);
   const repeatOnRef = useRef(false);
+  const isPlayingRef = useRef(false);
+  const sessionPlaylistIdRef = useRef<string | null>(null);
 
   const bumpQueue = () => setQueueVersion(v => v + 1);
 
   useEffect(() => { repeatOnRef.current = repeatOn; }, [repeatOn]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   useEffect(() => {
-    TrackPlayer.setupPlayer({ autoHandleInterruptions: true }).catch(() => { }).then(() =>
-      TrackPlayer.updateOptions({
-        capabilities: [
-          Capability.Play,
-          Capability.Pause,
-          Capability.SkipToNext,
-          Capability.SkipToPrevious,
-          Capability.Stop,
-          Capability.SeekTo,
-        ],
-      })
-    ).catch(() => { });
+    TrackPlayer.configure({
+      androidAutoEnabled: true,
+      carPlayEnabled: true,
+      showInNotification: true,
+      lookaheadCount: 10,
+    }).catch(() => { });
   }, []);
 
   useEffect(() => {
-    if (rawProgress.position != null && rawProgress.position > 0) {
-      lastListenedSecondsRef.current = Math.floor(rawProgress.position);
+    if (rawPosition != null && rawPosition > 0) {
+      lastListenedSecondsRef.current = Math.floor(rawPosition);
     }
-  }, [rawProgress.position]);
+  }, [rawPosition]);
 
   const scrobbleIfNeeded = useCallback(async (
     song: Song | null,
@@ -203,93 +183,53 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   }, [activeServer?.id, listenBrainzConfig?.token, dispatch]);
 
-  // Load a song into the player: reset, add, play. Checks local file right before playing.
-  const loadAndPlay = useCallback(async (song: Song, opts?: { clearScrobbleState?: boolean }) => {
-    if (opts?.clearScrobbleState) lastScrobbledIdRef.current = null;
+  // Create a fresh session playlist and start playing from the given index
+  const loadSessionPlaylist = useCallback(async (songs: Song[], startIndex: number) => {
+    // Delete previous session playlist
+    if (sessionPlaylistIdRef.current) {
+      await PlayerQueue.deletePlaylist(sessionPlaylistIdRef.current).catch(() => { });
+      sessionPlaylistIdRef.current = null;
+    }
+
+    const tracks = songs.map(buildTrackItem);
+    const playlistId = await PlayerQueue.createPlaylist('Yuzic Session');
+    sessionPlaylistIdRef.current = playlistId;
+    await PlayerQueue.addTracksToPlaylist(playlistId, tracks);
+    await PlayerQueue.loadPlaylist(playlistId);
+
+    lastScrobbledIdRef.current = null;
     scrobbleStartTimeRef.current = Date.now();
     lastListenedSecondsRef.current = 0;
 
-    await TrackPlayer.reset();
-
-    const localUri = await getSongLocalUri(song.id).catch(() => null);
-    const url = localUri ?? song.streamUrl;
-    if (!url) return;
-
-    const cover = buildCover(song.cover, 'grid') || undefined;
-
-    await TrackPlayer.add({
-      id: song.id,
-      title: song.title,
-      artist: song.artist,
-      artwork: cover,
-      url,
-      duration: parseFloat(song.duration || '0'),
-    });
-
-    setCurrentSong(song);
+    await TrackPlayer.playSong(songs[startIndex].id, playlistId);
     await TrackPlayer.play();
-  }, [getSongLocalUri]);
+  }, []);
 
-  // Preload the next song in the native queue so gapless playback works.
-  const appendNextIfNeeded = useCallback(async (index: number) => {
-    const next = queueRef.current[index + 1];
-    if (!next) return;
-    try {
-      const nativeQueue = await TrackPlayer.getQueue();
-      if (nativeQueue.some(t => t.id === next.id)) return;
-      const localUri = await getSongLocalUri(next.id).catch(() => null);
-      const url = localUri ?? next.streamUrl;
-      if (!url) return;
-      const cover = buildCover(next.cover, 'grid') || undefined;
-      await TrackPlayer.add({
-        id: next.id,
-        title: next.title,
-        artist: next.artist,
-        artwork: cover,
-        url,
-        duration: parseFloat(next.duration || '0'),
+  // Track-change handler: update current song/index, scrobble previous
+  const { track: nitroTrack } = useOnChangeTrack();
+  useEffect(() => {
+    if (!nitroTrack) return;
+
+    const prev = currentSongRef.current;
+    // Scrobble previous song if it changed
+    if (prev && prev.id !== nitroTrack.id) {
+      scrobbleIfNeeded(prev, {
+        listenedSeconds: lastListenedSecondsRef.current,
+        startTime: scrobbleStartTimeRef.current,
       });
-    } catch (err) {
-      console.warn('[PlayingContext] appendNextIfNeeded failed', err);
-    }
-  }, [getSongLocalUri]);
-
-  useTrackPlayerEvents(
-    [Event.PlaybackActiveTrackChanged, Event.PlaybackError],
-    async (event) => {
-      if (event.type === Event.PlaybackError) {
-        toast.error(t('common.playbackError'));
-        const nextIdx = currentIndexRef.current + 1;
-        if (nextIdx < queueRef.current.length) {
-          currentIndexRef.current = nextIdx;
-          setCurrentIndex(nextIdx);
-          await loadAndPlay(queueRef.current[nextIdx]);
-        }
-        return;
-      }
-
-      if (!event.track) return;
-
-      const prev = currentSongRef.current;
-      if (prev) {
-        await scrobbleIfNeeded(prev, {
-          listenedSeconds: lastListenedSecondsRef.current,
-          startTime: scrobbleStartTimeRef.current,
-        });
-      }
-
-      const newIndex = queueRef.current.findIndex(s => s.id === event.track!.id);
-      if (newIndex === -1) return;
-
       scrobbleStartTimeRef.current = Date.now();
       lastListenedSecondsRef.current = 0;
-      currentIndexRef.current = newIndex;
-      setCurrentIndex(newIndex);
-      currentSongRef.current = queueRef.current[newIndex];
-      setCurrentSong(queueRef.current[newIndex]);
-      await appendNextIfNeeded(newIndex);
     }
-  );
+
+    const newIndex = queueRef.current.findIndex(s => s.id === nitroTrack.id);
+    if (newIndex === -1) return;
+
+    currentIndexRef.current = newIndex;
+    setCurrentIndex(newIndex);
+    currentSongRef.current = queueRef.current[newIndex];
+    setCurrentSong(queueRef.current[newIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nitroTrack?.id]);
 
   const playSong = async (song: Song) => {
     queueRef.current = [song];
@@ -297,8 +237,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setShuffleOn(false);
     currentIndexRef.current = 0;
     setCurrentIndex(0);
+    currentSongRef.current = song;
+    setCurrentSong(song);
     bumpQueue();
-    await loadAndPlay(song, { clearScrobbleState: true });
+    await loadSessionPlaylist([song], 0);
   };
 
   const playSongInCollection = async (
@@ -317,14 +259,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     } else {
       originalQueueRef.current = null;
       index = songs.findIndex(s => s.id === selectedSong.id);
+      if (index === -1) index = 0;
       setShuffleOn(false);
     }
 
     queueRef.current = songs;
     currentIndexRef.current = index;
     setCurrentIndex(index);
+    currentSongRef.current = songs[index];
+    setCurrentSong(songs[index]);
     bumpQueue();
-    await loadAndPlay(songs[index], { clearScrobbleState: true });
+    await loadSessionPlaylist(songs, index);
   };
 
   const addCollectionToQueue = (collection: Album | Playlist) => {
@@ -332,6 +277,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const toAdd = collection.songs.filter(s => !existingIds.has(s.id));
     if (!toAdd.length) return;
     queueRef.current = [...queueRef.current, ...toAdd];
+    if (sessionPlaylistIdRef.current) {
+      PlayerQueue.addTracksToPlaylist(sessionPlaylistIdRef.current, toAdd.map(buildTrackItem))
+        .catch(() => { });
+    }
     bumpQueue();
   };
 
@@ -340,6 +289,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const toAdd = shuffleArray(collection.songs.filter(s => !existingIds.has(s.id)));
     if (!toAdd.length) return;
     queueRef.current = [...queueRef.current, ...toAdd];
+    if (sessionPlaylistIdRef.current) {
+      PlayerQueue.addTracksToPlaylist(sessionPlaylistIdRef.current, toAdd.map(buildTrackItem))
+        .catch(() => { });
+    }
     bumpQueue();
   };
 
@@ -351,14 +304,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const nextIdx = currentIndexRef.current + 1;
     if (nextIdx >= queueRef.current.length) {
       if (!repeatOnRef.current) return;
-      currentIndexRef.current = 0;
-      setCurrentIndex(0);
-      await loadAndPlay(queueRef.current[0]);
+      await TrackPlayer.skipToIndex(0);
+      if (isPlayingRef.current) await TrackPlayer.play();
       return;
     }
-    currentIndexRef.current = nextIdx;
-    setCurrentIndex(nextIdx);
-    await loadAndPlay(queueRef.current[nextIdx]);
+    await TrackPlayer.skipToNext();
+    if (isPlayingRef.current) await TrackPlayer.play();
   };
 
   const skipToPrevious = async () => {
@@ -366,18 +317,16 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       listenedSeconds: lastListenedSecondsRef.current,
       startTime: scrobbleStartTimeRef.current,
     });
-    const prev = currentIndexRef.current - 1;
-    if (prev < 0) return;
-    currentIndexRef.current = prev;
-    setCurrentIndex(prev);
-    await loadAndPlay(queueRef.current[prev]);
+    const prevIdx = currentIndexRef.current - 1;
+    if (prevIdx < 0) return;
+    await TrackPlayer.skipToPrevious();
+    if (isPlayingRef.current) await TrackPlayer.play();
   };
 
   const skipTo = async (index: number) => {
     if (!queueRef.current[index]) return;
-    currentIndexRef.current = index;
-    setCurrentIndex(index);
-    await loadAndPlay(queueRef.current[index]);
+    await TrackPlayer.skipToIndex(index);
+    if (isPlayingRef.current) await TrackPlayer.play();
   };
 
   const pauseSong = async () => TrackPlayer.pause();
@@ -390,11 +339,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [item] = q.splice(from, 1);
     q.splice(to, 0, item);
     queueRef.current = q;
+    if (sessionPlaylistIdRef.current) {
+      PlayerQueue.reorderTrackInPlaylist(sessionPlaylistIdRef.current, item.id, to)
+        .catch(() => { });
+    }
     setCurrentIndex(prev => {
-      if (prev === from) return to;
-      if (from < prev && to >= prev) return prev - 1;
-      if (from > prev && to <= prev) return prev + 1;
-      return prev;
+      let next = prev;
+      if (prev === from) next = to;
+      else if (from < prev && to >= prev) next = prev - 1;
+      else if (from > prev && to <= prev) next = prev + 1;
+      currentIndexRef.current = next;
+      return next;
     });
     bumpQueue();
   };
@@ -402,14 +357,26 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const addToQueue = (song: Song) => {
     if (queueRef.current.some(s => s.id === song.id)) return;
     queueRef.current = [...queueRef.current, song];
+    if (sessionPlaylistIdRef.current) {
+      PlayerQueue.addTrackToPlaylist(sessionPlaylistIdRef.current, buildTrackItem(song))
+        .catch(() => { });
+    }
     bumpQueue();
   };
 
   const playNext = (song: Song) => {
     if (!currentSongRef.current) return;
+    const insertIdx = currentIndexRef.current + 1;
     const q = queueRef.current.filter(s => s.id !== song.id);
-    q.splice(currentIndexRef.current + 1, 0, song);
+    q.splice(insertIdx, 0, song);
     queueRef.current = q;
+    if (sessionPlaylistIdRef.current) {
+      PlayerQueue.addTrackToPlaylist(
+        sessionPlaylistIdRef.current,
+        buildTrackItem(song),
+        insertIdx
+      ).catch(() => { });
+    }
     bumpQueue();
   };
 
@@ -439,19 +406,56 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       originalQueueRef.current = queueRef.current;
       const current = queueRef.current[currentIndexRef.current];
       const rest = queueRef.current.filter((_, i) => i !== currentIndexRef.current);
-      queueRef.current = [current, ...shuffleArray(rest)];
+      const shuffled = [current, ...shuffleArray(rest)];
+      queueRef.current = shuffled;
       currentIndexRef.current = 0;
       setCurrentIndex(0);
       setShuffleOn(true);
+      bumpQueue();
+      // Recreate native playlist in shuffled order, preserving position
+      const savedPosition = lastListenedSecondsRef.current;
+      if (sessionPlaylistIdRef.current) {
+        await PlayerQueue.deletePlaylist(sessionPlaylistIdRef.current).catch(() => { });
+        sessionPlaylistIdRef.current = null;
+      }
+      const playlistId = await PlayerQueue.createPlaylist('Yuzic Session');
+      sessionPlaylistIdRef.current = playlistId;
+      await PlayerQueue.addTracksToPlaylist(playlistId, shuffled.map(buildTrackItem));
+      await PlayerQueue.loadPlaylist(playlistId);
+      await TrackPlayer.playSong(current.id, playlistId);
+      if (isPlayingRef.current) await TrackPlayer.play();
+      if (savedPosition > 2) {
+        await TrackPlayer.seek(savedPosition).catch(() => { });
+      }
     } else if (originalQueueRef.current) {
       const original = originalQueueRef.current;
-      const idx = original.findIndex(s => s.id === currentSongRef.current?.id);
+      const currentId = currentSongRef.current?.id;
+      const idx = currentId ? original.findIndex(s => s.id === currentId) : 0;
+      const adjustedIdx = idx === -1 ? 0 : idx;
       queueRef.current = original;
-      currentIndexRef.current = idx;
-      setCurrentIndex(idx);
+      currentIndexRef.current = adjustedIdx;
+      setCurrentIndex(adjustedIdx);
       setShuffleOn(false);
+      originalQueueRef.current = null;
+      bumpQueue();
+      // Recreate native playlist in original order, preserving position
+      const savedPosition = lastListenedSecondsRef.current;
+      if (sessionPlaylistIdRef.current) {
+        await PlayerQueue.deletePlaylist(sessionPlaylistIdRef.current).catch(() => { });
+        sessionPlaylistIdRef.current = null;
+      }
+      const playlistId = await PlayerQueue.createPlaylist('Yuzic Session');
+      sessionPlaylistIdRef.current = playlistId;
+      await PlayerQueue.addTracksToPlaylist(playlistId, original.map(buildTrackItem));
+      await PlayerQueue.loadPlaylist(playlistId);
+      if (currentSongRef.current) {
+        await TrackPlayer.playSong(currentSongRef.current.id, playlistId);
+        if (isPlayingRef.current) await TrackPlayer.play();
+      }
+      if (savedPosition > 2) {
+        await TrackPlayer.seek(savedPosition).catch(() => { });
+      }
     }
-    bumpQueue();
   };
 
   const toggleRepeat = () => setRepeatOn(prev => !prev);
@@ -460,7 +464,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     lastScrobbledIdRef.current = null;
     scrobbleStartTimeRef.current = 0;
     lastListenedSecondsRef.current = 0;
-    await TrackPlayer.reset();
+    if (sessionPlaylistIdRef.current) {
+      await TrackPlayer.pause().catch(() => { });
+      await PlayerQueue.deletePlaylist(sessionPlaylistIdRef.current).catch(() => { });
+      sessionPlaylistIdRef.current = null;
+    }
     queueRef.current = [];
     originalQueueRef.current = null;
     currentIndexRef.current = 0;
@@ -497,7 +505,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     addToQueue,
     playNext,
     playSimilar,
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [currentSong, isPlaying, currentIndex, queueVersion, shuffleOn, repeatOn]);
 
   return (

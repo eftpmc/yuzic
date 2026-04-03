@@ -1,8 +1,10 @@
-import TrackPlayer from 'react-native-track-player';
+import { Platform } from 'react-native';
+if (Platform.OS === 'android') {
+  require('@/carplay/AndroidAutoApp');
+}
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 
-TrackPlayer.registerPlaybackService(() => require('../service').default);
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,6 +13,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import { PlayingProvider } from '@/contexts/PlayingContext';
+import { CarPlayService } from '@/carplay/CarPlayService';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
@@ -62,6 +65,7 @@ function AppShell() {
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
         <PlayingProvider>
+          <CarPlayService />
           <SearchProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
