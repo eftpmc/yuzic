@@ -10,13 +10,13 @@ import { useApi } from '@/api';
 import type { Album, Playlist } from '@/types';
 
 export function CarPlayService() {
-  const { playSongInCollection, toggleShuffle, toggleRepeat, getQueue, shuffleOn, repeatOn } = usePlaying();
+  const { playSongInCollection, toggleShuffle, toggleRepeat, shuffleOn, repeatOn } = usePlaying();
   const api = useApi();
 
   const playSongInCollectionRef = useRef(playSongInCollection);
   const toggleShuffleRef = useRef(toggleShuffle);
   const toggleRepeatRef = useRef(toggleRepeat);
-  const getQueueRef = useRef(getQueue);
+
   const shuffleOnRef = useRef(shuffleOn);
   const repeatOnRef = useRef(repeatOn);
   const apiRef = useRef(api);
@@ -24,7 +24,7 @@ export function CarPlayService() {
   useEffect(() => { playSongInCollectionRef.current = playSongInCollection; }, [playSongInCollection]);
   useEffect(() => { toggleShuffleRef.current = toggleShuffle; }, [toggleShuffle]);
   useEffect(() => { toggleRepeatRef.current = toggleRepeat; }, [toggleRepeat]);
-  useEffect(() => { getQueueRef.current = getQueue; }, [getQueue]);
+
   useEffect(() => { shuffleOnRef.current = shuffleOn; }, [shuffleOn]);
   useEffect(() => { repeatOnRef.current = repeatOn; }, [repeatOn]);
   useEffect(() => { apiRef.current = api; }, [api]);
@@ -103,42 +103,10 @@ export function CarPlayService() {
       // via the standard CPNowPlayingButton active state.
       new NowPlayingTemplate({
         id: 'cp-nowplaying',
-        upNextButtonEnabled: true,
-        upNextButtonTitle: 'Queue',
         buttons: [
           { id: 'cp-shuffle', type: 'shuffle' },
           { id: 'cp-repeat', type: 'repeat' },
         ],
-        onUpNextButtonPressed: () => {
-          const queue = getQueueRef.current();
-          if (!queue.length) return;
-          const queueTemplate = new ListTemplate({
-            id: 'cp-queue',
-            title: 'Queue',
-            sections: [{
-              items: queue.map((song, i) => ({
-                id: song.id,
-                text: song.title,
-                detailText: song.artist,
-                isPlaying: i === 0,
-              })),
-            }],
-            onItemSelect: async ({ index }) => {
-              try {
-                const song = queue[index];
-                if (!song) return;
-                // Build a minimal collection from the remaining queue
-                const collection = {
-                  id: 'cp-queue-collection',
-                  title: 'Queue',
-                  songs: queue.slice(index),
-                } as any;
-                await playSongInCollectionRef.current(song, collection);
-              } catch {}
-            },
-          });
-          CarPlay.pushTemplate(queueTemplate, true);
-        },
         onButtonPressed: ({ id }) => {
           if (id === 'cp-shuffle') {
             toggleShuffleRef.current().catch(() => {});

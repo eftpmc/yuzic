@@ -37,6 +37,46 @@ index 1ca1eda..82a6b6a 100644
      val newQueueTracks = ArrayList<TrackItem>(playNextStack.size + upNextQueue.size + currentTracks.size)
      val currentId = exo.currentMediaItem?.mediaId?.let { extractTrackId(it) }
  
+diff --git a/node_modules/react-native-nitro-player/ios/core/TrackPlayerListener.swift b/node_modules/react-native-nitro-player/ios/core/TrackPlayerListener.swift
+index 1446071..7d8501f 100644
+--- a/node_modules/react-native-nitro-player/ios/core/TrackPlayerListener.swift
++++ b/node_modules/react-native-nitro-player/ios/core/TrackPlayerListener.swift
+@@ -78,8 +78,15 @@ extension TrackPlayerCore {
+     guard let player, let currentItem = player.currentItem,
+       currentItem.status == .readyToPlay else { return }
+ 
+-    let duration = currentItem.duration.seconds
+-    guard duration > 0 && !duration.isNaN && !duration.isInfinite else { return }
++    let nativeDuration = currentItem.duration.seconds
++    let duration: Double
++    if nativeDuration > 0 && !nativeDuration.isNaN && !nativeDuration.isInfinite {
++      duration = nativeDuration
++    } else if let meta = currentTracks[safe: currentTrackIndex], meta.duration > 0 {
++      duration = meta.duration
++    } else {
++      return
++    }
+ 
+     let interval: Double
+     if duration > Constants.twoHoursInSeconds { interval = Constants.boundaryIntervalLong }
+@@ -104,8 +111,15 @@ extension TrackPlayerCore {
+     guard player.rate > 0 else { return }
+ 
+     let position = currentItem.currentTime().seconds
+-    let duration = currentItem.duration.seconds
+-    guard duration > 0 && !duration.isNaN && !duration.isInfinite else { return }
++    let nativeDuration = currentItem.duration.seconds
++    let duration: Double
++    if nativeDuration > 0 && !nativeDuration.isNaN && !nativeDuration.isInfinite {
++      duration = nativeDuration
++    } else if let meta = currentTracks[safe: currentTrackIndex], meta.duration > 0 {
++      duration = meta.duration
++    } else {
++      return
++    }
+ 
+     NitroPlayerLogger.log("TrackPlayerCore", "⏱️ Boundary crossed - position: \(Int(position))s / \(Int(duration))s")
+ 
 diff --git a/node_modules/react-native-nitro-player/ios/core/TrackPlayerQueueBuild.swift b/node_modules/react-native-nitro-player/ios/core/TrackPlayerQueueBuild.swift
 index d998af7..0e26b48 100644
 --- a/node_modules/react-native-nitro-player/ios/core/TrackPlayerQueueBuild.swift
@@ -76,3 +116,23 @@ index d998af7..0e26b48 100644
      // Build the desired upcoming track list
      var newQueueTracks: [TrackItem] = []
      let currentId = currentItem?.trackId
+diff --git a/node_modules/react-native-nitro-player/ios/media/MediaSessionManager.swift b/node_modules/react-native-nitro-player/ios/media/MediaSessionManager.swift
+index f0d6cc4..bb51a7d 100644
+--- a/node_modules/react-native-nitro-player/ios/media/MediaSessionManager.swift
++++ b/node_modules/react-native-nitro-player/ios/media/MediaSessionManager.swift
+@@ -140,6 +140,7 @@ class MediaSessionManager {
+       } else {
+         // Write info first without artwork, then patch it in when loaded
+         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
++        MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
+         loadArtwork(url: artworkUrl) { [weak self] image in
+           guard let self = self, let image = image else { return }
+           guard self.lastArtworkUrl == artworkUrl else { return }
+@@ -157,6 +158,7 @@ class MediaSessionManager {
+     }
+ 
+     MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
++    MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
+   }
+ 
+   // MARK: - Command Center State
