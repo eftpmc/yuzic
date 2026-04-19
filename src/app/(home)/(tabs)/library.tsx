@@ -50,7 +50,7 @@ import SortBottomSheet from '@/screens/home/components/SortBottomSheet'
 import GridSettingsBottomSheet from '@/screens/home/components/GridSettingsBottomSheet'
 
 type Filter = 'playlists' | 'albums' | 'artists' | 'tracks' | 'downloaded' | null
-type SortOrder = 'title' | 'recent' | 'userplays' | 'year'
+type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded'
 
 type LibraryItem =
   | { kind: 'album'; data: Album }
@@ -106,6 +106,13 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
         return 0
       }
       return getPlays(b) - getPlays(a)
+    }
+    if (order === 'recentlyAdded') {
+      const getCreated = (x: LibraryItem): number => {
+        const created = (x.data as any).created
+        return created ? new Date(created).getTime() : 0
+      }
+      return getCreated(b) - getCreated(a)
     }
     return 0
   })
@@ -208,10 +215,11 @@ export default function LibraryScreen() {
   ], [t])
 
   const SORT_LABELS = useMemo((): Record<SortOrder, string> => ({
-    recent:    t('home.sort.mostRecent'),
-    title:     t('home.sort.alphabetical'),
-    year:      t('home.sort.releaseYear'),
-    userplays: t('home.sort.mostPlayed'),
+    recent:        t('home.sort.mostRecent'),
+    recentlyAdded: t('home.sort.recentlyAdded'),
+    title:         t('home.sort.alphabetical'),
+    year:          t('home.sort.releaseYear'),
+    userplays:     t('home.sort.mostPlayed'),
   }), [t])
 
   const secondaryColor = isDarkMode ? '#aaa' : '#666'

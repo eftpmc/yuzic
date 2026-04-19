@@ -75,7 +75,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
 
   const toggleDownload = async () => {
     if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
-    await downloadAlbumById(album.id);
+    await downloadAlbumById(album.id, songs);
   };
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 

@@ -71,7 +71,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
 
   const toggleDownload = async () => {
     if (!songs.length || isPlaylistDownloading || isPlaylistDownloaded) return;
-    await downloadPlaylistById(playlist.id);
+    await downloadPlaylistById(playlist.id, songs);
   };
 
   return (

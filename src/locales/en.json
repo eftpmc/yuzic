@@ -331,6 +331,7 @@
       "mostRecent": "Most Recent",
       "mostPlayed": "Most Played",
       "releaseYear": "Release Year",
+      "recentlyAdded": "Recently Added",
       "lastModified": "Last Modified"
     },
     "sortSheet": {
@@ -470,14 +471,23 @@
   "externalAlbum": {
     "menu": {
       "title": "External Album",
-      "downloadToServer": "Download to Server"
+      "downloadToServer": "Download to Server",
+      "inLibrary": "On Server",
+      "downloading": "Downloading to server… {{progress}}%"
+    },
+    "serverStatus": {
+      "onServer": "On your server",
+      "downloadingToServer": "Downloading to server · {{progress}}%"
     },
     "download": {
       "noDownloader": "No active downloader connected.",
       "addedToLidarr": "Album added to Lidarr!",
       "addedToSlskd": "Album added to slskd queue!",
       "failed": "Download failed.",
-      "startFailed": "Failed to start download."
+      "startFailed": "Failed to start download.",
+      "chooseService": "Choose a service",
+      "lidarrDesc": "Music collection manager",
+      "slskdDesc": "Peer-to-peer file sharing"
     },
     "header": {
       "songs": "{{count}} song",

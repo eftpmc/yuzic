@@ -33,8 +33,8 @@ type DownloadContextType = {
   deleteDownloadedTrack: (trackId: string) => Promise<void>;
   getStorageInfo: () => Promise<any>;
   setPlaybackSourcePreference: (pref: 'auto' | 'download' | 'network') => void;
-  downloadAlbumById: (albumId: string) => Promise<void>;
-  downloadPlaylistById: (playlistId: string) => Promise<void>;
+  downloadAlbumById: (albumId: string, songs?: Song[]) => Promise<void>;
+  downloadPlaylistById: (playlistId: string, songs?: Song[]) => Promise<void>;
   isTrackDownloading: (trackId: string) => boolean;
   getCollectionDownloadState: (trackIds: string[]) => {
     isDownloaded: boolean;
@@ -81,6 +81,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Own state — avoids useDownloadedTracks which calls getAllDownloadedPlaylists()
   // (broken: requires PlaylistManager to know download collection IDs, which it never does)
   const [downloadedTracks, setDownloadedTracks] = useState<DownloadedTrack[]>([]);
+  const [downloadStateVersion, setDownloadStateVersion] = useState(0);
 
   const refreshDownloads = useCallback(async () => {
     try {
@@ -104,9 +105,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       refreshDownloads();
     });
 
-    // Also re-fetch on any state change to 'completed' (covers edge cases)
+    // Re-fetch on completion; bump version on any state change so UI reacts immediately
     DownloadManager.onDownloadStateChange((_downloadId, _trackId, state) => {
       if (state === 'completed') refreshDownloads();
+      setDownloadStateVersion(v => v + 1);
     });
 
     return () => {
@@ -182,19 +184,17 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     await DownloadManager.downloadPlaylist(playlistId, tracks.map(buildTrackItem));
   }, []);
 
-  const downloadAlbumById = useCallback(async (albumId: string) => {
-    const album = await api.albums.get(albumId);
-    const songs = album.songs ?? [];
-    if (songs.length > 0) {
-      await DownloadManager.downloadPlaylist(albumId, songs.map(buildTrackItem));
+  const downloadAlbumById = useCallback(async (albumId: string, songs?: Song[]) => {
+    const tracksToDownload = songs ?? (await api.albums.get(albumId)).songs ?? [];
+    if (tracksToDownload.length > 0) {
+      await DownloadManager.downloadPlaylist(albumId, tracksToDownload.map(buildTrackItem));
     }
   }, [api]);
 
-  const downloadPlaylistById = useCallback(async (playlistId: string) => {
-    const playlist = await api.playlists.get(playlistId);
-    const songs = playlist.songs ?? [];
-    if (songs.length > 0) {
-      await DownloadManager.downloadPlaylist(playlistId, songs.map(song => buildTrackItem(song, playlistId)));
+  const downloadPlaylistById = useCallback(async (playlistId: string, songs?: Song[]) => {
+    const tracksToDownload = songs ?? (await api.playlists.get(playlistId)).songs ?? [];
+    if (tracksToDownload.length > 0) {
+      await DownloadManager.downloadPlaylist(playlistId, tracksToDownload.map(s => buildTrackItem(s, playlistId)));
     }
   }, [api]);
 
@@ -296,7 +296,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     cancelDownloadAll,
     clearDownloadsForProvider,
     clearAllDownloads,
-    downloadStateVersion: downloadedTrackCount,
+    downloadStateVersion,
     getLocalPath,
     getSongLocalUri,
     getAllDownloadedCollections,

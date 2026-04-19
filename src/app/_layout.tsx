@@ -1,7 +1,3 @@
-import { Platform } from 'react-native';
-if (Platform.OS === 'android') {
-  require('@/carplay/AndroidAutoApp');
-}
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 
@@ -13,7 +9,6 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { Toasts } from '@backpackapp-io/react-native-toast';
 import { PlayingProvider } from '@/contexts/PlayingContext';
-import { CarPlayService } from '@/carplay/CarPlayService';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
@@ -65,8 +60,7 @@ function AppShell() {
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
         <PlayingProvider>
-          <CarPlayService />
-          <SearchProvider>
+<SearchProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
               <BottomSheetModalProvider>

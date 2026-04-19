@@ -94,7 +94,7 @@ export default function HomeLayout() {
                     style={StyleSheet.absoluteFill}
                     pointerEvents="none"
                 />
-                <View style={styles.tabRow}>
+<View style={styles.tabRow}>
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return
@@ -127,6 +127,7 @@ export default function HomeLayout() {
             <View style={[styles.playingBarHolder, { bottom: tabRowHeight }]}>
                 <PlayingBar />
             </View>
+
         </View>
     );
 }

@@ -123,7 +123,7 @@ const AlbumOptions = forwardRef<
 
   const handleDownload = async () => {
     if (!album || isDownloaded || isDownloading) return;
-    await downloadAlbumById(album.id);
+    await downloadAlbumById(album.id, songs);
   };
 
   if (!album) {

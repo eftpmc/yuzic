@@ -1,7 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export type DownloaderType = 'lidarr' | 'slskd';
-
 export interface LidarrConfig {
   serverUrl: string;
   apiKey: string;
@@ -15,7 +13,6 @@ export interface SlskdConfig {
 }
 
 export interface PerServerDownloadersState {
-  activeDownloader: DownloaderType | null;
   lidarr: LidarrConfig;
   slskd: SlskdConfig;
 }
@@ -25,7 +22,6 @@ export interface DownloadersState {
 }
 
 const defaultPerServer: PerServerDownloadersState = {
-  activeDownloader: null,
   lidarr: {
     serverUrl: '',
     apiKey: '',
@@ -53,10 +49,6 @@ const downloadersSlice = createSlice({
   name: 'downloaders',
   initialState,
   reducers: {
-    setActiveDownloader(state, action: PayloadAction<{ serverId: string; value: DownloaderType | null }>) {
-      const entry = getOrCreate(state, action.payload.serverId);
-      entry.activeDownloader = action.payload.value;
-    },
     setLidarrServerUrl(state, action: PayloadAction<{ serverId: string; value: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.lidarr.serverUrl = action.payload.value;
@@ -72,14 +64,12 @@ const downloadersSlice = createSlice({
     connectLidarr(state, action: PayloadAction<{ serverId: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.lidarr.isAuthenticated = true;
-      entry.activeDownloader = 'lidarr';
     },
     disconnectLidarr(state, action: PayloadAction<{ serverId: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.lidarr.serverUrl = '';
       entry.lidarr.apiKey = '';
       entry.lidarr.isAuthenticated = false;
-      entry.activeDownloader = entry.activeDownloader === 'lidarr' ? null : entry.activeDownloader;
     },
     setSlskdServerUrl(state, action: PayloadAction<{ serverId: string; value: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
@@ -96,20 +86,17 @@ const downloadersSlice = createSlice({
     connectSlskd(state, action: PayloadAction<{ serverId: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.slskd.isAuthenticated = true;
-      entry.activeDownloader = 'slskd';
     },
     disconnectSlskd(state, action: PayloadAction<{ serverId: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.slskd.serverUrl = '';
       entry.slskd.apiKey = '';
       entry.slskd.isAuthenticated = false;
-      entry.activeDownloader = entry.activeDownloader === 'slskd' ? null : entry.activeDownloader;
     },
   },
 });
 
 export const {
-  setActiveDownloader,
   setLidarrServerUrl,
   setLidarrApiKey,
   setLidarrAuthenticated,

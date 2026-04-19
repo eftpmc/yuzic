@@ -330,6 +330,7 @@
       "mostRecent": "最新添加",
       "mostPlayed": "播放最多",
       "releaseYear": "发行年份",
+      "recentlyAdded": "最近添加",
       "lastModified": "最后修改时间"
     },
     "sortSheet": {
@@ -469,14 +470,23 @@
   "externalAlbum": {
     "menu": {
       "title": "外部专辑",
-      "downloadToServer": "下载至服务器"
+      "downloadToServer": "下载至服务器",
+      "inLibrary": "已在服务器",
+      "downloading": "正在下载至服务器… {{progress}}%"
+    },
+    "serverStatus": {
+      "onServer": "已在您的服务器上",
+      "downloadingToServer": "正在下载至服务器 · {{progress}}%"
     },
     "download": {
       "noDownloader": "未连接可用的下载工具。",
       "addedToLidarr": "专辑已添加至 Lidarr！",
       "addedToSlskd": "专辑已添加至 slskd 队列！",
       "failed": "下载失败。",
-      "startFailed": "启动下载失败。"
+      "startFailed": "启动下载失败。",
+      "chooseService": "选择服务",
+      "lidarrDesc": "音乐收藏管理器",
+      "slskdDesc": "点对点文件共享"
     },
     "header": {
       "songs": "{{count}} 首曲目",

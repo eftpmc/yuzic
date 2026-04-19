@@ -110,7 +110,7 @@ const PlaylistOptions = forwardRef<
 
   const handleDownload = async () => {
     if (!playlist || isDownloaded || isDownloading) return;
-    await downloadPlaylistById(playlist.id);
+    await downloadPlaylistById(playlist.id, songs);
   };
 
   const handleDeletePress = () => {

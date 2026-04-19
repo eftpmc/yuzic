@@ -10,25 +10,21 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectLidarrAuthenticated,
   selectSlskdAuthenticated,
-  selectActiveDownloader,
 } from '@/utils/redux/selectors/downloadersSelectors';
-import { setActiveDownloader } from '@/utils/redux/slices/downloadersSlice';
-import type { DownloaderType } from '@/utils/redux/slices/downloadersSlice';
 
 const LIDARR_ICON = require('@assets/images/lidarr.png');
 const SLSKD_ICON = require('@assets/images/slskd.png');
 
 const DOWNLOADERS: {
-  id: DownloaderType;
+  id: 'lidarr' | 'slskd';
   labelKey: string;
   icon: number;
   route: string;
@@ -40,24 +36,14 @@ const DOWNLOADERS: {
 const DownloadersView: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
-  const activeServer = useSelector(selectActiveServer);
-  const activeDownloader = useSelector(selectActiveDownloader);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
 
-  const getConnectionStatus = (id: DownloaderType) => {
+  const getConnectionStatus = (id: 'lidarr' | 'slskd') => {
     if (id === 'lidarr') return isLidarrConnected;
     if (id === 'slskd') return isSlskdConnected;
     return false;
-  };
-
-  const handleSelect = (id: DownloaderType, route: string) => {
-    if (activeServer) {
-      dispatch(setActiveDownloader({ serverId: activeServer.id, value: id }));
-    }
-    router.push(route as any);
   };
 
   return (
@@ -66,19 +52,13 @@ const DownloadersView: React.FC = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {DOWNLOADERS.map((d) => {
-          const isActive = activeDownloader === d.id;
           const isConnected = getConnectionStatus(d.id);
 
           return (
             <TouchableOpacity
               key={d.id}
-              style={[
-                styles.row,
-                isDarkMode && styles.rowDark,
-                isActive && styles.rowSelected,
-                isActive && isDarkMode && styles.rowSelectedDark,
-              ]}
-              onPress={() => handleSelect(d.id, d.route)}
+              style={[styles.row, isDarkMode && styles.rowDark]}
+              onPress={() => router.push(d.route as any)}
               activeOpacity={0.7}
             >
               <Image
@@ -95,14 +75,6 @@ const DownloadersView: React.FC = () => {
                   {isConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
                 </Text>
               </View>
-              {isActive ? (
-                <MaterialIcons
-                  name="check-circle"
-                  size={24}
-                  color="#34C759"
-                  style={styles.checkIcon}
-                />
-              ) : null}
               <MaterialIcons
                 name="chevron-right"
                 size={24}
@@ -131,18 +103,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   rowDark: { backgroundColor: '#111' },
-  rowSelected: {
-    borderWidth: 2,
-    borderColor: '#34C759',
-  },
-  rowSelectedDark: {
-    borderColor: '#34C759',
-  },
   downloaderIcon: { width: 40, height: 40, marginRight: 14 },
   rowContent: { flex: 1 },
   rowText: { fontSize: 17, fontWeight: '600', color: '#000', marginBottom: 2 },
   rowTextDark: { color: '#fff' },
   subtitle: { fontSize: 13, color: '#6E6E73' },
   subtitleDark: { color: '#8E8E93' },
-  checkIcon: { marginRight: 8 },
 });

@@ -330,6 +330,7 @@
       "mostRecent": "最近再生",
       "mostPlayed": "よく再生",
       "releaseYear": "リリース年",
+      "recentlyAdded": "最近追加",
       "lastModified": "更新順"
     },
     "sortSheet": {
@@ -469,14 +470,23 @@
   "externalAlbum": {
     "menu": {
       "title": "外部アルバム",
-      "downloadToServer": "サーバーにダウンロード"
+      "downloadToServer": "サーバーにダウンロード",
+      "inLibrary": "サーバーにあります",
+      "downloading": "サーバーにダウンロード中… {{progress}}%"
+    },
+    "serverStatus": {
+      "onServer": "サーバーにあります",
+      "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%"
     },
     "download": {
       "noDownloader": "有効なダウンローダーが接続されていません。",
       "addedToLidarr": "Lidarr に追加しました！",
       "addedToSlskd": "slskd キューに追加しました！",
       "failed": "ダウンロードに失敗しました。",
-      "startFailed": "ダウンロードを開始できませんでした。"
+      "startFailed": "ダウンロードを開始できませんでした。",
+      "chooseService": "サービスを選択",
+      "lidarrDesc": "音楽コレクションマネージャー",
+      "slskdDesc": "P2P ファイル共有"
     },
     "header": {
       "songs": "{{count}} 曲",

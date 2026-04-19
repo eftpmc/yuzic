@@ -5,18 +5,29 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { Ionicons } from '@expo/vector-icons';
+import ExternalSongOptions from '@/components/options/ExternalSongOptions';
 
 type Props = {
   song: ExternalSong;
   trackNumber?: number;
+  albumTitle: string;
+  albumArtist: string;
+  hasPreview?: boolean;
   onPress?: () => void;
 };
 
-const ExternalSongRow: React.FC<Props> = ({ song, trackNumber, onPress }) => {
+const ExternalSongRow: React.FC<Props> = ({
+  song,
+  trackNumber,
+  albumTitle,
+  albumArtist,
+  hasPreview = false,
+  onPress,
+}) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
@@ -35,19 +46,22 @@ const ExternalSongRow: React.FC<Props> = ({ song, trackNumber, onPress }) => {
         </View>
 
         <View style={styles.textContainer}>
-          <Text
-            style={[styles.title, themeStyles.title]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
             {song.title}
           </Text>
+          {hasPreview && (
+            <View style={styles.previewBadge}>
+              <Ionicons name="headset-outline" size={10} color={isDarkMode ? '#666' : '#aaa'} />
+              <Text style={[styles.previewText, themeStyles.previewText]}>preview</Text>
+            </View>
+          )}
         </View>
       </TouchableOpacity>
 
-      <Ionicons
-        name="ellipsis-horizontal"
-        size={18}
-        color={isDarkMode ? '#fff' : '#000'}
+      <ExternalSongOptions
+        song={song}
+        albumTitle={albumTitle}
+        albumArtist={albumArtist}
       />
     </View>
   );
@@ -69,10 +83,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   leadingMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
     width: 44,
     marginRight: 4,
+    alignItems: 'flex-start',
   },
   trackNumber: {
     fontSize: 13,
@@ -85,22 +98,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
   },
+  previewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 2,
+  },
+  previewText: {
+    fontSize: 10,
+  },
 });
 
 const stylesLight = StyleSheet.create({
-  title: {
-    color: '#000',
-  },
-  trackNumber: {
-    color: '#666',
-  },
+  title: { color: '#000' },
+  trackNumber: { color: '#666' },
+  previewText: { color: '#aaa' },
 });
 
 const stylesDark = StyleSheet.create({
-  title: {
-    color: '#fff',
-  },
-  trackNumber: {
-    color: '#aaa',
-  },
+  title: { color: '#fff' },
+  trackNumber: { color: '#aaa' },
+  previewText: { color: '#666' },
 });
