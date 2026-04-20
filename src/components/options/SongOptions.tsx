@@ -16,7 +16,8 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
-import { ListEnd, ListStart, PlusCircle, Radio } from 'lucide-react-native';
+import { ListEnd, ListStart } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -55,6 +56,7 @@ const SongOptions = forwardRef<
 
     const snapPoints = useMemo(() => ['55%', '90%'], []);
 
+    const router = useRouter();
     const { currentSong, addToQueue, playNext, playSimilar } = usePlaying();
     const instantMixInFlightRef = useRef(false);
 
@@ -131,6 +133,11 @@ const SongOptions = forwardRef<
     const handleAddToPlaylist = () => {
       close();
       requestAnimationFrame(onAddToPlaylist);
+    };
+
+    const handleGoToAlbum = () => {
+      close();
+      router.push({ pathname: '/(home)/albumView', params: { id: selectedSong.albumId } });
     };
 
     const handleInstantMix = async () => {
@@ -240,7 +247,8 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleAddToPlaylist}
           >
-            <PlusCircle
+            <Ionicons
+              name="add-circle-outline"
               size={26}
               color={themeStyles.icon.color}
             />
@@ -251,11 +259,30 @@ const SongOptions = forwardRef<
             </Text>
           </TouchableOpacity>
 
+          {selectedSong.albumId && (
+            <TouchableOpacity
+              style={styles.option}
+              onPress={handleGoToAlbum}
+            >
+              <Ionicons
+                name="albums"
+                size={26}
+                color={themeStyles.icon.color}
+              />
+              <Text
+                style={[styles.optionText, themeStyles.optionText]}
+              >
+                {t('songOptions.actions.goToAlbum')}
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={styles.option}
             onPress={handleInstantMix}
           >
-            <Radio
+            <Ionicons
+              name="radio-outline"
               size={26}
               color={themeStyles.icon.color}
             />

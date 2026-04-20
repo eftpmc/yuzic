@@ -50,8 +50,8 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
 
               {status.kind === 'in_library' && (
                 <View style={styles.badge}>
-                  <Ionicons name="checkmark-circle" size={12} color="#34C759" />
-                  <Text style={styles.badgeText}>On Server</Text>
+                  <Ionicons name="link" size={12} color="#34C759" />
+                  <Text style={styles.badgeText}>MusicBrainz</Text>
                 </View>
               )}
               {status.kind === 'downloading' && (

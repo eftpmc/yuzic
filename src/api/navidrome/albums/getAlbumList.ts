@@ -32,12 +32,22 @@ function normalizeAlbumEntry(a: any): Album {
   };
 }
 
+const PAGE_SIZE = 500;
+
 export async function getAlbumList(
   client: NavidromeClient,
-  type = "newest",
-  size = 500
+  type = "newest"
 ): Promise<GetAlbumListResult> {
-  const raw = await client.request<any>("getAlbumList.view", { type, size });
-  const albums = raw?.["subsonic-response"]?.albumList?.album ?? [];
-  return albums.map((a: any) => normalizeAlbumEntry(a));
+  const all: Album[] = [];
+  let offset = 0;
+
+  while (true) {
+    const raw = await client.request<any>("getAlbumList.view", { type, size: PAGE_SIZE, offset });
+    const page: any[] = raw?.["subsonic-response"]?.albumList?.album ?? [];
+    all.push(...page.map(normalizeAlbumEntry));
+    if (page.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+
+  return all;
 }

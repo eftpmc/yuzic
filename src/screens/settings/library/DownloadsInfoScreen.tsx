@@ -110,7 +110,9 @@ const DownloadsInfoScreen: React.FC = () => {
         ? t('settings.library.downloads.provider.navidrome')
         : row.provider === 'jellyfin'
           ? t('settings.library.downloads.provider.jellyfin')
-          : t('settings.library.downloads.provider.unknown');
+          : row.provider === 'emby'
+            ? t('settings.library.downloads.provider.emby')
+            : t('settings.library.downloads.provider.unknown');
 
     Alert.alert(
       t('settings.library.downloads.clearTitle'),
@@ -223,7 +225,9 @@ const DownloadsInfoScreen: React.FC = () => {
               ? t('settings.library.downloads.provider.navidrome')
               : item.provider === 'jellyfin'
                 ? t('settings.library.downloads.provider.jellyfin')
-                : t('settings.library.downloads.provider.unknown');
+                : item.provider === 'emby'
+                  ? t('settings.library.downloads.provider.emby')
+                  : t('settings.library.downloads.provider.unknown');
 
           return (
             <View>

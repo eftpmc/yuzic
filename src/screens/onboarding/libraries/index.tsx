@@ -15,6 +15,7 @@ import { selectServerById } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/jellyfin/auth/getMusicLibraries';
+import { getMusicLibraries as getEmbyMusicLibraries } from '@/api/emby/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 
 type Library = { id: string; name: string };
@@ -42,6 +43,8 @@ export default function LibrariesOnboarding() {
           result = await getMusicFolders(server);
         } else if (server.type === 'jellyfin') {
           result = await getMusicLibraries(server);
+        } else if (server.type === 'emby') {
+          result = await getEmbyMusicLibraries(server);
         }
         setLibraries(result);
       } finally {

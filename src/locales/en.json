@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "Unknown source"
         },
         "status": {
@@ -277,11 +278,9 @@
       "switchClearFailedBody": "Failed to clear downloads before switching servers."
     },
     "connect": {
-      "title": "Connect to your Server",
-      "subtitle": "Enter your server URL (http/https)",
-      "urlPlaceholder": "https://your-server.example.com",
+      "title": "Choose a Server Type",
+      "subtitle": "Select the type of server you want to connect to.",
       "selectTypeFirst": "Select a server type first.",
-      "enterUrl": "Please enter a valid server URL.",
       "demoUnavailableProvider": "Demo unavailable for this provider.",
       "connectError": "An error occurred while connecting.",
       "useDemo": "Use {{provider}} demo",
@@ -289,8 +288,18 @@
       "demoFailed": "Demo connection failed",
       "providerDescription": {
         "navidrome": "A lightweight, self-hosted music server.",
-        "jellyfin": "A full-featured media server for music, movies, and TV."
+        "jellyfin": "A full-featured media server for music, movies, and TV.",
+        "emby": "A personal media server for music, movies, and TV."
       }
+    },
+    "address": {
+      "title": "Server Address",
+      "subtitle": "Enter the address of your server.",
+      "enterUrl": "Please enter a server address.",
+      "hint": "Include a port if needed, e.g. your-server.com:4533",
+      "schemeTitle": "Protocol",
+      "httpsDesc": "Encrypted (recommended)",
+      "httpDesc": "Unencrypted"
     },
     "credentials": {
       "title": "Enter Your Credentials",
@@ -425,6 +434,7 @@
       "addToQueue": "Add to Queue",
       "addToEnd": "Add to End",
       "addToPlaylist": "Add to Playlist",
+      "goToAlbum": "Go to Album",
       "instantMix": "Instant Mix"
     },
     "sections": {
@@ -472,11 +482,11 @@
     "menu": {
       "title": "External Album",
       "downloadToServer": "Download to Server",
-      "inLibrary": "On Server",
+      "inLibrary": "MusicBrainz Linked",
       "downloading": "Downloading to server… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "On your server",
+      "onServer": "MusicBrainz Linked",
       "downloadingToServer": "Downloading to server · {{progress}}%"
     },
     "download": {

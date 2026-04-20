@@ -161,7 +161,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           <View style={[styles.serverStatusRow, themeStyles.serverStatusRow]}>
             {albumStatus.kind === 'in_library' ? (
               <>
-                <Ionicons name="checkmark-circle" size={14} color="#34C759" />
+                <Ionicons name="link" size={14} color="#34C759" />
                 <Text style={[styles.serverStatusText, { color: '#34C759' }]}>
                   {t('externalAlbum.serverStatus.onServer')}
                 </Text>

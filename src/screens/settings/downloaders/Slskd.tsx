@@ -175,6 +175,7 @@ const SlskdView: React.FC = () => {
   };
 
   const renderDownloadItem = ({ item }: { item: SlskdQueueRecord }) => {
+    const isCompleted = item.state.toLowerCase() === 'completed';
     const percent = Math.min(100, item.percentComplete ?? 0);
     const meta = item.fileCount > 0 ? `${item.fileCount} ${t('settings.downloaders.files', { count: item.fileCount })}` : '';
 
@@ -195,23 +196,29 @@ const SlskdView: React.FC = () => {
               {[item.artistName, meta].filter(Boolean).join(' · ')}
             </Text>
           </View>
-          <Text style={[styles.itemPct, isDarkMode && styles.itemPctDark]}>
-            {percent}%
-          </Text>
+          {isCompleted ? (
+            <CheckCircle size={16} color="#34C759" />
+          ) : (
+            <Text style={[styles.itemPct, isDarkMode && styles.itemPctDark]}>
+              {percent}%
+            </Text>
+          )}
         </View>
-        <View
-          style={[
-            styles.progressTrack,
-            isDarkMode && styles.progressTrackDark,
-          ]}
-        >
+        {!isCompleted && (
           <View
             style={[
-              styles.progressFill,
-              { backgroundColor: themeColor, width: `${percent}%` },
+              styles.progressTrack,
+              isDarkMode && styles.progressTrackDark,
             ]}
-          />
-        </View>
+          >
+            <View
+              style={[
+                styles.progressFill,
+                { backgroundColor: themeColor, width: `${percent}%` },
+              ]}
+            />
+          </View>
+        )}
       </View>
     );
   };

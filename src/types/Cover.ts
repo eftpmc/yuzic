@@ -3,6 +3,7 @@ export type CoverSource =
   | { kind: 'none' }
   | { kind: 'navidrome'; coverArtId: string }
   | { kind: 'jellyfin'; itemId: string; }
+  | { kind: 'emby'; itemId: string; tag?: string }
   | { kind: 'url'; url: string }
   | { kind: 'musicbrainz'; releaseGroupId: string }
 

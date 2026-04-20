@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "Source inconnue"
         },
         "status": {
@@ -276,11 +277,9 @@
       "switchClearFailedBody": "Échec de l'effacement des téléchargements avant le changement de serveur."
     },
     "connect": {
-      "title": "Connectez-vous à votre serveur",
-      "subtitle": "Saisissez l'URL de votre serveur (http/https)",
-      "urlPlaceholder": "https://votre-serveur.exemple.com",
+      "title": "Choisissez un type de serveur",
+      "subtitle": "Sélectionnez le type de serveur auquel vous souhaitez vous connecter.",
       "selectTypeFirst": "Sélectionnez d'abord un type de serveur.",
-      "enterUrl": "Veuillez saisir une URL de serveur valide.",
       "demoUnavailableProvider": "Démo non disponible pour ce fournisseur.",
       "connectError": "Une erreur s'est produite lors de la connexion.",
       "useDemo": "Utiliser la démo {{provider}}",
@@ -288,8 +287,18 @@
       "demoFailed": "Échec de la connexion à la démo",
       "providerDescription": {
         "navidrome": "Un serveur musical léger et auto-hébergé.",
-        "jellyfin": "Un serveur multimédia complet pour la musique, les films et les séries."
+        "jellyfin": "Un serveur multimédia complet pour la musique, les films et les séries.",
+        "emby": "Un serveur multimédia personnel pour la musique, les films et les séries."
       }
+    },
+    "address": {
+      "title": "Adresse du serveur",
+      "subtitle": "Saisissez l'adresse de votre serveur.",
+      "enterUrl": "Veuillez saisir une adresse de serveur.",
+      "hint": "Ajoutez un port si nécessaire, ex. : votre-serveur.com:4533",
+      "schemeTitle": "Protocole",
+      "httpsDesc": "Chiffré (recommandé)",
+      "httpDesc": "Non chiffré"
     },
     "credentials": {
       "title": "Saisissez vos identifiants",
@@ -424,6 +433,7 @@
       "addToQueue": "Ajouter à la file d'attente",
       "addToEnd": "Ajouter à la fin",
       "addToPlaylist": "Ajouter à une liste de lecture",
+      "goToAlbum": "Aller à l'album",
       "instantMix": "Mix instantané"
     },
     "sections": {
@@ -471,11 +481,11 @@
     "menu": {
       "title": "Album externe",
       "downloadToServer": "Télécharger sur le serveur",
-      "inLibrary": "Sur le serveur",
+      "inLibrary": "Lié à MusicBrainz",
       "downloading": "Téléchargement vers le serveur… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "Sur votre serveur",
+      "onServer": "Lié à MusicBrainz",
       "downloadingToServer": "Téléchargement vers le serveur · {{progress}}%"
     },
     "download": {

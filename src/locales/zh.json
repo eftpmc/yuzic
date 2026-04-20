@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "未知来源"
         },
         "status": {
@@ -276,11 +277,9 @@
       "switchClearFailedBody": "切换服务器前，清空下载内容失败。"
     },
     "connect": {
-      "title": "连接至你的服务器",
-      "subtitle": "输入服务器地址（http/https）",
-      "urlPlaceholder": "https://your-server.example.com",
+      "title": "选择服务器类型",
+      "subtitle": "选择你要连接的服务器类型。",
       "selectTypeFirst": "请先选择服务器类型。",
-      "enterUrl": "请输入有效的服务器地址。",
       "demoUnavailableProvider": "该服务商暂不提供演示环境。",
       "connectError": "连接时发生错误。",
       "useDemo": "使用 {{provider}} 演示环境",
@@ -288,8 +287,18 @@
       "demoFailed": "演示环境连接失败",
       "providerDescription": {
         "navidrome": "轻量级自托管音乐服务器。",
-        "jellyfin": "全功能媒体服务器，支持音乐、电影和电视节目。"
+        "jellyfin": "全功能媒体服务器，支持音乐、电影和电视节目。",
+        "emby": "个人媒体服务器，支持音乐、电影和电视节目。"
       }
+    },
+    "address": {
+      "title": "服务器地址",
+      "subtitle": "输入你的服务器地址。",
+      "enterUrl": "请输入服务器地址。",
+      "hint": "如需指定端口，请在地址后添加，例如：your-server.com:4533",
+      "schemeTitle": "协议",
+      "httpsDesc": "加密（推荐）",
+      "httpDesc": "未加密"
     },
     "credentials": {
       "title": "输入你的凭证",
@@ -424,6 +433,7 @@
       "addToQueue": "添加至队列",
       "addToEnd": "添加至队尾",
       "addToPlaylist": "添加至播放列表",
+      "goToAlbum": "前往专辑",
       "instantMix": "即时混音"
     },
     "sections": {
@@ -471,11 +481,11 @@
     "menu": {
       "title": "外部专辑",
       "downloadToServer": "下载至服务器",
-      "inLibrary": "已在服务器",
+      "inLibrary": "已关联 MusicBrainz",
       "downloading": "正在下载至服务器… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "已在您的服务器上",
+      "onServer": "已关联 MusicBrainz",
       "downloadingToServer": "正在下载至服务器 · {{progress}}%"
     },
     "download": {

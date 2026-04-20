@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "不明なソース"
         },
         "status": {
@@ -276,11 +277,9 @@
       "switchClearFailedBody": "サーバー切り替え前のダウンロード削除に失敗しました。"
     },
     "connect": {
-      "title": "サーバーに接続",
-      "subtitle": "サーバーURLを入力してください（http/https）",
-      "urlPlaceholder": "https://your-server.example.com",
+      "title": "サーバーの種類を選択",
+      "subtitle": "接続するサーバーの種類を選んでください。",
       "selectTypeFirst": "サーバー種別を先に選択してください。",
-      "enterUrl": "有効なサーバーURLを入力してください。",
       "demoUnavailableProvider": "このプロバイダーではデモを利用できません。",
       "connectError": "接続中にエラーが発生しました。",
       "useDemo": "{{provider}} のデモを使う",
@@ -288,8 +287,18 @@
       "demoFailed": "デモ接続に失敗しました",
       "providerDescription": {
         "navidrome": "軽量なセルフホスト型音楽サーバー。",
-        "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。"
+        "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。",
+        "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。"
       }
+    },
+    "address": {
+      "title": "サーバーアドレス",
+      "subtitle": "サーバーのアドレスを入力してください。",
+      "enterUrl": "サーバーアドレスを入力してください。",
+      "hint": "必要に応じてポートを含めてください（例：your-server.com:4533）",
+      "schemeTitle": "プロトコル",
+      "httpsDesc": "暗号化（推奨）",
+      "httpDesc": "非暗号化"
     },
     "credentials": {
       "title": "認証情報を入力",
@@ -424,6 +433,7 @@
       "addToQueue": "キューに追加",
       "addToEnd": "末尾に追加",
       "addToPlaylist": "プレイリストに追加",
+      "goToAlbum": "アルバムへ移動",
       "instantMix": "インスタントミックス"
     },
     "sections": {
@@ -471,11 +481,11 @@
     "menu": {
       "title": "外部アルバム",
       "downloadToServer": "サーバーにダウンロード",
-      "inLibrary": "サーバーにあります",
+      "inLibrary": "MusicBrainz リンク済み",
       "downloading": "サーバーにダウンロード中… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "サーバーにあります",
+      "onServer": "MusicBrainz リンク済み",
       "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%"
     },
     "download": {

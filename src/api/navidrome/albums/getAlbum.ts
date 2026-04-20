@@ -44,6 +44,8 @@ export async function getAlbum(
     bpm: s.bpm ?? undefined,
     genres: Array.isArray(s.genres) && s.genres.length > 0
       ? s.genres.map((g: any) => g?.name ?? g).filter(Boolean)
+      : s.genre
+      ? [s.genre]
       : undefined,
   }));
 

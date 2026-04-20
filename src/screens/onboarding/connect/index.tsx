@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet,
     ActivityIndicator,
+    ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -19,7 +19,6 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 
 export default function Connect() {
-    const [localServerUrl, setLocalServerUrl] = useState('');
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
     const [isLayoutMounted, setIsLayoutMounted] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
@@ -29,56 +28,40 @@ export default function Connect() {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const t = setTimeout(() => setIsLayoutMounted(true), 0);
-        return () => clearTimeout(t);
+        const timer = setTimeout(() => setIsLayoutMounted(true), 0);
+        return () => clearTimeout(timer);
     }, []);
 
-    const handleNext = async () => {
-    if (!selectedType) {
-        toast.error(t('onboarding.connect.selectTypeFirst'));
-        return;
-    }
-
-    if (!localServerUrl) {
-        toast.error(t('onboarding.connect.enterUrl'));
-        return;
-    }
-
-    router.push({
-        pathname: '(onboarding)/credentials',
-        params: {
-            type: selectedType,
-            serverUrl: localServerUrl.trim(),
-        },
-    });
-};
+    const handleNext = () => {
+        if (!selectedType) {
+            toast.error(t('onboarding.connect.selectTypeFirst'));
+            return;
+        }
+        router.push({
+            pathname: '(onboarding)/address',
+            params: { type: selectedType },
+        });
+    };
 
     const handleDemo = async () => {
         if (!selectedType) return;
-
         const provider = SERVER_PROVIDERS[selectedType];
-
         if (!provider.capabilities.supportsDemo || !provider.demo) {
             toast.error(t('onboarding.connect.demoUnavailableProvider'));
             return;
         }
-
         setIsTesting(true);
         try {
             const demo = await provider.demo();
             const id = nanoid();
-
-            dispatch(
-                addServer({
-                    id,
-                    type: selectedType,
-                    serverUrl: demo.serverUrl,
-                    username: demo.username,
-                    auth: demo.auth,
-                    isAuthenticated: true,
-                })
-            );
-
+            dispatch(addServer({
+                id,
+                type: selectedType,
+                serverUrl: demo.serverUrl,
+                username: demo.username,
+                auth: demo.auth,
+                isAuthenticated: true,
+            }));
             dispatch(setActiveServer(id));
             router.replace('/(home)');
         } catch {
@@ -96,118 +79,106 @@ export default function Connect() {
         );
     }
 
+    const providers = Object.values(SERVER_PROVIDERS);
+
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-            <View style={{ flex: 1 }}>
-                <View style={styles.mainContent}>
-                    <Text style={styles.title}>{t('onboarding.connect.title')}</Text>
-                    <Text style={styles.subtitle}>{t('onboarding.connect.subtitle')}</Text>
+        <SafeAreaView style={styles.container}>
+            <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                <Text style={styles.title}>{t('onboarding.connect.title')}</Text>
+                <Text style={styles.subtitle}>{t('onboarding.connect.subtitle')}</Text>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder={t('onboarding.connect.urlPlaceholder')}
-                        placeholderTextColor="#888"
-                        value={localServerUrl}
-                        onChangeText={setLocalServerUrl}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        keyboardAppearance="dark"
-                        keyboardType="url"
-                        returnKeyType="next"
-                        onSubmitEditing={handleNext}
-                    />
-
-                    <View style={styles.serverTypeContainer}>
-                        {Object.values(SERVER_PROVIDERS).map((provider) => {
-                            const isSelected = selectedType === provider.type;
-
-                            return (
-                                <TouchableOpacity
-                                    key={provider.type}
-                                    onPress={() => setSelectedType(provider.type)}
+                <View style={styles.serverTypeContainer}>
+                    {providers.map((provider) => {
+                        const isSelected = selectedType === provider.type;
+                        return (
+                            <TouchableOpacity
+                                key={provider.type}
+                                onPress={() => setSelectedType(provider.type)}
+                                style={[
+                                    styles.serverTypeButton,
+                                    isSelected && styles.serverTypeButtonSelected,
+                                ]}
+                            >
+                                <Image
+                                    source={provider.icon}
+                                    style={{ width: 36, height: 36, marginBottom: 6 }}
+                                    contentFit="contain"
+                                    cachePolicy="memory-disk"
+                                />
+                                <Text
                                     style={[
-                                        styles.serverTypeButton,
-                                        isSelected && styles.serverTypeButtonSelected,
+                                        styles.serverTypeText,
+                                        isSelected && styles.serverTypeTextSelected,
                                     ]}
                                 >
-                                    <Image
-                                        source={provider.icon}
-                                        style={{ width: 36, height: 36, marginBottom: 6 }}
-                                        contentFit="contain"
-                                        cachePolicy="memory-disk"
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.serverTypeText,
-                                            isSelected && styles.serverTypeTextSelected,
-                                        ]}
-                                    >
-                                        {provider.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
+                                    {provider.label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
 
-                    {selectedType && (
-                        <Text style={styles.description}>
-                            {SERVER_PROVIDERS[selectedType].description}
-                        </Text>
+                {selectedType && (
+                    <Text style={styles.description}>
+                        {t(`onboarding.connect.providerDescription.${selectedType}`)}
+                    </Text>
+                )}
+            </ScrollView>
+
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                    style={[styles.nextButton, isTesting && styles.buttonDisabled]}
+                    onPress={handleNext}
+                    disabled={isTesting}
+                >
+                    {isTesting ? (
+                        <ActivityIndicator size="small" color="#000" />
+                    ) : (
+                        <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}
-                </View>
+                </TouchableOpacity>
 
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={[styles.nextButton, isTesting && styles.nextButtonDisabled]}
-                        onPress={handleNext}
-                        disabled={isTesting}
-                    >
-                        {isTesting ? (
-                            <ActivityIndicator size="small" color="#000" />
-                        ) : (
-                            <Text style={styles.nextButtonText}>{t('common.next')}</Text>
-                        )}
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[
-                            styles.demoButton,
-                            (!selectedType ||
-                                !SERVER_PROVIDERS[selectedType].capabilities.supportsDemo ||
-                                isTesting) &&
-                                styles.nextButtonDisabled,
-                        ]}
-                        onPress={handleDemo}
-                        disabled={
-                            !selectedType ||
-                            !SERVER_PROVIDERS[selectedType].capabilities.supportsDemo ||
-                            isTesting
-                        }
-                    >
-                        <Text style={styles.demoButtonText}>
-                            {selectedType &&
-                            SERVER_PROVIDERS[selectedType].capabilities.supportsDemo
-                                ? t('onboarding.connect.useDemo', { provider: SERVER_PROVIDERS[selectedType].label })
-                                : t('onboarding.connect.demoUnavailable')}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                    style={[
+                        styles.demoButton,
+                        (!selectedType || !SERVER_PROVIDERS[selectedType]?.capabilities.supportsDemo || isTesting) && styles.buttonDisabled,
+                    ]}
+                    onPress={handleDemo}
+                    disabled={!selectedType || !SERVER_PROVIDERS[selectedType]?.capabilities.supportsDemo || isTesting}
+                >
+                    <Text style={styles.demoButtonText}>
+                        {selectedType && SERVER_PROVIDERS[selectedType]?.capabilities.supportsDemo
+                            ? t('onboarding.connect.useDemo', { provider: SERVER_PROVIDERS[selectedType].label })
+                            : t('onboarding.connect.demoUnavailable')}
+                    </Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    mainContent: {
-        flexGrow: 1,
-        paddingHorizontal: 20,
-        marginTop: 40,
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#000',
+    },
+    scroll: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        paddingBottom: 20,
     },
     title: {
         fontSize: 28,
@@ -228,7 +199,7 @@ const styles = StyleSheet.create({
     serverTypeContainer: {
         flexDirection: 'row',
         gap: 12,
-        marginBottom: 20,
+        marginBottom: 4,
     },
     serverTypeButton: {
         flex: 1,
@@ -253,16 +224,6 @@ const styles = StyleSheet.create({
     serverTypeTextSelected: {
         color: '#000',
     },
-    input: {
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#555',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        color: '#fff',
-        backgroundColor: '#222',
-        marginBottom: 10,
-    },
     buttonContainer: {
         padding: 20,
         backgroundColor: '#000',
@@ -276,7 +237,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 12,
     },
-    nextButtonDisabled: {
+    buttonDisabled: {
         opacity: 0.6,
     },
     nextButtonText: {

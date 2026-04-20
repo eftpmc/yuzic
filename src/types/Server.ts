@@ -1,4 +1,4 @@
-export type ServerType = "navidrome" | "jellyfin";
+export type ServerType = "navidrome" | "jellyfin" | "emby";
 
 export type ProviderAuth = {
   [key: string]: string | number | boolean | null | string[];

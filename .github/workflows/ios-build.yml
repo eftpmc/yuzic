@@ -1,0 +1,62 @@
+name: iOS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      ios_build_number:
+        description: "iOS build number"
+        required: false
+        type: string
+      version_label:
+        description: "Version label"
+        required: false
+        type: string
+
+concurrency: ios-build
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Homebrew Ruby
+        run: echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Install Ruby dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Allow codesign to access keychain
+        run: |
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      - name: Run Fastlane iOS build
+        env:
+          IOS_BUILD_NUMBER: ${{ github.event.inputs.ios_build_number }}
+          VERSION_LABEL: ${{ github.event.inputs.version_label }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_API_KEY_BASE64: ${{ secrets.APPSTORE_API_KEY_BASE64 }}
+        run: bundle exec fastlane ios ci_ios
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yuzic-ios
+          path: build/ios/*.ipa

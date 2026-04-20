@@ -83,7 +83,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
           {status.kind === 'in_library' ? (
             <View style={styles.option}>
-              <Ionicons name="checkmark-circle" size={26} color="#34C759" />
+              <Ionicons name="link" size={26} color="#34C759" />
               <Text style={[styles.optionText, themeStyles.optionText]}>
                 {t('externalAlbum.menu.inLibrary')}
               </Text>

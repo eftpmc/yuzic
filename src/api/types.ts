@@ -94,7 +94,7 @@ export type LyricLine = {
 };
 
 export type LyricsResult = {
-  provider: "jellyfin" | "navidrome";
+  provider: "jellyfin" | "navidrome" | "emby";
   synced: true;
   lines: LyricLine[];
 };

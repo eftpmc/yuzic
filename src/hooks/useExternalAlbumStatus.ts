@@ -74,6 +74,7 @@ export function useExternalAlbumStatus(album: ExternalAlbumBase | null): Externa
 
     if (slskdQueue) {
       const match = slskdQueue.find(r => {
+        if (r.state.toLowerCase() === 'completed') return false;
         const t = normalize(r.title);
         return t.includes(normTitle) || normTitle.includes(t);
       });
