@@ -379,14 +379,18 @@
       "recentlyPlayed": "最近播放",
       "recentlyAdded": "最近添加",
       "favoriteAlbums": "收藏专辑",
-      "randomAlbums": "随机专辑"
+      "randomAlbums": "随机专辑",
+      "albumsForYou": "为你推荐的专辑",
+      "artistsForYou": "为你推荐的艺术家"
     },
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",
       "recentlyPlayed": "播放专辑后将显示在此处",
       "recentlyAdded": "媒体库中暂无专辑",
       "favoriteAlbums": "收藏曲目可将专辑添加至此",
-      "randomAlbums": "媒体库中暂无专辑"
+      "randomAlbums": "媒体库中暂无专辑",
+      "albumsForYou": "正在发现专辑...",
+      "artistsForYou": "正在发现艺术家..."
     }
   },
   "playing": {

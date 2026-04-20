@@ -85,16 +85,18 @@ export default function HomeLayout() {
                 <Stack.Screen name="genreView" options={{ headerShown: false }} />
             </Stack>
 
-            <View style={[styles.tabGradientContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+            <View
+                style={[styles.tabGradientContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}
+                onStartShouldSetResponder={() => true}
+            >
                 <LinearGradient
                     colors={isDarkMode
                         ? ['#00000000', '#000000F0', '#000000F0', '#000000']
                         : ['#ffffff00', '#fffffff0', '#fffffff0', '#ffffff']}
                     locations={[0, 0.2, 0.45, 0.6]}
                     style={StyleSheet.absoluteFill}
-                    pointerEvents="none"
                 />
-<View style={styles.tabRow}>
+                <View style={styles.tabRow}>
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return

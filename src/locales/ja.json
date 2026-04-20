@@ -379,14 +379,18 @@
       "recentlyPlayed": "最近再生",
       "recentlyAdded": "最近追加",
       "favoriteAlbums": "お気に入りのアルバム",
-      "randomAlbums": "ランダムアルバム"
+      "randomAlbums": "ランダムアルバム",
+      "albumsForYou": "あなたへのアルバム",
+      "artistsForYou": "あなたへのアーティスト"
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",
       "recentlyPlayed": "再生したアルバムがここに表示されます",
       "recentlyAdded": "ライブラリにアルバムがありません",
       "favoriteAlbums": "曲をお気に入りするとここに表示されます",
-      "randomAlbums": "ライブラリにアルバムがありません"
+      "randomAlbums": "ライブラリにアルバムがありません",
+      "albumsForYou": "アルバムを探しています...",
+      "artistsForYou": "アーティストを探しています..."
     }
   },
   "playing": {

@@ -133,13 +133,22 @@ const SongRow: React.FC<Props> = ({
             </Text>
 
             {!isAlbumCompact && (
-              <Text
-                style={[styles.subtitle, themeStyles.subtitle]}
-                numberOfLines={1}
-              >
-                {song.artist || t('songOptions.unknownArtist')} •{' '}
-                {formatDuration(Number(song.duration))}
-              </Text>
+              song.isPreview ? (
+                <View style={styles.previewBadge}>
+                  <Ionicons name="headset-outline" size={10} color={isDarkMode ? '#666' : '#aaa'} />
+                  <Text style={[styles.previewText, themeStyles.subtitle]} numberOfLines={1}>
+                    preview
+                  </Text>
+                </View>
+              ) : (
+                <Text
+                  style={[styles.subtitle, themeStyles.subtitle]}
+                  numberOfLines={1}
+                >
+                  {song.artist || t('songOptions.unknownArtist')} •{' '}
+                  {formatDuration(Number(song.duration))}
+                </Text>
+              )
             )}
           </View>
         </TouchableOpacity>
@@ -229,6 +238,15 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
+  },
+  previewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 2,
+  },
+  previewText: {
+    fontSize: 10,
   },
 });
 

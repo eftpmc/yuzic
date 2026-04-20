@@ -23,6 +23,7 @@ import { MediaImage } from '@/components/MediaImage';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
 import { ExternalSong } from '@/types';
 import type { ExternalAlbumBase } from '@/types';
+import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
 
 function formatDuration(seconds: string): string {
   const n = parseInt(seconds, 10);
@@ -36,12 +37,14 @@ interface ExternalSongOptionsProps {
   song: ExternalSong;
   albumTitle: string;
   albumArtist: string;
+  previewUrl?: string;
 }
 
 const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   song,
   albumTitle,
   albumArtist,
+  previewUrl,
 }) => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
@@ -54,6 +57,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
   const canDownload = isLidarrConnected || isSlskdConnected;
+
+  const { addPreviewToQueue, playPreviewNext } = usePreviewPlayer();
 
   const albumBase = useMemo<ExternalAlbumBase>(() => ({
     id: song.albumId,
@@ -103,6 +108,36 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
           </View>
 
           <View style={styles.divider} />
+
+          {previewUrl && (
+            <>
+              <TouchableOpacity
+                style={styles.option}
+                onPress={() => {
+                  playPreviewNext(song, previewUrl);
+                  bottomSheetRef.current?.dismiss();
+                }}
+              >
+                <Ionicons name="add-circle-outline" size={26} color={themeStyles.icon.color} />
+                <Text style={[styles.optionText, themeStyles.optionText]}>
+                  {t('songOptions.actions.addToQueue')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.option}
+                onPress={() => {
+                  addPreviewToQueue(song, previewUrl);
+                  bottomSheetRef.current?.dismiss();
+                }}
+              >
+                <Ionicons name="list-outline" size={26} color={themeStyles.icon.color} />
+                <Text style={[styles.optionText, themeStyles.optionText]}>
+                  {t('songOptions.actions.addToEnd')}
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.divider} />
+            </>
+          )}
 
           {canDownload && (
             <TouchableOpacity

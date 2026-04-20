@@ -319,13 +319,13 @@ export default function LibraryScreen() {
       </View>
 
       <Animated.View style={[{ flex: 1 }, animatedListStyle]}>
-      <FlashList
+      <FlashList<LibraryItem>
         key={`${isGridView ? `grid-${gridColumns}` : 'list'}`}
         data={items}
         keyExtractor={item => `${item.kind}-${item.data.id}`}
         renderItem={renderItem}
         numColumns={isGridView ? gridColumns : 1}
-        estimatedItemSize={isGridView ? gridWidth + 30 : 64}
+        {...({ estimatedItemSize: isGridView ? gridWidth + 30 : 64 } as any)}
         getItemType={item => item.kind}
         ListHeaderComponent={
           <View style={[styles.sortRow, { borderBottomColor: borderColor, backgroundColor: isDarkMode ? '#000' : '#fff' }]}>

@@ -16,6 +16,9 @@ type Props = {
   trackNumber?: number;
   albumTitle: string;
   albumArtist: string;
+  /** When provided, preview badge is shown and queue actions become available. */
+  previewUrl?: string;
+  /** @deprecated use previewUrl */
   hasPreview?: boolean;
   onPress?: () => void;
 };
@@ -25,11 +28,13 @@ const ExternalSongRow: React.FC<Props> = ({
   trackNumber,
   albumTitle,
   albumArtist,
-  hasPreview = false,
+  previewUrl,
+  hasPreview,
   onPress,
 }) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const showPreview = !!previewUrl || !!hasPreview;
 
   return (
     <View style={styles.row}>
@@ -49,7 +54,7 @@ const ExternalSongRow: React.FC<Props> = ({
           <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
             {song.title}
           </Text>
-          {hasPreview && (
+          {showPreview && (
             <View style={styles.previewBadge}>
               <Ionicons name="headset-outline" size={10} color={isDarkMode ? '#666' : '#aaa'} />
               <Text style={[styles.previewText, themeStyles.previewText]}>preview</Text>
@@ -62,6 +67,7 @@ const ExternalSongRow: React.FC<Props> = ({
         song={song}
         albumTitle={albumTitle}
         albumArtist={albumArtist}
+        previewUrl={previewUrl}
       />
     </View>
   );

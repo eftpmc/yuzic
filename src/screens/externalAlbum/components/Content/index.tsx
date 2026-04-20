@@ -7,7 +7,7 @@ import ExternalAlbumHeader from '../Header';
 import ExternalSongRow from '@/components/rows/ExternalSongRow';
 import ListSeparator from '@/components/ListSeparator';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
-import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
+import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
 
 type Props = {
   album: ExternalAlbum;
@@ -19,18 +19,27 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
   const songs = album.songs ?? [];
   const previewsRaw = useExternalAlbumPreviews(album);
   const previews: Map<string, string> = previewsRaw instanceof Map ? previewsRaw : new Map();
-  const { toggle } = usePreviewPlayer();
+  const { toggleInAlbum } = usePreviewPlayer();
+
+  // Build the full album preview queue once so all rows share the same array reference.
+  const albumPreviewSongs = useMemo(() =>
+    songs
+      .filter(s => previews.has(s.id))
+      .map(s => externalSongToTrack(s, previews.get(s.id)!)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [previews]
+  );
 
   const handleSongPress = useCallback((song: ExternalSong) => {
     const url = previews.get(song.id);
     if (!url) return;
-    toggle(song, url);
-  }, [previews, toggle]);
+    toggleInAlbum(song, url, albumPreviewSongs, album.id, album.title);
+  }, [previews, albumPreviewSongs, toggleInAlbum, album.id, album.title]);
 
   const header = useMemo(() => <ExternalAlbumHeader album={album} />, [album]);
 
   const renderItem = ({ item, index }: { item: ExternalSong; index: number }) => {
-    const hasPreview = previews.has(item.id);
+    const previewUrl = previews.get(item.id);
 
     return (
       <ExternalSongRow
@@ -38,8 +47,8 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
         trackNumber={index + 1}
         albumTitle={album.title}
         albumArtist={album.artist}
-        hasPreview={hasPreview}
-        onPress={hasPreview ? () => handleSongPress(item) : undefined}
+        previewUrl={previewUrl}
+        onPress={previewUrl ? () => handleSongPress(item) : undefined}
       />
     );
   };

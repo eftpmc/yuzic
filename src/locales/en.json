@@ -380,14 +380,18 @@
       "recentlyPlayed": "Recently played",
       "recentlyAdded": "Recently added",
       "favoriteAlbums": "Favorite albums",
-      "randomAlbums": "Random albums"
+      "randomAlbums": "Random albums",
+      "albumsForYou": "Albums for you",
+      "artistsForYou": "Artists for you"
     },
     "empty": {
       "recentSongs": "Play something to see it here",
       "recentlyPlayed": "Play albums to see them here",
       "recentlyAdded": "No albums in your library yet",
       "favoriteAlbums": "Star songs to add albums here",
-      "randomAlbums": "No albums in your library yet"
+      "randomAlbums": "No albums in your library yet",
+      "albumsForYou": "Discovering albums...",
+      "artistsForYou": "Discovering artists..."
     }
   },
   "playing": {
