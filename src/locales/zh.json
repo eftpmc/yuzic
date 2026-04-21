@@ -432,6 +432,7 @@
   "songOptions": {
     "unknownArtist": "未知",
     "actions": {
+      "play": "播放",
       "favorite": "加入收藏",
       "unfavorite": "移出收藏",
       "addToQueue": "添加至队列",
@@ -485,11 +486,11 @@
     "menu": {
       "title": "外部专辑",
       "downloadToServer": "下载至服务器",
-      "inLibrary": "已关联 MusicBrainz",
+      "inLibrary": "已在库中",
       "downloading": "正在下载至服务器… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "已关联 MusicBrainz",
+      "onServer": "已在库中",
       "downloadingToServer": "正在下载至服务器 · {{progress}}%"
     },
     "download": {
@@ -509,7 +510,7 @@
     },
     "info": {
       "title": "关于外部专辑",
-      "body": "此专辑的信息由 MusicBrainz 提供。曲目列表、时长、封面或发行详情可能不完整，或与你的本地文件存在差异。"
+      "body": "专辑元数据由 MusicBrainz 提供。曲目预览由 Deezer 提供——依据 Deezer API 条款提供的 30 秒片段。"
     }
   },
   "albumOptions": {

@@ -5,8 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
@@ -54,12 +52,6 @@ const ExternalSongRow: React.FC<Props> = ({
           <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
             {song.title}
           </Text>
-          {showPreview && (
-            <View style={styles.previewBadge}>
-              <Ionicons name="headset-outline" size={10} color={isDarkMode ? '#666' : '#aaa'} />
-              <Text style={[styles.previewText, themeStyles.previewText]}>preview</Text>
-            </View>
-          )}
         </View>
       </TouchableOpacity>
 
@@ -67,7 +59,7 @@ const ExternalSongRow: React.FC<Props> = ({
         song={song}
         albumTitle={albumTitle}
         albumArtist={albumArtist}
-        previewUrl={previewUrl}
+        onPlay={onPress}
       />
     </View>
   );
@@ -104,25 +96,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
   },
-  previewBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 2,
-  },
-  previewText: {
-    fontSize: 10,
-  },
 });
 
 const stylesLight = StyleSheet.create({
   title: { color: '#000' },
   trackNumber: { color: '#666' },
-  previewText: { color: '#aaa' },
 });
 
 const stylesDark = StyleSheet.create({
   title: { color: '#fff' },
   trackNumber: { color: '#aaa' },
-  previewText: { color: '#666' },
 });

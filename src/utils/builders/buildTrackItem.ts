@@ -16,6 +16,7 @@ export function buildTrackItem(song: Song, playlistId?: string): TrackItem {
       artistId: song.artistId ?? '',
       serverId: song.sourceServerId ?? '',
       serverType: song.sourceServerType ?? '',
+      isPreview: song.isPreview ? 'true' : '',
       ...(playlistId ? { playlistId } : {}),
     },
   };

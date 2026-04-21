@@ -49,10 +49,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
               </Text>
 
               {status.kind === 'in_library' && (
-                <View style={styles.badge}>
-                  <Ionicons name="link" size={12} color="#34C759" />
-                  <Text style={styles.badgeText}>MusicBrainz</Text>
-                </View>
+                <Ionicons name="link" size={14} color="#34C759" />
               )}
               {status.kind === 'downloading' && (
                 <View style={styles.badge}>
@@ -126,7 +123,6 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    color: '#34C759',
     fontWeight: '500',
   },
   badgeTextBlue: {

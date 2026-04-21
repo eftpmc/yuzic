@@ -35,8 +35,10 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 }) => {
   const { currentSong } = usePlaying();
   const progress = usePlayingProgress();
-  const position = progress.position;
-  const duration = currentSong ? Number(currentSong.duration) : 1;
+  const nativeDuration = progress.duration
+  const songDuration = currentSong ? Number(currentSong.duration) : 1
+  const duration = nativeDuration > 0 ? nativeDuration : songDuration
+  const position = Math.min(progress.position, duration)
 
   if (!currentSong) {
     return null;
@@ -67,10 +69,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           </Text>
 
           {currentSong.artist && (
-            <TouchableOpacity
-              onPress={onPressArtist}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={onPressArtist} activeOpacity={0.7}>
               <Text style={styles.artist} numberOfLines={1}>
                 {currentSong.artist}
               </Text>

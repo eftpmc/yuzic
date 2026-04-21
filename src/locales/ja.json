@@ -432,6 +432,7 @@
   "songOptions": {
     "unknownArtist": "不明",
     "actions": {
+      "play": "再生",
       "favorite": "お気に入り",
       "unfavorite": "お気に入り解除",
       "addToQueue": "キューに追加",
@@ -485,11 +486,11 @@
     "menu": {
       "title": "外部アルバム",
       "downloadToServer": "サーバーにダウンロード",
-      "inLibrary": "MusicBrainz リンク済み",
+      "inLibrary": "ライブラリ内",
       "downloading": "サーバーにダウンロード中… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "MusicBrainz リンク済み",
+      "onServer": "ライブラリ内",
       "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%"
     },
     "download": {
@@ -509,7 +510,7 @@
     },
     "info": {
       "title": "外部アルバムについて",
-      "body": "このアルバムの情報は MusicBrainz によって提供されています。曲目、再生時間、アートワーク、リリース情報は不完全であったり、ローカルのファイルと異なる場合があります。"
+      "body": "アルバムのメタデータは MusicBrainz が提供しています。トラックのプレビューは Deezer によるもので、Deezer API 利用規約に基づく 30 秒のクリップです。"
     }
   },
   "albumOptions": {

@@ -79,8 +79,6 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
             </View>
           </View>
 
-          <View style={styles.divider} />
-
           {status.kind === 'in_library' ? (
             <View style={styles.option}>
               <Ionicons name="link" size={26} color="#34C759" />
@@ -136,11 +134,6 @@ const styles = StyleSheet.create({
   headerText: { flex: 1, marginLeft: 12 },
   title: { fontSize: 16, fontWeight: '600' },
   artist: { fontSize: 14, marginTop: 2 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#444',
-    marginVertical: 12,
-  },
   option: {
     flexDirection: 'row',
     alignItems: 'center',

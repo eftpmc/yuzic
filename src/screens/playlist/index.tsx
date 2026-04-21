@@ -1,13 +1,14 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePlaylist } from '@/hooks/playlists';
+import { useTheme } from '@/hooks/useTheme';
+import NotFoundView from '@/components/NotFoundView';
 
 import PlaylistContent from './components/Content';
 import LoadingPlaylistContent from './components/Content/Loading';
-import { useTheme } from '@/hooks/useTheme';
 
 const PlaylistScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -25,11 +26,7 @@ const PlaylistScreen: React.FC = () => {
   }
 
   if (!playlist) {
-    return (
-      <SafeAreaView style={styles.screen(isDarkMode)}>
-        <Text style={styles.error(isDarkMode)}>Playlist not found.</Text>
-      </SafeAreaView>
-    );
+    return <NotFoundView message="Playlist not found" />;
   }
 
   return (
@@ -45,11 +42,5 @@ const styles = StyleSheet.create({
   screen: (isDark: boolean) => ({
     flex: 1,
     backgroundColor: isDark ? '#000' : '#fff',
-  }),
-  error: (isDark: boolean) => ({
-    color: isDark ? '#fff' : '#000',
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
   }),
 });

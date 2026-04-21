@@ -256,10 +256,16 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const newIndex = queueRef.current.findIndex(s => s.id === nitroTrack.id);
     if (newIndex === -1) return;
 
+    const songFromQueue = queueRef.current[newIndex];
+    const isPreview = nitroTrack.extraPayload?.isPreview === 'true' || songFromQueue.isPreview;
+    const resolvedSong: Song = isPreview && !songFromQueue.isPreview
+      ? { ...songFromQueue, isPreview: true }
+      : songFromQueue;
+
     currentIndexRef.current = newIndex;
     setCurrentIndex(newIndex);
-    currentSongRef.current = queueRef.current[newIndex];
-    setCurrentSong(queueRef.current[newIndex]);
+    currentSongRef.current = resolvedSong;
+    setCurrentSong(resolvedSong);
 
     // Extend native window: keep NATIVE_WINDOW_SIZE - 1 songs ahead of current.
     // This handles gapless natural advance without destroying the native playlist.

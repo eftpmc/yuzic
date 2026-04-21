@@ -206,8 +206,11 @@ const Search = () => {
             subtext: result.subtext,
             cover: result.cover,
           }}
+          rounded
           onPress={() =>
-            (navigation as any).navigate('artistView', { id: result.id })
+            result.source === 'external'
+              ? (navigation as any).navigate('externalArtistView', { mbid: result.id, name: result.title })
+              : (navigation as any).navigate('artistView', { id: result.id })
           }
         />
       );

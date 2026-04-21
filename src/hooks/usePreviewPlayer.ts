@@ -10,7 +10,7 @@ export function externalSongToTrack(song: ExternalSong, previewUrl: string): Son
     artist: song.artist,
     artistId: '',
     cover: song.cover,
-    duration: song.duration,
+    duration: '30',
     albumId: song.albumId,
     streamUrl: previewUrl,
     isPreview: true,

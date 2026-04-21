@@ -186,16 +186,19 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
     const albumResults = albums
       .filter(a => a.title.toLowerCase().includes(lowerQuery))
+      .slice(0, 5)
       .map((album: Album) =>
         albumToResult(album, 'local', downloadedAlbumIds.has(album.id))
       );
 
     const artistResults = artists
       .filter(a => a.name.toLowerCase().includes(lowerQuery))
+      .slice(0, 3)
       .map((artist: Artist) => artistToResult(artist));
 
     const playlistResults = playlists
       .filter(p => p.title.toLowerCase().includes(lowerQuery))
+      .slice(0, 3)
       .map((playlist: Playlist) =>
         playlistToResult(playlist, downloadedPlaylistIds.has(playlist.id))
       );
@@ -206,6 +209,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         const artist = (track.artist ?? '').toLowerCase();
         return title.includes(lowerQuery) || artist.includes(lowerQuery);
       })
+      .slice(0, 5)
       .map((track: SongBase) =>
         songToResult(track, downloadedTrackIds.has(track.id))
       );
@@ -239,10 +243,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     if (!query.trim()) return [];
 
     try {
-      const results: ExternalAlbumBase[] =
-        await musicbrainz.searchAlbums(query);
-
-      return results.map(album => albumToResult(album, 'external', false));
+      const albums = await musicbrainz.searchAlbums(query);
+      return albums.map(album => albumToResult(album, 'external', false));
     } catch {
       return [];
     }
@@ -328,7 +330,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         return aTitle.localeCompare(bTitle);
       });
 
-      setSearchResults(uniqueResults.slice(0, 50));
+      setSearchResults(uniqueResults);
     } finally {
       if (requestId === searchRequestIdRef.current) {
         setIsLoading(false);

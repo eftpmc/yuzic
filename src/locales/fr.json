@@ -432,6 +432,7 @@
   "songOptions": {
     "unknownArtist": "Inconnu",
     "actions": {
+      "play": "Lire",
       "favorite": "Ajouter aux favoris",
       "unfavorite": "Retirer des favoris",
       "addToQueue": "Ajouter à la file d'attente",
@@ -485,11 +486,11 @@
     "menu": {
       "title": "Album externe",
       "downloadToServer": "Télécharger sur le serveur",
-      "inLibrary": "Lié à MusicBrainz",
+      "inLibrary": "Dans la bibliothèque",
       "downloading": "Téléchargement vers le serveur… {{progress}}%"
     },
     "serverStatus": {
-      "onServer": "Lié à MusicBrainz",
+      "onServer": "Dans la bibliothèque",
       "downloadingToServer": "Téléchargement vers le serveur · {{progress}}%"
     },
     "download": {
@@ -509,7 +510,7 @@
     },
     "info": {
       "title": "À propos des albums externes",
-      "body": "Les informations de cet album sont fournies par MusicBrainz. Les listes de pistes, durées, pochettes ou détails de sortie peuvent être incomplets ou différer de vos fichiers locaux."
+      "body": "Les métadonnées de l'album sont fournies par MusicBrainz. Les aperçus des pistes sont fournis par Deezer — des extraits de 30 secondes conformément aux conditions d'utilisation de l'API Deezer."
     }
   },
   "albumOptions": {

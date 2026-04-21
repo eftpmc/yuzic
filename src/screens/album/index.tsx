@@ -1,16 +1,14 @@
 import React from 'react';
-import {
-  Text,
-  StyleSheet,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAlbum } from '@/hooks/albums';
+import { useTheme } from '@/hooks/useTheme';
+import NotFoundView from '@/components/NotFoundView';
 
 import AlbumContent from './components/Content';
 import LoadingAlbumContent from './components/Content/Loading';
-import { useTheme } from '@/hooks/useTheme';
 
 const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -29,13 +27,7 @@ const AlbumScreen: React.FC = () => {
   }
 
   if (!album || error) {
-    return (
-      <SafeAreaView style={styles.screen(isDarkMode)}>
-        <Text style={styles.error(isDarkMode)}>
-          {error?.message ?? 'Album not found'}
-        </Text>
-      </SafeAreaView>
-    );
+    return <NotFoundView message="Album not found" />;
   }
 
   return (
@@ -51,11 +43,5 @@ const styles = StyleSheet.create({
   screen: (isDark: boolean) => ({
     flex: 1,
     backgroundColor: isDark ? '#000' : '#fff',
-  }),
-  error: (isDark: boolean) => ({
-    color: isDark ? '#fff' : '#000',
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
   }),
 });
