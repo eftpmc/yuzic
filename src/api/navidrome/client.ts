@@ -60,11 +60,17 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
     const auth = buildTokenParams(username, password);
     const params = buildParams(auth, { ...(defaultParams ?? {}), ...extraParams });
     const url = `${baseUrl}/rest/${endpoint}?${params}`;
-    const res = await fetch(url, { method: options.method ?? "GET", headers: proxyHeader });
-    if (!res.ok) {
-      throw new Error(`Navidrome API error (${res.status}): ${await res.text()}`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(url, { method: options.method ?? "GET", headers: proxyHeader, signal: controller.signal });
+      if (!res.ok) {
+        throw new Error(`Navidrome API error (${res.status}): ${await res.text()}`);
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timer);
     }
-    return res.json();
   }
 
   function buildStreamUrl(songId: string): string {

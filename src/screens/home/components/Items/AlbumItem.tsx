@@ -13,7 +13,7 @@ import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import { useAlbums } from '@/hooks/albums';
+import { useAlbum } from '@/hooks/albums';
 
 interface ItemProps {
   id: string;
@@ -36,8 +36,7 @@ const AlbumItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const { albums } = useAlbums();
-  const album = albums.find(a => a.id === id) ?? null;
+  const { album } = useAlbum(id);
 
   const sheetRef = useRef<BottomSheetModal>(null);
 

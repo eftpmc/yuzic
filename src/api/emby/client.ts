@@ -37,17 +37,24 @@ export function createEmbyClient(config: EmbyClientConfig) {
       ...(tokenOnly ? tokenOnlyHeaders : defaultHeaders),
       ...((fetchOptions.headers as Record<string, string>) ?? {}),
     };
-    const res = await fetch(`${baseUrl}${path}`, {
-      ...fetchOptions,
-      headers,
-    });
-    if (!res.ok) {
-      throw new Error(`Emby API error (${res.status}): ${await res.text()}`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(`${baseUrl}${path}`, {
+        ...fetchOptions,
+        headers,
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        throw new Error(`Emby API error (${res.status}): ${await res.text()}`);
+      }
+      if (res.status === 204 || res.headers.get("content-length") === "0") {
+        return {} as T;
+      }
+      return res.json();
+    } finally {
+      clearTimeout(timer);
     }
-    if (res.status === 204 || res.headers.get("content-length") === "0") {
-      return {} as T;
-    }
-    return res.json();
   }
 
   async function requestText(
@@ -59,14 +66,21 @@ export function createEmbyClient(config: EmbyClientConfig) {
       ...(tokenOnly ? tokenOnlyHeaders : defaultHeaders),
       ...((fetchOptions.headers as Record<string, string>) ?? {}),
     };
-    const res = await fetch(`${baseUrl}${path}`, {
-      ...fetchOptions,
-      headers,
-    });
-    if (!res.ok) {
-      throw new Error(`Emby API error (${res.status})`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(`${baseUrl}${path}`, {
+        ...fetchOptions,
+        headers,
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        throw new Error(`Emby API error (${res.status})`);
+      }
+      return res.text();
+    } finally {
+      clearTimeout(timer);
     }
-    return res.text();
   }
 
   function buildStreamUrl(songId: string): string {

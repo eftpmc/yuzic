@@ -11,7 +11,7 @@ export async function search(
     return { albums: [], artists: [], songs: [] };
   }
 
-  const [albumsData, artistsData, songsData] = await Promise.all([
+  const [albumsRes, artistsRes, songsRes] = await Promise.allSettled([
     client.request<any>(
       `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicAlbum&Recursive=true&Limit=20&Fields=DateCreated,ProviderIds,ArtistItems`,
       { tokenOnly: true }
@@ -26,9 +26,9 @@ export async function search(
     ),
   ]);
 
-  const albumItems = albumsData.Items ?? [];
-  const artistItems = artistsData.Items ?? [];
-  const songItems = songsData.Items ?? [];
+  const albumItems = albumsRes.status === 'fulfilled' ? (albumsRes.value.Items ?? []) : [];
+  const artistItems = artistsRes.status === 'fulfilled' ? (artistsRes.value.Items ?? []) : [];
+  const songItems = songsRes.status === 'fulfilled' ? (songsRes.value.Items ?? []) : [];
 
   const albums: Album[] = albumItems.map((item: any) => ({
     id: item.Id,

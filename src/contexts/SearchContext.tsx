@@ -270,16 +270,19 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       if (searchScope.includes('client')) {
         results.push(...await searchLibrary(query));
       }
-      // Early exit if a newer search has started
       if (requestId !== searchRequestIdRef.current) return;
 
       if (searchScope.includes('server')) {
-        results.push(...await searchServer(query));
+        try {
+          results.push(...await searchServer(query));
+        } catch {}
       }
       if (requestId !== searchRequestIdRef.current) return;
 
       if (searchScope.includes('external')) {
-        results.push(...await searchExternal(query));
+        try {
+          results.push(...await searchExternal(query));
+        } catch {}
       }
       if (requestId !== searchRequestIdRef.current) return;
 

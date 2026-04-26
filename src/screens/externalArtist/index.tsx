@@ -34,7 +34,11 @@ export default function ExternalArtistScreen() {
     )
   }
 
-  if (!artist || error) {
+  if (error) {
+    return <NotFoundView message="Couldn't load artist. Check your connection." />
+  }
+
+  if (!artist) {
     return <NotFoundView message="Artist not found" />
   }
 

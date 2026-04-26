@@ -52,7 +52,7 @@ const TrackItem: React.FC<Props> = ({
   const longPressInFlightRef = useRef(false);
   const lastPressAtRef = useRef(0);
 
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [selectedSong, setSelectedSong] = useState<Song>(song as unknown as Song);
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
   const formatDuration = (duration?: number) => {
@@ -99,11 +99,8 @@ const TrackItem: React.FC<Props> = ({
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
-    // Show sheet immediately — use cached Redux data if available, else base data
     setSelectedSong(cachedSong ?? (song as unknown as Song));
-    requestAnimationFrame(() => {
-      optionsRef.current?.present();
-    });
+    optionsRef.current?.present();
     try {
       if (!cachedSong) {
         const fullSong = await api.tracks.get(song.id);
@@ -187,13 +184,11 @@ const TrackItem: React.FC<Props> = ({
         )}
       </Pressable>
 
-      {selectedSong && (
-        <SongOptions
-          ref={optionsRef}
-          selectedSong={selectedSong}
-          onAddToPlaylist={openPlaylistList}
-        />
-      )}
+      <SongOptions
+        ref={optionsRef}
+        selectedSong={selectedSong}
+        onAddToPlaylist={openPlaylistList}
+      />
 
       <PlaylistList
         ref={playlistRef}

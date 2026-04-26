@@ -8,7 +8,7 @@ import MediaTile from './MediaTile'
 import ExploreEmptyCard from './ExploreEmptyCard'
 import { ExternalAlbumBase } from '@/types'
 
-const H_PADDING = 12
+const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
 
 type Props = {

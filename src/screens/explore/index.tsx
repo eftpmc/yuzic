@@ -16,20 +16,20 @@ import { useSimilarContent } from '@/features/explore/hooks/useSimilarContent'
 
 export default function Explore() {
   const { isDarkMode } = useTheme()
-  const [shuffleKey, setShuffleKey] = useState(() => Date.now())
 
-  const { artists, albums, artistsReady, albumsReady, isFetching } = useSimilarContent(shuffleKey)
+  const { artists, albums, artistsReady, albumsReady, isFetching, isError, hasNoSeeds, refresh } = useSimilarContent()
+  const showExternalSections = !hasNoSeeds && !isError
 
   const [refreshing, setRefreshing] = useState(false)
 
-  useEffect(() => {
-    if (!isFetching) setRefreshing(false)
-  }, [isFetching])
-
   const onRefresh = useCallback(() => {
     setRefreshing(true)
-    setShuffleKey(Date.now())
-  }, [])
+    refresh()
+  }, [refresh])
+
+  useEffect(() => {
+    if (refreshing && !isFetching) setRefreshing(false)
+  }, [refreshing, isFetching])
 
   return (
     <ScrollView
@@ -50,8 +50,8 @@ export default function Explore() {
       <RecentSongsSpeedDial/>
       <RecentlyPlayed />
       <RecentlyAdded />
-      <AlbumsForYouSection data={albums} ready={albumsReady} />
-      <ArtistsForYouSection data={artists} ready={artistsReady} />
+      {showExternalSections && <AlbumsForYouSection data={albums} ready={albumsReady} />}
+      {showExternalSections && <ArtistsForYouSection data={artists} ready={artistsReady} />}
       <FavoriteAlbums />
       <RandomAlbums />
     </ScrollView>

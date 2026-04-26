@@ -36,7 +36,11 @@ const ExternalAlbumScreen: React.FC = () => {
     );
   }
 
-  if (!externalAlbum || error) {
+  if (error) {
+    return <NotFoundView message="Couldn't load album. Check your connection." />;
+  }
+
+  if (!externalAlbum) {
     return <NotFoundView message="Album not found" />;
   }
 
