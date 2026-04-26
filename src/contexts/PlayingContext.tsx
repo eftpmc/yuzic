@@ -193,6 +193,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
           console.warn('Navidrome scrobble failed', err);
         }
       }
+    try {
+      await api.songs.scrobble(song.id, opts.startTime);
+    } catch {
+      // server scrobble is best-effort; never block playback
     }
     if (!listenBrainzConfig?.token) return;
     try {
@@ -227,6 +231,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     await PlayerQueue.loadPlaylist(playlistId);
     return playlistId;
   }, []);
+  }, [activeServer?.id, listenBrainzConfig?.token, dispatch, api]);
 
   // Start a new session: build native window then play.
   const loadSessionPlaylist = useCallback(async (songs: Song[], startIndex: number) => {

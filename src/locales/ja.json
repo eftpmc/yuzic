@@ -449,6 +449,7 @@
     },
     "media": {
       "duration": "再生時間",
+      "plays": "再生回数",
       "bitrate": "ビットレート",
       "sampleRate": "サンプルレート",
       "bitsPerSample": "サンプルあたりのビット数",
@@ -535,6 +536,7 @@
       "year": "年",
       "genres": "ジャンル",
       "songs": "曲数",
+      "plays": "再生回数",
       "unknown": "—"
     }
   },
@@ -586,7 +588,8 @@
       "info": "アーティスト情報"
     },
     "info": {
-      "albums": "アルバム"
+      "albums": "アルバム",
+      "plays": "再生回数"
     }
   }
 }

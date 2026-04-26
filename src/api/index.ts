@@ -41,6 +41,7 @@ const EMPTY_ADAPTER: ApiAdapter = {
   },
   songs: {
     get: async () => null,
+    scrobble: async () => {},
   },
   tracks: {
     list: async () => [],

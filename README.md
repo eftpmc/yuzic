@@ -80,7 +80,6 @@ Screenshots taken on iPhone 13
 
 <p align="center">
   <img src="screenshots/playing.png" alt="Yuzic Playing" width="275" height="600">
-  <img src="screenshots/playing-bottom.png" alt="Yuzic Playing Bottom" width="275" height="600">
   <img src="screenshots/queue.png" alt="Yuzic Queue" width="275" height="600">
 </p>
 

@@ -449,6 +449,7 @@
     },
     "media": {
       "duration": "时长",
+      "plays": "播放次数",
       "bitrate": "比特率",
       "sampleRate": "采样率",
       "bitsPerSample": "采样位数",
@@ -535,6 +536,7 @@
       "year": "发行年份",
       "genres": "流派",
       "songs": "曲目数",
+      "plays": "播放次数",
       "unknown": "—"
     }
   },
@@ -586,7 +588,8 @@
       "info": "歌手信息"
     },
     "info": {
-      "albums": "专辑数"
+      "albums": "专辑数",
+      "plays": "播放次数"
     }
   }
 }

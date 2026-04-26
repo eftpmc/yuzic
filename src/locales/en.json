@@ -450,6 +450,7 @@
     },
     "media": {
       "duration": "Duration",
+      "plays": "Plays",
       "bitrate": "Bitrate",
       "sampleRate": "Sample rate",
       "bitsPerSample": "Bits per sample",
@@ -536,6 +537,7 @@
       "year": "Year",
       "genres": "Genres",
       "songs": "Songs",
+      "plays": "Plays",
       "unknown": "—"
     }
   },
@@ -587,7 +589,8 @@
       "info": "Artist Info"
     },
     "info": {
-      "albums": "Albums"
+      "albums": "Albums",
+      "plays": "Plays"
     }
   }
 }

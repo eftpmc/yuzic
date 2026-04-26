@@ -22,6 +22,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistMbid } from '@/hooks/artists';
@@ -65,6 +66,7 @@ const ArtistOptions = forwardRef<
   );
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
+  const playCount = useSelector(selectArtistPlayCount(artist?.id ?? ''));
   const artistAlbumIdsKey = useMemo(
     () => artist?.ownedAlbums?.map(album => album.id).join(',') ?? '',
     [artist?.ownedAlbums]
@@ -343,6 +345,10 @@ const ArtistOptions = forwardRef<
           <Text style={[styles.infoValue, themeStyles.title]}>
             {artist.ownedAlbums?.length ?? 0}
           </Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('artistOptions.info.plays')}</Text>
+          <Text style={[styles.infoValue, themeStyles.title]}>{playCount}</Text>
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
