@@ -3,7 +3,7 @@ import { RootState } from "@/utils/redux/store";
 import i18n from '@/i18n';
 
 export const selectFavoritesPlaylist = createSelector(
-  [(state: RootState) => state.library.starred.songs],
+  [(state: RootState) => state.library.starred],
   (songs) => {
     return {
       id: "favorites",

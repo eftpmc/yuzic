@@ -49,8 +49,8 @@ const PlayingBar: React.FC = () => {
   const [currentGradient, setCurrentGradient] = useState<string[]>(['#000', '#000']);
   const [nextGradient, setNextGradient] = useState<string[]>(['#000', '#000']);
 
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const playlistSheetRef = useRef<BottomSheetModal>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const playlistSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const primaryAction = usePlayingBarAction(actionMode, {
     presentAddToPlaylist: () => {
@@ -77,7 +77,7 @@ const PlayingBar: React.FC = () => {
       if (colors.platform === 'android') {
         dominant = colors.darkVibrant || colors.dominant || dominant;
       } else {
-        dominant = colors.primary || dominant;
+        dominant = (colors as any).primary || dominant;
       }
       dominant = darkenHexColor(dominant);
       setNextGradient([dominant, '#000']);

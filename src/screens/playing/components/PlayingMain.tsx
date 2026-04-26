@@ -55,7 +55,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   return (
     <View style={[styles.root, { width }]}>
       <Image
-        source={{ uri: coverUri }}
+        source={{ uri: coverUri ?? undefined }}
         style={[styles.cover, { width, height: width }]}
         cachePolicy="memory-disk"
         priority="high"

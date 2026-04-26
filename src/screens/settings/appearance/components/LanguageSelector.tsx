@@ -15,7 +15,7 @@ export const LanguageSelector: React.FC = () => {
   const { colors } = useTheme();
   const selected = useSelector(selectLanguage);
   const { t } = useTranslation();
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const selectedLang = getLanguageByCode(selected);
   const selectedLabel = selectedLang?.nativeName ?? selected;

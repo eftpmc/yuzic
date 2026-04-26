@@ -19,7 +19,7 @@ const ArtistScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
         <LoadingArtistContent />
       </SafeAreaView>
     );
@@ -30,7 +30,7 @@ const ArtistScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
       <ArtistContent artist={artist} />
     </SafeAreaView>
   );
@@ -39,8 +39,13 @@ const ArtistScreen: React.FC = () => {
 export default ArtistScreen;
 
 const styles = StyleSheet.create({
-  screen: (isDark: boolean) => ({
+  screen: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#fff',
-  }),
+  },
+  screenDark: {
+    backgroundColor: '#000',
+  },
+  screenLight: {
+    backgroundColor: '#fff',
+  },
 });

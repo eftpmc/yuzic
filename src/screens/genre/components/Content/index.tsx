@@ -45,7 +45,6 @@ export default function GenreContent({ genre, albums }: Props) {
     <FlashList
       data={albums}
       keyExtractor={(item) => item.id}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       renderItem={({ item }) => (
         <AlbumRow

@@ -39,7 +39,7 @@ const ArtistItem: React.FC<ItemProps> = ({
   const { artists } = useArtists();
   const artist = artists.find(a => a.id === id) ?? null;
 
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('artistView', { id });

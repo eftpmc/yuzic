@@ -51,7 +51,7 @@ export const PlayingBarActionSelector: React.FC = () => {
                 },
               ]}
             >
-              {React.cloneElement(action.icon as React.ReactElement, {
+              {React.cloneElement(action.icon as React.ReactElement<any>, {
                 color: active ? '#fff' : isDarkMode ? '#ccc' : '#000',
               })}
             </TouchableOpacity>

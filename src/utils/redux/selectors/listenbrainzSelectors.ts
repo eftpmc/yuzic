@@ -11,7 +11,7 @@ const defaultEntry: PerServerListenBrainzState = {
 const selectListenBrainzForActiveServer = createSelector(
   [(s: RootState) => s.listenbrainz.byServer, (s: RootState) => s.servers.activeServerId],
   (byServer, activeServerId): PerServerListenBrainzState =>
-    (activeServerId && byServer[activeServerId]) ?? defaultEntry
+    (activeServerId ? byServer[activeServerId] ?? defaultEntry : defaultEntry)
 );
 
 export const selectListenBrainzUsername = createSelector(

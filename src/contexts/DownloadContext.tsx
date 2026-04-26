@@ -181,13 +181,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, []);
 
   const downloadPlaylistTracks = useCallback(async (playlistId: string, tracks: Song[]) => {
-    await DownloadManager.downloadPlaylist(playlistId, tracks.map(buildTrackItem));
+    await DownloadManager.downloadPlaylist(playlistId, tracks.map(s => buildTrackItem(s)));
   }, []);
 
   const downloadAlbumById = useCallback(async (albumId: string, songs?: Song[]) => {
     const tracksToDownload = songs ?? (await api.albums.get(albumId)).songs ?? [];
     if (tracksToDownload.length > 0) {
-      await DownloadManager.downloadPlaylist(albumId, tracksToDownload.map(buildTrackItem));
+      await DownloadManager.downloadPlaylist(albumId, tracksToDownload.map(s => buildTrackItem(s)));
     }
   }, [api]);
 

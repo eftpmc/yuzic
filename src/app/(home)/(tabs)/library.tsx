@@ -119,7 +119,7 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
 }
 
 export default function LibraryScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const themeColor = useSelector(selectThemeColor)
@@ -137,9 +137,9 @@ export default function LibraryScreen() {
   const listOpacity = useSharedValue(1)
   const animatedListStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }))
 
-  const accountSheetRef = useRef<BottomSheetModal>(null)
-  const sortSheetRef = useRef<BottomSheetModal>(null)
-  const gridSheetRef = useRef<BottomSheetModal>(null)
+  const accountSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
+  const sortSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
+  const gridSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
 
   const songLastPlayed = useSelector(selectSongLastPlayedAt)
   const songPlays = useSelector(selectSongPlayCounts)

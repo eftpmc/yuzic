@@ -32,7 +32,7 @@ type Props = {
 
 const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { t } = useTranslation();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -43,8 +43,8 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const previewsRaw = useExternalAlbumPreviews(album);
   const previews: Map<string, string> = previewsRaw instanceof Map ? previewsRaw : new Map();
 
-  const infoSheetRef = useRef<BottomSheetModal>(null);
-  const downloadSheetRef = useRef<BottomSheetModal>(null);
+  const infoSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const downloadSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const snapPoints = useMemo(() => ['25%'], []);
 
   const songs = album.songs ?? [];

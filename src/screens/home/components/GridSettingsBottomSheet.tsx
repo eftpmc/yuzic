@@ -177,6 +177,8 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
   }
 );
 
+GridSettingsBottomSheet.displayName = 'GridSettingsBottomSheet';
+
 export default GridSettingsBottomSheet;
 
 const styles = StyleSheet.create({

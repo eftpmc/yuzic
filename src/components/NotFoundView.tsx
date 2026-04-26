@@ -10,7 +10,7 @@ type Props = {
 }
 
 export default function NotFoundView({ message = 'Not found' }: Props) {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
 
   const bg = isDarkMode ? '#000' : '#fff'

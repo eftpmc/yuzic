@@ -31,7 +31,7 @@ export type AlbumOptionsProps = {
 };
 
 const AlbumOptions = forwardRef<
-  React.ElementRef<typeof BottomSheetModal>,
+  BottomSheetModal,
   AlbumOptionsProps
 >(({ album, hideGoToAlbum }, ref) => {
   const { t } = useTranslation();

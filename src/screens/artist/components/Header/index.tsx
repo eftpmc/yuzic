@@ -35,7 +35,7 @@ type Props = {
 
 const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const { t } = useTranslation();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
@@ -44,7 +44,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const api = useApi();
   const { playSongInCollection } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
-  const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const [artistSongs, setArtistSongs] = useState<Song[]>([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
@@ -158,7 +158,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     <>
       <View style={styles.fullBleedWrapper}>
         <Image
-          source={{ uri: buildCover(artist.cover, 'background') }}
+          source={{ uri: buildCover(artist.cover, 'background') ?? undefined }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           blurRadius={Platform.OS === 'ios' ? 20 : 10}

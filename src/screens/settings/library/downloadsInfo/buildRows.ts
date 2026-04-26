@@ -144,7 +144,8 @@ export function buildDownloadRows({
   const providerRank: Record<DownloadProviderType, number> = {
     navidrome: 0,
     jellyfin: 1,
-    unknown: 2,
+    emby: 2,
+    unknown: 3,
   };
 
   return normalized.sort((a, b) => {

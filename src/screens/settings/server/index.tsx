@@ -39,12 +39,9 @@ const ServerSettings: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-
-    if (!activeServer) {
-        return null;
-    }
-
-    const { serverUrl, username, isAuthenticated } = activeServer;
+    const serverUrl = activeServer?.serverUrl;
+    const username = activeServer?.username;
+    const isAuthenticated = activeServer?.isAuthenticated;
 
     useEffect(() => {
         if (!api || !serverUrl) {
@@ -69,6 +66,8 @@ const ServerSettings: React.FC = () => {
             clearTimeout(timeout);
         };
     }, [serverUrl]);
+
+    if (!activeServer) return null;
 
     return (
         <SafeAreaView

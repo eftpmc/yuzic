@@ -146,7 +146,7 @@ export default function Settings() {
 
     function renderRow(label: string, icon: any, route: string) {
         return (
-            <TouchableOpacity style={styles.row} onPress={() => router.push(route)}>
+            <TouchableOpacity style={styles.row} onPress={() => router.push(route as any)}>
                 <View style={styles.leftContent}>
                     <Entypo
                         name={icon}

@@ -72,9 +72,9 @@ export default function LibrariesOnboarding() {
       : { parentIds: selectedIds };
     dispatch(updateServer({
       id: server.id,
-      patch: { auth: { ...server.auth, ...authPatch } },
+      patch: { auth: { ...server.auth, ...authPatch } as any },
     }));
-    router.replace('/(home)');
+    router.replace('/');
   };
 
   return (

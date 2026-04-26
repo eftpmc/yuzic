@@ -47,7 +47,7 @@ function formatDate(value: string): string {
 }
 
 const SongOptions = forwardRef<
-  React.ElementRef<typeof BottomSheetModal>,
+  BottomSheetModal,
   SongOptionsProps
 >(({ selectedSong, onAddToPlaylist }, ref) => {
     const { t } = useTranslation();
@@ -399,6 +399,8 @@ const SongOptions = forwardRef<
     );
   }
 );
+
+SongOptions.displayName = 'SongOptions';
 
 export default SongOptions;
 

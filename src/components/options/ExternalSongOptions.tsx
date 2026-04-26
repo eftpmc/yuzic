@@ -49,8 +49,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const downloadSheetRef = useRef<BottomSheetModal>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const downloadSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const snapPoints = useMemo(() => ['40%', '70%'], []);
 
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);

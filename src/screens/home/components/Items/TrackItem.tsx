@@ -46,8 +46,8 @@ const TrackItem: React.FC<Props> = ({
   const songsById = useSelector(selectSongsById);
   const cachedSong = songsById.get(song.id) ?? null;
 
-  const optionsRef = useRef<BottomSheetModal>(null);
-  const playlistRef = useRef<BottomSheetModal>(null);
+  const optionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const playlistRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const pressInFlightRef = useRef(false);
   const longPressInFlightRef = useRef(false);
   const lastPressAtRef = useRef(0);

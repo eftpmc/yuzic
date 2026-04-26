@@ -86,7 +86,6 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
       }
       renderItem={renderItem}
       getItemType={(item) => item.type}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       ItemSeparatorComponent={({ leadingItem }) => {
         if (!leadingItem || leadingItem.type === 'disc-header') return null;

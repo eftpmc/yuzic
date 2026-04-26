@@ -29,7 +29,7 @@ const ExternalAlbumScreen: React.FC = () => {
     return (
       <SafeAreaView
         edges={['top']}
-        style={styles.screen(isDarkMode)}
+        style={[styles.screen, isDarkMode && styles.screenDark]}
       >
         <LoadingExternalAlbumContent />
       </SafeAreaView>
@@ -47,7 +47,7 @@ const ExternalAlbumScreen: React.FC = () => {
   return (
     <SafeAreaView
       edges={['top']}
-      style={styles.screen(isDarkMode)}
+      style={[styles.screen, isDarkMode && styles.screenDark]}
     >
       <ExternalAlbumContent album={externalAlbum} />
     </SafeAreaView>
@@ -57,8 +57,13 @@ const ExternalAlbumScreen: React.FC = () => {
 export default ExternalAlbumScreen;
 
 const styles = StyleSheet.create({
-  screen: (isDark: boolean) => ({
+  screen: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#fff',
-  }),
+  },
+  screenDark: {
+    backgroundColor: '#000',
+  },
+  screenLight: {
+    backgroundColor: '#fff',
+  },
 });

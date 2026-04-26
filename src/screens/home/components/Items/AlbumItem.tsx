@@ -38,7 +38,7 @@ const AlbumItem: React.FC<ItemProps> = ({
   const navigation = useNavigation<any>();
   const { album } = useAlbum(id);
 
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('albumView', { id });

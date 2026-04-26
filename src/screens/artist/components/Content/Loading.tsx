@@ -17,7 +17,6 @@ const LoadingArtistContent: React.FC = () => {
     <FlashList
       data={data}
       keyExtractor={(_, index) => `artist-loading-${index}`}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<LoadingArtistHeader />}
       renderItem={({ index }) => <LoadingAlbumRow key={index} />}
       showsVerticalScrollIndicator={false}

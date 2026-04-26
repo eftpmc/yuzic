@@ -23,7 +23,7 @@ type Props = {
 
 export default function ExternalArtistHeader({ artist }: Props) {
   const { t } = useTranslation()
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
 
   const bgUri = buildCover(artist.cover, 'background')

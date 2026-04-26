@@ -223,7 +223,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     sessionPlaylistIdRef.current = playlistId;
     nativeWindowStartRef.current = windowStart;
     nativeWindowSizeRef.current = windowSongs.length;
-    await PlayerQueue.addTracksToPlaylist(playlistId, windowSongs.map(buildTrackItem));
+    await PlayerQueue.addTracksToPlaylist(playlistId, windowSongs.map(s => buildTrackItem(s)));
     await PlayerQueue.loadPlaylist(playlistId);
     return playlistId;
   }, []);
@@ -275,7 +275,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (needed > 0 && nativeWindowEnd < queueRef.current.length && sessionPlaylistIdRef.current) {
       const toAdd = queueRef.current
         .slice(nativeWindowEnd, nativeWindowEnd + needed)
-        .map(buildTrackItem);
+        .map(s => buildTrackItem(s));
       const pid = sessionPlaylistIdRef.current;
       PlayerQueue.addTracksToPlaylist(pid, toAdd)
         .then(() => { nativeWindowSizeRef.current += toAdd.length; })

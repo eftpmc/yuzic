@@ -17,7 +17,7 @@ type Props = {
 }
 
 export default function AlbumsForYouSection({ data, ready }: Props) {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const screenWidth = Dimensions.get('window').width
@@ -44,7 +44,6 @@ export default function AlbumsForYouSection({ data, ready }: Props) {
           horizontal
           data={data}
           keyExtractor={item => item.id}
-          estimatedItemSize={gridItemWidth}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
           ItemSeparatorComponent={() => <View style={{ width: gridGap }} />}

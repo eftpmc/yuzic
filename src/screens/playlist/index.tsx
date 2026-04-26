@@ -19,7 +19,7 @@ const PlaylistScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
         <LoadingPlaylistContent />
       </SafeAreaView>
     );
@@ -30,7 +30,7 @@ const PlaylistScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
       <PlaylistContent playlist={playlist} />
     </SafeAreaView>
   );
@@ -39,8 +39,13 @@ const PlaylistScreen: React.FC = () => {
 export default PlaylistScreen;
 
 const styles = StyleSheet.create({
-  screen: (isDark: boolean) => ({
+  screen: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#fff',
-  }),
+  },
+  screenDark: {
+    backgroundColor: '#000',
+  },
+  screenLight: {
+    backgroundColor: '#fff',
+  },
 });

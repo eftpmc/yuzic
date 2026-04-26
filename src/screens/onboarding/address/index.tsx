@@ -25,7 +25,7 @@ export default function Address() {
     const [scheme, setScheme] = useState<Scheme>('https');
     const [host, setHost] = useState('');
 
-    const schemeSheetRef = useRef<BottomSheetModal>(null);
+    const schemeSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
     const snapPoints = useMemo(() => ['28%'], []);
 
     const handleNext = () => {
@@ -34,7 +34,7 @@ export default function Address() {
             return;
         }
         router.push({
-            pathname: '(onboarding)/credentials',
+            pathname: '/(onboarding)/credentials',
             params: { type, serverUrl: `${scheme}://${host.trim()}` },
         });
     };

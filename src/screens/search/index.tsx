@@ -31,9 +31,9 @@ import { Song } from '@/types';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
-  const songOptionsRef = useRef<BottomSheetModal>(null);
-  const playlistListRef = useRef<BottomSheetModal>(null);
-  const navigation = useNavigation();
+  const songOptionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const playlistListRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const navigation = useNavigation<any>();
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const api = useApi();
@@ -189,6 +189,7 @@ const Search = () => {
             year: 0,
             genres: [],
             created: new Date(0),
+            songs: [],
           }}
           onPress={album =>
             (navigation as any).navigate('albumView', { id: album.id })
@@ -205,6 +206,7 @@ const Search = () => {
             name: result.title,
             subtext: result.subtext,
             cover: result.cover,
+            ownedAlbums: [],
           }}
           rounded
           onPress={() =>
@@ -226,6 +228,7 @@ const Search = () => {
             cover: result.cover,
             changed: new Date(),
             created: new Date(),
+            songs: [],
           }}
           onPress={() =>
             (navigation as any).navigate('playlistView', { id: result.id })

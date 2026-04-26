@@ -68,6 +68,8 @@ const QueueItem = memo(
   queueItemPropsAreEqual
 );
 
+QueueItem.displayName = 'QueueItem';
+
 const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   onBack,
   width,

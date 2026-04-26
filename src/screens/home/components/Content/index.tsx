@@ -12,7 +12,7 @@ type Props<T> = {
   isGridView: boolean;
   gridColumns: number;
   gridItemWidth: number;
-  estimatedItemSize: number;
+  estimatedItemSize?: number;
   renderItem: ListRenderItem<T>;
   ListHeaderComponent?: React.ReactElement | null;
   onEndReached?: () => void;
@@ -25,7 +25,6 @@ export default function LibraryContent<T>({
   isGridView,
   gridColumns,
   gridItemWidth,
-  estimatedItemSize,
   renderItem,
   ListHeaderComponent,
   onEndReached,
@@ -60,7 +59,6 @@ export default function LibraryContent<T>({
   return (
     <FlashList
       data={data}
-      estimatedItemSize={estimatedItemSize}
       key={isGridView ? `grid-${gridColumns}` : 'list'}
       numColumns={isGridView ? gridColumns : 1}
       keyExtractor={(item: any, index) => {

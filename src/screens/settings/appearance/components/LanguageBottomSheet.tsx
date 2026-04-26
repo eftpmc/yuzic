@@ -109,6 +109,8 @@ const LanguageBottomSheet = forwardRef<
   );
 });
 
+LanguageBottomSheet.displayName = 'LanguageBottomSheet';
+
 export default LanguageBottomSheet;
 
 const styles = StyleSheet.create({

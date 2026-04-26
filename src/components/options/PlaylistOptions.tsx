@@ -43,7 +43,7 @@ function formatDate(value: string | Date): string {
 }
 
 const PlaylistOptions = forwardRef<
-  React.ElementRef<typeof BottomSheetModal>,
+  BottomSheetModal,
   PlaylistOptionsProps
 >(({ playlist, hideGoToPlaylist }, ref) => {
   const { t } = useTranslation();

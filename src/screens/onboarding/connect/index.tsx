@@ -38,7 +38,7 @@ export default function Connect() {
             return;
         }
         router.push({
-            pathname: '(onboarding)/address',
+            pathname: '/(onboarding)/address',
             params: { type: selectedType },
         });
     };
@@ -63,7 +63,7 @@ export default function Connect() {
                 isAuthenticated: true,
             }));
             dispatch(setActiveServer(id));
-            router.replace('/(home)');
+            router.replace('/');
         } catch {
             toast.error(t('onboarding.connect.connectError'));
         } finally {

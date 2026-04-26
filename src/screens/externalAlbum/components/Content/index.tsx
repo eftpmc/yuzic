@@ -58,7 +58,6 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       data={songs}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}

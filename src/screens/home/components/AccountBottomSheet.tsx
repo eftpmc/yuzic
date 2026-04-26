@@ -140,6 +140,8 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
     );
   });
 
+AccountBottomSheet.displayName = 'AccountBottomSheet';
+
 export default AccountBottomSheet;
 
 const styles = StyleSheet.create({

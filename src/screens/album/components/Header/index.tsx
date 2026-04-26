@@ -25,10 +25,10 @@ type Props = {
 };
 
 const AlbumHeader: React.FC<Props> = ({ album }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const { playSongInCollection } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();

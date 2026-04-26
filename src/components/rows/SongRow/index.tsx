@@ -43,8 +43,8 @@ const SongRow: React.FC<Props> = ({
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
 
-  const optionsRef = useRef<BottomSheetModal>(null);
-  const playlistRef = useRef<BottomSheetModal>(null);
+  const optionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const playlistRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
@@ -55,7 +55,7 @@ const SongRow: React.FC<Props> = ({
     }
 
     if (collection) {
-      playSongInCollection(song, collection, false, selectedIndex);
+      playSongInCollection(song, collection, false);
     }
   };
 

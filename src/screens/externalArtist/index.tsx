@@ -28,7 +28,7 @@ export default function ExternalArtistScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
         <LoadingExternalArtistContent />
       </SafeAreaView>
     )
@@ -43,15 +43,20 @@ export default function ExternalArtistScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
       <ExternalArtistContent artist={artist} />
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  screen: (isDark: boolean) => ({
+  screen: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#fff',
-  }),
+  },
+  screenDark: {
+    backgroundColor: '#000',
+  },
+  screenLight: {
+    backgroundColor: '#fff',
+  },
 })

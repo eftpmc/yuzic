@@ -24,7 +24,7 @@ export default function Index() {
       activeServer.isAuthenticated &&
       activeServer.serverUrl
     ) {
-      router.replace('/(home)');
+      router.replace('/');
     } else {
       router.replace('/(onboarding)');
     }

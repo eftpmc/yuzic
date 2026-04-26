@@ -26,7 +26,6 @@ const LoadingPlaylistContent: React.FC = () => {
       data={data}
       keyExtractor={(_, index) => `playlist-loading-${index}`}
       renderItem={renderItem}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}

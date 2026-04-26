@@ -10,7 +10,7 @@ const defaultEntry: PerServerDownloadersState = {
 const selectDownloadersForActiveServer = createSelector(
   [(s: RootState) => s.downloaders.byServer, (s: RootState) => s.servers.activeServerId],
   (byServer, activeServerId): PerServerDownloadersState =>
-    (activeServerId && byServer[activeServerId]) ?? defaultEntry
+    (activeServerId ? byServer[activeServerId] ?? defaultEntry : defaultEntry)
 );
 
 export const selectLidarrServerUrl = createSelector(

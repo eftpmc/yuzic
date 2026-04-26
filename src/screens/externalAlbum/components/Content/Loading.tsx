@@ -18,7 +18,6 @@ const LoadingExternalAlbumContent: React.FC = () => {
       data={data}
       keyExtractor={(_, index) => `skeleton-${index}`}
       renderItem={() => <LoadingExternalSongRow />}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<LoadingAlbumHeader />}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}

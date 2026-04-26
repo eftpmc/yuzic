@@ -31,7 +31,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
   const queryClient = useQueryClient();
   const api = useApi();
 
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const [fullArtist, setFullArtist] = useState<Artist | null>(null);
 
   const activeServer = useSelector(selectActiveServer);

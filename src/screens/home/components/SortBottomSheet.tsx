@@ -113,6 +113,8 @@ const SortBottomSheet = forwardRef<
   );
 });
 
+SortBottomSheet.displayName = 'SortBottomSheet';
+
 export default SortBottomSheet;
 
 const styles = StyleSheet.create({

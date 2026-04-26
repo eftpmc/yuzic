@@ -7,7 +7,8 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { useTranslation, TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
 import { Check, X } from 'lucide-react-native';

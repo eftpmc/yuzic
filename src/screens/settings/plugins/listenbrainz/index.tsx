@@ -42,9 +42,7 @@ const ListenBrainzView: React.FC = () => {
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
   const activeServer = useSelector(selectActiveServer);
-
-  if (!activeServer) return null;
-  const serverId = activeServer.id;
+  const serverId = activeServer?.id ?? '';
 
   const username = useSelector(selectListenBrainzUsername);
   const token = useSelector(selectListenBrainzToken);
@@ -104,6 +102,7 @@ const ListenBrainzView: React.FC = () => {
 
     setIsLoading(true);
     try {
+      if (!config) return;
       const result = await listenbrainz.testConnection(config);
 
       if (result.success) {
@@ -125,6 +124,8 @@ const ListenBrainzView: React.FC = () => {
     dispatch(disconnect({ serverId }));
     toast(t('settings.listenBrainz.disconnected'));
   };
+
+  if (!activeServer) return null;
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
@@ -159,7 +160,7 @@ const ListenBrainzView: React.FC = () => {
             style={[styles.input, isDarkMode && styles.inputDark]}
           />
 
-          <View style={styles.row} onPress={handlePing}>
+          <TouchableOpacity style={styles.row} onPress={handlePing}>
             <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
               {t('settings.listenBrainz.connectivity')}
             </Text>
@@ -171,7 +172,7 @@ const ListenBrainzView: React.FC = () => {
             ) : (
               <XCircle size={20} color="red" />
             )}
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>

@@ -74,7 +74,7 @@ const LibrarySelect: React.FC = () => {
       : { parentIds: next };
     dispatch(updateServer({
       id: activeServer.id,
-      patch: { auth: { ...activeServer.auth, ...authPatch } },
+      patch: { auth: { ...activeServer.auth, ...authPatch } as any },
     }));
   };
 
@@ -84,7 +84,7 @@ const LibrarySelect: React.FC = () => {
       : { parentIds: [] };
     dispatch(updateServer({
       id: activeServer.id,
-      patch: { auth: { ...activeServer.auth, ...authPatch } },
+      patch: { auth: { ...activeServer.auth, ...authPatch } as any },
     }));
   };
 

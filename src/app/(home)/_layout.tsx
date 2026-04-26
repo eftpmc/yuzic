@@ -73,7 +73,7 @@ export default function HomeLayout() {
 
     return (
         <View style={{ flex: 1 }}>
-            <Stack style={{ flex: 1 }}>
+            <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
                 <Stack.Screen name="search" options={{ headerShown: false, animation: "fade", animationDuration: 150 }} />
                 <Stack.Screen name="albumView" options={{ headerShown: false }} />

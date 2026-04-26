@@ -29,7 +29,6 @@ const LoadingAlbumContent: React.FC = () => {
       data={data}
       keyExtractor={(_, index) => `skeleton-${index}`}
       renderItem={renderItem}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
