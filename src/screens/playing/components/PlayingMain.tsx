@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import TrackPlayer from 'react-native-track-player';
+import { TrackPlayer } from 'react-native-nitro-player';
 import { Image } from 'expo-image';
 
 import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
@@ -35,8 +35,10 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 }) => {
   const { currentSong } = usePlaying();
   const progress = usePlayingProgress();
-  const position = progress.position;
-  const duration = currentSong ? Number(currentSong.duration) : 1;
+  const nativeDuration = progress.duration
+  const songDuration = currentSong ? Number(currentSong.duration) : 1
+  const duration = nativeDuration > 0 ? nativeDuration : songDuration
+  const position = Math.min(progress.position, duration)
 
   if (!currentSong) {
     return null;
@@ -47,13 +49,13 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
     buildCover({ kind: 'none' } as CoverSource, 'detail');
 
   const handleSeek = (positionSeconds: number) => {
-    TrackPlayer.seekTo(positionSeconds);
+    TrackPlayer.seek(positionSeconds);
   };
 
   return (
     <View style={[styles.root, { width }]}>
       <Image
-        source={{ uri: coverUri }}
+        source={{ uri: coverUri ?? undefined }}
         style={[styles.cover, { width, height: width }]}
         cachePolicy="memory-disk"
         priority="high"
@@ -67,10 +69,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           </Text>
 
           {currentSong.artist && (
-            <TouchableOpacity
-              onPress={onPressArtist}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={onPressArtist} activeOpacity={0.7}>
               <Text style={styles.artist} numberOfLines={1}>
                 {currentSong.artist}
               </Text>

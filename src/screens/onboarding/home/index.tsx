@@ -31,7 +31,7 @@ export default function Home() {
 
     useEffect(() => {
         if (isAuthenticated) {
-            router.replace('/(home)');
+            router.replace('/');
             return;
         }
 

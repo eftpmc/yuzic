@@ -62,8 +62,8 @@ export async function getAlbums(
       (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "") +
       (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
-    const raw = await client.request(path);
-    const items = raw?.Items ?? [];
+    const raw = await client.request(path) as any;
+    const items: any[] = raw?.Items ?? [];
 
     const albums = items.map((a: any) => normalizeAlbum(a));
 

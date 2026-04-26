@@ -5,11 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ExternalAlbumBase } from '@/types';
 import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 
 type Props = {
   album: ExternalAlbumBase;
@@ -17,12 +19,9 @@ type Props = {
   onPress?: (album: ExternalAlbumBase) => void;
 };
 
-const ExternalAlbumRow: React.FC<Props> = ({
-  album,
-  artistName,
-  onPress,
-}) => {
+const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
   const { isDarkMode } = useTheme();
+  const status = useExternalAlbumStatus(album);
 
   return (
     <View style={styles.wrapper}>
@@ -31,39 +30,38 @@ const ExternalAlbumRow: React.FC<Props> = ({
           style={styles.albumContent}
           onPress={() => onPress?.(album)}
         >
-          <MediaImage
-            cover={album.cover}
-            size="thumb"
-            style={styles.cover}
-          />
+          <MediaImage cover={album.cover} size="thumb" style={styles.cover} />
 
           <View style={styles.albumTextContainer}>
             <Text
               numberOfLines={1}
-              style={[
-                styles.albumTitle,
-                isDarkMode && styles.albumTitleDark,
-              ]}
+              style={[styles.albumTitle, isDarkMode && styles.albumTitleDark]}
             >
               {album.title}
             </Text>
 
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.albumSubtext,
-                isDarkMode && styles.albumSubtextDark,
-              ]}
-            >
-              {album.subtext}
-            </Text>
+            <View style={styles.subtextRow}>
+              <Text
+                numberOfLines={1}
+                style={[styles.albumSubtext, isDarkMode && styles.albumSubtextDark, styles.subtextFlex]}
+              >
+                {album.subtext}
+              </Text>
+
+              {status.kind === 'in_library' && (
+                <Ionicons name="link" size={14} color="#34C759" />
+              )}
+              {status.kind === 'downloading' && (
+                <View style={styles.badge}>
+                  <Ionicons name="arrow-down-circle" size={12} color="#007AFF" />
+                  <Text style={[styles.badgeText, styles.badgeTextBlue]}>{status.progress}%</Text>
+                </View>
+              )}
+            </View>
           </View>
         </TouchableOpacity>
 
-        <ExternalAlbumOptions
-          selectedAlbumTitle={album.title}
-          selectedAlbumArtist={artistName}
-        />
+        <ExternalAlbumOptions album={album} />
       </View>
     </View>
   );
@@ -102,12 +100,32 @@ const styles = StyleSheet.create({
   albumTitleDark: {
     color: '#fff',
   },
+  subtextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    gap: 8,
+  },
+  subtextFlex: {
+    flex: 1,
+  },
   albumSubtext: {
     fontSize: 14,
     color: '#666',
-    marginTop: 2,
   },
   albumSubtextDark: {
     color: '#aaa',
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  badgeTextBlue: {
+    color: '#007AFF',
   },
 });

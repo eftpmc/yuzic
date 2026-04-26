@@ -83,9 +83,9 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const [lyrics, setLyrics] = useState<LyricsResult | null>(null);
     const [lyricsAvailable, setLyricsAvailable] = useState(false);
 
-    const songOptionsRef = useRef<BottomSheetModal>(null);
-    const playlistRef = useRef<BottomSheetModal>(null);
-    const lyricsSheetRef = useRef<BottomSheetModal>(null);
+    const songOptionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+    const playlistRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+    const lyricsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
 
     const [mode, setMode] = useState<PlayingViewMode>("player");
     const { playerStyle, queueStyle } =

@@ -5,20 +5,34 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { Ionicons } from '@expo/vector-icons';
+import ExternalSongOptions from '@/components/options/ExternalSongOptions';
 
 type Props = {
   song: ExternalSong;
   trackNumber?: number;
+  albumTitle: string;
+  albumArtist: string;
+  /** When provided, preview badge is shown and queue actions become available. */
+  previewUrl?: string;
+  /** @deprecated use previewUrl */
+  hasPreview?: boolean;
   onPress?: () => void;
 };
 
-const ExternalSongRow: React.FC<Props> = ({ song, trackNumber, onPress }) => {
+const ExternalSongRow: React.FC<Props> = ({
+  song,
+  trackNumber,
+  albumTitle,
+  albumArtist,
+  previewUrl,
+  hasPreview,
+  onPress,
+}) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const showPreview = !!previewUrl || !!hasPreview;
 
   return (
     <View style={styles.row}>
@@ -35,19 +49,17 @@ const ExternalSongRow: React.FC<Props> = ({ song, trackNumber, onPress }) => {
         </View>
 
         <View style={styles.textContainer}>
-          <Text
-            style={[styles.title, themeStyles.title]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
             {song.title}
           </Text>
         </View>
       </TouchableOpacity>
 
-      <Ionicons
-        name="ellipsis-horizontal"
-        size={18}
-        color={isDarkMode ? '#fff' : '#000'}
+      <ExternalSongOptions
+        song={song}
+        albumTitle={albumTitle}
+        albumArtist={albumArtist}
+        onPlay={onPress}
       />
     </View>
   );
@@ -69,10 +81,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   leadingMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
     width: 44,
     marginRight: 4,
+    alignItems: 'flex-start',
   },
   trackNumber: {
     fontSize: 13,
@@ -88,19 +99,11 @@ const styles = StyleSheet.create({
 });
 
 const stylesLight = StyleSheet.create({
-  title: {
-    color: '#000',
-  },
-  trackNumber: {
-    color: '#666',
-  },
+  title: { color: '#000' },
+  trackNumber: { color: '#666' },
 });
 
 const stylesDark = StyleSheet.create({
-  title: {
-    color: '#fff',
-  },
-  trackNumber: {
-    color: '#aaa',
-  },
+  title: { color: '#fff' },
+  trackNumber: { color: '#aaa' },
 });

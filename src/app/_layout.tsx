@@ -1,8 +1,6 @@
-import TrackPlayer from 'react-native-track-player';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 
-TrackPlayer.registerPlaybackService(() => require('../service').default);
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,6 +27,14 @@ import i18n from '@/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import NetInfo from '@react-native-community/netinfo';
+import { onlineManager } from '@tanstack/react-query';
+
+onlineManager.setEventListener(setOnline => {
+  return NetInfo.addEventListener(state => {
+    setOnline(!!state.isConnected)
+  })
+})
 
 SplashScreen.preventAutoHideAsync();
 
@@ -62,7 +68,7 @@ function AppShell() {
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
         <PlayingProvider>
-          <SearchProvider>
+<SearchProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
               <BottomSheetModalProvider>

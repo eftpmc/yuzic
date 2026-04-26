@@ -6,6 +6,7 @@ export default function OnboardingLayout() {
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="servers" options={{ headerShown: false }} />
             <Stack.Screen name="connect" options={{ headerShown: false }} />
+            <Stack.Screen name="address" options={{ headerShown: false }} />
             <Stack.Screen name="credentials" options={{ headerShown: false }} />
             <Stack.Screen name="libraries" options={{ headerShown: false }} />
         </Stack>

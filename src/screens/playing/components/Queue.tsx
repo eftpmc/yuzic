@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -10,7 +10,6 @@ import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GripVertical } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
-import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlbums } from '@/hooks/albums';
@@ -69,6 +68,8 @@ const QueueItem = memo(
   queueItemPropsAreEqual
 );
 
+QueueItem.displayName = 'QueueItem';
+
 const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   onBack,
   width,
@@ -91,11 +92,9 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 
   const [queue, setQueue] = useState<Song[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      setQueue(getQueue());
-    }, [queueVersion])
-  );
+  useEffect(() => {
+    setQueue(getQueue());
+  }, [queueVersion]);
 
   const currentAlbum = useMemo(
     () =>

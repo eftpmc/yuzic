@@ -28,7 +28,7 @@ type Props = {
 }
 
 const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
   const themeColor = useSelector(selectThemeColor)
   const { playSongInCollection } = usePlaying()

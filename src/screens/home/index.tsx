@@ -16,7 +16,7 @@ import AccountBottomSheet from './components/AccountBottomSheet'
 import Explore from '@/screens/explore'
 
 export default function HomeScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const router = useRouter()
 
   const activeServer = useSelector(selectActiveServer)
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   const [isMounted, setIsMounted] = useState(false)
   const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
 
-  const accountSheetRef = useRef<BottomSheetModal>(null)
+  const accountSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
 
   const { sync } = useSync()
   const syncOnAppStart = useSelector(selectSyncOnAppStart)

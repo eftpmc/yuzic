@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { ArrowDownAZ, Calendar, Check, Clock3, Flame } from 'lucide-react-native';
+import { ArrowDownAZ, Calendar, CalendarPlus, Check, Clock3, Flame } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
-type SortOrder = 'title' | 'recent' | 'userplays' | 'year';
+type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
 
 interface SortBottomSheetProps {
   sortOrder: SortOrder;
@@ -31,12 +31,13 @@ const SortBottomSheet = forwardRef<
 
   const sortOptions = [
     { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
+    { value: 'recentlyAdded' as const, label: t('home.sort.recentlyAdded'), Icon: CalendarPlus },
     { value: 'title' as const, label: t('home.sort.alphabetical'), Icon: ArrowDownAZ },
     { value: 'year' as const, label: t('home.sort.releaseYear'), Icon: Calendar },
     { value: 'userplays' as const, label: t('home.sort.mostPlayed'), Icon: Flame },
   ];
 
-  const snapPoints = useMemo(() => ['40%'], []);
+  const snapPoints = useMemo(() => ['48%'], []);
 
   return (
     <BottomSheetModal
@@ -111,6 +112,8 @@ const SortBottomSheet = forwardRef<
     </BottomSheetModal>
   );
 });
+
+SortBottomSheet.displayName = 'SortBottomSheet';
 
 export default SortBottomSheet;
 

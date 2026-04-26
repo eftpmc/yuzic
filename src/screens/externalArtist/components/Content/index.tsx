@@ -15,7 +15,7 @@ type Props = {
 const ESTIMATED_ROW_HEIGHT = 80
 
 export default function ExternalArtistContent({ artist }: Props) {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
 
   const header = useMemo(() => <Header artist={artist} />, [artist])
@@ -24,7 +24,6 @@ export default function ExternalArtistContent({ artist }: Props) {
     <FlashList
       data={artist.albums}
       keyExtractor={(item) => item.id}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       renderItem={({ item }) => (
         <ExternalAlbumRow

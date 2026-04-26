@@ -68,17 +68,17 @@ export default memo(MediaTile);
 
 const styles = StyleSheet.create({
   title: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: '600',
+    marginTop: 6,
+    fontSize: 15,
+    fontWeight: '700',
     color: '#000',
   },
   titleDark: {
-    color: '#fff',
+    color: '#e6e6e6',
   },
   subtitle: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: 2,
+    fontSize: 13,
     color: '#666',
   },
   subtitleDark: {

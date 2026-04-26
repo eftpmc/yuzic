@@ -258,6 +258,8 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
   }
 );
 
+PlaylistList.displayName = 'PlaylistList';
+
 export default PlaylistList;
 
 const styles = StyleSheet.create({

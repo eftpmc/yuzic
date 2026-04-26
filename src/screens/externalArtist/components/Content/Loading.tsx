@@ -16,7 +16,6 @@ export default function LoadingExternalArtistContent() {
     <FlashList
       data={data}
       keyExtractor={(_, i) => `external-artist-loading-${i}`}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<LoadingExternalArtistHeader />}
       renderItem={() => <LoadingExternalAlbumRow />}
       showsVerticalScrollIndicator={false}

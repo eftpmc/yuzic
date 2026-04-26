@@ -22,15 +22,16 @@ import { useTranslation } from 'react-i18next';
 type Props = {
   artist: Artist;
   onPress?: (artist: Artist) => void;
+  rounded?: boolean;
 };
 
-const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
+const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const queryClient = useQueryClient();
   const api = useApi();
 
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const [fullArtist, setFullArtist] = useState<Artist | null>(null);
 
   const activeServer = useSelector(selectActiveServer);
@@ -61,7 +62,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress }) => {
             <MediaImage
               cover={artist.cover}
               size="grid"
-              style={styles.cover}
+              style={[styles.cover, rounded && styles.coverRounded]}
             />
 
             <View style={styles.textContainer}>
@@ -117,6 +118,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 6,
+  },
+  coverRounded: {
+    borderRadius: 32,
   },
   rowItem: {
     flexDirection: 'row',

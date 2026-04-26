@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,23 +11,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useSelector } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
 
-import { ExternalAlbum } from '@/types';
+import { ExternalAlbum, Playlist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import {
-  selectLidarrConfig,
   selectLidarrAuthenticated,
-  selectIsLidarrActive,
-  selectSlskdConfig,
   selectSlskdAuthenticated,
-  selectIsSlskdActive,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import * as lidarr from '@/api/lidarr';
-import * as slskd from '@/api/slskd';
 import { LucideDownload } from 'lucide-react-native';
+import { usePlaying } from '@/contexts/PlayingContext';
+import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
+import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
+import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
 
 type Props = {
   album: ExternalAlbum;
@@ -35,56 +32,63 @@ type Props = {
 
 const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { t } = useTranslation();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const lidarrConfig = useSelector(selectLidarrConfig);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isLidarrActive = useSelector(selectIsLidarrActive);
-  const slskdConfig = useSelector(selectSlskdConfig);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
-  const isSlskdActive = useSelector(selectIsSlskdActive);
-  const [downloading, setDownloading] = useState(false);
 
-  const infoSheetRef = useRef<BottomSheetModal>(null);
+  const { playSongInCollection } = usePlaying();
+  const albumStatus = useExternalAlbumStatus(album);
+  const previewsRaw = useExternalAlbumPreviews(album);
+  const previews: Map<string, string> = previewsRaw instanceof Map ? previewsRaw : new Map();
+
+  const infoSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const downloadSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const snapPoints = useMemo(() => ['25%'], []);
 
   const songs = album.songs ?? [];
 
-  const handleDownload = async () => {
-    if (downloading || !album.title || !album.artist) return;
-    const hasDownloader =
-      (isLidarrActive && isLidarrConnected) ||
-      (isSlskdActive && isSlskdConnected);
-    if (!hasDownloader) {
-      toast.error(t('externalAlbum.download.noDownloader'));
-      return;
-    }
-    setDownloading(true);
-    try {
-      if (isLidarrActive && isLidarrConnected) {
-        const result = await lidarr.downloadAlbum(lidarrConfig, album.title, album.artist);
-        toast[result.success ? 'success' : 'error'](
-          result.success
-            ? t('externalAlbum.download.addedToLidarr')
-            : (result.message ?? t('externalAlbum.download.failed'))
-        );
-        return;
-      }
-      if (isSlskdActive && isSlskdConnected) {
-        const result = await slskd.downloadAlbum(slskdConfig, album.title, album.artist);
-        toast[result.success ? 'success' : 'error'](
-          result.success
-            ? t('externalAlbum.download.addedToSlskd')
-            : (result.message ?? t('externalAlbum.download.failed'))
-        );
-        return;
-      }
-    } catch {
-      toast.error(t('externalAlbum.download.startFailed'));
-    } finally {
-      setDownloading(false);
-    }
+  const previewSongs = useMemo<Song[]>(() => (
+    songs
+      .filter(s => previews.has(s.id))
+      .map(s => ({
+        id: s.id,
+        title: s.title,
+        artist: s.artist,
+        artistId: '',
+        cover: s.cover,
+        duration: s.duration,
+        albumId: s.albumId,
+        streamUrl: previews.get(s.id)!,
+      }))
+  ), [songs, previews]);
+
+  const previewCollection = useMemo<Playlist>(() => ({
+    id: `preview-${album.id}`,
+    title: album.title,
+    subtext: album.artist,
+    cover: album.cover,
+    changed: new Date(),
+    created: new Date(),
+    songs: previewSongs,
+  }), [album, previewSongs]);
+
+  const handlePlay = () => {
+    if (!previewSongs.length) return;
+    playSongInCollection(previewSongs[0], previewCollection);
+  };
+
+  const handleShuffle = () => {
+    if (!previewSongs.length) return;
+    playSongInCollection(previewSongs[0], previewCollection, true);
+  };
+
+  const canDownload = isLidarrConnected || isSlskdConnected;
+
+  const handleDownload = () => {
+    if (!canDownload || albumStatus.kind !== 'none') return;
+    downloadSheetRef.current?.present();
   };
 
   const metadataItems = useMemo(() => {
@@ -152,21 +156,65 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           </View>
         </View>
 
+        {/* Server status row */}
+        {albumStatus.kind !== 'none' && (
+          <View style={[styles.serverStatusRow, themeStyles.serverStatusRow]}>
+            {albumStatus.kind === 'in_library' ? (
+              <>
+                <Ionicons name="link" size={14} color="#34C759" />
+                <Text style={[styles.serverStatusText, { color: '#34C759' }]}>
+                  {t('externalAlbum.serverStatus.onServer')}
+                </Text>
+              </>
+            ) : (
+              <>
+                <SpinningLoaderCircle size={14} color="#007AFF" />
+                <Text style={[styles.serverStatusText, { color: '#007AFF' }]}>
+                  {t('externalAlbum.serverStatus.downloadingToServer', { progress: albumStatus.progress })}
+                </Text>
+              </>
+            )}
+          </View>
+        )}
+
         {/* Actions */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={[styles.downloadButton, { backgroundColor: themeColor }]}
-            onPress={handleDownload}
-            disabled={downloading}
-          >
-            {downloading ? (
-              <SpinningLoaderCircle size={24} color="#fff" />
-            ) : (
-              <LucideDownload size={24} color="#fff" />
-            )}
-          </TouchableOpacity>
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={[styles.secondaryButton, themeStyles.secondaryButton]}
+              onPress={handleShuffle}
+              disabled={!previewSongs.length}
+            >
+              <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.playButton, { backgroundColor: themeColor }]}
+              onPress={handlePlay}
+              disabled={!previewSongs.length}
+            >
+              <Ionicons name="play" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.secondaryButton, themeStyles.secondaryButton]}
+              onPress={handleDownload}
+              disabled={!canDownload || albumStatus.kind !== 'none'}
+            >
+              <LucideDownload
+                size={18}
+                color={
+                  !canDownload || albumStatus.kind !== 'none'
+                    ? (isDarkMode ? '#555' : '#bbb')
+                    : (isDarkMode ? '#fff' : '#000')
+                }
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
+
+      <DownloadAlbumSheet album={album} sheetRef={downloadSheetRef} />
 
       <BottomSheetModal
         ref={infoSheetRef}
@@ -265,7 +313,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  downloadButton: {
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  secondaryButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  serverStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  serverStatusText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  playButton: {
     borderRadius: 22,
     width: 112,
     height: 48,
@@ -298,9 +371,13 @@ const styles = StyleSheet.create({
 const stylesLight = StyleSheet.create({
   title: { color: '#000' },
   subtext: { color: '#666' },
+  secondaryButton: { backgroundColor: '#f0f0f0' },
+  serverStatusRow: { backgroundColor: 'rgba(0,0,0,0.05)' },
 });
 
 const stylesDark = StyleSheet.create({
   title: { color: '#fff' },
   subtext: { color: '#aaa' },
+  secondaryButton: { backgroundColor: '#1c1c1e' },
+  serverStatusRow: { backgroundColor: 'rgba(255,255,255,0.07)' },
 });

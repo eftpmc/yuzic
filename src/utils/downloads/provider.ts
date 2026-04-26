@@ -22,12 +22,12 @@ type DownloadTrackLike = {
 };
 
 export function normalizeServerType(value: unknown): ServerType | null {
-  if (value === 'navidrome' || value === 'jellyfin') return value;
+  if (value === 'navidrome' || value === 'jellyfin' || value === 'emby') return value;
   return null;
 }
 
 export function inferServerTypeFromCoverKind(value: unknown): ServerType | null {
-  if (value === 'navidrome' || value === 'jellyfin') return value;
+  if (value === 'navidrome' || value === 'jellyfin' || value === 'emby') return value;
   return null;
 }
 

@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "Source inconnue"
         },
         "status": {
@@ -276,11 +277,9 @@
       "switchClearFailedBody": "Échec de l'effacement des téléchargements avant le changement de serveur."
     },
     "connect": {
-      "title": "Connectez-vous à votre serveur",
-      "subtitle": "Saisissez l'URL de votre serveur (http/https)",
-      "urlPlaceholder": "https://votre-serveur.exemple.com",
+      "title": "Choisissez un type de serveur",
+      "subtitle": "Sélectionnez le type de serveur auquel vous souhaitez vous connecter.",
       "selectTypeFirst": "Sélectionnez d'abord un type de serveur.",
-      "enterUrl": "Veuillez saisir une URL de serveur valide.",
       "demoUnavailableProvider": "Démo non disponible pour ce fournisseur.",
       "connectError": "Une erreur s'est produite lors de la connexion.",
       "useDemo": "Utiliser la démo {{provider}}",
@@ -288,8 +287,18 @@
       "demoFailed": "Échec de la connexion à la démo",
       "providerDescription": {
         "navidrome": "Un serveur musical léger et auto-hébergé.",
-        "jellyfin": "Un serveur multimédia complet pour la musique, les films et les séries."
+        "jellyfin": "Un serveur multimédia complet pour la musique, les films et les séries.",
+        "emby": "Un serveur multimédia personnel pour la musique, les films et les séries."
       }
+    },
+    "address": {
+      "title": "Adresse du serveur",
+      "subtitle": "Saisissez l'adresse de votre serveur.",
+      "enterUrl": "Veuillez saisir une adresse de serveur.",
+      "hint": "Ajoutez un port si nécessaire, ex. : votre-serveur.com:4533",
+      "schemeTitle": "Protocole",
+      "httpsDesc": "Chiffré (recommandé)",
+      "httpDesc": "Non chiffré"
     },
     "credentials": {
       "title": "Saisissez vos identifiants",
@@ -330,6 +339,7 @@
       "mostRecent": "Plus récents",
       "mostPlayed": "Plus écoutés",
       "releaseYear": "Année de sortie",
+      "recentlyAdded": "Récemment ajouté",
       "lastModified": "Dernière modification"
     },
     "sortSheet": {
@@ -369,14 +379,18 @@
       "recentlyPlayed": "Écoutés récemment",
       "recentlyAdded": "Ajoutés récemment",
       "favoriteAlbums": "Albums favoris",
-      "randomAlbums": "Albums au hasard"
+      "randomAlbums": "Albums au hasard",
+      "albumsForYou": "Albums pour vous",
+      "artistsForYou": "Artistes pour vous"
     },
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",
       "recentlyPlayed": "Écoutez des albums pour les voir ici",
       "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment",
       "favoriteAlbums": "Marquez des morceaux comme favoris pour ajouter des albums ici",
-      "randomAlbums": "Aucun album dans votre bibliothèque pour le moment"
+      "randomAlbums": "Aucun album dans votre bibliothèque pour le moment",
+      "albumsForYou": "Découverte des albums...",
+      "artistsForYou": "Découverte des artistes..."
     }
   },
   "playing": {
@@ -418,11 +432,13 @@
   "songOptions": {
     "unknownArtist": "Inconnu",
     "actions": {
+      "play": "Lire",
       "favorite": "Ajouter aux favoris",
       "unfavorite": "Retirer des favoris",
       "addToQueue": "Ajouter à la file d'attente",
       "addToEnd": "Ajouter à la fin",
       "addToPlaylist": "Ajouter à une liste de lecture",
+      "goToAlbum": "Aller à l'album",
       "instantMix": "Mix instantané"
     },
     "sections": {
@@ -470,14 +486,23 @@
   "externalAlbum": {
     "menu": {
       "title": "Album externe",
-      "downloadToServer": "Télécharger sur le serveur"
+      "downloadToServer": "Télécharger sur le serveur",
+      "inLibrary": "Dans la bibliothèque",
+      "downloading": "Téléchargement vers le serveur… {{progress}}%"
+    },
+    "serverStatus": {
+      "onServer": "Dans la bibliothèque",
+      "downloadingToServer": "Téléchargement vers le serveur · {{progress}}%"
     },
     "download": {
       "noDownloader": "Aucun gestionnaire de téléchargement actif connecté.",
       "addedToLidarr": "Album ajouté à Lidarr !",
       "addedToSlskd": "Album ajouté à la file d'attente slskd !",
       "failed": "Échec du téléchargement.",
-      "startFailed": "Échec du démarrage du téléchargement."
+      "startFailed": "Échec du démarrage du téléchargement.",
+      "chooseService": "Choisir un service",
+      "lidarrDesc": "Gestionnaire de collection musicale",
+      "slskdDesc": "Partage de fichiers pair à pair"
     },
     "header": {
       "songs": "{{count}} morceau",
@@ -486,7 +511,7 @@
     },
     "info": {
       "title": "À propos des albums externes",
-      "body": "Les informations de cet album sont fournies par MusicBrainz. Les listes de pistes, durées, pochettes ou détails de sortie peuvent être incomplets ou différer de vos fichiers locaux."
+      "body": "Les métadonnées de l'album sont fournies par MusicBrainz. Les aperçus des pistes sont fournis par Deezer — des extraits de 30 secondes conformément aux conditions d'utilisation de l'API Deezer."
     }
   },
   "albumOptions": {

@@ -50,7 +50,7 @@ import SortBottomSheet from '@/screens/home/components/SortBottomSheet'
 import GridSettingsBottomSheet from '@/screens/home/components/GridSettingsBottomSheet'
 
 type Filter = 'playlists' | 'albums' | 'artists' | 'tracks' | 'downloaded' | null
-type SortOrder = 'title' | 'recent' | 'userplays' | 'year'
+type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded'
 
 type LibraryItem =
   | { kind: 'album'; data: Album }
@@ -107,12 +107,19 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
       }
       return getPlays(b) - getPlays(a)
     }
+    if (order === 'recentlyAdded') {
+      const getCreated = (x: LibraryItem): number => {
+        const created = (x.data as any).created
+        return created ? new Date(created).getTime() : 0
+      }
+      return getCreated(b) - getCreated(a)
+    }
     return 0
   })
 }
 
 export default function LibraryScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const themeColor = useSelector(selectThemeColor)
@@ -130,9 +137,9 @@ export default function LibraryScreen() {
   const listOpacity = useSharedValue(1)
   const animatedListStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }))
 
-  const accountSheetRef = useRef<BottomSheetModal>(null)
-  const sortSheetRef = useRef<BottomSheetModal>(null)
-  const gridSheetRef = useRef<BottomSheetModal>(null)
+  const accountSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
+  const sortSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
+  const gridSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
 
   const songLastPlayed = useSelector(selectSongLastPlayedAt)
   const songPlays = useSelector(selectSongPlayCounts)
@@ -208,10 +215,11 @@ export default function LibraryScreen() {
   ], [t])
 
   const SORT_LABELS = useMemo((): Record<SortOrder, string> => ({
-    recent:    t('home.sort.mostRecent'),
-    title:     t('home.sort.alphabetical'),
-    year:      t('home.sort.releaseYear'),
-    userplays: t('home.sort.mostPlayed'),
+    recent:        t('home.sort.mostRecent'),
+    recentlyAdded: t('home.sort.recentlyAdded'),
+    title:         t('home.sort.alphabetical'),
+    year:          t('home.sort.releaseYear'),
+    userplays:     t('home.sort.mostPlayed'),
   }), [t])
 
   const secondaryColor = isDarkMode ? '#aaa' : '#666'
@@ -311,13 +319,13 @@ export default function LibraryScreen() {
       </View>
 
       <Animated.View style={[{ flex: 1 }, animatedListStyle]}>
-      <FlashList
+      <FlashList<LibraryItem>
         key={`${isGridView ? `grid-${gridColumns}` : 'list'}`}
         data={items}
         keyExtractor={item => `${item.kind}-${item.data.id}`}
         renderItem={renderItem}
         numColumns={isGridView ? gridColumns : 1}
-        estimatedItemSize={isGridView ? gridWidth + 30 : 64}
+        {...({ estimatedItemSize: isGridView ? gridWidth + 30 : 64 } as any)}
         getItemType={item => item.kind}
         ListHeaderComponent={
           <View style={[styles.sortRow, { borderBottomColor: borderColor, backgroundColor: isDarkMode ? '#000' : '#fff' }]}>

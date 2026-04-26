@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "不明なソース"
         },
         "status": {
@@ -276,11 +277,9 @@
       "switchClearFailedBody": "サーバー切り替え前のダウンロード削除に失敗しました。"
     },
     "connect": {
-      "title": "サーバーに接続",
-      "subtitle": "サーバーURLを入力してください（http/https）",
-      "urlPlaceholder": "https://your-server.example.com",
+      "title": "サーバーの種類を選択",
+      "subtitle": "接続するサーバーの種類を選んでください。",
       "selectTypeFirst": "サーバー種別を先に選択してください。",
-      "enterUrl": "有効なサーバーURLを入力してください。",
       "demoUnavailableProvider": "このプロバイダーではデモを利用できません。",
       "connectError": "接続中にエラーが発生しました。",
       "useDemo": "{{provider}} のデモを使う",
@@ -288,8 +287,18 @@
       "demoFailed": "デモ接続に失敗しました",
       "providerDescription": {
         "navidrome": "軽量なセルフホスト型音楽サーバー。",
-        "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。"
+        "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。",
+        "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。"
       }
+    },
+    "address": {
+      "title": "サーバーアドレス",
+      "subtitle": "サーバーのアドレスを入力してください。",
+      "enterUrl": "サーバーアドレスを入力してください。",
+      "hint": "必要に応じてポートを含めてください（例：your-server.com:4533）",
+      "schemeTitle": "プロトコル",
+      "httpsDesc": "暗号化（推奨）",
+      "httpDesc": "非暗号化"
     },
     "credentials": {
       "title": "認証情報を入力",
@@ -330,6 +339,7 @@
       "mostRecent": "最近再生",
       "mostPlayed": "よく再生",
       "releaseYear": "リリース年",
+      "recentlyAdded": "最近追加",
       "lastModified": "更新順"
     },
     "sortSheet": {
@@ -369,14 +379,18 @@
       "recentlyPlayed": "最近再生",
       "recentlyAdded": "最近追加",
       "favoriteAlbums": "お気に入りのアルバム",
-      "randomAlbums": "ランダムアルバム"
+      "randomAlbums": "ランダムアルバム",
+      "albumsForYou": "あなたへのアルバム",
+      "artistsForYou": "あなたへのアーティスト"
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",
       "recentlyPlayed": "再生したアルバムがここに表示されます",
       "recentlyAdded": "ライブラリにアルバムがありません",
       "favoriteAlbums": "曲をお気に入りするとここに表示されます",
-      "randomAlbums": "ライブラリにアルバムがありません"
+      "randomAlbums": "ライブラリにアルバムがありません",
+      "albumsForYou": "アルバムを探しています...",
+      "artistsForYou": "アーティストを探しています..."
     }
   },
   "playing": {
@@ -418,11 +432,13 @@
   "songOptions": {
     "unknownArtist": "不明",
     "actions": {
+      "play": "再生",
       "favorite": "お気に入り",
       "unfavorite": "お気に入り解除",
       "addToQueue": "キューに追加",
       "addToEnd": "末尾に追加",
       "addToPlaylist": "プレイリストに追加",
+      "goToAlbum": "アルバムへ移動",
       "instantMix": "インスタントミックス"
     },
     "sections": {
@@ -470,14 +486,23 @@
   "externalAlbum": {
     "menu": {
       "title": "外部アルバム",
-      "downloadToServer": "サーバーにダウンロード"
+      "downloadToServer": "サーバーにダウンロード",
+      "inLibrary": "ライブラリ内",
+      "downloading": "サーバーにダウンロード中… {{progress}}%"
+    },
+    "serverStatus": {
+      "onServer": "ライブラリ内",
+      "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%"
     },
     "download": {
       "noDownloader": "有効なダウンローダーが接続されていません。",
       "addedToLidarr": "Lidarr に追加しました！",
       "addedToSlskd": "slskd キューに追加しました！",
       "failed": "ダウンロードに失敗しました。",
-      "startFailed": "ダウンロードを開始できませんでした。"
+      "startFailed": "ダウンロードを開始できませんでした。",
+      "chooseService": "サービスを選択",
+      "lidarrDesc": "音楽コレクションマネージャー",
+      "slskdDesc": "P2P ファイル共有"
     },
     "header": {
       "songs": "{{count}} 曲",
@@ -486,7 +511,7 @@
     },
     "info": {
       "title": "外部アルバムについて",
-      "body": "このアルバムの情報は MusicBrainz によって提供されています。曲目、再生時間、アートワーク、リリース情報は不完全であったり、ローカルのファイルと異なる場合があります。"
+      "body": "アルバムのメタデータは MusicBrainz が提供しています。トラックのプレビューは Deezer によるもので、Deezer API 利用規約に基づく 30 秒のクリップです。"
     }
   },
   "albumOptions": {

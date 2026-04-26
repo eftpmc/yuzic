@@ -23,7 +23,9 @@ export function buildCover(
     const id = cover.releaseGroupId
     if (!id) return null
 
-    const mbSize = mapMusicBrainzCoverSize(px)
+    // CAA only guarantees 250 and 500 thumbnails for release-group covers.
+    // 1200 is only generated for large originals and 404s otherwise.
+    const mbSize = px <= 250 ? 250 : 500
 
     return `https://coverartarchive.org/release-group/${id}/front-${mbSize}`
   }
@@ -38,8 +40,3 @@ export function buildCover(
   return provider.buildCoverUrl(active, cover, px);
 }
 
-export function mapMusicBrainzCoverSize(px: number): 250 | 500 | 1200 {
-  if (px <= 250) return 250
-  if (px <= 500) return 500
-  return 1200
-}

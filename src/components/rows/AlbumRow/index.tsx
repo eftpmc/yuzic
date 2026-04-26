@@ -28,7 +28,7 @@ const AlbumRow: React.FC<Props> = ({
   isDownloaded = false,
 }) => {
   const { isDarkMode } = useTheme();
-  const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const { album: fullAlbum } = useAlbum(album.id);
 
   return (

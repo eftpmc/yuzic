@@ -38,7 +38,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
   const navigation = useNavigation<any>();
   const { playlist } = usePlaylist(id);
 
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
   const handleNavigation = useCallback(() => {

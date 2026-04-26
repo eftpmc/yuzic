@@ -20,14 +20,14 @@ type Props = {
 const ESTIMATED_ROW_HEIGHT = 80
 
 export default function ArtistContent({ artist }: Props) {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
   const { tracks } = useTracks()
   const { getAllDownloadedTracks } = useDownload()
 
   const downloadedTrackIds = React.useMemo(
     () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
-    []
+    [getAllDownloadedTracks]
   )
   const downloadedAlbumIds = React.useMemo(
     () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
@@ -38,7 +38,6 @@ export default function ArtistContent({ artist }: Props) {
     <FlashList
       data={artist.ownedAlbums}
       keyExtractor={(item) => item.id}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={<Header artist={artist} />}
       renderItem={({ item }) => (
         <AlbumRow

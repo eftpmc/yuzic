@@ -41,6 +41,8 @@ export interface Song extends SongBase {
     bpm?: number;
     /** Genres; omitted when not available. */
     genres?: string[];
+    /** True when this song is a 30s external preview rather than an owned track. */
+    isPreview?: boolean;
 }
 
 export interface ExternalSong {

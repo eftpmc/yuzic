@@ -1,0 +1,55 @@
+import { deezerClient } from '../client';
+
+export type DeezerPreviewTrack = {
+  id: number;
+  title: string;
+  track_position: number;
+  preview: string;
+  duration: number;
+};
+
+type DeezerAlbumSearchResult = {
+  id: number;
+  title: string;
+  artist: { name: string };
+};
+
+type DeezerSearchResponse = {
+  data: DeezerAlbumSearchResult[];
+};
+
+type DeezerTracksResponse = {
+  data: DeezerPreviewTrack[];
+};
+
+async function searchAlbum(query: string): Promise<DeezerAlbumSearchResult | null> {
+  const res = await deezerClient.request<DeezerSearchResponse>(
+    `/search/album?q=${encodeURIComponent(query)}&limit=5`
+  );
+  return res.data?.[0] ?? null;
+}
+
+/**
+ * Searches Deezer for an album by artist + title, then fetches its tracks
+ * with 30s preview URLs. Returns an empty array if nothing is found.
+ *
+ * Strategy:
+ * 1. Advanced search: artist:"X" album:"Y"  — most precise
+ * 2. Fallback: plain "artist album" query    — handles punctuation/formatting differences
+ */
+export async function searchAlbumPreviews(
+  artist: string,
+  albumTitle: string
+): Promise<DeezerPreviewTrack[]> {
+  let album =
+    await searchAlbum(`artist:"${artist}" album:"${albumTitle}"`) ??
+    await searchAlbum(`${artist} ${albumTitle}`);
+
+  if (!album) return [];
+
+  const tracksRes = await deezerClient.request<DeezerTracksResponse>(
+    `/album/${album.id}/tracks`
+  );
+
+  return tracksRes.data?.filter(t => !!t.preview) ?? [];
+}

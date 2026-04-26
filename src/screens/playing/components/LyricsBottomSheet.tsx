@@ -10,6 +10,7 @@ import {
 import {
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetScrollViewMethods,
 } from '@gorhom/bottom-sheet';
 import Animated, {
   useAnimatedStyle,
@@ -81,7 +82,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     const { isDarkMode } = useTheme();
     const progress = usePlayingProgress();
     const insets = useSafeAreaInsets();
-    const scrollRef = useRef<BottomSheetScrollView>(null);
+    const scrollRef = useRef<BottomSheetScrollViewMethods>(null);
     const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
     const [contentHeight, setContentHeight] = useState(0);
     const [viewportHeight, setViewportHeight] = useState(0);

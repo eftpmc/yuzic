@@ -1,11 +1,12 @@
 import React from 'react'
-import { Text, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { useRoute } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useExternalArtist } from '@/hooks/artists/useExternalArtist'
+import { useTheme } from '@/hooks/useTheme'
+import NotFoundView from '@/components/NotFoundView'
 import ExternalArtistContent from './components/Content'
 import LoadingExternalArtistContent from './components/Content/Loading'
-import { useTheme } from '@/hooks/useTheme'
 
 type RouteParams = {
   mbid: string
@@ -22,47 +23,40 @@ export default function ExternalArtistScreen() {
   )
 
   if (!mbid) {
-    return (
-      <SafeAreaView style={styles.screen(isDarkMode)}>
-        <Text style={styles.error(isDarkMode)}>Artist not found.</Text>
-      </SafeAreaView>
-    )
+    return <NotFoundView message="Artist not found" />
   }
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
         <LoadingExternalArtistContent />
       </SafeAreaView>
     )
   }
 
-  if (!artist || error) {
-    return (
-      <SafeAreaView style={styles.screen(isDarkMode)}>
-        <Text style={styles.error(isDarkMode)}>
-          {error?.message ?? 'Artist not found.'}
-        </Text>
-      </SafeAreaView>
-    )
+  if (error) {
+    return <NotFoundView message="Couldn't load artist. Check your connection." />
+  }
+
+  if (!artist) {
+    return <NotFoundView message="Artist not found" />
   }
 
   return (
-    <SafeAreaView edges={['top']} style={styles.screen(isDarkMode)}>
+    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
       <ExternalArtistContent artist={artist} />
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  screen: (isDark: boolean) => ({
+  screen: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#fff',
-  }),
-  error: (isDark: boolean) => ({
-    color: isDark ? '#fff' : '#000',
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
-  }),
+  },
+  screenDark: {
+    backgroundColor: '#000',
+  },
+  screenLight: {
+    backgroundColor: '#fff',
+  },
 })

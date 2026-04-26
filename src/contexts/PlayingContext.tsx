@@ -8,23 +8,21 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
-import TrackPlayer, {
-  Capability,
-  State,
-  Event,
-  usePlaybackState,
-  useProgress,
-  useTrackPlayerEvents,
-} from 'react-native-track-player';
+import {
+  TrackPlayer,
+  PlayerQueue,
+  useOnPlaybackStateChange,
+  useOnPlaybackProgressChange,
+  useOnChangeTrack,
+} from 'react-native-nitro-player';
 import { Album, Playlist, Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
-import { useDownload } from '@/contexts/DownloadContext';
 import { useApi } from '@/api';
-import { buildCover } from '@/utils/builders/buildCover';
+import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
+import * as navidromeScrobble from '@/api/navidrome/scrobble';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -93,14 +91,6 @@ export interface PlayingContextType {
 const PlayingContext = createContext<PlayingContextType | undefined>(undefined);
 const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, duration: 0, buffered: 0 });
 
-function normalizeProgress(raw: ReturnType<typeof useProgress>): PlaybackProgress {
-  return {
-    position: typeof raw?.position === 'number' && !Number.isNaN(raw.position) ? raw.position : 0,
-    duration: typeof raw?.duration === 'number' && !Number.isNaN(raw.duration) ? raw.duration : 0,
-    buffered: typeof raw?.buffered === 'number' && !Number.isNaN(raw.buffered) ? raw.buffered : 0,
-  };
-}
-
 export const usePlaying = () => {
   const ctx = useContext(PlayingContext);
   if (!ctx) throw new Error('usePlaying must be used within PlayingProvider');
@@ -111,23 +101,17 @@ export const usePlayingProgress = () => useContext(PlayingProgressContext);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
-  const playbackState = usePlaybackState();
-  const isPlaying = playbackState.state === State.Playing;
-  const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', setAppState);
-    return () => sub.remove();
-  }, []);
+  const { state: playbackState } = useOnPlaybackStateChange();
+  const isPlaying = playbackState === 'playing';
 
-  const rawProgress = useProgress(500);
-  const progress = useMemo(
-    () => appState === 'active' ? normalizeProgress(rawProgress) : { position: 0, duration: 0, buffered: 0 },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [appState, rawProgress.position, rawProgress.duration, rawProgress.buffered]
-  );
+  const { position: rawPosition, totalDuration: rawDuration } = useOnPlaybackProgressChange();
+  const progress = useMemo<PlaybackProgress>(() => ({
+    position: typeof rawPosition === 'number' && !Number.isNaN(rawPosition) ? rawPosition : 0,
+    duration: typeof rawDuration === 'number' && !Number.isNaN(rawDuration) ? rawDuration : 0,
+    buffered: 0,
+  }), [rawPosition, rawDuration]);
 
   const api = useApi();
-  const { getSongLocalUri } = useDownload();
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
@@ -140,37 +124,39 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const queueRef = useRef<Song[]>([]);
   const originalQueueRef = useRef<Song[] | null>(null);
+  // Native nitro-player queue is a sliding window of at most NATIVE_WINDOW_SIZE songs.
+  // JS queueRef is the source of truth for the full queue.
+  const NATIVE_WINDOW_SIZE = 5;
+  const nativeWindowStartRef = useRef(0); // JS index of first song in native queue
+  const nativeWindowSizeRef = useRef(0);  // count of songs currently in native queue
   const lastScrobbledIdRef = useRef<string | null>(null);
   const scrobbleStartTimeRef = useRef<number>(0);
   const lastListenedSecondsRef = useRef<number>(0);
   const currentIndexRef = useRef(0);
   const currentSongRef = useRef<Song | null>(null);
   const repeatOnRef = useRef(false);
+  const isPlayingRef = useRef(false);
+  const sessionPlaylistIdRef = useRef<string | null>(null);
 
   const bumpQueue = () => setQueueVersion(v => v + 1);
 
   useEffect(() => { repeatOnRef.current = repeatOn; }, [repeatOn]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   useEffect(() => {
-    TrackPlayer.setupPlayer({ autoHandleInterruptions: true }).catch(() => { }).then(() =>
-      TrackPlayer.updateOptions({
-        capabilities: [
-          Capability.Play,
-          Capability.Pause,
-          Capability.SkipToNext,
-          Capability.SkipToPrevious,
-          Capability.Stop,
-          Capability.SeekTo,
-        ],
-      })
-    ).catch(() => { });
+    TrackPlayer.configure({
+      androidAutoEnabled: true,
+      carPlayEnabled: true,
+      showInNotification: true,
+      lookaheadCount: 3,
+    }).catch(() => { });
   }, []);
 
   useEffect(() => {
-    if (rawProgress.position != null && rawProgress.position > 0) {
-      lastListenedSecondsRef.current = Math.floor(rawProgress.position);
+    if (rawPosition != null && rawPosition > 0) {
+      lastListenedSecondsRef.current = Math.floor(rawPosition);
     }
-  }, [rawProgress.position]);
+  }, [rawPosition]);
 
   const scrobbleIfNeeded = useCallback(async (
     song: Song | null,
@@ -189,6 +175,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         artistId: song.artistId,
       }));
     }
+    if (activeServer?.type === 'navidrome') {
+      const password = activeServer.auth?.password as string | undefined;
+      if (activeServer.serverUrl && activeServer.username && password) {
+        try {
+          await navidromeScrobble.scrobble(
+            {
+              serverUrl: activeServer.serverUrl,
+              username: activeServer.username,
+              password,
+              basicAuth: activeServer.basicAuth,
+            },
+            song.id,
+            opts.startTime
+          );
+        } catch (err) {
+          console.warn('Navidrome scrobble failed', err);
+        }
+      }
     try {
       await api.songs.scrobble(song.id, opts.startTime);
     } catch {
@@ -206,95 +210,84 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (err) {
       console.warn('ListenBrainz scrobble failed', err);
     }
+  }, [activeServer, listenBrainzConfig?.token, dispatch]);
+
+  // Destroy the current native playlist and build a fresh window of NATIVE_WINDOW_SIZE
+  // songs centred on targetIndex (1 behind + up to 4 ahead). Returns the new playlist id.
+  const buildNativeWindow = useCallback(async (songs: Song[], targetIndex: number): Promise<string> => {
+    if (sessionPlaylistIdRef.current) {
+      const oldId = sessionPlaylistIdRef.current;
+      sessionPlaylistIdRef.current = null;
+      PlayerQueue.deletePlaylist(oldId).catch(() => { });
+    }
+    const windowStart = Math.max(0, targetIndex - 1);
+    const windowEnd = Math.min(songs.length, windowStart + NATIVE_WINDOW_SIZE);
+    const windowSongs = songs.slice(windowStart, windowEnd);
+    const playlistId = await PlayerQueue.createPlaylist('Yuzic Session');
+    sessionPlaylistIdRef.current = playlistId;
+    nativeWindowStartRef.current = windowStart;
+    nativeWindowSizeRef.current = windowSongs.length;
+    await PlayerQueue.addTracksToPlaylist(playlistId, windowSongs.map(s => buildTrackItem(s)));
+    await PlayerQueue.loadPlaylist(playlistId);
+    return playlistId;
+  }, []);
   }, [activeServer?.id, listenBrainzConfig?.token, dispatch, api]);
 
-  // Load a song into the player: reset, add, play. Checks local file right before playing.
-  const loadAndPlay = useCallback(async (song: Song, opts?: { clearScrobbleState?: boolean }) => {
-    if (opts?.clearScrobbleState) lastScrobbledIdRef.current = null;
+  // Start a new session: build native window then play.
+  const loadSessionPlaylist = useCallback(async (songs: Song[], startIndex: number) => {
+    const playlistId = await buildNativeWindow(songs, startIndex);
+    lastScrobbledIdRef.current = null;
     scrobbleStartTimeRef.current = Date.now();
     lastListenedSecondsRef.current = 0;
-
-    await TrackPlayer.reset();
-
-    const localUri = await getSongLocalUri(song.id).catch(() => null);
-    const url = localUri ?? song.streamUrl;
-    if (!url) return;
-
-    const cover = buildCover(song.cover, 'grid') || undefined;
-
-    await TrackPlayer.add({
-      id: song.id,
-      title: song.title,
-      artist: song.artist,
-      artwork: cover,
-      url,
-      duration: parseFloat(song.duration || '0'),
-    });
-
-    setCurrentSong(song);
+    await TrackPlayer.playSong(songs[startIndex].id, playlistId);
     await TrackPlayer.play();
-  }, [getSongLocalUri]);
+  }, [buildNativeWindow]);
 
-  // Preload the next song in the native queue so gapless playback works.
-  const appendNextIfNeeded = useCallback(async (index: number) => {
-    const next = queueRef.current[index + 1];
-    if (!next) return;
-    try {
-      const nativeQueue = await TrackPlayer.getQueue();
-      if (nativeQueue.some(t => t.id === next.id)) return;
-      const localUri = await getSongLocalUri(next.id).catch(() => null);
-      const url = localUri ?? next.streamUrl;
-      if (!url) return;
-      const cover = buildCover(next.cover, 'grid') || undefined;
-      await TrackPlayer.add({
-        id: next.id,
-        title: next.title,
-        artist: next.artist,
-        artwork: cover,
-        url,
-        duration: parseFloat(next.duration || '0'),
+  // Track-change handler: update current song/index, scrobble previous, extend native window.
+  const { track: nitroTrack } = useOnChangeTrack();
+  useEffect(() => {
+    if (!nitroTrack) return;
+
+    const prev = currentSongRef.current;
+    if (prev && prev.id !== nitroTrack.id) {
+      scrobbleIfNeeded(prev, {
+        listenedSeconds: lastListenedSecondsRef.current,
+        startTime: scrobbleStartTimeRef.current,
       });
-    } catch (err) {
-      console.warn('[PlayingContext] appendNextIfNeeded failed', err);
-    }
-  }, [getSongLocalUri]);
-
-  useTrackPlayerEvents(
-    [Event.PlaybackActiveTrackChanged, Event.PlaybackError],
-    async (event) => {
-      if (event.type === Event.PlaybackError) {
-        toast.error(t('common.playbackError'));
-        const nextIdx = currentIndexRef.current + 1;
-        if (nextIdx < queueRef.current.length) {
-          currentIndexRef.current = nextIdx;
-          setCurrentIndex(nextIdx);
-          await loadAndPlay(queueRef.current[nextIdx]);
-        }
-        return;
-      }
-
-      if (!event.track) return;
-
-      const prev = currentSongRef.current;
-      if (prev) {
-        await scrobbleIfNeeded(prev, {
-          listenedSeconds: lastListenedSecondsRef.current,
-          startTime: scrobbleStartTimeRef.current,
-        });
-      }
-
-      const newIndex = queueRef.current.findIndex(s => s.id === event.track!.id);
-      if (newIndex === -1) return;
-
       scrobbleStartTimeRef.current = Date.now();
       lastListenedSecondsRef.current = 0;
-      currentIndexRef.current = newIndex;
-      setCurrentIndex(newIndex);
-      currentSongRef.current = queueRef.current[newIndex];
-      setCurrentSong(queueRef.current[newIndex]);
-      await appendNextIfNeeded(newIndex);
     }
-  );
+
+    const newIndex = queueRef.current.findIndex(s => s.id === nitroTrack.id);
+    if (newIndex === -1) return;
+
+    const songFromQueue = queueRef.current[newIndex];
+    const isPreview = nitroTrack.extraPayload?.isPreview === 'true' || songFromQueue.isPreview;
+    const resolvedSong: Song = isPreview && !songFromQueue.isPreview
+      ? { ...songFromQueue, isPreview: true }
+      : songFromQueue;
+
+    currentIndexRef.current = newIndex;
+    setCurrentIndex(newIndex);
+    currentSongRef.current = resolvedSong;
+    setCurrentSong(resolvedSong);
+
+    // Extend native window: keep NATIVE_WINDOW_SIZE - 1 songs ahead of current.
+    // This handles gapless natural advance without destroying the native playlist.
+    const nativeWindowEnd = nativeWindowStartRef.current + nativeWindowSizeRef.current;
+    const songsAheadInNative = nativeWindowEnd - newIndex - 1;
+    const needed = (NATIVE_WINDOW_SIZE - 1) - songsAheadInNative;
+    if (needed > 0 && nativeWindowEnd < queueRef.current.length && sessionPlaylistIdRef.current) {
+      const toAdd = queueRef.current
+        .slice(nativeWindowEnd, nativeWindowEnd + needed)
+        .map(s => buildTrackItem(s));
+      const pid = sessionPlaylistIdRef.current;
+      PlayerQueue.addTracksToPlaylist(pid, toAdd)
+        .then(() => { nativeWindowSizeRef.current += toAdd.length; })
+        .catch(() => { });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nitroTrack?.id]);
 
   const playSong = async (song: Song) => {
     queueRef.current = [song];
@@ -302,8 +295,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setShuffleOn(false);
     currentIndexRef.current = 0;
     setCurrentIndex(0);
+    currentSongRef.current = song;
+    setCurrentSong(song);
     bumpQueue();
-    await loadAndPlay(song, { clearScrobbleState: true });
+    await loadSessionPlaylist([song], 0);
   };
 
   const playSongInCollection = async (
@@ -322,14 +317,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     } else {
       originalQueueRef.current = null;
       index = songs.findIndex(s => s.id === selectedSong.id);
+      if (index === -1) index = 0;
       setShuffleOn(false);
     }
 
     queueRef.current = songs;
     currentIndexRef.current = index;
     setCurrentIndex(index);
+    currentSongRef.current = songs[index];
+    setCurrentSong(songs[index]);
     bumpQueue();
-    await loadAndPlay(songs[index], { clearScrobbleState: true });
+    await loadSessionPlaylist(songs, index);
   };
 
   const addCollectionToQueue = (collection: Album | Playlist) => {
@@ -337,6 +335,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const toAdd = collection.songs.filter(s => !existingIds.has(s.id));
     if (!toAdd.length) return;
     queueRef.current = [...queueRef.current, ...toAdd];
+    // Native window is extended lazily by useOnChangeTrack as playback approaches these songs.
     bumpQueue();
   };
 
@@ -356,14 +355,23 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const nextIdx = currentIndexRef.current + 1;
     if (nextIdx >= queueRef.current.length) {
       if (!repeatOnRef.current) return;
+      const playlistId = await buildNativeWindow(queueRef.current, 0);
       currentIndexRef.current = 0;
       setCurrentIndex(0);
-      await loadAndPlay(queueRef.current[0]);
+      currentSongRef.current = queueRef.current[0];
+      setCurrentSong(queueRef.current[0]);
+      await TrackPlayer.playSong(queueRef.current[0].id, playlistId);
+      if (isPlayingRef.current) await TrackPlayer.play();
       return;
     }
+    const nextSong = queueRef.current[nextIdx];
     currentIndexRef.current = nextIdx;
     setCurrentIndex(nextIdx);
-    await loadAndPlay(queueRef.current[nextIdx]);
+    currentSongRef.current = nextSong;
+    setCurrentSong(nextSong);
+    const playlistId = await buildNativeWindow(queueRef.current, nextIdx);
+    await TrackPlayer.playSong(nextSong.id, playlistId);
+    if (isPlayingRef.current) await TrackPlayer.play();
   };
 
   const skipToPrevious = async () => {
@@ -371,18 +379,28 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       listenedSeconds: lastListenedSecondsRef.current,
       startTime: scrobbleStartTimeRef.current,
     });
-    const prev = currentIndexRef.current - 1;
-    if (prev < 0) return;
-    currentIndexRef.current = prev;
-    setCurrentIndex(prev);
-    await loadAndPlay(queueRef.current[prev]);
+    const prevIdx = currentIndexRef.current - 1;
+    if (prevIdx < 0) return;
+    const prevSong = queueRef.current[prevIdx];
+    currentIndexRef.current = prevIdx;
+    setCurrentIndex(prevIdx);
+    currentSongRef.current = prevSong;
+    setCurrentSong(prevSong);
+    const playlistId = await buildNativeWindow(queueRef.current, prevIdx);
+    await TrackPlayer.playSong(prevSong.id, playlistId);
+    if (isPlayingRef.current) await TrackPlayer.play();
   };
 
   const skipTo = async (index: number) => {
-    if (!queueRef.current[index]) return;
+    const song = queueRef.current[index];
+    if (!song) return;
     currentIndexRef.current = index;
     setCurrentIndex(index);
-    await loadAndPlay(queueRef.current[index]);
+    currentSongRef.current = song;
+    setCurrentSong(song);
+    const playlistId = await buildNativeWindow(queueRef.current, index);
+    await TrackPlayer.playSong(song.id, playlistId);
+    if (isPlayingRef.current) await TrackPlayer.play();
   };
 
   const pauseSong = async () => TrackPlayer.pause();
@@ -395,11 +413,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [item] = q.splice(from, 1);
     q.splice(to, 0, item);
     queueRef.current = q;
+    // Only sync to native if both positions are within the current window
+    const wStart = nativeWindowStartRef.current;
+    const wEnd = wStart + nativeWindowSizeRef.current;
+    if (from >= wStart && from < wEnd && to >= wStart && to < wEnd && sessionPlaylistIdRef.current) {
+      PlayerQueue.reorderTrackInPlaylist(sessionPlaylistIdRef.current, item.id, to - wStart)
+        .catch(() => { });
+    }
     setCurrentIndex(prev => {
-      if (prev === from) return to;
-      if (from < prev && to >= prev) return prev - 1;
-      if (from > prev && to <= prev) return prev + 1;
-      return prev;
+      let next = prev;
+      if (prev === from) next = to;
+      else if (from < prev && to >= prev) next = prev - 1;
+      else if (from > prev && to <= prev) next = prev + 1;
+      currentIndexRef.current = next;
+      return next;
     });
     bumpQueue();
   };
@@ -407,14 +434,27 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const addToQueue = (song: Song) => {
     if (queueRef.current.some(s => s.id === song.id)) return;
     queueRef.current = [...queueRef.current, song];
+    // Song goes to end of JS queue; native window will pick it up lazily.
     bumpQueue();
   };
 
   const playNext = (song: Song) => {
     if (!currentSongRef.current) return;
+    const insertIdx = currentIndexRef.current + 1;
     const q = queueRef.current.filter(s => s.id !== song.id);
-    q.splice(currentIndexRef.current + 1, 0, song);
+    q.splice(insertIdx, 0, song);
     queueRef.current = q;
+    // Insert into native window if the position falls within it
+    const nativeInsertPos = insertIdx - nativeWindowStartRef.current;
+    if (
+      nativeInsertPos >= 0 &&
+      nativeInsertPos <= nativeWindowSizeRef.current &&
+      sessionPlaylistIdRef.current
+    ) {
+      PlayerQueue.addTrackToPlaylist(sessionPlaylistIdRef.current, buildTrackItem(song), nativeInsertPos)
+        .then(() => { nativeWindowSizeRef.current += 1; })
+        .catch(() => { });
+    }
     bumpQueue();
   };
 
@@ -444,19 +484,36 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       originalQueueRef.current = queueRef.current;
       const current = queueRef.current[currentIndexRef.current];
       const rest = queueRef.current.filter((_, i) => i !== currentIndexRef.current);
-      queueRef.current = [current, ...shuffleArray(rest)];
+      const shuffled = [current, ...shuffleArray(rest)];
+      queueRef.current = shuffled;
       currentIndexRef.current = 0;
       setCurrentIndex(0);
       setShuffleOn(true);
+      bumpQueue();
+      const savedPosition = lastListenedSecondsRef.current;
+      const playlistId = await buildNativeWindow(shuffled, 0);
+      await TrackPlayer.playSong(current.id, playlistId);
+      if (isPlayingRef.current) await TrackPlayer.play();
+      if (savedPosition > 2) await TrackPlayer.seek(savedPosition).catch(() => { });
     } else if (originalQueueRef.current) {
       const original = originalQueueRef.current;
-      const idx = original.findIndex(s => s.id === currentSongRef.current?.id);
+      const currentId = currentSongRef.current?.id;
+      const idx = currentId ? original.findIndex(s => s.id === currentId) : 0;
+      const adjustedIdx = idx === -1 ? 0 : idx;
       queueRef.current = original;
-      currentIndexRef.current = idx;
-      setCurrentIndex(idx);
+      currentIndexRef.current = adjustedIdx;
+      setCurrentIndex(adjustedIdx);
       setShuffleOn(false);
+      originalQueueRef.current = null;
+      bumpQueue();
+      const savedPosition = lastListenedSecondsRef.current;
+      const playlistId = await buildNativeWindow(original, adjustedIdx);
+      if (currentSongRef.current) {
+        await TrackPlayer.playSong(currentSongRef.current.id, playlistId);
+        if (isPlayingRef.current) await TrackPlayer.play();
+      }
+      if (savedPosition > 2) await TrackPlayer.seek(savedPosition).catch(() => { });
     }
-    bumpQueue();
   };
 
   const toggleRepeat = () => setRepeatOn(prev => !prev);
@@ -465,7 +522,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     lastScrobbledIdRef.current = null;
     scrobbleStartTimeRef.current = 0;
     lastListenedSecondsRef.current = 0;
-    await TrackPlayer.reset();
+    if (sessionPlaylistIdRef.current) {
+      await TrackPlayer.pause().catch(() => { });
+      await PlayerQueue.deletePlaylist(sessionPlaylistIdRef.current).catch(() => { });
+      sessionPlaylistIdRef.current = null;
+    }
     queueRef.current = [];
     originalQueueRef.current = null;
     currentIndexRef.current = 0;
@@ -502,7 +563,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     addToQueue,
     playNext,
     playSimilar,
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [currentSong, isPlaying, currentIndex, queueVersion, shuffleOn, repeatOn]);
 
   return (

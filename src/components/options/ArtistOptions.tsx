@@ -38,7 +38,7 @@ export type ArtistOptionsProps = {
 };
 
 const ArtistOptions = forwardRef<
-  React.ElementRef<typeof BottomSheetModal>,
+  BottomSheetModal,
   ArtistOptionsProps
 >(({ artist, hideGoToArtist }, ref) => {
   const { t } = useTranslation();

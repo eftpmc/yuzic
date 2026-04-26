@@ -5,7 +5,7 @@ import { getAlbum } from "../albums/getAlbum";
 
 export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
   try {
-    const albums = await getAlbumList(client, "alphabeticalByName", 500);
+    const albums = await getAlbumList(client, "alphabeticalByName");
     const albumResults = await Promise.allSettled(
       albums.map((album) => getAlbum(client, album.id))
     );

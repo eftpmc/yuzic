@@ -5,30 +5,29 @@ export const MUSICBRAINZ_DELAY_MS = 1000
 export const LISTENBRAINZ_DELAY_MS = 500
 
 export class RequestQueue {
-  private last = 0
+  private lastStart = 0
   constructor(private delayMs: number) {}
 
   async run<T>(fn: () => Promise<T>): Promise<T> {
     const now = Date.now()
-    const wait = Math.max(0, this.delayMs - (now - this.last))
+    const wait = Math.max(0, this.delayMs - (now - this.lastStart))
     if (wait) {
       await new Promise(r => setTimeout(r, wait))
     }
-    this.last = Date.now()
+    this.lastStart = Date.now()
     return fn()
   }
 }
 
-/** Shared MusicBrainz queue so similar-artists calls stay within 1 req/s */
+/** FIFO: one MusicBrainz request at a time, enforcing 1s between request STARTS. */
 type QueuedTask<T> = {
   fn: () => Promise<T>
   resolve: (value: T) => void
   reject: (err: unknown) => void
 }
 
-/** FIFO: one MusicBrainz request at a time, 1s after last *completion*. */
 class FifoMusicBrainzQueue {
-  private lastComplete = 0
+  private lastStart = 0
   private queue: QueuedTask<unknown>[] = []
   private processing = false
 
@@ -45,15 +44,19 @@ class FifoMusicBrainzQueue {
     if (this.processing || this.queue.length === 0) return
     this.processing = true
     const { fn, resolve, reject } = this.queue.shift()!
+
+    // Enforce 1s between request STARTS (not completions).
+    // If a request takes 200ms, the next starts at exactly 1000ms from last start
+    // rather than 1000ms after the previous finished (1200ms total).
     const now = Date.now()
-    const wait = Math.max(0, this.delayMs - (now - this.lastComplete))
+    const wait = Math.max(0, this.delayMs - (now - this.lastStart))
     if (wait) await new Promise(r => setTimeout(r, wait))
+
+    this.lastStart = Date.now()
     try {
       const result = await fn()
-      this.lastComplete = Date.now()
       resolve(result)
     } catch (err) {
-      this.lastComplete = Date.now()
       reject(err)
     } finally {
       this.processing = false

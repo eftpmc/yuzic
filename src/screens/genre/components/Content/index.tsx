@@ -29,7 +29,7 @@ export default function GenreContent({ genre, albums }: Props) {
 
   const downloadedTrackIds = React.useMemo(
     () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
-    []
+    [getAllDownloadedTracks]
   )
   const downloadedAlbumIds = React.useMemo(
     () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
@@ -45,7 +45,6 @@ export default function GenreContent({ genre, albums }: Props) {
     <FlashList
       data={albums}
       keyExtractor={(item) => item.id}
-      estimatedItemSize={ESTIMATED_ROW_HEIGHT}
       ListHeaderComponent={header}
       renderItem={({ item }) => (
         <AlbumRow

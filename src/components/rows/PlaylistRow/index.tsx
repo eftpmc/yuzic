@@ -21,7 +21,7 @@ type Props = {
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
   const { isDarkMode } = useTheme();
-  const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
   const { playlist: fullPlaylist } = usePlaylist(playlist.id);
   const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 

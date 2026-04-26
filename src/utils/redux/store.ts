@@ -5,7 +5,6 @@ import storage from '@react-native-async-storage/async-storage';
 import serversReducer from './slices/serversSlice';
 import downloadersReducer from './slices/downloadersSlice';
 import settingsReducer from './slices/settingsSlice';
-import downloadsReducer from './slices/downloadsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
@@ -13,26 +12,10 @@ import libraryReducer from './slices/librarySlice';
 // ─── Migrations ───────────────────────────────────────────────────────────────
 // Version 1: normalize state shapes that changed during the redesign.
 // library  — always safe to reset; it re-syncs from the server on launch.
-// downloads — keep tracks/collections if they already look like Records;
-//             otherwise reset to empty so the app doesn't crash on iteration.
 // stats    — all fields must be plain objects (Records), sanitize if needed.
 
 const libraryMigrations: Record<number, (s: any) => any> = {
   1: () => ({ albums: [], artists: [], playlists: [], tracks: [], genres: [], starred: [] }),
-};
-
-const downloadsMigrations: Record<number, (s: any) => any> = {
-  1: (state: any) => ({
-    tracks:
-      state?.tracks && !Array.isArray(state.tracks) && typeof state.tracks === 'object'
-        ? state.tracks
-        : {},
-    collections:
-      state?.collections && !Array.isArray(state.collections) && typeof state.collections === 'object'
-        ? state.collections
-        : {},
-    pending: {},
-  }),
 };
 
 const statsMigrations: Record<number, (s: any) => any> = {
@@ -54,12 +37,6 @@ const downloadersPersistConfig = { key: 'downloaders', storage };
 const settingsPersistConfig = { key: 'settings', storage };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
 
-const downloadsPersistConfig = {
-  key: 'downloads',
-  storage,
-  version: 1,
-  migrate: createMigrate(downloadsMigrations, { debug: false }),
-};
 const statsPersistConfig = {
   key: 'stats',
   storage,
@@ -77,7 +54,6 @@ export const rootReducer = combineReducers({
     servers: serversReducer,
     downloaders: downloadersReducer,
     settings: settingsReducer,
-    downloads: downloadsReducer,
     listenbrainz: listenbrainzReducer,
     stats: statsReducer,
     library: libraryReducer,
@@ -87,7 +63,6 @@ const persistedReducer = combineReducers({
     servers: persistReducer(serversPersistConfig, serversReducer),
     downloaders: persistReducer(downloadersPersistConfig, downloadersReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
-    downloads: persistReducer(downloadsPersistConfig, downloadsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),

@@ -1,20 +1,19 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
 
 import { useExternalAlbum } from '@/hooks/albums';
+import { useTheme } from '@/hooks/useTheme';
+import NotFoundView from '@/components/NotFoundView';
 import ExternalAlbumContent from './components/Content';
 import LoadingExternalAlbumContent from './components/Content/Loading';
-import { useTheme } from '@/hooks/useTheme';
 
 type RouteParams = {
   albumId: string;
 };
 
 const ExternalAlbumScreen: React.FC = () => {
-  const { t } = useTranslation();
   const route = useRoute<any>();
   const { albumId } = route.params as RouteParams;
 
@@ -30,27 +29,25 @@ const ExternalAlbumScreen: React.FC = () => {
     return (
       <SafeAreaView
         edges={['top']}
-        style={styles.screen(isDarkMode)}
+        style={[styles.screen, isDarkMode && styles.screenDark]}
       >
         <LoadingExternalAlbumContent />
       </SafeAreaView>
     );
   }
 
-  if (!externalAlbum || error) {
-    return (
-      <SafeAreaView style={styles.screen(isDarkMode)}>
-        <Text style={styles.error(isDarkMode)}>
-          {error?.message ?? t('media.albumNotFound')}
-        </Text>
-      </SafeAreaView>
-    );
+  if (error) {
+    return <NotFoundView message="Couldn't load album. Check your connection." />;
+  }
+
+  if (!externalAlbum) {
+    return <NotFoundView message="Album not found" />;
   }
 
   return (
     <SafeAreaView
       edges={['top']}
-      style={styles.screen(isDarkMode)}
+      style={[styles.screen, isDarkMode && styles.screenDark]}
     >
       <ExternalAlbumContent album={externalAlbum} />
     </SafeAreaView>
@@ -60,14 +57,13 @@ const ExternalAlbumScreen: React.FC = () => {
 export default ExternalAlbumScreen;
 
 const styles = StyleSheet.create({
-  screen: (isDark: boolean) => ({
+  screen: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#fff',
-  }),
-  error: (isDark: boolean) => ({
-    color: isDark ? '#fff' : '#000',
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
-  }),
+  },
+  screenDark: {
+    backgroundColor: '#000',
+  },
+  screenLight: {
+    backgroundColor: '#fff',
+  },
 });

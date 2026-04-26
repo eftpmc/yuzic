@@ -107,6 +107,7 @@
         "provider": {
           "navidrome": "Navidrome",
           "jellyfin": "Jellyfin",
+          "emby": "Emby",
           "unknown": "Unknown source"
         },
         "status": {
@@ -277,11 +278,9 @@
       "switchClearFailedBody": "Failed to clear downloads before switching servers."
     },
     "connect": {
-      "title": "Connect to your Server",
-      "subtitle": "Enter your server URL (http/https)",
-      "urlPlaceholder": "https://your-server.example.com",
+      "title": "Choose a Server Type",
+      "subtitle": "Select the type of server you want to connect to.",
       "selectTypeFirst": "Select a server type first.",
-      "enterUrl": "Please enter a valid server URL.",
       "demoUnavailableProvider": "Demo unavailable for this provider.",
       "connectError": "An error occurred while connecting.",
       "useDemo": "Use {{provider}} demo",
@@ -289,8 +288,18 @@
       "demoFailed": "Demo connection failed",
       "providerDescription": {
         "navidrome": "A lightweight, self-hosted music server.",
-        "jellyfin": "A full-featured media server for music, movies, and TV."
+        "jellyfin": "A full-featured media server for music, movies, and TV.",
+        "emby": "A personal media server for music, movies, and TV."
       }
+    },
+    "address": {
+      "title": "Server Address",
+      "subtitle": "Enter the address of your server.",
+      "enterUrl": "Please enter a server address.",
+      "hint": "Include a port if needed, e.g. your-server.com:4533",
+      "schemeTitle": "Protocol",
+      "httpsDesc": "Encrypted (recommended)",
+      "httpDesc": "Unencrypted"
     },
     "credentials": {
       "title": "Enter Your Credentials",
@@ -331,6 +340,7 @@
       "mostRecent": "Most Recent",
       "mostPlayed": "Most Played",
       "releaseYear": "Release Year",
+      "recentlyAdded": "Recently Added",
       "lastModified": "Last Modified"
     },
     "sortSheet": {
@@ -370,14 +380,18 @@
       "recentlyPlayed": "Recently played",
       "recentlyAdded": "Recently added",
       "favoriteAlbums": "Favorite albums",
-      "randomAlbums": "Random albums"
+      "randomAlbums": "Random albums",
+      "albumsForYou": "Albums for you",
+      "artistsForYou": "Artists for you"
     },
     "empty": {
       "recentSongs": "Play something to see it here",
       "recentlyPlayed": "Play albums to see them here",
       "recentlyAdded": "No albums in your library yet",
       "favoriteAlbums": "Star songs to add albums here",
-      "randomAlbums": "No albums in your library yet"
+      "randomAlbums": "No albums in your library yet",
+      "albumsForYou": "Discovering albums...",
+      "artistsForYou": "Discovering artists..."
     }
   },
   "playing": {
@@ -419,11 +433,13 @@
   "songOptions": {
     "unknownArtist": "Unknown",
     "actions": {
+      "play": "Play",
       "favorite": "Favorite",
       "unfavorite": "Unfavorite",
       "addToQueue": "Add to Queue",
       "addToEnd": "Add to End",
       "addToPlaylist": "Add to Playlist",
+      "goToAlbum": "Go to Album",
       "instantMix": "Instant Mix"
     },
     "sections": {
@@ -471,14 +487,23 @@
   "externalAlbum": {
     "menu": {
       "title": "External Album",
-      "downloadToServer": "Download to Server"
+      "downloadToServer": "Download to Server",
+      "inLibrary": "In Library",
+      "downloading": "Downloading to server… {{progress}}%"
+    },
+    "serverStatus": {
+      "onServer": "In Library",
+      "downloadingToServer": "Downloading to server · {{progress}}%"
     },
     "download": {
       "noDownloader": "No active downloader connected.",
       "addedToLidarr": "Album added to Lidarr!",
       "addedToSlskd": "Album added to slskd queue!",
       "failed": "Download failed.",
-      "startFailed": "Failed to start download."
+      "startFailed": "Failed to start download.",
+      "chooseService": "Choose a service",
+      "lidarrDesc": "Music collection manager",
+      "slskdDesc": "Peer-to-peer file sharing"
     },
     "header": {
       "songs": "{{count}} song",
@@ -487,7 +512,7 @@
     },
     "info": {
       "title": "About external albums",
-      "body": "This album’s information is provided by MusicBrainz. Track listings, durations, artwork, or release details may be incomplete or differ from your local files."
+      "body": "Album metadata is provided by MusicBrainz. Track previews are powered by Deezer — 30-second clips provided under the Deezer API terms."
     }
   },
   "albumOptions": {

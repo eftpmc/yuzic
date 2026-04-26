@@ -1,7 +1,9 @@
 import React from 'react'
-import { View, Dimensions } from 'react-native'
+import { View, Text, StyleSheet, Dimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
+import { useTheme } from '@/hooks/useTheme'
 import MediaTile from './MediaTile'
 import ExploreEmptyCard from './ExploreEmptyCard'
 import { ExternalAlbumBase } from '@/types'
@@ -14,62 +16,68 @@ type Props = {
   ready: boolean
 }
 
-export default function AlbumsForYouSection({
-  data,
-  ready,
-}: Props) {
-  const navigation = useNavigation()
+export default function AlbumsForYouSection({ data, ready }: Props) {
+  const navigation = useNavigation<any>()
+  const { t } = useTranslation()
+  const { isDarkMode } = useTheme()
   const screenWidth = Dimensions.get('window').width
   const gridGap = 12
 
-  const gridItemWidth =
-    (screenWidth - H_PADDING * 2 - gridGap * 2) /
-    VISIBLE_ITEMS
-
-  const tileHeight =
-    gridItemWidth + 8 + 14 + 4 + 12
-
-  const showEmpty = !ready || data.length === 0
-  if (showEmpty) {
-    return (
-      <View style={{ paddingHorizontal: H_PADDING }}>
-        <ExploreEmptyCard
-          width={screenWidth - H_PADDING * 2}
-          height={tileHeight}
-          radius={14}
-        />
-      </View>
-    )
-  }
+  const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
+  const tileHeight = gridItemWidth + 8 + 14 + 4 + 12
 
   return (
-    <FlashList
-      horizontal
-      data={data}
-      keyExtractor={item => item.id}
-      estimatedItemSize={gridItemWidth}
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingHorizontal: H_PADDING,
-      }}
-      ItemSeparatorComponent={() => (
-        <View style={{ width: gridGap }} />
-      )}
-      renderItem={({ item }) => (
-        <MediaTile
-          cover={item.cover}
-          title={item.title}
-          subtitle={item.subtext}
-          size={gridItemWidth}
-          radius={14}
-          onPress={() =>
-            navigation.navigate(
-              'externalAlbumView',
-              { albumId: item.id }
-            )
-          }
+    <View style={styles.container}>
+      <Text style={[styles.title, isDarkMode && styles.titleDark]}>
+        {t('explore.sections.albumsForYou')}
+      </Text>
+      {!ready || data.length === 0 ? (
+        <View style={{ paddingHorizontal: H_PADDING }}>
+          <ExploreEmptyCard
+            width={screenWidth - H_PADDING * 2}
+            height={tileHeight}
+            radius={14}
+          />
+        </View>
+      ) : (
+        <FlashList
+          horizontal
+          data={data}
+          keyExtractor={item => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: H_PADDING }}
+          ItemSeparatorComponent={() => <View style={{ width: gridGap }} />}
+          renderItem={({ item }) => (
+            <MediaTile
+              cover={item.cover}
+              title={item.title}
+              subtitle={item.subtext}
+              size={gridItemWidth}
+              radius={6}
+              onPress={() => navigation.navigate('externalAlbumView', { albumId: item.id })}
+            />
+          )}
         />
       )}
-    />
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 8,
+    marginLeft: H_PADDING,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  titleDark: {
+    color: '#888',
+  },
+})

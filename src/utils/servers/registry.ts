@@ -1,5 +1,6 @@
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
+import EmbyIcon from '@assets/images/emby.png';
 
 import { createNavidromeClient, buildTokenParams } from '@/api/navidrome/client';
 import { ping as pingNavidrome } from '@/api/navidrome/auth/ping';
@@ -10,6 +11,11 @@ import { createJellyfinClient } from '@/api/jellyfin/client';
 import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
 import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 import { createJellyfinAdapter } from '@/api/jellyfin';
+
+import { createEmbyClient } from '@/api/emby/client';
+import { ping as pingEmby } from '@/api/emby/auth/ping';
+import { connect as connectEmby } from '@/api/emby/auth/connect';
+import { createEmbyAdapter } from '@/api/emby';
 
 import { ServerType, Server, CoverSource, BasicAuth } from '@/types';
 import type { Library, ApiAdapter } from '@/api/types';
@@ -174,6 +180,51 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       if (!server.serverUrl || !token) return null;
       const params = new URLSearchParams({ quality: '90', maxWidth: String(px), maxHeight: String(px), 'X-Emby-Token': token });
       return `${server.serverUrl}/Items/${cover.itemId}/Images/Primary?${params}`;
+    },
+  },
+
+  emby: {
+    type: 'emby',
+    label: 'Emby',
+    get description() { return i18n.t('onboarding.connect.providerDescription.emby'); },
+    icon: EmbyIcon,
+    capabilities: {
+      supportsDemo: false,
+    },
+    ping: async (url, username, auth, basicAuth) => {
+      const token = auth.token as string;
+      const userId = auth.userId as string;
+      if (!token || !userId) return false;
+      const client = createEmbyClient({ serverUrl: url, token, userId, basicAuth });
+      return pingEmby(client);
+    },
+    connect: async (url, username, password, basicAuth) => {
+      const result = await connectEmby(url, username, password, basicAuth);
+      if (!result.success) {
+        return {
+          success: false,
+          message: result.message,
+        };
+      }
+      return {
+        success: true,
+        auth: {
+          password,
+          token: result.token,
+          userId: result.userId,
+        },
+      };
+    },
+    createAdapter: (server) => createEmbyAdapter(server),
+    buildCoverUrl: (server, cover, px) => {
+      if (cover.kind !== 'emby') return null;
+      const token = server.auth?.token as string | undefined;
+      if (!server.serverUrl || !token) return null;
+      const baseUrl = server.serverUrl.replace(/\/$/, '');
+      const paramObj: Record<string, string> = { quality: '90', maxWidth: String(px), maxHeight: String(px), api_key: token };
+      if (cover.tag) paramObj.tag = cover.tag;
+      const params = new URLSearchParams(paramObj);
+      return `${baseUrl}/Items/${cover.itemId}/Images/Primary?${params}`;
     },
   },
 };
