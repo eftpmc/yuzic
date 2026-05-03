@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { ApiAdapter } from "./types";
 import { SERVER_PROVIDERS } from "@/utils/servers/registry";
@@ -61,6 +62,8 @@ const EMPTY_ADAPTER: ApiAdapter = {
 export const useApi = (): ApiAdapter => {
   const activeServer = useSelector(selectActiveServer);
 
-  if (!activeServer || !activeServer.isAuthenticated) return EMPTY_ADAPTER;
-  return SERVER_PROVIDERS[activeServer.type]?.createAdapter(activeServer) ?? EMPTY_ADAPTER;
+  return useMemo(() => {
+    if (!activeServer || !activeServer.isAuthenticated) return EMPTY_ADAPTER;
+    return SERVER_PROVIDERS[activeServer.type]?.createAdapter(activeServer) ?? EMPTY_ADAPTER;
+  }, [activeServer]);
 };

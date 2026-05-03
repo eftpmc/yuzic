@@ -1,3 +1,5 @@
+// md5 does not ship TypeScript declarations in this project.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const md5 = require("md5") as (s: string) => string;
 
 export interface NavidromeClientConfig {

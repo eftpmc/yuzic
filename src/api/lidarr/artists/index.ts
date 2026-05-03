@@ -1,5 +1,4 @@
-import { createLidarrClient, type LidarrClient } from '../client';
-import { LidarrConfig } from '@/types';
+import type { LidarrClient } from '../client';
 
 export type LidarrArtistLookupResult = {
   artistName: string;

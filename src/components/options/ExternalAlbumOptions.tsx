@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
 import type { ExternalAlbumBase } from '@/types';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 interface ExternalAlbumOptionsProps {
   album: ExternalAlbumBase;
@@ -33,8 +34,8 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
-  const bottomSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-  const downloadSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const bottomSheetRef = useSheetRef();
+  const downloadSheetRef = useSheetRef();
   const snapPoints = useMemo(() => ['25%'], []);
 
   const status = useExternalAlbumStatus(album);

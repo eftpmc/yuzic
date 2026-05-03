@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
@@ -92,7 +92,7 @@ const ListenBrainzView: React.FC = () => {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [username, token]);
+  }, [config, dispatch, isAuthenticated, serverId, t, token, username]);
 
   const handlePing = async () => {
     if (!username || !token) {

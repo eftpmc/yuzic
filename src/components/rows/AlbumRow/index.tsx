@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Album } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useAlbum } from '@/hooks/albums';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   album: Album;
@@ -28,7 +28,7 @@ const AlbumRow: React.FC<Props> = ({
   isDownloaded = false,
 }) => {
   const { isDarkMode } = useTheme();
-  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsSheetRef = useSheetRef();
   const { album: fullAlbum } = useAlbum(album.id);
 
   return (

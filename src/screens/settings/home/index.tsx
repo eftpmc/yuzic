@@ -5,7 +5,6 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    Platform,
     Linking,
     Alert,
 } from 'react-native';
@@ -173,7 +172,11 @@ export default function Settings() {
                 style={styles.row}
                 onPress={async () => {
                     const supported = await Linking.canOpenURL(url);
-                    supported ? Linking.openURL(url) : Alert.alert(t('settings.links.cantOpen', { url }));
+                    if (supported) {
+                        await Linking.openURL(url);
+                    } else {
+                        Alert.alert(t('settings.links.cantOpen', { url }));
+                    }
                 }}
             >
                 <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
@@ -185,19 +188,6 @@ export default function Settings() {
                     color={isDarkMode ? '#fff' : '#6E6E73'}
                 />
             </TouchableOpacity>
-        );
-    }
-
-    function renderStaticRow(label: string, value: string) {
-        return (
-            <View style={styles.row}>
-                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                    {label}
-                </Text>
-                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
-                    {value}
-                </Text>
-            </View>
         );
     }
 

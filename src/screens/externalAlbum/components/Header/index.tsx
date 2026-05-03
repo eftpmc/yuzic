@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   album: ExternalAlbum;
@@ -41,13 +42,16 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { playSongInCollection } = usePlaying();
   const albumStatus = useExternalAlbumStatus(album);
   const previewsRaw = useExternalAlbumPreviews(album);
-  const previews: Map<string, string> = previewsRaw instanceof Map ? previewsRaw : new Map();
+  const previews = useMemo(
+    () => previewsRaw instanceof Map ? previewsRaw : new Map<string, string>(),
+    [previewsRaw]
+  );
 
-  const infoSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-  const downloadSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const infoSheetRef = useSheetRef();
+  const downloadSheetRef = useSheetRef();
   const snapPoints = useMemo(() => ['25%'], []);
 
-  const songs = album.songs ?? [];
+  const songs = useMemo(() => album.songs ?? [], [album.songs]);
 
   const previewSongs = useMemo<Song[]>(() => (
     songs

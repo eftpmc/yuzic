@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -12,7 +12,6 @@ import {
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
 import AlbumRow from '@/components/rows/AlbumRow';
@@ -28,11 +27,13 @@ import { MediaImage } from '@/components/MediaImage';
 import SongOptions from '@/components/options/SongOptions';
 import PlaylistList from '@/components/PlaylistList';
 import { Song } from '@/types';
+import { toast } from '@backpackapp-io/react-native-toast';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
-  const songOptionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-  const playlistListRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const songOptionsRef = useSheetRef();
+  const playlistListRef = useSheetRef();
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
@@ -45,6 +46,12 @@ const Search = () => {
   const { searchResults, handleSearch, clearSearch, isLoading } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
 
   const onSearchChange = (text: string) => {
     setQuery(text);
@@ -78,6 +85,7 @@ const Search = () => {
       }
     } catch (error) {
       console.warn('Failed to play searched song', error);
+      toast.error(t('common.playbackError'));
     }
   };
 
@@ -95,6 +103,7 @@ const Search = () => {
       }
     } catch (error) {
       console.warn('Failed to open song options', error);
+      toast.error(t('common.songDetailsError'));
     }
   };
 

@@ -29,6 +29,7 @@ import { useArtistMbid } from '@/hooks/artists';
 import { staleTime } from '@/constants/staleTime';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
+import { toast } from '@backpackapp-io/react-native-toast';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
 export type ArtistOptionsProps = {
@@ -116,7 +117,7 @@ const ArtistOptions = forwardRef<
     return () => {
       cancelled = true;
     };
-  }, [artist?.id, artistAlbumIdsKey, activeServer?.id, loadSongs]);
+  }, [artist?.id, artist?.ownedAlbums?.length, artistAlbumIdsKey, activeServer?.id, loadSongs]);
 
   const buildCollection = useCallback(
     (songs: Song[]) => ({
@@ -213,6 +214,8 @@ const ArtistOptions = forwardRef<
       }
       const refreshedSongs = await loadSongs();
       setArtistSongsForDownload(refreshedSongs);
+    } catch {
+      toast.error(t('artistOptions.downloadAllFailed'));
     } finally {
       setIsDownloadingAll(false);
     }

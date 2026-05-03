@@ -1,35 +1,35 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useTheme } from '@/hooks/useTheme';
 import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
 import { setLanguage } from '@/utils/redux/slices/settingsSlice';
 import { getLanguageByCode } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import LanguageBottomSheet from './LanguageBottomSheet';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 export const LanguageSelector: React.FC = () => {
   const dispatch = useDispatch();
   const { colors } = useTheme();
   const selected = useSelector(selectLanguage);
   const { t } = useTranslation();
-  const bottomSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const bottomSheetRef = useSheetRef();
 
   const selectedLang = getLanguageByCode(selected);
   const selectedLabel = selectedLang?.nativeName ?? selected;
 
   const handleOpen = useCallback(() => {
     bottomSheetRef.current?.present();
-  }, []);
+  }, [bottomSheetRef]);
 
   const handleSelect = useCallback(
     (code: string) => {
       dispatch(setLanguage(code));
       bottomSheetRef.current?.dismiss();
     },
-    [dispatch],
+    [bottomSheetRef, dispatch],
   );
 
   return (

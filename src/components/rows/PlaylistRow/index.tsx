@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Playlist } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaylist } from '@/hooks/playlists';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   playlist: Playlist;
@@ -21,7 +21,7 @@ type Props = {
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
   const { isDarkMode } = useTheme();
-  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsSheetRef = useSheetRef();
   const { playlist: fullPlaylist } = usePlaylist(playlist.id);
   const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
@@ -30,7 +30,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
       setPlaylistForSheet(fullPlaylist);
       optionsSheetRef.current?.present();
     }
-  }, [fullPlaylist]);
+  }, [fullPlaylist, optionsSheetRef]);
 
   return (
     <View style={styles.wrapper}>

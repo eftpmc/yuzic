@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useArtists } from '@/hooks/artists'
 import * as listenbrainz from '@/api/listenbrainz'
@@ -129,12 +129,15 @@ export function useSimilarContent() {
   const { artists } = useArtists()
   const queryClient = useQueryClient()
 
-  const seeds = artists
+  const seeds = useMemo(() => artists
     .slice(0, 5)
     .map(a => ({ id: a.id, name: a.name, mbid: a.mbid }))
-    .filter(a => a.name.trim())
+    .filter(a => a.name.trim()), [artists])
 
-  const queryKey = [QueryKeys.ExploreSimilarContent, seeds.map(s => s.name).join(',')]
+  const queryKey = useMemo(
+    () => [QueryKeys.ExploreSimilarContent, seeds.map(s => s.name).join(',')],
+    [seeds]
+  )
 
   const query = useQuery({
     queryKey,
@@ -146,8 +149,7 @@ export function useSimilarContent() {
 
   const refresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryClient, queryKey.join(',')])
+  }, [queryClient, queryKey])
 
   return {
     artists: (query.data?.artists ?? []).slice(0, TARGET_ARTISTS),

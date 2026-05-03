@@ -2,7 +2,6 @@ import React from 'react';
 import {
   ScrollView,
   StyleSheet,
-  Appearance,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

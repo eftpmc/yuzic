@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Album } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
@@ -19,6 +18,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   album: Album;
@@ -28,12 +28,12 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsSheetRef = useSheetRef();
 
   const { playSongInCollection } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
 
-  const songs = album.songs ?? [];
+  const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
     getCollectionDownloadState(songs.map((song) => song.id));
 

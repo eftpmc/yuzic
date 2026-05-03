@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useApi } from '@/api';
 import { Artist } from '@/types';
@@ -18,6 +17,7 @@ import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
 import { staleTime } from '@/constants/staleTime';
 import { useTranslation } from 'react-i18next';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   artist: Artist;
@@ -31,8 +31,13 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
   const queryClient = useQueryClient();
   const api = useApi();
 
-  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const sheetRef = useSheetRef();
   const [fullArtist, setFullArtist] = useState<Artist | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const activeServer = useSelector(selectActiveServer);
 
@@ -48,8 +53,8 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
     setFullArtist(null);
     sheetRef.current?.present();
     const fetched = await fetchArtist();
-    if (fetched) setFullArtist(fetched);
-  }, [fetchArtist]);
+    if (fetched && mountedRef.current) setFullArtist(fetched);
+  }, [fetchArtist, sheetRef]);
 
   return (
     <>

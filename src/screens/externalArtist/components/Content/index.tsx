@@ -12,8 +12,6 @@ type Props = {
   artist: ExternalArtist
 }
 
-const ESTIMATED_ROW_HEIGHT = 80
-
 export default function ExternalArtistContent({ artist }: Props) {
   const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()

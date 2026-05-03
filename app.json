@@ -7,7 +7,6 @@
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "buildNumber": "4",
       "supportsTablet": true,
@@ -25,7 +24,6 @@
       }
     },
     "android": {
-      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash.png",
         "backgroundColor": "#1c1c1e"

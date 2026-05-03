@@ -9,8 +9,7 @@ import {
   SongsApi,
   TracksApi,
   AuthApi,
-  LyricsApi,
-  SearchApi
+  LyricsApi
 } from "../types";
 
 import { Playlist, Server } from "@/types";
@@ -22,6 +21,7 @@ import { testServerUrl } from "./auth/testServerUrl";
 import { startScan } from "./auth/startScan";
 import { getAlbum } from "./albums/getAlbum";
 import { getAlbums } from "./albums/getAlbums";
+import { getAlbumsWithSongs } from "./albums/getAlbumsWithSongs";
 import { getArtists } from "./artists/getArtists";
 import { getPlaylists } from "./playlists/getPlaylists";
 import { getPlaylistItems, getPlaylistEntryIdForSong } from "./playlists/getPlaylistItems";
@@ -88,6 +88,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
       if (!album) throw new Error("Album not found");
       return album;
     },
+    listWithSongs: async () => fromParents(c => getAlbumsWithSongs(c)),
   };
 
   const artists: ArtistsApi = {

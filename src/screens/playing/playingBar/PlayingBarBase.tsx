@@ -1,0 +1,435 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { Ionicons } from '@expo/vector-icons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { BlurView } from 'expo-blur';
+import { Toasts } from '@backpackapp-io/react-native-toast';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import ImageColors from 'react-native-image-colors';
+
+import PlaylistList from '@/components/PlaylistList';
+import { MediaImage } from '@/components/MediaImage';
+import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+import PlayingScreen from '@/screens/playing';
+import PlayingBackground from '@/screens/playing/components/PlayingBackground';
+import { useTheme } from '@/hooks/useTheme';
+import { buildCover } from '@/utils/builders/buildCover';
+import {
+  selectPlayingBarAction,
+  selectThemeColor,
+} from '@/utils/redux/selectors/settingsSelectors';
+
+import { usePlayingBarAction } from './actions/usePlayingBarAction';
+import { useSheetRef } from '@/utils/useSheetRef';
+
+type Variant = 'ios' | 'android';
+
+type Props = {
+  variant: Variant;
+};
+
+const variantStyles = {
+  ios: {
+    blurIntensity: 100,
+    wrapper: {
+      marginHorizontal: 12,
+      marginTop: 12,
+      marginBottom: 0,
+      borderRadius: 14,
+      overflow: 'hidden' as const,
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+    },
+    container: {
+      flexDirection: 'column' as const,
+      padding: 8,
+      paddingBottom: 0,
+      paddingHorizontal: 12,
+      borderRadius: 14,
+    },
+    topRowWrapper: {
+      height: 40,
+      justifyContent: 'center' as const,
+    },
+    topRow: {
+      minHeight: 40,
+      paddingRight: 4,
+    },
+    coverArt: {
+      width: 42,
+      height: 42,
+      marginRight: 10,
+    },
+    title: {
+      fontSize: 13,
+    },
+    artist: {
+      fontSize: 13,
+    },
+    progressBarContainer: {
+      height: 3,
+      marginTop: 6,
+    },
+    playPauseButton: {
+      padding: 8,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      marginRight: 4,
+    },
+    fabButton: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+      elevation: 4,
+    },
+    placeholderIconSize: 32,
+  },
+  android: {
+    blurIntensity: 140,
+    wrapper: {
+      margin: 12,
+      marginBottom: 8,
+      borderRadius: 14,
+      overflow: 'hidden' as const,
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 4,
+    },
+    container: {
+      padding: 10,
+      paddingBottom: 6,
+      paddingHorizontal: 16,
+      borderRadius: 14,
+    },
+    topRowWrapper: null,
+    topRow: {
+      minHeight: 50,
+    },
+    coverArt: {
+      width: 45,
+      height: 45,
+      marginRight: 12,
+    },
+    title: {
+      fontSize: 14,
+    },
+    artist: {
+      fontSize: 14,
+    },
+    progressBarContainer: {
+      height: 4,
+      marginTop: 8,
+    },
+    playPauseButton: {
+      padding: 8,
+      marginRight: 4,
+    },
+    fabButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      elevation: 4,
+    },
+    placeholderIconSize: 40,
+  },
+};
+
+const gradientCache = new Map<string, string[]>();
+
+function darkenHexColor(hex: string, amount = 0.3) {
+  let col = hex.replace('#', '');
+  if (col.length === 3) col = col.split('').map(c => c + c).join('');
+  const num = parseInt(col, 16);
+  const r = Math.floor(((num >> 16) & 0xff) * (1 - amount));
+  const g = Math.floor(((num >> 8) & 0xff) * (1 - amount));
+  const b = Math.floor((num & 0xff) * (1 - amount));
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b)
+    .toString(16)
+    .slice(1)}`;
+}
+
+export default function PlayingBarBase({ variant }: Props) {
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const themeColor = useSelector(selectThemeColor);
+  const actionMode = useSelector(selectPlayingBarAction);
+
+  const {
+    currentSong,
+    isPlaying,
+    pauseSong,
+    resumeSong,
+  } = usePlaying();
+  const { position: progressPosition } = usePlayingProgress();
+
+  const stylesForVariant = variantStyles[variant];
+  const bottomSheetRef = useSheetRef();
+  const playlistSheetRef = useSheetRef();
+
+  const primaryAction = usePlayingBarAction(actionMode, {
+    presentAddToPlaylist: () => {
+      if (currentSong) playlistSheetRef.current?.present();
+    },
+  });
+
+  const [currentGradient, setCurrentGradient] = useState<string[]>(['#000', '#000']);
+  const [nextGradient, setNextGradient] = useState<string[]>(['#000', '#000']);
+
+  const extractColors = useCallback(async (uri: string) => {
+    const cached = gradientCache.get(uri);
+    if (cached) {
+      setNextGradient(cached);
+      return;
+    }
+    try {
+      const colors = await ImageColors.getColors(uri, { fallback: '#121212' });
+      let dominant = '#121212';
+      if (colors.platform === 'android') {
+        dominant = colors.darkVibrant || colors.dominant || dominant;
+      } else {
+        dominant = (colors as any).primary || dominant;
+      }
+      const gradient = [darkenHexColor(dominant), '#000'];
+      gradientCache.set(uri, gradient);
+      setNextGradient(gradient);
+    } catch {
+      setNextGradient(['#121212', '#000']);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!currentSong?.cover) return;
+    const uri =
+      buildCover(currentSong.cover, 'detail') ??
+      buildCover({ kind: 'none' }, 'detail');
+    if (uri) extractColors(uri);
+  }, [currentSong?.cover, currentSong?.id, extractColors]);
+
+  const duration = currentSong ? Number(currentSong.duration) : 1;
+  const progress = duration > 0 ? progressPosition / duration : 0;
+
+  const handlePlayPause = async () => {
+    if (!currentSong) return;
+    if (isPlaying) {
+      await pauseSong();
+    } else {
+      await resumeSong();
+    }
+  };
+
+  const handleExpand = () => {
+    if (currentSong) bottomSheetRef.current?.present();
+  };
+
+  const handleFadeComplete = useCallback(() => {
+    setCurrentGradient(nextGradient);
+  }, [nextGradient]);
+
+  const content = (
+    <View style={[styles.topRow, stylesForVariant.topRow]}>
+      {currentSong?.cover ? (
+        <MediaImage
+          cover={currentSong.cover}
+          size="thumb"
+          style={[styles.coverArt, stylesForVariant.coverArt]}
+        />
+      ) : (
+        <View style={[styles.coverArt, stylesForVariant.coverArt, styles.iconPlaceholder]}>
+          <Ionicons
+            name="musical-notes"
+            size={stylesForVariant.placeholderIconSize}
+            color={isDarkMode ? '#fff' : '#333'}
+          />
+        </View>
+      )}
+
+      <View style={styles.details}>
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.title,
+            stylesForVariant.title,
+            isDarkMode ? styles.textDark : styles.textLight,
+          ]}
+        >
+          {currentSong?.title || t('playing.bar.noSong')}
+        </Text>
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.artist,
+            stylesForVariant.artist,
+            isDarkMode ? styles.textDarkSecondary : styles.textLightSecondary,
+          ]}
+        >
+          {currentSong?.artist || t('playing.bar.selectTrack')}
+        </Text>
+      </View>
+
+      {currentSong && (
+        <TouchableOpacity
+          style={[styles.playPauseButton, stylesForVariant.playPauseButton]}
+          onPress={handlePlayPause}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <FontAwesome6
+            name={isPlaying ? 'pause' : 'play'}
+            size={20}
+            color={isDarkMode ? '#fff' : '#000'}
+          />
+        </TouchableOpacity>
+      )}
+
+      {primaryAction && (
+        <TouchableOpacity
+          style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor }]}
+          onPress={primaryAction.onPress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          {primaryAction.icon}
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  return (
+    <>
+      <TouchableOpacity onPress={handleExpand} activeOpacity={0.9}>
+        <View style={[styles.wrapper, stylesForVariant.wrapper]}>
+          <BlurView
+            intensity={stylesForVariant.blurIntensity}
+            tint={isDarkMode ? 'dark' : 'light'}
+            style={[styles.container, stylesForVariant.container]}
+          >
+            {stylesForVariant.topRowWrapper ? (
+              <View style={stylesForVariant.topRowWrapper}>{content}</View>
+            ) : content}
+
+            <View style={[styles.progressBarContainer, stylesForVariant.progressBarContainer]}>
+              {currentSong && (
+                <View
+                  style={[
+                    styles.progressBar,
+                    {
+                      width: `${progress * 100}%`,
+                      backgroundColor: themeColor,
+                    },
+                  ]}
+                />
+              )}
+            </View>
+          </BlurView>
+        </View>
+      </TouchableOpacity>
+
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        snapPoints={['100%']}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        backgroundStyle={{ backgroundColor: 'transparent' }}
+        backgroundComponent={props => (
+          <PlayingBackground
+            {...props}
+            current={currentGradient}
+            next={nextGradient}
+            onFadeComplete={handleFadeComplete}
+          />
+        )}
+      >
+        <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
+
+        <Toasts
+          defaultStyle={{
+            view: {
+              backgroundColor: isDarkMode
+                ? 'rgba(32,32,32,0.9)'
+                : 'rgba(255,255,255,0.9)',
+              borderRadius: 10,
+              shadowColor: '#000',
+              shadowOpacity: 0.15,
+              shadowRadius: 10,
+              elevation: 4,
+            },
+            pressable: {
+              backgroundColor: 'transparent',
+            },
+            text: {
+              color: isDarkMode ? '#fff' : '#000',
+              fontSize: 16,
+              fontWeight: '500',
+            },
+            indicator: {
+              marginRight: 12,
+            },
+          }}
+        />
+      </BottomSheetModal>
+
+      <PlaylistList
+        ref={playlistSheetRef}
+        selectedSong={currentSong}
+        onClose={() => playlistSheetRef.current?.dismiss()}
+      />
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrapper: {},
+  container: {},
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  coverArt: {
+    borderRadius: 5,
+  },
+  details: {
+    flex: 1,
+  },
+  title: {
+    fontWeight: '600',
+  },
+  artist: {
+    marginTop: 2,
+  },
+  textLight: {
+    color: '#000',
+  },
+  textDark: {
+    color: '#fff',
+  },
+  textLightSecondary: {
+    color: '#666',
+  },
+  textDarkSecondary: {
+    color: '#aaa',
+  },
+  iconPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressBarContainer: {
+    backgroundColor: '#666',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+  },
+  playPauseButton: {},
+  fabButton: {
+    marginLeft: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

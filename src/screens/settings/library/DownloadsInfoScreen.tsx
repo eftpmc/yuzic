@@ -44,8 +44,8 @@ const DownloadsInfoScreen: React.FC = () => {
     setFreeBytes(Paths.availableDiskSpace);
   }, [downloadStateVersion]);
 
-  const downloadedTracks = useMemo(() => getAllDownloadedTracks(), [getAllDownloadedTracks, downloadStateVersion]);
-  const downloadedCollections = useMemo(() => getAllDownloadedCollections(), [getAllDownloadedCollections, downloadStateVersion]);
+  const downloadedTracks = useMemo(() => getAllDownloadedTracks(), [getAllDownloadedTracks]);
+  const downloadedCollections = useMemo(() => getAllDownloadedCollections(), [getAllDownloadedCollections]);
 
   const formattedSize = formatBytes(totalDownloadedBytes);
   const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
@@ -61,7 +61,7 @@ const DownloadsInfoScreen: React.FC = () => {
         downloadedCollections,
         t,
       }),
-    [albums, tracks, fullPlaylists, downloadedTracks, downloadedCollections, downloadStateVersion, t]
+    [albums, tracks, fullPlaylists, downloadedTracks, downloadedCollections, t]
   );
 
   const downloadedAlbumCount = useMemo(

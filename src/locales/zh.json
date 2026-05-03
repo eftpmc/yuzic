@@ -90,6 +90,17 @@
         "lastSynced": "上次同步",
         "syncOnAppStart": "启动时同步"
       },
+      "offlineChanges": {
+        "title": "待同步的离线更改",
+        "subtitle": "{{count}} 项更改将在联网后同步",
+        "subtitle_plural": "{{count}} 项更改将在联网后同步",
+        "failedSubtitle": "{{count}} 项更改需要处理后才能同步",
+        "failedSubtitle_plural": "{{count}} 项更改需要处理后才能同步",
+        "retry": "重试",
+        "discard": "放弃",
+        "discardTitle": "放弃离线更改？",
+        "discardBody": "这会移除当前服务器的待同步更改。本地媒体库将在下次同步时刷新。"
+      },
       "downloads": {
         "title": "下载管理",
         "detailsTitle": "下载详情",
@@ -246,10 +257,16 @@
     "offline": {
       "downloadRequired": "需下载此曲目才能在离线模式下播放。",
       "noDownloadedTracks": "此操作无可用的已下载曲目。",
-      "similarUnavailable": "离线模式下无法使用相似曲目功能。"
+      "similarUnavailable": "离线模式下无法使用相似曲目功能。",
+      "noConnection": "无网络连接",
+      "syncedChanges": "离线更改已同步",
+      "syncQueuedChangesFailed": "部分离线更改无法同步"
     },
     "oneSecond": "稍等片刻。",
     "playingSimilar": "正在播放相似音乐",
+    "songDetailsError": "无法加载歌曲详情",
+    "syncFailed": "库同步失败，请检查您的网络连接。",
+    "libraryLoadFailed": "库加载失败，请检查您的网络连接。",
     "error": {
       "unexpected": "发生意外错误",
       "details": "错误：{{name}} {{message}}",
@@ -412,7 +429,9 @@
     },
     "actions": {
       "addedToFavorites": "{{title}} 已加入收藏。",
+      "addedToFavoritesOffline": "已离线将 {{title}} 加入收藏。",
       "removedFromFavorites": "{{title}} 已移出收藏。",
+      "removedFromFavoritesOffline": "已离线将 {{title}} 移出收藏。",
       "updateFavoritesFailed": "更新收藏失败。",
       "randomAlbum": "正在播放随机专辑：{{title}}",
       "loadAlbumFailed": "加载专辑失败。"
@@ -421,13 +440,17 @@
   "playlist": {
     "favoritesTitle": "收藏",
     "subtext": "播放列表 • {{count}} 首曲目",
-    "subtext_plural": "播放列表 • {{count}} 首曲目"
+    "subtext_plural": "播放列表 • {{count}} 首曲目",
+    "empty": "此播放列表暂无歌曲。"
   },
   "playlistList": {
     "title": "添加至播放列表",
     "searchPlaceholder": "搜索播放列表",
     "newPlaceholder": "新建播放列表名称",
-    "updated": "播放列表已更新"
+    "updated": "播放列表已更新",
+    "updatedOffline": "播放列表已离线保存，联网后会同步。",
+    "createFailed": "创建播放列表失败",
+    "updateFailed": "更新播放列表失败"
   },
   "songOptions": {
     "unknownArtist": "未知",
@@ -472,7 +495,9 @@
     },
     "toasts": {
       "removedFromFavorites": "{{title}} 已移出收藏。",
+      "removedFromFavoritesOffline": "已离线将 {{title}} 移出收藏。",
       "addedToFavorites": "{{title}} 已加入收藏。",
+      "addedToFavoritesOffline": "已离线将 {{title}} 加入收藏。",
       "updateFavoritesFailed": "更新收藏失败。",
       "nothingPlaying": "当前无播放内容。",
       "alreadyPlaying": "{{title}} 正在播放中。",
@@ -590,6 +615,7 @@
     "info": {
       "albums": "专辑数",
       "plays": "播放次数"
-    }
+    },
+    "downloadAllFailed": "部分专辑下载失败。"
   }
 }

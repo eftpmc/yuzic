@@ -55,7 +55,7 @@ function LyricLine({
 
   useEffect(() => {
     opacity.value = withTiming(opacityTarget, { duration: 240 });
-  }, [variant, opacityTarget]);
+  }, [opacity, opacityTarget]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -88,7 +88,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     const [viewportHeight, setViewportHeight] = useState(0);
     const [layoutVersion, setLayoutVersion] = useState(0);
 
-    const lines = lyrics?.lines ?? [];
+    const lines = useMemo(() => lyrics?.lines ?? [], [lyrics?.lines]);
     const currentIndex = useMemo(
       () => getCurrentLineIndex(lines, progress.position),
       [lines, progress.position]

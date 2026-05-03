@@ -7,7 +7,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { usePlaying } from '@/contexts/PlayingContext';
-import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 const Controls: React.FC = () => {
   const {

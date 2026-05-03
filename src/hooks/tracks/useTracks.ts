@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { QueryKeys } from "@/enums/queryKeys";
 import { SongBase } from "@/types";
@@ -6,6 +5,7 @@ import { useApi } from "@/api";
 import { staleTime } from "@/constants/staleTime";
 import { selectActiveServer } from "@/utils/redux/selectors/serversSelectors";
 import { useLibrary } from "@/contexts/LibraryContext";
+import { hasArrayData, useOfflineFirstQuery } from "@/hooks/useOfflineFirstQuery";
 
 type UseTracksResult = {
   tracks: SongBase[];
@@ -18,20 +18,19 @@ export function useTracks(): UseTracksResult {
   const activeServer = useSelector(selectActiveServer);
   const { tracks: libraryTracks } = useLibrary();
 
-  const query = useQuery<SongBase[], Error>({
+  const query = useOfflineFirstQuery<SongBase[]>({
     queryKey: [QueryKeys.Tracks, activeServer?.id],
     queryFn: api.tracks.list,
     enabled: !!activeServer?.id,
     staleTime: staleTime.tracks,
+    fallbackData: libraryTracks,
+    hasFallbackData: hasArrayData,
+    preferFallbackWhenQueryEmpty: true,
   });
 
-  // Prefer query data only when non-empty so a failed fetch that returns []
-  // doesn't mask persisted library tracks.
-  const tracks = (query.data && query.data.length > 0) ? query.data : libraryTracks;
-
   return {
-    tracks,
-    isLoading: query.isLoading && libraryTracks.length === 0,
-    error: query.error ?? null,
+    tracks: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
   };
 }

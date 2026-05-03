@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   InteractionManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 import { MediaImage } from "@/components/MediaImage";
 import SongOptions from "@/components/options/SongOptions";
@@ -17,10 +16,12 @@ import { usePlaying } from "@/contexts/PlayingContext";
 import { useDownload } from "@/contexts/DownloadContext";
 import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "react-i18next";
 import { useApi } from "@/api";
 import { useSelector } from "react-redux";
 import { selectSongsById } from "@/utils/redux/selectors/librarySelectors";
 import { toast } from "@backpackapp-io/react-native-toast";
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   song: SongBase;
@@ -40,19 +41,21 @@ const TrackItem: React.FC<Props> = ({
   gridSpacing = 8,
 }) => {
   const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
   const api = useApi();
   const { playSimilar, playSong } = usePlaying();
   const { getLocalPath } = useDownload();
   const songsById = useSelector(selectSongsById);
   const cachedSong = songsById.get(song.id) ?? null;
 
-  const optionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-  const playlistRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsRef = useSheetRef();
+  const playlistRef = useSheetRef();
+  const sheetOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressInFlightRef = useRef(false);
   const longPressInFlightRef = useRef(false);
   const lastPressAtRef = useRef(0);
 
-  const [selectedSong, setSelectedSong] = useState<Song>(song as unknown as Song);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
   const formatDuration = (duration?: number) => {
@@ -90,7 +93,7 @@ const TrackItem: React.FC<Props> = ({
       await playSimilar(fullSong);
     } catch (error) {
       console.warn("Failed to play home track", error);
-      toast.error("Unable to start playback");
+      toast.error(t("common.playbackError"));
     } finally {
       pressInFlightRef.current = false;
     }
@@ -99,23 +102,35 @@ const TrackItem: React.FC<Props> = ({
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
-    setSelectedSong(cachedSong ?? (song as unknown as Song));
-    optionsRef.current?.present();
     try {
-      if (!cachedSong) {
+      if (cachedSong) {
+        setSelectedSong(cachedSong);
+        optionsRef.current?.present();
+      } else {
         const fullSong = await api.tracks.get(song.id);
-        if (fullSong) setSelectedSong(fullSong);
+        if (fullSong) {
+          setSelectedSong(fullSong);
+          optionsRef.current?.present();
+        }
       }
     } catch (error) {
       console.warn("Failed to fetch full track data", error);
+      toast.error(t("common.songDetailsError"));
     } finally {
       longPressInFlightRef.current = false;
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (sheetOpenTimerRef.current) clearTimeout(sheetOpenTimerRef.current);
+    };
+  }, []);
+
   const openPlaylistList = () => {
+    if (!selectedSong) return;
     setPlaylistSong(selectedSong);
-    setTimeout(() => {
+    sheetOpenTimerRef.current = setTimeout(() => {
       playlistRef.current?.present();
     }, SHEET_TRANSITION_DELAY_MS);
   };
@@ -184,11 +199,13 @@ const TrackItem: React.FC<Props> = ({
         )}
       </Pressable>
 
-      <SongOptions
-        ref={optionsRef}
-        selectedSong={selectedSong}
-        onAddToPlaylist={openPlaylistList}
-      />
+      {selectedSong && (
+        <SongOptions
+          ref={optionsRef}
+          selectedSong={selectedSong}
+          onAddToPlaylist={openPlaylistList}
+        />
+      )}
 
       <PlaylistList
         ref={playlistRef}

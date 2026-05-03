@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import { MediaImage } from '@/components/MediaImage';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
 import { ExternalSong } from '@/types';
 import type { ExternalAlbumBase } from '@/types';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 function formatDuration(seconds: string): string {
   const n = parseInt(seconds, 10);
@@ -49,8 +50,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
-  const bottomSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-  const downloadSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const bottomSheetRef = useSheetRef();
+  const downloadSheetRef = useSheetRef();
   const snapPoints = useMemo(() => ['40%', '70%'], []);
 
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);

@@ -4,11 +4,7 @@ import { Album, Artist, Playlist, Song } from '@/types';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
 import {
-  selectAlbumLastPlayedAt,
-  selectArtistLastPlayedAt,
   selectSongLastPlayedAt,
-  selectAlbumPlayCounts,
-  selectArtistPlayCounts,
   selectSongPlayCounts,
   selectPlaylistPlayCounts,
   selectPlaylistLastPlayedAt,
@@ -38,11 +34,7 @@ export function useQuickAccessItems(): QuickAccessItem[] {
   const { albums } = useAlbums();
   const { playlists } = usePlaylists();
   const songsById = useSelector(selectSongsById);
-  const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt);
-  const artistLastPlayedAt = useSelector(selectArtistLastPlayedAt);
   const songLastPlayedAt = useSelector(selectSongLastPlayedAt);
-  const albumPlayCounts = useSelector(selectAlbumPlayCounts);
-  const artistPlayCounts = useSelector(selectArtistPlayCounts);
   const songPlayCounts = useSelector(selectSongPlayCounts);
   const playlistPlayCounts = useSelector(selectPlaylistPlayCounts);
   const playlistLastPlayedAt = useSelector(selectPlaylistLastPlayedAt);
@@ -117,8 +109,7 @@ export function useQuickAccessItems(): QuickAccessItem[] {
 
     return result;
   }, [
-    albumLastPlayedAt, artistLastPlayedAt, songLastPlayedAt,
-    albumPlayCounts, artistPlayCounts, songPlayCounts,
+    songLastPlayedAt, songPlayCounts,
     playlistPlayCounts, playlistLastPlayedAt,
     songsById, albums, playlists,
   ]);

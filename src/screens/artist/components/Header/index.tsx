@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -11,10 +11,9 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { Artist, Song, Album } from '@/types';
@@ -28,6 +27,7 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { useTheme } from '@/hooks/useTheme';
 import { staleTime } from '@/constants/staleTime';
 import { useDownload } from '@/contexts/DownloadContext';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   artist: Artist;
@@ -44,7 +44,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const api = useApi();
   const { playSongInCollection } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
-  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsSheetRef = useSheetRef();
 
   const [artistSongs, setArtistSongs] = useState<Song[]>([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
@@ -93,7 +93,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     return () => {
       cancelled = true;
     };
-  }, [artist.id, artistAlbumIdsKey, activeServer?.id, queryClient]);
+  }, [activeServer?.id, api.albums, artist.id, artist.ownedAlbums, artistAlbumIdsKey, queryClient]);
 
   const playArtist = (shuffle = false) => {
     if (!artistSongs.length) {
@@ -157,13 +157,16 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   return (
     <>
       <View style={styles.fullBleedWrapper}>
-        <Image
-          source={{ uri: buildCover(artist.cover, 'background') ?? undefined }}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          blurRadius={Platform.OS === 'ios' ? 20 : 10}
-          transition={300}
-        />
+        {buildCover(artist.cover, 'background') && (
+          <TurboImage
+            source={{ uri: buildCover(artist.cover, 'background')! }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            blur={Platform.OS === 'ios' ? 20 : 10}
+            fadeDuration={300}
+            cachePolicy="dataCache"
+          />
+        )}
 
         <LinearGradient
           colors={

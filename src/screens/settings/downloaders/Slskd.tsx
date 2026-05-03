@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
@@ -63,15 +63,18 @@ const SlskdView: React.FC = () => {
   const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.timing(spinAnim, {
         toValue: 1,
         duration: 1000,
         easing: Easing.linear,
         useNativeDriver: true,
       })
-    ).start();
-  }, []);
+    );
+    animation.start();
+
+    return () => animation.stop();
+  }, [spinAnim]);
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
@@ -114,7 +117,7 @@ const SlskdView: React.FC = () => {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [serverUrl, apiKey]);
+  }, [apiKey, config, dispatch, isAuthenticated, serverId, serverUrl, t]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -123,7 +126,7 @@ const SlskdView: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  const pollQueue = async () => {
+  const pollQueue = useCallback(async () => {
     if (!isAuthenticated) return;
 
     try {
@@ -139,7 +142,7 @@ const SlskdView: React.FC = () => {
     } catch {
       console.warn('Queue polling failed');
     }
-  };
+  }, [config, isAuthenticated, t]);
 
   useEffect(() => {
     if (!config.serverUrl || !config.apiKey || !isAuthenticated) {
@@ -165,7 +168,7 @@ const SlskdView: React.FC = () => {
         pollingRef.current = null;
       }
     };
-  }, [config.serverUrl, config.apiKey, isAuthenticated]);
+  }, [config.serverUrl, config.apiKey, isAuthenticated, pollQueue]);
 
   const handleDisconnect = () => {
     dispatch(disconnectSlskd({ serverId }));

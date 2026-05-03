@@ -10,7 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
+import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'
 import { useTranslation } from 'react-i18next'
@@ -87,13 +87,16 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
   return (
     <>
       <View style={styles.fullBleedWrapper}>
-        <Image
-          source={coverUri ? { uri: coverUri } : undefined}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          blurRadius={Platform.OS === 'ios' ? 20 : 10}
-          transition={300}
-        />
+        {coverUri && (
+          <TurboImage
+            source={{ uri: coverUri }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            blur={Platform.OS === 'ios' ? 20 : 10}
+            fadeDuration={300}
+            cachePolicy="dataCache"
+          />
+        )}
 
         <LinearGradient
           colors={

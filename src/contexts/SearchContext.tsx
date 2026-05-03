@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useMemo,
+  useCallback,
   ReactNode,
   useRef,
 } from 'react';
@@ -11,7 +12,6 @@ import {
   Artist,
   Playlist,
   CoverSource,
-  ExternalAlbumBase,
   Song,
   SongBase,
 } from '@/types';
@@ -144,16 +144,15 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchScope = useSelector(selectSearchScope);
 
-  const { getAllDownloadedTracks, downloadStateVersion } = useDownload();
+  const { downloadedTracks } = useDownload();
 
   const downloadedTrackIds = useMemo(
     () => buildDownloadedTrackIdSet(
-      (getAllDownloadedTracks() as any[])
-        .map((track: any) => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
-        .filter((track: any) => track.id)
+      downloadedTracks
+        .map(track => ({ id: String(track.trackId ?? track.originalTrack?.id ?? '') }))
+        .filter(track => track.id)
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [downloadStateVersion]
+    [downloadedTracks]
   );
 
   const downloadedAlbumIds = useMemo(
@@ -179,7 +178,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchRequestIdRef = useRef(0);
 
-  const searchLibrary = async (
+  const searchLibrary = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     const lowerQuery = query.toLowerCase();
@@ -220,9 +219,17 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       ...artistResults,
       ...playlistResults,
     ];
-  };
+  }, [
+    albums,
+    artists,
+    playlists,
+    tracks,
+    downloadedAlbumIds,
+    downloadedPlaylistIds,
+    downloadedTrackIds,
+  ]);
 
-  const searchServer = async (
+  const searchServer = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     if (!api?.search) return [];
@@ -231,13 +238,13 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       await api.search.search(query);
 
     return [
-      ...songs.map((song: Song) => songToResult(song, true, song)),
-      ...albums.map((album: Album) => albumToResult(album, 'local', true)),
+      ...songs.map((song: Song) => songToResult(song, downloadedTrackIds.has(song.id), song)),
+      ...albums.map((album: Album) => albumToResult(album, 'local', downloadedAlbumIds.has(album.id))),
       ...artists.map((artist: Artist) => artistToResult(artist)),
     ];
-  };
+  }, [api, downloadedAlbumIds, downloadedTrackIds]);
 
-  const searchExternal = async (
+  const searchExternal = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     if (!query.trim()) return [];
@@ -248,16 +255,23 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     } catch {
       return [];
     }
-  };
+  }, []);
 
   const resultKey = (r: SearchResult) =>
     `${r.source}:${r.type}:${r.id}`;
 
-  const handleSearch = async (query: string) => {
+  const clearSearch = useCallback(() => {
+    searchRequestIdRef.current += 1;
+    setSearchResults([]);
+    setIsLoading(false);
+  }, []);
+
+  const handleSearch = useCallback(async (query: string) => {
     const requestId = ++searchRequestIdRef.current;
 
     if (!query.trim()) {
-      clearSearch();
+      setSearchResults([]);
+      setIsLoading(false);
       return;
     }
 
@@ -339,23 +353,26 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         setIsLoading(false);
       }
     }
-  };
+  }, [searchExternal, searchLibrary, searchScope, searchServer]);
 
-  const clearSearch = () => {
-    setSearchResults([]);
-  };
+  const value = useMemo<SearchContextType>(() => ({
+    searchResults,
+    searchLibrary,
+    searchExternal,
+    clearSearch,
+    isLoading,
+    handleSearch,
+  }), [
+    searchResults,
+    searchLibrary,
+    searchExternal,
+    clearSearch,
+    isLoading,
+    handleSearch,
+  ]);
 
   return (
-    <SearchContext.Provider
-      value={{
-        searchResults,
-        searchLibrary,
-        searchExternal,
-        clearSearch,
-        isLoading,
-        handleSearch,
-      }}
-    >
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   );

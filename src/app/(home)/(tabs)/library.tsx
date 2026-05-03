@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   Dimensions,
   ScrollView,
@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useAlbums } from '@/hooks/albums'
@@ -48,6 +47,7 @@ import TrackItem from '@/screens/home/components/Items/TrackItem'
 import { FilterPill } from '@/screens/home/components/Filters/FilterPill'
 import SortBottomSheet from '@/screens/home/components/SortBottomSheet'
 import GridSettingsBottomSheet from '@/screens/home/components/GridSettingsBottomSheet'
+import { useSheetRef } from '@/utils/useSheetRef'
 
 type Filter = 'playlists' | 'albums' | 'artists' | 'tracks' | 'downloaded' | null
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded'
@@ -76,8 +76,8 @@ interface SortStats {
 function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): LibraryItem[] {
   return [...items].sort((a, b) => {
     if (order === 'title') {
-      const aName = a.kind === 'artist' ? a.data.name : (a.data as any).title ?? ''
-      const bName = b.kind === 'artist' ? b.data.name : (b.data as any).title ?? ''
+      const aName = a.kind === 'artist' ? a.data.name : a.data.title
+      const bName = b.kind === 'artist' ? b.data.name : b.data.title
       return collator.compare(aName, bName)
     }
     if (order === 'year') {
@@ -93,7 +93,7 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
         if (x.kind === 'album') return stats.albumLastPlayed[x.data.id] ?? 0
         if (x.kind === 'track') return stats.songLastPlayed[x.data.id] ?? 0
         if (x.kind === 'artist') return stats.artistLastPlayed[x.data.id] ?? 0
-        if (x.kind === 'playlist') return (x.data as any).changed ? new Date((x.data as any).changed).getTime() : 0
+        if (x.kind === 'playlist') return x.data.changed ? new Date(x.data.changed).getTime() : 0
         return 0
       }
       return getMs(b) - getMs(a)
@@ -109,8 +109,9 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
     }
     if (order === 'recentlyAdded') {
       const getCreated = (x: LibraryItem): number => {
-        const created = (x.data as any).created
-        return created ? new Date(created).getTime() : 0
+        if (x.kind === 'album' || x.kind === 'playlist') return x.data.created ? new Date(x.data.created).getTime() : 0
+        if (x.kind === 'track') return x.data.dateAdded ? new Date(x.data.dateAdded).getTime() : 0
+        return 0
       }
       return getCreated(b) - getCreated(a)
     }
@@ -137,9 +138,9 @@ export default function LibraryScreen() {
   const listOpacity = useSharedValue(1)
   const animatedListStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }))
 
-  const accountSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
-  const sortSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
-  const gridSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
+  const accountSheetRef = useSheetRef()
+  const sortSheetRef = useSheetRef()
+  const gridSheetRef = useSheetRef()
 
   const songLastPlayed = useSelector(selectSongLastPlayedAt)
   const songPlays = useSelector(selectSongPlayCounts)
@@ -152,7 +153,7 @@ export default function LibraryScreen() {
   const { artists } = useArtists()
   const { playlists } = usePlaylists()
   const { tracks } = useTracks()
-  const { getAllDownloadedCollections, downloadStateVersion } = useDownload()
+  const { getAllDownloadedCollections } = useDownload()
 
   const screenWidth = Dimensions.get('window').width
   const gridWidth = (screenWidth - LIST_PADDING * 2 - (gridColumns + 1) * gridSpacing) / gridColumns
@@ -172,7 +173,7 @@ export default function LibraryScreen() {
     const ids = new Set<string>()
     getAllDownloadedCollections().forEach(c => ids.add(c.id))
     return ids
-  }, [getAllDownloadedCollections, downloadStateVersion])
+  }, [getAllDownloadedCollections])
 
   const sortedByFilter = useMemo(() => ({
     playlists:  sortItems(playlists.map(p => ({ kind: 'playlist'  as const, data: p })), sortOrder, stats),
@@ -204,7 +205,7 @@ export default function LibraryScreen() {
       setIsAccountSheetOpen(true)
       accountSheetRef.current?.present()
     }
-  }, [isAccountSheetOpen])
+  }, [accountSheetRef, isAccountSheetOpen])
 
   const FILTERS = useMemo(() => [
     { value: 'playlists'  as const, label: t('home.filters.playlists') },

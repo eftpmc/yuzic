@@ -90,6 +90,17 @@
         "lastSynced": "Last synced",
         "syncOnAppStart": "Sync on app start"
       },
+      "offlineChanges": {
+        "title": "Pending offline changes",
+        "subtitle": "{{count}} change will sync when you're online",
+        "subtitle_plural": "{{count}} changes will sync when you're online",
+        "failedSubtitle": "{{count}} change needs attention before it can sync",
+        "failedSubtitle_plural": "{{count}} changes need attention before they can sync",
+        "retry": "Retry",
+        "discard": "Discard",
+        "discardTitle": "Discard offline changes?",
+        "discardBody": "This removes pending changes for the current server. Your local library will refresh on the next sync."
+      },
       "downloads": {
         "title": "Downloads",
         "detailsTitle": "Download Details",
@@ -246,11 +257,17 @@
     "offline": {
       "downloadRequired": "Download this track to play it in Offline Mode.",
       "noDownloadedTracks": "No downloaded tracks are available for this action.",
-      "similarUnavailable": "Similar songs are unavailable in Offline Mode."
+      "similarUnavailable": "Similar songs are unavailable in Offline Mode.",
+      "noConnection": "No internet connection",
+      "syncedChanges": "Offline changes synced",
+      "syncQueuedChangesFailed": "Some offline changes could not sync"
     },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
     "playbackError": "Unable to play track",
+    "songDetailsError": "Unable to load song details",
+    "syncFailed": "Library sync failed. Check your connection.",
+    "libraryLoadFailed": "Failed to load library data. Check your connection.",
     "error": {
       "unexpected": "Unexpected error occurred",
       "details": "Error: {{name}} {{message}}",
@@ -413,7 +430,9 @@
     },
     "actions": {
       "addedToFavorites": "{{title}} added to favorites.",
+      "addedToFavoritesOffline": "{{title}} added to favorites offline.",
       "removedFromFavorites": "{{title}} removed from favorites.",
+      "removedFromFavoritesOffline": "{{title}} removed from favorites offline.",
       "updateFavoritesFailed": "Failed to update favorites.",
       "randomAlbum": "Playing random album: {{title}}",
       "loadAlbumFailed": "Failed to load album."
@@ -422,13 +441,17 @@
   "playlist": {
     "favoritesTitle": "Favorites",
     "subtext": "Playlist • {{count}} song",
-    "subtext_plural": "Playlist • {{count}} songs"
+    "subtext_plural": "Playlist • {{count}} songs",
+    "empty": "This playlist has no songs yet."
   },
   "playlistList": {
     "title": "Add to Playlist",
     "searchPlaceholder": "Search playlists",
     "newPlaceholder": "New playlist name",
-    "updated": "Playlists updated"
+    "updated": "Playlists updated",
+    "updatedOffline": "Playlists saved offline. They will sync when you're online.",
+    "createFailed": "Failed to create playlist",
+    "updateFailed": "Failed to update playlists"
   },
   "songOptions": {
     "unknownArtist": "Unknown",
@@ -473,7 +496,9 @@
     },
     "toasts": {
       "removedFromFavorites": "{{title}} removed from favorites.",
+      "removedFromFavoritesOffline": "{{title}} removed from favorites offline.",
       "addedToFavorites": "{{title}} added to favorites.",
+      "addedToFavoritesOffline": "{{title}} added to favorites offline.",
       "updateFavoritesFailed": "Failed to update favorites.",
       "nothingPlaying": "Nothing is currently playing.",
       "alreadyPlaying": "{{title}} is already playing.",
@@ -591,6 +616,7 @@
     "info": {
       "albums": "Albums",
       "plays": "Plays"
-    }
+    },
+    "downloadAllFailed": "Some albums failed to download."
   }
 }

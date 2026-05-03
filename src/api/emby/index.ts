@@ -22,6 +22,7 @@ import { testServerUrl } from "./auth/testServerUrl";
 import { startScan } from "./auth/startScan";
 import { getAlbum } from "./albums/getAlbum";
 import { getAlbums } from "./albums/getAlbums";
+import { getAlbumsWithSongs } from "./albums/getAlbumsWithSongs";
 import { getArtists } from "./artists/getArtists";
 import { getPlaylists } from "./playlists/getPlaylists";
 import { getPlaylistItems, getPlaylistEntryIdForSong } from "./playlists/getPlaylistItems";
@@ -38,6 +39,7 @@ import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist"
 import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 import { getSong } from "./songs/getSong";
+import { markPlayed } from "./songs/markPlayed";
 import { getTracks } from "./tracks/getTracks";
 import { getInstantMix } from "./instantMix/getInstantMix";
 import { search as searchEmby } from "./search/search";
@@ -87,6 +89,7 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
       if (!album) throw new Error("Album not found");
       return album;
     },
+    listWithSongs: async () => fromParents(c => getAlbumsWithSongs(c)),
   };
 
   const artists: ArtistsApi = {
@@ -171,6 +174,7 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
 
   const songs: SongsApi = {
     get: async (id: string) => getSong(client, id),
+    scrobble: async (songId) => markPlayed(client, songId),
   };
 
   const tracks: TracksApi = {

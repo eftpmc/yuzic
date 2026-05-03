@@ -57,6 +57,8 @@ export interface AuthApi {
 export interface AlbumsApi {
   list(): Promise<Album[]>;
   get(id: string): Promise<Album>;
+  /** Optional bulk fetch — returns all albums with songs in the fewest possible requests. */
+  listWithSongs?(): Promise<Album[]>;
 }
 
 export interface ArtistsApi {

@@ -50,12 +50,47 @@ type DownloadContextType = {
   clearDownloadsForProvider: (scope?: DownloadProviderScope) => Promise<void>;
   clearAllDownloads: () => Promise<void>;
   downloadStateVersion: number;
+  downloadedTracks: DownloadedTrack[];
   getLocalPath: (trackId: string) => string | null;
   getSongLocalUri: (songId: string) => Promise<string | null>;
   getAllDownloadedCollections: () => DownloadedCollectionEntry[];
   totalDownloadedBytes: number;
   downloadedTrackCount: number;
 };
+
+type DownloadCompleteCallback = Parameters<typeof DownloadManager.onDownloadComplete>[0];
+type DownloadStateChangeCallback = Parameters<typeof DownloadManager.onDownloadStateChange>[0];
+
+type DownloadCallbackHub = {
+  registered: boolean;
+  completeSubscribers: Set<DownloadCompleteCallback>;
+  stateSubscribers: Set<DownloadStateChangeCallback>;
+};
+
+const downloadCallbackHub = ((globalThis as typeof globalThis & {
+  __yuzicDownloadCallbackHub?: DownloadCallbackHub;
+}).__yuzicDownloadCallbackHub ??= {
+  registered: false,
+  completeSubscribers: new Set<DownloadCompleteCallback>(),
+  stateSubscribers: new Set<DownloadStateChangeCallback>(),
+});
+
+function ensureDownloadCallbacksRegistered() {
+  if (downloadCallbackHub.registered) return;
+  downloadCallbackHub.registered = true;
+
+  DownloadManager.onDownloadComplete((downloadedTrack) => {
+    downloadCallbackHub.completeSubscribers.forEach(subscriber => {
+      subscriber(downloadedTrack);
+    });
+  });
+
+  DownloadManager.onDownloadStateChange((downloadId, trackId, state, error) => {
+    downloadCallbackHub.stateSubscribers.forEach(subscriber => {
+      subscriber(downloadId, trackId, state, error);
+    });
+  });
+}
 
 // Configure before any hook calls so getAllDownloadedTracks/Playlists don't
 // race against an uninitialised native module on first mount.
@@ -100,19 +135,24 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     DownloadManager.syncDownloads().catch(() => {});
     refreshDownloads();
 
-    // Re-fetch when a track finishes downloading
-    DownloadManager.onDownloadComplete(() => {
-      refreshDownloads();
-    });
+    ensureDownloadCallbacksRegistered();
 
-    // Re-fetch on completion; bump version on any state change so UI reacts immediately
-    DownloadManager.onDownloadStateChange((_downloadId, _trackId, state) => {
+    const handleDownloadComplete: DownloadCompleteCallback = () => {
+      refreshDownloads();
+    };
+
+    const handleDownloadStateChange: DownloadStateChangeCallback = (_downloadId, _trackId, state) => {
       if (state === 'completed') refreshDownloads();
       setDownloadStateVersion(v => v + 1);
-    });
+    };
+
+    downloadCallbackHub.completeSubscribers.add(handleDownloadComplete);
+    downloadCallbackHub.stateSubscribers.add(handleDownloadStateChange);
 
     return () => {
       isMountedRef.current = false;
+      downloadCallbackHub.completeSubscribers.delete(handleDownloadComplete);
+      downloadCallbackHub.stateSubscribers.delete(handleDownloadStateChange);
     };
   }, [refreshDownloads]);
 
@@ -272,21 +312,32 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const getAllDownloadedTracks = useCallback(() => downloadedTracks, [downloadedTracks]);
 
-  const totalDownloadedBytes = downloadedTracks.reduce((sum, t) => sum + t.fileSize, 0);
+  const totalDownloadedBytes = useMemo(
+    () => downloadedTracks.reduce((sum, t) => sum + t.fileSize, 0),
+    [downloadedTracks]
+  );
   const downloadedTrackCount = downloadedTracks.length;
 
-  const value: DownloadContextType = {
+  const pauseDownload = useCallback((id: string) => DownloadManager.pauseDownload(id), []);
+  const resumeDownload = useCallback((id: string) => DownloadManager.resumeDownload(id), []);
+  const getStorageInfo = useCallback(() => DownloadManager.getStorageInfo(), []);
+  const setPlaybackSourcePreference = useCallback(
+    (pref: 'auto' | 'download' | 'network') => DownloadManager.setPlaybackSourcePreference(pref),
+    []
+  );
+
+  const value = useMemo<DownloadContextType>(() => ({
     configure: () => {},
     downloadTrack,
     downloadPlaylist: downloadPlaylistTracks,
-    pauseDownload: async (id) => DownloadManager.pauseDownload(id),
-    resumeDownload: async (id) => DownloadManager.resumeDownload(id),
+    pauseDownload,
+    resumeDownload,
     cancelDownload,
     isTrackDownloaded: hookIsTrackDownloaded,
     getAllDownloadedTracks,
     deleteDownloadedTrack,
-    getStorageInfo: () => DownloadManager.getStorageInfo(),
-    setPlaybackSourcePreference: (pref) => DownloadManager.setPlaybackSourcePreference(pref),
+    getStorageInfo,
+    setPlaybackSourcePreference,
     downloadAlbumById,
     downloadPlaylistById,
     isTrackDownloading,
@@ -297,12 +348,40 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     clearDownloadsForProvider,
     clearAllDownloads,
     downloadStateVersion,
+    downloadedTracks,
     getLocalPath,
     getSongLocalUri,
     getAllDownloadedCollections,
     totalDownloadedBytes,
     downloadedTrackCount,
-  };
+  }), [
+    downloadTrack,
+    downloadPlaylistTracks,
+    pauseDownload,
+    resumeDownload,
+    cancelDownload,
+    hookIsTrackDownloaded,
+    getAllDownloadedTracks,
+    deleteDownloadedTrack,
+    getStorageInfo,
+    setPlaybackSourcePreference,
+    downloadAlbumById,
+    downloadPlaylistById,
+    isTrackDownloading,
+    getCollectionDownloadState,
+    cancelCollectionDownloads,
+    removeDownloadByCollectionId,
+    cancelDownloadAll,
+    clearDownloadsForProvider,
+    clearAllDownloads,
+    downloadStateVersion,
+    downloadedTracks,
+    getLocalPath,
+    getSongLocalUri,
+    getAllDownloadedCollections,
+    totalDownloadedBytes,
+    downloadedTrackCount,
+  ]);
 
   return (
     <DownloadContext.Provider value={value}>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { View, Text, StyleSheet, Dimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -25,6 +25,16 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
 
   const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
   const tileHeight = gridItemWidth + 8 + 14 + 4 + 12
+  const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
+    <MediaTile
+      cover={item.cover}
+      title={item.name}
+      subtitle={item.subtext}
+      size={gridItemWidth}
+      radius={gridItemWidth / 2}
+      onPress={() => navigation.navigate('externalArtistView', { mbid: item.id, name: item.name })}
+    />
+  ), [navigation, gridItemWidth])
 
   return (
     <View style={styles.container}>
@@ -47,16 +57,7 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
           ItemSeparatorComponent={() => <View style={{ width: gridGap }} />}
-          renderItem={({ item }) => (
-            <MediaTile
-              cover={item.cover}
-              title={item.name}
-              subtitle={item.subtext}
-              size={gridItemWidth}
-              radius={gridItemWidth / 2}
-              onPress={() => navigation.navigate('externalArtistView', { mbid: item.id, name: item.name })}
-            />
-          )}
+          renderItem={renderArtist}
         />
       )}
     </View>

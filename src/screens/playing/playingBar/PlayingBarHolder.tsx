@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    View,
     Platform,
     KeyboardAvoidingView,
 } from 'react-native';

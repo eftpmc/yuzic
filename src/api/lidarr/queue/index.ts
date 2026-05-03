@@ -13,7 +13,7 @@ type LidarrQueueRecordRaw = {
   sizeleft?: number;
   album?: { title?: string };
   artist?: { artistName?: string };
-  statusMessages?: Array<{ title: string }>;
+  statusMessages?: { title: string }[];
 };
 
 /** One queue entry per album. Keeps queue minimal. */
@@ -28,7 +28,7 @@ export type LidarrQueueRecord = {
   trackCount: number;
   status?: string;
   trackedDownloadState?: string;
-  statusMessages: Array<{ title: string }>;
+  statusMessages: { title: string }[];
 };
 
 export type LidarrQueueResponse = {
@@ -56,7 +56,7 @@ function groupByAlbum(records: LidarrQueueRecordRaw[]): LidarrQueueRecord[] {
     const percent = totalSize > 0 ? Math.round(((totalSize - sizeleft) / totalSize) * 100) : 0;
     const albumTitle = first.album?.title || first.title || 'Unknown Album';
     const artistName = first.artist?.artistName || 'Unknown Artist';
-    const statusMessages: Array<{ title: string }> = [];
+    const statusMessages: { title: string }[] = [];
     for (const r of arr) {
       for (const m of r.statusMessages ?? []) {
         if (m?.title) statusMessages.push({ title: m.title });

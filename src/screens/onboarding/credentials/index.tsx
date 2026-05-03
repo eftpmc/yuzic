@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -17,7 +17,6 @@ import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
 
 export default function Credentials() {
     const { t } = useTranslation();
@@ -52,7 +51,7 @@ export default function Credentials() {
         if (!type || !serverUrl) {
             router.replace('/(onboarding)/servers');
         }
-    }, [type, serverUrl]);
+    }, [router, type, serverUrl]);
 
     const buildBasicAuth = (): BasicAuth | undefined => {
         const u = proxyUsername.trim();
@@ -110,7 +109,7 @@ export default function Credentials() {
             }
 
             saveServer(result.auth);
-        } catch (err) {
+        } catch {
             toast.error(t('onboarding.credentials.connectError'));
         } finally {
             setIsTesting(false);

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { CoverSource } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtists } from '@/hooks/artists';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 interface ItemProps {
   id: string;
@@ -39,7 +39,7 @@ const ArtistItem: React.FC<ItemProps> = ({
   const { artists } = useArtists();
   const artist = artists.find(a => a.id === id) ?? null;
 
-  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const sheetRef = useSheetRef();
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('artistView', { id });
@@ -47,7 +47,7 @@ const ArtistItem: React.FC<ItemProps> = ({
 
   const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
-  }, []);
+  }, [sheetRef]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,9 @@ import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { useAlbum } from '@/hooks/albums';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 interface ItemProps {
   id: string;
@@ -38,7 +38,7 @@ const AlbumItem: React.FC<ItemProps> = ({
   const navigation = useNavigation<any>();
   const { album } = useAlbum(id);
 
-  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const sheetRef = useSheetRef();
 
   const handleNavigation = useCallback(() => {
     navigation.navigate('albumView', { id });
@@ -46,7 +46,7 @@ const AlbumItem: React.FC<ItemProps> = ({
 
   const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
-  }, []);
+  }, [sheetRef]);
 
   return (
     <>

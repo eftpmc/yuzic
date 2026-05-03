@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
+import TurboImage from 'react-native-turbo-image'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useTranslation } from 'react-i18next'
 
@@ -42,12 +42,13 @@ export default function ExternalArtistHeader({ artist }: Props) {
     <>
       <View style={styles.fullBleedWrapper}>
         {bgUri ? (
-          <Image
+          <TurboImage
             source={{ uri: bgUri }}
             style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            blurRadius={Platform.OS === 'ios' ? 20 : 10}
-            transition={300}
+            resizeMode="cover"
+            blur={Platform.OS === 'ios' ? 20 : 10}
+            fadeDuration={300}
+            cachePolicy="dataCache"
           />
         ) : (
           <View

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Song } from '@/types';
 import SongOptions from '@/components/options/SongOptions';
@@ -16,6 +15,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   song: Song;
@@ -43,8 +43,8 @@ const SongRow: React.FC<Props> = ({
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
 
-  const optionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-  const playlistRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsRef = useSheetRef();
+  const playlistRef = useSheetRef();
 
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 

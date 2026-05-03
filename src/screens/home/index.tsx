@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
-import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { useSheetRef } from '@/utils/useSheetRef';
 
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
@@ -28,13 +28,22 @@ export default function HomeScreen() {
   const [isMounted, setIsMounted] = useState(false)
   const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
 
-  const accountSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>
+  const accountSheetRef = useSheetRef()
+  const lastAutoSyncServerIdRef = useRef<string | null>(null)
 
   const { sync } = useSync()
   const syncOnAppStart = useSelector(selectSyncOnAppStart)
 
   useEffect(() => {
-    if (syncOnAppStart) sync(true)
+    if (!syncOnAppStart || !activeServer?.id || !activeServer.isAuthenticated) {
+      if (!activeServer?.id) lastAutoSyncServerIdRef.current = null
+      return
+    }
+
+    if (lastAutoSyncServerIdRef.current === activeServer.id) return
+
+    lastAutoSyncServerIdRef.current = activeServer.id
+    sync(true)
   }, [activeServer?.id, activeServer?.isAuthenticated, sync, syncOnAppStart])
 
   useEffect(() => {
@@ -46,7 +55,7 @@ export default function HomeScreen() {
     if (!isAuthenticated) {
       router.replace('/(onboarding)')
     }
-  }, [isMounted, isAuthenticated])
+  }, [isMounted, isAuthenticated, router])
 
   const toggleAccountSheet = () => {
     if (isAccountSheetOpen) {

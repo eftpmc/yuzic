@@ -32,7 +32,7 @@ const ExternalSongRow: React.FC<Props> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
-  const showPreview = !!previewUrl || !!hasPreview;
+  const isPreviewAvailable = !!previewUrl || !!hasPreview;
 
   return (
     <View style={styles.row}>
@@ -59,7 +59,7 @@ const ExternalSongRow: React.FC<Props> = ({
         song={song}
         albumTitle={albumTitle}
         albumArtist={albumArtist}
-        onPlay={onPress}
+        onPlay={isPreviewAvailable ? onPress : undefined}
       />
     </View>
   );
