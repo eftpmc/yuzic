@@ -160,7 +160,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
         {buildCover(artist.cover, 'background') && (
           <TurboImage
             source={{ uri: buildCover(artist.cover, 'background')! }}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, { left: -50, right: -50 }]}
             resizeMode="cover"
             blur={Platform.OS === 'ios' ? 20 : 10}
             fadeDuration={300}

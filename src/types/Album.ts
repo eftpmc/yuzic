@@ -23,6 +23,7 @@ export interface ExternalAlbumBase {
     artistMbid?: string | null;
     subtext: string;
     releaseDate?: string
+    releaseType?: 'album' | 'single'
 }
 
 export interface ExternalAlbum extends ExternalAlbumBase {

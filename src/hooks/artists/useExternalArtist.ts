@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { ExternalArtist, ExternalAlbumBase } from '@/types';
+import { ExternalArtist } from '@/types';
 import * as musicbrainz from '@/api/musicbrainz';
 import { resolveArtistMbid } from '@/utils/musicbrainz/resolveArtistMbid';
 import { QueryKeys } from '@/enums/queryKeys';
 import { staleTime } from '@/constants/staleTime';
+import { getSimilarExternalArtists } from './useSimilarArtists';
 
 const MBID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,13 +54,24 @@ export function useExternalArtist(input: UseExternalArtistInput | null) {
         );
       }
 
-      const albums: ExternalAlbumBase[] = await musicbrainz.getArtistAlbums(
-        resolvedMbid,
-        baseArtist.name,
-        15
-      );
+      const [discography, similarArtists] = await Promise.all([
+        musicbrainz.getArtistDiscography(resolvedMbid, baseArtist.name, {
+          albumLimit: 80,
+          singleLimit: 80,
+        }),
+        getSimilarExternalArtists({
+          mbid: resolvedMbid,
+          excludeName: baseArtist.name,
+          limit: 8,
+        }),
+      ]);
 
-      return { ...baseArtist, albums };
+      return {
+        ...baseArtist,
+        albums: discography.albums,
+        singles: discography.singles,
+        similarArtists,
+      };
     },
   });
 }

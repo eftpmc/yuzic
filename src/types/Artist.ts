@@ -20,4 +20,6 @@ export interface ExternalArtistBase {
 
 export interface ExternalArtist extends ExternalArtistBase {
     albums: ExternalAlbumBase[];
+    singles: ExternalAlbumBase[];
+    similarArtists: ExternalArtistBase[];
 }

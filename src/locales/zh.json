@@ -162,7 +162,7 @@
           "high": "高（192 kbps）",
           "original": "原始音质（无压缩）"
         }
-      },
+      }
     },
     "player": {
       "title": "播放器",
@@ -389,6 +389,13 @@
     "albumNotFound": "未找到专辑",
     "artistNotFound": "未找到歌手。",
     "playlistNotFound": "未找到播放列表。"
+  },
+  "artist": {
+    "sections": {
+      "albums": "专辑",
+      "singles": "单曲和 EP",
+      "similarArtists": "相似歌手"
+    }
   },
   "explore": {
     "sections": {

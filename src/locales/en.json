@@ -162,7 +162,7 @@
           "high": "High (192kbps)",
           "original": "Original (no compression)"
         }
-      },
+      }
     },
     "player": {
       "title": "Player",
@@ -390,6 +390,13 @@
     "albumNotFound": "Album not found",
     "artistNotFound": "Artist not found.",
     "playlistNotFound": "Playlist not found."
+  },
+  "artist": {
+    "sections": {
+      "albums": "Albums",
+      "singles": "Singles & EPs",
+      "similarArtists": "Similar artists"
+    }
   },
   "explore": {
     "sections": {

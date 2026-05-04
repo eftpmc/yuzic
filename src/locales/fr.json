@@ -162,7 +162,7 @@
           "high": "Élevée (192 kbps)",
           "original": "Originale (sans compression)"
         }
-      },
+      }
     },
     "player": {
       "title": "Lecteur",
@@ -389,6 +389,13 @@
     "albumNotFound": "Album introuvable",
     "artistNotFound": "Artiste introuvable.",
     "playlistNotFound": "Liste de lecture introuvable."
+  },
+  "artist": {
+    "sections": {
+      "albums": "Albums",
+      "singles": "Singles et EP",
+      "similarArtists": "Artistes similaires"
+    }
   },
   "explore": {
     "sections": {

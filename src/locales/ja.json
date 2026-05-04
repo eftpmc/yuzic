@@ -162,7 +162,7 @@
           "high": "高 (192kbps)",
           "original": "オリジナル (圧縮なし)"
         }
-      },
+      }
     },
     "player": {
       "title": "プレーヤー",
@@ -389,6 +389,13 @@
     "albumNotFound": "アルバムが見つかりません",
     "artistNotFound": "アーティストが見つかりません。",
     "playlistNotFound": "プレイリストが見つかりません。"
+  },
+  "artist": {
+    "sections": {
+      "albums": "アルバム",
+      "singles": "シングル・EP",
+      "similarArtists": "似ているアーティスト"
+    }
   },
   "explore": {
     "sections": {

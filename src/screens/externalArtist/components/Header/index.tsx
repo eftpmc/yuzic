@@ -44,7 +44,7 @@ export default function ExternalArtistHeader({ artist }: Props) {
         {bgUri ? (
           <TurboImage
             source={{ uri: bgUri }}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, { left: -50, right: -50 }]}
             resizeMode="cover"
             blur={Platform.OS === 'ios' ? 20 : 10}
             fadeDuration={300}
