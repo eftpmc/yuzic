@@ -2,13 +2,13 @@
   "expo": {
     "name": "Yuzic",
     "slug": "yuzic",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "buildNumber": "4",
+      "buildNumber": "1",
       "supportsTablet": true,
       "bundleIdentifier": "com.arinora.rawarr",
       "infoPlist": {

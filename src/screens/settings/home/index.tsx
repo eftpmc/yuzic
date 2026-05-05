@@ -90,8 +90,6 @@ export default function Settings() {
                     {renderRow(t('settings.rows.player'), 'controller-play', '/settings/playerView')}
                     {renderDivider()}
                     {renderRow(t('settings.rows.appearance'), 'brush', '/settings/appearanceView')}
-                    {renderDivider()}
-                    {renderStatsRow()}
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
