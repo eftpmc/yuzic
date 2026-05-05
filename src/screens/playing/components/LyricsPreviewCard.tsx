@@ -1,7 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -48,7 +47,7 @@ function LyricLine({
 
   useEffect(() => {
     opacity.value = withTiming(opacityTarget, { duration: 240 });
-  }, [variant]);
+  }, [opacity, opacityTarget]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -77,8 +76,11 @@ export default function LyricsPreviewCard({
   const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
   const [contentHeight, setContentHeight] = useState(0);
   const [layoutVersion, setLayoutVersion] = useState(0);
-  const lines = lyrics.lines;
-  const currentIndex = getCurrentLineIndex(lines, position);
+  const lines = useMemo(() => lyrics.lines, [lyrics.lines]);
+  const currentIndex = useMemo(
+    () => getCurrentLineIndex(lines, position),
+    [lines, position]
+  );
 
   useEffect(() => {
     lineLayouts.current = {};

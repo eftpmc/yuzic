@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useMemo,
+  useCallback,
   ReactNode,
   useRef,
 } from 'react';
@@ -11,12 +12,12 @@ import {
   Artist,
   Playlist,
   CoverSource,
-  ExternalAlbumBase,
   Song,
   SongBase,
 } from '@/types';
 
 import * as musicbrainz from '@/api/musicbrainz';
+import * as deezer from '@/api/deezer';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
@@ -54,6 +55,15 @@ export interface SearchResult {
   cover: CoverSource;
   type: 'song' | 'album' | 'artist' | 'playlist';
   source: 'local' | 'external';
+  externalSource?: 'deezer' | 'musicbrainz' | 'lastfm';
+  externalIds?: {
+    deezerId?: string;
+    artistDeezerId?: string;
+    mbid?: string | null;
+    artistMbid?: string | null;
+    upc?: string | null;
+    isrc?: string | null;
+  };
   isDownloaded: boolean;
   song?: Song;
 }
@@ -61,7 +71,14 @@ export interface SearchResult {
 // --- result mapping helpers ---
 
 function albumToResult(
-  album: { id: string; title: string; subtext: string; cover: CoverSource },
+  album: {
+    id: string;
+    title: string;
+    subtext: string;
+    cover: CoverSource;
+    externalSource?: SearchResult['externalSource'];
+    externalIds?: SearchResult['externalIds'];
+  },
   source: SearchResult['source'],
   isDownloaded: boolean
 ): SearchResult {
@@ -72,18 +89,33 @@ function albumToResult(
     cover: album.cover,
     type: 'album',
     source,
+    externalSource: album.externalSource,
+    externalIds: album.externalIds,
     isDownloaded,
   };
 }
 
-function artistToResult(artist: Artist, isDownloaded = true): SearchResult {
+function artistToResult(
+  artist: Artist | {
+    id: string;
+    name: string;
+    subtext: string;
+    cover: CoverSource;
+    externalSource?: SearchResult['externalSource'];
+    externalIds?: SearchResult['externalIds'];
+  },
+  isDownloaded = true,
+  source: SearchResult['source'] = 'local'
+): SearchResult {
   return {
     id: artist.id,
     title: artist.name,
     subtext: artist.subtext,
     cover: artist.cover,
     type: 'artist',
-    source: 'local',
+    source,
+    externalSource: 'externalSource' in artist ? artist.externalSource : undefined,
+    externalIds: 'externalIds' in artist ? artist.externalIds : undefined,
     isDownloaded,
   };
 }
@@ -144,16 +176,15 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchScope = useSelector(selectSearchScope);
 
-  const { getAllDownloadedTracks, downloadStateVersion } = useDownload();
+  const { downloadedTracks } = useDownload();
 
   const downloadedTrackIds = useMemo(
     () => buildDownloadedTrackIdSet(
-      (getAllDownloadedTracks() as any[])
-        .map((track: any) => ({ id: String(track?.trackId ?? track?.originalTrack?.id ?? '') }))
-        .filter((track: any) => track.id)
+      downloadedTracks
+        .map(track => ({ id: String(track.trackId ?? track.originalTrack?.id ?? '') }))
+        .filter(track => track.id)
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [downloadStateVersion]
+    [downloadedTracks]
   );
 
   const downloadedAlbumIds = useMemo(
@@ -179,7 +210,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchRequestIdRef = useRef(0);
 
-  const searchLibrary = async (
+  const searchLibrary = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     const lowerQuery = query.toLowerCase();
@@ -220,9 +251,17 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       ...artistResults,
       ...playlistResults,
     ];
-  };
+  }, [
+    albums,
+    artists,
+    playlists,
+    tracks,
+    downloadedAlbumIds,
+    downloadedPlaylistIds,
+    downloadedTrackIds,
+  ]);
 
-  const searchServer = async (
+  const searchServer = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     if (!api?.search) return [];
@@ -231,33 +270,60 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       await api.search.search(query);
 
     return [
-      ...songs.map((song: Song) => songToResult(song, true, song)),
-      ...albums.map((album: Album) => albumToResult(album, 'local', true)),
+      ...songs.map((song: Song) => songToResult(song, downloadedTrackIds.has(song.id), song)),
+      ...albums.map((album: Album) => albumToResult(album, 'local', downloadedAlbumIds.has(album.id))),
       ...artists.map((artist: Artist) => artistToResult(artist)),
     ];
-  };
+  }, [api, downloadedAlbumIds, downloadedTrackIds]);
 
-  const searchExternal = async (
+  const searchExternal = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     if (!query.trim()) return [];
 
     try {
+      const [deezerArtists, deezerAlbums] = await Promise.all([
+        deezer.searchDeezerArtists(query, 4),
+        deezer.searchDeezerAlbums(query, 6),
+      ]);
+
+      const deezerResults = [
+        ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
+        ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
+      ];
+
+      if (deezerResults.length >= 4) return deezerResults;
+
       const albums = await musicbrainz.searchAlbums(query);
-      return albums.map(album => albumToResult(album, 'external', false));
+      const musicBrainzResults = albums
+        .slice(0, 6 - deezerResults.length)
+        .map(album => albumToResult({
+          ...album,
+          externalSource: 'musicbrainz' as const,
+          externalIds: { mbid: album.id },
+        }, 'external', false));
+
+      return [...deezerResults, ...musicBrainzResults];
     } catch {
       return [];
     }
-  };
+  }, []);
 
   const resultKey = (r: SearchResult) =>
     `${r.source}:${r.type}:${r.id}`;
 
-  const handleSearch = async (query: string) => {
+  const clearSearch = useCallback(() => {
+    searchRequestIdRef.current += 1;
+    setSearchResults([]);
+    setIsLoading(false);
+  }, []);
+
+  const handleSearch = useCallback(async (query: string) => {
     const requestId = ++searchRequestIdRef.current;
 
     if (!query.trim()) {
-      clearSearch();
+      setSearchResults([]);
+      setIsLoading(false);
       return;
     }
 
@@ -339,23 +405,26 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         setIsLoading(false);
       }
     }
-  };
+  }, [searchExternal, searchLibrary, searchScope, searchServer]);
 
-  const clearSearch = () => {
-    setSearchResults([]);
-  };
+  const value = useMemo<SearchContextType>(() => ({
+    searchResults,
+    searchLibrary,
+    searchExternal,
+    clearSearch,
+    isLoading,
+    handleSearch,
+  }), [
+    searchResults,
+    searchLibrary,
+    searchExternal,
+    clearSearch,
+    isLoading,
+    handleSearch,
+  ]);
 
   return (
-    <SearchContext.Provider
-      value={{
-        searchResults,
-        searchLibrary,
-        searchExternal,
-        clearSearch,
-        isLoading,
-        handleSearch,
-      }}
-    >
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   );

@@ -4,7 +4,6 @@ import { FlashList } from '@shopify/flash-list';
 import LoadingPlaylistHeader from '../Header/Loading';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
 
-const ESTIMATED_ROW_HEIGHT = 72;
 const PLACEHOLDER_ROWS = 8;
 
 const LoadingPlaylistContent: React.FC = () => {

@@ -8,6 +8,7 @@ import { PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useAlbums } from '@/hooks/albums';
 import { useApi } from '@/api';
+import { useIsOffline } from '@/hooks/useIsOffline';
 
 export type PlayingBarActionConfig = {
   id: PlayingBarAction;
@@ -27,6 +28,7 @@ export function usePlayingBarAction(
   const { skipToNext, currentSong, playSongInCollection } = usePlaying();
   const { albums } = useAlbums();
   const api = useApi();
+  const isOffline = useIsOffline();
 
   const { songs: starredSongs } = useStarredSongs();
   const star = useStarSong();
@@ -67,12 +69,22 @@ export function usePlayingBarAction(
             if (isFavorite) {
               await unstar.mutateAsync(currentSong.id);
               toast.success(
-                t('playing.actions.removedFromFavorites', { title: currentSong.title })
+                t(
+                  isOffline
+                    ? 'playing.actions.removedFromFavoritesOffline'
+                    : 'playing.actions.removedFromFavorites',
+                  { title: currentSong.title }
+                )
               );
             } else {
-              await star.mutateAsync(currentSong.id);
+              await star.mutateAsync(currentSong);
               toast.success(
-                t('playing.actions.addedToFavorites', { title: currentSong.title })
+                t(
+                  isOffline
+                    ? 'playing.actions.addedToFavoritesOffline'
+                    : 'playing.actions.addedToFavorites',
+                  { title: currentSong.title }
+                )
               );
             }
           } catch {

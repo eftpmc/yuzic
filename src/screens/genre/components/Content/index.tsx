@@ -19,8 +19,6 @@ type Props = {
   albums: Album[]
 }
 
-const ESTIMATED_ROW_HEIGHT = 80
-
 export default function GenreContent({ genre, albums }: Props) {
   const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()

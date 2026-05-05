@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -65,7 +65,7 @@ const ServerSettings: React.FC = () => {
             cancelled = true;
             clearTimeout(timeout);
         };
-    }, [serverUrl]);
+    }, [api, serverUrl]);
 
     if (!activeServer) return null;
 

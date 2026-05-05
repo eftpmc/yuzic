@@ -11,11 +11,12 @@ import LoadingExternalAlbumContent from './components/Content/Loading';
 
 type RouteParams = {
   albumId: string;
+  source?: 'deezer' | 'musicbrainz' | 'lastfm';
 };
 
 const ExternalAlbumScreen: React.FC = () => {
   const route = useRoute<any>();
-  const { albumId } = route.params as RouteParams;
+  const { albumId, source } = route.params as RouteParams;
 
   const { isDarkMode } = useTheme();
 
@@ -23,7 +24,7 @@ const ExternalAlbumScreen: React.FC = () => {
     album: externalAlbum,
     isLoading,
     error,
-  } = useExternalAlbum(albumId);
+  } = useExternalAlbum({ albumId, source });
 
   if (isLoading) {
     return (

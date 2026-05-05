@@ -23,6 +23,7 @@ import { useRouter } from 'expo-router';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import { useIsOffline } from '@/hooks/useIsOffline';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -54,6 +55,7 @@ const SongOptions = forwardRef<
 >(({ selectedSong, onAddToPlaylist }, ref) => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
+    const isOffline = useIsOffline();
     const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
     const snapPoints = useMemo(() => ['55%', '90%'], []);
@@ -79,10 +81,20 @@ const SongOptions = forwardRef<
       try {
         if (isStarred) {
           await unstarSong.mutateAsync(selectedSong.id);
-          toast.success(t('songOptions.toasts.removedFromFavorites', { title: selectedSong.title }));
+          toast.success(t(
+            isOffline
+              ? 'songOptions.toasts.removedFromFavoritesOffline'
+              : 'songOptions.toasts.removedFromFavorites',
+            { title: selectedSong.title }
+          ));
         } else {
-          await starSong.mutateAsync(selectedSong.id);
-          toast.success(t('songOptions.toasts.addedToFavorites', { title: selectedSong.title }));
+          await starSong.mutateAsync(selectedSong);
+          toast.success(t(
+            isOffline
+              ? 'songOptions.toasts.addedToFavoritesOffline'
+              : 'songOptions.toasts.addedToFavorites',
+            { title: selectedSong.title }
+          ));
         }
       } catch {
         toast.error(t('songOptions.toasts.updateFavoritesFailed'));

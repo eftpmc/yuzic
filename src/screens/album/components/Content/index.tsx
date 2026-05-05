@@ -22,7 +22,6 @@ const DISC_HEADER_HEIGHT = 36;
 
 const AlbumContent: React.FC<Props> = ({ album }) => {
   const { isDarkMode } = useTheme();
-  const songs = album.songs ?? [];
 
   /**
    * Memoized header so FlashList doesn't recreate it unnecessarily
@@ -30,6 +29,43 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
   const header = useMemo(() => {
     return <AlbumHeader album={album} />;
   }, [album]);
+
+  const items = useMemo<ListItem[]>(() => {
+    const songs = album.songs ?? [];
+    const hasMultipleDiscs = new Set(songs.map((song) => song.disc ?? 1)).size > 1;
+
+    if (!hasMultipleDiscs) {
+      return songs.map((song) => ({ type: 'song', song }));
+    }
+
+    const listItems: ListItem[] = [];
+    let currentDisc: number | null = null;
+
+    songs.forEach((song) => {
+      const disc = song.disc ?? 1;
+
+      if (disc !== currentDisc) {
+        currentDisc = disc;
+        listItems.push({ type: 'disc-header', disc });
+      }
+
+      listItems.push({ type: 'song', song });
+    });
+
+    return listItems;
+  }, [album.songs]);
+
+  const renderItem = ({ item }: { item: ListItem }) => {
+    if (item.type === 'disc-header') {
+      return (
+        <Text style={[styles.discHeader, isDarkMode ? styles.discHeaderDark : styles.discHeaderLight]}>
+          Disc {item.disc}
+        </Text>
+      );
+    }
+
+    const song = item.song;
+    const trackNum = song.trackNumber;
 
     return (
       <SongRow
@@ -49,6 +85,10 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
       }
       renderItem={renderItem}
       getItemType={(item) => item.type}
+      overrideItemLayout={(layout, item) => {
+        (layout as { size?: number }).size =
+          item.type === 'disc-header' ? DISC_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT;
+      }}
       ListHeaderComponent={header}
       ItemSeparatorComponent={({ leadingItem }) => {
         if (!leadingItem || leadingItem.type === 'disc-header') return null;
@@ -59,5 +99,21 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
     />
   );
 };
+
+const styles = StyleSheet.create({
+  discHeader: {
+    height: DISC_HEADER_HEIGHT,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  discHeaderLight: {
+    color: '#6b6b70',
+  },
+  discHeaderDark: {
+    color: '#a7a7ad',
+  },
+});
 
 export default AlbumContent;

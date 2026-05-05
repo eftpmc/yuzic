@@ -1,7 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
@@ -18,11 +17,10 @@ import Animated, {
     useAnimatedStyle,
     withTiming,
 } from 'react-native-reanimated';
-import { CoverSource } from '@/types';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
 import { useAlbum } from '@/hooks/albums';
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import PlaylistList from '@/components/PlaylistList';
 import PlayingMain from './components/PlayingMain';
 import Controls from './components/Controls';
@@ -31,6 +29,7 @@ import LyricsBottomSheet from './components/LyricsBottomSheet';
 import LyricsPreviewCard from './components/LyricsPreviewCard';
 import AboutTheArtistCard from './components/AboutTheArtistCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -45,7 +44,7 @@ const usePlayingTransitions = (mode: PlayingViewMode) => {
     useEffect(() => {
         playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: 300 });
         queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: 300 });
-    }, [mode]);
+    }, [mode, playerOpacity, queueOpacity]);
 
     const playerStyle = useAnimatedStyle(() => ({
         opacity: playerOpacity.value,
@@ -83,15 +82,13 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const [lyrics, setLyrics] = useState<LyricsResult | null>(null);
     const [lyricsAvailable, setLyricsAvailable] = useState(false);
 
-    const songOptionsRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-    const playlistRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
-    const lyricsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+    const songOptionsRef = useSheetRef();
+    const playlistRef = useSheetRef();
+    const lyricsSheetRef = useSheetRef();
 
     const [mode, setMode] = useState<PlayingViewMode>("player");
     const { playerStyle, queueStyle } =
         usePlayingTransitions(mode);
-
-    const lastCoverRef = useRef<CoverSource | null>(null);
 
     const { width, height } = Dimensions.get('window');
     const isTablet = width >= 768;
@@ -125,13 +122,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
             cancelled = true;
             task.cancel();
         };
-    }, [currentSong?.id]);
-
-    useEffect(() => {
-        if (currentSong?.cover) {
-            lastCoverRef.current = currentSong.cover;
-        }
-    }, [currentSong?.id]);
+    }, [api.lyrics, currentSong?.id]);
 
     if (!currentSong) {
         return <View style={{ flex: 1, backgroundColor: '#000' }} />;

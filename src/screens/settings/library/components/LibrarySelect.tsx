@@ -45,7 +45,7 @@ const LibrarySelect: React.FC = () => {
     };
     load();
     return () => { cancelled = true; };
-  }, [activeServer?.id]);
+  }, [activeServer]);
 
   if (!activeServer) return null;
 

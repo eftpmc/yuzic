@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Song, SongBase } from '@/types';
+import { Song } from '@/types';
 import { useTracks } from '@/hooks/tracks';
 import shuffleArray from '@/utils/shuffleArray';
 import {

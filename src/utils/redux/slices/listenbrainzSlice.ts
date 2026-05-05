@@ -4,6 +4,8 @@ export interface PerServerListenBrainzState {
   username: string;
   token: string;
   isAuthenticated: boolean;
+  scrobbleEnabled: boolean;
+  nowPlayingEnabled: boolean;
 }
 
 export interface ListenBrainzState {
@@ -14,6 +16,8 @@ const defaultPerServer: PerServerListenBrainzState = {
   username: '',
   token: '',
   isAuthenticated: false,
+  scrobbleEnabled: true,
+  nowPlayingEnabled: true,
 };
 
 const initialState: ListenBrainzState = {
@@ -45,6 +49,12 @@ const listenbrainzSlice = createSlice({
       const entry = getOrCreate(state, action.payload.serverId);
       entry.isAuthenticated = action.payload.value;
     },
+    setScrobbleEnabled(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
+      getOrCreate(state, action.payload.serverId).scrobbleEnabled = action.payload.value;
+    },
+    setNowPlayingEnabled(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
+      getOrCreate(state, action.payload.serverId).nowPlayingEnabled = action.payload.value;
+    },
     disconnect(state, action: PayloadAction<{ serverId: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.username = '';
@@ -58,6 +68,8 @@ export const {
   setUsername,
   setToken,
   setAuthenticated,
+  setScrobbleEnabled,
+  setNowPlayingEnabled,
   disconnect,
 } = listenbrainzSlice.actions;
 

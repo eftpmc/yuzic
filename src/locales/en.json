@@ -13,6 +13,8 @@
       "appearance": "Appearance",
       "downloaders": "Downloaders",
       "listenBrainz": "ListenBrainz",
+      "lastfm": "Last.fm",
+      "stats": "Listening Stats",
       "github": "Github",
       "privacyPolicy": "Privacy Policy",
       "termsOfUse": "Terms of Use",
@@ -90,6 +92,17 @@
         "lastSynced": "Last synced",
         "syncOnAppStart": "Sync on app start"
       },
+      "offlineChanges": {
+        "title": "Pending offline changes",
+        "subtitle": "{{count}} change will sync when you're online",
+        "subtitle_plural": "{{count}} changes will sync when you're online",
+        "failedSubtitle": "{{count}} change needs attention before it can sync",
+        "failedSubtitle_plural": "{{count}} changes need attention before they can sync",
+        "retry": "Retry",
+        "discard": "Discard",
+        "discardTitle": "Discard offline changes?",
+        "discardBody": "This removes pending changes for the current server. Your local library will refresh on the next sync."
+      },
       "downloads": {
         "title": "Downloads",
         "detailsTitle": "Download Details",
@@ -151,7 +164,7 @@
           "high": "High (192kbps)",
           "original": "Original (no compression)"
         }
-      },
+      }
     },
     "player": {
       "title": "Player",
@@ -176,7 +189,39 @@
       "connectionSuccessful": "ListenBrainz connection successful.",
       "connectionFailed": "Connection failed.",
       "connectFailed": "Failed to connect to ListenBrainz.",
-      "disconnected": "Disconnected from ListenBrainz."
+      "disconnected": "Disconnected from ListenBrainz.",
+      "scrobble": "Scrobble",
+      "nowPlaying": "Now Playing"
+    },
+    "lastfm": {
+      "title": "Last.fm",
+      "apiKey": "API Key",
+      "apiSecret": "API Secret",
+      "apiKeyPlaceholder": "Your Last.fm API key",
+      "apiSecretPlaceholder": "Your Last.fm API secret",
+      "connectedAs": "Connected as",
+      "notConnected": "Not connected",
+      "connectWithLastfm": "Connect with Last.fm",
+      "iAuthorized": "I've authorized — get session",
+      "helperText": "Enter your Last.fm API key and secret, then tap Connect to authorize. Your tracks will be scrobbled automatically. Get API credentials at last.fm/api/account/create.",
+      "disconnect": "Disconnect",
+      "missingCredentials": "Enter API key and secret first.",
+      "credentialsTitle": "App Credentials",
+      "credentialsHelper": "Create an app at last.fm/api/account/create to get these keys.",
+      "pendingInstruction": "A browser window has opened — authorize yuzic, then tap below.",
+      "scrobble": "Scrobble",
+      "nowPlaying": "Now Playing",
+      "connectFailed": "Failed to get token from Last.fm.",
+      "sessionFailed": "Failed to get session. Make sure you authorized the app.",
+      "connectionSuccessful": "Connected as {{username}}.",
+      "disconnected": "Disconnected from Last.fm."
+    },
+    "stats": {
+      "title": "Listening Stats",
+      "topArtists": "Top Artists",
+      "topAlbums": "Top Albums",
+      "topSongs": "Top Songs",
+      "empty": "Play some music to see your listening stats here."
     },
     "downloaders": {
       "title": "Downloaders",
@@ -235,6 +280,8 @@
     "next": "Next",
     "done": "Done",
     "back": "Back",
+    "more": "More",
+    "less": "Less",
     "play": "Play",
     "shuffle": "Shuffle",
     "album": "album",
@@ -246,11 +293,17 @@
     "offline": {
       "downloadRequired": "Download this track to play it in Offline Mode.",
       "noDownloadedTracks": "No downloaded tracks are available for this action.",
-      "similarUnavailable": "Similar songs are unavailable in Offline Mode."
+      "similarUnavailable": "Similar songs are unavailable in Offline Mode.",
+      "noConnection": "No internet connection",
+      "syncedChanges": "Offline changes synced",
+      "syncQueuedChangesFailed": "Some offline changes could not sync"
     },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
     "playbackError": "Unable to play track",
+    "songDetailsError": "Unable to load song details",
+    "syncFailed": "Library sync failed. Check your connection.",
+    "libraryLoadFailed": "Failed to load library data. Check your connection.",
     "error": {
       "unexpected": "Unexpected error occurred",
       "details": "Error: {{name}} {{message}}",
@@ -374,6 +427,14 @@
     "artistNotFound": "Artist not found.",
     "playlistNotFound": "Playlist not found."
   },
+  "artist": {
+    "sections": {
+      "albums": "Albums",
+      "singles": "Singles & EPs",
+      "topTracks": "Top tracks",
+      "similarArtists": "Similar artists"
+    }
+  },
   "explore": {
     "sections": {
       "dial": "Dial",
@@ -413,7 +474,9 @@
     },
     "actions": {
       "addedToFavorites": "{{title}} added to favorites.",
+      "addedToFavoritesOffline": "{{title}} added to favorites offline.",
       "removedFromFavorites": "{{title}} removed from favorites.",
+      "removedFromFavoritesOffline": "{{title}} removed from favorites offline.",
       "updateFavoritesFailed": "Failed to update favorites.",
       "randomAlbum": "Playing random album: {{title}}",
       "loadAlbumFailed": "Failed to load album."
@@ -422,13 +485,17 @@
   "playlist": {
     "favoritesTitle": "Favorites",
     "subtext": "Playlist • {{count}} song",
-    "subtext_plural": "Playlist • {{count}} songs"
+    "subtext_plural": "Playlist • {{count}} songs",
+    "empty": "This playlist has no songs yet."
   },
   "playlistList": {
     "title": "Add to Playlist",
     "searchPlaceholder": "Search playlists",
     "newPlaceholder": "New playlist name",
-    "updated": "Playlists updated"
+    "updated": "Playlists updated",
+    "updatedOffline": "Playlists saved offline. They will sync when you're online.",
+    "createFailed": "Failed to create playlist",
+    "updateFailed": "Failed to update playlists"
   },
   "songOptions": {
     "unknownArtist": "Unknown",
@@ -473,7 +540,9 @@
     },
     "toasts": {
       "removedFromFavorites": "{{title}} removed from favorites.",
+      "removedFromFavoritesOffline": "{{title}} removed from favorites offline.",
       "addedToFavorites": "{{title}} added to favorites.",
+      "addedToFavoritesOffline": "{{title}} added to favorites offline.",
       "updateFavoritesFailed": "Failed to update favorites.",
       "nothingPlaying": "Nothing is currently playing.",
       "alreadyPlaying": "{{title}} is already playing.",
@@ -489,7 +558,8 @@
       "title": "External Album",
       "downloadToServer": "Download to Server",
       "inLibrary": "In Library",
-      "downloading": "Downloading to server… {{progress}}%"
+      "downloading": "Downloading to server… {{progress}}%",
+      "noServiceConnected": "Connect a downloader in Settings to download"
     },
     "serverStatus": {
       "onServer": "In Library",
@@ -591,6 +661,7 @@
     "info": {
       "albums": "Albums",
       "plays": "Plays"
-    }
+    },
+    "downloadAllFailed": "Some albums failed to download."
   }
 }

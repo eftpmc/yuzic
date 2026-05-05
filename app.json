@@ -2,14 +2,13 @@
   "expo": {
     "name": "Yuzic",
     "slug": "yuzic",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
-      "buildNumber": "4",
+      "buildNumber": "1",
       "supportsTablet": true,
       "bundleIdentifier": "com.arinora.rawarr",
       "infoPlist": {
@@ -25,7 +24,6 @@
       }
     },
     "android": {
-      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash.png",
         "backgroundColor": "#1c1c1e"

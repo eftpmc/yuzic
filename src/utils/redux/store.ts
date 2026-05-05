@@ -1,13 +1,15 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, createMigrate } from 'redux-persist';
-import storage from '@react-native-async-storage/async-storage';
+import { reduxStorage as storage } from '@/utils/mmkvStorage';
 
 import serversReducer from './slices/serversSlice';
 import downloadersReducer from './slices/downloadersSlice';
 import settingsReducer from './slices/settingsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
+import lastfmReducer from './slices/lastfmSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
+import offlineMutationsReducer from './slices/offlineMutationsSlice';
 
 // ─── Migrations ───────────────────────────────────────────────────────────────
 // Version 1: normalize state shapes that changed during the redesign.
@@ -36,6 +38,8 @@ const serversPersistConfig = { key: 'servers', storage };
 const downloadersPersistConfig = { key: 'downloaders', storage };
 const settingsPersistConfig = { key: 'settings', storage };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
+const lastfmPersistConfig = { key: 'lastfm', storage };
+const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
 
 const statsPersistConfig = {
   key: 'stats',
@@ -55,8 +59,10 @@ export const rootReducer = combineReducers({
     downloaders: downloadersReducer,
     settings: settingsReducer,
     listenbrainz: listenbrainzReducer,
+    lastfm: lastfmReducer,
     stats: statsReducer,
     library: libraryReducer,
+    offlineMutations: offlineMutationsReducer,
 });
 
 const persistedReducer = combineReducers({
@@ -64,8 +70,10 @@ const persistedReducer = combineReducers({
     downloaders: persistReducer(downloadersPersistConfig, downloadersReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
+    lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),
+    offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
 });
 
 const store = configureStore({

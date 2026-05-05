@@ -9,8 +9,7 @@ import {
   SongsApi,
   TracksApi,
   AuthApi,
-  LyricsApi,
-  SearchApi
+  LyricsApi
 } from "../types";
 import { FAVORITES_ID } from "@/constants/favorites";
 import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
@@ -25,6 +24,7 @@ import { startScan } from "./auth/startScan";
 
 import { getAlbum } from "./albums/getAlbum";
 import { getAlbumList } from "./albums/getAlbumList";
+import { getAlbumsWithSongs } from "./albums/getAlbumsWithSongs";
 
 import { getArtist } from "./artists/getArtist";
 import { getArtists } from "./artists/getArtists";
@@ -113,6 +113,8 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
       if (!full) throw new Error("Album not found");
       return full;
     },
+
+    listWithSongs: async () => fromFolders(c => getAlbumsWithSongs(c)),
   };
 
   const artists: ArtistsApi = {

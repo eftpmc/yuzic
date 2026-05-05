@@ -1,5 +1,6 @@
-import { Album, ExternalAlbumBase } from "./Album";
+import { Album, ExternalAlbumBase, ExternalCatalogSource, ExternalIds } from "./Album";
 import { CoverSource } from "./Cover";
+import { ExternalSong } from "./Song";
 
 export interface Artist {
     id: string;
@@ -16,8 +17,14 @@ export interface ExternalArtistBase {
     name: string;
     cover: CoverSource;
     subtext: string;
+    biography?: string;
+    externalSource?: ExternalCatalogSource;
+    externalIds?: ExternalIds;
 }
 
 export interface ExternalArtist extends ExternalArtistBase {
+    topTracks?: ExternalSong[];
     albums: ExternalAlbumBase[];
+    singles: ExternalAlbumBase[];
+    similarArtists: ExternalArtistBase[];
 }

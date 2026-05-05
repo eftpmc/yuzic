@@ -53,7 +53,7 @@ export default function LibrariesOnboarding() {
     };
 
     load();
-  }, [server?.id]);
+  }, [server]);
 
   const toggle = (id: string) => {
     setSelectedIds(prev =>
@@ -74,7 +74,7 @@ export default function LibrariesOnboarding() {
       id: server.id,
       patch: { auth: { ...server.auth, ...authPatch } as any },
     }));
-    router.replace('/');
+    router.replace('/(home)/(tabs)' as never);
   };
 
   return (

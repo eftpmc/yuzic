@@ -32,6 +32,7 @@ import {
 } from '@/hooks/playlists';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import { useIsOffline } from '@/hooks/useIsOffline';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -42,6 +43,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
+    const isOffline = useIsOffline();
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
 
@@ -66,56 +68,69 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
     const initialIds = useMemo(() => {
       if (!selectedSong) return new Set<string>();
+      const selectedSongId = selectedSong.id;
 
       return new Set(
         fullPlaylists
-          .filter(p => p.songs.some(s => s.id === selectedSong.id))
+          .filter(p => p.songs.some(s => s.id === selectedSongId))
           .map(p => p.id)
       );
-    }, [selectedSong?.id, fullPlaylists]);
+    }, [fullPlaylists, selectedSong]);
 
     useEffect(() => {
       setSelectedIds(new Set(initialIds));
-    }, [selectedSong?.id]);
+    }, [initialIds]);
 
     const togglePlaylist = (id: string) => {
       setSelectedIds(prev => {
         const next = new Set(prev);
-        next.has(id) ? next.delete(id) : next.add(id);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
         return next;
       });
     };
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
-      await createPlaylist.mutateAsync(newPlaylistName.trim());
-      setNewPlaylistName('');
+      try {
+        await createPlaylist.mutateAsync(newPlaylistName.trim());
+        setNewPlaylistName('');
+      } catch {
+        toast.error(t('playlistList.createFailed'));
+      }
     };
 
     const handleDone = async () => {
       if (!selectedSong) return;
 
-      for (const playlist of fullPlaylists) {
-        const wasIn = initialIds.has(playlist.id);
-        const isIn = selectedIds.has(playlist.id);
+      try {
+        for (const playlist of fullPlaylists) {
+          const wasIn = initialIds.has(playlist.id);
+          const isIn = selectedIds.has(playlist.id);
 
-        if (isIn && !wasIn) {
-          await addSongToPlaylist.mutateAsync({
-            playlistId: playlist.id,
-            songId: selectedSong.id,
-          });
+          if (isIn && !wasIn) {
+            await addSongToPlaylist.mutateAsync({
+              playlistId: playlist.id,
+              song: selectedSong,
+            });
+          }
+
+          if (!isIn && wasIn) {
+            await removeSongFromPlaylist.mutateAsync({
+              playlistId: playlist.id,
+              songId: selectedSong.id,
+            });
+          }
         }
 
-        if (!isIn && wasIn) {
-          await removeSongFromPlaylist.mutateAsync({
-            playlistId: playlist.id,
-            songId: selectedSong.id,
-          });
-        }
+        toast.success(t(isOffline ? 'playlistList.updatedOffline' : 'playlistList.updated'));
+        onClose();
+      } catch {
+        toast.error(t('playlistList.updateFailed'));
       }
-
-      toast.success(t('playlistList.updated'));
-      onClose();
     };
 
     return (

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Appearance } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 import {
   selectThemeMode,
@@ -13,7 +13,7 @@ export const useTheme = () => {
   const mode = useSelector(selectThemeMode) as ThemeMode;
   const themeColor = useSelector(selectThemeColor);
 
-  const systemScheme = Appearance.getColorScheme() as ResolvedTheme | null;
+  const systemScheme = useColorScheme() as ResolvedTheme | null;
 
   const resolved: ResolvedTheme =
     mode === 'system' ? systemScheme ?? 'light' : mode;

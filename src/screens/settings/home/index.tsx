@@ -5,12 +5,11 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    Platform,
     Linking,
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, Entypo, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -124,6 +123,20 @@ export default function Settings() {
                             color={isDarkMode ? '#fff' : '#6E6E73'}
                         />
                     </TouchableOpacity>
+                    {renderDivider()}
+                    <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => router.push('/settings/lastfmView')}
+                    >
+                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                            {t('settings.rows.lastfm')}
+                        </Text>
+                        <MaterialIcons
+                            name="chevron-right"
+                            size={24}
+                            color={isDarkMode ? '#fff' : '#6E6E73'}
+                        />
+                    </TouchableOpacity>
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
@@ -167,13 +180,40 @@ export default function Settings() {
         );
     }
 
+    function renderStatsRow() {
+        return (
+            <TouchableOpacity style={styles.row} onPress={() => router.push('/settings/statsView' as any)}>
+                <View style={styles.leftContent}>
+                    <FontAwesome5
+                        name="chart-bar"
+                        size={18}
+                        color={isDarkMode ? '#fff' : '#6E6E73'}
+                        style={styles.icon}
+                    />
+                    <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                        {t('settings.rows.stats')}
+                    </Text>
+                </View>
+                <MaterialIcons
+                    name="chevron-right"
+                    size={24}
+                    color={isDarkMode ? '#fff' : '#6E6E73'}
+                />
+            </TouchableOpacity>
+        );
+    }
+
     function renderLinkRow(label: string, url: string) {
         return (
             <TouchableOpacity
                 style={styles.row}
                 onPress={async () => {
                     const supported = await Linking.canOpenURL(url);
-                    supported ? Linking.openURL(url) : Alert.alert(t('settings.links.cantOpen', { url }));
+                    if (supported) {
+                        await Linking.openURL(url);
+                    } else {
+                        Alert.alert(t('settings.links.cantOpen', { url }));
+                    }
                 }}
             >
                 <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
@@ -185,19 +225,6 @@ export default function Settings() {
                     color={isDarkMode ? '#fff' : '#6E6E73'}
                 />
             </TouchableOpacity>
-        );
-    }
-
-    function renderStaticRow(label: string, value: string) {
-        return (
-            <View style={styles.row}>
-                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                    {label}
-                </Text>
-                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
-                    {value}
-                </Text>
-            </View>
         );
     }
 

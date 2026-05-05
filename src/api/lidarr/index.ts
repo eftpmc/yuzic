@@ -1,11 +1,11 @@
 import { createLidarrClient } from './client';
 import type { LidarrConfig } from '@/types';
+import * as artists from './artists';
 
 // Auth / connection
 export { testConnection } from './auth';
 
 // Artists
-import * as artists from './artists';
 export function lookupArtist(config: LidarrConfig, term: string) {
   return artists.lookupArtist(createLidarrClient(config), term);
 }

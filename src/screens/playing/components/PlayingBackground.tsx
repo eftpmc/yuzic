@@ -50,7 +50,7 @@ const PlayingBackground: React.FC<Props> = ({
         }
       }
     );
-  }, [key]);
+  }, [key, onFadeComplete, opacity]);
 
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

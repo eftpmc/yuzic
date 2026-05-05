@@ -22,22 +22,17 @@ function normalizeTrack(item: any): SongBase {
 }
 
 export async function getTracks(client: EmbyClient): Promise<SongBase[]> {
-  try {
-    const path =
-      `/Users/${encodeURIComponent(client.userId)}/Items` +
-      `?IncludeItemTypes=Audio` +
-      `&Recursive=true` +
-      `&SortBy=SortName` +
-      `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated` +
-      (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
+  const path =
+    `/Users/${encodeURIComponent(client.userId)}/Items` +
+    `?IncludeItemTypes=Audio` +
+    `&Recursive=true` +
+    `&SortBy=SortName` +
+    `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated` +
+    (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
-    const raw = await client.request<any>(path);
-    const items = raw?.Items ?? [];
-    return items
-      .filter((item: any) => item?.Id)
-      .map((item: any) => normalizeTrack(item));
-  } catch (error) {
-    console.error("Failed to fetch Emby tracks:", error);
-    return [];
-  }
+  const raw = await client.request<any>(path);
+  const items = raw?.Items ?? [];
+  return items
+    .filter((item: any) => item?.Id)
+    .map((item: any) => normalizeTrack(item));
 }

@@ -9,15 +9,18 @@ function Loader() {
   const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.timing(spinAnim, {
         toValue: 1,
         duration: 1000,
         easing: Easing.linear,
         useNativeDriver: false,
       })
-    ).start();
-  }, []);
+    );
+    animation.start();
+
+    return () => animation.stop();
+  }, [spinAnim]);
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],

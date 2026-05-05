@@ -154,4 +154,3 @@ export function buildDownloadRows({
     return b.updatedAt - a.updatedAt;
   });
 }
-

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { QueryKeys } from '@/enums/queryKeys';
 import { Album } from '@/types';
@@ -6,6 +5,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { hasValue, useOfflineFirstQuery } from '@/hooks/useOfflineFirstQuery';
 
 type UseAlbumResult = {
   album: Album | null;
@@ -19,16 +19,18 @@ export function useAlbum(id: string): UseAlbumResult {
   const { albums } = useLibrary();
   const cachedAlbum = albums.find(a => a.id === id) ?? null;
 
-  const query = useQuery<Album, Error>({
+  const query = useOfflineFirstQuery<Album | null>({
     queryKey: [QueryKeys.Album, activeServer?.id, id],
-    queryFn: () => api.albums.get(id),
+    queryFn: async () => api.albums.get(id),
     enabled: !!activeServer?.id && !!id,
     staleTime: staleTime.albums,
+    fallbackData: cachedAlbum,
+    hasFallbackData: hasValue,
   });
 
   return {
-    album: query.data ?? cachedAlbum,
-    isLoading: query.isLoading && cachedAlbum === null,
-    error: query.error ?? null,
+    album: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
   };
 }

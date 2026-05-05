@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Playlist } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
@@ -22,6 +21,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
   playlist: Playlist;
@@ -32,14 +32,14 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
-  const optionsSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const optionsSheetRef = useSheetRef();
 
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const { playSongInCollection } = usePlaying();
   const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
 
-  const songs = playlist.songs ?? [];
+  const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
   const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
     getCollectionDownloadState(songs.map((song) => song.id));
 

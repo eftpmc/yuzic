@@ -10,8 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Loader2 } from 'lucide-react-native';
-import { Check, X } from 'lucide-react-native';
+import { Check, Loader2, X } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectThemeColor, selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
 import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';

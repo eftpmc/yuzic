@@ -94,7 +94,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 
   useEffect(() => {
     setQueue(getQueue());
-  }, [queueVersion]);
+  }, [getQueue, queueVersion]);
 
   const currentAlbum = useMemo(
     () =>

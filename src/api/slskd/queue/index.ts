@@ -14,17 +14,17 @@ export interface SlskdQueueRecord {
 
 type Transfer = {
   username: string;
-  directories?: Array<{
+  directories?: {
     directory?: string;
-    files?: Array<{
+    files?: {
       id: string;
       filename: string;
       state: string;
       size: number;
       bytesTransferred?: number;
       percentComplete?: number;
-    }>;
-  }>;
+    }[];
+  }[];
 };
 
 function basename(path: string): string {

@@ -90,6 +90,17 @@
         "lastSynced": "最終同期",
         "syncOnAppStart": "起動時に同期"
       },
+      "offlineChanges": {
+        "title": "保留中のオフライン変更",
+        "subtitle": "{{count}}件の変更をオンライン時に同期します",
+        "subtitle_plural": "{{count}}件の変更をオンライン時に同期します",
+        "failedSubtitle": "{{count}}件の変更は同期前に確認が必要です",
+        "failedSubtitle_plural": "{{count}}件の変更は同期前に確認が必要です",
+        "retry": "再試行",
+        "discard": "破棄",
+        "discardTitle": "オフライン変更を破棄しますか？",
+        "discardBody": "現在のサーバーの保留中の変更を削除します。ローカルライブラリは次回同期時に更新されます。"
+      },
       "downloads": {
         "title": "ダウンロード",
         "detailsTitle": "ダウンロード詳細",
@@ -151,7 +162,7 @@
           "high": "高 (192kbps)",
           "original": "オリジナル (圧縮なし)"
         }
-      },
+      }
     },
     "player": {
       "title": "プレーヤー",
@@ -246,10 +257,16 @@
     "offline": {
       "downloadRequired": "オフラインモードで再生するには、この曲をダウンロードしてください。",
       "noDownloadedTracks": "この操作に使えるダウンロード済みの曲がありません。",
-      "similarUnavailable": "オフラインモードでは類似曲を利用できません。"
+      "similarUnavailable": "オフラインモードでは類似曲を利用できません。",
+      "noConnection": "インターネット接続なし",
+      "syncedChanges": "オフラインの変更を同期しました",
+      "syncQueuedChangesFailed": "一部のオフライン変更を同期できませんでした"
     },
     "oneSecond": "少々お待ちください。",
     "playingSimilar": "類似の音楽を再生中",
+    "songDetailsError": "曲の詳細を読み込めませんでした",
+    "syncFailed": "ライブラリの同期に失敗しました。接続を確認してください。",
+    "libraryLoadFailed": "ライブラリの読み込みに失敗しました。接続を確認してください。",
     "error": {
       "unexpected": "予期しないエラーが発生しました",
       "details": "エラー: {{name}} {{message}}",
@@ -373,6 +390,14 @@
     "artistNotFound": "アーティストが見つかりません。",
     "playlistNotFound": "プレイリストが見つかりません。"
   },
+  "artist": {
+    "sections": {
+      "albums": "アルバム",
+      "singles": "シングル・EP",
+      "topTracks": "人気曲",
+      "similarArtists": "似ているアーティスト"
+    }
+  },
   "explore": {
     "sections": {
       "dial": "ダイアル",
@@ -412,7 +437,9 @@
     },
     "actions": {
       "addedToFavorites": "{{title}} をお気に入りに追加しました。",
+      "addedToFavoritesOffline": "{{title}} をオフラインでお気に入りに追加しました。",
       "removedFromFavorites": "{{title}} をお気に入りから削除しました。",
+      "removedFromFavoritesOffline": "{{title}} をオフラインでお気に入りから削除しました。",
       "updateFavoritesFailed": "お気に入りの更新に失敗しました。",
       "randomAlbum": "ランダム再生: {{title}}",
       "loadAlbumFailed": "アルバムの読み込みに失敗しました。"
@@ -421,13 +448,17 @@
   "playlist": {
     "favoritesTitle": "お気に入り",
     "subtext": "プレイリスト・{{count}}曲",
-    "subtext_plural": "プレイリスト・{{count}}曲"
+    "subtext_plural": "プレイリスト・{{count}}曲",
+    "empty": "このプレイリストにはまだ曲がありません。"
   },
   "playlistList": {
     "title": "プレイリストに追加",
     "searchPlaceholder": "プレイリストを検索",
     "newPlaceholder": "新しいプレイリスト名",
-    "updated": "プレイリストを更新しました"
+    "updated": "プレイリストを更新しました",
+    "updatedOffline": "プレイリストをオフラインで保存しました。オンライン時に同期します。",
+    "createFailed": "プレイリストの作成に失敗しました",
+    "updateFailed": "プレイリストの更新に失敗しました"
   },
   "songOptions": {
     "unknownArtist": "不明",
@@ -472,7 +503,9 @@
     },
     "toasts": {
       "removedFromFavorites": "{{title}} をお気に入りから削除しました。",
+      "removedFromFavoritesOffline": "{{title}} をオフラインでお気に入りから削除しました。",
       "addedToFavorites": "{{title}} をお気に入りに追加しました。",
+      "addedToFavoritesOffline": "{{title}} をオフラインでお気に入りに追加しました。",
       "updateFavoritesFailed": "お気に入りの更新に失敗しました。",
       "nothingPlaying": "再生中の曲はありません。",
       "alreadyPlaying": "{{title}} はすでに再生中です。",
@@ -590,6 +623,7 @@
     "info": {
       "albums": "アルバム",
       "plays": "再生回数"
-    }
+    },
+    "downloadAllFailed": "一部のアルバムのダウンロードに失敗しました。"
   }
 }

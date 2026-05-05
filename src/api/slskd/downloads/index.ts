@@ -1,4 +1,4 @@
-import { createSlskdClient, type SlskdClient, type SlskdConfig } from '../client';
+import { createSlskdClient, type SlskdConfig } from '../client';
 
 const ALLOWED_EXTENSIONS = ['flac', 'mp3'];
 const SEARCH_TIMEOUT_MS = 15000;

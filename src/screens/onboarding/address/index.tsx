@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -14,6 +14,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { ServerType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 type Scheme = 'https' | 'http';
 
@@ -25,7 +26,7 @@ export default function Address() {
     const [scheme, setScheme] = useState<Scheme>('https');
     const [host, setHost] = useState('');
 
-    const schemeSheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+    const schemeSheetRef = useSheetRef();
     const snapPoints = useMemo(() => ['28%'], []);
 
     const handleNext = () => {

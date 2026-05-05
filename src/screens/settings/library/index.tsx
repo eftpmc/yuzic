@@ -14,6 +14,7 @@ import AudioQuality from './components/AudioQuality';
 import Downloads from './components/Downloads';
 import LibrarySelect from './components/LibrarySelect';
 import { useTheme } from '@/hooks/useTheme';
+import PendingOfflineChanges from './components/PendingOfflineChanges';
 
 const LibrarySettings: React.FC = () => {
     const { t } = useTranslation();
@@ -30,6 +31,7 @@ const LibrarySettings: React.FC = () => {
             <Header title={t('settings.library.title')} />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
+                <PendingOfflineChanges />
                 <Stats />
                 <LibrarySelect />
                 <Downloads />

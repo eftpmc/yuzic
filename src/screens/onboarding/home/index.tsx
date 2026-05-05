@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -7,10 +7,9 @@ import {
     Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import Loader from '@/components/Loader';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -22,26 +21,19 @@ export default function Home() {
     const themeColor = useSelector(selectThemeColor);
     const dispatch = useDispatch();
     const [isPressed, setIsPressed] = useState(false);
-    const [ready, setReady] = useState(false);
 
     const hasSeenGetStarted = useSelector(selectHasSeenGetStarted);
 
     const activeServer = useSelector(selectActiveServer);
     const isAuthenticated = activeServer?.isAuthenticated;
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            router.replace('/');
-            return;
-        }
+    if (isAuthenticated) {
+        return <Redirect href="/(home)/(tabs)" />;
+    }
 
-        if (hasSeenGetStarted) {
-            router.replace('/(onboarding)/servers');
-            return;
-        }
-
-        setReady(true);
-    }, [isAuthenticated, hasSeenGetStarted]);
+    if (hasSeenGetStarted) {
+        return <Redirect href="/(onboarding)/servers" />;
+    }
 
     const handlePressIn = () => setIsPressed(true);
 
@@ -51,14 +43,6 @@ export default function Home() {
         dispatch(setHasSeenGetStarted(true));
         router.push('/(onboarding)/servers');
     };
-
-    if (!ready) {
-        return (
-            <SafeAreaView style={styles.container}>
-                <Loader />
-            </SafeAreaView>
-        );
-    }
 
     return (
         <SafeAreaView style={styles.container}>

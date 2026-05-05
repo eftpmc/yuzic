@@ -25,6 +25,13 @@ const EXCLUDE_TITLE_HINTS = [
   'edition',
 ]
 
+type ReleaseGroupPrimaryType = 'album' | 'single' | 'ep'
+
+export type ArtistDiscography = {
+  albums: ExternalAlbumBase[]
+  singles: ExternalAlbumBase[]
+}
+
 function parseYear(date?: string | null): number | null {
   if (!date) return null
   const m = /^(\d{4})/.exec(date)
@@ -66,10 +73,18 @@ function scoreReleaseGroup(rg: any): number {
   return score
 }
 
+function compareByReleaseDateDesc(a: any, b: any): number {
+  const ad = a['first-release-date'] ?? ''
+  const bd = b['first-release-date'] ?? ''
+  if (bd !== ad) return bd.localeCompare(ad)
+  return String(a.title ?? '').localeCompare(String(b.title ?? ''))
+}
+
 const normalizeReleaseGroup = (
   rg: any,
   artistName: string,
-  artistMbid: string
+  artistMbid: string,
+  releaseType: ExternalAlbumBase['releaseType']
 ): ExternalAlbumBase => {
   const releaseDate = rg['first-release-date']
 
@@ -78,12 +93,88 @@ const normalizeReleaseGroup = (
     title: rg.title,
     artist: artistName,
     artistMbid,
-    subtext: artistName,
+    subtext: parseYear(releaseDate)?.toString() ?? artistName,
     cover: {
       kind: 'musicbrainz',
       releaseGroupId: rg.id,
     },
     releaseDate,
+    releaseType,
+  }
+}
+
+async function getReleaseGroupsByType(
+  artistMbid: string,
+  artistName: string,
+  primaryType: ReleaseGroupPrimaryType,
+  limit: number
+): Promise<ExternalAlbumBase[]> {
+  const { request } = createMusicBrainzClient()
+
+  const res = await request<{
+    'release-groups'?: any[]
+  }>('release-group', {
+    artist: artistMbid,
+    type: primaryType,
+    limit: String(Math.max(limit * 2, 50)),
+  })
+
+  const groups = Array.isArray(res['release-groups'])
+    ? res['release-groups']
+    : []
+
+  const expectedPrimaryType =
+    primaryType === 'ep' ? 'EP' : primaryType === 'album' ? 'Album' : 'Single'
+
+  const filtered = groups
+    .filter(rg => (rg['primary-type'] ?? null) === expectedPrimaryType)
+    .filter(rg => !isExcludedSecondary(rg))
+
+  filtered.sort(compareByReleaseDateDesc)
+
+  return filtered
+    .slice(0, limit)
+    .map(rg => normalizeReleaseGroup(
+      rg,
+      artistName,
+      artistMbid,
+      primaryType === 'album' ? 'album' : 'single'
+    ))
+}
+
+export async function getArtistDiscography(
+  artistMbid: string,
+  artistName: string,
+  options: { albumLimit?: number; singleLimit?: number } = {}
+): Promise<ArtistDiscography> {
+  const { albumLimit = 80, singleLimit = 80 } = options
+
+  try {
+    const albums = await getReleaseGroupsByType(artistMbid, artistName, 'album', albumLimit)
+    const singles = singleLimit > 0
+      ? await getReleaseGroupsByType(artistMbid, artistName, 'single', singleLimit)
+      : []
+    const eps = singleLimit > 0
+      ? await getReleaseGroupsByType(artistMbid, artistName, 'ep', Math.ceil(singleLimit / 2))
+      : []
+
+    const seenSingles = new Set<string>()
+    const singlesAndEps = [...singles, ...eps]
+      .filter(release => {
+        if (seenSingles.has(release.id)) return false
+        seenSingles.add(release.id)
+        return true
+      })
+      .sort((a, b) => (b.releaseDate ?? '').localeCompare(a.releaseDate ?? ''))
+      .slice(0, singleLimit)
+
+    return { albums, singles: singlesAndEps }
+  } catch (err) {
+    console.warn(
+      `MusicBrainz getArtistDiscography failed for ${artistMbid}`,
+      err
+    )
+    return { albums: [], singles: [] }
   }
 }
 
@@ -93,38 +184,28 @@ export async function getArtistAlbums(
   limit = 25
 ): Promise<ExternalAlbumBase[]> {
   try {
-    const { request } = createMusicBrainzClient()
-
-    const res = await request<{
-      'release-groups'?: any[]
-    }>('release-group', {
-      artist: artistMbid,
-      type: 'album',
-      limit: String(Math.max(limit * 3, 50)),
+    const { albums } = await getArtistDiscography(artistMbid, artistName, {
+      albumLimit: Math.max(limit, 25),
+      singleLimit: 0,
     })
 
-    const groups = Array.isArray(res['release-groups'])
-      ? res['release-groups']
-      : []
-
-    const filtered = groups
-      .filter(rg => (rg['primary-type'] ?? null) === 'Album')
-      .filter(rg => !isExcludedSecondary(rg))
-      .filter(rg => !hasExcludedTitle(String(rg.title ?? '')))
-
-    filtered.sort((a, b) => {
-      const sa = scoreReleaseGroup(a)
-      const sb = scoreReleaseGroup(b)
-      if (sb !== sa) return sb - sa
-
-      const ad = a['first-release-date'] ?? ''
-      const bd = b['first-release-date'] ?? ''
-      return bd.localeCompare(ad)
-    })
-
-    return filtered
+    return albums
+      .filter(album => !hasExcludedTitle(album.title))
+      .sort((a, b) => {
+        const sa = scoreReleaseGroup({
+          title: a.title,
+          'first-release-date': a.releaseDate,
+          'primary-type': 'Album',
+        })
+        const sb = scoreReleaseGroup({
+          title: b.title,
+          'first-release-date': b.releaseDate,
+          'primary-type': 'Album',
+        })
+        if (sb !== sa) return sb - sa
+        return (b.releaseDate ?? '').localeCompare(a.releaseDate ?? '')
+      })
       .slice(0, limit)
-      .map(rg => normalizeReleaseGroup(rg, artistName, artistMbid))
   } catch (err) {
     console.warn(
       `MusicBrainz getArtistAlbums failed for ${artistMbid}`,

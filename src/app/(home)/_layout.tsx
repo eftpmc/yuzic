@@ -1,5 +1,5 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -23,7 +23,7 @@ function TabIcon({ onPress, active, activeColor, inactiveColor, activeIndicatorB
 
     useEffect(() => {
         opacity.value = withTiming(active ? 1 : 0, { duration: 200 });
-    }, [active]);
+    }, [active, opacity]);
 
     const indicatorStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -58,15 +58,8 @@ export default function HomeLayout() {
         return () => sub.remove()
     }, [sync, syncPlaylists])
 
-    const [activeTab, setActiveTab] = useState<'home' | 'library'>('home')
-
-    useEffect(() => {
-        if (pathname === '/') setActiveTab('home')
-        else if (pathname === '/library') setActiveTab('library')
-    }, [pathname])
-
-    const isLibrary = activeTab === 'library'
-    const isHome = activeTab === 'home'
+    const isLibrary = pathname === '/library'
+    const isHome = !isLibrary
     const activeColor = themeColor
     const inactiveColor = isDarkMode ? '#555' : '#aaa'
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
@@ -100,8 +93,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return
-                            setActiveTab('home')
-                            router.navigate('/')
+                            router.navigate('/(home)/(tabs)' as never)
                         }}
                         active={isHome}
                         activeColor={activeColor}
@@ -113,8 +105,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/library') return
-                            setActiveTab('library')
-                            router.navigate('/library')
+                            router.navigate('/(home)/(tabs)/library' as never)
                         }}
                         active={isLibrary}
                         activeColor={activeColor}

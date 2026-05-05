@@ -1,15 +1,14 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryCache, onlineManager } from '@tanstack/react-query';
+import { Toasts, toast } from '@backpackapp-io/react-native-toast';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { Toasts } from '@backpackapp-io/react-native-toast';
 import { PlayingProvider } from '@/contexts/PlayingContext';
-import { SearchProvider } from '@/contexts/SearchContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -24,11 +23,11 @@ import { useTheme } from '@/hooks/useTheme';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
 import i18n from '@/i18n';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { queryStorage } from '@/utils/mmkvStorage';
 import NetInfo from '@react-native-community/netinfo';
-import { onlineManager } from '@tanstack/react-query';
+import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 
 onlineManager.setEventListener(setOnline => {
   return NetInfo.addEventListener(state => {
@@ -39,23 +38,36 @@ onlineManager.setEventListener(setOnline => {
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (_error, query) => {
+      // Only show a toast when a query has no cached data — silent background
+      // refreshes shouldn't interrupt the user if stale data is still visible.
+      if (query.state.data === undefined) {
+        toast.error(i18n.t('common.libraryLoadFailed'));
+      }
+    },
+  }),
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
       networkMode: 'offlineFirst',
-      gcTime: Infinity,
+      gcTime: 1000 * 60 * 60 * 24 * 30,
     },
   },
 });
 
+const QUERY_CACHE_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
+
 const asyncStoragePersister = createAsyncStoragePersister({
-  storage: AsyncStorage,
+  storage: queryStorage,
 })
 
+const OFFLINE_TOAST_ID = 'offline-banner';
+
 function AppShell() {
-  const { resolved, isDarkMode, colors } = useTheme();
+  const { resolved, isDarkMode } = useTheme();
   const language = useSelector(selectLanguage);
 
   useEffect(() => {
@@ -64,11 +76,24 @@ function AppShell() {
     }
   }, [language]);
 
+  useEffect(() => {
+    const unsub = NetInfo.addEventListener(state => {
+      if (!state.isConnected) {
+        toast(i18n.t('common.offline.noConnection'), {
+          id: OFFLINE_TOAST_ID,
+          duration: Infinity,
+        });
+      } else {
+        toast.dismiss(OFFLINE_TOAST_ID);
+      }
+    });
+    return unsub;
+  }, []);
+
   return (
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
         <PlayingProvider>
-<SearchProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
               <BottomSheetModalProvider>
@@ -108,7 +133,6 @@ function AppShell() {
               </BottomSheetModalProvider>
               </ErrorBoundary>
             </GestureHandlerRootView>
-          </SearchProvider>
         </PlayingProvider>
       </DownloadProvider>
     </ThemeProvider>
@@ -120,10 +144,9 @@ export default function RootLayout() {
     SpaceMono: require('@assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  SplashScreen.setOptions({
-    duration: 1000,
-    fade: true,
-  });
+  useEffect(() => {
+    SplashScreen.setOptions({ duration: 1000, fade: true });
+  }, []);
 
   useEffect(() => {
     const jsErrorHandler = (error: { name: string; message: string }, isFatal: boolean) => {
@@ -149,10 +172,17 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: asyncStoragePersister,
+        maxAge: QUERY_CACHE_MAX_AGE,
+      }}
+    >
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <LibraryProvider>
+            <OfflineMutationReplayer />
             <AppShell />
           </LibraryProvider>
         </PersistGate>

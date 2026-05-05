@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { QueryKeys } from '@/enums/queryKeys';
 import { Playlist } from '@/types';
@@ -6,6 +5,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { hasValue, useOfflineFirstQuery } from '@/hooks/useOfflineFirstQuery';
 
 type UsePlaylistResult = {
   playlist: Playlist | null;
@@ -19,16 +19,18 @@ export function usePlaylist(id: string): UsePlaylistResult {
   const { playlists } = useLibrary();
   const cachedPlaylist = playlists.find(p => p.id === id) ?? null;
 
-  const query = useQuery<Playlist, Error>({
+  const query = useOfflineFirstQuery<Playlist | null>({
     queryKey: [QueryKeys.Playlist, activeServer?.id, id],
-    queryFn: () => api.playlists.get(id),
+    queryFn: async () => api.playlists.get(id),
     enabled: !!activeServer?.id && !!id,
     staleTime: staleTime.playlists,
+    fallbackData: cachedPlaylist,
+    hasFallbackData: hasValue,
   });
 
   return {
-    playlist: query.data ?? cachedPlaylist,
-    isLoading: query.isLoading && cachedPlaylist === null,
-    error: query.error ?? null,
+    playlist: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
   };
 }

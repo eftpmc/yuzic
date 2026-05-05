@@ -6,6 +6,8 @@ const defaultEntry: PerServerListenBrainzState = {
   username: '',
   token: '',
   isAuthenticated: false,
+  scrobbleEnabled: true,
+  nowPlayingEnabled: true,
 };
 
 const selectListenBrainzForActiveServer = createSelector(
@@ -27,6 +29,16 @@ export const selectListenBrainzToken = createSelector(
 export const selectListenBrainzAuthenticated = createSelector(
   [selectListenBrainzForActiveServer],
   (entry) => entry.isAuthenticated
+);
+
+export const selectListenBrainzScrobbleEnabled = createSelector(
+  [selectListenBrainzForActiveServer],
+  (entry) => entry.scrobbleEnabled ?? true
+);
+
+export const selectListenBrainzNowPlayingEnabled = createSelector(
+  [selectListenBrainzForActiveServer],
+  (entry) => entry.nowPlayingEnabled ?? true
 );
 
 export const selectListenBrainzConfig = createSelector(

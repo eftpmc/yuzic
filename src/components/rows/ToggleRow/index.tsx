@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Appearance,
 } from 'react-native';
 
 type ToggleRowProps = {

@@ -50,26 +50,19 @@ export async function getAlbums(
   client: JellyfinClient,
   artistId?: string
 ): Promise<GetAlbumsResult> {
-  try {
-    const baseParams =
-      `IncludeItemTypes=MusicAlbum` +
-      `&Recursive=true` +
-      `&SortBy=SortName` +
-      `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds`;
+  const baseParams =
+    `IncludeItemTypes=MusicAlbum` +
+    `&Recursive=true` +
+    `&SortBy=SortName` +
+    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds`;
 
-    const path =
-      `/Items?${baseParams}` +
-      (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "") +
-      (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
+  const path =
+    `/Items?${baseParams}` +
+    (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "") +
+    (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
-    const raw = await client.request(path) as any;
-    const items: any[] = raw?.Items ?? [];
+  const raw = await client.request(path) as any;
+  const items: any[] = raw?.Items ?? [];
 
-    const albums = items.map((a: any) => normalizeAlbum(a));
-
-    return albums.filter((a): a is Album => a !== null);
-  } catch (error) {
-    console.error(`Failed to fetch albums:`, error);
-    return [];
-  }
+  return items.map((a: any) => normalizeAlbum(a)).filter((a): a is Album => a !== null);
 }

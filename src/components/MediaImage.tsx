@@ -1,13 +1,13 @@
-import React, { useMemo } from 'react';
-import { View } from 'react-native';
-import { Image } from 'expo-image';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Image } from 'react-native';
+import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
-import { buildCover } from '@/utils/builders/buildCover';
+import { buildCover, buildCoverArtArchiveUrl } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 
-const PLACEHOLDER = require('@assets/images/placeholder.png');
+const placeholder = require('@assets/images/placeholder.png');
 
 export function MediaImage({
   cover,
@@ -21,8 +21,21 @@ export function MediaImage({
   // Subscribe so we re-render when active server becomes available or changes.
   // buildCover() reads from the store; without this, URLs stay null until
   // some other state (e.g. list data) causes a re-render.
-  const activeServer = useSelector(selectActiveServer);
-  const uri = useMemo(() => buildCover(cover, size), [cover, size, activeServer]);
+  const activeServerId = useSelector(selectActiveServerId);
+  const uri = useMemo(() => {
+    void activeServerId;
+    return buildCover(cover, size);
+  }, [cover, size, activeServerId]);
+  const fallbackUri = useMemo(() => {
+    if (cover.kind !== 'coverartarchive' || cover.mbidType !== 'unknown') return null;
+    return buildCoverArtArchiveUrl(cover.mbid, 'release', size);
+  }, [cover, size]);
+  const [useFallback, setUseFallback] = useState(false);
+  const sourceUri = useFallback && fallbackUri ? fallbackUri : uri;
+
+  useEffect(() => {
+    setUseFallback(false);
+  }, [uri, fallbackUri]);
 
   if (uri === 'heart-icon') {
     return (
@@ -32,23 +45,33 @@ export function MediaImage({
     );
   }
 
-  const priority =
-    size === 'detail' || size === 'grid'
-      ? 'high'
-      : size === 'thumb'
-      ? 'normal'
-      : 'low';
+  if (!sourceUri) {
+    return (
+      <Image
+        source={placeholder}
+        style={[style, { backgroundColor: '#1e1e1e' }]}
+        resizeMode="cover"
+      />
+    );
+  }
 
   return (
-    <Image
-      source={uri ? { uri } : PLACEHOLDER}
-      placeholder={PLACEHOLDER}
-      placeholderContentFit="cover"
-      contentFit="cover"
-      style={style}
-      cachePolicy="memory-disk"
-      priority={priority}
-      transition={200}
-    />
+    <View style={[style, { overflow: 'hidden' }]}>
+      <Image
+        source={placeholder}
+        style={{ position: 'absolute', width: '100%', height: '100%' }}
+        resizeMode="cover"
+      />
+      <TurboImage
+        source={{ uri: sourceUri }}
+        style={{ width: '100%', height: '100%' }}
+        resizeMode="cover"
+        cachePolicy="dataCache"
+        fadeDuration={200}
+        onFailure={() => {
+          if (fallbackUri && !useFallback) setUseFallback(true);
+        }}
+      />
+    </View>
   );
 }

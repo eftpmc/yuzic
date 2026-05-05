@@ -14,8 +14,12 @@ end
 
 ENV['RCT_NEW_ARCH_ENABLED'] ||= '0' if podfile_properties['newArchEnabled'] == 'false'
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] ||= podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
-ENV['RCT_USE_RN_DEP'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
-ENV['RCT_USE_PREBUILT_RNCORE'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
+
+# Prebuilt React Native core (React-Core-prebuilt / ReactNativeDependencies) was compiled
+# against an older Xcode SDK and is missing debug-only symbols (Sealable, DebugStringConvertible,
+# RCTPackagerConnection, etc.) when linking against newer SDKs. Force source build always.
+ENV.delete('RCT_USE_RN_DEP')
+ENV.delete('RCT_USE_PREBUILT_RNCORE')
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 
 prepare_react_native_project!
@@ -59,5 +63,15 @@ target 'Yuzic' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    # fmt 11.0.2 trips Apple clang's C++20 consteval path in Xcode 26.4.
+    # Compile only fmt as C++17; React Native pods remain on their normal C++20 setting.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
+
+      target.build_configurations.each do |build_configuration|
+        build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+      end
+    end
   end
 end

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { TrackPlayer } from 'react-native-nitro-player';
-import { Image } from 'expo-image';
+import TurboImage from 'react-native-turbo-image';
 
 import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
 import { buildCover } from '@/utils/builders/buildCover';
@@ -54,13 +54,17 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 
   return (
     <View style={[styles.root, { width }]}>
-      <Image
-        source={{ uri: coverUri ?? undefined }}
-        style={[styles.cover, { width, height: width }]}
-        cachePolicy="memory-disk"
-        priority="high"
-        transition={300}
-      />
+      {coverUri ? (
+        <TurboImage
+          source={{ uri: coverUri }}
+          style={[styles.cover, { width, height: width }]}
+          resizeMode="cover"
+          cachePolicy="dataCache"
+          fadeDuration={300}
+        />
+      ) : (
+        <View style={[styles.cover, { width, height: width }]} />
+      )}
 
       <View style={styles.titleRow}>
         <View style={styles.textContainer}>

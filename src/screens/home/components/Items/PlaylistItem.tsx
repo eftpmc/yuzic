@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,8 @@ import { MediaImage } from '@/components/MediaImage';
 import { CoverSource, Playlist } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaylist } from '@/hooks/playlists';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 interface ItemProps {
   id: string;
@@ -38,7 +38,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
   const navigation = useNavigation<any>();
   const { playlist } = usePlaylist(id);
 
-  const sheetRef = useRef<BottomSheetModal>(null) as unknown as React.RefObject<BottomSheetModal>;
+  const sheetRef = useSheetRef();
   const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
   const handleNavigation = useCallback(() => {
@@ -49,7 +49,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
     if (!playlist) return;
     setPlaylistForSheet(playlist);
     sheetRef.current?.present();
-  }, [playlist]);
+  }, [playlist, sheetRef]);
 
   return (
     <>

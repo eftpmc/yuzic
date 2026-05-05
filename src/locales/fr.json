@@ -90,6 +90,17 @@
         "lastSynced": "Dernière synchro",
         "syncOnAppStart": "Synchroniser au démarrage"
       },
+      "offlineChanges": {
+        "title": "Modifications hors ligne en attente",
+        "subtitle": "{{count}} modification sera synchronisée en ligne",
+        "subtitle_plural": "{{count}} modifications seront synchronisées en ligne",
+        "failedSubtitle": "{{count}} modification nécessite votre attention avant synchronisation",
+        "failedSubtitle_plural": "{{count}} modifications nécessitent votre attention avant synchronisation",
+        "retry": "Réessayer",
+        "discard": "Ignorer",
+        "discardTitle": "Ignorer les modifications hors ligne ?",
+        "discardBody": "Cela supprimera les modifications en attente pour le serveur actuel. Votre bibliothèque locale sera actualisée lors de la prochaine synchronisation."
+      },
       "downloads": {
         "title": "Téléchargements",
         "detailsTitle": "Détails des téléchargements",
@@ -151,7 +162,7 @@
           "high": "Élevée (192 kbps)",
           "original": "Originale (sans compression)"
         }
-      },
+      }
     },
     "player": {
       "title": "Lecteur",
@@ -246,10 +257,16 @@
     "offline": {
       "downloadRequired": "Téléchargez cette piste pour la lire en mode hors ligne.",
       "noDownloadedTracks": "Aucune piste téléchargée n'est disponible pour cette action.",
-      "similarUnavailable": "Les titres similaires ne sont pas disponibles en mode hors ligne."
+      "similarUnavailable": "Les titres similaires ne sont pas disponibles en mode hors ligne.",
+      "noConnection": "Pas de connexion internet",
+      "syncedChanges": "Modifications hors ligne synchronisées",
+      "syncQueuedChangesFailed": "Certaines modifications hors ligne n'ont pas pu être synchronisées"
     },
     "oneSecond": "Un instant.",
     "playingSimilar": "Lecture de musique similaire",
+    "songDetailsError": "Impossible de charger les détails de la chanson",
+    "syncFailed": "Échec de la synchronisation. Vérifiez votre connexion.",
+    "libraryLoadFailed": "Échec du chargement. Vérifiez votre connexion.",
     "error": {
       "unexpected": "Une erreur inattendue s'est produite",
       "details": "Erreur : {{name}} {{message}}",
@@ -373,6 +390,14 @@
     "artistNotFound": "Artiste introuvable.",
     "playlistNotFound": "Liste de lecture introuvable."
   },
+  "artist": {
+    "sections": {
+      "albums": "Albums",
+      "singles": "Singles et EP",
+      "topTracks": "Titres populaires",
+      "similarArtists": "Artistes similaires"
+    }
+  },
   "explore": {
     "sections": {
       "dial": "Sélection",
@@ -412,7 +437,9 @@
     },
     "actions": {
       "addedToFavorites": "{{title}} ajouté aux favoris.",
+      "addedToFavoritesOffline": "{{title}} ajouté aux favoris hors ligne.",
       "removedFromFavorites": "{{title}} retiré des favoris.",
+      "removedFromFavoritesOffline": "{{title}} retiré des favoris hors ligne.",
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
       "randomAlbum": "Lecture d'un album aléatoire : {{title}}",
       "loadAlbumFailed": "Échec du chargement de l'album."
@@ -421,13 +448,17 @@
   "playlist": {
     "favoritesTitle": "Favoris",
     "subtext": "Liste de lecture • {{count}} morceau",
-    "subtext_plural": "Liste de lecture • {{count}} morceaux"
+    "subtext_plural": "Liste de lecture • {{count}} morceaux",
+    "empty": "Cette liste de lecture n'a pas encore de morceaux."
   },
   "playlistList": {
     "title": "Ajouter à une liste de lecture",
     "searchPlaceholder": "Rechercher des listes de lecture",
     "newPlaceholder": "Nom de la nouvelle liste de lecture",
-    "updated": "Listes de lecture mises à jour"
+    "updated": "Listes de lecture mises à jour",
+    "updatedOffline": "Listes de lecture enregistrées hors ligne. Elles seront synchronisées en ligne.",
+    "createFailed": "Impossible de créer la liste de lecture",
+    "updateFailed": "Impossible de mettre à jour les listes de lecture"
   },
   "songOptions": {
     "unknownArtist": "Inconnu",
@@ -472,7 +503,9 @@
     },
     "toasts": {
       "removedFromFavorites": "{{title}} retiré des favoris.",
+      "removedFromFavoritesOffline": "{{title}} retiré des favoris hors ligne.",
       "addedToFavorites": "{{title}} ajouté aux favoris.",
+      "addedToFavoritesOffline": "{{title}} ajouté aux favoris hors ligne.",
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
       "nothingPlaying": "Aucune lecture en cours.",
       "alreadyPlaying": "{{title}} est déjà en cours de lecture.",
@@ -590,6 +623,7 @@
     "info": {
       "albums": "Albums",
       "plays": "Lectures"
-    }
+    },
+    "downloadAllFailed": "Certains albums n'ont pas pu être téléchargés."
   }
 }

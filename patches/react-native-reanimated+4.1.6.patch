@@ -1,4 +1,4 @@
- diff --git a/node_modules/react-native-reanimated/compatibility.json b/node_modules/react-native-reanimated/compatibility.json
+diff --git a/node_modules/react-native-reanimated/compatibility.json b/node_modules/react-native-reanimated/compatibility.json
 index f1ba9cb..ffab7fe 100644
 --- a/node_modules/react-native-reanimated/compatibility.json
 +++ b/node_modules/react-native-reanimated/compatibility.json

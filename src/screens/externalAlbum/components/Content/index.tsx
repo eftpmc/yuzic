@@ -13,12 +13,13 @@ type Props = {
   album: ExternalAlbum;
 };
 
-const ESTIMATED_ROW_HEIGHT = 72;
-
 const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
-  const songs = album.songs ?? [];
+  const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const previewsRaw = useExternalAlbumPreviews(album);
-  const previews: Map<string, string> = previewsRaw instanceof Map ? previewsRaw : new Map();
+  const previews = useMemo(
+    () => previewsRaw instanceof Map ? previewsRaw : new Map<string, string>(),
+    [previewsRaw]
+  );
   const { toggleInAlbum } = usePreviewPlayer();
 
   // Build the full album preview queue once so all rows share the same array reference.
@@ -26,8 +27,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
     songs
       .filter(s => previews.has(s.id))
       .map(s => externalSongToTrack(s, previews.get(s.id)!)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [previews]
+    [previews, songs]
   );
 
   const handleSongPress = useCallback((song: ExternalSong) => {
