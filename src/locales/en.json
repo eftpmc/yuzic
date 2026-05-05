@@ -13,6 +13,8 @@
       "appearance": "Appearance",
       "downloaders": "Downloaders",
       "listenBrainz": "ListenBrainz",
+      "lastfm": "Last.fm",
+      "stats": "Listening Stats",
       "github": "Github",
       "privacyPolicy": "Privacy Policy",
       "termsOfUse": "Terms of Use",
@@ -187,7 +189,39 @@
       "connectionSuccessful": "ListenBrainz connection successful.",
       "connectionFailed": "Connection failed.",
       "connectFailed": "Failed to connect to ListenBrainz.",
-      "disconnected": "Disconnected from ListenBrainz."
+      "disconnected": "Disconnected from ListenBrainz.",
+      "scrobble": "Scrobble",
+      "nowPlaying": "Now Playing"
+    },
+    "lastfm": {
+      "title": "Last.fm",
+      "apiKey": "API Key",
+      "apiSecret": "API Secret",
+      "apiKeyPlaceholder": "Your Last.fm API key",
+      "apiSecretPlaceholder": "Your Last.fm API secret",
+      "connectedAs": "Connected as",
+      "notConnected": "Not connected",
+      "connectWithLastfm": "Connect with Last.fm",
+      "iAuthorized": "I've authorized — get session",
+      "helperText": "Enter your Last.fm API key and secret, then tap Connect to authorize. Your tracks will be scrobbled automatically. Get API credentials at last.fm/api/account/create.",
+      "disconnect": "Disconnect",
+      "missingCredentials": "Enter API key and secret first.",
+      "credentialsTitle": "App Credentials",
+      "credentialsHelper": "Create an app at last.fm/api/account/create to get these keys.",
+      "pendingInstruction": "A browser window has opened — authorize yuzic, then tap below.",
+      "scrobble": "Scrobble",
+      "nowPlaying": "Now Playing",
+      "connectFailed": "Failed to get token from Last.fm.",
+      "sessionFailed": "Failed to get session. Make sure you authorized the app.",
+      "connectionSuccessful": "Connected as {{username}}.",
+      "disconnected": "Disconnected from Last.fm."
+    },
+    "stats": {
+      "title": "Listening Stats",
+      "topArtists": "Top Artists",
+      "topAlbums": "Top Albums",
+      "topSongs": "Top Songs",
+      "empty": "Play some music to see your listening stats here."
     },
     "downloaders": {
       "title": "Downloaders",
@@ -246,6 +280,8 @@
     "next": "Next",
     "done": "Done",
     "back": "Back",
+    "more": "More",
+    "less": "Less",
     "play": "Play",
     "shuffle": "Shuffle",
     "album": "album",
@@ -395,6 +431,7 @@
     "sections": {
       "albums": "Albums",
       "singles": "Singles & EPs",
+      "topTracks": "Top tracks",
       "similarArtists": "Similar artists"
     }
   },
@@ -521,7 +558,8 @@
       "title": "External Album",
       "downloadToServer": "Download to Server",
       "inLibrary": "In Library",
-      "downloading": "Downloading to server… {{progress}}%"
+      "downloading": "Downloading to server… {{progress}}%",
+      "noServiceConnected": "Connect a downloader in Settings to download"
     },
     "serverStatus": {
       "onServer": "In Library",

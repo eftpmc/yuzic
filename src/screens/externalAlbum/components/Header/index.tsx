@@ -143,7 +143,12 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
                 {index === 0 && album.artist ? (
                   <TouchableOpacity
                     onPress={() =>
-                      (navigation as any).navigate('externalArtistView', { mbid: album.artistMbid, name: album.artist })
+                      (navigation as any).navigate('externalArtistView', {
+                        source: album.externalSource,
+                        artistId: album.externalIds?.artistDeezerId,
+                        mbid: album.artistMbid,
+                        name: album.artist,
+                      })
                     }
                   >
                     <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>

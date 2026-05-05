@@ -9,20 +9,22 @@ import ExternalArtistContent from './components/Content'
 import LoadingExternalArtistContent from './components/Content/Loading'
 
 type RouteParams = {
-  mbid: string
+  source?: 'deezer' | 'musicbrainz' | 'lastfm'
+  artistId?: string
+  mbid?: string
   name?: string
 }
 
 export default function ExternalArtistScreen() {
   const route = useRoute<any>()
-  const { mbid, name } = (route.params ?? {}) as RouteParams
+  const { source, artistId, mbid, name } = (route.params ?? {}) as RouteParams
   const { isDarkMode } = useTheme()
 
   const { data: artist, isLoading, error } = useExternalArtist(
-    mbid ? { mbid, name: name ?? null } : null
+    artistId || mbid || name ? { source, artistId, mbid, name: name ?? null } : null
   )
 
-  if (!mbid) {
+  if (!artistId && !mbid && !name) {
     return <NotFoundView message="Artist not found" />
   }
 

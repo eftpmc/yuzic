@@ -1,49 +1,62 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface PerServerListenBrainzState {
+export interface PerServerLastFmState {
+  apiKey: string;
+  apiSecret: string;
+  sessionKey: string;
   username: string;
-  token: string;
   isAuthenticated: boolean;
   scrobbleEnabled: boolean;
   nowPlayingEnabled: boolean;
 }
 
-export interface ListenBrainzState {
-  byServer: Record<string, PerServerListenBrainzState>;
+export interface LastFmState {
+  byServer: Record<string, PerServerLastFmState>;
 }
 
-const defaultPerServer: PerServerListenBrainzState = {
+const defaultPerServer: PerServerLastFmState = {
+  apiKey: '',
+  apiSecret: '',
+  sessionKey: '',
   username: '',
-  token: '',
   isAuthenticated: false,
   scrobbleEnabled: true,
   nowPlayingEnabled: true,
 };
 
-const initialState: ListenBrainzState = {
+const initialState: LastFmState = {
   byServer: {},
 };
 
-function getOrCreate(state: ListenBrainzState, serverId: string): PerServerListenBrainzState {
+function getOrCreate(state: LastFmState, serverId: string): PerServerLastFmState {
   if (!state.byServer[serverId]) {
     state.byServer[serverId] = { ...defaultPerServer };
   }
   return state.byServer[serverId];
 }
 
-const listenbrainzSlice = createSlice({
-  name: 'listenbrainz',
+const lastfmSlice = createSlice({
+  name: 'lastfm',
   initialState,
   reducers: {
-    setUsername(state, action: PayloadAction<{ serverId: string; value: string }>) {
+    setApiKey(state, action: PayloadAction<{ serverId: string; value: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
-      entry.username = action.payload.value;
+      entry.apiKey = action.payload.value;
       entry.isAuthenticated = false;
     },
-    setToken(state, action: PayloadAction<{ serverId: string; value: string }>) {
+    setApiSecret(state, action: PayloadAction<{ serverId: string; value: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
-      entry.token = action.payload.value;
+      entry.apiSecret = action.payload.value;
       entry.isAuthenticated = false;
+    },
+    setSessionData(
+      state,
+      action: PayloadAction<{ serverId: string; sessionKey: string; username: string }>
+    ) {
+      const entry = getOrCreate(state, action.payload.serverId);
+      entry.sessionKey = action.payload.sessionKey;
+      entry.username = action.payload.username;
+      entry.isAuthenticated = true;
     },
     setAuthenticated(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
       const entry = getOrCreate(state, action.payload.serverId);
@@ -56,21 +69,19 @@ const listenbrainzSlice = createSlice({
       getOrCreate(state, action.payload.serverId).nowPlayingEnabled = action.payload.value;
     },
     disconnect(state, action: PayloadAction<{ serverId: string }>) {
-      const entry = getOrCreate(state, action.payload.serverId);
-      entry.username = '';
-      entry.token = '';
-      entry.isAuthenticated = false;
+      state.byServer[action.payload.serverId] = { ...defaultPerServer };
     },
   },
 });
 
 export const {
-  setUsername,
-  setToken,
+  setApiKey,
+  setApiSecret,
+  setSessionData,
   setAuthenticated,
   setScrobbleEnabled,
   setNowPlayingEnabled,
   disconnect,
-} = listenbrainzSlice.actions;
+} = lastfmSlice.actions;
 
-export default listenbrainzSlice.reducer;
+export default lastfmSlice.reducer;

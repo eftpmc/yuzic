@@ -6,6 +6,8 @@ export type CoverSource =
   | { kind: 'emby'; itemId: string; tag?: string }
   | { kind: 'url'; url: string }
   | { kind: 'musicbrainz'; releaseGroupId: string }
+  | { kind: 'coverartarchive'; mbid: string; mbidType: 'release' | 'release-group' | 'unknown' }
+  | { kind: 'commons'; filename: string }
 
 export const COVER_PX: Record<'thumb' | 'grid' | 'detail' | 'background', number> = {
   thumb: 96,

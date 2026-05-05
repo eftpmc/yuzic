@@ -394,6 +394,7 @@
     "sections": {
       "albums": "Albums",
       "singles": "Singles et EP",
+      "topTracks": "Titres populaires",
       "similarArtists": "Artistes similaires"
     }
   },

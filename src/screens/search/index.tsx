@@ -174,10 +174,13 @@ const Search = () => {
             subtext: result.subtext,
             cover: result.cover,
             artist: result.subtext,
+            externalSource: result.externalSource,
+            externalIds: result.externalIds,
           }}
           artistName={result.subtext}
           onPress={album =>
             (navigation as any).navigate('externalAlbumView', {
+              source: album.externalSource,
               albumId: album.id
             })
           }
@@ -220,7 +223,12 @@ const Search = () => {
           rounded
           onPress={() =>
             result.source === 'external'
-              ? (navigation as any).navigate('externalArtistView', { mbid: result.id, name: result.title })
+              ? (navigation as any).navigate('externalArtistView', {
+                source: result.externalSource,
+                artistId: result.externalIds?.deezerId,
+                mbid: result.externalIds?.mbid ?? result.id,
+                name: result.title,
+              })
               : (navigation as any).navigate('artistView', { id: result.id })
           }
         />

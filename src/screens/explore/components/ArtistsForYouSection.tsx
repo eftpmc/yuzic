@@ -32,7 +32,12 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
       subtitle={item.subtext}
       size={gridItemWidth}
       radius={gridItemWidth / 2}
-      onPress={() => navigation.navigate('externalArtistView', { mbid: item.id, name: item.name })}
+      onPress={() => navigation.navigate('externalArtistView', {
+        source: item.externalSource,
+        artistId: item.externalIds?.deezerId,
+        mbid: item.externalIds?.mbid ?? item.id,
+        name: item.name,
+      })}
     />
   ), [navigation, gridItemWidth])
 

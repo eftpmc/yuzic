@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { ExternalArtist } from '@/types';
 import * as musicbrainz from '@/api/musicbrainz';
+import * as deezer from '@/api/deezer';
 import { resolveArtistMbid } from '@/utils/musicbrainz/resolveArtistMbid';
 import { QueryKeys } from '@/enums/queryKeys';
 import { staleTime } from '@/constants/staleTime';
@@ -11,6 +12,8 @@ const MBID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type UseExternalArtistInput = {
+  source?: 'deezer' | 'musicbrainz' | 'lastfm';
+  artistId?: string | null;
   /** Use directly when present and valid; otherwise we resolve via name. */
   mbid?: string | null;
   /** Used to resolve MBID when mbid is not provided or invalid. */
@@ -21,18 +24,58 @@ function isValidMbid(s: string): boolean {
   return MBID_REGEX.test(s);
 }
 
+async function getDeezerExternalArtist(
+  artistId: string,
+  fallbackMbid?: string | null
+): Promise<ExternalArtist | null> {
+  const baseArtist = await deezer.getDeezerArtist(artistId);
+  if (!baseArtist) return null;
+
+  const [albums, topTracks, similarArtists] = await Promise.all([
+    deezer.getDeezerArtistAlbums(artistId, 80, baseArtist),
+    deezer.getDeezerArtistTopTracks(artistId, 5),
+    deezer.getDeezerRelatedArtists(artistId, 8),
+  ]);
+
+  return {
+    ...baseArtist,
+    externalIds: {
+      ...baseArtist.externalIds,
+      mbid: fallbackMbid ?? baseArtist.externalIds?.mbid ?? null,
+    },
+    topTracks,
+    albums: albums.filter(album => album.releaseType !== 'single'),
+    singles: albums.filter(album => album.releaseType === 'single'),
+    similarArtists,
+  };
+}
+
 export function useExternalArtist(input: UseExternalArtistInput | null) {
   const mbid = input?.mbid ?? null;
   const name = input?.name ?? null;
-  const enabled = !!(mbid || name);
+  const source = input?.source;
+  const artistId = input?.artistId ?? null;
+  const enabled = !!(artistId || mbid || name);
 
   return useQuery({
-    queryKey: [QueryKeys.ExternalArtist, mbid ?? name ?? ''],
+    queryKey: [QueryKeys.ExternalArtist, source ?? 'musicbrainz', artistId ?? mbid ?? name ?? ''],
     enabled,
     staleTime: staleTime.musicbrainz,
 
     queryFn: async (): Promise<ExternalArtist | null> => {
       if (!enabled) return null;
+
+      if (source === 'deezer' && artistId) {
+        return getDeezerExternalArtist(artistId, mbid);
+      }
+
+      if (!source && name) {
+        const deezerArtist = await deezer.resolveDeezerArtistByName(name);
+        if (deezerArtist?.externalIds?.deezerId) {
+          const externalArtist = await getDeezerExternalArtist(deezerArtist.externalIds.deezerId, mbid);
+          if (externalArtist) return externalArtist;
+        }
+      }
 
       let resolvedMbid: string | null =
         mbid && isValidMbid(mbid) ? mbid : null;
@@ -70,6 +113,7 @@ export function useExternalArtist(input: UseExternalArtistInput | null) {
         ...baseArtist,
         albums: discography.albums,
         singles: discography.singles,
+        topTracks: [],
         similarArtists,
       };
     },

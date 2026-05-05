@@ -394,6 +394,7 @@
     "sections": {
       "albums": "专辑",
       "singles": "单曲和 EP",
+      "topTracks": "热门歌曲",
       "similarArtists": "相似歌手"
     }
   },

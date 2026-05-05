@@ -21,6 +21,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
+import { MediaImage } from '@/components/MediaImage';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
 import type { ExternalAlbumBase } from '@/types';
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -36,7 +37,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
   const bottomSheetRef = useSheetRef();
   const downloadSheetRef = useSheetRef();
-  const snapPoints = useMemo(() => ['25%'], []);
+  const snapPoints = useMemo(() => ['30%'], []);
 
   const status = useExternalAlbumStatus(album);
 
@@ -69,7 +70,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
       >
         <BottomSheetView style={[styles.sheetContent, themeStyles.sheetBackground]}>
           <View style={styles.header}>
-            <Ionicons name="disc-outline" size={32} color={themeStyles.icon.color} />
+            <MediaImage cover={album.cover} size="grid" style={styles.cover} />
             <View style={styles.headerText}>
               <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
                 {album.title}
@@ -79,6 +80,8 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
               </Text>
             </View>
           </View>
+
+          <View style={styles.divider} />
 
           {status.kind === 'in_library' ? (
             <View style={styles.option}>
@@ -105,7 +108,14 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
               </Text>
               <Ionicons name="chevron-forward" size={16} color={isDarkMode ? '#555' : '#bbb'} style={styles.chevron} />
             </TouchableOpacity>
-          ) : null}
+          ) : (
+            <View style={styles.option}>
+              <Ionicons name="arrow-down-circle-outline" size={26} color={isDarkMode ? '#444' : '#ccc'} />
+              <Text style={[styles.optionText, styles.disabledText]}>
+                {t('externalAlbum.menu.noServiceConnected')}
+              </Text>
+            </View>
+          )}
         </BottomSheetView>
       </BottomSheetModal>
 
@@ -132,15 +142,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerText: { flex: 1, marginLeft: 12 },
+  cover: {
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  headerText: { flex: 1 },
   title: { fontSize: 16, fontWeight: '600' },
   artist: { fontSize: 14, marginTop: 2 },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#444',
+    marginVertical: 12,
+  },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
   },
   optionText: { marginLeft: 16, fontSize: 16, flex: 1 },
+  disabledText: { color: '#888', fontSize: 14 },
   chevron: { marginLeft: 4 },
 });
 

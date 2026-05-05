@@ -194,7 +194,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color="#fff" style={{ marginLeft: -2 }} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.backButton}
@@ -309,7 +309,12 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   backButton: {
-    padding: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     alignItems: 'center',

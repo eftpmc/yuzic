@@ -1,6 +1,17 @@
 import { CoverSource } from "./Cover";
 import { ExternalSong, Song } from "./Song";
 
+export type ExternalCatalogSource = 'deezer' | 'musicbrainz' | 'lastfm';
+
+export interface ExternalIds {
+    deezerId?: string;
+    artistDeezerId?: string;
+    mbid?: string | null;
+    artistMbid?: string | null;
+    upc?: string | null;
+    isrc?: string | null;
+}
+
 export interface Album {
     id: string;
     title: string;
@@ -24,6 +35,8 @@ export interface ExternalAlbumBase {
     subtext: string;
     releaseDate?: string
     releaseType?: 'album' | 'single'
+    externalSource?: ExternalCatalogSource;
+    externalIds?: ExternalIds;
 }
 
 export interface ExternalAlbum extends ExternalAlbumBase {

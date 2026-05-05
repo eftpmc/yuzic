@@ -6,6 +6,7 @@ import { staleTime } from '@/constants/staleTime';
 import { sharedMusicBrainzQueue } from '@/features/explore/utils/requestQueue';
 
 import * as musicbrainz from '@/api/musicbrainz';
+import * as deezer from '@/api/deezer';
 
 type UseExternalAlbumResult = {
   album: ExternalAlbum | null;
@@ -32,14 +33,21 @@ async function resolveReleaseGroup(albumId: string): Promise<ResolveResult | nul
  * @param albumId - MusicBrainz release ID or release-group ID (servers may provide either)
  */
 export function useExternalAlbum(
-  albumId: string
+  albumIdOrInput: string | { source?: 'deezer' | 'musicbrainz' | 'lastfm'; albumId: string }
 ): UseExternalAlbumResult {
+  const albumId = typeof albumIdOrInput === 'string' ? albumIdOrInput : albumIdOrInput.albumId;
+  const source = typeof albumIdOrInput === 'string' ? undefined : albumIdOrInput.source;
+
   const query = useQuery<ExternalAlbum | null, Error>({
-    queryKey: [QueryKeys.ExternalAlbum, albumId],
+    queryKey: [QueryKeys.ExternalAlbum, source ?? 'musicbrainz', albumId],
     enabled: !!albumId,
     staleTime: staleTime.musicbrainz,
 
     queryFn: async () => {
+      if (source === 'deezer') {
+        return deezer.getDeezerAlbum(albumId);
+      }
+
       // Try single-request path first (release ID from Navidrome/Jellyfin)
       const fromRelease = await sharedMusicBrainzQueue.run(() =>
         musicbrainz.getReleaseWithDetails(albumId)

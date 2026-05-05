@@ -1,5 +1,6 @@
 import { CoverSource } from "./Cover";
 import { ServerType } from "./Server";
+import { ExternalCatalogSource, ExternalIds } from "./Album";
 
 export interface SongBase {
     id: string;
@@ -52,4 +53,7 @@ export interface ExternalSong {
     cover: CoverSource;
     duration: string;
     albumId: string;
+    previewUrl?: string | null;
+    externalSource?: ExternalCatalogSource;
+    externalIds?: ExternalIds;
 }

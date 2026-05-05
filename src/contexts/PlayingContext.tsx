@@ -22,9 +22,19 @@ import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
+import * as lastfm from '@/api/lastfm';
 import * as navidromeScrobble from '@/api/navidrome/scrobble';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
+import {
+  selectListenBrainzConfig,
+  selectListenBrainzScrobbleEnabled,
+  selectListenBrainzNowPlayingEnabled,
+} from '@/utils/redux/selectors/listenbrainzSelectors';
+import {
+  selectLastFmConfig,
+  selectLastFmScrobbleEnabled,
+  selectLastFmNowPlayingEnabled,
+} from '@/utils/redux/selectors/lastfmSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent } from './playingQueue';
@@ -118,6 +128,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
+  const lbScrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
+  const lbNowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
+  const lastFmConfig = useSelector(selectLastFmConfig);
+  const lastFmScrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
+  const lastFmNowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -208,19 +223,32 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         // server scrobble is best-effort; never block playback
       }
     }
-    if (!listenBrainzConfig?.token) return;
-    try {
-      await listenbrainz.submitScrobble(listenBrainzConfig, {
-        artist: song.artist,
-        track: song.title,
-        listenedAt: Math.floor(opts.startTime / 1000),
-        durationSeconds: duration > 0 ? duration : undefined,
-        durationPlayedSeconds: opts.listenedSeconds,
-      });
-    } catch (err) {
-      console.warn('ListenBrainz scrobble failed', err);
+    if (listenBrainzConfig?.token && lbScrobbleEnabled) {
+      try {
+        await listenbrainz.submitScrobble(listenBrainzConfig, {
+          artist: song.artist,
+          track: song.title,
+          listenedAt: Math.floor(opts.startTime / 1000),
+          durationSeconds: duration > 0 ? duration : undefined,
+          durationPlayedSeconds: opts.listenedSeconds,
+        });
+      } catch (err) {
+        console.warn('ListenBrainz scrobble failed', err);
+      }
     }
-  }, [activeServer, listenBrainzConfig, dispatch, api]);
+    if (lastFmConfig && lastFmScrobbleEnabled) {
+      try {
+        await lastfm.submitScrobble(lastFmConfig, {
+          artist: song.artist,
+          track: song.title,
+          timestamp: Math.floor(opts.startTime / 1000),
+          duration: duration > 0 ? duration : undefined,
+        });
+      } catch (err) {
+        console.warn('LastFM scrobble failed', err);
+      }
+    }
+  }, [activeServer, listenBrainzConfig, lbScrobbleEnabled, lastFmConfig, lastFmScrobbleEnabled, dispatch, api]);
 
   useEffect(() => {
     scrobbleIfNeededRef.current = scrobbleIfNeeded;
@@ -293,6 +321,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     currentSongRef.current = resolvedSong;
     setCurrentSong(resolvedSong);
 
+    const duration = Number(resolvedSong.duration) || undefined;
+    if (listenBrainzConfig?.token && lbNowPlayingEnabled) {
+      listenbrainz.submitNowPlaying(listenBrainzConfig, {
+        artist: resolvedSong.artist,
+        track: resolvedSong.title,
+        durationSeconds: duration,
+      }).catch(() => {});
+    }
+    if (lastFmConfig && lastFmNowPlayingEnabled) {
+      lastfm.updateNowPlaying(lastFmConfig, {
+        artist: resolvedSong.artist,
+        track: resolvedSong.title,
+        duration,
+      }).catch(() => {});
+    }
+
     // Extend native window: keep NATIVE_WINDOW_SIZE - 1 songs ahead of current.
     // This handles gapless natural advance without destroying the native playlist.
     const nativeWindowEnd = nativeWindowStartRef.current + nativeWindowSizeRef.current;
@@ -307,7 +351,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         .then(() => { nativeWindowSizeRef.current += toAdd.length; })
         .catch(() => { });
     }
-  }, [nitroTrackId, nitroTrackIsPreview]);
+  }, [nitroTrackId, nitroTrackIsPreview, listenBrainzConfig, lbNowPlayingEnabled, lastFmConfig, lastFmNowPlayingEnabled]);
 
   const playSong = useCallback(async (song: Song) => {
     const playableSong = resolvePlayableSong(song);

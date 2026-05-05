@@ -17,6 +17,7 @@ import {
 } from '@/types';
 
 import * as musicbrainz from '@/api/musicbrainz';
+import * as deezer from '@/api/deezer';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
@@ -54,6 +55,15 @@ export interface SearchResult {
   cover: CoverSource;
   type: 'song' | 'album' | 'artist' | 'playlist';
   source: 'local' | 'external';
+  externalSource?: 'deezer' | 'musicbrainz' | 'lastfm';
+  externalIds?: {
+    deezerId?: string;
+    artistDeezerId?: string;
+    mbid?: string | null;
+    artistMbid?: string | null;
+    upc?: string | null;
+    isrc?: string | null;
+  };
   isDownloaded: boolean;
   song?: Song;
 }
@@ -61,7 +71,14 @@ export interface SearchResult {
 // --- result mapping helpers ---
 
 function albumToResult(
-  album: { id: string; title: string; subtext: string; cover: CoverSource },
+  album: {
+    id: string;
+    title: string;
+    subtext: string;
+    cover: CoverSource;
+    externalSource?: SearchResult['externalSource'];
+    externalIds?: SearchResult['externalIds'];
+  },
   source: SearchResult['source'],
   isDownloaded: boolean
 ): SearchResult {
@@ -72,18 +89,33 @@ function albumToResult(
     cover: album.cover,
     type: 'album',
     source,
+    externalSource: album.externalSource,
+    externalIds: album.externalIds,
     isDownloaded,
   };
 }
 
-function artistToResult(artist: Artist, isDownloaded = true): SearchResult {
+function artistToResult(
+  artist: Artist | {
+    id: string;
+    name: string;
+    subtext: string;
+    cover: CoverSource;
+    externalSource?: SearchResult['externalSource'];
+    externalIds?: SearchResult['externalIds'];
+  },
+  isDownloaded = true,
+  source: SearchResult['source'] = 'local'
+): SearchResult {
   return {
     id: artist.id,
     title: artist.name,
     subtext: artist.subtext,
     cover: artist.cover,
     type: 'artist',
-    source: 'local',
+    source,
+    externalSource: 'externalSource' in artist ? artist.externalSource : undefined,
+    externalIds: 'externalIds' in artist ? artist.externalIds : undefined,
     isDownloaded,
   };
 }
@@ -250,8 +282,28 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     if (!query.trim()) return [];
 
     try {
+      const [deezerArtists, deezerAlbums] = await Promise.all([
+        deezer.searchDeezerArtists(query, 4),
+        deezer.searchDeezerAlbums(query, 6),
+      ]);
+
+      const deezerResults = [
+        ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
+        ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
+      ];
+
+      if (deezerResults.length >= 4) return deezerResults;
+
       const albums = await musicbrainz.searchAlbums(query);
-      return albums.map(album => albumToResult(album, 'external', false));
+      const musicBrainzResults = albums
+        .slice(0, 6 - deezerResults.length)
+        .map(album => albumToResult({
+          ...album,
+          externalSource: 'musicbrainz' as const,
+          externalIds: { mbid: album.id },
+        }, 'external', false));
+
+      return [...deezerResults, ...musicBrainzResults];
     } catch {
       return [];
     }

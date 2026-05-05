@@ -15,6 +15,12 @@ export function useExternalAlbumPreviews(album: ExternalAlbum | null): Map<strin
     queryFn: async () => {
       if (!album) return new Map<string, string>();
 
+      const embedded = new Map<string, string>();
+      for (const song of album.songs) {
+        if (song.previewUrl) embedded.set(song.id, song.previewUrl);
+      }
+      if (embedded.size > 0) return embedded;
+
       const deezerTracks = await searchAlbumPreviews(album.artist, album.title);
       if (!deezerTracks.length) return new Map<string, string>();
 

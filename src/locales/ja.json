@@ -394,6 +394,7 @@
     "sections": {
       "albums": "アルバム",
       "singles": "シングル・EP",
+      "topTracks": "人気曲",
       "similarArtists": "似ているアーティスト"
     }
   },

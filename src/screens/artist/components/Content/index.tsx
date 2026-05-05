@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo } from 'react'
-import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native'
+import React, { useCallback, useMemo, useState } from 'react'
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
+import { Ionicons } from '@expo/vector-icons'
 import { useDownload } from '@/contexts/DownloadContext'
 import type { Album, Artist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
@@ -24,7 +25,10 @@ type Props = {
 type ArtistContentItem =
   | { kind: 'section'; id: string; title: string }
   | { kind: 'album'; id: string; album: Album }
+  | { kind: 'showMore'; id: string; target: 'albums' | 'singles'; remaining: number }
   | { kind: 'similar'; id: string }
+
+const INITIAL_RELEASE_ROWS = 3
 
 function isSingleOrEp(album: Album): boolean {
   const songCount = album.songs?.length ?? 0
@@ -54,7 +58,12 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
       subtitle={item.subtext}
       size={itemSize}
       radius={itemSize / 2}
-      onPress={() => navigation.navigate('externalArtistView', { mbid: item.id, name: item.name })}
+      onPress={() => navigation.navigate('externalArtistView', {
+        source: item.externalSource,
+        artistId: item.externalIds?.deezerId,
+        mbid: item.externalIds?.mbid ?? item.id,
+        name: item.name,
+      })}
     />
   ), [itemSize, navigation])
 
@@ -71,7 +80,7 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
         keyExtractor={item => item.id}
         renderItem={renderArtist}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.similarList}
+        contentContainerStyle={styles.similarListContent}
         ItemSeparatorComponent={() => <View style={styles.similarGap} />}
       />
     </View>
@@ -84,6 +93,8 @@ export default function ArtistContent({ artist }: Props) {
   const { t } = useTranslation()
   const { tracks } = useTracks()
   const { getAllDownloadedTracks } = useDownload()
+  const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
+  const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
 
   const downloadedTrackIds = React.useMemo(
     () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
@@ -101,17 +112,35 @@ export default function ArtistContent({ artist }: Props) {
 
     if (albums.length > 0) {
       rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
-      rows.push(...albums.map(album => ({ kind: 'album' as const, id: `album-${album.id}`, album })))
+      const visibleAlbums = albums.slice(0, visibleAlbumsCount)
+      rows.push(...visibleAlbums.map(album => ({ kind: 'album' as const, id: `album-${album.id}`, album })))
+      if (visibleAlbumsCount < albums.length) {
+        rows.push({
+          kind: 'showMore',
+          id: 'show-more-albums',
+          target: 'albums',
+          remaining: albums.length - visibleAlbumsCount,
+        })
+      }
     }
 
     if (singles.length > 0) {
       rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
-      rows.push(...singles.map(album => ({ kind: 'album' as const, id: `single-${album.id}`, album })))
+      const visibleSingles = singles.slice(0, visibleSinglesCount)
+      rows.push(...visibleSingles.map(album => ({ kind: 'album' as const, id: `single-${album.id}`, album })))
+      if (visibleSinglesCount < singles.length) {
+        rows.push({
+          kind: 'showMore',
+          id: 'show-more-singles',
+          target: 'singles',
+          remaining: singles.length - visibleSinglesCount,
+        })
+      }
     }
 
     rows.push({ kind: 'similar', id: 'similar-artists' })
     return rows
-  }, [artist.ownedAlbums, t])
+  }, [artist.ownedAlbums, visibleAlbumsCount, visibleSinglesCount, t])
 
   return (
     <FlashList
@@ -131,6 +160,26 @@ export default function ArtistContent({ artist }: Props) {
 
         if (item.kind === 'similar') {
           return <SimilarArtistsSection artist={artist} />
+        }
+
+        if (item.kind === 'showMore') {
+          return (
+            <TouchableOpacity
+              style={styles.showMoreRow}
+              onPress={() => {
+                if (item.target === 'albums') setVisibleAlbumsCount(c => c + 5)
+                else setVisibleSinglesCount(c => c + 5)
+              }}
+              activeOpacity={0.65}
+            >
+              <View style={[styles.showMoreIcon, isDarkMode && styles.showMoreIconDark]}>
+                <Ionicons name="ellipsis-horizontal" size={18} color={isDarkMode ? '#fff' : '#111'} />
+              </View>
+              <Text style={[styles.showMoreText, isDarkMode && styles.showMoreTextDark]}>
+                {item.remaining} more
+              </Text>
+            </TouchableOpacity>
+          )
         }
 
         return (
@@ -158,7 +207,6 @@ export default function ArtistContent({ artist }: Props) {
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 10,
   },
@@ -167,20 +215,48 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.5,
+    paddingHorizontal: 16,
     textTransform: 'uppercase',
   },
   sectionTitleDark: {
     color: '#888',
   },
   similarSection: {
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingTop: 18,
+    paddingBottom: 10,
   },
-  similarList: {
+  similarListContent: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 12,
   },
   similarGap: {
     width: 12,
+  },
+  showMoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 4,
+  },
+  showMoreIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 6,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  showMoreIconDark: {
+    backgroundColor: '#242426',
+  },
+  showMoreText: {
+    color: '#111',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  showMoreTextDark: {
+    color: '#fff',
   },
 })

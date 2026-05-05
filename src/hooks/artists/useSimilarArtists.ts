@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
+import * as deezer from '@/api/deezer'
 import * as listenbrainz from '@/api/listenbrainz'
-import { fetchArtistImage, getArtistBasic } from '@/api/musicbrainz/artists/getArtist'
+import { fetchArtistCommonsFilename, getArtistBasic } from '@/api/musicbrainz/artists/getArtist'
+import { getArtistImagesByMbid } from '@/api/musicbrainz/artists/getArtistImagesByMbid'
+import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists'
+import { RAWARR_URL } from '@/constants/rawarr'
 import { QueryKeys } from '@/enums/queryKeys'
 import { staleTime } from '@/constants/staleTime'
 import type { ExternalArtistBase } from '@/types'
@@ -16,12 +20,57 @@ export type SimilarArtistsInput = {
   limit?: number
 }
 
+async function getSimilarViaLastFm(
+  name: string,
+  excludeName: string | undefined,
+  limit: number
+): Promise<ExternalArtistBase[]> {
+  const candidates = await getLastFmSimilarArtists(RAWARR_URL, name, limit * 2)
+  if (!candidates.length) return []
+
+  const normalizedExclude = excludeName?.trim().toLowerCase()
+  const filtered = candidates.filter(
+    c => !!c.mbid && (!normalizedExclude || c.name.trim().toLowerCase() !== normalizedExclude)
+  ).slice(0, limit)
+
+  const deezerArtists = (await Promise.all(
+    filtered.map(c => deezer.resolveDeezerArtistByName(c.name))
+  )).filter(Boolean) as ExternalArtistBase[]
+
+  if (deezerArtists.length > 0) {
+    return deezerArtists.slice(0, limit)
+  }
+
+  // Fallback to Wikidata images by MBID when Deezer cannot resolve the list.
+  const mbids = filtered.map(c => c.mbid) as string[]
+  const images = mbids.length ? await getArtistImagesByMbid(mbids) : new Map<string, string>()
+
+  return filtered.map(c => {
+    const commonsFilename = images.get(c.mbid!)
+    return {
+      id: c.mbid!,
+      name: c.name,
+      subtext: '',
+      cover: commonsFilename
+        ? { kind: 'commons' as const, filename: commonsFilename }
+        : { kind: 'none' as const },
+    }
+  })
+}
+
 export async function getSimilarExternalArtists({
   mbid,
   name,
   excludeName,
   limit = 8,
 }: SimilarArtistsInput): Promise<ExternalArtistBase[]> {
+  // Fast path: use LastFM via rawarr-server (no MusicBrainz queue needed for the list itself)
+  if (name) {
+    const lastFmResult = await getSimilarViaLastFm(name, excludeName ?? undefined, limit)
+    if (lastFmResult.length > 0) return lastFmResult
+  }
+
+  // Fallback: ListenBrainz + MusicBrainz
   const resolvedMbid =
     mbid ?? (name ? await sharedMusicBrainzQueue.run(() => resolveArtistMbid(undefined, name)) : null)
 
@@ -44,15 +93,15 @@ export async function getSimilarExternalArtists({
     if (!basic) continue
     if (normalizedExcludeName && basic.name.trim().toLowerCase() === normalizedExcludeName) continue
 
-    const imageUrl = basic.wikidataId
-      ? await fetchArtistImage(basic.wikidataId)
+    const filename = basic.wikidataId
+      ? await fetchArtistCommonsFilename(basic.wikidataId)
       : null
 
     result.push({
       id: basic.id,
       name: basic.name,
       subtext: basic.area ?? '',
-      cover: imageUrl ? { kind: 'url', url: imageUrl } : { kind: 'none' },
+      cover: filename ? { kind: 'commons', filename } : { kind: 'none' },
     })
   }
 

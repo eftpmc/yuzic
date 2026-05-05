@@ -11,7 +11,7 @@ export type ArtistBasicData = {
 
 /**
  * Fetches only the MusicBrainz artist record (name, area, wikidata relation URL).
- * Does NOT fetch the Wikidata image — call fetchArtistImage separately.
+ * Does NOT fetch the Wikidata image — call fetchArtistCommonsFilename separately.
  * This is the fast path for the discovery pipeline: only the MB request goes
  * through the rate-limited queue; Wikidata runs in parallel with queue delays.
  */
@@ -40,10 +40,11 @@ export async function getArtistBasic(
 }
 
 /**
- * Fetches an artist's photo from Wikidata/Commons.
+ * Fetches an artist's Commons filename from Wikidata.
+ * Use with CoverSource { kind: 'commons', filename } so buildCover can size it correctly.
  * Not rate-limited — safe to run in parallel with MB queue requests.
  */
-export async function fetchArtistImage(wikidataId: string): Promise<string | null> {
+export async function fetchArtistCommonsFilename(wikidataId: string): Promise<string | null> {
   try {
     const wdRes = await fetch(
       `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
@@ -56,8 +57,7 @@ export async function fetchArtistImage(wikidataId: string): Promise<string | nul
     const imageName = entity?.claims?.P18?.[0]?.mainsnak?.datavalue?.value
     if (!imageName) return null
 
-    const commonsName = encodeURIComponent(imageName.replace(/ /g, '_'))
-    return `https://commons.wikimedia.org/w/thumb.php?f=${commonsName}&w=512`
+    return imageName.replace(/ /g, '_')
   } catch {
     return null
   }
@@ -76,8 +76,8 @@ export async function getArtist(
 
     let cover: ExternalArtistBase['cover'] = { kind: 'none' }
     if (basic.wikidataId) {
-      const imageUrl = await fetchArtistImage(basic.wikidataId)
-      if (imageUrl) cover = { kind: 'url', url: imageUrl }
+      const filename = await fetchArtistCommonsFilename(basic.wikidataId)
+      if (filename) cover = { kind: 'commons', filename }
     }
 
     return {

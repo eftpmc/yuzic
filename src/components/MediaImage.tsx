@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Image } from 'react-native';
 import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
-import { buildCover } from '@/utils/builders/buildCover';
+import { buildCover, buildCoverArtArchiveUrl } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
@@ -26,6 +26,16 @@ export function MediaImage({
     void activeServerId;
     return buildCover(cover, size);
   }, [cover, size, activeServerId]);
+  const fallbackUri = useMemo(() => {
+    if (cover.kind !== 'coverartarchive' || cover.mbidType !== 'unknown') return null;
+    return buildCoverArtArchiveUrl(cover.mbid, 'release', size);
+  }, [cover, size]);
+  const [useFallback, setUseFallback] = useState(false);
+  const sourceUri = useFallback && fallbackUri ? fallbackUri : uri;
+
+  useEffect(() => {
+    setUseFallback(false);
+  }, [uri, fallbackUri]);
 
   if (uri === 'heart-icon') {
     return (
@@ -35,7 +45,7 @@ export function MediaImage({
     );
   }
 
-  if (!uri) {
+  if (!sourceUri) {
     return (
       <Image
         source={placeholder}
@@ -53,11 +63,14 @@ export function MediaImage({
         resizeMode="cover"
       />
       <TurboImage
-        source={{ uri }}
+        source={{ uri: sourceUri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode="cover"
         cachePolicy="dataCache"
         fadeDuration={200}
+        onFailure={() => {
+          if (fallbackUri && !useFallback) setUseFallback(true);
+        }}
       />
     </View>
   );

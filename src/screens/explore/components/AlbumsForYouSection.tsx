@@ -32,7 +32,10 @@ export default function AlbumsForYouSection({ data, ready }: Props) {
       subtitle={item.subtext}
       size={gridItemWidth}
       radius={6}
-      onPress={() => navigation.navigate('externalAlbumView', { albumId: item.id })}
+      onPress={() => navigation.navigate('externalAlbumView', {
+        source: item.externalSource,
+        albumId: item.id,
+      })}
     />
   ), [navigation, gridItemWidth])
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ export default function ExternalArtistHeader({ artist }: Props) {
   const { t } = useTranslation()
   const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
+  const [bioExpanded, setBioExpanded] = useState(false)
 
   const bgUri = buildCover(artist.cover, 'background')
 
@@ -74,9 +75,9 @@ export default function ExternalArtistHeader({ artist }: Props) {
 
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color="#fff" style={{ marginLeft: -2 }} />
           </TouchableOpacity>
-          <View style={styles.backButton} />
+          <View style={{ width: 36 }} />
         </View>
       </View>
 
@@ -97,6 +98,19 @@ export default function ExternalArtistHeader({ artist }: Props) {
               </React.Fragment>
             ))}
           </View>
+          {!!artist.biography && (
+            <TouchableOpacity onPress={() => setBioExpanded(e => !e)} activeOpacity={0.7} style={styles.bioContainer}>
+              <Text
+                style={[styles.bioText, isDarkMode && styles.bioTextDark]}
+                numberOfLines={bioExpanded ? undefined : 3}
+              >
+                {artist.biography}
+              </Text>
+              <Text style={[styles.bioToggle, isDarkMode && styles.bioToggleDark]}>
+                {bioExpanded ? t('common.less') : t('common.more')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </>
@@ -139,7 +153,12 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   backButton: {
-    padding: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     alignItems: 'center',
@@ -173,5 +192,28 @@ const styles = StyleSheet.create({
   },
   metaTextDark: {
     color: '#aaa',
+  },
+  bioContainer: {
+    marginTop: 12,
+    alignSelf: 'stretch',
+  },
+  bioText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#555',
+    textAlign: 'center',
+  },
+  bioTextDark: {
+    color: '#aaa',
+  },
+  bioToggle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  bioToggleDark: {
+    color: '#888',
   },
 })
