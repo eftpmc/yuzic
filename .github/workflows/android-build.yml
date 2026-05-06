@@ -29,8 +29,10 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Fix hermesc permissions
-        run: chmod +x node_modules/react-native/sdks/hermesc/osx-bin/hermesc || true
+      - name: Fix hermesc for macOS
+        run: |
+          chmod +x node_modules/react-native/sdks/hermesc/osx-bin/hermesc || true
+          xattr -rd com.apple.quarantine node_modules/react-native/sdks/hermesc/ || true
 
       - name: Install Ruby dependencies
         run: |
