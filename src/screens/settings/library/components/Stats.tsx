@@ -103,7 +103,9 @@ const Stats: React.FC = () => {
         </Text>
         <Switch
           value={syncOnAppStart}
-          onValueChange={(v) => dispatch(setSyncOnAppStart(v))}
+          onValueChange={(v) => {
+            dispatch(setSyncOnAppStart(v));
+          }}
           trackColor={{ true: themeColor }}
           thumbColor="#fff"
         />

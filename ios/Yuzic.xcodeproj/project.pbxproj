@@ -12,6 +12,7 @@
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		AD7DA4CA31162C353896478B /* libPods-Yuzic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20DFED5AC99809ACD3B26DF0 /* libPods-Yuzic.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		C0DEF00D0000000000000001 /* PhoneSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF00D0000000000000002 /* PhoneSceneDelegate.swift */; };
 		E7000440E371C289BA5B5809 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 875E459F6E2A3DB7320988DC /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
@@ -27,6 +28,7 @@
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Yuzic/SplashScreen.storyboard; sourceTree = "<group>"; };
 		ADE8578FC89021972922440C /* Pods-Yuzic.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yuzic.release.xcconfig"; path = "Target Support Files/Pods-Yuzic/Pods-Yuzic.release.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C0DEF00D0000000000000002 /* PhoneSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhoneSceneDelegate.swift; path = Yuzic/PhoneSceneDelegate.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Yuzic/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Yuzic-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Yuzic-Bridging-Header.h"; path = "Yuzic/Yuzic-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -48,6 +50,7 @@
 			isa = PBXGroup;
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
+				C0DEF00D0000000000000002 /* PhoneSceneDelegate.swift */,
 				F11748442D0722820044C1D9 /* Yuzic-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -343,6 +346,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				C0DEF00D0000000000000001 /* PhoneSceneDelegate.swift in Sources */,
 				2653EE81F0F6CCDBAE26B2B0 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -370,7 +374,7 @@
 				INFOPLIST_FILE = Yuzic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Yuzic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -409,7 +413,7 @@
 				INFOPLIST_FILE = Yuzic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Yuzic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -479,7 +483,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -537,7 +541,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",

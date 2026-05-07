@@ -61,6 +61,31 @@
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Phone</string>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).PhoneSceneDelegate</string>
+				</dict>
+			</array>
+			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>CarPlay</string>
+					<key>UISceneClassName</key>
+					<string>CPTemplateApplicationScene</string>
+					<key>UISceneDelegateClassName</key>
+					<string>RNTPCarPlaySceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
 	</dict>
 	<key>UIBackgroundModes</key>
 	<array>

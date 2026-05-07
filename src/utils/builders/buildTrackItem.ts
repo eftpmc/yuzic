@@ -1,23 +1,15 @@
-import type { TrackItem } from 'react-native-nitro-player';
+import type { MediaItem } from '@rntp/player';
 import { Song } from '@/types';
 import { buildCover } from './buildCover';
 
-export function buildTrackItem(song: Song, playlistId?: string): TrackItem {
+export function buildTrackItem(song: Song): MediaItem {
   return {
-    id: song.id,
+    mediaId: song.id,
     title: song.title,
     artist: song.artist,
-    album: '',
-    duration: parseFloat(song.duration || '0'),
+    albumTitle: '',
+    duration: Number(song.duration) || undefined,
     url: song.streamUrl,
-    artwork: buildCover(song.cover, 'grid') ?? undefined,
-    extraPayload: {
-      albumId: song.albumId ?? '',
-      artistId: song.artistId ?? '',
-      serverId: song.sourceServerId ?? '',
-      serverType: song.sourceServerType ?? '',
-      isPreview: song.isPreview ? 'true' : '',
-      ...(playlistId ? { playlistId } : {}),
-    },
+    artworkUrl: buildCover(song.cover, 'grid') ?? undefined,
   };
 }
