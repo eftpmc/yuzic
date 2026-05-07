@@ -30,6 +30,8 @@ import NetInfo from '@react-native-community/netinfo';
 import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { QueryKeys } from '@/enums/queryKeys';
 
+const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
+
 onlineManager.setEventListener(setOnline => {
   return NetInfo.addEventListener(state => {
     setOnline(!!state.isConnected)
@@ -50,6 +52,37 @@ const LIBRARY_ERROR_QUERY_KEYS = new Set<string>([
   QueryKeys.Genres,
 ]);
 
+function hasUsableLibraryData(value: unknown): boolean {
+  if (Array.isArray(value)) return value.length > 0;
+  if (
+    value &&
+    typeof value === 'object' &&
+    'songs' in value &&
+    Array.isArray((value as { songs?: unknown }).songs)
+  ) {
+    return ((value as { songs: unknown[] }).songs).length > 0;
+  }
+  return value !== null && value !== undefined;
+}
+
+function hasCachedLibraryDataForServer(queryKey: readonly unknown[]): boolean {
+  const serverId = queryKey[1];
+  if (typeof serverId !== 'string') return false;
+
+  return queryClient
+    .getQueryCache()
+    .findAll()
+    .some(query => {
+      const [rootKey, cachedServerId] = query.queryKey;
+      return (
+        typeof rootKey === 'string' &&
+        cachedServerId === serverId &&
+        LIBRARY_ERROR_QUERY_KEYS.has(rootKey) &&
+        hasUsableLibraryData(query.state.data)
+      );
+    });
+}
+
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (_error, query) => {
@@ -60,9 +93,12 @@ const queryClient = new QueryClient({
         typeof rootKey === 'string' &&
         LIBRARY_ERROR_QUERY_KEYS.has(rootKey) &&
         query.state.data === undefined &&
+        !hasCachedLibraryDataForServer(query.queryKey) &&
         !query.meta?.suppressGlobalErrorToast
       ) {
-        toast.error(i18n.t('common.libraryLoadFailed'));
+        toast.error(i18n.t('common.libraryLoadFailed'), {
+          id: LIBRARY_LOAD_FAILED_TOAST_ID,
+        });
       }
     },
   }),

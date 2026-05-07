@@ -91,10 +91,11 @@ const variantStyles = {
     placeholderIconSize: 32,
   },
   android: {
-    blurIntensity: 140,
+    blurIntensity: 0,
     wrapper: {
-      margin: 12,
-      marginBottom: 8,
+      marginHorizontal: 12,
+      marginTop: 12,
+      marginBottom: 0,
       borderRadius: 14,
       overflow: 'hidden' as const,
       shadowColor: '#000',
@@ -103,41 +104,48 @@ const variantStyles = {
       elevation: 4,
     },
     container: {
-      padding: 10,
-      paddingBottom: 6,
-      paddingHorizontal: 16,
+      flexDirection: 'column' as const,
+      padding: 8,
+      paddingBottom: 0,
+      paddingHorizontal: 12,
       borderRadius: 14,
     },
-    topRowWrapper: null,
+    topRowWrapper: {
+      height: 40,
+      justifyContent: 'center' as const,
+    },
     topRow: {
-      minHeight: 50,
+      minHeight: 40,
+      paddingRight: 4,
     },
     coverArt: {
-      width: 45,
-      height: 45,
-      marginRight: 12,
+      width: 42,
+      height: 42,
+      marginRight: 10,
     },
     title: {
-      fontSize: 14,
+      fontSize: 13,
     },
     artist: {
-      fontSize: 14,
+      fontSize: 13,
     },
     progressBarContainer: {
-      height: 4,
-      marginTop: 8,
+      height: 3,
+      marginTop: 6,
     },
     playPauseButton: {
       padding: 8,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
       marginRight: 4,
     },
     fabButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
       elevation: 4,
     },
-    placeholderIconSize: 40,
+    placeholderIconSize: 32,
   },
 };
 
@@ -232,6 +240,12 @@ export default function PlayingBarBase({ variant }: Props) {
     setCurrentGradient(nextGradient);
   }, [nextGradient]);
 
+  const androidSurfaceStyle = {
+    backgroundColor: isDarkMode ? 'rgba(24,24,24,0.96)' : 'rgba(255,255,255,0.96)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+  };
+
   const content = (
     <View style={[styles.topRow, stylesForVariant.topRow]}>
       {currentSong?.cover ? (
@@ -299,33 +313,45 @@ export default function PlayingBarBase({ variant }: Props) {
     </View>
   );
 
+  const barContent = (
+    <>
+      {stylesForVariant.topRowWrapper ? (
+        <View style={stylesForVariant.topRowWrapper}>{content}</View>
+      ) : content}
+
+      <View style={[styles.progressBarContainer, stylesForVariant.progressBarContainer]}>
+        {currentSong && (
+          <View
+            style={[
+              styles.progressBar,
+              {
+                width: `${progress * 100}%`,
+                backgroundColor: themeColor,
+              },
+            ]}
+          />
+        )}
+      </View>
+    </>
+  );
+
   return (
     <>
       <TouchableOpacity onPress={handleExpand} activeOpacity={0.9}>
         <View style={[styles.wrapper, stylesForVariant.wrapper]}>
-          <BlurView
-            intensity={stylesForVariant.blurIntensity}
-            tint={isDarkMode ? 'dark' : 'light'}
-            style={[styles.container, stylesForVariant.container]}
-          >
-            {stylesForVariant.topRowWrapper ? (
-              <View style={stylesForVariant.topRowWrapper}>{content}</View>
-            ) : content}
-
-            <View style={[styles.progressBarContainer, stylesForVariant.progressBarContainer]}>
-              {currentSong && (
-                <View
-                  style={[
-                    styles.progressBar,
-                    {
-                      width: `${progress * 100}%`,
-                      backgroundColor: themeColor,
-                    },
-                  ]}
-                />
-              )}
+          {variant === 'android' ? (
+            <View style={[styles.container, stylesForVariant.container, androidSurfaceStyle]}>
+              {barContent}
             </View>
-          </BlurView>
+          ) : (
+            <BlurView
+              intensity={stylesForVariant.blurIntensity}
+              tint={isDarkMode ? 'dark' : 'light'}
+              style={[styles.container, stylesForVariant.container]}
+            >
+              {barContent}
+            </BlurView>
+          )}
         </View>
       </TouchableOpacity>
 

@@ -21,7 +21,7 @@ import TrackPlayer, {
 import { Album, Playlist, Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
 import { useApi } from '@/api';
-import { buildTrackItem } from '@/utils/builders/buildTrackItem';
+import { buildTrackItem, normalizeMediaUrl } from '@/utils/builders/buildTrackItem';
 import { buildCover } from '@/utils/builders/buildCover';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
@@ -125,7 +125,7 @@ const toPlayableBrowseItem = (song: Song): BrowseItem | null => {
     title: song.title,
     artist: song.artist,
     artworkUrl: buildCover(song.cover, 'grid') ?? undefined,
-    url: song.streamUrl,
+    url: normalizeMediaUrl(song.streamUrl),
     duration: Number(song.duration) || undefined,
   };
 };
@@ -201,8 +201,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
           },
         });
         playerWasSetup = true;
-      } catch {
-        playerWasSetup = true;
+      } catch (err) {
+        console.warn('TrackPlayer setup failed', err);
       }
     }
 
