@@ -589,7 +589,8 @@
     "actions": {
       "play": "Play",
       "shuffle": "Shuffle",
-      "addToQueue": "Add to Queue",
+      "addToNext": "Play Next",
+      "addToEnd": "Add to End",
       "shuffleToQueue": "Shuffle to Queue",
       "goToAlbum": "Go to Album",
       "goToExternalAlbum": "Go to External Album",
@@ -598,6 +599,11 @@
       "download": "Download",
       "downloading": "Downloading…",
       "downloaded": "Downloaded"
+    },
+    "toasts": {
+      "addedNext": "Playing {{title}} next",
+      "addedToEnd": "Added {{title}} to queue",
+      "shuffledToQueue": "Shuffled {{title}} into queue"
     },
     "sections": {
       "albumInfo": "Album Info"

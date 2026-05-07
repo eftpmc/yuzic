@@ -551,7 +551,8 @@
     "actions": {
       "play": "Lire",
       "shuffle": "Lecture aléatoire",
-      "addToQueue": "Ajouter à la file d'attente",
+      "addToNext": "Lire ensuite",
+      "addToEnd": "Ajouter à la fin",
       "shuffleToQueue": "Ajouter aléatoirement à la file d'attente",
       "goToAlbum": "Aller à l'album",
       "goToExternalAlbum": "Aller à l'album externe",
@@ -560,6 +561,11 @@
       "download": "Télécharger",
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé"
+    },
+    "toasts": {
+      "addedNext": "Lecture de {{title}} ensuite",
+      "addedToEnd": "{{title}} ajouté à la file",
+      "shuffledToQueue": "{{title}} ajouté en ordre aléatoire"
     },
     "sections": {
       "albumInfo": "Informations sur l'album"

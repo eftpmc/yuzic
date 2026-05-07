@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import type { ExternalAlbumBase, ExternalArtist, ExternalArtistBase, ExternalSong } from '@/types'
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
-import ListSeparator from '@/components/ListSeparator'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
@@ -20,6 +19,7 @@ type Props = {
 type ExternalArtistContentItem =
   | { kind: 'section'; id: string; title: string }
   | { kind: 'topTrack'; id: string; song: ExternalSong; index: number }
+  | { kind: 'toggleTracks'; id: string; expanded: boolean; hidden: number }
   | { kind: 'album'; id: string; album: ExternalAlbumBase }
   | { kind: 'showMore'; id: string; target: 'albums' | 'singles'; remaining: number }
   | { kind: 'similar'; id: string; artists: ExternalArtistBase[] }
@@ -126,20 +126,30 @@ export default function ExternalArtistContent({ artist }: Props) {
   const { toggle } = usePreviewPlayer()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
+  const [showAllTracks, setShowAllTracks] = useState(false)
 
   const header = useMemo(() => <Header artist={artist} />, [artist])
   const items = useMemo<ExternalArtistContentItem[]>(() => {
     const rows: ExternalArtistContentItem[] = []
 
-    const topTracks = (artist.topTracks ?? []).slice(0, 5)
-    if (topTracks.length > 0) {
+    const allTopTracks = (artist.topTracks ?? []).slice(0, 10)
+    if (allTopTracks.length > 0) {
+      const visibleTracks = showAllTracks ? allTopTracks : allTopTracks.slice(0, 5)
       rows.push({ kind: 'section', id: 'top-tracks-section', title: t('artist.sections.topTracks') })
-      rows.push(...topTracks.map((song, index) => ({
+      rows.push(...visibleTracks.map((song, index) => ({
         kind: 'topTrack' as const,
         id: `top-track-${song.id}`,
         song,
         index,
       })))
+      if (allTopTracks.length > 5) {
+        rows.push({
+          kind: 'toggleTracks',
+          id: 'toggle-tracks',
+          expanded: showAllTracks,
+          hidden: allTopTracks.length - 5,
+        })
+      }
     }
 
     if (artist.albums.length > 0) {
@@ -175,7 +185,7 @@ export default function ExternalArtistContent({ artist }: Props) {
     }
 
     return rows
-  }, [artist.albums, artist.similarArtists, artist.singles, artist.topTracks, visibleAlbumsCount, visibleSinglesCount, t])
+  }, [artist.albums, artist.similarArtists, artist.singles, artist.topTracks, visibleAlbumsCount, visibleSinglesCount, showAllTracks, t])
 
   return (
     <FlashList
@@ -205,6 +215,22 @@ export default function ExternalArtistContent({ artist }: Props) {
               artistName={artist.name}
               onPress={item.song.previewUrl ? () => toggle(item.song, item.song.previewUrl!) : undefined}
             />
+          )
+        }
+
+        if (item.kind === 'toggleTracks') {
+          return (
+            <View style={styles.toggleTracksRow}>
+              <TouchableOpacity
+                style={[styles.toggleTracksButton, isDarkMode && styles.toggleTracksButtonDark]}
+                onPress={() => setShowAllTracks(v => !v)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.toggleTracksText, isDarkMode && styles.toggleTracksTextDark]}>
+                  {item.expanded ? 'See less' : 'See more'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           )
         }
 
@@ -241,11 +267,6 @@ export default function ExternalArtistContent({ artist }: Props) {
           />
         )
       }}
-      ItemSeparatorComponent={({ leadingItem, trailingItem }) =>
-        leadingItem?.kind === 'album' ||
-        (leadingItem?.kind === 'topTrack' && trailingItem?.kind === 'topTrack')
-          ? <ListSeparator /> : null
-      }
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: Platform.OS === 'android' ? 180 : 140,
@@ -360,5 +381,27 @@ const styles = StyleSheet.create({
   },
   showMoreTextDark: {
     color: '#fff',
+  },
+  toggleTracksRow: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  toggleTracksButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  toggleTracksButtonDark: {
+    backgroundColor: '#2c2c2e',
+  },
+  toggleTracksText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  toggleTracksTextDark: {
+    color: '#ccc',
   },
 })

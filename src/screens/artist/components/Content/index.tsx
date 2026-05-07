@@ -3,17 +3,10 @@ import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from '
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
-import { useDownload } from '@/contexts/DownloadContext'
 import type { Album, Artist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
-import ListSeparator from '@/components/ListSeparator'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
-import { useTracks } from '@/hooks/tracks'
-import {
-  buildDownloadedTrackIdSet,
-  getFullyDownloadedAlbumIds,
-} from '@/utils/downloads/collectionState'
 import { useTranslation } from 'react-i18next'
 import { useSimilarArtists } from '@/hooks/artists'
 import MediaTile from '@/screens/explore/components/MediaTile'
@@ -91,19 +84,8 @@ export default function ArtistContent({ artist }: Props) {
   const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
   const { t } = useTranslation()
-  const { tracks } = useTracks()
-  const { getAllDownloadedTracks } = useDownload()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
-
-  const downloadedTrackIds = React.useMemo(
-    () => buildDownloadedTrackIdSet(getAllDownloadedTracks()),
-    [getAllDownloadedTracks]
-  )
-  const downloadedAlbumIds = React.useMemo(
-    () => getFullyDownloadedAlbumIds(tracks, downloadedTrackIds),
-    [tracks, downloadedTrackIds]
-  )
 
   const items = useMemo<ArtistContentItem[]>(() => {
     const albums = artist.ownedAlbums.filter(album => !isSingleOrEp(album))
@@ -185,17 +167,12 @@ export default function ArtistContent({ artist }: Props) {
         return (
           <AlbumRow
             album={item.album}
-            showDownloadedDot
-            isDownloaded={downloadedAlbumIds.has(String(item.album.id))}
             onPress={(album) =>
               navigation.navigate('albumView', { id: album.id })
             }
           />
         )
       }}
-      ItemSeparatorComponent={({ leadingItem }) =>
-        leadingItem?.kind === 'album' ? <ListSeparator /> : null
-      }
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: Platform.OS === 'android' ? 180 : 140,

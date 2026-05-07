@@ -28,6 +28,7 @@ import { useIsOffline } from '@/hooks/useIsOffline';
 type SongOptionsProps = {
   selectedSong: Song;
   onAddToPlaylist: () => void;
+  onNavigate?: () => void;
 };
 
 function formatDuration(seconds: string): string {
@@ -52,7 +53,7 @@ function formatDate(value: string): string {
 const SongOptions = forwardRef<
   BottomSheetModal,
   SongOptionsProps
->(({ selectedSong, onAddToPlaylist }, ref) => {
+>(({ selectedSong, onAddToPlaylist, onNavigate }, ref) => {
     const { t } = useTranslation();
     const { isDarkMode } = useTheme();
     const isOffline = useIsOffline();
@@ -152,6 +153,7 @@ const SongOptions = forwardRef<
 
     const handleGoToAlbum = () => {
       close();
+      onNavigate?.();
       router.push({ pathname: '/(home)/albumView', params: { id: selectedSong.albumId } });
     };
 

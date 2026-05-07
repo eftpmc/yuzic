@@ -17,15 +17,11 @@ import { useSheetRef } from '@/utils/useSheetRef';
 type Props = {
   album: Album;
   onPress?: (album: Album) => void;
-  showDownloadedDot?: boolean;
-  isDownloaded?: boolean;
 };
 
 const AlbumRow: React.FC<Props> = ({
   album,
   onPress,
-  showDownloadedDot = false,
-  isDownloaded = false,
 }) => {
   const { isDarkMode } = useTheme();
   const optionsSheetRef = useSheetRef();
@@ -38,15 +34,6 @@ const AlbumRow: React.FC<Props> = ({
           style={styles.albumContent}
           onPress={() => onPress?.(album)}
         >
-          {showDownloadedDot && (
-            <View
-              style={[
-                styles.downloadDot,
-                styles.downloadDotBeforeCover,
-                isDownloaded ? styles.downloadDotVisible : styles.downloadDotHidden,
-              ]}
-            />
-          )}
           <MediaImage
             cover={album.cover}
             size="grid"
@@ -129,20 +116,6 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  downloadDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  downloadDotBeforeCover: {
-    marginRight: 8,
-  },
-  downloadDotVisible: {
-    backgroundColor: '#8e8e93',
-  },
-  downloadDotHidden: {
-    backgroundColor: 'transparent',
   },
   albumTitle: {
     fontSize: 16,

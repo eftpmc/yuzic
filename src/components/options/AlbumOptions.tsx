@@ -12,7 +12,8 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import { ListEnd } from 'lucide-react-native';
+import { ListEnd, ListStart } from 'lucide-react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Album } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
@@ -46,6 +47,8 @@ const AlbumOptions = forwardRef<
     addCollectionToQueue,
     shuffleCollectionToQueue,
     getQueue,
+    currentSong,
+    playNext,
   } = usePlaying();
 
   const { downloadAlbumById, getCollectionDownloadState } =
@@ -69,13 +72,25 @@ const AlbumOptions = forwardRef<
     close();
   };
 
-  const handleAddToQueue = () => {
+  const handleAddToNext = () => {
+    if (!album || !songs.length) return;
+    if (!currentSong) {
+      toast.error(t('songOptions.toasts.nothingPlaying'));
+      return;
+    }
+    [...songs].reverse().forEach(song => playNext(song));
+    toast.success(t('albumOptions.toasts.addedNext', { title: album.title }));
+    close();
+  };
+
+  const handleAddToEnd = () => {
     if (!album || !songs.length) return;
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
       playSongInCollection(songs[0], album, false);
     } else {
       addCollectionToQueue(album);
+      toast.success(t('albumOptions.toasts.addedToEnd', { title: album.title }));
     }
     close();
   };
@@ -87,6 +102,7 @@ const AlbumOptions = forwardRef<
       playSongInCollection(songs[0], album, true);
     } else {
       shuffleCollectionToQueue(album);
+      toast.success(t('albumOptions.toasts.shuffledToQueue', { title: album.title }));
     }
     close();
   };
@@ -100,7 +116,11 @@ const AlbumOptions = forwardRef<
   const handleGoToExternalAlbum = () => {
     if (!album?.mbid) return;
     close();
-    navigation.navigate('externalAlbumView', { albumId: album.mbid });
+    navigation.navigate('externalAlbumView', {
+      albumId: album.mbid,
+      artist: album.artist?.name,
+      title: album.title,
+    });
   };
 
   const handleGoToExternalArtist = () => {
@@ -194,9 +214,13 @@ const AlbumOptions = forwardRef<
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={handleAddToQueue}>
+        <TouchableOpacity style={styles.option} onPress={handleAddToNext}>
+          <ListStart size={26} color={themeStyles.icon.color} />
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.addToNext')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.option} onPress={handleAddToEnd}>
           <ListEnd size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.addToQueue')}</Text>
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.addToEnd')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />

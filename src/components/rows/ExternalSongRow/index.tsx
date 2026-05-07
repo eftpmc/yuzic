@@ -11,28 +11,22 @@ import ExternalSongOptions from '@/components/options/ExternalSongOptions';
 
 type Props = {
   song: ExternalSong;
-  trackNumber?: number;
   albumTitle: string;
   albumArtist: string;
   /** When provided, preview badge is shown and queue actions become available. */
   previewUrl?: string;
-  /** @deprecated use previewUrl */
-  hasPreview?: boolean;
   onPress?: () => void;
 };
 
 const ExternalSongRow: React.FC<Props> = ({
   song,
-  trackNumber,
   albumTitle,
   albumArtist,
   previewUrl,
-  hasPreview,
   onPress,
 }) => {
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
-  const isPreviewAvailable = !!previewUrl || !!hasPreview;
 
   return (
     <View style={styles.row}>
@@ -42,15 +36,12 @@ const ExternalSongRow: React.FC<Props> = ({
         disabled={!onPress}
         activeOpacity={onPress ? 0.6 : 1}
       >
-        <View style={styles.leadingMeta}>
-          <Text style={[styles.trackNumber, themeStyles.trackNumber]}>
-            {String(trackNumber ?? '')}
-          </Text>
-        </View>
-
         <View style={styles.textContainer}>
           <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
             {song.title}
+          </Text>
+          <Text style={[styles.subtitle, themeStyles.subtitle]} numberOfLines={1}>
+            {song.artist || albumArtist}
           </Text>
         </View>
       </TouchableOpacity>
@@ -59,7 +50,7 @@ const ExternalSongRow: React.FC<Props> = ({
         song={song}
         albumTitle={albumTitle}
         albumArtist={albumArtist}
-        onPlay={isPreviewAvailable ? onPress : undefined}
+        onPlay={previewUrl ? onPress : undefined}
       />
     </View>
   );
@@ -80,15 +71,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 12,
   },
-  leadingMeta: {
-    width: 44,
-    marginRight: 4,
-    alignItems: 'flex-start',
-  },
-  trackNumber: {
-    fontSize: 13,
-    minWidth: 16,
-  },
   textContainer: {
     flex: 1,
   },
@@ -96,14 +78,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
   },
+  subtitle: {
+    fontSize: 13,
+    marginTop: 1,
+  },
 });
 
 const stylesLight = StyleSheet.create({
   title: { color: '#000' },
-  trackNumber: { color: '#666' },
+  subtitle: { color: '#666' },
 });
 
 const stylesDark = StyleSheet.create({
   title: { color: '#fff' },
-  trackNumber: { color: '#aaa' },
+  subtitle: { color: '#aaa' },
 });

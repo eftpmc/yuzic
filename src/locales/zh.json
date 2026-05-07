@@ -551,7 +551,8 @@
     "actions": {
       "play": "播放",
       "shuffle": "随机播放",
-      "addToQueue": "添加至队列",
+      "addToNext": "播放下一首",
+      "addToEnd": "添加至队尾",
       "shuffleToQueue": "随机添加至队列",
       "goToAlbum": "前往专辑页面",
       "goToExternalAlbum": "前往外部专辑页面",
@@ -571,6 +572,11 @@
       "songs": "曲目数",
       "plays": "播放次数",
       "unknown": "—"
+    },
+    "toasts": {
+      "addedNext": "{{title}} 将作为下一曲播放。",
+      "addedToEnd": "{{title}} 已添加至队尾。",
+      "shuffledToQueue": "{{title}} 已随机添加至队列。"
     }
   },
   "playlistOptions": {

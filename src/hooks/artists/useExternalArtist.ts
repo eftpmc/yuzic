@@ -33,7 +33,7 @@ async function getDeezerExternalArtist(
 
   const [albums, topTracks, similarArtists] = await Promise.all([
     deezer.getDeezerArtistAlbums(artistId, 80, baseArtist),
-    deezer.getDeezerArtistTopTracks(artistId, 5),
+    deezer.getDeezerArtistTopTracks(artistId, 10),
     deezer.getDeezerRelatedArtists(artistId, 8),
   ]);
 

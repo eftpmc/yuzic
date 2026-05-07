@@ -251,6 +251,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 ref={songOptionsRef}
                 selectedSong={currentSong}
                 onAddToPlaylist={() => playlistRef.current?.present()}
+                onNavigate={onClose}
             />
 
             <PlaylistList

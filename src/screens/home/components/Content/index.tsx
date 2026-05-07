@@ -69,9 +69,6 @@ export default function LibraryContent<T>({
       contentContainerStyle={{ paddingBottom: 150, paddingHorizontal: 8 }}
       ListHeaderComponent={ListHeaderComponent}
       renderItem={renderItem}
-      ItemSeparatorComponent={isGridView ? null : () => (
-        <View style={[styles.separator, isDarkMode && styles.separatorDark]} />
-      )}
       showsVerticalScrollIndicator={false}
       onEndReached={hasMore ? onEndReached : undefined}
       onEndReachedThreshold={0.5}
@@ -100,13 +97,5 @@ const styles = StyleSheet.create({
   },
   emptyTextDark: {
     color: '#ccc',
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#e0e0e0',
-    marginHorizontal: 4,
-  },
-  separatorDark: {
-    backgroundColor: '#333',
   },
 });

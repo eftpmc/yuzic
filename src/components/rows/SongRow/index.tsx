@@ -20,20 +20,16 @@ import { useSheetRef } from '@/utils/useSheetRef';
 type Props = {
   song: Song;
   collection?: any;
-  selectedIndex?: number;
   onPress?: () => void;
   variant?: 'default' | 'albumCompact';
-  trackNumber?: number;
   showDownloadedDot?: boolean;
 };
 
 const SongRow: React.FC<Props> = ({
   song,
   collection,
-  selectedIndex,
   onPress,
   variant = 'default',
-  trackNumber,
   showDownloadedDot = false,
 }) => {
   const { t } = useTranslation();
@@ -93,29 +89,8 @@ const SongRow: React.FC<Props> = ({
           onPress={handlePress}
           disabled={!onPress && !collection}
         >
-          {isAlbumCompact ? (
-            <View style={styles.leadingMeta}>
-              <View
-                style={[
-                  styles.downloadDot,
-                  downloaded ? styles.downloadDotVisible : styles.downloadDotHidden,
-                ]}
-              />
-              <Text style={[styles.trackNumber, themeStyles.trackNumber]}>
-                {String(trackNumber ?? '')}
-              </Text>
-            </View>
-          ) : (
+          {!isAlbumCompact && (
             <View style={styles.defaultLeading}>
-              {showDownloadedDot && (
-                <View
-                  style={[
-                    styles.downloadDot,
-                    styles.downloadDotForDefault,
-                    downloaded ? styles.downloadDotVisible : styles.downloadDotHidden,
-                  ]}
-                />
-              )}
               <MediaImage
                 cover={song.cover}
                 size="thumb"
@@ -132,25 +107,32 @@ const SongRow: React.FC<Props> = ({
               {song.title}
             </Text>
 
-            {!isAlbumCompact && (
-              <Text
-                style={[styles.subtitle, themeStyles.subtitle]}
-                numberOfLines={1}
-              >
-                {song.artist || t('songOptions.unknownArtist')} •{' '}
-                {formatDuration(Number(song.duration))}
-              </Text>
-            )}
+            <Text
+              style={[styles.subtitle, themeStyles.subtitle]}
+              numberOfLines={1}
+            >
+              {song.artist || t('songOptions.unknownArtist')}
+              {!isAlbumCompact && ` • ${formatDuration(Number(song.duration))}`}
+            </Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={openOptions} hitSlop={10}>
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={18}
-            color={isDarkMode ? '#fff' : '#000'}
-          />
-        </TouchableOpacity>
+        <View style={styles.rowRight}>
+          {downloaded && (isAlbumCompact || showDownloadedDot) && (
+            <Ionicons
+              name="checkmark"
+              size={16}
+              color={isDarkMode ? '#aaa' : '#8e8e93'}
+            />
+          )}
+          <TouchableOpacity onPress={openOptions} hitSlop={10}>
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={18}
+              color={isDarkMode ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <SongOptions
@@ -198,26 +180,10 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
-  leadingMeta: {
+  rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 44,
-    marginRight: 4,
-  },
-  downloadDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 8,
-  },
-  downloadDotForDefault: {
-    marginRight: 8,
-  },
-  downloadDotVisible: {
-    backgroundColor: '#8e8e93',
-  },
-  downloadDotHidden: {
-    backgroundColor: 'transparent',
+    gap: 8,
   },
   trackNumber: {
     fontSize: 13,

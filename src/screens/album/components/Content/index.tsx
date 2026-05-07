@@ -1,13 +1,15 @@
 import React, { useMemo } from 'react';
-import { Platform, Text, StyleSheet } from 'react-native';
+import { Platform, Text, View, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { useNavigation } from '@react-navigation/native';
 
 import { Album, Song } from '@/types';
 
 import AlbumHeader from '../Header';
 import SongRow from '@/components/rows/SongRow';
-import ListSeparator from '@/components/ListSeparator';
+import MediaTile from '@/screens/explore/components/MediaTile';
 import { useTheme } from '@/hooks/useTheme';
+import { useArtist } from '@/hooks/artists';
 
 type Props = {
   album: Album;
@@ -19,16 +21,67 @@ type ListItem = DiscHeader | SongItem;
 
 const ESTIMATED_ROW_HEIGHT = 72;
 const DISC_HEADER_HEIGHT = 36;
+const H_PADDING = 16;
+const TILE_GAP = 12;
+const VISIBLE_TILES = 2.5;
 
 const AlbumContent: React.FC<Props> = ({ album }) => {
   const { isDarkMode } = useTheme();
+  const navigation = useNavigation<any>();
+  const { artist: fullArtist } = useArtist(album.artist?.id ?? '');
 
-  /**
-   * Memoized header so FlashList doesn't recreate it unnecessarily
-   */
+  const screenWidth = Dimensions.get('window').width;
+  const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
+
   const header = useMemo(() => {
     return <AlbumHeader album={album} />;
   }, [album]);
+
+  const moreAlbums = useMemo(() => {
+    return (fullArtist?.ownedAlbums ?? []).filter(a => a.id !== album.id);
+  }, [fullArtist?.ownedAlbums, album.id]);
+
+  const footer = useMemo(() => {
+    const songs = album.songs ?? [];
+    const totalSec = songs.reduce((acc, s) => acc + (Number(s.duration) || 0), 0);
+    const hrs = Math.floor(totalSec / 3600);
+    const mins = Math.floor((totalSec % 3600) / 60);
+    const duration = hrs > 0 ? `${hrs} hr ${mins} min` : `${mins} min`;
+    const label = songs.length === 1 ? 'song' : 'songs';
+    return (
+      <View>
+        <View style={styles.statsFooter}>
+          <Text style={[styles.statsText, isDarkMode ? styles.statsTextDark : styles.statsTextLight]}>
+            {songs.length} {label} · {duration}
+          </Text>
+        </View>
+        {moreAlbums.length > 0 && (
+          <View style={styles.moreSection}>
+            <Text style={[styles.moreSectionTitle, isDarkMode && styles.moreSectionTitleDark]}>
+              More by {album.artist?.name}
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.moreTileRow}
+            >
+              {moreAlbums.map(a => (
+                <MediaTile
+                  key={a.id}
+                  cover={a.cover}
+                  title={a.title}
+                  subtitle={a.subtext || String(a.year || '')}
+                  size={tileWidth}
+                  radius={6}
+                  onPress={() => navigation.navigate('albumView', { id: a.id })}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+    );
+  }, [album.songs, album.artist, isDarkMode, moreAlbums, tileWidth, navigation]);
 
   const items = useMemo<ListItem[]>(() => {
     const songs = album.songs ?? [];
@@ -64,15 +117,11 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
       );
     }
 
-    const song = item.song;
-    const trackNum = song.trackNumber;
-
     return (
       <SongRow
-        song={song}
+        song={item.song}
         collection={album}
         variant="albumCompact"
-        trackNumber={trackNum}
       />
     );
   };
@@ -90,10 +139,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
           item.type === 'disc-header' ? DISC_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT;
       }}
       ListHeaderComponent={header}
-      ItemSeparatorComponent={({ leadingItem }) => {
-        if (!leadingItem || leadingItem.type === 'disc-header') return null;
-        return <ListSeparator variant="compact" />;
-      }}
+      ListFooterComponent={footer}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />
@@ -113,6 +159,40 @@ const styles = StyleSheet.create({
   },
   discHeaderDark: {
     color: '#a7a7ad',
+  },
+  statsFooter: {
+    paddingHorizontal: H_PADDING,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  statsText: {
+    fontSize: 13,
+  },
+  statsTextLight: {
+    color: '#8e8e93',
+  },
+  statsTextDark: {
+    color: '#666',
+  },
+  moreSection: {
+    paddingTop: 24,
+    paddingBottom: 8,
+  },
+  moreSectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: '#666',
+    paddingHorizontal: H_PADDING,
+    marginBottom: 12,
+  },
+  moreSectionTitleDark: {
+    color: '#888',
+  },
+  moreTileRow: {
+    paddingHorizontal: H_PADDING,
+    gap: TILE_GAP,
   },
 });
 

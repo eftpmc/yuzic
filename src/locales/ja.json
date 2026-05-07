@@ -551,7 +551,8 @@
     "actions": {
       "play": "再生",
       "shuffle": "シャッフル",
-      "addToQueue": "キューに追加",
+      "addToNext": "次に再生",
+      "addToEnd": "末尾に追加",
       "shuffleToQueue": "シャッフルで追加",
       "goToAlbum": "アルバムへ",
       "goToExternalAlbum": "外部アルバムへ",
@@ -560,6 +561,11 @@
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み"
+    },
+    "toasts": {
+      "addedNext": "{{title}}を次に再生",
+      "addedToEnd": "{{title}}をキューに追加",
+      "shuffledToQueue": "{{title}}をシャッフルで追加"
     },
     "sections": {
       "albumInfo": "アルバム情報"

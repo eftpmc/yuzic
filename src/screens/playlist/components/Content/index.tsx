@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Playlist, Song } from '@/types';
 import SongRow from '@/components/rows/SongRow';
-import ListSeparator from '@/components/ListSeparator';
 import SectionEmptyState from '@/screens/explore/components/SectionEmptyState';
 
 import Header from '../Header';
@@ -24,11 +23,10 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
     return <Header playlist={playlist} />;
   }, [playlist]);
 
-  const renderItem = ({ item, index }: { item: Song; index: number }) => (
+  const renderItem = ({ item }: { item: Song }) => (
     <SongRow
       song={item}
       collection={playlist}
-      selectedIndex={index}
       showDownloadedDot
     />
   );
@@ -41,7 +39,6 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
       {...({ estimatedItemSize: ESTIMATED_ROW_HEIGHT } as any)}
       ListHeaderComponent={header}
       ListEmptyComponent={<SectionEmptyState message={t('playlist.empty')} />}
-      ItemSeparatorComponent={() => <ListSeparator variant="compact" />}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />
