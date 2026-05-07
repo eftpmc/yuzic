@@ -210,12 +210,6 @@ const ListenBrainzView: React.FC = () => {
           </View>
         )}
 
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.helperText, isDarkMode && styles.helperTextDark]}>
-            {t('settings.listenBrainz.helperText')}
-          </Text>
-        </View>
-
         {isAuthenticated && (
           <TouchableOpacity
             style={[
@@ -256,10 +250,20 @@ const styles = StyleSheet.create({
   sectionDark: {
     backgroundColor: '#111',
   },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#000',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  sectionLabelDark: { color: '#fff' },
   label: {
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
+    marginTop: 4,
     color: '#000',
   },
   labelDark: {
@@ -278,18 +282,6 @@ const styles = StyleSheet.create({
     borderColor: '#444',
     backgroundColor: '#1a1a1a',
     color: '#fff',
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',

@@ -301,16 +301,15 @@ const SlskdView: React.FC = () => {
           )}
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.disconnectButton,
-            isDarkMode && styles.disconnectButtonDark,
-          ]}
-          onPress={handleDisconnect}
-        >
-          <MaterialIcons name="logout" size={20} color="#fff" />
-          <Text style={styles.disconnectButtonText}>{t('settings.downloaders.disconnect')}</Text>
-        </TouchableOpacity>
+        {isAuthenticated && (
+          <TouchableOpacity
+            style={[styles.disconnectButton, isDarkMode && styles.disconnectButtonDark]}
+            onPress={handleDisconnect}
+          >
+            <MaterialIcons name="logout" size={20} color="#fff" />
+            <Text style={styles.disconnectButtonText}>{t('settings.downloaders.disconnect')}</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -329,7 +328,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionDark: { backgroundColor: '#111' },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#000' },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#000',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  sectionLabelDark: { color: '#fff' },
+  helperText: { fontSize: 14, lineHeight: 20, color: '#555', marginBottom: 12 },
+  helperTextDark: { color: '#aaa' },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 4, color: '#000' },
   labelDark: { color: '#fff' },
   input: {
     borderWidth: 1,
@@ -349,7 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
+    paddingVertical: 10,
   },
   rowText: { fontSize: 16, color: '#000' },
   rowTextDark: { color: '#fff' },

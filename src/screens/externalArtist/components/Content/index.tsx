@@ -9,7 +9,7 @@ import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import MediaTile from '@/screens/explore/components/MediaTile'
-import { usePreviewPlayer } from '@/hooks/usePreviewPlayer'
+import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import { MediaImage } from '@/components/MediaImage'
 
 type Props = {
@@ -123,7 +123,14 @@ export default function ExternalArtistContent({ artist }: Props) {
   const navigation = useNavigation<any>()
   const { isDarkMode } = useTheme()
   const { t } = useTranslation()
-  const { toggle } = usePreviewPlayer()
+  const { toggleInAlbum } = usePreviewPlayer()
+
+  const topTrackQueue = useMemo(() =>
+    (artist.topTracks ?? [])
+      .filter(s => !!s.previewUrl)
+      .map(s => externalSongToTrack(s, s.previewUrl!)),
+    [artist.topTracks]
+  )
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
   const [showAllTracks, setShowAllTracks] = useState(false)
@@ -213,7 +220,9 @@ export default function ExternalArtistContent({ artist }: Props) {
               song={item.song}
               index={item.index}
               artistName={artist.name}
-              onPress={item.song.previewUrl ? () => toggle(item.song, item.song.previewUrl!) : undefined}
+              onPress={item.song.previewUrl
+                ? () => toggleInAlbum(item.song, item.song.previewUrl!, topTrackQueue, artist.id, artist.name)
+                : undefined}
             />
           )
         }

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
-    TextInput,
     ScrollView,
     StyleSheet,
     Platform,
@@ -81,45 +80,32 @@ const ServerSettings: React.FC = () => {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-                        {t('settings.server.serverUrl')}
-                    </Text>
-                    <TextInput
-                        numberOfLines={1}
-                        value={serverUrl || ''}
-                        editable={false}
-                        placeholder={t('settings.server.notSet')}
-                        placeholderTextColor="#888"
-                        style={[styles.input, isDarkMode && styles.inputDark]}
-                    />
+                    <View style={styles.row}>
+                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                            {t('settings.server.serverUrl')}
+                        </Text>
+                        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]} numberOfLines={1}>
+                            {serverUrl || t('settings.server.notSet')}
+                        </Text>
+                    </View>
 
-                    <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-                        {t('settings.server.username')}
-                    </Text>
-                    <TextInput
-                        numberOfLines={1}
-                        value={username || ''}
-                        editable={false}
-                        placeholder={t('settings.server.notSet')}
-                        placeholderTextColor="#888"
-                        style={[
-                            styles.inputNoMargin,
-                            isDarkMode && styles.inputDark,
-                        ]}
-                    />
-
-                    <View style={{ height: 16 }} />
+                    <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
 
                     <View style={styles.row}>
-                        <Text
-                            style={[
-                                styles.rowText,
-                                isDarkMode && styles.rowTextDark,
-                            ]}
-                        >
+                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                            {t('settings.server.username')}
+                        </Text>
+                        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]} numberOfLines={1}>
+                            {username || t('settings.server.notSet')}
+                        </Text>
+                    </View>
+
+                    <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+
+                    <View style={styles.row}>
+                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
                             {t('settings.server.connectivity')}
                         </Text>
-
                         <View style={styles.iconSlot}>
                             {isLoading ? (
                                 <SpinningLoaderCircle size={ICON_SIZE} color={themeColor} />
@@ -192,44 +178,27 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     sectionDark: { backgroundColor: '#111' },
-    label: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 8,
-        color: '#000',
+    divider: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#e0e0e0',
     },
-    labelDark: { color: '#fff' },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 10,
-        borderRadius: 8,
-        marginBottom: 16,
-        color: '#000',
-        backgroundColor: '#f9f9f9',
-    },
-    inputNoMargin: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 10,
-        borderRadius: 8,
-        marginBottom: 0,
-        color: '#000',
-        backgroundColor: '#f9f9f9',
-    },
-    inputDark: {
-        borderColor: '#444',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-    },
+    dividerDark: { backgroundColor: '#2a2a2a' },
     row: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginTop: 16,
+        paddingVertical: 13,
+        gap: 12,
     },
     rowText: { fontSize: 16, color: '#000' },
     rowTextDark: { color: '#fff' },
+    rowValue: {
+        fontSize: 15,
+        color: '#888',
+        flexShrink: 1,
+        textAlign: 'right',
+    },
+    rowValueDark: { color: '#666' },
     iconSlot: {
         width: ICON_SIZE,
         height: ICON_SIZE,

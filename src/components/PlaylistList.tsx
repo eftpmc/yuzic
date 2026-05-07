@@ -18,11 +18,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { X } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { Song } from '@/types';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { Playlist, Song } from '@/types';
+import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import { useLibrary } from '@/contexts/LibraryContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   usePlaylists,
@@ -47,6 +51,9 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
 
+    const queryClient = useQueryClient();
+    const activeServer = useSelector(selectActiveServer);
+    const { playlists: libraryPlaylists } = useLibrary();
     const { playlists: fullPlaylists } = usePlaylists();
     const createPlaylist = useCreatePlaylist();
     const addSongToPlaylist = useAddSongToPlaylist();
@@ -72,10 +79,19 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
       return new Set(
         fullPlaylists
-          .filter(p => p.songs.some(s => s.id === selectedSongId))
+          .filter(p => {
+            // Individual playlist cache has full songs (populated when user opens a playlist)
+            const cached = queryClient.getQueryData<Playlist | null>(
+              [QueryKeys.Playlist, activeServer?.id, p.id]
+            );
+            if (cached) return cached.songs.some(s => s.id === selectedSongId);
+            // Redux accumulates song additions via addLibraryPlaylistSong
+            const redux = libraryPlaylists.find(lp => lp.id === p.id);
+            return redux?.songs.some(s => s.id === selectedSongId) ?? false;
+          })
           .map(p => p.id)
       );
-    }, [fullPlaylists, selectedSong]);
+    }, [fullPlaylists, selectedSong, queryClient, activeServer?.id, libraryPlaylists]);
 
     useEffect(() => {
       setSelectedIds(new Set(initialIds));
@@ -98,38 +114,45 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       try {
         await createPlaylist.mutateAsync(newPlaylistName.trim());
         setNewPlaylistName('');
-      } catch {
-        toast.error(t('playlistList.createFailed'));
+      } catch (e) {
+        if (e instanceof Error && e.message === 'offline') {
+          toast.error(t('common.offline.notAvailable'));
+        } else {
+          toast.error(t('playlistList.createFailed'));
+        }
       }
     };
 
     const handleDone = async () => {
       if (!selectedSong) return;
+      const wasOffline = isOffline;
 
-      try {
-        for (const playlist of fullPlaylists) {
-          const wasIn = initialIds.has(playlist.id);
-          const isIn = selectedIds.has(playlist.id);
+      const mutations: Promise<unknown>[] = [];
+      for (const playlist of fullPlaylists) {
+        const wasIn = initialIds.has(playlist.id);
+        const isIn = selectedIds.has(playlist.id);
 
-          if (isIn && !wasIn) {
-            await addSongToPlaylist.mutateAsync({
-              playlistId: playlist.id,
-              song: selectedSong,
-            });
-          }
-
-          if (!isIn && wasIn) {
-            await removeSongFromPlaylist.mutateAsync({
-              playlistId: playlist.id,
-              songId: selectedSong.id,
-            });
-          }
+        if (isIn && !wasIn) {
+          mutations.push(addSongToPlaylist.mutateAsync({
+            playlistId: playlist.id,
+            song: selectedSong,
+          }));
+        } else if (!isIn && wasIn) {
+          mutations.push(removeSongFromPlaylist.mutateAsync({
+            playlistId: playlist.id,
+            songId: selectedSong.id,
+          }));
         }
+      }
 
-        toast.success(t(isOffline ? 'playlistList.updatedOffline' : 'playlistList.updated'));
-        onClose();
-      } catch {
+      const results = await Promise.allSettled(mutations);
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      if (failed > 0) {
         toast.error(t('playlistList.updateFailed'));
+      } else {
+        toast.success(t(wasOffline ? 'playlistList.updatedOffline' : 'playlistList.updated'));
+        onClose();
       }
     };
 

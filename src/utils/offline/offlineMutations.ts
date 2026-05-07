@@ -31,6 +31,10 @@ export type OfflineMutation =
       type: 'removeSongFromPlaylist';
       playlistId: string;
       songId: string;
+    })
+  | (OfflineMutationBase & {
+      type: 'deletePlaylist';
+      playlistId: string;
     });
 
 export function createOfflineMutationId(
@@ -59,6 +63,10 @@ function sameTarget(a: OfflineMutation, b: OfflineMutation): boolean {
     const aSongId = a.type === 'addSongToPlaylist' ? a.song.id : a.songId;
     const bSongId = b.type === 'addSongToPlaylist' ? b.song.id : b.songId;
     return a.playlistId === b.playlistId && aSongId === bSongId;
+  }
+
+  if (a.type === 'deletePlaylist' && b.type === 'deletePlaylist') {
+    return a.playlistId === b.playlistId;
   }
 
   return false;

@@ -4,7 +4,6 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { BlurView } from 'expo-blur';
-import { Toasts } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import ImageColors from 'react-native-image-colors';
@@ -346,32 +345,6 @@ export default function PlayingBarBase({ variant }: Props) {
         )}
       >
         <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
-
-        <Toasts
-          defaultStyle={{
-            view: {
-              backgroundColor: isDarkMode
-                ? 'rgba(32,32,32,0.9)'
-                : 'rgba(255,255,255,0.9)',
-              borderRadius: 10,
-              shadowColor: '#000',
-              shadowOpacity: 0.15,
-              shadowRadius: 10,
-              elevation: 4,
-            },
-            pressable: {
-              backgroundColor: 'transparent',
-            },
-            text: {
-              color: isDarkMode ? '#fff' : '#000',
-              fontSize: 16,
-              fontWeight: '500',
-            },
-            indicator: {
-              marginRight: 12,
-            },
-          }}
-        />
       </BottomSheetModal>
 
       <PlaylistList

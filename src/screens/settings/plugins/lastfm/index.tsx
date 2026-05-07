@@ -103,13 +103,6 @@ const LastFmView: React.FC = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.sectionLabel, isDarkMode && styles.sectionLabelDark]}>
-            {t('settings.lastfm.credentialsTitle')}
-          </Text>
-          <Text style={[styles.helperText, isDarkMode && styles.helperTextDark]}>
-            {t('settings.lastfm.credentialsHelper')}
-          </Text>
-
           <Text style={[styles.label, isDarkMode && styles.labelDark]}>
             {t('settings.lastfm.apiKey')}
           </Text>
@@ -206,12 +199,6 @@ const LastFmView: React.FC = () => {
             </View>
           </View>
         )}
-
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.helperText, isDarkMode && styles.helperTextDark]}>
-            {t('settings.lastfm.helperText')}
-          </Text>
-        </View>
 
         {isAuthenticated && (
           <TouchableOpacity

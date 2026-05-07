@@ -34,6 +34,9 @@ async function replayMutation(api: ReturnType<typeof useApi>, mutation: OfflineM
     case 'removeSongFromPlaylist':
       await api.playlists.removeSong(mutation.playlistId, mutation.songId);
       break;
+    case 'deletePlaylist':
+      await api.playlists.delete(mutation.playlistId);
+      break;
   }
 }
 

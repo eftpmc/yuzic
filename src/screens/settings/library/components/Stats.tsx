@@ -4,13 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Switch,
   Animated,
   Easing,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Check, Loader2, X } from 'lucide-react-native';
+import { Loader2 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectThemeColor, selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
 import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
@@ -100,44 +101,12 @@ const Stats: React.FC = () => {
         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
           {t('settings.library.stats.syncOnAppStart')}
         </Text>
-        <View style={styles.toggleGrid}>
-          <TouchableOpacity
-            onPress={() => dispatch(setSyncOnAppStart(false))}
-            style={[
-              styles.gridButton,
-              isDarkMode && styles.gridButtonDark,
-              !syncOnAppStart && {
-                backgroundColor: themeColor,
-                borderColor: themeColor,
-              },
-            ]}
-            activeOpacity={0.8}
-          >
-            <X
-              size={18}
-              color={!syncOnAppStart ? '#fff' : isDarkMode ? '#ccc' : '#666'}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => dispatch(setSyncOnAppStart(true))}
-            style={[
-              styles.gridButton,
-              styles.gridButtonSpaced,
-              isDarkMode && styles.gridButtonDark,
-              syncOnAppStart && {
-                backgroundColor: themeColor,
-                borderColor: themeColor,
-              },
-            ]}
-            activeOpacity={0.8}
-          >
-            <Check
-              size={18}
-              color={syncOnAppStart ? '#fff' : isDarkMode ? '#ccc' : '#666'}
-            />
-          </TouchableOpacity>
-        </View>
+        <Switch
+          value={syncOnAppStart}
+          onValueChange={(v) => dispatch(setSyncOnAppStart(v))}
+          trackColor={{ true: themeColor }}
+          thumbColor="#fff"
+        />
       </View>
     </View>
   );
@@ -205,26 +174,5 @@ const styles = StyleSheet.create({
   },
   rowValueDark: {
     color: '#aaa',
-  },
-  toggleGrid: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  gridButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f1f1f1',
-    borderColor: '#ddd',
-    borderWidth: 1,
-  },
-  gridButtonDark: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-  },
-  gridButtonSpaced: {
-    marginLeft: 8,
   },
 });

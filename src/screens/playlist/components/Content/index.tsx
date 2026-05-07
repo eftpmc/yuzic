@@ -8,6 +8,7 @@ import SongRow from '@/components/rows/SongRow';
 import SectionEmptyState from '@/screens/explore/components/SectionEmptyState';
 
 import Header from '../Header';
+import RecommendedSection from '../RecommendedSection';
 
 type Props = {
   playlist: Playlist;
@@ -19,9 +20,8 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
   const { t } = useTranslation();
   const songs = playlist.songs ?? [];
 
-  const header = useMemo(() => {
-    return <Header playlist={playlist} />;
-  }, [playlist]);
+  const header = useMemo(() => <Header playlist={playlist} />, [playlist]);
+  const footer = useMemo(() => <RecommendedSection playlist={playlist} />, [playlist]);
 
   const renderItem = ({ item }: { item: Song }) => (
     <SongRow
@@ -38,6 +38,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist }) => {
       renderItem={renderItem}
       {...({ estimatedItemSize: ESTIMATED_ROW_HEIGHT } as any)}
       ListHeaderComponent={header}
+      ListFooterComponent={footer}
       ListEmptyComponent={<SectionEmptyState message={t('playlist.empty')} />}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}

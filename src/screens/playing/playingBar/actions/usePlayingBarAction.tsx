@@ -105,6 +105,10 @@ export function usePlayingBarAction(
         ),
         onPress: async () => {
           if (!albums.length) return;
+          if (isOffline) {
+            toast.error(t('common.offline.notAvailable'));
+            return;
+          }
 
           const base =
             albums[Math.floor(Math.random() * albums.length)];

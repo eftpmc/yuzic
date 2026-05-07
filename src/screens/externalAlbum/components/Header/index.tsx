@@ -9,7 +9,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useSelector } from 'react-redux';
 
 import { ExternalAlbum, Playlist, Song } from '@/types';
@@ -47,9 +46,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
     [previewsRaw]
   );
 
-  const infoSheetRef = useSheetRef();
   const downloadSheetRef = useSheetRef();
-  const snapPoints = useMemo(() => ['25%'], []);
 
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
 
@@ -119,9 +116,8 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
             </Text>
           </View>
 
-          <TouchableOpacity onPress={() => infoSheetRef.current?.present()} style={styles.headerButton}>
-            <Ionicons name="information-circle-outline" size={24} color={isDarkMode ? '#fff' : '#1C1C1E'} />
-          </TouchableOpacity>
+          {/* Spacer to balance the back button */}
+          <View style={styles.headerButton} />
         </View>
 
         {/* Cover */}
@@ -224,23 +220,6 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
       </View>
 
       <DownloadAlbumSheet album={album} sheetRef={downloadSheetRef} />
-
-      <BottomSheetModal
-        ref={infoSheetRef}
-        snapPoints={snapPoints}
-        enableDynamicSizing={false}
-        backgroundStyle={{ backgroundColor: isDarkMode ? '#1c1c1e' : '#f9f9f9' }}
-        handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
-      >
-        <BottomSheetView style={styles.sheetContainer}>
-          <Text style={[styles.sheetTitle, isDarkMode && styles.sheetTitleDark]}>
-            {t('externalAlbum.info.title')}
-          </Text>
-          <Text style={[styles.sheetBody, isDarkMode && styles.sheetBodyDark]}>
-            {t('externalAlbum.info.body')}
-          </Text>
-        </BottomSheetView>
-      </BottomSheetModal>
     </>
   );
 };
@@ -277,6 +256,7 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: 6,
+    width: 36,
   },
   coverWrapper: {
     width: 280,
@@ -353,27 +333,6 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  sheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-  },
-  sheetTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#222',
-    marginBottom: 8,
-  },
-  sheetTitleDark: {
-    color: '#fff',
-  },
-  sheetBody: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#555',
-  },
-  sheetBodyDark: {
-    color: '#ccc',
   },
 });
 

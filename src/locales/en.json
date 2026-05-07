@@ -178,6 +178,8 @@
     },
     "listenBrainz": {
       "title": "ListenBrainz",
+      "credentialsTitle": "Credentials",
+      "credentialsHelper": "Your username and user token from listenbrainz.org/profile.",
       "username": "Username",
       "userToken": "User Token",
       "usernamePlaceholder": "ListenBrainz username",
@@ -206,7 +208,7 @@
       "helperText": "Enter your Last.fm API key and secret, then tap Connect to authorize. Your tracks will be scrobbled automatically. Get API credentials at last.fm/api/account/create.",
       "disconnect": "Disconnect",
       "missingCredentials": "Enter API key and secret first.",
-      "credentialsTitle": "App Credentials",
+      "credentialsTitle": "Credentials",
       "credentialsHelper": "Create an app at last.fm/api/account/create to get these keys.",
       "pendingInstruction": "A browser window has opened — authorize yuzic, then tap below.",
       "scrobble": "Scrobble",
@@ -245,13 +247,18 @@
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"
       },
+      "queueTitle": "Download Queue",
       "lidarr": {
         "title": "Lidarr",
+        "credentialsTitle": "Connection",
+        "credentialsHelper": "Your Lidarr server URL and API key. Found in Lidarr under Settings → General.",
         "connectionFailed": "Lidarr connection failed",
         "disconnected": "Disconnected from Lidarr."
       },
       "slskd": {
         "title": "slskd",
+        "credentialsTitle": "Connection",
+        "credentialsHelper": "Your slskd server URL and API key. Found in slskd under Options → API Keys.",
         "connectionFailed": "slskd connection failed",
         "disconnected": "Disconnected from slskd."
       }
@@ -296,7 +303,8 @@
       "similarUnavailable": "Similar songs are unavailable in Offline Mode.",
       "noConnection": "No internet connection",
       "syncedChanges": "Offline changes synced",
-      "syncQueuedChangesFailed": "Some offline changes could not sync"
+      "syncQueuedChangesFailed": "Some offline changes could not sync",
+      "notAvailable": "Not available offline"
     },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
@@ -443,7 +451,12 @@
       "favoriteAlbums": "Favorite albums",
       "randomAlbums": "Random albums",
       "albumsForYou": "Albums for you",
-      "artistsForYou": "Artists for you"
+      "artistsForYou": "Artists for you",
+      "playlists": "Playlists",
+      "recommended": "Recommended",
+      "recommendedLocal": "From your library",
+      "recommendedExternal": "Discover",
+      "refresh": "Refresh"
     },
     "empty": {
       "recentSongs": "Play something to see it here",
@@ -452,7 +465,8 @@
       "favoriteAlbums": "Star songs to add albums here",
       "randomAlbums": "No albums in your library yet",
       "albumsForYou": "Discovering albums...",
-      "artistsForYou": "Discovering artists..."
+      "artistsForYou": "Discovering artists...",
+      "recommendedExternal": "Nothing to discover yet"
     }
   },
   "playing": {
@@ -486,7 +500,16 @@
     "favoritesTitle": "Favorites",
     "subtext": "Playlist • {{count}} song",
     "subtext_plural": "Playlist • {{count}} songs",
-    "empty": "This playlist has no songs yet."
+    "empty": "This playlist has no songs yet.",
+    "recommended": {
+      "title": "Recommended",
+      "local": "From your library",
+      "external": "Discover",
+      "added": "Added to playlist",
+      "addFailed": "Failed to add song",
+      "externalEmpty": "Nothing to discover yet",
+      "refresh": "Refresh"
+    }
   },
   "playlistList": {
     "title": "Add to Playlist",
@@ -580,10 +603,6 @@
       "songs_plural": "{{count}} songs",
       "externalMetadata": "External metadata"
     },
-    "info": {
-      "title": "About external albums",
-      "body": "Album metadata is provided by MusicBrainz. Track previews are powered by Deezer — 30-second clips provided under the Deezer API terms."
-    }
   },
   "albumOptions": {
     "actions": {

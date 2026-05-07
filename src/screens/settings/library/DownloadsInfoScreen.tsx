@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -150,137 +149,134 @@ const DownloadsInfoScreen: React.FC = () => {
     >
       <Header title={t('settings.library.downloads.detailsTitle')} />
 
-      <View style={[styles.summaryCard, isDarkMode && styles.summaryCardDark]}>
-        <View style={styles.summaryRow}>
-          <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
-            {t('settings.library.downloads.sizeLabel')}
-          </Text>
-          <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {formattedSize}
-          </Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={[styles.summaryCard, isDarkMode && styles.summaryCardDark]}>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+              {t('settings.library.downloads.sizeLabel')}
+            </Text>
+            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+              {formattedSize}
+            </Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+              {t('settings.library.downloads.availableLabel')}
+            </Text>
+            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+              {formattedAvailable}
+            </Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+              {t('settings.library.downloads.table.playlists')}
+            </Text>
+            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+              {String(downloadedPlaylistCount)}
+            </Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+              {t('settings.library.downloads.type.album')}
+            </Text>
+            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+              {String(downloadedAlbumCount)}
+            </Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+              {t('settings.library.downloads.table.tracks')}
+            </Text>
+            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+              {String(downloadedTrackCount)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.summaryRow}>
-          <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
-            {t('settings.library.downloads.availableLabel')}
-          </Text>
-          <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {formattedAvailable}
-          </Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
-            {t('settings.library.downloads.table.playlists')}
-          </Text>
-          <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {String(downloadedPlaylistCount)}
-          </Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
-            {t('settings.library.downloads.type.album')}
-          </Text>
-          <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {String(downloadedAlbumCount)}
-          </Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
-            {t('settings.library.downloads.table.tracks')}
-          </Text>
-          <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
-            {String(downloadedTrackCount)}
-          </Text>
-        </View>
-      </View>
 
-      <View style={[styles.tableHeader, isDarkMode && styles.tableHeaderDark]}>
-        <Text numberOfLines={1} style={[styles.headerItem, styles.headerTrack]}>
-          {t('settings.library.downloads.table.item')}
-        </Text>
-        <Text numberOfLines={1} style={[styles.headerItem, styles.headerBytes]}>
-          {t('settings.library.downloads.table.downloaded')}
-        </Text>
-        <Text numberOfLines={1} style={[styles.headerItem, styles.headerBytes]}>
-          {t('settings.library.downloads.table.size')}
-        </Text>
-        <View style={styles.headerAction} />
-      </View>
+        <View style={[styles.tableHeader, isDarkMode && styles.tableHeaderDark]}>
+          <Text numberOfLines={1} style={[styles.headerItem, styles.headerTrack]}>
+            {t('settings.library.downloads.table.item')}
+          </Text>
+          <Text numberOfLines={1} style={[styles.headerItem, styles.headerBytes]}>
+            {t('settings.library.downloads.table.downloaded')}
+          </Text>
+          <Text numberOfLines={1} style={[styles.headerItem, styles.headerBytes]}>
+            {t('settings.library.downloads.table.size')}
+          </Text>
+          <View style={styles.headerAction} />
+        </View>
 
-      <FlashList
-        data={rows}
-        keyExtractor={(item) => item.id}
-        removeClippedSubviews={false}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={
+        {rows.length === 0 ? (
           <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
             {t('settings.library.downloads.table.empty')}
           </Text>
-        }
-        renderItem={({ item, index }) => {
-          const prev = index > 0 ? rows[index - 1] : null;
-          const showSectionHeader = !prev || prev.provider !== item.provider;
-          const sectionTitle =
-            item.provider === 'navidrome'
-              ? t('settings.library.downloads.provider.navidrome')
-              : item.provider === 'jellyfin'
-                ? t('settings.library.downloads.provider.jellyfin')
-                : item.provider === 'emby'
-                  ? t('settings.library.downloads.provider.emby')
-                  : t('settings.library.downloads.provider.unknown');
+        ) : (
+          rows.map((item, index) => {
+            const prev = index > 0 ? rows[index - 1] : null;
+            const showSectionHeader = !prev || prev.provider !== item.provider;
+            const sectionTitle =
+              item.provider === 'navidrome'
+                ? t('settings.library.downloads.provider.navidrome')
+                : item.provider === 'jellyfin'
+                  ? t('settings.library.downloads.provider.jellyfin')
+                  : item.provider === 'emby'
+                    ? t('settings.library.downloads.provider.emby')
+                    : t('settings.library.downloads.provider.unknown');
 
-          return (
-            <View>
-              {showSectionHeader && (
-                <View style={[styles.providerHeader, isDarkMode && styles.providerHeaderDark]}>
-                  <Text style={[styles.providerHeaderText, isDarkMode && styles.providerHeaderTextDark]}>
-                    {sectionTitle}
+            return (
+              <View key={item.id}>
+                {showSectionHeader && (
+                  <View style={[styles.providerHeader, isDarkMode && styles.providerHeaderDark]}>
+                    <Text style={[styles.providerHeaderText, isDarkMode && styles.providerHeaderTextDark]}>
+                      {sectionTitle}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => confirmClearProvider(item)}
+                      style={styles.providerHeaderDelete}
+                    >
+                      <MaterialIcons name="delete-outline" size={16} color={themeColor} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {index > 0 && !showSectionHeader && (
+                  <View style={styles.separator} />
+                )}
+
+                <View style={[styles.row, isDarkMode && styles.rowDark]}>
+                  <View style={styles.coverCell}>
+                    <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
+                  </View>
+                  <View style={styles.trackCell}>
+                    <Text numberOfLines={1} style={[styles.title, isDarkMode && styles.titleDark]}>
+                      {item.title}
+                    </Text>
+                    <Text numberOfLines={1} style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+                      {item.subtitle}
+                    </Text>
+                  </View>
+                  <Text numberOfLines={1} style={[styles.bytesCell, isDarkMode && styles.valueDark]}>
+                    {item.downloaded}
+                  </Text>
+                  <Text numberOfLines={1} style={[styles.bytesCell, isDarkMode && styles.valueDark]}>
+                    {item.size}
                   </Text>
                   <TouchableOpacity
-                    onPress={() => confirmClearProvider(item)}
-                    style={styles.providerHeaderDelete}
+                    style={[styles.removeButton, removingId === item.id && styles.removeButtonDisabled]}
+                    onPress={() => confirmRemove(item)}
+                    disabled={removingId === item.id}
                   >
-                    <MaterialIcons name="delete-outline" size={16} color={themeColor} />
+                    <MaterialIcons name="delete-outline" size={18} color={themeColor} />
                   </TouchableOpacity>
                 </View>
-              )}
-
-              <View style={[styles.row, isDarkMode && styles.rowDark]}>
-                <View style={styles.coverCell}>
-                  <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
-                </View>
-                <View style={styles.trackCell}>
-                  <Text
-                    numberOfLines={1}
-                    style={[styles.title, isDarkMode && styles.titleDark]}
-                  >
-                    {item.title}
-                  </Text>
-                  <Text
-                    numberOfLines={1}
-                    style={[styles.subtitle, isDarkMode && styles.subtitleDark]}
-                  >
-                    {item.subtitle}
-                  </Text>
-                </View>
-                <Text numberOfLines={1} style={[styles.bytesCell, isDarkMode && styles.valueDark]}>
-                  {item.downloaded}
-                </Text>
-                <Text numberOfLines={1} style={[styles.bytesCell, isDarkMode && styles.valueDark]}>
-                  {item.size}
-                </Text>
-                <TouchableOpacity
-                  style={[styles.removeButton, removingId === item.id && styles.removeButtonDisabled]}
-                  onPress={() => confirmRemove(item)}
-                  disabled={removingId === item.id}
-                >
-                  <MaterialIcons name="delete-outline" size={18} color={themeColor} />
-                </TouchableOpacity>
               </View>
-            </View>
-          );
-        }}
-      />
+            );
+          })
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };

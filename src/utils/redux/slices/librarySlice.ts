@@ -67,6 +67,9 @@ const librarySlice = createSlice({
       playlist.songs = playlist.songs.filter(song => song.id !== action.payload.songId);
       playlist.changed = new Date();
     },
+    removeLibraryPlaylist(state, action: PayloadAction<string>) {
+      state.playlists = state.playlists.filter(p => p.id !== action.payload);
+    },
   },
 });
 
@@ -81,6 +84,7 @@ export const {
   removeLibraryStarredSong,
   addLibraryPlaylistSong,
   removeLibraryPlaylistSong,
+  removeLibraryPlaylist,
 } = librarySlice.actions;
 
 export default librarySlice.reducer;

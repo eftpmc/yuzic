@@ -1,0 +1,422 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from '@backpackapp-io/react-native-toast';
+
+import { useTheme } from '@/hooks/useTheme';
+import { MediaImage } from '@/components/MediaImage';
+import { usePlaying } from '@/contexts/PlayingContext';
+import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
+import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useAddSongToPlaylist } from '@/hooks/playlists';
+import { useTracks } from '@/hooks/tracks';
+import { useApi } from '@/api';
+import { useIsOffline } from '@/hooks/useIsOffline';
+import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
+import * as deezer from '@/api/deezer';
+import { RAWARR_URL } from '@/constants/rawarr';
+import { QueryKeys } from '@/enums/queryKeys';
+import type { Playlist, SongBase, ExternalSong } from '@/types';
+
+const LOCAL_COUNT = 4;
+const EXTERNAL_COUNT = 4;
+const COVER_SIZE = 44;
+
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const a = [...arr];
+  let s = (seed * 2 ** 31) | 0;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = Math.imul(s, 1664525) + 1013904223;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function formatDuration(dur?: string | number): string {
+  const n = Number(dur);
+  if (!n) return '';
+  const m = Math.floor(n / 60);
+  const s = Math.floor(n % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]> {
+  if (!artistNames.length) return [];
+
+  try {
+    const similarResults = await Promise.all(
+      artistNames.map(name => getLastFmSimilarArtists(RAWARR_URL, name, 15))
+    );
+
+    const seen = new Set<string>(artistNames.map(n => n.toLowerCase()));
+    const candidates: string[] = [];
+    for (const similar of similarResults) {
+      for (const s of shuffle(similar)) {
+        if (candidates.length >= artistNames.length * 8) break;
+        const key = s.name.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          candidates.push(s.name);
+        }
+      }
+    }
+
+    const shuffledCandidates = shuffle(candidates);
+    const trackGroupResults = await Promise.allSettled(
+      shuffledCandidates.map(async name => {
+        const artist = await deezer.resolveDeezerArtistByName(name);
+        if (!artist) return [] as ExternalSong[];
+        return deezer.getDeezerArtistTopTracks(artist.id, 2);
+      })
+    );
+    const trackGroups = trackGroupResults
+      .filter((r): r is PromiseFulfilledResult<ExternalSong[]> => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    const seenIds = new Set<string>();
+    const tracks: ExternalSong[] = [];
+    for (const group of shuffle(trackGroups)) {
+      for (const track of group) {
+        if (tracks.length >= EXTERNAL_COUNT) break;
+        if (!seenIds.has(track.id)) {
+          seenIds.add(track.id);
+          tracks.push(track);
+        }
+      }
+      if (tracks.length >= EXTERNAL_COUNT) break;
+    }
+    return tracks;
+  } catch {
+    return [];
+  }
+}
+
+// ── Local song row ─────────────────────────────────────────────────────────────
+
+type LocalRowProps = {
+  song: SongBase;
+  playlistId: string;
+  isDarkMode: boolean;
+};
+
+const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId, isDarkMode }) => {
+  const { t } = useTranslation();
+  const { playSimilar } = usePlaying();
+  const api = useApi();
+  const addToPlaylist = useAddSongToPlaylist();
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const handlePress = useCallback(async () => {
+    try {
+      const full = await api.tracks.get(song.id);
+      if (full) await playSimilar(full);
+    } catch {
+      toast.error(t('common.playbackError'));
+    }
+  }, [api, song.id, playSimilar, t]);
+
+  const handleAdd = useCallback(async () => {
+    if (adding || added) return;
+    setAdding(true);
+    try {
+      await addToPlaylist.mutateAsync({ playlistId, songId: song.id });
+      setAdded(true);
+      toast.success(t('playlist.recommended.added'));
+    } catch {
+      toast.error(t('playlist.recommended.addFailed'));
+    } finally {
+      setAdding(false);
+    }
+  }, [adding, added, addToPlaylist, playlistId, song.id, t]);
+
+  return (
+    <TouchableOpacity style={styles.row} onPress={() => void handlePress()} activeOpacity={0.7}>
+      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
+      <View style={styles.rowText}>
+        <Text style={[styles.rowTitle, isDarkMode && styles.rowTitleDark]} numberOfLines={1}>
+          {song.title}
+        </Text>
+        <Text style={[styles.rowSub, isDarkMode && styles.rowSubDark]} numberOfLines={1}>
+          {song.artist}{song.duration ? ` · ${formatDuration(song.duration)}` : ''}
+        </Text>
+      </View>
+      <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
+        <Ionicons
+          name={added ? 'checkmark-circle-outline' : 'add-circle-outline'}
+          size={22}
+          color={(adding || added) ? (isDarkMode ? '#444' : '#ccc') : (isDarkMode ? '#aaa' : '#666')}
+        />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+};
+
+// ── External song row ──────────────────────────────────────────────────────────
+
+type ExternalRowProps = {
+  song: ExternalSong;
+  isDarkMode: boolean;
+};
+
+const ExternalRow: React.FC<ExternalRowProps> = ({ song, isDarkMode }) => {
+  const { toggle } = usePreviewPlayer();
+  const hasPreview = !!song.previewUrl;
+
+  return (
+    <TouchableOpacity
+      style={styles.row}
+      onPress={() => song.previewUrl && void toggle(song, song.previewUrl)}
+      disabled={!hasPreview}
+      activeOpacity={hasPreview ? 0.7 : 1}
+    >
+      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
+      <View style={styles.rowText}>
+        <Text style={[styles.rowTitle, isDarkMode && styles.rowTitleDark]} numberOfLines={1}>
+          {song.title}
+        </Text>
+        <Text style={[styles.rowSub, isDarkMode && styles.rowSubDark]} numberOfLines={1}>
+          {song.artist}{song.duration ? ` · ${formatDuration(song.duration)}` : ''}
+        </Text>
+      </View>
+      <TouchableOpacity
+        onPress={() => song.previewUrl && void toggle(song, song.previewUrl)}
+        disabled={!hasPreview}
+        hitSlop={10}
+        style={styles.actionBtn}
+      >
+        <Ionicons
+          name="play-circle-outline"
+          size={22}
+          color={hasPreview ? (isDarkMode ? '#aaa' : '#666') : (isDarkMode ? '#333' : '#ddd')}
+        />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+};
+
+// ── Main section ───────────────────────────────────────────────────────────────
+
+type Props = {
+  playlist: Playlist;
+};
+
+const RecommendedSection: React.FC<Props> = ({ playlist }) => {
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const themeColor = useSelector(selectThemeColor);
+  const { tracks } = useTracks();
+  const queryClient = useQueryClient();
+  const isOffline = useIsOffline();
+
+  const [localSeed, setLocalSeed] = useState(() => Math.random());
+
+  const playlistSongIds = useMemo(
+    () => new Set((playlist.songs ?? []).map(s => s.id)),
+    [playlist.songs]
+  );
+
+  const playlistArtistNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const song of playlist.songs ?? []) {
+      if (song.artist && song.artist.toLowerCase() !== 'various artists') {
+        names.add(song.artist);
+      }
+    }
+    return [...names].slice(0, 3);
+  }, [playlist.songs]);
+
+  // Local: songs from same artists not already in playlist
+  const localSongs = useMemo<SongBase[]>(() => {
+    const artistSet = new Set(playlistArtistNames.map(n => n.toLowerCase()));
+    const pool = tracks.filter(
+      s => !playlistSongIds.has(s.id) && s.artist && artistSet.has(s.artist.toLowerCase())
+    );
+    return seededShuffle(pool, localSeed).slice(0, LOCAL_COUNT);
+  }, [tracks, playlistSongIds, playlistArtistNames, localSeed]);
+
+  // External: similar artist tracks from Deezer
+  const externalQueryKey = useMemo(
+    () => [QueryKeys.RecommendedExternalSongs, 'playlist', playlist.id, playlistArtistNames.join(',')],
+    [playlist.id, playlistArtistNames]
+  );
+
+  const externalQuery = useQuery({
+    queryKey: externalQueryKey,
+    queryFn: () => fetchExternalRecs(playlistArtistNames),
+    enabled: playlistArtistNames.length > 0,
+    staleTime: 1000 * 60 * 60 * 6,
+    networkMode: 'online',
+  });
+
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleRefresh = useCallback(() => {
+    if (countdown !== null) return;
+    setLocalSeed(Math.random());
+    queryClient.invalidateQueries({ queryKey: externalQueryKey });
+    setCountdown(3);
+  }, [countdown, queryClient, externalQueryKey]);
+
+  useEffect(() => {
+    if (countdown === null || countdown === 0) return;
+    countdownRef.current = setInterval(() => {
+      setCountdown(c => (c !== null && c > 1 ? c - 1 : null));
+    }, 1000);
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [countdown]);
+
+  const showLocal = localSongs.length > 0;
+  const showExternal = !isOffline && playlistArtistNames.length > 0;
+
+  if (!showLocal && !showExternal) return null;
+
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+        {t('playlist.recommended.title')}
+      </Text>
+
+      {showLocal && localSongs.map(song => (
+        <LocalRow key={song.id} song={song} playlistId={playlist.id} isDarkMode={isDarkMode} />
+      ))}
+
+      {showExternal && (
+        externalQuery.isLoading ? (
+          <ActivityIndicator color={themeColor} style={styles.loader} />
+        ) : (externalQuery.data ?? []).length === 0 ? (
+          <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+            {t('playlist.recommended.externalEmpty')}
+          </Text>
+        ) : (
+          (externalQuery.data ?? []).map(song => (
+            <ExternalRow key={song.id} song={song} isDarkMode={isDarkMode} />
+          ))
+        )
+      )}
+
+      <TouchableOpacity
+        style={[styles.refreshBtn, isDarkMode && styles.refreshBtnDark]}
+        onPress={handleRefresh}
+        activeOpacity={countdown !== null ? 1 : 0.7}
+        disabled={countdown !== null}
+      >
+        <Ionicons
+          name="refresh"
+          size={16}
+          color={isDarkMode ? '#aaa' : '#666'}
+          style={{ opacity: countdown !== null ? 0 : 1 }}
+        />
+        <Text style={[styles.refreshText, isDarkMode && styles.refreshTextDark, { opacity: countdown !== null ? 0 : 1 }]}>
+          {t('playlist.recommended.refresh')}
+        </Text>
+        {countdown !== null && (
+          <Text style={[styles.countdownText, isDarkMode && styles.refreshTextDark, { position: 'absolute' }]}>
+            {countdown}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+export default RecommendedSection;
+
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: 40,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  sectionTitleDark: { color: '#888' },
+  groupGap: {
+    height: 16,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  cover: {
+    width: COVER_SIZE,
+    height: COVER_SIZE,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  rowText: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 6,
+  },
+  rowTitle: {
+    fontSize: 15,
+    fontWeight: '400',
+    color: '#000',
+  },
+  rowTitleDark: { color: '#fff' },
+  rowSub: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 1,
+  },
+  rowSubDark: { color: '#aaa' },
+  actionBtn: { padding: 4 },
+  loader: { marginVertical: 24 },
+  emptyText: {
+    fontSize: 13,
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  emptyTextDark: { color: '#555' },
+  refreshBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 10,
+  },
+  refreshBtnDark: { borderColor: '#2a2a2a' },
+  refreshText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+  },
+  countdownText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#666',
+  },
+  refreshTextDark: { color: '#aaa' },
+});

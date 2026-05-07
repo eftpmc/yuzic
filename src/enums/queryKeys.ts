@@ -21,4 +21,7 @@ export enum QueryKeys {
 	ExternalAlbumPreviews = 'external-album-previews',
 	LidarrQueue = 'lidarr-queue',
 	SlskdQueue = 'slskd-queue',
+	RecommendedLocalSongs = 'recommended-local-songs',
+	RecommendedExternalSongs = 'recommended-external-songs',
+	RecommendedAlbums = 'recommended-albums',
 }

@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Album, Song } from '@/types';
 
 import AlbumHeader from '../Header';
+import RecommendedAlbumsSection from '../RecommendedAlbumsSection';
 import SongRow from '@/components/rows/SongRow';
 import MediaTile from '@/screens/explore/components/MediaTile';
 import { useTheme } from '@/hooks/useTheme';
@@ -79,6 +80,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
             </ScrollView>
           </View>
         )}
+        <RecommendedAlbumsSection album={album} />
       </View>
     );
   }, [album.songs, album.artist, isDarkMode, moreAlbums, tileWidth, navigation]);

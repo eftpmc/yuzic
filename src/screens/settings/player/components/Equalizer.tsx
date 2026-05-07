@@ -4,9 +4,9 @@ import {
     Text,
     StyleSheet,
     ScrollView,
+    Switch,
     TouchableOpacity,
 } from 'react-native';
-import { X, Check } from 'lucide-react-native';
 import Slider from '@react-native-community/slider';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -40,31 +40,12 @@ const Equalizer: React.FC = () => {
                 <Text style={[styles.title, isDarkMode && styles.titleDark]}>
                     {t('settings.player.equalizer.title')}
                 </Text>
-                <View style={styles.toggleGrid}>
-                    <TouchableOpacity
-                        onPress={() => setEnabled(false)}
-                        style={[
-                            styles.gridButton,
-                            isDarkMode && styles.gridButtonDark,
-                            !isEnabled && { backgroundColor: themeColor, borderColor: themeColor },
-                        ]}
-                        activeOpacity={0.8}
-                    >
-                        <X size={18} color={!isEnabled ? '#fff' : isDarkMode ? '#ccc' : '#666'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setEnabled(true)}
-                        style={[
-                            styles.gridButton,
-                            styles.gridButtonSpaced,
-                            isDarkMode && styles.gridButtonDark,
-                            isEnabled && { backgroundColor: themeColor, borderColor: themeColor },
-                        ]}
-                        activeOpacity={0.8}
-                    >
-                        <Check size={18} color={isEnabled ? '#fff' : isDarkMode ? '#ccc' : '#666'} />
-                    </TouchableOpacity>
-                </View>
+                <Switch
+                    value={isEnabled}
+                    onValueChange={setEnabled}
+                    trackColor={{ true: themeColor }}
+                    thumbColor="#fff"
+                />
             </View>
 
             {/* Presets */}
@@ -274,26 +255,5 @@ const styles = StyleSheet.create({
     },
     resetTextDark: {
         color: '#aaa',
-    },
-    toggleGrid: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    gridButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f1f1f1',
-        borderColor: '#ddd',
-        borderWidth: 1,
-    },
-    gridButtonDark: {
-        backgroundColor: '#1a1a1a',
-        borderColor: '#333',
-    },
-    gridButtonSpaced: {
-        marginLeft: 8,
     },
 });

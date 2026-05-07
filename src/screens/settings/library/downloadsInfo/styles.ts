@@ -104,6 +104,11 @@ export const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 100,
   },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 100,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

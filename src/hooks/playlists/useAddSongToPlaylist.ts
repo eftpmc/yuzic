@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { Song } from '@/types';
+import { Playlist, Song } from '@/types';
 import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { addLibraryPlaylistSong } from '@/utils/redux/slices/librarySlice';
@@ -46,13 +46,35 @@ export function useAddSongToPlaylist() {
 
       await api.playlists.addSong(playlistId, resolvedSongId);
     },
-    onSuccess: (_, { playlistId }) => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Playlist, activeServer?.id, playlistId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Playlists, activeServer?.id],
-      });
+    onSuccess: (_, { playlistId, songId, song: inputSong }) => {
+      const resolvedSongId = songId ?? inputSong?.id;
+      const song = inputSong ?? (resolvedSongId ? songsById.get(resolvedSongId) : undefined);
+
+      if (song) {
+        const addToCache = (old: Playlist | null | undefined): Playlist | null | undefined => {
+          if (!old) return old;
+          if (old.songs.some(s => s.id === song.id)) return old;
+          return { ...old, songs: [...old.songs, song] };
+        };
+
+        queryClient.setQueryData<Playlist | null>(
+          [QueryKeys.Playlist, activeServer?.id, playlistId],
+          addToCache
+        );
+        queryClient.setQueryData<Playlist[]>(
+          [QueryKeys.Playlists, activeServer?.id],
+          old => old?.map(p => p.id === playlistId ? (addToCache(p) ?? p) : p)
+        );
+        dispatch(addLibraryPlaylistSong({ playlistId, song }));
+      } else {
+        // No song object available — fall back to invalidation so UI stays correct
+        queryClient.invalidateQueries({
+          queryKey: [QueryKeys.Playlist, activeServer?.id, playlistId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QueryKeys.Playlists, activeServer?.id],
+        });
+      }
     },
   });
 }

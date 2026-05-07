@@ -14,12 +14,10 @@ import {
   selectThemeColor,
   selectIsGridView,
   selectGridColumns,
-  selectGridSpacing,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setIsGridView,
   setGridColumns,
-  setGridSpacing,
 } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -32,10 +30,9 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
     const themeColor = useSelector(selectThemeColor);
     const isGridView = useSelector(selectIsGridView);
     const gridColumns = useSelector(selectGridColumns);
-    const gridSpacing = useSelector(selectGridSpacing);
     const { isDarkMode } = useTheme();
 
-    const snapPoints = useMemo(() => ['45%'], []);
+    const snapPoints = useMemo(() => ['34%'], []);
 
     const viewOptions = [
       {
@@ -142,30 +139,6 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                 />
               </View>
 
-              {/* Spacing slider */}
-              <View style={styles.sliderRow}>
-                <View style={styles.sliderHeader}>
-                  <Text style={[styles.sliderLabel, isDarkMode && styles.sliderLabelDark]}>
-                    {t('home.displaySheet.spacing', { defaultValue: 'Spacing' })}
-                  </Text>
-                  <View style={[styles.badge, { backgroundColor: themeColor + '22' }]}>
-                    <Text style={[styles.badgeText, { color: themeColor }]}>
-                      {gridSpacing}px
-                    </Text>
-                  </View>
-                </View>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={2}
-                  maximumValue={16}
-                  step={2}
-                  value={gridSpacing}
-                  onValueChange={(val) => dispatch(setGridSpacing(Math.round(val)))}
-                  minimumTrackTintColor={themeColor}
-                  maximumTrackTintColor={isDarkMode ? '#555' : '#ccc'}
-                  thumbTintColor={themeColor}
-                />
-              </View>
             </View>
           )}
 
