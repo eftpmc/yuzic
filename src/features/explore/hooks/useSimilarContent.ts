@@ -23,6 +23,7 @@ const SEED_COUNT = 5
 const SEED_POOL_SIZE = 20
 
 const LB_DELAY_MS = 500
+const SIMILAR_CONTENT_TIMEOUT_MS = 15000
 
 type SimilarContentResult = {
   artists: ExternalArtistBase[]
@@ -79,6 +80,24 @@ function preferCovered<T extends { cover: CoverSource }>(items: T[]): T[] {
 
 function delay(ms: number): Promise<void> {
   return new Promise(r => setTimeout(r, ms))
+}
+
+function emptySimilarContent(): SimilarContentResult {
+  return { artists: [], albums: [] }
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+
+  const timer = new Promise<T>(resolve => {
+    timeout = setTimeout(() => resolve(fallback), ms)
+  })
+
+  try {
+    return await Promise.race([promise, timer])
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
 }
 
 async function fetchSimilarContentViaLastFm(
@@ -274,7 +293,11 @@ export function useSimilarContent() {
 
   const query = useQuery({
     queryKey,
-    queryFn: () => fetchSimilarContent(selectedSeeds),
+    queryFn: () => withTimeout(
+      fetchSimilarContent(selectedSeeds),
+      SIMILAR_CONTENT_TIMEOUT_MS,
+      emptySimilarContent()
+    ),
     enabled: seedPool.length > 0,
     staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
@@ -287,8 +310,8 @@ export function useSimilarContent() {
   return {
     artists: (query.data?.artists ?? []).slice(0, TARGET_ARTISTS),
     albums: (query.data?.albums ?? []).slice(0, TARGET_ALBUMS),
-    artistsReady: !query.isLoading && (query.data?.artists?.length ?? 0) > 0,
-    albumsReady: !query.isLoading && (query.data?.albums?.length ?? 0) > 0,
+    artistsReady: !query.isLoading,
+    albumsReady: !query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
     hasNoSeeds: seedPool.length === 0,

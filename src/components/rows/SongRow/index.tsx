@@ -23,6 +23,7 @@ type Props = {
   onPress?: () => void;
   variant?: 'default' | 'albumCompact';
   showDownloadedDot?: boolean;
+  isFavorite?: boolean;
 };
 
 const SongRow: React.FC<Props> = ({
@@ -31,6 +32,7 @@ const SongRow: React.FC<Props> = ({
   onPress,
   variant = 'default',
   showDownloadedDot = false,
+  isFavorite = false,
 }) => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
@@ -118,9 +120,16 @@ const SongRow: React.FC<Props> = ({
         </TouchableOpacity>
 
         <View style={styles.rowRight}>
+          {isFavorite && (
+            <Ionicons
+              name="heart"
+              size={15}
+              color="#ff4d67"
+            />
+          )}
           {downloaded && (isAlbumCompact || showDownloadedDot) && (
             <Ionicons
-              name="checkmark"
+              name="arrow-down-circle"
               size={16}
               color={isDarkMode ? '#aaa' : '#8e8e93'}
             />

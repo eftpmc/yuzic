@@ -11,6 +11,7 @@ import SongRow from '@/components/rows/SongRow';
 import MediaTile from '@/screens/explore/components/MediaTile';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtist } from '@/hooks/artists';
+import { useStarredSongs } from '@/hooks/starred';
 
 type Props = {
   album: Album;
@@ -30,9 +31,14 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
   const { artist: fullArtist } = useArtist(album.artist?.id ?? '');
+  const { songs: starredSongs } = useStarredSongs();
 
   const screenWidth = Dimensions.get('window').width;
   const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
+  const starredSongIds = useMemo(
+    () => new Set(starredSongs.map(song => song.id)),
+    [starredSongs]
+  );
 
   const header = useMemo(() => {
     return <AlbumHeader album={album} />;
@@ -124,6 +130,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
         song={item.song}
         collection={album}
         variant="albumCompact"
+        isFavorite={starredSongIds.has(item.song.id)}
       />
     );
   };

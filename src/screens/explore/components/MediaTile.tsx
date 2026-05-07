@@ -43,7 +43,7 @@ function MediaTile({ cover, title, subtitle, size, radius, onPress }: Props) {
     >
       <MediaImage
         cover={cover}
-        size="thumb"
+        size="grid"
         style={imageStyle}
       />
 

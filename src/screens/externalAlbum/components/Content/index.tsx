@@ -47,10 +47,20 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       let deezerId = artistDeezerId;
       if (!deezerId && artistName) {
         const resolved = await deezer.resolveDeezerArtistByName(artistName);
-        deezerId = resolved?.externalIds?.deezerId ?? null;
+        deezerId = resolved?.externalIds?.deezerId;
       }
       if (!deezerId) return [];
-      return deezer.getDeezerArtistAlbums(deezerId);
+      const fallbackArtist = artistName
+        ? {
+            id: deezerId,
+            name: artistName,
+            subtext: '',
+            cover: { kind: 'none' as const },
+            externalSource: 'deezer' as const,
+            externalIds: { deezerId },
+          }
+        : null;
+      return deezer.getDeezerArtistAlbums(deezerId, 50, fallbackArtist);
     },
     select: (albums) => albums.filter(a => a.id !== album.id),
   });

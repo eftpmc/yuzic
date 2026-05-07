@@ -41,12 +41,14 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
     />
   ), [navigation, gridItemWidth])
 
+  if (ready && data.length === 0) return null
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         {t('explore.sections.artistsForYou')}
       </Text>
-      {!ready || data.length === 0 ? (
+      {!ready ? (
         <View style={{ paddingHorizontal: H_PADDING }}>
           <ExploreEmptyCard
             width={screenWidth - H_PADDING * 2}

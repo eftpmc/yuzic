@@ -27,12 +27,21 @@ async function fetchRecommendedAlbums(artistName: string): Promise<ExternalAlbum
       related.map(a => deezer.getDeezerArtistAlbums(a.id, 2, a))
     );
 
+    const groups = albumGroups
+      .filter((result): result is PromiseFulfilledResult<ExternalAlbumBase[]> =>
+        result.status === 'fulfilled'
+      )
+      .map(result => result.value)
+      .filter(group => group.length > 0);
+
     const seen = new Set<string>();
     const albums: ExternalAlbumBase[] = [];
-    for (const result of albumGroups) {
-      if (result.status !== 'fulfilled') continue;
-      for (const album of result.value) {
+
+    for (let albumIndex = 0; albumIndex < 2; albumIndex++) {
+      for (const group of groups) {
         if (albums.length >= MAX_ALBUMS) break;
+        const album = group[albumIndex];
+        if (!album) continue;
         if (!seen.has(album.id)) {
           seen.add(album.id);
           albums.push(album);
@@ -40,6 +49,7 @@ async function fetchRecommendedAlbums(artistName: string): Promise<ExternalAlbum
       }
       if (albums.length >= MAX_ALBUMS) break;
     }
+
     return albums;
   } catch {
     return [];
