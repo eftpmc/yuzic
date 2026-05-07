@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import { MediaImage } from '@/components/MediaImage';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -101,7 +102,7 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
     >
       <BottomSheetView style={[styles.content, themeStyles.sheetBackground]}>
         <View style={styles.header}>
-          <Ionicons name="disc-outline" size={32} color={themeStyles.icon.color} />
+          <MediaImage cover={album.cover} size="thumb" style={styles.cover} />
           <View style={styles.headerText}>
             <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
               {album.title}
@@ -193,6 +194,11 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
     marginLeft: 12,
+  },
+  cover: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
   },
   title: {
     fontSize: 16,

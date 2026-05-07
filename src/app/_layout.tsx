@@ -28,6 +28,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { queryStorage } from '@/utils/mmkvStorage';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
+import { QueryKeys } from '@/enums/queryKeys';
 
 onlineManager.setEventListener(setOnline => {
   return NetInfo.addEventListener(state => {
@@ -37,12 +38,30 @@ onlineManager.setEventListener(setOnline => {
 
 SplashScreen.preventAutoHideAsync();
 
+const LIBRARY_ERROR_QUERY_KEYS = new Set<string>([
+  QueryKeys.Album,
+  QueryKeys.Albums,
+  QueryKeys.Artist,
+  QueryKeys.Artists,
+  QueryKeys.Playlist,
+  QueryKeys.Playlists,
+  QueryKeys.Tracks,
+  QueryKeys.Starred,
+  QueryKeys.Genres,
+]);
+
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (_error, query) => {
       // Only show a toast when a query has no cached data — silent background
       // refreshes shouldn't interrupt the user if stale data is still visible.
-      if (query.state.data === undefined) {
+      const rootKey = query.queryKey[0];
+      if (
+        typeof rootKey === 'string' &&
+        LIBRARY_ERROR_QUERY_KEYS.has(rootKey) &&
+        query.state.data === undefined &&
+        !query.meta?.suppressGlobalErrorToast
+      ) {
         toast.error(i18n.t('common.libraryLoadFailed'));
       }
     },

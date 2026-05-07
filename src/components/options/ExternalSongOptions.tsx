@@ -10,6 +10,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import { CloudDownload } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 
 import {
@@ -128,7 +129,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
               style={styles.option}
               onPress={() => downloadSheetRef.current?.present()}
             >
-              <Ionicons name="arrow-down-circle" size={26} color={themeStyles.icon.color} />
+              <CloudDownload size={26} color={themeStyles.icon.color} />
               <Text style={[styles.optionText, themeStyles.optionText]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>

@@ -43,7 +43,7 @@ export default function HomeScreen() {
     if (lastAutoSyncServerIdRef.current === activeServer.id) return
 
     lastAutoSyncServerIdRef.current = activeServer.id
-    sync(true)
+    sync()
   }, [activeServer?.id, activeServer?.isAuthenticated, sync, syncOnAppStart])
 
   useEffect(() => {

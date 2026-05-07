@@ -22,6 +22,9 @@ import { DETAIL_STALE_MS, shouldRunDetailEnrichment } from './syncPolicy'
 const SYNC_THROTTLE_MS = 30 * 60 * 1000
 // Max concurrent N+1 requests to avoid overwhelming the server
 const N1_CONCURRENCY = 15
+const MAX_AUTO_DETAIL_ALBUMS = 500
+const MAX_AUTO_DETAIL_ARTISTS = 500
+const MAX_AUTO_DETAIL_PLAYLISTS = 100
 
 async function fetchBatch<T>(
   ids: string[],
@@ -105,6 +108,14 @@ export function useSync() {
       const tracks = queryClient.getQueryData<SongBase[]>([QueryKeys.Tracks, serverId])
       const genres = queryClient.getQueryData<string[]>([QueryKeys.Genres, serverId])
       const starred = queryClient.getQueryData<{ songs: Song[] }>([QueryKeys.Starred, serverId])
+      const hasAnyLibraryData = !!(
+        albums?.length ||
+        artists?.length ||
+        playlists?.length ||
+        tracks?.length ||
+        genres?.length ||
+        starred?.songs?.length
+      )
 
       if (albums) dispatch(setLibraryAlbums(albums))
       if (artists) dispatch(setLibraryArtists(artists))
@@ -113,9 +124,11 @@ export function useSync() {
       if (genres) dispatch(setLibraryGenres(genres))
       if (starred?.songs) dispatch(setLibraryStarred(starred.songs))
 
-      const syncedAt = Date.now()
-      lastSyncedAtRef.current = syncedAt
-      dispatch(setLastSyncedAt(syncedAt))
+      if (hasAnyLibraryData) {
+        const syncedAt = Date.now()
+        lastSyncedAtRef.current = syncedAt
+        dispatch(setLastSyncedAt(syncedAt))
+      }
     } finally {
       setIsSyncing(false)
     }
@@ -128,15 +141,19 @@ export function useSync() {
 
       try {
         const fullAlbumMap = new Map<string, Album>()
+        const albums = queryClient.getQueryData<Album[]>([QueryKeys.Albums, serverId]) ?? []
+        const artists = queryClient.getQueryData<Artist[]>([QueryKeys.Artists, serverId]) ?? []
+        const playlists = queryClient.getQueryData<Playlist[]>([QueryKeys.Playlists, serverId]) ?? []
+        const shouldFetchAlbumDetails = force || albums.length <= MAX_AUTO_DETAIL_ALBUMS
+        const shouldFetchArtistDetails = force || artists.length <= MAX_AUTO_DETAIL_ARTISTS
+        const shouldFetchPlaylistDetails = force || playlists.length <= MAX_AUTO_DETAIL_PLAYLISTS
 
-        {
+        if (shouldFetchAlbumDetails) {
           // Use bulk fetch when the adapter supports it (Jellyfin: 2 requests
           // instead of 2N), otherwise fall back to the N+1 batch pattern.
-          const albums = queryClient.getQueryData<Album[]>([QueryKeys.Albums, serverId])
           const fullAlbums = api.albums.listWithSongs
             ? await api.albums.listWithSongs()
-            : albums
-              ? await fetchBatch(
+            : await fetchBatch(
                   albums.map(a => a.id),
                   id => queryClient.fetchQuery({
                     queryKey: [QueryKeys.Album, serverId, id],
@@ -144,7 +161,6 @@ export function useSync() {
                     staleTime: DETAIL_STALE_MS,
                   })
                 )
-              : []
 
           if (fullAlbums.length > 0) {
             fullAlbums.forEach(a => fullAlbumMap.set(a.id, a))
@@ -160,8 +176,7 @@ export function useSync() {
 
         if (syncGenerationRef.current !== generation) return
 
-        const artists = queryClient.getQueryData<Artist[]>([QueryKeys.Artists, serverId])
-        if (artists) {
+        if (shouldFetchArtistDetails) {
           const fullArtists = await fetchBatch(
             artists.map(a => a.id),
             id => queryClient.fetchQuery({
@@ -178,8 +193,7 @@ export function useSync() {
           ))
         }
 
-        const playlists = queryClient.getQueryData<Playlist[]>([QueryKeys.Playlists, serverId])
-        if (playlists) {
+        if (shouldFetchPlaylistDetails) {
           const fullPlaylists = await fetchBatch(
             playlists.map(p => p.id),
             id => queryClient.fetchQuery({

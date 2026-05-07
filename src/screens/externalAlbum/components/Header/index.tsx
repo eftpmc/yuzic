@@ -19,7 +19,7 @@ import {
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { LucideDownload } from 'lucide-react-native';
+import { CloudDownload } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
@@ -206,7 +206,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
               onPress={handleDownload}
               disabled={!canDownload || albumStatus.kind !== 'none'}
             >
-              <LucideDownload
+              <CloudDownload
                 size={18}
                 color={
                   !canDownload || albumStatus.kind !== 'none'

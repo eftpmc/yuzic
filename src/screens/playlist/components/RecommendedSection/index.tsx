@@ -21,11 +21,18 @@ import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
 import { useIsOffline } from '@/hooks/useIsOffline';
-import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
+import { useSheetRef } from '@/utils/useSheetRef';
 import * as deezer from '@/api/deezer';
+import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
 import { RAWARR_URL } from '@/constants/rawarr';
 import { QueryKeys } from '@/enums/queryKeys';
-import type { Playlist, SongBase, ExternalSong } from '@/types';
+import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
+import {
+  selectLidarrAuthenticated,
+  selectSlskdAuthenticated,
+} from '@/utils/redux/selectors/downloadersSelectors';
+import { CloudDownload } from 'lucide-react-native';
+import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
 const LOCAL_COUNT = 4;
 const EXTERNAL_COUNT = 4;
@@ -89,9 +96,13 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
 
     const seenIds = new Set<string>();
     const tracks: ExternalSong[] = [];
-    for (const group of shuffle(trackGroups)) {
-      for (const track of group) {
+    const groups = shuffle(trackGroups.filter(group => group.length > 0));
+
+    for (let trackIndex = 0; trackIndex < 2; trackIndex++) {
+      for (const group of groups) {
         if (tracks.length >= EXTERNAL_COUNT) break;
+        const track = group[trackIndex];
+        if (!track) continue;
         if (!seenIds.has(track.id)) {
           seenIds.add(track.id);
           tracks.push(track);
@@ -99,6 +110,18 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
       }
       if (tracks.length >= EXTERNAL_COUNT) break;
     }
+
+    for (const group of groups) {
+      if (tracks.length >= EXTERNAL_COUNT) break;
+      for (const track of group) {
+        if (tracks.length >= EXTERNAL_COUNT) break;
+        if (!seenIds.has(track.id)) {
+          seenIds.add(track.id);
+          tracks.push(track);
+        }
+      }
+    }
+
     return tracks;
   } catch {
     return [];
@@ -171,9 +194,16 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId, isDarkMode }) => 
 type ExternalRowProps = {
   song: ExternalSong;
   isDarkMode: boolean;
+  hasDownloader: boolean;
+  onDownload: (song: ExternalSong) => void;
 };
 
-const ExternalRow: React.FC<ExternalRowProps> = ({ song, isDarkMode }) => {
+const ExternalRow: React.FC<ExternalRowProps> = ({
+  song,
+  isDarkMode,
+  hasDownloader,
+  onDownload,
+}) => {
   const { toggle } = usePreviewPlayer();
   const hasPreview = !!song.previewUrl;
 
@@ -194,15 +224,14 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, isDarkMode }) => {
         </Text>
       </View>
       <TouchableOpacity
-        onPress={() => song.previewUrl && void toggle(song, song.previewUrl)}
-        disabled={!hasPreview}
+        onPress={() => hasDownloader && onDownload(song)}
+        disabled={!hasDownloader}
         hitSlop={10}
         style={styles.actionBtn}
       >
-        <Ionicons
-          name="play-circle-outline"
+        <CloudDownload
           size={22}
-          color={hasPreview ? (isDarkMode ? '#aaa' : '#666') : (isDarkMode ? '#333' : '#ddd')}
+          color={hasDownloader ? (isDarkMode ? '#aaa' : '#666') : (isDarkMode ? '#333' : '#ddd')}
         />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -222,8 +251,13 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
   const { tracks } = useTracks();
   const queryClient = useQueryClient();
   const isOffline = useIsOffline();
+  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
+  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const hasDownloader = isLidarrConnected || isSlskdConnected;
+  const downloadSheetRef = useSheetRef();
 
   const [localSeed, setLocalSeed] = useState(() => Math.random());
+  const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
 
   const playlistSongIds = useMemo(
     () => new Set((playlist.songs ?? []).map(s => s.id)),
@@ -273,6 +307,29 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
     setCountdown(3);
   }, [countdown, queryClient, externalQueryKey]);
 
+  const handleDownloadExternalSong = useCallback(async (song: ExternalSong) => {
+    if (!hasDownloader) return;
+    if (!song.albumId) {
+      toast.error(t('externalAlbum.download.startFailed'));
+      return;
+    }
+
+    try {
+      const album = await deezer.getDeezerAlbum(song.albumId);
+      if (!album) {
+        toast.error(t('externalAlbum.download.startFailed'));
+        return;
+      }
+
+      setAlbumForDownload(album);
+      requestAnimationFrame(() => {
+        downloadSheetRef.current?.present();
+      });
+    } catch {
+      toast.error(t('externalAlbum.download.startFailed'));
+    }
+  }, [downloadSheetRef, hasDownloader, t]);
+
   useEffect(() => {
     if (countdown === null || countdown === 0) return;
     countdownRef.current = setInterval(() => {
@@ -307,7 +364,13 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
           </Text>
         ) : (
           (externalQuery.data ?? []).map(song => (
-            <ExternalRow key={song.id} song={song} isDarkMode={isDarkMode} />
+            <ExternalRow
+              key={song.id}
+              song={song}
+              isDarkMode={isDarkMode}
+              hasDownloader={hasDownloader}
+              onDownload={handleDownloadExternalSong}
+            />
           ))
         )
       )}
@@ -333,6 +396,13 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
           </Text>
         )}
       </TouchableOpacity>
+
+      {albumForDownload && (
+        <DownloadAlbumSheet
+          album={albumForDownload}
+          sheetRef={downloadSheetRef}
+        />
+      )}
     </View>
   );
 };

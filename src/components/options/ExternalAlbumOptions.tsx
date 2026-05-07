@@ -11,6 +11,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import { CloudDownload } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 
 import {
@@ -102,7 +103,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
               style={styles.option}
               onPress={() => downloadSheetRef.current?.present()}
             >
-              <Ionicons name="arrow-down-circle" size={26} color={themeStyles.icon.color} />
+              <CloudDownload size={26} color={themeStyles.icon.color} />
               <Text style={[styles.optionText, themeStyles.optionText]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
@@ -110,7 +111,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
             </TouchableOpacity>
           ) : (
             <View style={styles.option}>
-              <Ionicons name="arrow-down-circle-outline" size={26} color={isDarkMode ? '#444' : '#ccc'} />
+              <CloudDownload size={26} color={isDarkMode ? '#444' : '#ccc'} />
               <Text style={[styles.optionText, styles.disabledText]}>
                 {t('externalAlbum.menu.noServiceConnected')}
               </Text>

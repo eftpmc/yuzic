@@ -60,6 +60,9 @@ export function useOfflineFirstQuery<T>({
     enabled: enabled && !isOffline,
     staleTime,
     networkMode: 'offlineFirst',
+    meta: {
+      suppressGlobalErrorToast: hasFallback,
+    },
   });
 
   const data = selectOfflineFirstData({
