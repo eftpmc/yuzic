@@ -73,5 +73,15 @@ target 'Yuzic' do
         build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
       end
     end
+
+    # expo-modules-core uses Swift 6 actor-isolation syntax that fails as errors
+    # under Xcode 16.4's Swift 6 compiler. Minimal concurrency treats them as warnings.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'ExpoModulesCore'
+
+      target.build_configurations.each do |build_configuration|
+        build_configuration.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
+      end
+    end
   end
 end
