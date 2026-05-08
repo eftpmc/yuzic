@@ -74,13 +74,16 @@ target 'Yuzic' do
       end
     end
 
-    # expo-modules-core uses Swift 6 actor-isolation syntax that fails as errors
-    # under Xcode 16.4's Swift 6 compiler. Minimal concurrency treats them as warnings.
+    # expo-modules-core specifies swift_version='6.0' in its podspec, so Xcode 16.4
+    # enforces strict Swift 6 concurrency and the SWIFT_STRICT_CONCURRENCY build
+    # setting is ignored. Pass -strict-concurrency=minimal directly to the compiler
+    # driver via OTHER_SWIFT_FLAGS so it takes effect regardless of language mode.
     installer.pods_project.targets.each do |target|
       next unless target.name == 'ExpoModulesCore'
 
       target.build_configurations.each do |build_configuration|
-        build_configuration.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
+        existing = build_configuration.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)'
+        build_configuration.build_settings['OTHER_SWIFT_FLAGS'] = "#{existing} -strict-concurrency=minimal"
       end
     end
   end
