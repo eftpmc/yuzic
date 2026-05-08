@@ -70,8 +70,9 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(
       try {
         await pauseSong();
         await resetQueue();
-        queryClient.clear();
         dispatch(disconnect());
+        await queryClient.cancelQueries();
+        queryClient.clear();
         router.replace('/(onboarding)');
       } catch {
         toast.error(t('home.account.signOutFailed'));

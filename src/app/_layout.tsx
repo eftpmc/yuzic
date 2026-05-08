@@ -15,7 +15,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import store, { persistor } from '@/utils/redux/store';
-import { Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -29,6 +29,7 @@ import { queryStorage } from '@/utils/mmkvStorage';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { QueryKeys } from '@/enums/queryKeys';
+import { clearImageMemoryCache } from '@/utils/images/imageCache';
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -83,6 +84,12 @@ function hasCachedLibraryDataForServer(queryKey: readonly unknown[]): boolean {
     });
 }
 
+function isQueryForActiveServer(queryKey: readonly unknown[]): boolean {
+  const serverId = queryKey[1];
+  if (typeof serverId !== 'string') return false;
+  return store.getState().servers.activeServerId === serverId;
+}
+
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (_error, query) => {
@@ -92,6 +99,7 @@ const queryClient = new QueryClient({
       if (
         typeof rootKey === 'string' &&
         LIBRARY_ERROR_QUERY_KEYS.has(rootKey) &&
+        isQueryForActiveServer(query.queryKey) &&
         query.state.data === undefined &&
         !hasCachedLibraryDataForServer(query.queryKey) &&
         !query.meta?.suppressGlobalErrorToast
@@ -121,9 +129,28 @@ const asyncStoragePersister = createAsyncStoragePersister({
 
 const OFFLINE_TOAST_ID = 'offline-banner';
 
+function useImageMemoryCleanup() {
+  useEffect(() => {
+    const appStateSubscription = AppState.addEventListener('change', state => {
+      if (state === 'background') {
+        clearImageMemoryCache();
+      }
+    });
+    const memoryWarningSubscription = AppState.addEventListener('memoryWarning', () => {
+      clearImageMemoryCache();
+    });
+
+    return () => {
+      appStateSubscription.remove();
+      memoryWarningSubscription.remove();
+    };
+  }, []);
+}
+
 function AppShell() {
   const { resolved, isDarkMode } = useTheme();
   const language = useSelector(selectLanguage);
+  useImageMemoryCleanup();
 
   useEffect(() => {
     if (i18n.language !== language) {

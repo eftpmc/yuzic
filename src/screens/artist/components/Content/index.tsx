@@ -184,27 +184,25 @@ export default function ArtistContent({ artist }: Props) {
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    paddingTop: 16,
+    paddingTop: 18,
     paddingBottom: 10,
   },
   sectionTitle: {
-    color: '#666',
-    fontSize: 13,
+    color: '#111',
+    fontSize: 18,
     fontWeight: '700',
-    letterSpacing: 0.5,
     paddingHorizontal: 16,
-    textTransform: 'uppercase',
   },
   sectionTitleDark: {
-    color: '#888',
+    color: '#fff',
   },
   similarSection: {
-    paddingTop: 18,
+    paddingTop: 20,
     paddingBottom: 10,
   },
   similarListContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 10,
   },
   similarGap: {
     width: 12,
@@ -217,8 +215,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   showMoreIcon: {
-    width: 52,
-    height: 52,
+    width: 64,
+    height: 64,
     borderRadius: 6,
     marginRight: 12,
     alignItems: 'center',

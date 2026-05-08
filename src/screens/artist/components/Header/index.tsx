@@ -213,7 +213,12 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
-          <Text style={[styles.artistName, isDarkMode && styles.artistNameDark]}>
+          <Text
+            style={[styles.artistName, isDarkMode && styles.artistNameDark]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.65}
+          >
             {artist.name}
           </Text>
           <View style={styles.metaRow}>
@@ -326,6 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     textAlign: 'center',
+    width: '100%',
   },
   artistNameDark: {
     color: '#fff',

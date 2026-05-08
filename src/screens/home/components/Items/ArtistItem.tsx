@@ -14,6 +14,7 @@ import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtists } from '@/hooks/artists';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { prefetchCovers } from '@/utils/images/imageCache';
 
 interface ItemProps {
   id: string;
@@ -42,8 +43,9 @@ const ArtistItem: React.FC<ItemProps> = ({
   const sheetRef = useSheetRef();
 
   const handleNavigation = useCallback(() => {
+    prefetchCovers([cover], 'detail');
     navigation.navigate('artistView', { id });
-  }, [navigation, id]);
+  }, [cover, navigation, id]);
 
   const handleLongPress = useCallback(() => {
     sheetRef.current?.present();
@@ -67,8 +69,8 @@ const ArtistItem: React.FC<ItemProps> = ({
           size={isGridView ? 'grid' : 'thumb'}
           style={
             isGridView
-              ? { width: gridWidth, aspectRatio: 1, borderRadius: 8 }
-              : { width: 50, height: 50, borderRadius: 4, marginRight: 12 }
+              ? { width: gridWidth, aspectRatio: 1, borderRadius: gridWidth / 2 }
+              : { width: 50, height: 50, borderRadius: 25, marginRight: 12 }
           }
         />
 

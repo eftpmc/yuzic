@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { useAlbum } from '@/hooks/albums';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { prefetchCovers } from '@/utils/images/imageCache';
 
 interface ItemProps {
   id: string;
@@ -41,8 +42,9 @@ const AlbumItem: React.FC<ItemProps> = ({
   const sheetRef = useSheetRef();
 
   const handleNavigation = useCallback(() => {
+    prefetchCovers([cover], 'detail');
     navigation.navigate('albumView', { id });
-  }, [navigation, id]);
+  }, [cover, navigation, id]);
 
   const handleLongPress = useCallback(() => {
     sheetRef.current?.present();

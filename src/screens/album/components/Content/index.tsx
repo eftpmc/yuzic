@@ -188,16 +188,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   moreSectionTitle: {
-    fontSize: 13,
+    fontSize: 20,
     fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    color: '#666',
+    color: '#000',
     paddingHorizontal: H_PADDING,
     marginBottom: 12,
   },
   moreSectionTitleDark: {
-    color: '#888',
+    color: '#fff',
   },
   moreTileRow: {
     paddingHorizontal: H_PADDING,

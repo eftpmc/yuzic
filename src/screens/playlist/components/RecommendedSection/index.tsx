@@ -411,18 +411,17 @@ export default RecommendedSection;
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: 24,
     paddingBottom: 40,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#666',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    color: '#000',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    marginBottom: 12,
   },
-  sectionTitleDark: { color: '#888' },
+  sectionTitleDark: { color: '#fff' },
   groupGap: {
     height: 16,
   },

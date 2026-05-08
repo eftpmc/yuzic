@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/home/components/Items/AlbumItem';
 import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
+import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 
 const H_PADDING = 12;
 const GAP = 12;
@@ -37,6 +38,8 @@ export default function RandomAlbums() {
     const shuffled = shuffle(albums);
     return shuffled.slice(0, Math.min(MAX_ALBUMS, albums.length));
   }, [albums]);
+  const coversToPrefetch = useMemo(() => randomAlbums.map(album => album.cover), [randomAlbums]);
+  usePrefetchCovers(coversToPrefetch, 'grid');
 
   return (
     <View style={[styles.container, isDarkMode && styles.containerDark]}>
@@ -76,16 +79,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 12,
     marginLeft: H_PADDING,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   titleDark: {
-    color: '#888',
+    color: '#fff',
   },
   scrollContent: {
     paddingHorizontal: H_PADDING,

@@ -2,6 +2,7 @@ import { COVER_PX, CoverSource } from '@/types';
 import store from '@/utils/redux/store';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
+import { normalizeImageUrlForSize } from '@/utils/images/normalizeImageUrl';
 
 export function buildCoverArtArchiveUrl(
   mbid: string,
@@ -31,7 +32,7 @@ export function buildCover(
   }
 
   if (cover.kind === 'url') {
-    return cover.url || null;
+    return cover.url ? normalizeImageUrlForSize(cover.url, px) : null;
   }
 
   if (cover.kind === 'commons') {

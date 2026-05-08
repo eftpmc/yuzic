@@ -237,22 +237,22 @@ const styles = StyleSheet.create({
   },
 
   coverWrapper: {
-    width: 280,
-    height: 280,
-    borderRadius: 16,
-    marginTop: 32,
-    marginBottom: 24,
+    width: 260,
+    height: 260,
+    borderRadius: 14,
+    marginTop: 24,
+    marginBottom: 18,
     overflow: 'hidden',
   },
   coverImage: {
-    width: 280,
-    height: 280,
-    borderRadius: 16,
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
   },
 
   titleInfo: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 10,
     alignItems: 'center',
   },
   title: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   actionsRow: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 18,
   },
   actions: {
     flexDirection: 'row',

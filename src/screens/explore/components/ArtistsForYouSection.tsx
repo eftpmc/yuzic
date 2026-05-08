@@ -1,12 +1,14 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { View, Text, StyleSheet, Dimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
+import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import MediaTile from './MediaTile'
-import ExploreEmptyCard from './ExploreEmptyCard'
+import ExploreLoadingTiles from './ExploreLoadingTiles'
 import { ExternalArtistBase } from '@/types'
+import { prefetchCovers } from '@/utils/images/imageCache'
 
 const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
@@ -24,7 +26,8 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
   const gridGap = 12
 
   const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
-  const tileHeight = gridItemWidth + 8 + 14 + 4 + 12
+  const coversToPrefetch = useMemo(() => data.map(artist => artist.cover), [data])
+  usePrefetchCovers(coversToPrefetch, 'grid')
   const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
     <MediaTile
       cover={item.cover}
@@ -32,12 +35,15 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
       subtitle={item.subtext}
       size={gridItemWidth}
       radius={gridItemWidth / 2}
-      onPress={() => navigation.navigate('externalArtistView', {
-        source: item.externalSource,
-        artistId: item.externalIds?.deezerId,
-        mbid: item.externalIds?.mbid ?? item.id,
-        name: item.name,
-      })}
+      onPress={() => {
+        prefetchCovers([item.cover], 'detail')
+        navigation.navigate('externalArtistView', {
+          source: item.externalSource,
+          artistId: item.externalIds?.deezerId,
+          mbid: item.externalIds?.mbid ?? item.id,
+          name: item.name,
+        })
+      }}
     />
   ), [navigation, gridItemWidth])
 
@@ -49,13 +55,12 @@ export default function ArtistsForYouSection({ data, ready }: Props) {
         {t('explore.sections.artistsForYou')}
       </Text>
       {!ready ? (
-        <View style={{ paddingHorizontal: H_PADDING }}>
-          <ExploreEmptyCard
-            width={screenWidth - H_PADDING * 2}
-            height={tileHeight}
-            radius={14}
-          />
-        </View>
+        <ExploreLoadingTiles
+          itemSize={gridItemWidth}
+          gap={gridGap}
+          horizontalPadding={H_PADDING}
+          variant="artist"
+        />
       ) : (
         <FlashList
           horizontal
@@ -77,15 +82,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 12,
     marginLeft: H_PADDING,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   titleDark: {
-    color: '#888',
+    color: '#fff',
   },
 })

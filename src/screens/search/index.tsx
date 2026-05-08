@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -29,6 +29,8 @@ import PlaylistList from '@/components/PlaylistList';
 import { Song } from '@/types';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
+import { prefetchCovers } from '@/utils/images/imageCache';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -114,6 +116,8 @@ const Search = () => {
 
   const localResults = searchResults.filter(result => result.source === 'local');
   const externalResults = searchResults.filter(result => result.source === 'external');
+  const coversToPrefetch = useMemo(() => searchResults.slice(0, 18).map(result => result.cover), [searchResults]);
+  usePrefetchCovers(coversToPrefetch, 'thumb');
 
   const renderResult = (result: SearchResult) => {
     if (result.type === 'song') {
@@ -179,11 +183,13 @@ const Search = () => {
           }}
           artistName={result.subtext}
           onPress={album =>
+          {
+            prefetchCovers([album.cover], 'detail');
             (navigation as any).navigate('externalAlbumView', {
               source: album.externalSource,
               albumId: album.id
-            })
-          }
+            });
+          }}
         />
       ) : (
         <AlbumRow
@@ -204,8 +210,10 @@ const Search = () => {
             songs: [],
           }}
           onPress={album =>
-            (navigation as any).navigate('albumView', { id: album.id })
-          }
+          {
+            prefetchCovers([album.cover], 'detail');
+            (navigation as any).navigate('albumView', { id: album.id });
+          }}
         />
       );
     }
@@ -221,16 +229,19 @@ const Search = () => {
             ownedAlbums: [],
           }}
           rounded
-          onPress={() =>
-            result.source === 'external'
-              ? (navigation as any).navigate('externalArtistView', {
+          onPress={() => {
+            prefetchCovers([result.cover], 'detail');
+            if (result.source === 'external') {
+              (navigation as any).navigate('externalArtistView', {
                 source: result.externalSource,
                 artistId: result.externalIds?.deezerId,
                 mbid: result.externalIds?.mbid ?? result.id,
                 name: result.title,
-              })
-              : (navigation as any).navigate('artistView', { id: result.id })
-          }
+              });
+            } else {
+              (navigation as any).navigate('artistView', { id: result.id });
+            }
+          }}
         />
       );
     }
@@ -247,9 +258,10 @@ const Search = () => {
             created: new Date(),
             songs: [],
           }}
-          onPress={() =>
-            (navigation as any).navigate('playlistView', { id: result.id })
-          }
+          onPress={() => {
+            prefetchCovers([result.cover], 'detail');
+            (navigation as any).navigate('playlistView', { id: result.id });
+          }}
         />
       );
     }
@@ -272,17 +284,9 @@ const Search = () => {
       >
         {getSourceLabel(source)}
       </Text>
-      {results.map((result, index) => (
+      {results.map((result) => (
         <React.Fragment key={`${result.source}:${result.type}:${result.id}`}>
           <View style={styles.resultBlock}>{renderResult(result)}</View>
-          {index < results.length - 1 && (
-            <View
-              style={[
-                styles.separator,
-                isDarkMode && styles.separatorDark,
-              ]}
-            />
-          )}
         </React.Fragment>
       ))}
     </React.Fragment>
@@ -434,16 +438,6 @@ const styles = StyleSheet.create({
   noResultsDark: {
     color: '#aaa',
   },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#e0e0e0',
-    marginHorizontal: 16,
-    marginTop: -8,
-    marginBottom: 8,
-  },
-  separatorDark: {
-    backgroundColor: '#333',
-  },
   resultBlock: {
     paddingBottom: 0,
   },
@@ -490,18 +484,16 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     paddingHorizontal: 16,
-    marginBottom: 8,
-    marginTop: 12,
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    marginBottom: 10,
+    marginTop: 18,
+    fontSize: 18,
+    color: '#111',
+    fontWeight: '700',
   },
   sectionLabelFirst: {
-    marginTop: 4,
+    marginTop: 8,
   },
   sectionLabelDark: {
-    color: '#9a9a9a',
+    color: '#fff',
   },
 });

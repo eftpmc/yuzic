@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { usePlaylist } from '@/hooks/playlists';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { prefetchCovers } from '@/utils/images/imageCache';
 
 interface ItemProps {
   id: string;
@@ -42,8 +43,9 @@ const PlaylistItem: React.FC<ItemProps> = ({
   const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
   const handleNavigation = useCallback(() => {
+    prefetchCovers([cover], 'detail');
     navigation.navigate('playlistView', { id });
-  }, [navigation, id]);
+  }, [cover, navigation, id]);
 
   const handleLongPress = useCallback(() => {
     if (!playlist) return;

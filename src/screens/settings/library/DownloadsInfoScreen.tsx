@@ -196,19 +196,6 @@ const DownloadsInfoScreen: React.FC = () => {
           </View>
         </View>
 
-        <View style={[styles.tableHeader, isDarkMode && styles.tableHeaderDark]}>
-          <Text numberOfLines={1} style={[styles.headerItem, styles.headerTrack]}>
-            {t('settings.library.downloads.table.item')}
-          </Text>
-          <Text numberOfLines={1} style={[styles.headerItem, styles.headerBytes]}>
-            {t('settings.library.downloads.table.downloaded')}
-          </Text>
-          <Text numberOfLines={1} style={[styles.headerItem, styles.headerBytes]}>
-            {t('settings.library.downloads.table.size')}
-          </Text>
-          <View style={styles.headerAction} />
-        </View>
-
         {rows.length === 0 ? (
           <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
             {t('settings.library.downloads.table.empty')}
@@ -242,28 +229,33 @@ const DownloadsInfoScreen: React.FC = () => {
                   </View>
                 )}
 
-                {index > 0 && !showSectionHeader && (
-                  <View style={styles.separator} />
-                )}
-
                 <View style={[styles.row, isDarkMode && styles.rowDark]}>
                   <View style={styles.coverCell}>
                     <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
                   </View>
                   <View style={styles.trackCell}>
-                    <Text numberOfLines={1} style={[styles.title, isDarkMode && styles.titleDark]}>
-                      {item.title}
-                    </Text>
-                    <Text numberOfLines={1} style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
-                      {item.subtitle}
-                    </Text>
+                    <View style={styles.titleLine}>
+                      <Text numberOfLines={1} style={[styles.title, isDarkMode && styles.titleDark]}>
+                        {item.title}
+                      </Text>
+                      <Text numberOfLines={1} style={[styles.sizeText, isDarkMode && styles.valueDark]}>
+                        {item.size}
+                      </Text>
+                    </View>
+                    <View style={styles.metaLine}>
+                      <Text numberOfLines={1} style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+                        {item.subtitle}
+                      </Text>
+                      <Text style={[styles.metaDot, isDarkMode && styles.subtitleDark]}>•</Text>
+                      <Text numberOfLines={1} style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+                        {item.trackCount} {item.trackCount === 1 ? t('common.song') : t('common.songs')}
+                      </Text>
+                      <Text style={[styles.metaDot, isDarkMode && styles.subtitleDark]}>•</Text>
+                      <Text numberOfLines={1} style={[styles.subtitle, styles.downloadedDate, isDarkMode && styles.subtitleDark]}>
+                        {item.downloaded}
+                      </Text>
+                    </View>
                   </View>
-                  <Text numberOfLines={1} style={[styles.bytesCell, isDarkMode && styles.valueDark]}>
-                    {item.downloaded}
-                  </Text>
-                  <Text numberOfLines={1} style={[styles.bytesCell, isDarkMode && styles.valueDark]}>
-                    {item.size}
-                  </Text>
                   <TouchableOpacity
                     style={[styles.removeButton, removingId === item.id && styles.removeButtonDisabled]}
                     onPress={() => confirmRemove(item)}

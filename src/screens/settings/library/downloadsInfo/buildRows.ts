@@ -41,6 +41,15 @@ function toTimestamp(value: unknown): number {
   return Number.isFinite(ts) ? ts : 0;
 }
 
+function toDateLabel(value: number): string {
+  if (!value) return '-';
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
 export function buildDownloadRows({
   albums,
   tracks,
@@ -102,12 +111,13 @@ export function buildDownloadRows({
               .map(track => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
               .filter(Boolean);
           })()
-        : (
-            fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs
+        : (() => {
+            const fromPlaylist = fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs
               .map((song: any) => String(song.id ?? '').trim())
-              .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) ??
-            (downloaded?.trackIds ?? []).filter((id: string) => downloadedTrackIds.has(id))
-          );
+              .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) ?? [];
+            if (fromPlaylist.length) return fromPlaylist;
+            return (downloaded?.trackIds ?? []).filter((id: string) => downloadedTrackIds.has(id));
+          })();
 
     const downloadTracksForRow =
       item.type === 'album'
@@ -121,6 +131,7 @@ export function buildDownloadRows({
     ) ?? 'unknown';
     const serverId = getDownloadedTrackServerId(downloadTracksForRow[0]);
     const title = item.title || id;
+    const updatedAt = toTimestamp(updatedAtRaw);
 
     return {
       id: `${provider}-${serverId ?? 'unknown'}-${item.type}-${id}`,
@@ -135,9 +146,10 @@ export function buildDownloadRows({
           ? t('settings.library.downloads.type.album')
           : t('settings.library.downloads.type.playlist'),
       trackIds: downloadedTrackIdsForCollection,
-      downloaded: toBytesLabel(downloadedBytes),
+      downloaded: toDateLabel(updatedAt),
       size: toBytesLabel(downloadedBytes),
-      updatedAt: toTimestamp(updatedAtRaw),
+      trackCount: downloadedTrackIdsForCollection.length,
+      updatedAt,
     };
   });
 

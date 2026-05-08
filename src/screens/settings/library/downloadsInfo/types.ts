@@ -12,6 +12,6 @@ export type DownloadRow = {
   trackIds: string[];
   downloaded: string;
   size: string;
+  trackCount: number;
   updatedAt: number;
 };
-

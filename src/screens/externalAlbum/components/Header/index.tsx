@@ -30,6 +30,10 @@ type Props = {
   album: ExternalAlbum;
 };
 
+function isCountLikeAlbumText(value?: string | null): boolean {
+  return /^\s*\d+\s+albums?\s*$/i.test(value ?? '');
+}
+
 const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
@@ -94,9 +98,9 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
 
   const metadataItems = useMemo(() => {
     const items: string[] = [];
-    if (album.artist) items.push(album.artist);
+    if (album.artist && !isCountLikeAlbumText(album.artist)) items.push(album.artist);
     if (songs.length > 0) items.push(t('externalAlbum.header.songs', { count: songs.length }));
-    return items;
+    return [...new Set(items.map(item => item.trim()).filter(Boolean))];
   }, [album.artist, songs.length, t]);
 
   const themeStyles = isDarkMode ? stylesDark : stylesLight;

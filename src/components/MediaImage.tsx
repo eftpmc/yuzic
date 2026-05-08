@@ -6,6 +6,12 @@ import { buildCover, buildCoverArtArchiveUrl } from '@/utils/builders/buildCover
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import {
+  hasImageUrlFailed,
+  IMAGE_CACHE_POLICY,
+  markImageUrlFailed,
+  markImageUrlSucceeded,
+} from '@/utils/images/imageCache';
 
 const placeholder = require('@assets/images/placeholder.png');
 
@@ -31,10 +37,20 @@ export function MediaImage({
     return buildCoverArtArchiveUrl(cover.mbid, 'release', size);
   }, [cover, size]);
   const [useFallback, setUseFallback] = useState(false);
-  const sourceUri = useFallback && fallbackUri ? fallbackUri : uri;
+  const [failedVersion, setFailedVersion] = useState(0);
+  const primaryFailed = hasImageUrlFailed(uri);
+  const fallbackFailed = hasImageUrlFailed(fallbackUri);
+  const sourceUri = useMemo(() => {
+    void failedVersion;
+    if (useFallback && fallbackUri && !fallbackFailed) return fallbackUri;
+    if (uri && !primaryFailed) return uri;
+    if (fallbackUri && !fallbackFailed) return fallbackUri;
+    return null;
+  }, [failedVersion, fallbackFailed, fallbackUri, primaryFailed, uri, useFallback]);
 
   useEffect(() => {
     setUseFallback(false);
+    setFailedVersion(version => version + 1);
   }, [uri, fallbackUri]);
 
   if (uri === 'heart-icon') {
@@ -63,12 +79,17 @@ export function MediaImage({
         resizeMode="cover"
       />
       <TurboImage
-        source={{ uri: sourceUri }}
+        source={{ uri: sourceUri, cacheKey: sourceUri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode="cover"
-        cachePolicy="dataCache"
+        cachePolicy={IMAGE_CACHE_POLICY}
         fadeDuration={200}
+        onSuccess={() => {
+          markImageUrlSucceeded(sourceUri);
+        }}
         onFailure={() => {
+          markImageUrlFailed(sourceUri);
+          setFailedVersion(version => version + 1);
           if (fallbackUri && !useFallback) setUseFallback(true);
         }}
       />

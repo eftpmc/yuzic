@@ -132,6 +132,38 @@ const toPlayableBrowseItem = (song: Song): BrowseItem | null => {
 
 const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
+function getMediaItemId(item: MediaItem): string {
+  return item.mediaId ?? (typeof item.url === 'string' ? item.url : '');
+}
+
+function getMediaItemUrl(item: MediaItem): string {
+  if (typeof item.url === 'string') return item.url;
+  if (typeof item.url === 'object' && item.url && 'uri' in item.url) return item.url.uri;
+  return '';
+}
+
+function mediaItemToFallbackSong(item: MediaItem): Song | null {
+  const id = getMediaItemId(item);
+  const streamUrl = getMediaItemUrl(item);
+  if (!id || !streamUrl) return null;
+
+  return {
+    id,
+    title: item.title ?? '',
+    artist: item.artist ?? '',
+    albumId: '',
+    artistId: '',
+    duration: String(item.duration ?? 0),
+    streamUrl,
+    cover: { kind: 'none' },
+    isPreview: false,
+  } as Song;
+}
+
+function hasSameQueueIds(current: Song[], next: Song[]): boolean {
+  return current.length === next.length && current.every((song, index) => song.id === next[index]?.id);
+}
+
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
   const isPlaying = useIsPlaying();
@@ -398,21 +430,33 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       lastListenedSecondsRef.current = 0;
     }
 
-    let newIndex = queueRef.current.findIndex(s => s.id === mediaId);
-    let songFromQueue = newIndex >= 0 ? queueRef.current[newIndex] : librarySongById.get(mediaId);
+    const nativeQueue = TrackPlayer.getQueue();
+    const nativeQueueSongs = nativeQueue
+      .map(item => {
+        const id = getMediaItemId(item);
+        return (
+          queueRef.current.find(song => song.id === id) ??
+          librarySongById.get(id) ??
+          mediaItemToFallbackSong(item)
+        );
+      })
+      .filter((song): song is Song => Boolean(song));
+
+    if (nativeQueueSongs.length && !hasSameQueueIds(queueRef.current, nativeQueueSongs)) {
+      queueRef.current = nativeQueueSongs;
+      bumpQueue();
+    }
+
+    const nativeIndex = TrackPlayer.getActiveMediaItemIndex();
+    let newIndex = typeof nativeIndex === 'number' && nativeIndex >= 0
+      ? nativeIndex
+      : queueRef.current.findIndex(s => s.id === mediaId);
+    let songFromQueue: Song | null | undefined = newIndex >= 0
+      ? queueRef.current[newIndex]
+      : librarySongById.get(mediaId);
 
     if (!songFromQueue && activeMediaItem.url) {
-      songFromQueue = {
-        id: mediaId,
-        title: activeMediaItem.title ?? '',
-        artist: activeMediaItem.artist ?? '',
-        albumId: '',
-        artistId: '',
-        duration: String(activeMediaItem.duration ?? 0),
-        streamUrl: String(activeMediaItem.url),
-        cover: { kind: 'none' },
-        isPreview: false,
-      } as Song;
+      songFromQueue = mediaItemToFallbackSong(activeMediaItem);
       newIndex = 0;
     }
 

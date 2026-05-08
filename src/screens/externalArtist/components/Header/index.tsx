@@ -21,6 +21,10 @@ type Props = {
   artist: ExternalArtist
 }
 
+function isAlbumCountText(value?: string | null): boolean {
+  return /^\s*\d+\s+albums?\s*$/i.test(value ?? '')
+}
+
 export default function ExternalArtistHeader({ artist }: Props) {
   const { t } = useTranslation()
   const navigation = useNavigation<any>()
@@ -35,7 +39,7 @@ export default function ExternalArtistHeader({ artist }: Props) {
     if (albumCount > 0) {
       items.push(`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`)
     }
-    if (artist.subtext) items.push(artist.subtext)
+    if (artist.subtext && !isAlbumCountText(artist.subtext)) items.push(artist.subtext)
     return items
   }, [artist.albums?.length, artist.subtext, t])
 
@@ -83,7 +87,12 @@ export default function ExternalArtistHeader({ artist }: Props) {
 
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
-          <Text style={[styles.artistName, isDarkMode && styles.artistNameDark]}>
+          <Text
+            style={[styles.artistName, isDarkMode && styles.artistNameDark]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.65}
+          >
             {artist.name}
           </Text>
           <View style={styles.metaRow}>
@@ -170,6 +179,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     textAlign: 'center',
+    width: '100%',
   },
   artistNameDark: {
     color: '#fff',

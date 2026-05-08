@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { LibraryGridSkeleton, LibraryListSkeleton } from './Skeletons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
+import { prefetchCovers } from '@/utils/images/imageCache';
+import type { CoverSource } from '@/types';
 
 type Props<T> = {
   data: T[];
@@ -32,6 +35,17 @@ export default function LibraryContent<T>({
 }: Props<T>) {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
+  const prefetchSize = isGridView ? 'grid' : 'thumb';
+  const initialCovers = useMemo(
+    () => data.slice(0, isGridView ? gridColumns * 4 : 18).map(getItemCover),
+    [data, gridColumns, isGridView]
+  );
+
+  usePrefetchCovers(initialCovers, prefetchSize);
+
+  const handleViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: { item: T }[] }) => {
+    prefetchCovers(viewableItems.map(({ item }) => getItemCover(item)), prefetchSize);
+  }, [prefetchSize]);
 
   if (isLoading) {
     return isGridView ? (
@@ -69,11 +83,22 @@ export default function LibraryContent<T>({
       contentContainerStyle={{ paddingBottom: 150, paddingHorizontal: 8 }}
       ListHeaderComponent={ListHeaderComponent}
       renderItem={renderItem}
+      onViewableItemsChanged={handleViewableItemsChanged}
+      viewabilityConfig={{
+        itemVisiblePercentThreshold: 35,
+        minimumViewTime: 80,
+      }}
       showsVerticalScrollIndicator={false}
       onEndReached={hasMore ? onEndReached : undefined}
       onEndReachedThreshold={0.5}
     />
   );
+}
+
+function getItemCover(item: unknown): CoverSource | null {
+  if (!item || typeof item !== 'object') return null;
+  const cover = (item as { cover?: CoverSource }).cover;
+  return cover ?? null;
 }
 
 const styles = StyleSheet.create({
