@@ -71,6 +71,13 @@ jobs:
           IOS_PROFILE_NAME: ${{ secrets.IOS_PROFILE_NAME }}
         run: bundle exec fastlane ios ci_ios
 
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: /Users/runner/Library/Logs/gym/Yuzic-Yuzic.log
+
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
