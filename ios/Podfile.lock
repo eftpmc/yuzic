@@ -8,12 +8,12 @@ PODS:
   - DoubleConversion (1.1.6)
   - EASClient (55.0.5):
     - ExpoModulesCore
-  - EXConstants (55.0.15):
+  - EXConstants (55.0.16):
     - ExpoModulesCore
   - EXJSONUtils (55.0.2)
   - EXManifests (55.0.16):
     - ExpoModulesCore
-  - Expo (55.0.19):
+  - Expo (55.0.23):
     - boost
     - DoubleConversion
     - ExpoModulesCore
@@ -222,15 +222,15 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - ExpoAsset (55.0.16):
+  - ExpoAsset (55.0.17):
     - ExpoModulesCore
   - ExpoBlur (55.0.14):
     - ExpoModulesCore
-  - ExpoDomWebView (55.0.5):
+  - ExpoDomWebView (55.0.6):
     - ExpoModulesCore
-  - ExpoFileSystem (55.0.17):
+  - ExpoFileSystem (55.0.19):
     - ExpoModulesCore
-  - ExpoFont (55.0.6):
+  - ExpoFont (55.0.7):
     - ExpoModulesCore
   - ExpoGlassEffect (55.0.10):
     - ExpoModulesCore
@@ -273,7 +273,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - ExpoKeepAwake (55.0.7):
+  - ExpoKeepAwake (55.0.8):
     - ExpoModulesCore
   - ExpoLinearGradient (55.0.13):
     - ExpoModulesCore
@@ -281,7 +281,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLogBox (55.0.11):
     - React-Core
-  - ExpoModulesCore (55.0.24):
+  - ExpoModulesCore (55.0.25):
     - boost
     - DoubleConversion
     - ExpoModulesJSI
@@ -312,7 +312,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - ExpoModulesJSI (55.0.24):
+  - ExpoModulesJSI (55.0.25):
     - hermes-engine
     - React-Core
     - React-runtimescheduler
@@ -3518,8 +3518,8 @@ DEPENDENCIES:
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - "ExpoLogBox (from `../node_modules/@expo/log-box`)"
-  - ExpoModulesCore (from `../node_modules/expo/node_modules/expo-modules-core`)
-  - ExpoModulesJSI (from `../node_modules/expo/node_modules/expo-modules-core`)
+  - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoModulesJSI (from `../node_modules/expo-modules-core`)
   - ExpoRouter (from `../node_modules/expo-router/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
@@ -3690,9 +3690,9 @@ EXTERNAL SOURCES:
   ExpoLogBox:
     :path: "../node_modules/@expo/log-box"
   ExpoModulesCore:
-    :path: "../node_modules/expo/node_modules/expo-modules-core"
+    :path: "../node_modules/expo-modules-core"
   ExpoModulesJSI:
-    :path: "../node_modules/expo/node_modules/expo-modules-core"
+    :path: "../node_modules/expo-modules-core"
   ExpoRouter:
     :path: "../node_modules/expo-router/ios"
   ExpoSplashScreen:
@@ -3902,29 +3902,29 @@ SPEC CHECKSUMS:
   Delegate: 0ff4467868095239ff578ab531efd8af46e62881
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EASClient: 8077eb9af46cc7ad3ad216cec12d2bf5763cca13
-  EXConstants: 5caf448ff399f60be9d1053e77aed32e39411900
+  EXConstants: dadbeba983acc30f855a919658a2b34fbd86615d
   EXJSONUtils: 04bc3807d351331a5fe154ce1da596ec15d99169
   EXManifests: f4e50a54115948e206f4c2391bdea755a1aa74ec
-  Expo: 14364d94b7e0aa81169d3d70fe760eec23cb71b6
+  Expo: 71d7bf2059afadf9b54b4645b433be1748f9e75b
   expo-dev-client: 66718bbf6f0bf3aa82a522d1c0b2833fcf1cfa3a
   expo-dev-launcher: 7b7659755ae591c79bfb122751a1231b87131527
   expo-dev-menu: 7e5bdfced6a219a7d1c9bffbb066615e4fec7788
   expo-dev-menu-interface: 833795f4c98a674d36cbc12b11b21756c38e01e8
-  ExpoAsset: f56ed740b6a127da2bfd90832cf688ae309d4410
+  ExpoAsset: 7721c5c4ae2a7c3c8147a046727ac6c020b05648
   ExpoBlur: 7a86e84e7728108fa6908d7103fa527705a3dbbf
-  ExpoDomWebView: 2b2fbd9a07de8790569257cbf9dfdaa31cf95c70
-  ExpoFileSystem: a0e4a5a09c9c4f84338289b273a172609452dec9
-  ExpoFont: cdd7a1d574a376fa003c713eff49e0a4df8672c7
+  ExpoDomWebView: b2e9d601f9cb77d3c97da73234e175b64be91928
+  ExpoFileSystem: 0b73b097e67c83622640168f620defc65a1a6f70
+  ExpoFont: a95606f106a6394df8edf6d0d87aab9020af5ad4
   ExpoGlassEffect: 72bcb9dc634262c59897ff7c53c16e2ff03990d0
   ExpoHaptics: 679f09dc37d5981e619bc197732007a3334e80b8
   ExpoImage: bd9e9c5bc4eff7a6883339be305f8b0bb5a0cf1c
   ExpoInsights: 28c81fdb46e82db6b58060dffc6689f7fee41221
-  ExpoKeepAwake: 861c66deb0f9f28f87882610195f26c4b88fba6f
+  ExpoKeepAwake: d0eb7a0719500d2a43fbf29b6f79e84d70c75ebf
   ExpoLinearGradient: c654e92d726a6d64c588a0988bb22bea331d5e79
   ExpoLinking: f9e01f5182f2653ea9d90f18fb47f1913e2f99ef
   ExpoLogBox: 617da77cbc083627692b2ea050a3666808aef2cd
-  ExpoModulesCore: e2f2ed0315e2935a43e3d62d756fb7f4e6369c51
-  ExpoModulesJSI: 9b60671a31c30bc8e24b25632e7cb475a84b9016
+  ExpoModulesCore: cc07ebf5b947a239f1669cb5856d905cb2b093f7
+  ExpoModulesJSI: 964334271fc77832736f66ee1785761cdc778dbe
   ExpoRouter: e2c56f80102b153c5f8c887b38094ef936c266a2
   ExpoSplashScreen: 43517d54a0f90d381c80deda859aa6087e80884b
   ExpoSymbols: 8b63e859ba013df1f2fc666f535fddb3d5270569
@@ -4036,6 +4036,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: b669e79fa0f8d3f6f5e35372345f54b99e06b13c
 
-PODFILE CHECKSUM: 81390d34684fcfad48bed9b3e585ba7cc48306df
+PODFILE CHECKSUM: 3d41b9725008c88c547221d58d8205226f715c4e
 
 COCOAPODS: 1.16.2

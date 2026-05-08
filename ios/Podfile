@@ -74,16 +74,17 @@ target 'Yuzic' do
       end
     end
 
-    # expo-modules-core specifies swift_version='6.0' in its podspec, so Xcode 16.4
-    # enforces strict Swift 6 concurrency and the SWIFT_STRICT_CONCURRENCY build
-    # setting is ignored. Pass -strict-concurrency=minimal directly to the compiler
-    # driver via OTHER_SWIFT_FLAGS so it takes effect regardless of language mode.
+    # expo-modules-core sets swift_version='6.0' in its podspec, but its code has
+    # actor-isolation violations that are hard errors in Swift 6 mode on Xcode 16.4.
+    # Override to Swift 5 language mode (Xcode 16.4's compiler still supports all
+    # Swift 5.10 syntax including SE-0420 @MainActor conformance clauses) and set
+    # minimal concurrency checking so the isolation issues become warnings.
     installer.pods_project.targets.each do |target|
       next unless target.name == 'ExpoModulesCore'
 
       target.build_configurations.each do |build_configuration|
-        existing = build_configuration.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)'
-        build_configuration.build_settings['OTHER_SWIFT_FLAGS'] = "#{existing} -strict-concurrency=minimal"
+        build_configuration.build_settings['SWIFT_VERSION'] = '5'
+        build_configuration.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
       end
     end
   end
