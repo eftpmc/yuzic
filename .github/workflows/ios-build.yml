@@ -39,14 +39,26 @@ jobs:
           cd ios
           pod install --repo-update
 
-      - name: Create temporary keychain for codesign
+      - name: Configure SSH for match repository
         run: |
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security set-keychain-settings -lut 21600 build.keychain
+          if [ -z "$MATCH_GIT_PRIVATE_KEY" ]; then
+            echo "Missing MATCH_GIT_PRIVATE_KEY secret."
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$MATCH_GIT_PRIVATE_KEY" > ~/.ssh/match_key
+          chmod 600 ~/.ssh/match_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<'EOF'
+          Host github.com
+            IdentityFile ~/.ssh/match_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
         env:
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
 
       - name: Run Fastlane iOS build
         env:
@@ -55,6 +67,8 @@ jobs:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_API_KEY_BASE64: ${{ secrets.APPSTORE_API_KEY_BASE64 }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          IOS_PROFILE_NAME: ${{ secrets.IOS_PROFILE_NAME }}
         run: bundle exec fastlane ios ci_ios
 
       - name: Upload IPA artifact

@@ -43,6 +43,11 @@ def resolved_ios_team_id
   ENV["IOS_TEAM_ID"] || "Y6YJ4P25H9"
 end
 
+def resolved_ios_profile_name
+  raw = ENV["IOS_PROFILE_NAME"]&.strip
+  raw.nil? || raw.empty? ? "carplay" : raw
+end
+
 def prepare_build_dirs
   sh "mkdir -p build/android"
   sh "mkdir -p build/ios"
@@ -83,16 +88,32 @@ platform :ios do
     team_id = resolved_ios_team_id
     build_number = resolved_ios_build_number
     version_label = resolved_version_label
+    profile_name = resolved_ios_profile_name
 
     UI.important("iOS team id: #{team_id}")
     UI.important("iOS build number: #{build_number}")
     UI.important("iOS version label: #{version_label}")
+    UI.important("iOS provisioning profile: #{profile_name}")
+
+    setup_ci(
+      keychain_name: "build.keychain",
+      timeout: 21600
+    )
 
     api_key = app_store_connect_api_key(
       key_id: ENV["APPSTORE_KEY_ID"],
       issuer_id: ENV["APPSTORE_ISSUER_ID"],
       key_content: ENV["APPSTORE_API_KEY_BASE64"],
       is_key_content_base64: true
+    )
+
+    match(
+      type: "appstore",
+      app_identifier: "com.arinora.rawarr",
+      team_id: team_id,
+      api_key: api_key,
+      readonly: true,
+      keychain_name: "build.keychain"
     )
 
     increment_version_number(
@@ -112,7 +133,10 @@ platform :ios do
       export_team_id: team_id,
       xcargs: "CURRENT_PROJECT_VERSION=#{build_number} MARKETING_VERSION=#{version_label}",
       export_options: {
-        signingStyle: "automatic"
+        signingStyle: "manual",
+        provisioningProfiles: {
+          "com.arinora.rawarr" => profile_name
+        }
       },
       output_directory: "build/ios",
       output_name: "Yuzic.ipa",
