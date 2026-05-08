@@ -17,7 +17,7 @@ concurrency: android-build
 jobs:
   build-android:
     name: Build Android
-    runs-on: self-hosted
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
