@@ -389,7 +389,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.arinora.rawarr;
 				PRODUCT_NAME = Yuzic;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = carplay;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.arinora.rawarr";
 				SWIFT_OBJC_BRIDGING_HEADER = "Yuzic/Yuzic-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -428,7 +428,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.arinora.rawarr;
 				PRODUCT_NAME = Yuzic;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = carplay;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.arinora.rawarr";
 				SWIFT_OBJC_BRIDGING_HEADER = "Yuzic/Yuzic-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
