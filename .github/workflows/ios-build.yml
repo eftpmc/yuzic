@@ -34,15 +34,18 @@ jobs:
           gem install bundler
           bundle install
 
-      - name: Install CocoaPods
+            - name: Install CocoaPods
         run: |
           cd ios
           pod install --repo-update
 
-      - name: Allow codesign to access keychain
+      - name: Create temporary keychain for codesign
         run: |
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
         env:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
