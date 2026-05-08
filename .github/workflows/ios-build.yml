@@ -34,7 +34,7 @@ jobs:
           gem install bundler
           bundle install
 
-            - name: Install CocoaPods
+      - name: Install CocoaPods
         run: |
           cd ios
           pod install --repo-update
