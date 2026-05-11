@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,12 +27,15 @@ const AlbumRow: React.FC<Props> = ({
   const optionsSheetRef = useSheetRef();
   const { album: fullAlbum } = useAlbum(album.id);
 
+  const handlePress = useCallback(() => onPress?.(album), [onPress, album]);
+  const handleOptionsPress = useCallback(() => optionsSheetRef.current?.present(), [optionsSheetRef]);
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.albumItem}>
         <TouchableOpacity
           style={styles.albumContent}
-          onPress={() => onPress?.(album)}
+          onPress={handlePress}
         >
           <MediaImage
             cover={album.cover}
@@ -67,7 +70,7 @@ const AlbumRow: React.FC<Props> = ({
 
         <View style={styles.optionsContainer}>
           <TouchableOpacity
-            onPress={() => optionsSheetRef.current?.present()}
+            onPress={handleOptionsPress}
             style={styles.optionButton}
           >
             <Ionicons
@@ -88,7 +91,7 @@ const AlbumRow: React.FC<Props> = ({
   );
 };
 
-export default AlbumRow;
+export default memo(AlbumRow);
 
 const styles = StyleSheet.create({
   wrapper: {

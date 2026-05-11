@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
@@ -56,7 +56,7 @@ const ExternalSongRow: React.FC<Props> = ({
   );
 };
 
-export default ExternalSongRow;
+export default memo(ExternalSongRow);
 
 const styles = StyleSheet.create({
   row: {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -49,6 +49,8 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
     });
   }, [api, queryClient, activeServer?.id, artist.id]);
 
+  const handlePress = useCallback(() => onPress?.(artist), [onPress, artist]);
+
   const handleOpenOptions = useCallback(async () => {
     setFullArtist(null);
     sheetRef.current?.present();
@@ -62,7 +64,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
         <View style={styles.rowItem}>
           <TouchableOpacity
             style={styles.rowContent}
-            onPress={() => onPress?.(artist)}
+            onPress={handlePress}
           >
             <MediaImage
               cover={artist.cover}
@@ -113,7 +115,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
   );
 };
 
-export default ArtistRow;
+export default memo(ArtistRow);
 
 const styles = StyleSheet.create({
   wrapper: {

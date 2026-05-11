@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,8 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
   const { playlist: fullPlaylist } = usePlaylist(playlist.id);
   const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
+  const handlePress = useCallback(() => onPress?.(playlist), [onPress, playlist]);
+
   const handleOptionsPress = useCallback(() => {
     if (fullPlaylist) {
       setPlaylistForSheet(fullPlaylist);
@@ -37,7 +39,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
       <View style={styles.rowItem}>
         <TouchableOpacity
           style={styles.rowContent}
-          onPress={() => onPress?.(playlist)}
+          onPress={handlePress}
         >
           <MediaImage
             cover={playlist.cover}
@@ -91,7 +93,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
   );
 };
 
-export default PlaylistRow;
+export default memo(PlaylistRow);
 
 const styles = StyleSheet.create({
   wrapper: {

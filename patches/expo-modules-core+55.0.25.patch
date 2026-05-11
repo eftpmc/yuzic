@@ -1,3 +1,34 @@
+diff --git a/node_modules/expo-modules-core/ios/Core/DynamicTypes/DynamicSwiftUIViewType.swift b/node_modules/expo-modules-core/ios/Core/DynamicTypes/DynamicSwiftUIViewType.swift
+index 586f261..8a24371 100644
+--- a/node_modules/expo-modules-core/ios/Core/DynamicTypes/DynamicSwiftUIViewType.swift
++++ b/node_modules/expo-modules-core/ios/Core/DynamicTypes/DynamicSwiftUIViewType.swift
+@@ -41,16 +41,22 @@ internal struct DynamicSwiftUIViewType<ViewType: ExpoSwiftUIView>: AnyDynamicTyp
+     }
+     // For wrapper types
+     // e.g. ExpoUIView(SecureFieldView.self)
+-    if let provider = appContext.findView(withTag: viewTag, ofType: ExpoSwiftUI.ViewWrapper.self),
+-       let innerView = provider.getWrappedView() as? ViewType {
+-      return innerView
++    if let provider = appContext.findView(withTag: viewTag, ofType: ExpoSwiftUI.ViewWrapper.self) {
++      let wrappedView = MainActor.assumeIsolated {
++        provider.getWrappedView()
++      }
++      if let innerView = wrappedView as? ViewType {
++        return innerView
++      }
+     }
+     // For views using WithHostingView protocol.
+     // e.g. View(HostView.self) where HostView conforms to WithHostingView
+     guard let view = appContext.findView(withTag: viewTag, ofType: AnyExpoSwiftUIHostingView.self) else {
+       throw Exceptions.SwiftUIViewNotFound((tag: viewTag, type: innerType.self))
+     }
+-    return view.getContentView()
++    return MainActor.assumeIsolated {
++      view.getContentView()
++    }
+   }
+ 
+   var description: String {
 diff --git a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/ExpoSwiftUI.swift b/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/ExpoSwiftUI.swift
 index b376a98..26c695d 100644
 --- a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/ExpoSwiftUI.swift
@@ -31,6 +62,41 @@ index d4ff7a9..d69db46 100644
      /**
       Props object that stores all the props for this particular view.
       It's an environment object that is observed by the content view.
+diff --git a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewDefinition.swift b/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewDefinition.swift
+index a85f17f..75a3ada 100644
+--- a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewDefinition.swift
++++ b/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewDefinition.swift
+@@ -47,7 +47,9 @@ extension ExpoSwiftUIView {
+         Group {
+           if let hostingView = child as? ExpoSwiftUI.UIViewHost,
+             let hostingUIView = hostingView.view as? (any ExpoSwiftUI.AnyHostingView) {
+-            let content = hostingUIView.getContentView()
++            let content = MainActor.assumeIsolated {
++              hostingUIView.getContentView()
++            }
+             transform(
+               AnyView(
+                 content
+@@ -142,4 +144,3 @@ extension ExpoSwiftUI {
+       } as [String]
+     }
+   }
+-
+diff --git a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewFrameObserver.swift b/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewFrameObserver.swift
+index d62091c..186ae7d 100644
+--- a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewFrameObserver.swift
++++ b/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIViewFrameObserver.swift
+@@ -26,7 +26,9 @@ extension ExpoSwiftUI {
+ 
+         // Update layout metrics of the `Child` view. The `origin` needs to be frame's origin,
+         // as `bounds` refers to coordinates relative to view's own space (instead of the parent's space).
+-        callback(CGRect(origin: view.frame.origin, size: newValue.size))
++        MainActor.assumeIsolated {
++          callback(CGRect(origin: view.frame.origin, size: newValue.size))
++        }
+       }
+     }
+   }
 diff --git a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIVirtualView.swift b/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIVirtualView.swift
 index 6d65323..092a3ea 100644
 --- a/node_modules/expo-modules-core/ios/Core/Views/SwiftUI/SwiftUIVirtualView.swift
@@ -57,3 +123,32 @@ index 5dc73e3..d641170 100644
    public static func getDynamicType() -> AnyDynamicType {
      return DynamicViewType(innerType: Self.self)
    }
+diff --git a/node_modules/expo-modules-core/ios/DevTools/URLAuthenticationChallengeForwardSender.swift b/node_modules/expo-modules-core/ios/DevTools/URLAuthenticationChallengeForwardSender.swift
+index 8c3efcb..6f96a3a 100644
+--- a/node_modules/expo-modules-core/ios/DevTools/URLAuthenticationChallengeForwardSender.swift
++++ b/node_modules/expo-modules-core/ios/DevTools/URLAuthenticationChallengeForwardSender.swift
+@@ -4,9 +4,9 @@
+  A helper class to forward URLAuthenticationChallenge completion handler to URLAuthenticationChallengeSender
+  */
+ internal final class URLAuthenticationChallengeForwardSender: NSObject, URLAuthenticationChallengeSender {
+-  let completionHandler: (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
++  let completionHandler: @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+ 
+-  init(completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
++  init(completionHandler: @Sendable @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+     self.completionHandler = completionHandler
+     super.init()
+   }
+diff --git a/node_modules/expo-modules-core/ios/DevTools/URLSessionSessionDelegateProxy.swift b/node_modules/expo-modules-core/ios/DevTools/URLSessionSessionDelegateProxy.swift
+index dbc5b65..2b9668d 100644
+--- a/node_modules/expo-modules-core/ios/DevTools/URLSessionSessionDelegateProxy.swift
++++ b/node_modules/expo-modules-core/ios/DevTools/URLSessionSessionDelegateProxy.swift
+@@ -5,7 +5,7 @@
+  */
+ public final class URLSessionSessionDelegateProxy: NSObject, URLSessionDataDelegate {
+   private let dispatchQueue: DispatchQueue
+-  private var delegateMap: [AnyHashable: URLSessionDataDelegate] = [:]
++  nonisolated(unsafe) private var delegateMap: [AnyHashable: URLSessionDataDelegate] = [:]
+ 
+   public init(dispatchQueue: DispatchQueue) {
+     self.dispatchQueue = dispatchQueue

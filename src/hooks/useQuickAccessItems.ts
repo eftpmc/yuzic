@@ -62,13 +62,14 @@ export function useQuickAccessItems(): QuickAccessItem[] {
     }
 
     if (pickedTracks.length < TRACK_SLOTS) {
-      const allSongs: Song[] = [];
-      songsById.forEach(s => allSongs.push(s));
-      const random = shuffleArray(allSongs.filter(s => !usedTrackIds.has(s.id)));
-      for (const data of random) {
-        if (pickedTracks.length >= TRACK_SLOTS) break;
-        usedTrackIds.add(data.id);
-        pickedTracks.push({ kind: 'track', data, ts: 0 });
+      const needed = TRACK_SLOTS - pickedTracks.length;
+      const candidates: Song[] = [];
+      songsById.forEach(s => { if (!usedTrackIds.has(s.id)) candidates.push(s); });
+      // Partial Fisher-Yates: only shuffle the first `needed` positions instead of the full array.
+      for (let i = 0; i < needed && i < candidates.length; i++) {
+        const j = i + Math.floor(Math.random() * (candidates.length - i));
+        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        pickedTracks.push({ kind: 'track', data: candidates[i], ts: 0 });
       }
     }
 

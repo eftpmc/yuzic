@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Song } from '@/types';
 import SongOptions from '@/components/options/SongOptions';
 import PlaylistList from '@/components/PlaylistList';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,13 @@ type Props = {
   isFavorite?: boolean;
 };
 
+function formatDuration(duration?: number): string {
+  if (!duration) return '';
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
 const SongRow: React.FC<Props> = ({
   song,
   collection,
@@ -36,7 +43,7 @@ const SongRow: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const { playSongInCollection } = usePlaying();
+  const { playSongInCollection } = usePlayingActions();
   const { isTrackDownloaded } = useDownload();
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
@@ -46,40 +53,32 @@ const SongRow: React.FC<Props> = ({
 
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     if (onPress) {
       onPress();
       return;
     }
-
     if (collection) {
       playSongInCollection(song, collection, false);
     }
-  };
+  }, [onPress, collection, song, playSongInCollection]);
 
-  const openOptions = () => {
+  const openOptions = useCallback(() => {
     optionsRef.current?.present();
-  };
+  }, [optionsRef]);
 
-  const openPlaylistList = () => {
+  const openPlaylistList = useCallback(() => {
     optionsRef.current?.dismiss();
     setPlaylistSong(song);
     requestAnimationFrame(() => {
       playlistRef.current?.present();
     });
-  };
+  }, [optionsRef, playlistRef, song]);
 
-  const closePlaylistList = () => {
+  const closePlaylistList = useCallback(() => {
     playlistRef.current?.dismiss();
     setPlaylistSong(null);
-  };
-
-  const formatDuration = (duration?: number) => {
-    if (!duration) return '';
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  }, [playlistRef]);
 
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
@@ -231,4 +230,4 @@ const stylesDark = StyleSheet.create({
   },
 });
 
-export default SongRow;
+export default memo(SongRow);

@@ -21,6 +21,7 @@ import {
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { CloudDownload } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
+import { externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
@@ -57,16 +58,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const previewSongs = useMemo<Song[]>(() => (
     songs
       .filter(s => previews.has(s.id))
-      .map(s => ({
-        id: s.id,
-        title: s.title,
-        artist: s.artist,
-        artistId: '',
-        cover: s.cover,
-        duration: s.duration,
-        albumId: s.albumId,
-        streamUrl: previews.get(s.id)!,
-      }))
+      .map(s => externalSongToTrack(s, previews.get(s.id)!))
   ), [songs, previews]);
 
   const previewCollection = useMemo<Playlist>(() => ({

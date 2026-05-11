@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Platform, Text, View, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { Platform, Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 
@@ -33,7 +33,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
   const { artist: fullArtist } = useArtist(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
 
-  const screenWidth = Dimensions.get('window').width;
+  const { width: screenWidth } = useWindowDimensions();
   const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
   const starredSongIds = useMemo(
     () => new Set(starredSongs.map(song => song.id)),
@@ -116,7 +116,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
     return listItems;
   }, [album.songs]);
 
-  const renderItem = ({ item }: { item: ListItem }) => {
+  const renderItem = useCallback(({ item }: { item: ListItem }) => {
     if (item.type === 'disc-header') {
       return (
         <Text style={[styles.discHeader, isDarkMode ? styles.discHeaderDark : styles.discHeaderLight]}>
@@ -133,7 +133,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
         isFavorite={starredSongIds.has(item.song.id)}
       />
     );
-  };
+  }, [isDarkMode, starredSongIds, album]);
 
   return (
     <FlashList
@@ -142,6 +142,7 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
         item.type === 'disc-header' ? `disc-${item.disc}` : item.song.id
       }
       renderItem={renderItem}
+      extraData={starredSongIds}
       getItemType={(item) => item.type}
       overrideItemLayout={(layout, item) => {
         (layout as { size?: number }).size =

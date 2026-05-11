@@ -124,7 +124,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
     );
   }, [songs, moreAlbums, album.artist, isDarkMode, tileWidth, navigation]);
 
-  const renderItem = ({ item }: { item: ExternalSong }) => {
+  const renderItem = useCallback(({ item }: { item: ExternalSong }) => {
     const previewUrl = previews.get(item.id);
 
     return (
@@ -136,13 +136,14 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
         onPress={previewUrl ? () => handleSongPress(item) : undefined}
       />
     );
-  };
+  }, [previews, handleSongPress, album.title, album.artist]);
 
   return (
     <FlashList
       data={songs}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      extraData={handleSongPress}
       ListHeaderComponent={header}
       ListFooterComponent={footer}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}

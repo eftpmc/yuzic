@@ -24,16 +24,22 @@ export function useExternalAlbumPreviews(album: ExternalAlbum | null): Map<strin
       const deezerTracks = await searchAlbumPreviews(album.artist, album.title);
       if (!deezerTracks.length) return new Map<string, string>();
 
-      // Build position → preview URL map from Deezer
+      // Build position → preview URL and title → preview URL maps from Deezer
       const byPosition = new Map<number, string>();
+      const byTitle = new Map<string, string>();
       for (const track of deezerTracks) {
-        if (track.preview) byPosition.set(track.track_position, track.preview);
+        if (track.preview) {
+          byPosition.set(track.track_position, track.preview);
+          byTitle.set(track.title.toLowerCase().trim(), track.preview);
+        }
       }
 
-      // Match each ExternalSong by its 1-based position in the tracklist
+      // Match each ExternalSong by position first, then fall back to title
       const result = new Map<string, string>();
       album.songs.forEach((song, index) => {
-        const url = byPosition.get(index + 1);
+        const url =
+          byPosition.get(index + 1) ??
+          byTitle.get(song.title.toLowerCase().trim());
         if (url) result.set(song.id, url);
       });
 

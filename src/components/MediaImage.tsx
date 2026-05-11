@@ -63,11 +63,13 @@ export function MediaImage({
 
   if (!sourceUri) {
     return (
-      <Image
-        source={placeholder}
-        style={[style, { backgroundColor: '#1e1e1e' }]}
-        resizeMode="cover"
-      />
+      <View style={[style, { overflow: 'hidden' }]}>
+        <Image
+          source={placeholder}
+          style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#1e1e1e' }}
+          resizeMode="cover"
+        />
+      </View>
     );
   }
 

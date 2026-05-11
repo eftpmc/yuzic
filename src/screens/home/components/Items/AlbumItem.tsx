@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -113,7 +113,7 @@ const AlbumItem: React.FC<ItemProps> = ({
   );
 };
 
-export default AlbumItem;
+export default memo(AlbumItem);
 
 const styles = StyleSheet.create({
   itemContainer: {

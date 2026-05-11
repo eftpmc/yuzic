@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, memo, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -11,6 +11,26 @@ import ImageColors from 'react-native-image-colors';
 import PlaylistList from '@/components/PlaylistList';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+
+// Isolated component so 1-second progress ticks don't rerender the full bar.
+const ProgressBarStrip = memo(({
+  fallbackDuration,
+  themeColor,
+  containerStyle,
+}: {
+  fallbackDuration: number;
+  themeColor: string;
+  containerStyle: ViewStyle;
+}) => {
+  const { position, duration } = usePlayingProgress();
+  const effectiveDuration = duration > 0 ? duration : fallbackDuration;
+  const progress = effectiveDuration > 0 ? position / effectiveDuration : 0;
+  return (
+    <View style={[styles.progressBarContainer, containerStyle]}>
+      <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: themeColor }]} />
+    </View>
+  );
+});
 import PlayingScreen from '@/screens/playing';
 import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 import { useTheme } from '@/hooks/useTheme';
@@ -175,7 +195,6 @@ export default function PlayingBarBase({ variant }: Props) {
     pauseSong,
     resumeSong,
   } = usePlaying();
-  const { position: progressPosition } = usePlayingProgress();
 
   const stylesForVariant = variantStyles[variant];
   const bottomSheetRef = useSheetRef();
@@ -219,9 +238,6 @@ export default function PlayingBarBase({ variant }: Props) {
       buildCover({ kind: 'none' }, 'detail');
     if (uri) extractColors(uri);
   }, [currentSong?.cover, currentSong?.id, extractColors]);
-
-  const duration = currentSong ? Number(currentSong.duration) : 1;
-  const progress = duration > 0 ? progressPosition / duration : 0;
 
   const handlePlayPause = async () => {
     if (!currentSong) return;
@@ -319,19 +335,11 @@ export default function PlayingBarBase({ variant }: Props) {
         <View style={stylesForVariant.topRowWrapper}>{content}</View>
       ) : content}
 
-      <View style={[styles.progressBarContainer, stylesForVariant.progressBarContainer]}>
-        {currentSong && (
-          <View
-            style={[
-              styles.progressBar,
-              {
-                width: `${progress * 100}%`,
-                backgroundColor: themeColor,
-              },
-            ]}
-          />
-        )}
-      </View>
+      <ProgressBarStrip
+        fallbackDuration={Number(currentSong?.duration) || 1}
+        themeColor={themeColor}
+        containerStyle={stylesForVariant.progressBarContainer}
+      />
     </>
   );
 

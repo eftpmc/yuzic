@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -23,12 +23,14 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
   const { isDarkMode } = useTheme();
   const status = useExternalAlbumStatus(album);
 
+  const handlePress = useCallback(() => onPress?.(album), [onPress, album]);
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.albumItem}>
         <TouchableOpacity
           style={styles.albumContent}
-          onPress={() => onPress?.(album)}
+          onPress={handlePress}
         >
           <MediaImage cover={album.cover} size="thumb" style={styles.cover} />
 
@@ -67,7 +69,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
   );
 };
 
-export default ExternalAlbumRow;
+export default memo(ExternalAlbumRow);
 
 const styles = StyleSheet.create({
   wrapper: {
