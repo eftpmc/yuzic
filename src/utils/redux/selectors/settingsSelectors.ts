@@ -52,6 +52,12 @@ export const selectAudioQuality = (
 ): AudioQuality =>
   state.settings.audioQuality;
 
+export const selectServerScrobbleEnabled = (state: RootState): boolean =>
+  state.settings.serverScrobbleEnabled ?? true;
+
+export const selectServerNowPlayingEnabled = (state: RootState): boolean =>
+  state.settings.serverNowPlayingEnabled ?? true;
+
 export const selectLastSyncedAt = (state: RootState): number | null =>
   state.settings.lastSyncedAt;
 

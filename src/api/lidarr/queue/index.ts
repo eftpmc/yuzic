@@ -83,7 +83,9 @@ export async function fetchQueue(
   config: LidarrConfig
 ): Promise<LidarrQueueRecord[]> {
   const client = createLidarrClient(config);
-  const data = await client.request<LidarrQueueResponse>('/queue');
+  const data = await client.request<LidarrQueueResponse>(
+    '/queue?includeAlbum=true&includeArtist=true&pageSize=100'
+  );
   const raw = data?.records ?? [];
   return groupByAlbum(raw);
 }

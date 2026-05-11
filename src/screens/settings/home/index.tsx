@@ -9,13 +9,19 @@ import {
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Entypo, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import {
+    selectLidarrAuthenticated,
+    selectSlskdAuthenticated,
+} from '@/utils/redux/selectors/downloadersSelectors';
+import { selectListenBrainzAuthenticated } from '@/utils/redux/selectors/listenbrainzSelectors';
+import { selectLastFmAuthenticated } from '@/utils/redux/selectors/lastfmSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function Settings() {
@@ -23,6 +29,10 @@ export default function Settings() {
     const router = useRouter();
     const activeServer = useSelector(selectActiveServer);
     const themeColor = useSelector(selectThemeColor);
+    const isLidarrConnected = useSelector(selectLidarrAuthenticated);
+    const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+    const isLbConnected = useSelector(selectListenBrainzAuthenticated);
+    const isLfmConnected = useSelector(selectLastFmAuthenticated);
 
     const { isDarkMode } = useTheme();
     const appVersion = Constants.expoConfig?.version ?? '—';
@@ -90,52 +100,101 @@ export default function Settings() {
                     {renderRow(t('settings.rows.player'), 'controller-play', '/settings/playerView')}
                     {renderDivider()}
                     {renderRow(t('settings.rows.appearance'), 'brush', '/settings/appearanceView')}
+                    {renderDivider()}
+                    {renderRow(t('settings.rows.scrobbling'), 'sound-mix', '/settings/scrobblingView')}
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                    {t('settings.sections.plugins')}
+                    {t('settings.sections.connections')}
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => router.push('/settings/downloadersView')}
-                    >
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            {t('settings.rows.downloaders')}
-                        </Text>
-                        <MaterialIcons
-                            name="chevron-right"
-                            size={24}
-                            color={isDarkMode ? '#fff' : '#6E6E73'}
-                        />
-                    </TouchableOpacity>
-                    {renderDivider()}
-                    <TouchableOpacity
-                        style={styles.row}
                         onPress={() => router.push('/settings/listenbrainzView')}
                     >
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            {t('settings.rows.listenBrainz')}
-                        </Text>
-                        <MaterialIcons
-                            name="chevron-right"
-                            size={24}
-                            color={isDarkMode ? '#fff' : '#6E6E73'}
-                        />
+                        <View style={styles.leftContent}>
+                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                {t('settings.rows.listenBrainz')}
+                            </Text>
+                        </View>
+                        <View style={styles.rowRight}>
+                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                {isLbConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
+                            </Text>
+                            <MaterialIcons
+                                name="chevron-right"
+                                size={24}
+                                color={isDarkMode ? '#fff' : '#6E6E73'}
+                            />
+                        </View>
                     </TouchableOpacity>
                     {renderDivider()}
                     <TouchableOpacity
                         style={styles.row}
                         onPress={() => router.push('/settings/lastfmView')}
                     >
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                            {t('settings.rows.lastfm')}
-                        </Text>
-                        <MaterialIcons
-                            name="chevron-right"
-                            size={24}
-                            color={isDarkMode ? '#fff' : '#6E6E73'}
-                        />
+                        <View style={styles.leftContent}>
+                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                {t('settings.rows.lastfm')}
+                            </Text>
+                        </View>
+                        <View style={styles.rowRight}>
+                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                {isLfmConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
+                            </Text>
+                            <MaterialIcons
+                                name="chevron-right"
+                                size={24}
+                                color={isDarkMode ? '#fff' : '#6E6E73'}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                    {t('settings.sections.downloaders')}
+                </Text>
+                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                    <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => router.push('/settings/lidarrView')}
+                    >
+                        <View style={styles.leftContent}>
+                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                {t('settings.downloaders.lidarr.title')}
+                            </Text>
+                        </View>
+                        <View style={styles.rowRight}>
+                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                {isLidarrConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
+                            </Text>
+                            <MaterialIcons
+                                name="chevron-right"
+                                size={24}
+                                color={isDarkMode ? '#fff' : '#6E6E73'}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                    {renderDivider()}
+                    <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => router.push('/settings/slskdView')}
+                    >
+                        <View style={styles.leftContent}>
+                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                {t('settings.downloaders.slskd.title')}
+                            </Text>
+                        </View>
+                        <View style={styles.rowRight}>
+                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                {isSlskdConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
+                            </Text>
+                            <MaterialIcons
+                                name="chevron-right"
+                                size={24}
+                                color={isDarkMode ? '#fff' : '#6E6E73'}
+                            />
+                        </View>
                     </TouchableOpacity>
                 </View>
 
@@ -169,29 +228,6 @@ export default function Settings() {
                     />
                     <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
                         {label}
-                    </Text>
-                </View>
-                <MaterialIcons
-                    name="chevron-right"
-                    size={24}
-                    color={isDarkMode ? '#fff' : '#6E6E73'}
-                />
-            </TouchableOpacity>
-        );
-    }
-
-    function renderStatsRow() {
-        return (
-            <TouchableOpacity style={styles.row} onPress={() => router.push('/settings/statsView' as any)}>
-                <View style={styles.leftContent}>
-                    <FontAwesome5
-                        name="chart-bar"
-                        size={18}
-                        color={isDarkMode ? '#fff' : '#6E6E73'}
-                        style={styles.icon}
-                    />
-                    <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                        {t('settings.rows.stats')}
                     </Text>
                 </View>
                 <MaterialIcons
@@ -310,6 +346,12 @@ const styles = StyleSheet.create({
     leftContent: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
+    },
+    rowRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     icon: {
         marginRight: 12,

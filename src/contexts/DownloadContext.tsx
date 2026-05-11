@@ -206,11 +206,8 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const activeServer = useSelector(selectActiveServer);
   const [state, setState] = useState<DownloadState>(() => loadInitialState());
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(() => new Set());
-  const [stateVersion, setStateVersion] = useState(0);
   const jobsRef = useRef<PersistedDownloadJob[]>(state.jobs);
   const processingQueueRef = useRef(false);
-
-  const bump = useCallback(() => setStateVersion(version => version + 1), []);
 
   useEffect(() => {
     jobsRef.current = state.jobs;
@@ -222,8 +219,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       persistTracks(tracks);
       return { ...current, tracks };
     });
-    bump();
-  }, [bump]);
+  }, []);
 
   const updateCollections = useCallback((updater: (collections: DownloadedCollectionEntry[]) => DownloadedCollectionEntry[]) => {
     setState(current => {
@@ -231,16 +227,14 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       writeDownloadedCollections(collections);
       return { ...current, collections };
     });
-    bump();
-  }, [bump]);
+  }, []);
 
   const updateJobs = useCallback((updater: (jobs: PersistedDownloadJob[]) => PersistedDownloadJob[]) => {
     const jobs = updater(jobsRef.current);
     jobsRef.current = jobs;
     writeDownloadJobs(jobs);
     setState(current => ({ ...current, jobs }));
-    bump();
-  }, [bump]);
+  }, []);
 
   const getLocalPath = useCallback((trackId: string): string | null => {
     const entry = state.tracks.find(track => track.trackId === trackId);
@@ -261,8 +255,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       else next.delete(trackId);
       return next;
     });
-    bump();
-  }, [bump]);
+  }, []);
 
   const resolveTrack = useCallback(async (track: Song): Promise<Song | null> => {
     const fullSong = await api.tracks.get(track.id).catch(() => null);
@@ -378,9 +371,8 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
     } finally {
       processingQueueRef.current = false;
-      bump();
     }
-  }, [bump, performDownloadTrack, removeJob]);
+  }, [performDownloadTrack, removeJob]);
 
   const enqueueDownloadJob = useCallback(async (job: Omit<PersistedDownloadJob, 'createdAt' | 'updatedAt'>) => {
     const now = Date.now();
@@ -622,7 +614,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     cancelDownloadAll,
     clearDownloadsForProvider,
     clearAllDownloads,
-    downloadStateVersion: stateVersion,
+    downloadStateVersion: downloadedTracks.length,
     downloadedTracks,
     getLocalPath,
     getSongLocalUri: async (songId: string) => getLocalPath(songId),
@@ -649,7 +641,6 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     resumeDownload,
     state.collections,
     state.tracks,
-    stateVersion,
   ]);
 
   return (

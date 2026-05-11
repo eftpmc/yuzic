@@ -28,7 +28,7 @@ export async function getArtists(client: JellyfinClient): Promise<GetArtistsResu
       cover,
       subtext: "Artist",
       mbid,
-      ownedAlbums: [],
+      albumIds: [],
     };
   });
 }

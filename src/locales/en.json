@@ -4,6 +4,8 @@
     "sections": {
       "general": "General",
       "plugins": "Plugins",
+      "connections": "Connections",
+      "downloaders": "Downloaders",
       "about": "About"
     },
     "rows": {
@@ -11,6 +13,7 @@
       "library": "Library",
       "player": "Player",
       "appearance": "Appearance",
+      "scrobbling": "Scrobbling",
       "downloaders": "Downloaders",
       "listenBrainz": "ListenBrainz",
       "lastfm": "Last.fm",
@@ -263,6 +266,14 @@
         "disconnected": "Disconnected from slskd."
       }
     },
+    "scrobbling": {
+      "title": "Scrobbling",
+      "server": "Server",
+      "scrobble": "Scrobble",
+      "nowPlaying": "Now Playing",
+      "notConnected": "Not connected",
+      "configure": "Configure"
+    },
     "discovery": {
       "title": "Discovery",
       "sections": {
@@ -450,6 +461,11 @@
       "recentlyAdded": "Recently added",
       "favoriteAlbums": "Favorite albums",
       "randomAlbums": "Random albums",
+      "newReleases": "New releases",
+      "becauseYouListened": "Because you listened to {{artist}}",
+      "becauseYouListenedLabel": "Because you listened to",
+      "charts": "What's trending",
+      "genre": "More {{genre}}",
       "albumsForYou": "Albums for you",
       "artistsForYou": "Artists for you",
       "playlists": "Playlists",

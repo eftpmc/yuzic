@@ -16,6 +16,10 @@ import {
   selectLastFmScrobbleEnabled,
   selectLastFmNowPlayingEnabled,
 } from '@/utils/redux/selectors/lastfmSelectors';
+import {
+  selectServerScrobbleEnabled,
+  selectServerNowPlayingEnabled,
+} from '@/utils/redux/selectors/settingsSelectors';
 import { useApi } from '@/api';
 
 function passesScrobbleThreshold(listenedSeconds: number, durationSeconds: number): boolean {
@@ -34,6 +38,8 @@ export function useScrobbling() {
   const lastFmConfig = useSelector(selectLastFmConfig);
   const lastFmScrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
   const lastFmNowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
+  const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
+  const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
 
   const lastScrobbledIdRef = useRef<string | null>(null);
 
@@ -61,21 +67,23 @@ export function useScrobbling() {
     }
 
     if (activeServer?.type === 'navidrome') {
-      const password = activeServer.auth?.password as string | undefined;
-      if (activeServer.serverUrl && activeServer.username && password) {
-        try {
-          await navidromeScrobble.scrobble(
-            {
-              serverUrl: activeServer.serverUrl,
-              username: activeServer.username,
-              password,
-              basicAuth: activeServer.basicAuth,
-            },
-            song.id,
-            opts.startTime
-          );
-        } catch (err) {
-          console.warn('Navidrome scrobble failed', err);
+      if (serverScrobbleEnabled) {
+        const password = activeServer.auth?.password as string | undefined;
+        if (activeServer.serverUrl && activeServer.username && password) {
+          try {
+            await navidromeScrobble.scrobble(
+              {
+                serverUrl: activeServer.serverUrl,
+                username: activeServer.username,
+                password,
+                basicAuth: activeServer.basicAuth,
+              },
+              song.id,
+              opts.startTime
+            );
+          } catch (err) {
+            console.warn('Navidrome scrobble failed', err);
+          }
         }
       }
     } else {
@@ -112,7 +120,7 @@ export function useScrobbling() {
         console.warn('LastFM scrobble failed', err);
       }
     }
-  }, [activeServer, listenBrainzConfig, lbScrobbleEnabled, lastFmConfig, lastFmScrobbleEnabled, dispatch, api]);
+  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, lastFmConfig, lastFmScrobbleEnabled, dispatch, api]);
 
   const submitNowPlaying = useCallback((song: Song) => {
     const songDuration = Number(song.duration) || undefined;

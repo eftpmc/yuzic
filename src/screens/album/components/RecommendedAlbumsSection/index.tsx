@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
 import { useTheme } from '@/hooks/useTheme';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import MediaTile from '@/screens/explore/components/MediaTile';
+import ExploreLoadingTiles from '@/screens/explore/components/ExploreLoadingTiles';
 import * as deezer from '@/api/deezer';
 import { QueryKeys } from '@/enums/queryKeys';
 import type { Album, ExternalAlbumBase } from '@/types';
@@ -79,7 +80,12 @@ const RecommendedAlbumsSection: React.FC<Props> = ({ album }) => {
   });
 
   if (!artistName || isOffline) return null;
-  if (isLoading) return <ActivityIndicator style={styles.loader} />;
+  if (isLoading) return (
+    <View style={styles.section}>
+      <Text style={[styles.title, isDarkMode && styles.titleDark]}>Recommended</Text>
+      <ExploreLoadingTiles itemSize={tileWidth} gap={TILE_GAP} horizontalPadding={H_PADDING} variant="album" count={3} />
+    </View>
+  );
   if (!data?.length) return null;
 
   return (
@@ -131,8 +137,5 @@ const styles = StyleSheet.create({
   tileRow: {
     paddingHorizontal: H_PADDING,
     gap: TILE_GAP,
-  },
-  loader: {
-    marginVertical: 24,
   },
 });

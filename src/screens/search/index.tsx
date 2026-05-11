@@ -226,7 +226,7 @@ const Search = () => {
             name: result.title,
             subtext: result.subtext,
             cover: result.cover,
-            ownedAlbums: [],
+            albumIds: [],
           }}
           rounded
           onPress={() => {

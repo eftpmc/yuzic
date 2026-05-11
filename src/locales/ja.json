@@ -4,6 +4,8 @@
     "sections": {
       "general": "一般",
       "plugins": "プラグイン",
+      "connections": "接続",
+      "downloaders": "ダウンローダー",
       "about": "情報"
     },
     "rows": {
@@ -11,6 +13,7 @@
       "library": "ライブラリ",
       "player": "プレーヤー",
       "appearance": "外観",
+      "scrobbling": "スクロブル",
       "downloaders": "ダウンローダー",
       "listenBrainz": "ListenBrainz",
       "github": "GitHub",
@@ -222,6 +225,14 @@
         "disconnected": "slskd から切断しました。"
       }
     },
+    "scrobbling": {
+      "title": "スクロブル",
+      "server": "サーバー",
+      "scrobble": "スクロブル",
+      "nowPlaying": "再生中",
+      "notConnected": "未接続",
+      "configure": "設定"
+    },
     "discovery": {
       "title": "ディスカバリー",
       "sections": {
@@ -405,6 +416,11 @@
       "recentlyAdded": "最近追加",
       "favoriteAlbums": "お気に入りのアルバム",
       "randomAlbums": "ランダムアルバム",
+      "newReleases": "新着リリース",
+      "becauseYouListened": "{{artist}}を聴いているあなたへ",
+      "becauseYouListenedLabel": "最近聴いているから",
+      "charts": "今トレンド",
+      "genre": "もっと{{genre}}",
       "albumsForYou": "あなたへのアルバム",
       "artistsForYou": "あなたへのアーティスト"
     },

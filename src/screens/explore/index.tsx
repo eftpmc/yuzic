@@ -1,31 +1,63 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import {
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-} from 'react-native'
+import { StyleSheet, ScrollView, RefreshControl } from 'react-native'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTheme } from '@/hooks/useTheme'
+import { useSimilarContent } from '@/features/explore/hooks/useSimilarContent'
+import { useDailyLayout } from '@/features/explore/hooks/useDailyLayout'
+import { QueryKeys } from '@/enums/queryKeys'
+import RecentSongsSpeedDial from './components/RecentSongsSpeedDial'
 import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
 import FavoriteAlbums from './components/FavoriteAlbums'
 import RandomAlbums from './components/RandomAlbums'
-import RecentSongsSpeedDial from './components/RecentSongsSpeedDial'
-import AlbumsForYouSection from './components/AlbumsForYouSection'
+import NewReleasesSection from './components/NewReleasesSection'
+import BecauseYouListenedSection from './components/BecauseYouListenedSection'
 import ArtistsForYouSection from './components/ArtistsForYouSection'
-import { useSimilarContent } from '@/features/explore/hooks/useSimilarContent'
+import DeezerChartsSection from './components/DeezerChartsSection'
+import GenreSection from './components/GenreSection'
+import type { SectionConfig } from '@/features/explore/hooks/useDailyLayout'
+
+function renderSection(config: SectionConfig) {
+  switch (config.type) {
+    case 'recentlyPlayed':
+      return <RecentlyPlayed key={config.key} />
+    case 'recentlyAdded':
+      return <RecentlyAdded key={config.key} />
+    case 'favoriteAlbums':
+      return <FavoriteAlbums key={config.key} />
+    case 'randomAlbums':
+      return <RandomAlbums key={config.key} />
+    case 'newReleases':
+      return <NewReleasesSection key={config.key} />
+    case 'charts':
+      return <DeezerChartsSection key={config.key} />
+    case 'artistsForYou':
+      return <ArtistsForYouSection key={config.key} />
+    case 'becauseYouListened':
+      return <BecauseYouListenedSection key={config.key} artistName={config.artistName!} />
+    case 'genre':
+      return <GenreSection key={config.key} genre={config.genre!} />
+    default:
+      return null
+  }
+}
 
 export default function Explore() {
   const { isDarkMode } = useTheme()
-
-  const { artists, albums, artistsReady, albumsReady, isFetching, isError, hasNoSeeds, refresh } = useSimilarContent()
-  const showExternalSections = !hasNoSeeds && !isError
+  const { isFetching, refresh } = useSimilarContent()
+  const queryClient = useQueryClient()
+  const layout = useDailyLayout()
 
   const [refreshing, setRefreshing] = useState(false)
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
     refresh()
-  }, [refresh])
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreBecauseYouListened] })
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreNewReleases] })
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreDeezerCharts] })
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreGenreRow] })
+  }, [refresh, queryClient])
 
   useEffect(() => {
     if (refreshing && !isFetching) setRefreshing(false)
@@ -33,10 +65,7 @@ export default function Explore() {
 
   return (
     <ScrollView
-      style={[
-        styles.container,
-        isDarkMode && styles.containerDark,
-      ]}
+      style={[styles.container, isDarkMode && styles.containerDark]}
       contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -47,13 +76,8 @@ export default function Explore() {
         />
       }
     >
-      <RecentSongsSpeedDial/>
-      <RecentlyPlayed />
-      <RecentlyAdded />
-      {showExternalSections && <AlbumsForYouSection data={albums} ready={albumsReady} />}
-      {showExternalSections && <ArtistsForYouSection data={artists} ready={artistsReady} />}
-      <FavoriteAlbums />
-      <RandomAlbums />
+      <RecentSongsSpeedDial />
+      {layout.map(renderSection)}
     </ScrollView>
   )
 }

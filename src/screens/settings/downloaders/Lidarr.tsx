@@ -57,6 +57,7 @@ const LidarrView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [queue, setQueue] = useState<LidarrQueueRecord[]>([]);
   const [loadingQueue, setLoadingQueue] = useState(false);
+  const [queueError, setQueueError] = useState(false);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
   const previousQueueRef = useRef<LidarrQueueRecord[]>([]);
@@ -137,12 +138,14 @@ const LidarrView: React.FC = () => {
 
       previousQueueRef.current = currentQueue;
       setQueue(currentQueue);
+      setQueueError(false);
 
       if (finishedItems.length > 0) {
         toast(t('settings.downloaders.downloadComplete'));
       }
-    } catch {
-      console.warn('Queue polling failed');
+    } catch (err) {
+      console.warn('Queue polling failed', err);
+      setQueueError(true);
     }
   }, [config, isAuthenticated, t]);
 
@@ -151,6 +154,7 @@ const LidarrView: React.FC = () => {
       setQueue([]);
       previousQueueRef.current = [];
       setLoadingQueue(false);
+      setQueueError(false);
 
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -310,6 +314,10 @@ const LidarrView: React.FC = () => {
             >
               <Loader2 size={32} color={isDarkMode ? '#fff' : '#000'} />
             </Animated.View>
+          ) : queueError ? (
+            <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+              {t('settings.downloaders.lidarr.connectionFailed')}
+            </Text>
           ) : queue.length === 0 ? (
             <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
               {t('settings.downloaders.emptyQueue')}

@@ -36,6 +36,10 @@ export interface SettingsState {
 
   language: AppLanguage;
 
+  /* Scrobbling */
+  serverScrobbleEnabled: boolean;
+  serverNowPlayingEnabled: boolean;
+
   /* Sync */
   lastSyncedAt: number | null;
   syncOnAppStart: boolean;
@@ -56,6 +60,9 @@ const initialState: SettingsState = {
   audioQuality: 'medium',
 
   language: DEFAULT_LANGUAGE,
+
+  serverScrobbleEnabled: true,
+  serverNowPlayingEnabled: true,
 
   lastSyncedAt: null,
   syncOnAppStart: false,
@@ -111,6 +118,13 @@ const settingsSlice = createSlice({
       state.language = action.payload;
     },
 
+    setServerScrobbleEnabled(state, action: PayloadAction<boolean>) {
+      state.serverScrobbleEnabled = action.payload;
+    },
+    setServerNowPlayingEnabled(state, action: PayloadAction<boolean>) {
+      state.serverNowPlayingEnabled = action.payload;
+    },
+
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
     },
@@ -134,6 +148,8 @@ export const {
   setHasSeenGetStarted,
   setAudioQuality,
   setLanguage,
+  setServerScrobbleEnabled,
+  setServerNowPlayingEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

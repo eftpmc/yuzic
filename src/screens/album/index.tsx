@@ -16,7 +16,7 @@ const AlbumScreen: React.FC = () => {
 
   const { isDarkMode } = useTheme();
 
-  const { album, isLoading, error } = useAlbum(id);
+  const { album, isLoading, songsLoading, error } = useAlbum(id);
 
   if (isLoading) {
     return (
@@ -32,7 +32,7 @@ const AlbumScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
-      <AlbumContent album={album} />
+      <AlbumContent album={album} songsLoading={songsLoading} />
     </SafeAreaView>
   );
 };

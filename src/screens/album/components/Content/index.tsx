@@ -8,18 +8,21 @@ import { Album, Song } from '@/types';
 import AlbumHeader from '../Header';
 import RecommendedAlbumsSection from '../RecommendedAlbumsSection';
 import SongRow from '@/components/rows/SongRow';
+import LoadingSongRow from '@/components/rows/SongRow/Loading';
 import MediaTile from '@/screens/explore/components/MediaTile';
 import { useTheme } from '@/hooks/useTheme';
-import { useArtist } from '@/hooks/artists';
+import { useArtistAlbums } from '@/hooks/artists';
 import { useStarredSongs } from '@/hooks/starred';
 
 type Props = {
   album: Album;
+  songsLoading?: boolean;
 };
 
 type DiscHeader = { type: 'disc-header'; disc: number };
 type SongItem = { type: 'song'; song: Song };
-type ListItem = DiscHeader | SongItem;
+type SkeletonItem = { type: 'skeleton'; id: string };
+type ListItem = DiscHeader | SongItem | SkeletonItem;
 
 const ESTIMATED_ROW_HEIGHT = 72;
 const DISC_HEADER_HEIGHT = 36;
@@ -27,10 +30,10 @@ const H_PADDING = 16;
 const TILE_GAP = 12;
 const VISIBLE_TILES = 2.5;
 
-const AlbumContent: React.FC<Props> = ({ album }) => {
+const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const { artist: fullArtist } = useArtist(album.artist?.id ?? '');
+  const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
 
   const { width: screenWidth } = useWindowDimensions();
@@ -45,8 +48,8 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
   }, [album]);
 
   const moreAlbums = useMemo(() => {
-    return (fullArtist?.ownedAlbums ?? []).filter(a => a.id !== album.id);
-  }, [fullArtist?.ownedAlbums, album.id]);
+    return artistAlbums.filter(a => a.id !== album.id);
+  }, [artistAlbums, album.id]);
 
   const footer = useMemo(() => {
     const songs = album.songs ?? [];
@@ -92,6 +95,10 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
   }, [album.songs, album.artist, isDarkMode, moreAlbums, tileWidth, navigation]);
 
   const items = useMemo<ListItem[]>(() => {
+    if (songsLoading) {
+      return Array.from({ length: 8 }, (_, i) => ({ type: 'skeleton' as const, id: `sk-${i}` }));
+    }
+
     const songs = album.songs ?? [];
     const hasMultipleDiscs = new Set(songs.map((song) => song.disc ?? 1)).size > 1;
 
@@ -114,9 +121,13 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
     });
 
     return listItems;
-  }, [album.songs]);
+  }, [album.songs, songsLoading]);
 
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
+    if (item.type === 'skeleton') {
+      return <LoadingSongRow />;
+    }
+
     if (item.type === 'disc-header') {
       return (
         <Text style={[styles.discHeader, isDarkMode ? styles.discHeaderDark : styles.discHeaderLight]}>
@@ -139,7 +150,9 @@ const AlbumContent: React.FC<Props> = ({ album }) => {
     <FlashList
       data={items}
       keyExtractor={(item) =>
-        item.type === 'disc-header' ? `disc-${item.disc}` : item.song.id
+        item.type === 'disc-header' ? `disc-${item.disc}` :
+        item.type === 'skeleton' ? item.id :
+        item.song.id
       }
       renderItem={renderItem}
       extraData={starredSongIds}

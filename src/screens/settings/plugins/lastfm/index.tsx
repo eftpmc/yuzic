@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Switch,
   Linking,
   StyleSheet,
 } from 'react-native';
@@ -26,15 +25,11 @@ import {
   selectLastFmApiSecret,
   selectLastFmAuthenticated,
   selectLastFmUsername,
-  selectLastFmScrobbleEnabled,
-  selectLastFmNowPlayingEnabled,
 } from '@/utils/redux/selectors/lastfmSelectors';
 import {
   setApiKey,
   setApiSecret,
   setSessionData,
-  setScrobbleEnabled,
-  setNowPlayingEnabled,
   disconnect,
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
@@ -51,8 +46,6 @@ const LastFmView: React.FC = () => {
   const apiSecret = useSelector(selectLastFmApiSecret);
   const isAuthenticated = useSelector(selectLastFmAuthenticated);
   const username = useSelector(selectLastFmUsername);
-  const scrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
-  const nowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
 
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -170,34 +163,6 @@ const LastFmView: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </>
-        )}
-
-        {isAuthenticated && (
-          <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-            <View style={styles.row}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                {t('settings.lastfm.scrobble')}
-              </Text>
-              <Switch
-                value={scrobbleEnabled}
-                onValueChange={(v) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }}
-                trackColor={{ true: themeColor }}
-                thumbColor="#fff"
-              />
-            </View>
-            <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
-            <View style={styles.row}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                {t('settings.lastfm.nowPlaying')}
-              </Text>
-              <Switch
-                value={nowPlayingEnabled}
-                onValueChange={(v) => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }}
-                trackColor={{ true: themeColor }}
-                thumbColor="#fff"
-              />
-            </View>
-          </View>
         )}
 
         {isAuthenticated && (

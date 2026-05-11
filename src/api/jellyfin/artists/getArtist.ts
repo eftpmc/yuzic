@@ -1,13 +1,8 @@
-import { Album, Artist, CoverSource } from "@/types";
+import { Artist, CoverSource } from "@/types";
 import type { JellyfinClient } from "../client";
-import { getAlbums } from "../albums/getAlbums";
 
 export type GetArtistResult = Artist | null;
 
-/**
- * Fetches a single artist by ID with their albums.
- * Uses /Items?Ids= to fetch the artist and AlbumArtistIds to fetch only that artist's albums.
- */
 export async function getArtist(
   client: JellyfinClient,
   artistId: string
@@ -31,14 +26,12 @@ export async function getArtist(
 
   const mbid = artistRaw.ProviderIds?.MusicBrainz ?? null;
 
-  const ownedAlbums: Album[] = await getAlbums(client, artistId);
-
   return {
     id: artistRaw.Id,
     name: artistRaw.Name ?? "Unknown Artist",
     cover,
     subtext: "Artist",
     mbid,
-    ownedAlbums
+    albumIds: [],
   };
 }

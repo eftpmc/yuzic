@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import {
-  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
@@ -155,7 +155,7 @@ export default function LibraryScreen() {
   const { tracks } = useTracks()
   const { getAllDownloadedCollections } = useDownload()
 
-  const screenWidth = Dimensions.get('window').width
+  const { width: screenWidth } = useWindowDimensions()
   const gridWidth = (screenWidth - LIST_PADDING * 2 - (gridColumns + 1) * gridSpacing) / gridColumns
 
   const stats = useMemo<SortStats>(

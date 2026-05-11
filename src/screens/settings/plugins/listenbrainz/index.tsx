@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Switch,
   StyleSheet,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -25,16 +24,12 @@ import {
   selectListenBrainzToken,
   selectListenBrainzAuthenticated,
   selectListenBrainzConfig,
-  selectListenBrainzScrobbleEnabled,
-  selectListenBrainzNowPlayingEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
 
 import {
   setUsername,
   setToken,
   setAuthenticated,
-  setScrobbleEnabled,
-  setNowPlayingEnabled,
   disconnect,
 } from '@/utils/redux/slices/listenbrainzSlice';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -53,8 +48,6 @@ const ListenBrainzView: React.FC = () => {
   const token = useSelector(selectListenBrainzToken);
   const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
   const config = useSelector(selectListenBrainzConfig);
-  const scrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
-  const nowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -181,34 +174,6 @@ const ListenBrainzView: React.FC = () => {
             )}
           </TouchableOpacity>
         </View>
-
-        {isAuthenticated && (
-          <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-            <View style={styles.row}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                {t('settings.listenBrainz.scrobble')}
-              </Text>
-              <Switch
-                value={scrobbleEnabled}
-                onValueChange={(v) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }}
-                trackColor={{ true: themeColor }}
-                thumbColor="#fff"
-              />
-            </View>
-            <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
-            <View style={styles.row}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                {t('settings.listenBrainz.nowPlaying')}
-              </Text>
-              <Switch
-                value={nowPlayingEnabled}
-                onValueChange={(v) => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }}
-                trackColor={{ true: themeColor }}
-                thumbColor="#fff"
-              />
-            </View>
-          </View>
-        )}
 
         {isAuthenticated && (
           <TouchableOpacity

@@ -4,6 +4,8 @@
     "sections": {
       "general": "通用",
       "plugins": "插件",
+      "connections": "连接",
+      "downloaders": "下载工具",
       "about": "关于"
     },
     "rows": {
@@ -11,6 +13,7 @@
       "library": "媒体库",
       "player": "播放器",
       "appearance": "外观",
+      "scrobbling": "Scrobbling",
       "downloaders": "下载管理",
       "listenBrainz": "ListenBrainz",
       "github": "Github",
@@ -222,6 +225,14 @@
         "disconnected": "已断开与 slskd 的连接。"
       }
     },
+    "scrobbling": {
+      "title": "Scrobbling",
+      "server": "服务器",
+      "scrobble": "Scrobble",
+      "nowPlaying": "正在播放",
+      "notConnected": "未连接",
+      "configure": "配置"
+    },
     "discovery": {
       "title": "发现",
       "sections": {
@@ -405,6 +416,11 @@
       "recentlyAdded": "最近添加",
       "favoriteAlbums": "收藏专辑",
       "randomAlbums": "随机专辑",
+      "newReleases": "新发行",
+      "becauseYouListened": "因为你听了{{artist}}",
+      "becauseYouListenedLabel": "因为你听了",
+      "charts": "当下流行",
+      "genre": "更多{{genre}}",
       "albumsForYou": "为你推荐的专辑",
       "artistsForYou": "为你推荐的艺术家"
     },

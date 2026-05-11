@@ -1,6 +1,5 @@
-import { Album, Artist, CoverSource } from "@/types";
+import { Artist, CoverSource } from "@/types";
 import type { NavidromeClient } from "../client";
-import { getAlbumInfo } from "../albums/getAlbumInfo";
 
 export type GetArtistResult = Artist | null;
 
@@ -12,45 +11,15 @@ export async function getArtist(
   const artist = raw?.["subsonic-response"]?.artist;
   if (!artist) return null;
 
-  const artistCover: CoverSource = artist.coverArt
+  const cover: CoverSource = artist.coverArt
     ? { kind: "navidrome", coverArtId: artist.coverArt }
     : { kind: "none" };
-
-  const artistInline = {
-    id: artist.id,
-    cover: artistCover,
-    name: artist.name,
-    subtext: "Artist",
-  };
-
-  const albumInfos = await Promise.all(
-    artist.album.map((a: { id: string }) => getAlbumInfo(client, a.id))
-  );
-
-  const albums: Album[] = artist.album.map((album: any, i: number) => {
-    const cover: CoverSource = album.coverArt
-      ? { kind: "navidrome", coverArtId: album.coverArt }
-      : { kind: "none" };
-
-    return {
-      id: album.id,
-      title: album.name,
-      cover,
-      subtext: `Album • ${artist.name}`,
-      year: album.year,
-      artist: artistInline,
-      genres: album.genre ? [album.genre] : [],
-      created: album.created ? new Date(album.created) : new Date(0),
-      mbid: albumInfos[i]?.musicBrainzId ?? null,
-      songs: [],
-    };
-  });
 
   return {
     id: artist.id,
     name: artist.name,
-    cover: artistCover,
+    cover,
     subtext: "Artist",
-    ownedAlbums: albums
+    albumIds: [],
   };
 }

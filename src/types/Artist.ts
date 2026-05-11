@@ -1,4 +1,4 @@
-import { Album, ExternalAlbumBase, ExternalCatalogSource, ExternalIds } from "./Album";
+import { ExternalAlbumBase, ExternalCatalogSource, ExternalIds } from "./Album";
 import { CoverSource } from "./Cover";
 import { ExternalSong } from "./Song";
 
@@ -9,7 +9,7 @@ export interface Artist {
     subtext: string;
     /** MusicBrainz ID when available from server (Navidrome, Jellyfin) */
     mbid?: string | null;
-    ownedAlbums: Album[];
+    albumIds: string[];
 }
 
 export interface ExternalArtistBase {

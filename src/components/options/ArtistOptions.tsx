@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -18,15 +18,10 @@ import { Artist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import { useApi } from '@/api';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
-import { QueryKeys } from '@/enums/queryKeys';
 import { useTheme } from '@/hooks/useTheme';
-import { useArtistMbid } from '@/hooks/artists';
-import { staleTime } from '@/constants/staleTime';
+import { useArtistAlbums, useArtistMbid } from '@/hooks/artists';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -46,9 +41,6 @@ const ArtistOptions = forwardRef<
   const { isDarkMode } = useTheme();
   const themeStyles = isDarkMode ? stylesDark : stylesLight;
   const navigation = useNavigation<any>();
-  const queryClient = useQueryClient();
-  const api = useApi();
-  const activeServer = useSelector(selectActiveServer);
 
   const {
     playSongInCollection,
@@ -57,9 +49,6 @@ const ArtistOptions = forwardRef<
     getQueue,
   } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
-  const apiRef = useRef(api);
-  apiRef.current = api;
-  const [artistSongsForDownload, setArtistSongsForDownload] = useState<Song[]>([]);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   const { data: mbid } = useArtistMbid(
@@ -68,56 +57,16 @@ const ArtistOptions = forwardRef<
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const playCount = useSelector(selectArtistPlayCount(artist?.id ?? ''));
-  const artistAlbumIdsKey = useMemo(
-    () => artist?.ownedAlbums?.map(album => album.id).join(',') ?? '',
-    [artist?.ownedAlbums]
+
+  const artistAlbums = useArtistAlbums(artist?.id ?? '');
+  const artistSongs = useMemo(
+    () => artistAlbums.flatMap(a => a.songs ?? []) as Song[],
+    [artistAlbums]
   );
 
   const close = () => {
     (ref as any)?.current?.dismiss();
   };
-
-  const loadSongs = useCallback(async () => {
-    if (!artist?.ownedAlbums?.length) return [];
-    const albums = await Promise.all(
-      artist.ownedAlbums.map((a) =>
-        queryClient.fetchQuery({
-          queryKey: [QueryKeys.Album, activeServer?.id, a.id],
-          queryFn: () => apiRef.current.albums.get(a.id),
-          staleTime: staleTime.albums,
-        })
-      )
-    );
-    return albums.flatMap((a) => a?.songs ?? []);
-  }, [artist, queryClient, activeServer?.id]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const resolveArtistSongs = async () => {
-      if (!artist?.ownedAlbums?.length) {
-        if (!cancelled) setArtistSongsForDownload([]);
-        return;
-      }
-
-      try {
-        const songs = await loadSongs();
-        if (!cancelled) {
-          setArtistSongsForDownload(songs);
-        }
-      } catch {
-        if (!cancelled) {
-          setArtistSongsForDownload([]);
-        }
-      }
-    };
-
-    void resolveArtistSongs();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [artist?.id, artist?.ownedAlbums?.length, artistAlbumIdsKey, activeServer?.id, loadSongs]);
 
   const buildCollection = useCallback(
     (songs: Song[]) => ({
@@ -138,37 +87,31 @@ const ArtistOptions = forwardRef<
     [artist, t]
   );
 
-  const handlePlay = async (shuffle: boolean) => {
-    if (!artist) return;
-    const songs = await loadSongs();
-    if (!songs.length) return;
-    const collection = buildCollection(songs);
-    playSongInCollection(songs[0], collection, shuffle);
+  const handlePlay = (shuffle: boolean) => {
+    if (!artist || !artistSongs.length) return;
+    const collection = buildCollection(artistSongs);
+    playSongInCollection(artistSongs[0], collection, shuffle);
     close();
   };
 
-  const handleAddToQueue = async () => {
-    if (!artist) return;
-    const songs = await loadSongs();
-    if (!songs.length) return;
-    const collection = buildCollection(songs);
+  const handleAddToQueue = () => {
+    if (!artist || !artistSongs.length) return;
+    const collection = buildCollection(artistSongs);
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
-      playSongInCollection(songs[0], collection, false);
+      playSongInCollection(artistSongs[0], collection, false);
     } else {
       addCollectionToQueue(collection);
     }
     close();
   };
 
-  const handleShuffleToQueue = async () => {
-    if (!artist) return;
-    const songs = await loadSongs();
-    if (!songs.length) return;
-    const collection = buildCollection(songs);
+  const handleShuffleToQueue = () => {
+    if (!artist || !artistSongs.length) return;
+    const collection = buildCollection(artistSongs);
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
-      playSongInCollection(songs[0], collection, true);
+      playSongInCollection(artistSongs[0], collection, true);
     } else {
       shuffleCollectionToQueue(collection);
     }
@@ -200,20 +143,17 @@ const ArtistOptions = forwardRef<
   };
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(
-    artistSongsForDownload.map((song) => song.id)
+    artistSongs.map(s => s.id)
   );
   const isDownloading = isDownloadingAll || isCollectionDownloading;
 
   const handleDownloadAll = async () => {
-    if (!artist || isDownloaded || isDownloading) return;
-
+    if (!artist || isDownloaded || isDownloading || !artistAlbums.length) return;
     setIsDownloadingAll(true);
     try {
-      for (const album of artist.ownedAlbums) {
+      for (const album of artistAlbums) {
         await downloadAlbumById(album.id);
       }
-      const refreshedSongs = await loadSongs();
-      setArtistSongsForDownload(refreshedSongs);
     } catch {
       toast.error(t('artistOptions.downloadAllFailed'));
     } finally {
@@ -291,9 +231,7 @@ const ArtistOptions = forwardRef<
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.option}
-          onPress={() => {
-            void handleDownloadAll();
-          }}
+          onPress={() => { void handleDownloadAll(); }}
           disabled={isDownloaded || isDownloading}
         >
           {isDownloading ? (
@@ -346,7 +284,7 @@ const ArtistOptions = forwardRef<
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, themeStyles.artist]}>{t('artistOptions.info.albums')}</Text>
           <Text style={[styles.infoValue, themeStyles.title]}>
-            {artist.ownedAlbums?.length ?? 0}
+            {artistAlbums.length}
           </Text>
         </View>
         <View style={styles.infoRow}>

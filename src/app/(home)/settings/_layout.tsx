@@ -15,6 +15,7 @@ export default function SettingsLayout() {
             <Stack.Screen name='slskdView' options={{ headerShown: false, title: "slskd" }} />
             <Stack.Screen name='listenbrainzView' options={{ headerShown: false, title: "ListenBrainz" }} />
             <Stack.Screen name='lastfmView' options={{ headerShown: false, title: "Last.fm" }} />
+            <Stack.Screen name='scrobblingView' options={{ headerShown: false, title: "Scrobbling" }} />
             <Stack.Screen name='statsView' options={{ headerShown: false, title: "Listening Stats" }} />
         </Stack>
     );

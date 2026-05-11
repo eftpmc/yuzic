@@ -10,7 +10,7 @@ import ImageColors from 'react-native-image-colors';
 
 import PlaylistList from '@/components/PlaylistList';
 import { MediaImage } from '@/components/MediaImage';
-import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingActions, usePlayingProgress } from '@/contexts/PlayingContext';
 
 // Isolated component so 1-second progress ticks don't rerender the full bar.
 const ProgressBarStrip = memo(({
@@ -189,12 +189,8 @@ export default function PlayingBarBase({ variant }: Props) {
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
 
-  const {
-    currentSong,
-    isPlaying,
-    pauseSong,
-    resumeSong,
-  } = usePlaying();
+  const { currentSong, isPlaying } = usePlayingState();
+  const { pauseSong, resumeSong } = usePlayingActions();
 
   const stylesForVariant = variantStyles[variant];
   const bottomSheetRef = useSheetRef();

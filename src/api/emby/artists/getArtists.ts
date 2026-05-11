@@ -29,7 +29,7 @@ export async function getArtists(client: EmbyClient): Promise<GetArtistsResult> 
       cover,
       subtext: "Artist",
       mbid,
-      ownedAlbums: [],
+      albumIds: [],
     };
   });
 }

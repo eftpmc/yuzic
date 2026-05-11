@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,18 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
 
 import { Album } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import { useAlbum } from '@/hooks/albums';
+import { useApi } from '@/api';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { QueryKeys } from '@/enums/queryKeys';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { staleTime } from '@/constants/staleTime';
 
 type Props = {
   album: Album;
@@ -25,10 +30,24 @@ const AlbumRow: React.FC<Props> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const optionsSheetRef = useSheetRef();
-  const { album: fullAlbum } = useAlbum(album.id);
+  const queryClient = useQueryClient();
+  const api = useApi();
+  const activeServer = useSelector(selectActiveServer);
+  const [fullAlbum, setFullAlbum] = useState<Album | null>(null);
 
   const handlePress = useCallback(() => onPress?.(album), [onPress, album]);
-  const handleOptionsPress = useCallback(() => optionsSheetRef.current?.present(), [optionsSheetRef]);
+
+  const handleOptionsPress = useCallback(async () => {
+    optionsSheetRef.current?.present();
+    if (!fullAlbum) {
+      const fetched = await queryClient.fetchQuery<Album>({
+        queryKey: [QueryKeys.Album, activeServer?.id, album.id],
+        queryFn: () => api.albums.get(album.id),
+        staleTime: staleTime.albums,
+      });
+      setFullAlbum(fetched);
+    }
+  }, [album.id, fullAlbum, queryClient, activeServer?.id, api, optionsSheetRef]);
 
   return (
     <View style={styles.wrapper}>
@@ -84,7 +103,7 @@ const AlbumRow: React.FC<Props> = ({
 
       <AlbumOptions
         ref={optionsSheetRef}
-        album={fullAlbum}
+        album={fullAlbum ?? album}
         hideGoToAlbum={false}
       />
     </View>

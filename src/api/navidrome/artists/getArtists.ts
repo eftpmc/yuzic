@@ -12,7 +12,7 @@ function normalizeArtistEntry(a: any): Artist {
     cover,
     name: a.name,
     subtext: "Artist",
-    ownedAlbums: [],
+    albumIds: [],
   };
 }
 

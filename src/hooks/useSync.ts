@@ -23,7 +23,6 @@ const SYNC_THROTTLE_MS = 30 * 60 * 1000
 // Max concurrent N+1 requests to avoid overwhelming the server
 const N1_CONCURRENCY = 15
 const MAX_AUTO_DETAIL_ALBUMS = 500
-const MAX_AUTO_DETAIL_ARTISTS = 500
 const MAX_AUTO_DETAIL_PLAYLISTS = 100
 
 async function fetchBatch<T>(
@@ -140,12 +139,9 @@ export function useSync() {
       if (syncGenerationRef.current !== generation) return
 
       try {
-        const fullAlbumMap = new Map<string, Album>()
         const albums = queryClient.getQueryData<Album[]>([QueryKeys.Albums, serverId]) ?? []
-        const artists = queryClient.getQueryData<Artist[]>([QueryKeys.Artists, serverId]) ?? []
         const playlists = queryClient.getQueryData<Playlist[]>([QueryKeys.Playlists, serverId]) ?? []
         const shouldFetchAlbumDetails = force || albums.length <= MAX_AUTO_DETAIL_ALBUMS
-        const shouldFetchArtistDetails = force || artists.length <= MAX_AUTO_DETAIL_ARTISTS
         const shouldFetchPlaylistDetails = force || playlists.length <= MAX_AUTO_DETAIL_PLAYLISTS
 
         if (shouldFetchAlbumDetails) {
@@ -163,7 +159,6 @@ export function useSync() {
                 )
 
           if (fullAlbums.length > 0) {
-            fullAlbums.forEach(a => fullAlbumMap.set(a.id, a))
             dispatch(setLibraryAlbums(fullAlbums))
 
             // Derive tracks from enriched album songs so tracks/downloaded
@@ -175,23 +170,6 @@ export function useSync() {
         }
 
         if (syncGenerationRef.current !== generation) return
-
-        if (shouldFetchArtistDetails) {
-          const fullArtists = await fetchBatch(
-            artists.map(a => a.id),
-            id => queryClient.fetchQuery({
-              queryKey: [QueryKeys.Artist, serverId, id],
-              queryFn: () => api.artists.get(id),
-              staleTime: DETAIL_STALE_MS,
-            })
-          )
-          dispatch(setLibraryArtists(
-            fullArtists.map(artist => ({
-              ...artist,
-              ownedAlbums: artist.ownedAlbums.map(a => fullAlbumMap.get(a.id) ?? a),
-            }))
-          ))
-        }
 
         if (shouldFetchPlaylistDetails) {
           const fullPlaylists = await fetchBatch(

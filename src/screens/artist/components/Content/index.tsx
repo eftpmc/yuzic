@@ -8,7 +8,7 @@ import AlbumRow from '@/components/rows/AlbumRow'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
-import { useSimilarArtists } from '@/hooks/artists'
+import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import MediaTile from '@/screens/explore/components/MediaTile'
 
 type Props = {
@@ -86,10 +86,11 @@ export default function ArtistContent({ artist }: Props) {
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
+  const artistAlbums = useArtistAlbums(artist.id)
 
   const items = useMemo<ArtistContentItem[]>(() => {
-    const albums = artist.ownedAlbums.filter(album => !isSingleOrEp(album))
-    const singles = artist.ownedAlbums.filter(isSingleOrEp)
+    const albums = artistAlbums.filter(album => !isSingleOrEp(album))
+    const singles = artistAlbums.filter(isSingleOrEp)
     const rows: ArtistContentItem[] = []
 
     if (albums.length > 0) {
@@ -122,7 +123,7 @@ export default function ArtistContent({ artist }: Props) {
 
     rows.push({ kind: 'similar', id: 'similar-artists' })
     return rows
-  }, [artist.ownedAlbums, visibleAlbumsCount, visibleSinglesCount, t])
+  }, [artistAlbums, visibleAlbumsCount, visibleSinglesCount, t])
 
   return (
     <FlashList

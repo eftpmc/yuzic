@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -297,15 +297,10 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
     networkMode: 'online',
   });
 
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   const handleRefresh = useCallback(() => {
-    if (countdown !== null) return;
     setLocalSeed(Math.random());
     queryClient.invalidateQueries({ queryKey: externalQueryKey });
-    setCountdown(3);
-  }, [countdown, queryClient, externalQueryKey]);
+  }, [queryClient, externalQueryKey]);
 
   const handleDownloadExternalSong = useCallback(async (song: ExternalSong) => {
     if (!hasDownloader) return;
@@ -329,16 +324,6 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
       toast.error(t('externalAlbum.download.startFailed'));
     }
   }, [downloadSheetRef, hasDownloader, t]);
-
-  useEffect(() => {
-    if (countdown === null || countdown === 0) return;
-    countdownRef.current = setInterval(() => {
-      setCountdown(c => (c !== null && c > 1 ? c - 1 : null));
-    }, 1000);
-    return () => {
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, [countdown]);
 
   const showLocal = localSongs.length > 0;
   const showExternal = !isOffline && playlistArtistNames.length > 0;
@@ -378,23 +363,18 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
       <TouchableOpacity
         style={[styles.refreshBtn, isDarkMode && styles.refreshBtnDark]}
         onPress={handleRefresh}
-        activeOpacity={countdown !== null ? 1 : 0.7}
-        disabled={countdown !== null}
+        activeOpacity={0.7}
+        disabled={externalQuery.isFetching}
       >
         <Ionicons
           name="refresh"
           size={16}
           color={isDarkMode ? '#aaa' : '#666'}
-          style={{ opacity: countdown !== null ? 0 : 1 }}
+          style={{ opacity: externalQuery.isFetching ? 0.3 : 1 }}
         />
-        <Text style={[styles.refreshText, isDarkMode && styles.refreshTextDark, { opacity: countdown !== null ? 0 : 1 }]}>
+        <Text style={[styles.refreshText, isDarkMode && styles.refreshTextDark, { opacity: externalQuery.isFetching ? 0.3 : 1 }]}>
           {t('playlist.recommended.refresh')}
         </Text>
-        {countdown !== null && (
-          <Text style={[styles.countdownText, isDarkMode && styles.refreshTextDark, { position: 'absolute' }]}>
-            {countdown}
-          </Text>
-        )}
       </TouchableOpacity>
 
       {albumForDownload && (
@@ -480,11 +460,6 @@ const styles = StyleSheet.create({
   refreshText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
-  },
-  countdownText: {
-    fontSize: 13,
-    fontWeight: '700',
     color: '#666',
   },
   refreshTextDark: { color: '#aaa' },

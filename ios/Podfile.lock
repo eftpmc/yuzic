@@ -6,7 +6,7 @@ PODS:
     - React-Core
   - Delegate (1.3.0)
   - DoubleConversion (1.1.6)
-  - EASClient (55.0.5):
+  - EASClient (0.6.0):
     - ExpoModulesCore
   - EXConstants (55.0.16):
     - ExpoModulesCore
@@ -243,36 +243,9 @@ PODS:
     - SDWebImageAVIFCoder (~> 0.11.0)
     - SDWebImageSVGCoder (~> 1.7.0)
     - SDWebImageWebPCoder (~> 0.14.6)
-  - ExpoInsights (55.0.16):
-    - boost
-    - DoubleConversion
+  - ExpoInsights (0.2.0):
     - EASClient
     - ExpoModulesCore
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - ExpoKeepAwake (55.0.8):
     - ExpoModulesCore
   - ExpoLinearGradient (55.0.13):
@@ -3121,8 +3094,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNDeviceInfo (15.0.2):
-    - React-Core
   - RNGestureHandler (2.30.1):
     - boost
     - DoubleConversion
@@ -3612,7 +3583,6 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
-  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNImageColors (from `../node_modules/react-native-image-colors`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -3876,8 +3846,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-exception-handler"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
-  RNDeviceInfo:
-    :path: "../node_modules/react-native-device-info"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNImageColors:
@@ -3901,7 +3869,7 @@ SPEC CHECKSUMS:
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
   Delegate: 0ff4467868095239ff578ab531efd8af46e62881
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  EASClient: 8077eb9af46cc7ad3ad216cec12d2bf5763cca13
+  EASClient: 847b2cedcc7f85900ebd54c53531b88aa41873d1
   EXConstants: dadbeba983acc30f855a919658a2b34fbd86615d
   EXJSONUtils: 04bc3807d351331a5fe154ce1da596ec15d99169
   EXManifests: f4e50a54115948e206f4c2391bdea755a1aa74ec
@@ -3918,7 +3886,7 @@ SPEC CHECKSUMS:
   ExpoGlassEffect: 72bcb9dc634262c59897ff7c53c16e2ff03990d0
   ExpoHaptics: 679f09dc37d5981e619bc197732007a3334e80b8
   ExpoImage: bd9e9c5bc4eff7a6883339be305f8b0bb5a0cf1c
-  ExpoInsights: 28c81fdb46e82db6b58060dffc6689f7fee41221
+  ExpoInsights: 56d1e4273c3f4e44a1e67444ed753ad67f74084c
   ExpoKeepAwake: d0eb7a0719500d2a43fbf29b6f79e84d70c75ebf
   ExpoLinearGradient: c654e92d726a6d64c588a0988bb22bea331d5e79
   ExpoLinking: f9e01f5182f2653ea9d90f18fb47f1913e2f99ef
@@ -4021,7 +3989,6 @@ SPEC CHECKSUMS:
   ReactCommon: 5901ef412ae35cc727b9584d4f7e3e1f7f17c251
   ReactNativeExceptionHandler: a23922ca00122b050ae9412f960061791c232c47
   RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
-  RNDeviceInfo: 4c852998208b60dc192ae3529e5867817719ad1e
   RNGestureHandler: b407c25a3f51d22dd7430e6b530f753f112b7e77
   RNImageColors: 977420bca17290f111104bcfcbfb698982cbfbba
   RNReanimated: 4e6187f2ba1e30e6ddc7c8fc9f19b2dd2b6b2532

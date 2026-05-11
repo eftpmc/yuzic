@@ -10,6 +10,7 @@ import { hasValue, useOfflineFirstQuery } from '@/hooks/useOfflineFirstQuery';
 type UseAlbumResult = {
   album: Album | null;
   isLoading: boolean;
+  songsLoading: boolean;
   error: Error | null;
 };
 
@@ -31,6 +32,7 @@ export function useAlbum(id: string): UseAlbumResult {
   return {
     album: query.data,
     isLoading: query.isLoading,
+    songsLoading: query.query.isFetching && (query.data?.songs?.length ?? 0) === 0,
     error: query.error,
   };
 }

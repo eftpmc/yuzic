@@ -3,72 +3,79 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { useTheme } from '@/hooks/useTheme'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
-import { useSimilarContent } from '@/features/explore/hooks/useSimilarContent'
+import { getDeezerChartAlbums } from '@/api/deezer'
+import { QueryKeys } from '@/enums/queryKeys'
 import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
-import type { ExternalArtistBase } from '@/types'
+import type { ExternalAlbumBase } from '@/types'
 
 const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
 
-export default function ArtistsForYouSection() {
+export default function DeezerChartsSection() {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
-  const { artists, artistsReady } = useSimilarContent()
 
   const screenWidth = Dimensions.get('window').width
   const gridGap = 12
   const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
 
-  const coversToPrefetch = useMemo(() => artists.map(a => a.cover), [artists])
+  const query = useQuery<ExternalAlbumBase[]>({
+    queryKey: [QueryKeys.ExploreDeezerCharts],
+    queryFn: () => getDeezerChartAlbums(10),
+    staleTime: 1000 * 60 * 60 * 6,
+    networkMode: 'online',
+  })
+
+  const data = query.data ?? []
+  const coversToPrefetch = useMemo(() => data.map(a => a.cover), [data])
   usePrefetchCovers(coversToPrefetch, 'grid')
 
-  const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
+  const renderAlbum = useCallback(({ item }: { item: ExternalAlbumBase }) => (
     <MediaTile
       cover={item.cover}
-      title={item.name}
+      title={item.title}
       subtitle={item.subtext}
       size={gridItemWidth}
-      radius={gridItemWidth / 2}
+      radius={6}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
-        navigation.navigate('externalArtistView', {
+        navigation.navigate('externalAlbumView', {
           source: item.externalSource,
-          artistId: item.externalIds?.deezerId,
-          mbid: item.externalIds?.mbid ?? item.id,
-          name: item.name,
+          albumId: item.id,
         })
       }}
     />
   ), [navigation, gridItemWidth])
 
-  if (artistsReady && artists.length === 0) return null
+  if (!query.isLoading && data.length === 0) return null
 
   return (
     <View style={styles.container}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-        {t('explore.sections.artistsForYou')}
+        {t('explore.sections.charts')}
       </Text>
-      {!artistsReady ? (
+      {query.isLoading ? (
         <ExploreLoadingTiles
           itemSize={gridItemWidth}
           gap={gridGap}
           horizontalPadding={H_PADDING}
-          variant="artist"
+          variant="album"
         />
       ) : (
         <FlashList
           horizontal
-          data={artists}
+          data={data}
           keyExtractor={item => item.id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
           ItemSeparatorComponent={() => <View style={{ width: gridGap }} />}
-          renderItem={renderArtist}
+          renderItem={renderAlbum}
         />
       )}
     </View>
