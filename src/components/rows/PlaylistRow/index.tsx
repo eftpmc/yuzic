@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,32 +7,26 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Playlist } from '@/types';
+import { PlaylistBase } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import { usePlaylist } from '@/hooks/playlists';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
-  playlist: Playlist;
-  onPress?: (playlist: Playlist) => void;
+  playlist: PlaylistBase;
+  onPress?: (playlist: PlaylistBase) => void;
 };
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
   const { isDarkMode } = useTheme();
   const optionsSheetRef = useSheetRef();
-  const { playlist: fullPlaylist } = usePlaylist(playlist.id);
-  const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
 
   const handlePress = useCallback(() => onPress?.(playlist), [onPress, playlist]);
 
   const handleOptionsPress = useCallback(() => {
-    if (fullPlaylist) {
-      setPlaylistForSheet(fullPlaylist);
-      optionsSheetRef.current?.present();
-    }
-  }, [fullPlaylist, optionsSheetRef]);
+    optionsSheetRef.current?.present();
+  }, [optionsSheetRef]);
 
   return (
     <View style={styles.wrapper}>
@@ -86,7 +80,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
 
       <PlaylistOptions
         ref={optionsSheetRef}
-        playlist={playlistForSheet}
+        playlist={playlist}
         hideGoToPlaylist={false}
       />
     </View>

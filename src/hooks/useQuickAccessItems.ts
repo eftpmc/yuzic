@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Album, Artist, Playlist, Song } from '@/types';
+import { AlbumBase, Artist, PlaylistBase, SongBase } from '@/types';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
 import {
@@ -19,10 +19,10 @@ const PLAYLIST_SLOTS = 3;
 const DECAY_MS = 14 * 24 * 60 * 60 * 1000; // 14-day half-life
 
 export type QuickAccessItem =
-  | { kind: 'album';    data: Album;    ts: number }
+  | { kind: 'album';    data: AlbumBase;    ts: number }
   | { kind: 'artist';   data: Artist;   ts: number }
-  | { kind: 'playlist'; data: Playlist; ts: number }
-  | { kind: 'track';    data: Song;     ts: number };
+  | { kind: 'playlist'; data: PlaylistBase; ts: number }
+  | { kind: 'track';    data: SongBase;     ts: number };
 
 function score(ts: number, playCount: number, now: number): number {
   const recency = ts > 0 ? Math.exp(-(now - ts) / DECAY_MS) : 0;
@@ -45,7 +45,7 @@ export function useQuickAccessItems(): QuickAccessItem[] {
     // --- Tracks: scored by play history, fallback to random library songs ---
     type Scored<T> = { item: T; score: number; ts: number };
 
-    const scoredTracks: Scored<Song>[] = [];
+    const scoredTracks: Scored<SongBase>[] = [];
     for (const [id, ts] of Object.entries(songLastPlayedAt)) {
       if (ts <= 0) continue;
       const data = songsById.get(id);
@@ -63,7 +63,7 @@ export function useQuickAccessItems(): QuickAccessItem[] {
 
     if (pickedTracks.length < TRACK_SLOTS) {
       const needed = TRACK_SLOTS - pickedTracks.length;
-      const candidates: Song[] = [];
+      const candidates: SongBase[] = [];
       songsById.forEach(s => { if (!usedTrackIds.has(s.id)) candidates.push(s); });
       // Partial Fisher-Yates: only shuffle the first `needed` positions instead of the full array.
       for (let i = 0; i < needed && i < candidates.length; i++) {
@@ -74,7 +74,7 @@ export function useQuickAccessItems(): QuickAccessItem[] {
     }
 
     // --- Playlists: all scored (score 0 if no history), sorted, pick top slots ---
-    const scoredPlaylists: Scored<Playlist>[] = playlists.map(playlist => {
+    const scoredPlaylists: Scored<PlaylistBase>[] = playlists.map(playlist => {
       const changedTs = playlist.changed ? new Date(playlist.changed).getTime() : 0;
       const playedTs = playlistLastPlayedAt[playlist.id] ?? 0;
       const ts = Math.max(changedTs, playedTs);

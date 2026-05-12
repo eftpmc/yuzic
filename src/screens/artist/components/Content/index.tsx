@@ -3,12 +3,13 @@ import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from '
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
-import type { Album, Artist, ExternalArtistBase } from '@/types'
+import type { AlbumBase, Artist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
+import { useTracks } from '@/hooks/tracks'
 import MediaTile from '@/screens/explore/components/MediaTile'
 
 type Props = {
@@ -17,14 +18,13 @@ type Props = {
 
 type ArtistContentItem =
   | { kind: 'section'; id: string; title: string }
-  | { kind: 'album'; id: string; album: Album }
+  | { kind: 'album'; id: string; album: AlbumBase }
   | { kind: 'showMore'; id: string; target: 'albums' | 'singles'; remaining: number }
   | { kind: 'similar'; id: string }
 
 const INITIAL_RELEASE_ROWS = 3
 
-function isSingleOrEp(album: Album): boolean {
-  const songCount = album.songs?.length ?? 0
+function isSingleOrEp(album: AlbumBase, songCount: number): boolean {
   if (songCount > 0 && songCount <= 6) return true
 
   const title = album.title.toLowerCase()
@@ -87,10 +87,19 @@ export default function ArtistContent({ artist }: Props) {
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
   const artistAlbums = useArtistAlbums(artist.id)
+  const { tracks: libraryTracks } = useTracks()
+
+  const songCountByAlbumId = useMemo(() => {
+    const counts = new Map<string, number>()
+    libraryTracks.forEach(track => {
+      counts.set(track.albumId, (counts.get(track.albumId) ?? 0) + 1)
+    })
+    return counts
+  }, [libraryTracks])
 
   const items = useMemo<ArtistContentItem[]>(() => {
-    const albums = artistAlbums.filter(album => !isSingleOrEp(album))
-    const singles = artistAlbums.filter(isSingleOrEp)
+    const albums = artistAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
+    const singles = artistAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
     const rows: ArtistContentItem[] = []
 
     if (albums.length > 0) {
@@ -123,7 +132,7 @@ export default function ArtistContent({ artist }: Props) {
 
     rows.push({ kind: 'similar', id: 'similar-artists' })
     return rows
-  }, [artistAlbums, visibleAlbumsCount, visibleSinglesCount, t])
+  }, [artistAlbums, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
 
   return (
     <FlashList

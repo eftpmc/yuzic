@@ -8,10 +8,13 @@ import AlbumItem from '@/screens/home/components/Items/AlbumItem';
 import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
+import { AlbumBase } from '@/types';
 
 const H_PADDING = 12;
 const GAP = 12;
 const VISIBLE_ITEMS = 2.5;
+const MIN_ALBUMS = 8;
+const MAX_ALBUMS = 10;
 
 const getItemWidth = (width: number) => {
   const availableWidth = width - H_PADDING * 2;
@@ -30,11 +33,11 @@ export default function RecentlyPlayed() {
     const entries = Object.entries(albumLastPlayedAt)
       .filter(([, timestamp]) => timestamp > 0)
       .sort(([, a], [, b]) => b - a)
-      .slice(0, 12);
+      .slice(0, MAX_ALBUMS);
 
     return entries
       .map(([id]) => albums.find((a) => a.id === id))
-      .filter(Boolean) as { id: string; title: string; subtext: string; cover: any }[];
+      .filter((album): album is AlbumBase => Boolean(album));
   }, [albumLastPlayedAt, albums]);
   const coversToPrefetch = useMemo(() => itemsToRender.map(album => album.cover), [itemsToRender]);
   usePrefetchCovers(coversToPrefetch, 'grid');
@@ -44,7 +47,7 @@ export default function RecentlyPlayed() {
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         {t('explore.sections.recentlyPlayed')}
       </Text>
-      {itemsToRender.length === 0 ? (
+      {itemsToRender.length < MIN_ALBUMS ? (
         <SectionEmptyState message={t('explore.empty.recentlyPlayed')} />
       ) : (
       <ScrollView
@@ -55,6 +58,7 @@ export default function RecentlyPlayed() {
         {itemsToRender.map((album) => (
           <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
             <AlbumItem
+              album={album}
               id={album.id}
               title={album.title}
               subtext={album.subtext}

@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ListEnd, ListStart } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
-import { Album } from '@/types';
+import { Album, AlbumBase } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
@@ -26,9 +26,10 @@ import { useTheme } from '@/hooks/useTheme';
 import { getAlbumMbidUrl } from '@/utils/musicbrainz/getAlbumMbidUrl';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import { useLazyAlbumDetail } from './useLazyCollectionDetails';
 
 export type AlbumOptionsProps = {
-  album: Album | null;
+  album: AlbumBase | Album | null;
   /** Hide "Go to Album" when already on the album screen */
   hideGoToAlbum?: boolean;
 };
@@ -56,53 +57,55 @@ const AlbumOptions = forwardRef<
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const playCount = useSelector(selectAlbumPlayCount(album?.id ?? ''));
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { albumWithSongs, songs, songsLoading } = useLazyAlbumDetail(album, isSheetOpen);
 
   const close = () => {
     (ref as any)?.current?.dismiss();
   };
 
-  const songs = album?.songs ?? [];
   const { isDownloaded, isDownloading } = getCollectionDownloadState(
     songs.map((song) => song.id)
   );
+  const playbackDisabled = songsLoading || !songs.length;
 
   const handlePlay = (shuffle: boolean) => {
-    if (!album || !songs.length) return;
-    playSongInCollection(songs[0], album, shuffle);
+    if (!albumWithSongs || playbackDisabled) return;
+    playSongInCollection(songs[0], albumWithSongs, shuffle);
     close();
   };
 
   const handleAddToNext = () => {
-    if (!album || !songs.length) return;
+    if (!albumWithSongs || playbackDisabled) return;
     if (!currentSong) {
       toast.error(t('songOptions.toasts.nothingPlaying'));
       return;
     }
     [...songs].reverse().forEach(song => playNext(song));
-    toast.success(t('albumOptions.toasts.addedNext', { title: album.title }));
+    toast.success(t('albumOptions.toasts.addedNext', { title: albumWithSongs.title }));
     close();
   };
 
   const handleAddToEnd = () => {
-    if (!album || !songs.length) return;
+    if (!albumWithSongs || playbackDisabled) return;
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
-      playSongInCollection(songs[0], album, false);
+      playSongInCollection(songs[0], albumWithSongs, false);
     } else {
-      addCollectionToQueue(album);
-      toast.success(t('albumOptions.toasts.addedToEnd', { title: album.title }));
+      addCollectionToQueue(albumWithSongs);
+      toast.success(t('albumOptions.toasts.addedToEnd', { title: albumWithSongs.title }));
     }
     close();
   };
 
   const handleShuffleToQueue = () => {
-    if (!album || !songs.length) return;
+    if (!albumWithSongs || playbackDisabled) return;
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
-      playSongInCollection(songs[0], album, true);
+      playSongInCollection(songs[0], albumWithSongs, true);
     } else {
-      shuffleCollectionToQueue(album);
-      toast.success(t('albumOptions.toasts.shuffledToQueue', { title: album.title }));
+      shuffleCollectionToQueue(albumWithSongs);
+      toast.success(t('albumOptions.toasts.shuffledToQueue', { title: albumWithSongs.title }));
     }
     close();
   };
@@ -181,6 +184,7 @@ const AlbumOptions = forwardRef<
       }}
       backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
       stackBehavior="push"
+      onChange={(index) => setIsSheetOpen(index >= 0)}
     >
       <BottomSheetScrollView
         style={themeStyles.sheetBackground}
@@ -206,23 +210,47 @@ const AlbumOptions = forwardRef<
 
         <View style={styles.divider} />
 
-        <TouchableOpacity style={styles.option} onPress={() => handlePlay(false)}>
-          <Ionicons name="play" size={26} color={themeStyles.icon.color} />
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={() => handlePlay(false)}
+          disabled={playbackDisabled}
+        >
+          {songsLoading ? (
+            <ActivityIndicator size="small" color={themeStyles.artist.color} />
+          ) : (
+            <Ionicons name="play" size={26} color={themeStyles.icon.color} />
+          )}
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.play')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={() => handlePlay(true)}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={() => handlePlay(true)}
+          disabled={playbackDisabled}
+        >
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={handleAddToNext}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={handleAddToNext}
+          disabled={playbackDisabled}
+        >
           <ListStart size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.addToNext')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={handleAddToEnd}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={handleAddToEnd}
+          disabled={playbackDisabled}
+        >
           <ListEnd size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.addToEnd')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={handleShuffleToQueue}
+          disabled={playbackDisabled}
+        >
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
@@ -364,6 +392,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
+  },
+  optionDisabled: {
+    opacity: 0.55,
   },
   optionText: { marginLeft: 16, fontSize: 16 },
   sectionLabel: {

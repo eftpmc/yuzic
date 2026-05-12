@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
-import { CoverSource } from '@/types';
+import { AlbumBase, CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import { useAlbum } from '@/hooks/albums';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { prefetchCovers } from '@/utils/images/imageCache';
 
 interface ItemProps {
+  album?: AlbumBase;
   id: string;
   title: string;
   subtext: string;
@@ -27,6 +27,7 @@ interface ItemProps {
 }
 
 const AlbumItem: React.FC<ItemProps> = ({
+  album,
   id,
   title,
   subtext,
@@ -37,9 +38,25 @@ const AlbumItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const { album } = useAlbum(id);
 
   const sheetRef = useSheetRef();
+  const albumForOptions = useMemo(() => album ?? {
+      id,
+      title,
+      subtext,
+      cover,
+      artist: {
+        id: '',
+        name: subtext,
+        cover: { kind: 'none' as const },
+        subtext: '',
+      },
+      year: 0,
+      genres: [],
+      created: new Date(0),
+    },
+    [album, cover, id, subtext, title]
+  );
 
   const handleNavigation = useCallback(() => {
     prefetchCovers([cover], 'detail');
@@ -106,7 +123,7 @@ const AlbumItem: React.FC<ItemProps> = ({
 
       <AlbumOptions
         ref={sheetRef}
-        album={album}
+        album={albumForOptions}
         hideGoToAlbum={false}
       />
     </>

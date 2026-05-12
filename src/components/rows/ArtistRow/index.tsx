@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQueryClient } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { useApi } from '@/api';
 import { Artist } from '@/types';
-import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import { staleTime } from '@/constants/staleTime';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
 
@@ -28,35 +22,14 @@ type Props = {
 const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const queryClient = useQueryClient();
-  const api = useApi();
 
   const sheetRef = useSheetRef();
-  const [fullArtist, setFullArtist] = useState<Artist | null>(null);
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    return () => { mountedRef.current = false; };
-  }, []);
-
-  const activeServer = useSelector(selectActiveServer);
-
-  const fetchArtist = useCallback(async () => {
-    return queryClient.fetchQuery({
-      queryKey: [QueryKeys.Artist, activeServer?.id, artist.id],
-      queryFn: () => api.artists.get(artist.id),
-      staleTime: staleTime.artists,
-    });
-  }, [api, queryClient, activeServer?.id, artist.id]);
 
   const handlePress = useCallback(() => onPress?.(artist), [onPress, artist]);
 
-  const handleOpenOptions = useCallback(async () => {
-    setFullArtist(null);
+  const handleOpenOptions = useCallback(() => {
     sheetRef.current?.present();
-    const fetched = await fetchArtist();
-    if (fetched && mountedRef.current) setFullArtist(fetched);
-  }, [fetchArtist, sheetRef]);
+  }, [sheetRef]);
 
   return (
     <>
@@ -110,7 +83,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
         </View>
       </View>
 
-      <ArtistOptions ref={sheetRef} artist={fullArtist} />
+      <ArtistOptions ref={sheetRef} artist={artist} />
     </>
   );
 };

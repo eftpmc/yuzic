@@ -8,9 +8,9 @@ import React, {
   useRef,
 } from 'react';
 import {
-  Album,
+  AlbumBase,
   Artist,
-  Playlist,
+  PlaylistBase,
   CoverSource,
   Song,
   SongBase,
@@ -32,7 +32,6 @@ import { useDownload } from '@/contexts/DownloadContext';
 import {
   buildDownloadedTrackIdSet,
   getFullyDownloadedAlbumIds,
-  isPlaylistFullyDownloaded,
 } from '@/utils/downloads/collectionState';
 
 interface SearchContextType {
@@ -137,7 +136,7 @@ function songToResult(
   };
 }
 
-function playlistToResult(playlist: Playlist, isDownloaded: boolean): SearchResult {
+function playlistToResult(playlist: PlaylistBase, isDownloaded: boolean): SearchResult {
   return {
     id: playlist.id,
     title: playlist.title,
@@ -176,7 +175,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchScope = useSelector(selectSearchScope);
 
-  const { downloadedTracks } = useDownload();
+  const {
+    downloadedTracks,
+    getAllDownloadedCollections,
+  } = useDownload();
 
   const downloadedTrackIds = useMemo(
     () => buildDownloadedTrackIdSet(
@@ -197,11 +199,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const downloadedPlaylistIds = useMemo(
     () => new Set(
-      playlists
-        .filter(playlist => isPlaylistFullyDownloaded(playlist, downloadedTrackIds))
-        .map(playlist => playlist.id)
+      getAllDownloadedCollections()
+        .filter(collection => collection.type === 'playlist')
+        .map(collection => String(collection.id))
     ),
-    [playlists, downloadedTrackIds]
+    [getAllDownloadedCollections]
   );
 
   const [searchResults, setSearchResults] =
@@ -218,7 +220,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     const albumResults = albums
       .filter(a => a.title.toLowerCase().includes(lowerQuery))
       .slice(0, 5)
-      .map((album: Album) =>
+      .map((album: AlbumBase) =>
         albumToResult(album, 'local', downloadedAlbumIds.has(album.id))
       );
 
@@ -230,7 +232,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     const playlistResults = playlists
       .filter(p => p.title.toLowerCase().includes(lowerQuery))
       .slice(0, 3)
-      .map((playlist: Playlist) =>
+      .map((playlist: PlaylistBase) =>
         playlistToResult(playlist, downloadedPlaylistIds.has(playlist.id))
       );
 
@@ -271,7 +273,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
     return [
       ...songs.map((song: Song) => songToResult(song, downloadedTrackIds.has(song.id), song)),
-      ...albums.map((album: Album) => albumToResult(album, 'local', downloadedAlbumIds.has(album.id))),
+      ...albums.map((album: AlbumBase) => albumToResult(album, 'local', downloadedAlbumIds.has(album.id))),
       ...artists.map((artist: Artist) => artistToResult(artist)),
     ];
   }, [api, downloadedAlbumIds, downloadedTrackIds]);

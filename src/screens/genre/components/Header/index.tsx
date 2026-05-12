@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   View,
   Text,
@@ -15,44 +16,88 @@ import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'
 import { useTranslation } from 'react-i18next'
 
-import { Album } from '@/types'
+import { AlbumBase, Song } from '@/types'
+import { useApi } from '@/api'
+import { fetchAlbumDetailsSettled } from '@/hooks/albums'
 import { buildCover } from '@/utils/builders/buildCover'
 import { useTheme } from '@/hooks/useTheme'
+import { useTracks } from '@/hooks/tracks'
 import { usePlaying } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 
 type Props = {
   genre: string
-  albums: Album[]
+  albums: AlbumBase[]
 }
 
 const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
   const navigation = useNavigation<any>()
+  const queryClient = useQueryClient()
+  const api = useApi()
   const { isDarkMode } = useTheme()
   const themeColor = useSelector(selectThemeColor)
+  const activeServer = useSelector(selectActiveServer)
   const { playSongInCollection } = usePlaying()
   const { downloadAlbumById, getCollectionDownloadState } = useDownload()
   const { t } = useTranslation()
 
   const [isDownloadingAll, setIsDownloadingAll] = useState(false)
+  const [songsLoading, setSongsLoading] = useState(false)
+  const { tracks } = useTracks()
 
   const coverUri = albums[0]?.cover ? buildCover(albums[0].cover, 'background') : null
 
-  const songs = useMemo(() => albums.flatMap((a) => a.songs ?? []), [albums])
+  const albumIds = useMemo(
+    () => new Set(albums.map(album => album.id)),
+    [albums]
+  )
+  const genreTrackIds = useMemo(
+    () => tracks
+      .filter(track => albumIds.has(track.albumId))
+      .map(track => track.id),
+    [albumIds, tracks]
+  )
 
   const {
     isDownloaded: isFullyDownloaded,
     isDownloading,
-  } = getCollectionDownloadState(songs.map((s) => s.id))
+  } = getCollectionDownloadState(genreTrackIds)
 
-  const play = (shuffle = false) => {
-    if (!songs.length) {
+  const fetchGenreSongs = async (): Promise<Song[]> => {
+    if (!activeServer?.id || !albums.length) return []
+
+    const fullAlbums = await fetchAlbumDetailsSettled({
+      queryClient,
+      serverId: activeServer.id,
+      albums,
+      getAlbum: api.albums.get,
+    })
+
+    return fullAlbums.flatMap(album => album.songs ?? [])
+  }
+
+  const play = async (shuffle = false) => {
+    if (songsLoading) return
+
+    const playableSongs = await (async () => {
+      setSongsLoading(true)
+      try {
+        return await fetchGenreSongs()
+      } catch {
+        return []
+      } finally {
+        setSongsLoading(false)
+      }
+    })()
+
+    if (!playableSongs.length) {
       toast.error(t('common.oneSecond'))
       return
     }
     playSongInCollection(
-      songs[0],
+      playableSongs[0],
       {
         id: genre,
         title: genre,
@@ -63,7 +108,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           subtext: '',
         },
         cover: albums[0]?.cover ?? { kind: 'none' },
-        songs,
+        songs: playableSongs,
         subtext: t('common.playlist'),
         changed: new Date('1995-12-17T03:24:00'),
         created: new Date('1995-12-17T03:24:00'),
@@ -132,17 +177,27 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
 
       <View style={styles.buttonRow}>
         <TouchableOpacity
-          onPress={() => play(true)}
+          onPress={() => { void play(true) }}
+          disabled={songsLoading}
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
-          <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+          {songsLoading ? (
+            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+          ) : (
+            <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => play(false)}
+          onPress={() => { void play(false) }}
+          disabled={songsLoading}
           style={[styles.playButton, { backgroundColor: themeColor }]}
         >
-          <Ionicons name="play" size={24} color="#fff" />
+          {songsLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Ionicons name="play" size={24} color="#fff" />
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity

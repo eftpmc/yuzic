@@ -19,7 +19,7 @@ import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
-import { useApi } from '@/api';
+import { usePlayableSongResolver } from '@/hooks/songs';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useSheetRef } from '@/utils/useSheetRef';
 import * as deezer from '@/api/deezer';
@@ -139,19 +139,19 @@ type LocalRowProps = {
 const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId, isDarkMode }) => {
   const { t } = useTranslation();
   const { playSimilar } = usePlaying();
-  const api = useApi();
+  const { resolvePlayableSong } = usePlayableSongResolver();
   const addToPlaylist = useAddSongToPlaylist();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
   const handlePress = useCallback(async () => {
     try {
-      const full = await api.tracks.get(song.id);
+      const full = await resolvePlayableSong(song);
       if (full) await playSimilar(full);
     } catch {
       toast.error(t('common.playbackError'));
     }
-  }, [api, song.id, playSimilar, t]);
+  }, [playSimilar, resolvePlayableSong, song, t]);
 
   const handleAdd = useCallback(async () => {
     if (adding || added) return;

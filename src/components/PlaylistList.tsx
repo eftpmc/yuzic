@@ -10,6 +10,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import {
   BottomSheetModal,
@@ -26,7 +27,6 @@ import { Playlist, Song } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import { useLibrary } from '@/contexts/LibraryContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   usePlaylists,
@@ -37,6 +37,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { useApi } from '@/api';
+import { staleTime } from '@/constants/staleTime';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -51,10 +53,10 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
 
+    const api = useApi();
     const queryClient = useQueryClient();
     const activeServer = useSelector(selectActiveServer);
-    const { playlists: libraryPlaylists } = useLibrary();
-    const { playlists: fullPlaylists } = usePlaylists();
+    const { playlists } = usePlaylists();
     const createPlaylist = useCreatePlaylist();
     const addSongToPlaylist = useAddSongToPlaylist();
     const removeSongFromPlaylist = useRemoveSongFromPlaylist();
@@ -62,15 +64,18 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const [searchQuery, setSearchQuery] = useState('');
     const [newPlaylistName, setNewPlaylistName] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [baseSelectedIds, setBaseSelectedIds] = useState<Set<string>>(new Set());
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [membershipLoading, setMembershipLoading] = useState(false);
 
     const snapPoints = useMemo(() => ['85%'], []);
 
     const filteredPlaylists = useMemo(
       () =>
-        fullPlaylists.filter(p =>
+        playlists.filter(p =>
           p.title.toLowerCase().includes(searchQuery.toLowerCase())
         ),
-      [fullPlaylists, searchQuery]
+      [playlists, searchQuery]
     );
 
     const initialIds = useMemo(() => {
@@ -78,26 +83,68 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       const selectedSongId = selectedSong.id;
 
       return new Set(
-        fullPlaylists
+        playlists
           .filter(p => {
             // Individual playlist cache has full songs (populated when user opens a playlist)
             const cached = queryClient.getQueryData<Playlist | null>(
               [QueryKeys.Playlist, activeServer?.id, p.id]
             );
             if (cached) return cached.songs.some(s => s.id === selectedSongId);
-            // Redux accumulates song additions via addLibraryPlaylistSong
-            const redux = libraryPlaylists.find(lp => lp.id === p.id);
-            return redux?.songs.some(s => s.id === selectedSongId) ?? false;
+            return false;
           })
           .map(p => p.id)
       );
-    }, [fullPlaylists, selectedSong, queryClient, activeServer?.id, libraryPlaylists]);
+    }, [playlists, selectedSong, queryClient, activeServer?.id]);
 
     useEffect(() => {
       setSelectedIds(new Set(initialIds));
+      setBaseSelectedIds(new Set(initialIds));
     }, [initialIds]);
 
+    useEffect(() => {
+      if (!isSheetOpen || !selectedSong || !activeServer?.id || !playlists.length) {
+        setMembershipLoading(false);
+        return;
+      }
+
+      let cancelled = false;
+      const selectedSongId = selectedSong.id;
+      setMembershipLoading(true);
+
+      Promise.allSettled(
+        playlists.map(playlist =>
+          queryClient.fetchQuery({
+            queryKey: [QueryKeys.Playlist, activeServer.id, playlist.id],
+            queryFn: () => api.playlists.get(playlist.id),
+            staleTime: staleTime.playlists,
+          })
+        )
+      )
+        .then(results => {
+          if (cancelled) return;
+          const hydratedIds = new Set<string>();
+          results.forEach((result, index) => {
+            if (
+              result.status === 'fulfilled' &&
+              result.value.songs.some(song => song.id === selectedSongId)
+            ) {
+              hydratedIds.add(playlists[index].id);
+            }
+          });
+          setSelectedIds(hydratedIds);
+          setBaseSelectedIds(hydratedIds);
+        })
+        .finally(() => {
+          if (!cancelled) setMembershipLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }, [activeServer?.id, api, isSheetOpen, playlists, queryClient, selectedSong]);
+
     const togglePlaylist = (id: string) => {
+      if (membershipLoading) return;
       setSelectedIds(prev => {
         const next = new Set(prev);
         if (next.has(id)) {
@@ -128,8 +175,8 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       const wasOffline = isOffline;
 
       const mutations: Promise<unknown>[] = [];
-      for (const playlist of fullPlaylists) {
-        const wasIn = initialIds.has(playlist.id);
+      for (const playlist of playlists) {
+        const wasIn = baseSelectedIds.has(playlist.id);
         const isIn = selectedIds.has(playlist.id);
 
         if (isIn && !wasIn) {
@@ -166,6 +213,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         backdropComponent={renderBackdrop}
         stackBehavior="push"
         handleComponent={null}
+        onChange={(index) => setIsSheetOpen(index >= 0)}
         backgroundStyle={{
           backgroundColor: isDarkMode ? '#1c1c1e' : '#E5E5EA',
         }}
@@ -247,6 +295,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
               return (
                 <TouchableOpacity
                   style={styles.option}
+                  disabled={membershipLoading}
                   onPress={() => togglePlaylist(item.id)}
                 >
                   <MediaImage
@@ -285,10 +334,16 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             style={[
               styles.doneButton,
               { backgroundColor: themeColor },
+              membershipLoading && styles.doneButtonDisabled,
             ]}
+            disabled={membershipLoading}
             onPress={handleDone}
           >
-            <Text style={styles.doneButtonText}>{t('common.done')}</Text>
+            {membershipLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.doneButtonText}>{t('common.done')}</Text>
+            )}
           </TouchableOpacity>
         </View>
       </BottomSheetModal>
@@ -384,6 +439,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
+  },
+  doneButtonDisabled: {
+    opacity: 0.7,
   },
   doneButtonText: {
     fontSize: 17,

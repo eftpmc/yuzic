@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/jellyfin/auth/getMusicLibraries';
 import { Ionicons } from '@expo/vector-icons';
+import { useSync } from '@/hooks/useSync';
 
 type Library = { id: string; name: string };
 
@@ -22,6 +23,8 @@ const LibrarySelect: React.FC = () => {
   const dispatch = useDispatch();
   const { colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
+  const { sync, isSyncing } = useSync();
+  const pendingSyncRef = useRef(false);
 
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,21 +50,28 @@ const LibrarySelect: React.FC = () => {
     return () => { cancelled = true; };
   }, [activeServer]);
 
-  if (!activeServer) return null;
-
-  const selectedIds: string[] = (() => {
+  const selectedIds: string[] = useMemo(() => {
+    if (!activeServer) return [];
     if (activeServer.type === 'navidrome') {
       const v = activeServer.auth?.musicFolderIds;
       if (Array.isArray(v)) return v as string[];
       const old = activeServer.auth?.musicFolderId;
       return old ? [String(old)] : [];
-    } else {
-      const v = activeServer.auth?.parentIds;
-      if (Array.isArray(v)) return v as string[];
-      const old = (activeServer.auth as any)?.parentId;
-      return old ? [String(old)] : [];
     }
-  })();
+
+    const v = activeServer.auth?.parentIds;
+    if (Array.isArray(v)) return v as string[];
+    const old = (activeServer.auth as any)?.parentId;
+    return old ? [String(old)] : [];
+  }, [activeServer]);
+
+  useEffect(() => {
+    if (!pendingSyncRef.current || !activeServer?.id) return;
+    pendingSyncRef.current = false;
+    sync(true);
+  }, [activeServer?.id, selectedIds, sync]);
+
+  if (!activeServer) return null;
 
   const isAll = selectedIds.length === 0;
 
@@ -72,6 +82,7 @@ const LibrarySelect: React.FC = () => {
     const authPatch = activeServer.type === 'navidrome'
       ? { musicFolderIds: next }
       : { parentIds: next };
+    pendingSyncRef.current = true;
     dispatch(updateServer({
       id: activeServer.id,
       patch: { auth: { ...activeServer.auth, ...authPatch } as any },
@@ -79,9 +90,11 @@ const LibrarySelect: React.FC = () => {
   };
 
   const selectAll = () => {
+    if (isAll) return;
     const authPatch = activeServer.type === 'navidrome'
       ? { musicFolderIds: [] }
       : { parentIds: [] };
+    pendingSyncRef.current = true;
     dispatch(updateServer({
       id: activeServer.id,
       patch: { auth: { ...activeServer.auth, ...authPatch } as any },
@@ -100,8 +113,10 @@ const LibrarySelect: React.FC = () => {
         <View style={styles.optionList}>
           <TouchableOpacity
             onPress={selectAll}
+            disabled={isSyncing}
             style={[styles.optionRow, {
               backgroundColor: colors.muted,
+              opacity: isSyncing ? 0.6 : 1,
               borderColor: isAll ? colors.themeColor : colors.border,
             }]}
           >
@@ -123,8 +138,10 @@ const LibrarySelect: React.FC = () => {
               <TouchableOpacity
                 key={lib.id}
                 onPress={() => toggle(lib.id)}
+                disabled={isSyncing}
                 style={[styles.optionRow, {
                   backgroundColor: colors.muted,
+                  opacity: isSyncing ? 0.6 : 1,
                   borderColor: selected ? colors.themeColor : colors.border,
                 }]}
               >

@@ -6,20 +6,13 @@ import AlbumItem from '@/screens/home/components/Items/AlbumItem';
 import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
+import { getExploreDayKey, getExploreSeed, seededShuffle } from '@/features/explore/hooks/useDailyLayout';
 
 const H_PADDING = 12;
 const GAP = 12;
 const VISIBLE_ITEMS = 2.5;
-const MAX_ALBUMS = 12;
-
-function shuffle<T>(arr: T[]): T[] {
-  const out = [...arr];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
+const MIN_ALBUMS = 8;
+const MAX_ALBUMS = 10;
 
 const getItemWidth = (width: number) => {
   const availableWidth = width - H_PADDING * 2;
@@ -32,12 +25,14 @@ export default function RandomAlbums() {
   const { width } = useWindowDimensions();
   const { albums } = useAlbums();
   const gridItemWidth = getItemWidth(width);
+  const dayKey = getExploreDayKey();
+  const dailySeed = getExploreSeed(dayKey);
 
   const randomAlbums = useMemo(() => {
     if (albums.length === 0) return [];
-    const shuffled = shuffle(albums);
+    const shuffled = seededShuffle(albums, dailySeed);
     return shuffled.slice(0, Math.min(MAX_ALBUMS, albums.length));
-  }, [albums]);
+  }, [albums, dailySeed]);
   const coversToPrefetch = useMemo(() => randomAlbums.map(album => album.cover), [randomAlbums]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
@@ -46,7 +41,7 @@ export default function RandomAlbums() {
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         {t('explore.sections.randomAlbums')}
       </Text>
-      {randomAlbums.length === 0 ? (
+      {randomAlbums.length < MIN_ALBUMS ? (
         <SectionEmptyState message={t('explore.empty.randomAlbums')} />
       ) : (
       <ScrollView
@@ -57,6 +52,7 @@ export default function RandomAlbums() {
         {randomAlbums.map((album) => (
           <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
             <AlbumItem
+              album={album}
               id={album.id}
               title={album.title}
               subtext={album.subtext}

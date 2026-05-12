@@ -4,7 +4,7 @@ import libraryReducer, {
   removeLibraryPlaylistSong,
   removeLibraryStarredSong,
 } from './librarySlice'
-import { Playlist, Song } from '@/types'
+import { PlaylistBase, Song } from '@/types'
 
 const song: Song = {
   id: 'song-1',
@@ -17,14 +17,13 @@ const song: Song = {
   streamUrl: 'https://example.com/song.mp3',
 }
 
-const playlist: Playlist = {
+const playlist: PlaylistBase = {
   id: 'playlist-1',
   title: 'Playlist',
   subtext: '',
   cover: { kind: 'none' },
   changed: new Date(0),
   created: new Date(0),
-  songs: [],
 }
 
 describe('library offline reducers', () => {
@@ -46,12 +45,12 @@ describe('library offline reducers', () => {
       initial,
       addLibraryPlaylistSong({ playlistId: playlist.id, song })
     )
-    expect(added.playlists[0].songs.map(item => item.id)).toEqual([song.id])
+    expect(new Date(added.playlists[0].changed).getTime()).toBeGreaterThan(0)
 
     const removed = libraryReducer(
       added,
       removeLibraryPlaylistSong({ playlistId: playlist.id, songId: song.id })
     )
-    expect(removed.playlists[0].songs).toEqual([])
+    expect(new Date(removed.playlists[0].changed).getTime()).toBeGreaterThan(0)
   })
 })

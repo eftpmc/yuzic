@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -15,15 +16,19 @@ import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
-import { Artist } from '@/types';
+import { Artist, Song } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useArtistAlbums } from '@/hooks/artists';
+import { useTracks } from '@/hooks/tracks';
 import { buildCover } from '@/utils/builders/buildCover';
 import { useTheme } from '@/hooks/useTheme';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { useApi } from '@/api';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 
 type Props = {
   artist: Artist;
@@ -32,28 +37,65 @@ type Props = {
 const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const queryClient = useQueryClient();
+  const api = useApi();
   const { isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const activeServer = useSelector(selectActiveServer);
 
   const { playSongInCollection } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const optionsSheetRef = useSheetRef();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [songsLoading, setSongsLoading] = useState(false);
 
   const artistAlbums = useArtistAlbums(artist.id);
-  const artistSongs = useMemo(
-    () => artistAlbums.flatMap(a => a.songs ?? []),
-    [artistAlbums]
+  const { tracks: allTracks } = useTracks();
+  const artistTrackIds = useMemo(
+    () => allTracks
+      .filter(track => track.artistId === artist.id)
+      .map(track => track.id),
+    [allTracks, artist.id]
+  );
+  const songCount = useMemo(
+    () => artistTrackIds.length,
+    [artistTrackIds]
   );
 
-  const playArtist = (shuffle = false) => {
-    if (!artistSongs.length) {
+  const fetchArtistSongs = async (): Promise<Song[]> => {
+    if (!activeServer?.id || !artistAlbums.length) return [];
+
+    const fullAlbums = await fetchAlbumDetailsSettled({
+      queryClient,
+      serverId: activeServer.id,
+      albums: artistAlbums,
+      getAlbum: api.albums.get,
+    });
+
+    return fullAlbums.flatMap(a => a.songs ?? []);
+  };
+
+  const playArtist = async (shuffle = false) => {
+    if (songsLoading) return;
+
+    const songs = await (async () => {
+      setSongsLoading(true);
+      try {
+        return await fetchArtistSongs();
+      } catch {
+        return [];
+      } finally {
+        setSongsLoading(false);
+      }
+    })();
+
+    if (!songs.length) {
       toast.error(t('common.oneSecond'));
       return;
     }
 
     playSongInCollection(
-      artistSongs[0],
+      songs[0],
       {
         id: artist.id,
         title: artist.name,
@@ -64,7 +106,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           subtext: t('common.artist'),
         },
         cover: artist.cover,
-        songs: artistSongs,
+        songs,
         subtext: t('common.playlist'),
         changed: new Date('1995-12-17T03:24:00'),
         created: new Date('1995-12-17T03:24:00')
@@ -75,18 +117,17 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
   const metadataItems = useMemo(() => {
     const albumCount = artistAlbums.length;
-    const songCount = artistSongs.length;
     const items = [`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`];
     if (songCount > 0) {
       items.push(`${songCount} ${songCount === 1 ? t('common.song') : t('common.songs')}`);
     }
     return items;
-  }, [artistAlbums.length, artistSongs.length, t]);
+  }, [artistAlbums.length, songCount, t]);
 
   const {
     isDownloaded: isArtistFullyDownloaded,
     isDownloading: isArtistDownloading,
-  } = getCollectionDownloadState(artistSongs.map(s => s.id));
+  } = getCollectionDownloadState(artistTrackIds);
 
   const handleDownloadAll = async () => {
     if (isDownloadingAll || isArtistDownloading || isArtistFullyDownloaded || !artistAlbums.length) return;
@@ -187,17 +228,27 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
       <View style={styles.buttonRow}>
         <TouchableOpacity
-          onPress={() => playArtist(true)}
+          onPress={() => { void playArtist(true); }}
+          disabled={songsLoading}
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
-          <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+          {songsLoading ? (
+            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+          ) : (
+            <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => playArtist(false)}
+          onPress={() => { void playArtist(false); }}
+          disabled={songsLoading}
           style={[styles.playButton, { backgroundColor: themeColor }]}
         >
-          <Ionicons name="play" size={24} color="#fff" />
+          {songsLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Ionicons name="play" size={24} color="#fff" />
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity

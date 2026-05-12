@@ -1,7 +1,7 @@
-import { CoverSource, Playlist } from "@/types";
+import { CoverSource, PlaylistBase } from "@/types";
 import type { EmbyClient } from "../client";
 
-export type GetPlaylistsResult = Playlist[];
+export type GetPlaylistsResult = PlaylistBase[];
 
 async function fetchGetPlaylists(client: EmbyClient) {
   const path =
@@ -12,7 +12,7 @@ async function fetchGetPlaylists(client: EmbyClient) {
   return client.request<any>(path);
 }
 
-function normalizePlaylistEntry(p: any): Playlist {
+function normalizePlaylistEntry(p: any): PlaylistBase {
   const id = p.Id;
 
   const cover: CoverSource = id
@@ -26,7 +26,6 @@ function normalizePlaylistEntry(p: any): Playlist {
     subtext: "Playlist",
     changed: new Date(p.DateLastMediaAdded),
     created: new Date(p.DateCreated),
-    songs: [],
   };
 }
 

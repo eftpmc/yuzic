@@ -1,10 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { StyleSheet, ScrollView, RefreshControl } from 'react-native'
-import { useQueryClient } from '@tanstack/react-query'
+import React from 'react'
+import { StyleSheet, ScrollView } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
-import { useSimilarContent } from '@/features/explore/hooks/useSimilarContent'
 import { useDailyLayout } from '@/features/explore/hooks/useDailyLayout'
-import { QueryKeys } from '@/enums/queryKeys'
 import RecentSongsSpeedDial from './components/RecentSongsSpeedDial'
 import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
@@ -44,37 +41,13 @@ function renderSection(config: SectionConfig) {
 
 export default function Explore() {
   const { isDarkMode } = useTheme()
-  const { isFetching, refresh } = useSimilarContent()
-  const queryClient = useQueryClient()
   const layout = useDailyLayout()
-
-  const [refreshing, setRefreshing] = useState(false)
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true)
-    refresh()
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreBecauseYouListened] })
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreNewReleases] })
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreDeezerCharts] })
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.ExploreGenreRow] })
-  }, [refresh, queryClient])
-
-  useEffect(() => {
-    if (refreshing && !isFetching) setRefreshing(false)
-  }, [refreshing, isFetching])
 
   return (
     <ScrollView
       style={[styles.container, isDarkMode && styles.containerDark]}
       contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={isDarkMode ? '#888' : '#aaa'}
-        />
-      }
     >
       <RecentSongsSpeedDial />
       {layout.map(renderSection)}

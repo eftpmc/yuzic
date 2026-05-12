@@ -38,7 +38,7 @@ function TabIcon({ onPress, active, activeColor, inactiveColor, activeIndicatorB
 }
 
 export default function HomeLayout() {
-    const { sync, syncPlaylists } = useSync()
+    const { sync } = useSync()
     const appState = useRef(AppState.currentState)
     const insets = useSafeAreaInsets()
     const router = useRouter()
@@ -51,12 +51,11 @@ export default function HomeLayout() {
         const sub = AppState.addEventListener('change', nextState => {
             if (appState.current.match(/inactive|background/) && nextState === 'active') {
                 sync()
-                syncPlaylists()
             }
             appState.current = nextState
         })
         return () => sub.remove()
-    }, [sync, syncPlaylists])
+    }, [sync])
 
     const isLibrary = pathname === '/library'
     const isHome = !isLibrary

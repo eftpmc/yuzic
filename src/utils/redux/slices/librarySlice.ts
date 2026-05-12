@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Album, Artist, Playlist, SongBase, Song } from '@/types';
+import { AlbumBase, Artist, PlaylistBase, SongBase, Song } from '@/types';
 
 interface LibraryState {
-  albums: Album[];
+  albums: AlbumBase[];
   artists: Artist[];
-  playlists: Playlist[];
+  playlists: PlaylistBase[];
   tracks: SongBase[];
   genres: string[];
   starred: Song[];
@@ -23,13 +23,13 @@ const librarySlice = createSlice({
   name: 'library',
   initialState,
   reducers: {
-    setLibraryAlbums(state, action: PayloadAction<Album[]>) {
+    setLibraryAlbums(state, action: PayloadAction<AlbumBase[]>) {
       state.albums = action.payload;
     },
     setLibraryArtists(state, action: PayloadAction<Artist[]>) {
       state.artists = action.payload;
     },
-    setLibraryPlaylists(state, action: PayloadAction<Playlist[]>) {
+    setLibraryPlaylists(state, action: PayloadAction<PlaylistBase[]>) {
       state.playlists = action.payload;
     },
     setLibraryTracks(state, action: PayloadAction<SongBase[]>) {
@@ -54,8 +54,7 @@ const librarySlice = createSlice({
       action: PayloadAction<{ playlistId: string; song: Song }>
     ) {
       const playlist = state.playlists.find(p => p.id === action.payload.playlistId);
-      if (!playlist || playlist.songs.some(song => song.id === action.payload.song.id)) return;
-      playlist.songs.push(action.payload.song);
+      if (!playlist) return;
       playlist.changed = new Date();
     },
     removeLibraryPlaylistSong(
@@ -64,7 +63,6 @@ const librarySlice = createSlice({
     ) {
       const playlist = state.playlists.find(p => p.id === action.payload.playlistId);
       if (!playlist) return;
-      playlist.songs = playlist.songs.filter(song => song.id !== action.payload.songId);
       playlist.changed = new Date();
     },
     removeLibraryPlaylist(state, action: PayloadAction<string>) {

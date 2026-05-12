@@ -10,6 +10,8 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 const H_PADDING = 12;
 const GAP = 12;
 const VISIBLE_ITEMS = 2.5;
+const MIN_ALBUMS = 8;
+const MAX_ALBUMS = 10;
 
 const getItemWidth = (width: number) => {
   const availableWidth = width - H_PADDING * 2;
@@ -26,7 +28,7 @@ export default function RecentlyAdded() {
   const recentlyAdded = useMemo(() => {
     return [...albums]
       .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
-      .slice(0, 12);
+      .slice(0, MAX_ALBUMS);
   }, [albums]);
   const coversToPrefetch = useMemo(() => recentlyAdded.map(album => album.cover), [recentlyAdded]);
   usePrefetchCovers(coversToPrefetch, 'grid');
@@ -36,7 +38,7 @@ export default function RecentlyAdded() {
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         {t('explore.sections.recentlyAdded')}
       </Text>
-      {recentlyAdded.length === 0 ? (
+      {recentlyAdded.length < MIN_ALBUMS ? (
         <SectionEmptyState message={t('explore.empty.recentlyAdded')} />
       ) : (
       <ScrollView
@@ -47,6 +49,7 @@ export default function RecentlyAdded() {
         {recentlyAdded.map((album) => (
           <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
             <AlbumItem
+              album={album}
               id={album.id}
               title={album.title}
               subtext={album.subtext}

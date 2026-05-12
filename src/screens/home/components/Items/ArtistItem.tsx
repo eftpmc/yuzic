@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { CoverSource } from '@/types';
+import { Artist, CoverSource } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { useTheme } from '@/hooks/useTheme';
-import { useArtists } from '@/hooks/artists';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { prefetchCovers } from '@/utils/images/imageCache';
 
 interface ItemProps {
+  artist?: Artist;
   id: string;
   name: string;
   subtext: string;
@@ -27,6 +27,7 @@ interface ItemProps {
 }
 
 const ArtistItem: React.FC<ItemProps> = ({
+  artist,
   id,
   name,
   subtext,
@@ -37,10 +38,17 @@ const ArtistItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const { artists } = useArtists();
-  const artist = artists.find(a => a.id === id) ?? null;
 
   const sheetRef = useSheetRef();
+  const artistForOptions = useMemo(() => artist ?? {
+      id,
+      name,
+      subtext,
+      cover,
+      albumIds: [],
+    },
+    [artist, cover, id, name, subtext]
+  );
 
   const handleNavigation = useCallback(() => {
     prefetchCovers([cover], 'detail');
@@ -105,7 +113,7 @@ const ArtistItem: React.FC<ItemProps> = ({
 
       <ArtistOptions
         ref={sheetRef}
-        artist={artist}
+        artist={artistForOptions}
         hideGoToArtist={false}
       />
     </>

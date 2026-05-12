@@ -11,6 +11,23 @@ import ImageColors from 'react-native-image-colors';
 import PlaylistList from '@/components/PlaylistList';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingState, usePlayingActions, usePlayingProgress } from '@/contexts/PlayingContext';
+import PlayingScreen from '@/screens/playing';
+import PlayingBackground from '@/screens/playing/components/PlayingBackground';
+import { useTheme } from '@/hooks/useTheme';
+import { buildCover } from '@/utils/builders/buildCover';
+import {
+  selectPlayingBarAction,
+  selectThemeColor,
+} from '@/utils/redux/selectors/settingsSelectors';
+
+import { usePlayingBarAction } from './actions/usePlayingBarAction';
+import { useSheetRef } from '@/utils/useSheetRef';
+
+type Variant = 'ios' | 'android';
+
+type Props = {
+  variant: Variant;
+};
 
 // Isolated component so 1-second progress ticks don't rerender the full bar.
 const ProgressBarStrip = memo(({
@@ -31,23 +48,7 @@ const ProgressBarStrip = memo(({
     </View>
   );
 });
-import PlayingScreen from '@/screens/playing';
-import PlayingBackground from '@/screens/playing/components/PlayingBackground';
-import { useTheme } from '@/hooks/useTheme';
-import { buildCover } from '@/utils/builders/buildCover';
-import {
-  selectPlayingBarAction,
-  selectThemeColor,
-} from '@/utils/redux/selectors/settingsSelectors';
-
-import { usePlayingBarAction } from './actions/usePlayingBarAction';
-import { useSheetRef } from '@/utils/useSheetRef';
-
-type Variant = 'ios' | 'android';
-
-type Props = {
-  variant: Variant;
-};
+ProgressBarStrip.displayName = 'ProgressBarStrip';
 
 const variantStyles = {
   ios: {

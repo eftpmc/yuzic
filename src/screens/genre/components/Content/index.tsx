@@ -2,14 +2,14 @@ import React, { useMemo } from 'react'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 
-import { Album } from '@/types'
+import { AlbumBase } from '@/types'
 import { useTheme } from '@/hooks/useTheme'
 import AlbumRow from '@/components/rows/AlbumRow'
 import GenreHeader from '../Header'
 
 type Props = {
   genre: string
-  albums: Album[]
+  albums: AlbumBase[]
 }
 
 export default function GenreContent({ genre, albums }: Props) {

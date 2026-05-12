@@ -11,6 +11,8 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 const H_PADDING = 12;
 const GAP = 12;
 const VISIBLE_ITEMS = 2.5;
+const MIN_ALBUMS = 8;
+const MAX_ALBUMS = 10;
 
 const getItemWidth = (width: number) => {
   const availableWidth = width - H_PADDING * 2;
@@ -43,7 +45,7 @@ export default function FavoriteAlbums() {
         if (countB !== countA) return countB - countA;
         return new Date(b.created).getTime() - new Date(a.created).getTime();
       })
-      .slice(0, 12);
+      .slice(0, MAX_ALBUMS);
   }, [albums, starredSongs]);
   const coversToPrefetch = useMemo(() => favoriteAlbums.map(album => album.cover), [favoriteAlbums]);
   usePrefetchCovers(coversToPrefetch, 'grid');
@@ -53,7 +55,7 @@ export default function FavoriteAlbums() {
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
         {t('explore.sections.favoriteAlbums')}
       </Text>
-      {favoriteAlbums.length === 0 ? (
+      {favoriteAlbums.length < MIN_ALBUMS ? (
         <SectionEmptyState message={t('explore.empty.favoriteAlbums')} />
       ) : (
       <ScrollView
@@ -64,6 +66,7 @@ export default function FavoriteAlbums() {
         {favoriteAlbums.map((album) => (
           <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
             <AlbumItem
+              album={album}
               id={album.id}
               title={album.title}
               subtext={album.subtext}

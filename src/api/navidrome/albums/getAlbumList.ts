@@ -1,9 +1,9 @@
-import { Album, CoverSource } from "@/types";
+import { AlbumBase, CoverSource } from "@/types";
 import type { NavidromeClient } from "../client";
 
-export type GetAlbumListResult = Album[];
+export type GetAlbumListResult = AlbumBase[];
 
-function normalizeAlbumEntry(a: any): Album {
+function normalizeAlbumEntry(a: any): AlbumBase {
   const cover: CoverSource =
   a.coverArt
     ? { kind: 'navidrome', coverArtId: a.coverArt }
@@ -28,7 +28,6 @@ function normalizeAlbumEntry(a: any): Album {
     year: a.year,
     genres: a.genre ? [a.genre] : [],
     created: a.created ? new Date(a.created) : new Date(0),
-    songs: [],
   };
 }
 
@@ -38,7 +37,7 @@ export async function getAlbumList(
   client: NavidromeClient,
   type = "newest"
 ): Promise<GetAlbumListResult> {
-  const all: Album[] = [];
+  const all: AlbumBase[] = [];
   let offset = 0;
 
   while (true) {

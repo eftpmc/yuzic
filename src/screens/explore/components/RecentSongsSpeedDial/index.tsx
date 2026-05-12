@@ -9,11 +9,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayableSongResolver } from '@/hooks/songs';
 import { MediaImage } from '@/components/MediaImage';
 import { useQuickAccessItems, QuickAccessItem } from '@/hooks/useQuickAccessItems';
 import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
-import { Song } from '@/types';
 
 const H_PADDING = 12;
 const COL_GAP = 6;
@@ -27,6 +27,7 @@ export default function RecentSongsSpeedDial() {
   const { width } = useWindowDimensions();
   const navigation = useNavigation<any>();
   const { playSimilar } = usePlaying();
+  const { resolvePlayableSong } = usePlayableSongResolver();
   const items = useQuickAccessItems();
 
   const inFlightRef = useRef<string | null>(null);
@@ -49,7 +50,10 @@ export default function RecentSongsSpeedDial() {
           navigation.navigate('playlistView', { id: item.data.id });
           break;
         case 'track':
-          await playSimilar(item.data as Song);
+          {
+            const song = await resolvePlayableSong(item.data);
+            if (song) await playSimilar(song);
+          }
           break;
       }
     } finally {

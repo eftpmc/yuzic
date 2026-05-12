@@ -1,7 +1,7 @@
-import { CoverSource, Playlist } from "@/types";
+import { CoverSource, PlaylistBase } from "@/types";
 import type { NavidromeClient } from "../client";
 
-export type GetPlaylistsResult = Playlist[];
+export type GetPlaylistsResult = PlaylistBase[];
 
 export async function getPlaylists(
   client: NavidromeClient
@@ -21,7 +21,6 @@ export async function getPlaylists(
       subtext: "Playlist",
       changed: new Date(pl.changed),
       created: new Date(pl.created),
-      songs: [],
     };
   });
 }

@@ -54,7 +54,7 @@ const initialState: SettingsState = {
   playingBarAction: 'skip',
 
   librarySortOrder: 'title',
-  searchScope: 'client+external',
+  searchScope: 'server+external',
   hasSeenGetStarted: false,
 
   audioQuality: 'medium',

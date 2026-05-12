@@ -12,7 +12,7 @@ export interface ExternalIds {
     isrc?: string | null;
 }
 
-export interface Album {
+export interface AlbumBase {
     id: string;
     title: string;
     cover: CoverSource;
@@ -23,6 +23,9 @@ export interface Album {
     created: Date;
     /** MusicBrainz ID (release or release-group) when available from server */
     mbid?: string | null;
+}
+
+export interface Album extends AlbumBase {
     songs: Song[];
 }
 

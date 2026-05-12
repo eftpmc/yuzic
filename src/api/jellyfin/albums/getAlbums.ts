@@ -1,9 +1,9 @@
-import { Album, CoverSource } from "@/types";
+import { AlbumBase, CoverSource } from "@/types";
 import type { JellyfinClient } from "../client";
 
-export type GetAlbumsResult = Album[];
+export type GetAlbumsResult = AlbumBase[];
 
-function normalizeAlbum(a: any): Album | null {
+function normalizeAlbum(a: any): AlbumBase | null {
   try {
     const albumId = a.Id;
     if (!albumId) return null;
@@ -37,7 +37,6 @@ function normalizeAlbum(a: any): Album | null {
         .filter(Boolean),
       created: a.DateCreated ? new Date(a.DateCreated) : new Date(0),
       mbid: albumMbid,
-      songs: [],
     };
   } catch (error) {
     console.error(`Failed to normalize album:`, error);
@@ -64,5 +63,5 @@ export async function getAlbums(
   const raw = await client.request(path) as any;
   const items: any[] = raw?.Items ?? [];
 
-  return items.map((a: any) => normalizeAlbum(a)).filter((a): a is Album => a !== null);
+  return items.map((a: any) => normalizeAlbum(a)).filter((a): a is AlbumBase => a !== null);
 }

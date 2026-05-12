@@ -36,7 +36,7 @@ import {
   selectArtistLastPlayedAt,
   selectArtistPlayCounts,
 } from '@/utils/redux/selectors/statsSelectors'
-import type { Album, Artist, Playlist, SongBase } from '@/types'
+import type { AlbumBase, Artist, PlaylistBase, SongBase } from '@/types'
 
 import HomeHeader from '@/screens/home/components/Header'
 import AccountBottomSheet from '@/screens/home/components/AccountBottomSheet'
@@ -53,9 +53,9 @@ type Filter = 'playlists' | 'albums' | 'artists' | 'tracks' | 'downloaded' | nul
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded'
 
 type LibraryItem =
-  | { kind: 'album'; data: Album }
+  | { kind: 'album'; data: AlbumBase }
   | { kind: 'artist'; data: Artist }
-  | { kind: 'playlist'; data: Playlist }
+  | { kind: 'playlist'; data: PlaylistBase }
   | { kind: 'track'; data: SongBase }
 
 const LIST_PADDING = 12
@@ -233,6 +233,7 @@ export default function LibraryScreen() {
       case 'album':
         return (
           <AlbumItem
+            album={item.data}
             id={item.data.id}
             title={item.data.title}
             subtext={item.data.subtext}
@@ -245,6 +246,7 @@ export default function LibraryScreen() {
       case 'artist':
         return (
           <ArtistItem
+            artist={item.data}
             id={item.data.id}
             name={item.data.name}
             subtext={item.data.subtext}
@@ -257,6 +259,7 @@ export default function LibraryScreen() {
       case 'playlist':
         return (
           <PlaylistItem
+            playlist={item.data}
             id={item.data.id}
             title={item.data.title}
             subtext={item.data.subtext}

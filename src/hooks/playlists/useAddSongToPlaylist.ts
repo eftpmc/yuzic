@@ -4,8 +4,8 @@ import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { Playlist, Song } from '@/types';
-import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { usePlayableSongResolver } from '@/hooks/songs';
 import { addLibraryPlaylistSong } from '@/utils/redux/slices/librarySlice';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import { createOfflineMutationId } from '@/utils/offline/offlineMutations';
@@ -21,14 +21,14 @@ export function useAddSongToPlaylist() {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
-  const songsById = useSelector(selectSongsById);
   const isOffline = useIsOffline();
+  const { resolvePlayableSong } = usePlayableSongResolver();
 
   return useMutation({
     mutationFn: async ({ playlistId, songId, song: inputSong }: AddSongArgs) => {
       const resolvedSongId = songId ?? inputSong?.id;
       if (!resolvedSongId) throw new Error('Missing song id.');
-      const song = inputSong ?? songsById.get(resolvedSongId);
+      const song = await resolvePlayableSong(inputSong ?? resolvedSongId, { allowNetwork: !isOffline });
 
       if (isOffline) {
         if (!activeServer?.id || !song) throw new Error('Song is not available offline.');
@@ -41,16 +41,15 @@ export function useAddSongToPlaylist() {
           song,
           createdAt: Date.now(),
         }));
-        return;
+        return { song };
       }
 
       await api.playlists.addSong(playlistId, resolvedSongId);
+      return { song };
     },
-    onSuccess: (_, { playlistId, songId, song: inputSong }) => {
-      const resolvedSongId = songId ?? inputSong?.id;
-      const song = inputSong ?? (resolvedSongId ? songsById.get(resolvedSongId) : undefined);
-
-      if (song) {
+    onSuccess: (result, { playlistId }) => {
+      if (result.song) {
+        const song = result.song;
         const addToCache = (old: Playlist | null | undefined): Playlist | null | undefined => {
           if (!old) return old;
           if (old.songs.some(s => s.id === song.id)) return old;
@@ -61,10 +60,9 @@ export function useAddSongToPlaylist() {
           [QueryKeys.Playlist, activeServer?.id, playlistId],
           addToCache
         );
-        queryClient.setQueryData<Playlist[]>(
-          [QueryKeys.Playlists, activeServer?.id],
-          old => old?.map(p => p.id === playlistId ? (addToCache(p) ?? p) : p)
-        );
+        queryClient.invalidateQueries({
+          queryKey: [QueryKeys.Playlists, activeServer?.id],
+        });
         dispatch(addLibraryPlaylistSong({ playlistId, song }));
       } else {
         // No song object available — fall back to invalidation so UI stays correct

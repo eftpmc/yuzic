@@ -13,6 +13,7 @@ import type { ExternalArtistBase } from '@/types'
 
 const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
+const MIN_ITEMS = 8
 
 export default function ArtistsForYouSection() {
   const navigation = useNavigation<any>()
@@ -46,7 +47,7 @@ export default function ArtistsForYouSection() {
     />
   ), [navigation, gridItemWidth])
 
-  if (artistsReady && artists.length === 0) return null
+  if (artistsReady && artists.length < MIN_ITEMS) return null
 
   return (
     <View style={styles.container}>

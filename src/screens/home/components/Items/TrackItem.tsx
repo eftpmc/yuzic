@@ -13,15 +13,12 @@ import { MediaImage } from "@/components/MediaImage";
 import SongOptions from "@/components/options/SongOptions";
 import PlaylistList from "@/components/PlaylistList";
 import { usePlaying } from "@/contexts/PlayingContext";
-import { useDownload } from "@/contexts/DownloadContext";
 import { Song, SongBase } from "@/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslation } from "react-i18next";
-import { useApi } from "@/api";
-import { useSelector } from "react-redux";
-import { selectSongsById } from "@/utils/redux/selectors/librarySelectors";
 import { toast } from "@backpackapp-io/react-native-toast";
 import { useSheetRef } from '@/utils/useSheetRef';
+import { usePlayableSongResolver } from '@/hooks/songs';
 
 type Props = {
   song: SongBase;
@@ -42,11 +39,8 @@ const TrackItem: React.FC<Props> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const { t } = useTranslation();
-  const api = useApi();
   const { playSimilar, playSong } = usePlaying();
-  const { getLocalPath } = useDownload();
-  const songsById = useSelector(selectSongsById);
-  const cachedSong = songsById.get(song.id) ?? null;
+  const { resolvePlayableSong } = usePlayableSongResolver();
 
   const optionsRef = useSheetRef();
   const playlistRef = useSheetRef();
@@ -65,13 +59,6 @@ const TrackItem: React.FC<Props> = ({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const getFullSongWithTimeout = async () => {
-    const timeoutPromise = new Promise<null>((resolve) =>
-      setTimeout(() => resolve(null), FULL_TRACK_FETCH_TIMEOUT_MS)
-    );
-    return Promise.race([api.tracks.get(song.id), timeoutPromise]);
-  };
-
   const handlePress = async () => {
     const now = Date.now();
     if (now - lastPressAtRef.current < PRESS_COOLDOWN_MS) return;
@@ -79,13 +66,12 @@ const TrackItem: React.FC<Props> = ({
     lastPressAtRef.current = now;
     pressInFlightRef.current = true;
     try {
-      const localPath = getLocalPath(song.id);
-      if (localPath) {
-        await playSong({ ...song, streamUrl: localPath } as Song);
+      const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
+      if (!fullSong) return;
+      if (fullSong.filePath) {
+        await playSong(fullSong);
         return;
       }
-      const fullSong = cachedSong ?? await getFullSongWithTimeout();
-      if (!fullSong) return;
       // Let press feedback/render settle before starting playback work.
       await new Promise<void>((resolve) =>
         InteractionManager.runAfterInteractions(() => resolve())
@@ -103,15 +89,10 @@ const TrackItem: React.FC<Props> = ({
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
     try {
-      if (cachedSong) {
-        setSelectedSong(cachedSong);
+      const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
+      if (fullSong) {
+        setSelectedSong(fullSong);
         optionsRef.current?.present();
-      } else {
-        const fullSong = await api.tracks.get(song.id);
-        if (fullSong) {
-          setSelectedSong(fullSong);
-          optionsRef.current?.present();
-        }
       }
     } catch (error) {
       console.warn("Failed to fetch full track data", error);

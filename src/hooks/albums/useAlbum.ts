@@ -19,13 +19,14 @@ export function useAlbum(id: string): UseAlbumResult {
   const activeServer = useSelector(selectActiveServer);
   const { albums } = useLibrary();
   const cachedAlbum = albums.find(a => a.id === id) ?? null;
+  const fallbackAlbum = cachedAlbum ? { ...cachedAlbum, songs: [] } : null;
 
   const query = useOfflineFirstQuery<Album | null>({
     queryKey: [QueryKeys.Album, activeServer?.id, id],
     queryFn: async () => api.albums.get(id),
     enabled: !!activeServer?.id && !!id,
     staleTime: staleTime.albums,
-    fallbackData: cachedAlbum,
+    fallbackData: fallbackAlbum,
     hasFallbackData: hasValue,
   });
 

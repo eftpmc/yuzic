@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 import {
   Text,
   TouchableOpacity,
@@ -11,13 +11,16 @@ import { useSelector } from 'react-redux'
 import { useDownload } from '@/contexts/DownloadContext'
 
 import { useTheme } from '@/hooks/useTheme'
-import { useLibrary } from '@/contexts/LibraryContext'
 import { usePlaying } from '@/contexts/PlayingContext'
+import { useTracks } from '@/hooks/tracks'
+import { useStarredSongs } from '@/hooks/starred'
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
 import shuffleArray from '@/utils/shuffleArray'
-import { Song } from '@/types'
+import { Song, SongBase } from '@/types'
+import { isPlayableSong, usePlayableSongResolver } from '@/hooks/songs'
 
 const H_PADDING = 12
+const SHUFFLE_DETAIL_LIMIT = 100
 
 function buildFakeCollection(songs: Song[]) {
   return {
@@ -36,22 +39,42 @@ export default function ShuffleCards() {
   const { isDarkMode } = useTheme()
   const themeColor = useSelector(selectThemeColor)
   const { playSongInCollection } = usePlaying()
+  const { resolvePlayableSong } = usePlayableSongResolver()
 
-  const { albums, starred: starredSongs } = useLibrary()
-  const { isTrackDownloaded } = useDownload()
+  const { tracks } = useTracks()
+  const { songs: starredSongs } = useStarredSongs()
+  const { getAllDownloadedTracks } = useDownload()
 
   const inFlightRef = useRef<string | null>(null)
 
-  const allSongs = albums.flatMap(a => a.songs)
+  const downloadedTrackIds = useMemo(
+    () => new Set(getAllDownloadedTracks().map(track => track.trackId)),
+    [getAllDownloadedTracks]
+  )
+  const downloadedSongs = useMemo(
+    () => tracks.filter(track => downloadedTrackIds.has(track.id)),
+    [downloadedTrackIds, tracks]
+  )
 
-  const downloadedSongs = allSongs.filter(s => isTrackDownloaded(s.id))
+  const fetchPlayableSongs = async (baseSongs: SongBase[]): Promise<Song[]> => {
+    const shuffled = shuffleArray(baseSongs).slice(0, SHUFFLE_DETAIL_LIMIT)
+    const settled = await Promise.allSettled(shuffled.map(song => resolvePlayableSong(song)))
 
-  const handleShuffle = async (key: string, songs: Song[]) => {
+    return settled
+      .map(result => result.status === 'fulfilled' ? result.value : null)
+      .filter(isPlayableSong)
+  }
+
+  const handleShuffle = async (key: string, songs: SongBase[] | Song[]) => {
     if (inFlightRef.current === key) return
     if (songs.length === 0) return
     inFlightRef.current = key
     try {
-      const shuffled = shuffleArray(songs)
+      const playableSongs = songs.every(isPlayableSong)
+        ? songs as Song[]
+        : await fetchPlayableSongs(songs)
+      const shuffled = shuffleArray(playableSongs)
+      if (!shuffled.length) return
       await playSongInCollection(shuffled[0], buildFakeCollection(shuffled), false)
     } finally {
       inFlightRef.current = null
@@ -63,7 +86,7 @@ export default function ShuffleCards() {
       key: 'all',
       label: t('library.shuffle.all'),
       icon: (color: string) => <Shuffle size={16} color={color} />,
-      songs: allSongs,
+      songs: tracks,
     },
     {
       key: 'favorites',

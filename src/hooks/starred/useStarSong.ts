@@ -5,8 +5,8 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { Song } from '@/types';
-import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { usePlayableSongResolver } from '@/hooks/songs';
 import { addLibraryStarredSong } from '@/utils/redux/slices/librarySlice';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import { createOfflineMutationId } from '@/utils/offline/offlineMutations';
@@ -18,13 +18,13 @@ export function useStarSong() {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
-  const songsById = useSelector(selectSongsById);
   const isOffline = useIsOffline();
+  const { resolvePlayableSong } = usePlayableSongResolver();
 
   return useMutation({
     mutationFn: async (input: StarSongInput) => {
-      const song = typeof input === 'string' ? songsById.get(input) : input;
       const songId = typeof input === 'string' ? input : input.id;
+      const song = await resolvePlayableSong(input, { allowNetwork: !isOffline });
 
       if (isOffline) {
         if (!activeServer?.id || !song) throw new Error('Song is not available offline.');

@@ -21,7 +21,6 @@ import PlaylistRow from '@/components/rows/PlaylistRow';
 import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useApi } from '@/api';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import SongOptions from '@/components/options/SongOptions';
@@ -31,6 +30,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
+import { usePlayableSongResolver } from '@/hooks/songs';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -39,8 +39,8 @@ const Search = () => {
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const api = useApi();
   const { playSong } = usePlaying();
+  const { resolvePlayableSong } = usePlayableSongResolver();
 
   const [query, setQuery] = useState('');
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -81,7 +81,7 @@ const Search = () => {
         await playSong(result.song);
         return;
       }
-      const song = await api.songs.get(result.id);
+      const song = await resolvePlayableSong(result.id);
       if (song) {
         await playSong(song);
       }
@@ -95,7 +95,7 @@ const Search = () => {
     try {
       let song: Song | null = result.song ?? null;
       if (!song) {
-        song = await api.songs.get(result.id);
+        song = await resolvePlayableSong(result.id);
       }
       if (song) {
         setSelectedSong(song);
@@ -207,7 +207,6 @@ const Search = () => {
             year: 0,
             genres: [],
             created: new Date(0),
-            songs: [],
           }}
           onPress={album =>
           {
@@ -256,7 +255,6 @@ const Search = () => {
             cover: result.cover,
             changed: new Date(),
             created: new Date(),
-            songs: [],
           }}
           onPress={() => {
             prefetchCovers([result.cover], 'detail');

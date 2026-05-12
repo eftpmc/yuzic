@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import { useLazyArtistSongs } from './useLazyCollectionDetails';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -50,6 +51,7 @@ const ArtistOptions = forwardRef<
   } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const { data: mbid } = useArtistMbid(
     artist ? { id: artist.id, name: artist.name, mbid: artist.mbid } : null
@@ -59,9 +61,10 @@ const ArtistOptions = forwardRef<
   const playCount = useSelector(selectArtistPlayCount(artist?.id ?? ''));
 
   const artistAlbums = useArtistAlbums(artist?.id ?? '');
-  const artistSongs = useMemo(
-    () => artistAlbums.flatMap(a => a.songs ?? []) as Song[],
-    [artistAlbums]
+  const { songs: artistSongs, songsLoading } = useLazyArtistSongs(
+    artist?.id,
+    artistAlbums,
+    isSheetOpen
   );
 
   const close = () => {
@@ -88,14 +91,14 @@ const ArtistOptions = forwardRef<
   );
 
   const handlePlay = (shuffle: boolean) => {
-    if (!artist || !artistSongs.length) return;
+    if (!artist || songsLoading || !artistSongs.length) return;
     const collection = buildCollection(artistSongs);
     playSongInCollection(artistSongs[0], collection, shuffle);
     close();
   };
 
   const handleAddToQueue = () => {
-    if (!artist || !artistSongs.length) return;
+    if (!artist || songsLoading || !artistSongs.length) return;
     const collection = buildCollection(artistSongs);
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
@@ -107,7 +110,7 @@ const ArtistOptions = forwardRef<
   };
 
   const handleShuffleToQueue = () => {
-    if (!artist || !artistSongs.length) return;
+    if (!artist || songsLoading || !artistSongs.length) return;
     const collection = buildCollection(artistSongs);
     const hasQueue = getQueue().length > 0;
     if (!hasQueue) {
@@ -146,6 +149,7 @@ const ArtistOptions = forwardRef<
     artistSongs.map(s => s.id)
   );
   const isDownloading = isDownloadingAll || isCollectionDownloading;
+  const playbackDisabled = songsLoading || !artistSongs.length;
 
   const handleDownloadAll = async () => {
     if (!artist || isDownloaded || isDownloading || !artistAlbums.length) return;
@@ -193,6 +197,7 @@ const ArtistOptions = forwardRef<
       }}
       backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
       stackBehavior="push"
+      onChange={(index) => setIsSheetOpen(index >= 0)}
     >
       <BottomSheetScrollView
         style={themeStyles.sheetBackground}
@@ -213,19 +218,39 @@ const ArtistOptions = forwardRef<
 
         <View style={styles.divider} />
 
-        <TouchableOpacity style={styles.option} onPress={() => handlePlay(false)}>
-          <Ionicons name="play" size={26} color={themeStyles.icon.color} />
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={() => handlePlay(false)}
+          disabled={playbackDisabled}
+        >
+          {songsLoading ? (
+            <ActivityIndicator size="small" color={themeStyles.artist.color} />
+          ) : (
+            <Ionicons name="play" size={26} color={themeStyles.icon.color} />
+          )}
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.play')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={() => handlePlay(true)}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={() => handlePlay(true)}
+          disabled={playbackDisabled}
+        >
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={handleAddToQueue}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={handleAddToQueue}
+          disabled={playbackDisabled}
+        >
           <ListEnd size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.addToQueue')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option} onPress={handleShuffleToQueue}>
+        <TouchableOpacity
+          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          onPress={handleShuffleToQueue}
+          disabled={playbackDisabled}
+        >
           <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
           <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
@@ -337,6 +362,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
+  },
+  optionDisabled: {
+    opacity: 0.55,
   },
   optionText: { marginLeft: 16, fontSize: 16 },
   sectionLabel: {

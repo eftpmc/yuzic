@@ -12,6 +12,8 @@ import { prefetchCovers } from '@/utils/images/imageCache'
 
 const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
+const MIN_ITEMS = 8
+const MAX_ITEMS = 10
 
 type Props = {
   data: ExternalAlbumBase[]
@@ -26,7 +28,8 @@ export default function AlbumsForYouSection({ data, ready }: Props) {
   const gridGap = 12
 
   const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
-  const coversToPrefetch = useMemo(() => data.map(album => album.cover), [data])
+  const albums = useMemo(() => data.slice(0, MAX_ITEMS), [data])
+  const coversToPrefetch = useMemo(() => albums.map(album => album.cover), [albums])
   usePrefetchCovers(coversToPrefetch, 'grid')
   const renderAlbum = useCallback(({ item }: { item: ExternalAlbumBase }) => (
     <MediaTile
@@ -45,7 +48,7 @@ export default function AlbumsForYouSection({ data, ready }: Props) {
     />
   ), [navigation, gridItemWidth])
 
-  if (ready && data.length === 0) return null
+  if (ready && albums.length < MIN_ITEMS) return null
 
   return (
     <View style={styles.container}>
@@ -62,7 +65,7 @@ export default function AlbumsForYouSection({ data, ready }: Props) {
       ) : (
         <FlashList
           horizontal
-          data={data}
+          data={albums}
           keyExtractor={item => item.id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}

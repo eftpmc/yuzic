@@ -1,6 +1,8 @@
 import {
   Playlist,
+  PlaylistBase,
   Album,
+  AlbumBase,
   Artist,
   Song,
   SongBase,
@@ -55,7 +57,7 @@ export interface AuthApi {
 }
 
 export interface AlbumsApi {
-  list(): Promise<Album[]>;
+  list(): Promise<AlbumBase[]>;
   get(id: string): Promise<Album>;
   /** Optional bulk fetch — returns all albums with songs in the fewest possible requests. */
   listWithSongs?(): Promise<Album[]>;
@@ -71,7 +73,7 @@ export interface GenresApi {
 }
 
 export interface PlaylistsApi {
-  list(): Promise<Playlist[]>;
+  list(): Promise<PlaylistBase[]>;
   get(id: string): Promise<Playlist>;
   create(name: string): Promise<string>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
@@ -104,7 +106,7 @@ export type LyricsResult = {
 
 export type SearchApi = {
   search: (query: string) => Promise<{
-    albums: Album[];
+    albums: AlbumBase[];
     artists: Artist[];
     songs: Song[];
   }>;

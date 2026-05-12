@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -18,9 +18,9 @@ import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useSync } from '@/hooks/useSync';
 
-function formatLastSynced(ts: number | null, t: TFunction): string {
+function formatLastSynced(ts: number | null, t: TFunction, now = Date.now()): string {
   if (ts === null) return t('settings.library.stats.neverSynced')
-  const mins = Math.floor((Date.now() - ts) / 60000)
+  const mins = Math.floor((now - ts) / 60000)
   if (mins < 1) return t('settings.library.stats.justNow')
   if (mins < 60) return t('settings.library.stats.minsAgo', { count: mins })
   const hrs = Math.floor(mins / 60)
@@ -35,8 +35,17 @@ const Stats: React.FC = () => {
   const themeColor = useSelector(selectThemeColor);
   const syncOnAppStart = useSelector(selectSyncOnAppStart);
   const { sync, isSyncing, lastSyncedAt } = useSync();
+  const [now, setNow] = useState(() => Date.now());
 
   const spinValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setNow(Date.now());
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [lastSyncedAt]);
 
   useEffect(() => {
     if (!isSyncing) {
@@ -93,7 +102,7 @@ const Stats: React.FC = () => {
           {t('settings.library.stats.lastSynced')}
         </Text>
         <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
-          {formatLastSynced(lastSyncedAt, t)}
+          {formatLastSynced(lastSyncedAt, t, now)}
         </Text>
       </View>
 

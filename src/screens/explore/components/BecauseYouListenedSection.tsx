@@ -5,38 +5,34 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useTheme } from '@/hooks/useTheme'
+import { useArtists } from '@/hooks/artists'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import * as deezer from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
+import { getExploreDayKey } from '@/features/explore/hooks/useDailyLayout'
+import { collectCoveredAlbumsForArtists } from '@/features/explore/utils/albumDiscovery'
 import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
 const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
+const MIN_ALBUMS = 8
 const TARGET_ALBUMS = 10
+const RELATED_ARTIST_LIMIT = 40
 
-async function fetchAlbumsForSeed(artistName: string): Promise<ExternalAlbumBase[]> {
+async function fetchAlbumsForSeed(
+  artistName: string,
+  libraryArtistNames: Set<string>
+): Promise<ExternalAlbumBase[]> {
   const seedArtist = await deezer.resolveDeezerArtistByName(artistName)
   if (!seedArtist) return []
 
-  const related = await deezer.getDeezerRelatedArtists(seedArtist.id, TARGET_ALBUMS + 5)
+  const related = await deezer.getDeezerRelatedArtists(seedArtist.id, RELATED_ARTIST_LIMIT)
+  const fresh = related.filter(artist => !libraryArtistNames.has(artist.name.toLowerCase()))
 
-  const results = await Promise.allSettled(
-    related.map(async artist => {
-      const albums = await deezer.getDeezerArtistAlbums(artist.id, 3, artist)
-      return albums.find(a => a.cover.kind !== 'none') ?? null
-    })
-  )
-
-  const albums: ExternalAlbumBase[] = []
-  for (const r of results) {
-    if (albums.length >= TARGET_ALBUMS) break
-    if (r.status === 'fulfilled' && r.value) albums.push(r.value)
-  }
-
-  return albums
+  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: TARGET_ALBUMS })
 }
 
 type Props = {
@@ -47,19 +43,29 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
+  const { artists: libraryArtists } = useArtists()
+  const dayKey = getExploreDayKey()
+  const libraryArtistNames = useMemo(
+    () => new Set(libraryArtists.map(artist => artist.name.toLowerCase())),
+    [libraryArtists]
+  )
+  const libraryArtistKey = useMemo(
+    () => [...libraryArtistNames].sort().join('|'),
+    [libraryArtistNames]
+  )
 
   const screenWidth = Dimensions.get('window').width
   const gridGap = 12
   const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreBecauseYouListened, artistName],
-    queryFn: () => fetchAlbumsForSeed(artistName),
+    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, artistName, libraryArtistKey],
+    queryFn: () => fetchAlbumsForSeed(artistName, libraryArtistNames),
     staleTime: 1000 * 60 * 60 * 12,
     networkMode: 'online',
   })
 
-  const albums = query.data ?? []
+  const albums = useMemo(() => query.data ?? [], [query.data])
   const coversToPrefetch = useMemo(() => albums.map(a => a.cover), [albums])
   usePrefetchCovers(coversToPrefetch, 'grid')
 
@@ -80,7 +86,7 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
     />
   ), [navigation, gridItemWidth])
 
-  if (!query.isLoading && albums.length === 0) return null
+  if (!query.isLoading && albums.length < MIN_ALBUMS) return null
 
   return (
     <View style={styles.container}>

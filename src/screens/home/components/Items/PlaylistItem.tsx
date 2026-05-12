@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
-import { CoverSource, Playlist } from '@/types';
+import { CoverSource, PlaylistBase } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { usePlaylist } from '@/hooks/playlists';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { prefetchCovers } from '@/utils/images/imageCache';
 
 interface ItemProps {
+  playlist?: PlaylistBase;
   id: string;
   title: string;
   subtext: string;
@@ -27,6 +27,7 @@ interface ItemProps {
 }
 
 const PlaylistItem: React.FC<ItemProps> = ({
+  playlist,
   id,
   title,
   subtext,
@@ -37,10 +38,18 @@ const PlaylistItem: React.FC<ItemProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const navigation = useNavigation<any>();
-  const { playlist } = usePlaylist(id);
 
   const sheetRef = useSheetRef();
-  const [playlistForSheet, setPlaylistForSheet] = useState<Playlist | null>(null);
+  const playlistForOptions = useMemo(() => playlist ?? {
+      id,
+      title,
+      subtext,
+      cover,
+      changed: new Date(0),
+      created: new Date(0),
+    },
+    [cover, id, playlist, subtext, title]
+  );
 
   const handleNavigation = useCallback(() => {
     prefetchCovers([cover], 'detail');
@@ -48,10 +57,8 @@ const PlaylistItem: React.FC<ItemProps> = ({
   }, [cover, navigation, id]);
 
   const handleLongPress = useCallback(() => {
-    if (!playlist) return;
-    setPlaylistForSheet(playlist);
     sheetRef.current?.present();
-  }, [playlist, sheetRef]);
+  }, [sheetRef]);
 
   return (
     <>
@@ -109,7 +116,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
 
       <PlaylistOptions
         ref={sheetRef}
-        playlist={playlistForSheet}
+        playlist={playlistForOptions}
         hideGoToPlaylist={false}
       />
     </>

@@ -1,36 +1,53 @@
 import { SongBase } from "@/types";
 import type { NavidromeClient } from "../client";
-import { getAlbumList } from "../albums/getAlbumList";
-import { getAlbum } from "../albums/getAlbum";
+
+function mapToSongBase(song: any): SongBase {
+  return {
+    id: song.id,
+    title: song.title ?? 'Unknown',
+    artist: song.artist ?? 'Unknown Artist',
+    artistId: song.artistId ?? '',
+    cover: song.coverArt
+      ? { kind: 'navidrome' as const, coverArtId: song.coverArt }
+      : { kind: 'none' as const },
+    duration: String(song.duration ?? 0),
+    albumId: song.albumId ?? '',
+    year: song.year ?? undefined,
+    dateAdded: song.created,
+  };
+}
+
+function asArray<T>(value: T | T[] | null | undefined): T[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
 
 export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
-  const albums = await getAlbumList(client, "alphabeticalByName");
-  const albumResults = await Promise.allSettled(
-    albums.map((album) => getAlbum(client, album.id))
-  );
+  const PAGE = 500;
+  const all = new Map<string, SongBase>();
+  let offset = 0;
 
-  const deduped = new Map<string, SongBase>();
-  for (const result of albumResults) {
-    if (result.status !== "fulfilled" || !result.value) continue;
+  while (true) {
+    const data = await client.request<any>("search3.view", {
+      query: "",
+      songCount: PAGE,
+      songOffset: offset,
+      albumCount: 0,
+      albumOffset: 0,
+      artistCount: 0,
+      artistOffset: 0,
+    });
 
-    for (const song of result.value.songs) {
-      if (!deduped.has(song.id)) {
-        deduped.set(song.id, {
-          id: song.id,
-          title: song.title,
-          artist: song.artist,
-          artistId: song.artistId,
-          cover: song.cover,
-          duration: song.duration,
-          albumId: song.albumId,
-          year: song.dateReleased ? parseInt(song.dateReleased, 10) : undefined,
-          dateAdded: song.dateAdded,
-        });
-      }
+    const songs = asArray<any>(data["subsonic-response"]?.searchResult3?.song);
+    if (!songs.length) break;
+
+    for (const song of songs) {
+      if (!song?.id || all.has(song.id)) continue;
+      all.set(song.id, mapToSongBase(song));
     }
+    if (songs.length < PAGE) break;
+    offset += PAGE;
   }
 
-  const result: SongBase[] = [];
-  deduped.forEach(v => result.push(v));
-  return result;
+  return [...all.values()];
 }

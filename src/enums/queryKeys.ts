@@ -8,6 +8,7 @@ export enum QueryKeys {
 	Artists = 'artists',
 	Playlist = 'playlist',
 	Playlists = 'playlists',
+	Song = 'song',
 	Tracks = 'tracks',
 	Starred = 'starred',
 	RecentSongs = 'recent-songs',

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useSelector } from 'react-redux';
-import { Album, Artist, Playlist, SongBase, Song } from '@/types';
+import { AlbumBase, Artist, PlaylistBase, SongBase, Song } from '@/types';
 import {
   selectLibraryAlbums,
   selectLibraryArtists,
@@ -11,9 +11,9 @@ import {
 } from '@/utils/redux/selectors/librarySelectors';
 
 interface LibraryContextType {
-  albums: Album[];
+  albums: AlbumBase[];
   artists: Artist[];
-  playlists: Playlist[];
+  playlists: PlaylistBase[];
   tracks: SongBase[];
   genres: string[];
   starred: Song[];

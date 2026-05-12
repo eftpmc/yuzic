@@ -85,7 +85,9 @@ const ScrobblingView: React.FC = () => {
                 </Text>
                 <Switch
                   value={serverScrobbleEnabled}
-                  onValueChange={(v) => dispatch(setServerScrobbleEnabled(v))}
+                  onValueChange={(v) => {
+                    dispatch(setServerScrobbleEnabled(v));
+                  }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
@@ -97,7 +99,9 @@ const ScrobblingView: React.FC = () => {
                 </Text>
                 <Switch
                   value={serverNowPlayingEnabled}
-                  onValueChange={(v) => dispatch(setServerNowPlayingEnabled(v))}
+                  onValueChange={(v) => {
+                    dispatch(setServerNowPlayingEnabled(v));
+                  }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
@@ -118,7 +122,9 @@ const ScrobblingView: React.FC = () => {
                 </Text>
                 <Switch
                   value={lbScrobbleEnabled}
-                  onValueChange={(v) => dispatch(setLbScrobbleEnabled({ serverId, value: v }))}
+                  onValueChange={(v) => {
+                    dispatch(setLbScrobbleEnabled({ serverId, value: v }));
+                  }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
@@ -130,7 +136,9 @@ const ScrobblingView: React.FC = () => {
                 </Text>
                 <Switch
                   value={lbNowPlayingEnabled}
-                  onValueChange={(v) => dispatch(setLbNowPlayingEnabled({ serverId, value: v }))}
+                  onValueChange={(v) => {
+                    dispatch(setLbNowPlayingEnabled({ serverId, value: v }));
+                  }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
@@ -165,7 +173,9 @@ const ScrobblingView: React.FC = () => {
                 </Text>
                 <Switch
                   value={lfmScrobbleEnabled}
-                  onValueChange={(v) => dispatch(setLfmScrobbleEnabled({ serverId, value: v }))}
+                  onValueChange={(v) => {
+                    dispatch(setLfmScrobbleEnabled({ serverId, value: v }));
+                  }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
@@ -177,7 +187,9 @@ const ScrobblingView: React.FC = () => {
                 </Text>
                 <Switch
                   value={lfmNowPlayingEnabled}
-                  onValueChange={(v) => dispatch(setLfmNowPlayingEnabled({ serverId, value: v }))}
+                  onValueChange={(v) => {
+                    dispatch(setLfmNowPlayingEnabled({ serverId, value: v }));
+                  }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
