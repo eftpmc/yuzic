@@ -283,6 +283,7 @@ export default function LibraryScreen() {
 
   return (
     <SafeAreaView
+      testID="library-screen"
       edges={['top']}
       style={[styles.container, isDarkMode && styles.containerDark]}
     >

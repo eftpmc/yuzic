@@ -9,6 +9,7 @@ import React, {
   ReactNode,
 } from 'react';
 import TrackPlayer, {
+  Event,
   MediaItem,
   PlayerCommand,
   RepeatMode,
@@ -149,6 +150,31 @@ function hasSameQueueIds(current: Song[], next: Song[]): boolean {
 
 const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
+function getSourceKind(song: Song | null): string {
+  if (!song?.streamUrl) return 'none';
+  if (song.filePath || song.streamUrl.startsWith('file:')) return 'file';
+  if (song.streamUrl.startsWith('http://') || song.streamUrl.startsWith('https://')) return 'remote';
+  return 'unknown';
+}
+
+function hasPlayableMediaUrl(song: Song): boolean {
+  const url = song.streamUrl?.trim();
+  if (!url) return false;
+  return (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('file://') ||
+    url.startsWith('/')
+  );
+}
+
+function assertPlayableSongs(songs: Song[]) {
+  const invalid = songs.find(song => !hasPlayableMediaUrl(song));
+  if (invalid) {
+    throw new Error(`Track has no playable media URL: ${invalid.id}`);
+  }
+}
+
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
   const isPlaying = useIsPlaying();
@@ -171,6 +197,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const shuffleOnRef = useRef(false);
   const isPlayingRef = useRef(false);
   const isShufflingRef = useRef(false);
+  const lastPlaybackErrorAtRef = useRef(0);
 
   // Stable refs to latest callbacks — avoids stale closures in effects without listing
   // volatile deps, while keeping the callbacks themselves stable for context consumers.
@@ -228,6 +255,44 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
+
+  const clearPlaybackState = useCallback(() => {
+    queueRef.current = [];
+    originalQueueRef.current = null;
+    currentIndexRef.current = 0;
+    currentSongRef.current = null;
+    setCurrentIndex(0);
+    setCurrentSong(null);
+    setShuffleOn(false);
+    bumpQueue();
+    TrackPlayer.stop();
+    TrackPlayer.clear();
+  }, [bumpQueue]);
+
+  useEffect(() => {
+    const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
+      const song = currentSongRef.current;
+      console.warn('Playback failed', {
+        code: event.code,
+        message: event.message,
+        songId: song?.id,
+        title: song?.title,
+        source: getSourceKind(song),
+        serverId: song?.sourceServerId,
+        serverType: song?.sourceServerType,
+      });
+
+      clearPlaybackState();
+
+      const now = Date.now();
+      if (now - lastPlaybackErrorAtRef.current > 1500) {
+        lastPlaybackErrorAtRef.current = now;
+        toast.error(t('common.playbackError'));
+      }
+    });
+
+    return () => subscription.remove();
+  }, [clearPlaybackState, t]);
 
   // Build a song lookup map from the library for queue reconciliation
   const librarySongByIdRef = useRef<Map<string, Song>>(new Map());
@@ -297,6 +362,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [getLocalPath]);
 
   const loadQueue = useCallback(async (songs: Song[], startIndex: number, play = true) => {
+    assertPlayableSongs(songs);
     resetLastScrobbled();
     scrobbleStartTimeRef.current = Date.now();
     TrackPlayer.setMediaItems(toMediaItems(songs), startIndex);
@@ -306,6 +372,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const playSong = useCallback(async (song: Song) => {
     const playableSong = resolvePlayableSong(song);
+    assertPlayableSongs([playableSong]);
     queueRef.current = [playableSong];
     originalQueueRef.current = null;
     setShuffleOn(false);
@@ -323,6 +390,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     shuffle = false
   ) => {
     let songs = collection.songs.map(resolvePlayableSong);
+    assertPlayableSongs(songs);
     let index = 0;
 
     if (shuffle) {
@@ -351,6 +419,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       .filter(s => !existingIds.has(s.id))
       .map(resolvePlayableSong);
     if (!toAdd.length) return;
+    assertPlayableSongs(toAdd);
     queueRef.current = [...queueRef.current, ...toAdd];
     TrackPlayer.addMediaItems(toMediaItems(toAdd));
     bumpQueue();
@@ -364,6 +433,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         .map(resolvePlayableSong)
     );
     if (!toAdd.length) return;
+    assertPlayableSongs(toAdd);
     queueRef.current = [...queueRef.current, ...toAdd];
     TrackPlayer.addMediaItems(toMediaItems(toAdd));
     bumpQueue();
@@ -432,6 +502,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addToQueue = useCallback((song: Song) => {
     const playableSong = resolvePlayableSong(song);
+    assertPlayableSongs([playableSong]);
     if (queueRef.current.some(s => s.id === playableSong.id)) return;
     queueRef.current = [...queueRef.current, playableSong];
     TrackPlayer.addMediaItem(buildTrackItem(playableSong));
@@ -441,6 +512,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const playNext = useCallback((song: Song) => {
     if (!currentSongRef.current) return;
     const playableSong = resolvePlayableSong(song);
+    assertPlayableSongs([playableSong]);
     const update = moveSongAfterCurrent(queueRef.current, currentIndexRef.current, playableSong);
     if (!update) return;
     if (update.removedIndex !== null) {

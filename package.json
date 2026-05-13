@@ -9,6 +9,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
+    "test:e2e": "maestro test .maestro/smoke.yaml && maestro test .maestro/common-user-flows.yaml",
+    "test:e2e:smoke": "maestro test .maestro/smoke.yaml",
+    "test:e2e:flows": "maestro test .maestro/common-user-flows.yaml",
     "lint": "expo lint",
     "postinstall": "patch-package"
   },

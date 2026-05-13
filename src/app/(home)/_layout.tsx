@@ -11,9 +11,11 @@ import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 
-function TabIcon({ onPress, active, activeColor, inactiveColor, activeIndicatorBg, children }: {
+function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
     active: boolean;
+    accessibilityLabel: string;
+    testID: string;
     activeColor: string;
     inactiveColor: string;
     activeIndicatorBg: string;
@@ -30,7 +32,13 @@ function TabIcon({ onPress, active, activeColor, inactiveColor, activeIndicatorB
     }));
 
     return (
-        <TouchableOpacity style={styles.tab} onPress={onPress}>
+        <TouchableOpacity
+            accessibilityLabel={accessibilityLabel}
+            accessibilityRole="tab"
+            testID={testID}
+            style={styles.tab}
+            onPress={onPress}
+        >
             <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg }, indicatorStyle]} />
             {children(active ? activeColor : inactiveColor)}
         </TouchableOpacity>
@@ -95,6 +103,8 @@ export default function HomeLayout() {
                             router.navigate('/(home)/(tabs)' as never)
                         }}
                         active={isHome}
+                        accessibilityLabel="Home tab"
+                        testID="home-tab"
                         activeColor={activeColor}
                         inactiveColor={inactiveColor}
                         activeIndicatorBg={activeIndicatorBg}
@@ -107,6 +117,8 @@ export default function HomeLayout() {
                             router.navigate('/(home)/(tabs)/library' as never)
                         }}
                         active={isLibrary}
+                        accessibilityLabel="Library tab"
+                        testID="library-tab"
                         activeColor={activeColor}
                         inactiveColor={inactiveColor}
                         activeIndicatorBg={activeIndicatorBg}

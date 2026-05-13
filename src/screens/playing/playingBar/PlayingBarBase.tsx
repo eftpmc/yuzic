@@ -302,6 +302,9 @@ export default function PlayingBarBase({ variant }: Props) {
 
       {currentSong && (
         <TouchableOpacity
+          accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+          accessibilityRole="button"
+          testID="playing-bar-play-pause"
           style={[styles.playPauseButton, stylesForVariant.playPauseButton]}
           onPress={handlePlayPause}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -342,7 +345,13 @@ export default function PlayingBarBase({ variant }: Props) {
 
   return (
     <>
-      <TouchableOpacity onPress={handleExpand} activeOpacity={0.9}>
+      <TouchableOpacity
+        accessibilityLabel={currentSong ? 'Now playing bar' : 'No song playing'}
+        accessibilityRole="button"
+        testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
+        onPress={handleExpand}
+        activeOpacity={0.9}
+      >
         <View style={[styles.wrapper, stylesForVariant.wrapper]}>
           {variant === 'android' ? (
             <View style={[styles.container, stylesForVariant.container, androidSurfaceStyle]}>

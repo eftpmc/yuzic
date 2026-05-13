@@ -123,6 +123,9 @@ const TrackItem: React.FC<Props> = ({
   return (
     <>
       <Pressable
+        accessibilityLabel={`Track ${song.title}`}
+        accessibilityRole="button"
+        testID="library-track-item"
         onPress={() => {
           void handlePress();
         }}

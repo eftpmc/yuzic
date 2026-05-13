@@ -34,6 +34,8 @@ export default function HomeHeader({
 
       <View style={styles.actions}>
         <TouchableOpacity
+          accessibilityLabel="Search"
+          accessibilityRole="button"
           onPress={onSearch}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -45,6 +47,8 @@ export default function HomeHeader({
         </TouchableOpacity>
 
         <TouchableOpacity
+          accessibilityLabel="Account"
+          accessibilityRole="button"
           style={[styles.avatar, { backgroundColor: themeColor }]}
           onPress={onAccountPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

@@ -68,6 +68,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView
+      testID="home-screen"
       edges={['top']}
       style={[styles.container, isDarkMode && styles.containerDark]}
     >

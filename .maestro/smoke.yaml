@@ -1,0 +1,27 @@
+appId: com.arinora.rawarr
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      id: "library-tab"
+    timeout: 60000
+
+- tapOn:
+    id: "library-tab"
+- assertVisible:
+    id: "library-screen"
+
+- tapOn:
+    id: "home-tab"
+- assertVisible:
+    id: "home-screen"
+
+- tapOn: "Search"
+- assertVisible:
+    id: "search-input"
+
+- tapOn: "Back"
+- assertVisible:
+    id: "home-screen"

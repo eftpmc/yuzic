@@ -24,6 +24,9 @@ export function FilterPill<T extends string>({
 }: Props<T>) {
   return (
     <TouchableOpacity
+      accessibilityLabel={`${label} filter`}
+      accessibilityRole="button"
+      testID={`library-filter-${value}`}
       style={[
         styles.button,
         active

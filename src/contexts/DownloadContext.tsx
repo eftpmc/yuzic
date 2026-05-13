@@ -88,12 +88,14 @@ const DownloadContext = createContext<DownloadContextType | undefined>(undefined
 const DOWNLOAD_DIR = `${FileSystem.documentDirectory ?? ''}downloads/audio/`;
 const TEMP_DOWNLOAD_DIR = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? ''}downloads/rawarr-source/`;
 const DOWNLOAD_QUALITY = 'high';
+const DOWNLOAD_SCHEMA_VERSION = 2;
 const BACKGROUND_FILE_OPTIONS = {
   sessionType: FileSystem.FileSystemSessionType.BACKGROUND,
 };
 
 type LocalDownloadedTrackEntry = DownloadedTrackEntry & {
   localPath: string;
+  schemaVersion?: number;
   title?: string;
   originalTrack?: {
     id?: string;
@@ -110,6 +112,8 @@ type DownloadState = {
   collections: DownloadedCollectionEntry[];
   jobs: PersistedDownloadJob[];
 };
+
+let legacyDownloadPathsToDelete: string[] = [];
 
 function sanitizeFileName(value: string): string {
   return value.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'track';
@@ -148,22 +152,76 @@ function normalizeLocalUri(uri: string): string {
   return `file://${uri}`;
 }
 
+function hasCurrentDownloadMetadata(track: LocalDownloadedTrackEntry): boolean {
+  if (track.schemaVersion === DOWNLOAD_SCHEMA_VERSION) return true;
+
+  const payload = track.originalTrack?.extraPayload;
+  return Boolean(
+    track.localPath &&
+    track.trackId &&
+    track.serverId &&
+    track.serverType &&
+    track.coverKind &&
+    payload?.serverId &&
+    payload?.serverType &&
+    payload?.coverKind
+  );
+}
+
 function loadInitialState(): DownloadState {
   const snapshot = readDownloadsSnapshot();
+  const stalePaths: string[] = [];
+  let didMigrate = false;
+
+  const tracks = snapshot.tracks
+    .map((track): LocalDownloadedTrackEntry | null => {
+      const localTrack = track as LocalDownloadedTrackEntry;
+      const localPath = localTrack.localPath;
+
+      if (!localPath) {
+        didMigrate = true;
+        return null;
+      }
+
+      if (!hasCurrentDownloadMetadata(localTrack)) {
+        stalePaths.push(localPath);
+        didMigrate = true;
+        return null;
+      }
+
+      return {
+        ...localTrack,
+        schemaVersion: DOWNLOAD_SCHEMA_VERSION,
+      };
+    })
+    .filter((track): track is LocalDownloadedTrackEntry => !!track);
+
+  const validTrackIds = new Set(tracks.map(track => track.trackId));
+  let didMigrateCollections = false;
+  const collections = snapshot.collections
+    .map(collection => {
+      const trackIds = Array.isArray(collection.trackIds) ? collection.trackIds : [];
+      const validCollectionTrackIds = trackIds.filter(trackId => validTrackIds.has(trackId));
+      if (validCollectionTrackIds.length !== trackIds.length) didMigrateCollections = true;
+      return {
+        ...collection,
+        trackIds: validCollectionTrackIds,
+      };
+    })
+    .filter(collection => collection.trackIds.length > 0);
+  const jobs = snapshot.jobs.filter(job => Array.isArray(job.tracks) && job.tracks.length > 0);
+
+  if (didMigrate || didMigrateCollections || collections.length !== snapshot.collections.length) {
+    writeDownloadedTracks(tracks);
+    writeDownloadedCollections(collections);
+  }
+
+  legacyDownloadPathsToDelete = stalePaths;
+
   return {
-    tracks: snapshot.tracks
-      .map((track): LocalDownloadedTrackEntry | null => {
-        const localPath = (track as LocalDownloadedTrackEntry).localPath;
-        if (!localPath) return null;
-        return {
-          ...track,
-          localPath,
-          originalTrack: (track as LocalDownloadedTrackEntry).originalTrack ?? { id: track.trackId },
-        };
-      })
-      .filter((track): track is LocalDownloadedTrackEntry => !!track),
-    collections: snapshot.collections,
-    jobs: snapshot.jobs.filter(job => Array.isArray(job.tracks) && job.tracks.length > 0),
+    tracks,
+    collections,
+    jobs,
   };
 }
 
@@ -208,6 +266,17 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(() => new Set());
   const jobsRef = useRef<PersistedDownloadJob[]>(state.jobs);
   const processingQueueRef = useRef(false);
+
+  useEffect(() => {
+    const stalePaths = legacyDownloadPathsToDelete;
+    legacyDownloadPathsToDelete = [];
+
+    if (!stalePaths.length) return;
+
+    void Promise.all(stalePaths.map(path =>
+      FileSystem.deleteAsync(path, { idempotent: true }).catch(() => {})
+    ));
+  }, []);
 
   useEffect(() => {
     jobsRef.current = state.jobs;
@@ -307,6 +376,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         serverId: resolvedTrack.sourceServerId ?? activeServer?.id ?? '',
         serverType: resolvedTrack.sourceServerType ?? activeServer?.type ?? '',
         coverKind: track.cover.kind,
+        schemaVersion: DOWNLOAD_SCHEMA_VERSION,
         title: track.title,
         originalTrack: {
           id: track.id,

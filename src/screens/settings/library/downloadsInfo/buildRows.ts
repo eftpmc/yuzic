@@ -112,9 +112,10 @@ export function buildDownloadRows({
               .filter(Boolean);
           })()
         : (() => {
-            const fromPlaylist = fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs
+            const playlistSongs = fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs;
+            const fromPlaylist = Array.isArray(playlistSongs) ? playlistSongs
               .map((song: any) => String(song.id ?? '').trim())
-              .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) ?? [];
+              .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) : [];
             if (fromPlaylist.length) return fromPlaylist;
             return (downloaded?.trackIds ?? []).filter((id: string) => downloadedTrackIds.has(id));
           })();

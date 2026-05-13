@@ -1,0 +1,46 @@
+appId: com.arinora.rawarr
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      id: "library-tab"
+    timeout: 60000
+
+- tapOn:
+    id: "library-tab"
+- assertVisible:
+    id: "library-screen"
+
+- tapOn:
+    id: "library-filter-tracks"
+- extendedWaitUntil:
+    visible:
+      id: "library-track-item"
+    timeout: 60000
+- tapOn:
+    id: "library-track-item"
+- extendedWaitUntil:
+    visible:
+      id: "playing-bar"
+    timeout: 30000
+
+- tapOn:
+    id: "home-tab"
+- assertVisible:
+    id: "home-screen"
+
+- tapOn: "Search"
+- assertVisible:
+    id: "search-screen"
+- tapOn:
+    id: "search-input"
+- inputText: "zzzxxyyqvnonexistent"
+- extendedWaitUntil:
+    visible:
+      id: "search-no-results"
+    timeout: 30000
+- tapOn: "Back"
+- assertVisible:
+    id: "home-screen"

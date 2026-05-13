@@ -9,13 +9,14 @@ export function normalizeMediaUrl(url: string): string {
 }
 
 export function buildTrackItem(song: Song): MediaItem {
+  const url = normalizeMediaUrl(song.streamUrl);
   return {
     mediaId: song.id,
     title: song.title,
     artist: song.artist,
     albumTitle: '',
     duration: Number(song.duration) || undefined,
-    url: normalizeMediaUrl(song.streamUrl),
+    url: url.startsWith('file://') ? { uri: url } : url,
     artworkUrl: buildCover(song.cover, 'grid') ?? undefined,
   };
 }

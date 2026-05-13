@@ -125,6 +125,9 @@ const Search = () => {
         <View style={styles.songWrapper}>
           <View style={styles.songRow}>
             <TouchableOpacity
+              accessibilityLabel={`Search result song ${result.title}`}
+              accessibilityRole="button"
+              testID="search-song-result"
               style={styles.songInfo}
               onPress={() => handleSongPress(result)}
             >
@@ -292,10 +295,13 @@ const Search = () => {
 
   return (
     <SafeAreaView
+      testID="search-screen"
       style={[styles.container, isDarkMode && styles.containerDark]}
     >
       <View style={styles.row}>
         <TouchableOpacity
+          accessibilityLabel="Back"
+          accessibilityRole="button"
           style={{ marginRight: 16 }}
           onPress={() => navigation.goBack()}
         >
@@ -313,6 +319,8 @@ const Search = () => {
           ]}
         >
           <TextInput
+            accessibilityLabel="Search input"
+            testID="search-input"
             ref={searchInputRef}
             style={[
               styles.searchInput,
@@ -359,6 +367,7 @@ const Search = () => {
 
         {hasSearched && !isLoading && searchResults.length === 0 && (
           <Text
+            testID="search-no-results"
             style={[styles.noResults, isDarkMode && styles.noResultsDark]}
           >
             {t('search.noResults')}
