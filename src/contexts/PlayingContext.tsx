@@ -175,6 +175,10 @@ function assertPlayableSongs(songs: Song[]) {
   }
 }
 
+function playableSongsOnly(songs: Song[]): Song[] {
+  return songs.filter(hasPlayableMediaUrl);
+}
+
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
   const isPlaying = useIsPlaying();
@@ -269,6 +273,36 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     TrackPlayer.clear();
   }, [bumpQueue]);
 
+  const removeFailedCurrentTrack = useCallback(() => {
+    const failedIndex = currentIndexRef.current;
+    const currentQueue = queueRef.current;
+
+    if (currentQueue.length <= 1 || failedIndex < 0 || failedIndex >= currentQueue.length) {
+      clearPlaybackState();
+      return;
+    }
+
+    const nextQueue = currentQueue.filter((_, index) => index !== failedIndex);
+    const nextIndex = Math.min(failedIndex, nextQueue.length - 1);
+    const nextSong = nextQueue[nextIndex] ?? null;
+
+    queueRef.current = nextQueue;
+    originalQueueRef.current = originalQueueRef.current
+      ? originalQueueRef.current.filter(song => song.id !== currentQueue[failedIndex]?.id)
+      : null;
+    currentIndexRef.current = nextIndex;
+    currentSongRef.current = nextSong;
+    setCurrentIndex(nextIndex);
+    setCurrentSong(nextSong);
+    bumpQueue();
+
+    TrackPlayer.removeMediaItem(failedIndex);
+    if (nextSong) {
+      TrackPlayer.skipToIndex(nextIndex);
+      TrackPlayer.play();
+    }
+  }, [bumpQueue, clearPlaybackState]);
+
   useEffect(() => {
     const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
       const song = currentSongRef.current;
@@ -282,7 +316,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         serverType: song?.sourceServerType,
       });
 
-      clearPlaybackState();
+      removeFailedCurrentTrack();
 
       const now = Date.now();
       if (now - lastPlaybackErrorAtRef.current > 1500) {
@@ -292,7 +326,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     return () => subscription.remove();
-  }, [clearPlaybackState, t]);
+  }, [removeFailedCurrentTrack, t]);
 
   // Build a song lookup map from the library for queue reconciliation
   const librarySongByIdRef = useRef<Map<string, Song>>(new Map());
@@ -389,9 +423,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     collection: Album | Playlist,
     shuffle = false
   ) => {
-    let songs = collection.songs.map(resolvePlayableSong);
-    assertPlayableSongs(songs);
+    let songs = playableSongsOnly(collection.songs.map(resolvePlayableSong));
+    if (!songs.length) throw new Error(`Collection has no playable media URLs: ${collection.id}`);
     let index = 0;
+    const selectedPlayableSong = resolvePlayableSong(selectedSong);
+    if (!hasPlayableMediaUrl(selectedPlayableSong)) {
+      throw new Error(`Track has no playable media URL: ${selectedSong.id}`);
+    }
 
     if (shuffle) {
       originalQueueRef.current = songs;
@@ -415,11 +453,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addCollectionToQueue = useCallback((collection: Album | Playlist) => {
     const existingIds = new Set(queueRef.current.map(s => s.id));
-    const toAdd = collection.songs
+    const toAdd = playableSongsOnly(collection.songs
       .filter(s => !existingIds.has(s.id))
-      .map(resolvePlayableSong);
+      .map(resolvePlayableSong));
     if (!toAdd.length) return;
-    assertPlayableSongs(toAdd);
     queueRef.current = [...queueRef.current, ...toAdd];
     TrackPlayer.addMediaItems(toMediaItems(toAdd));
     bumpQueue();
@@ -427,13 +464,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const shuffleCollectionToQueue = useCallback((collection: Album | Playlist) => {
     const existingIds = new Set(queueRef.current.map(s => s.id));
-    const toAdd = shuffleArray(
+    const toAdd = shuffleArray(playableSongsOnly(
       collection.songs
         .filter(s => !existingIds.has(s.id))
         .map(resolvePlayableSong)
-    );
+    ));
     if (!toAdd.length) return;
-    assertPlayableSongs(toAdd);
     queueRef.current = [...queueRef.current, ...toAdd];
     TrackPlayer.addMediaItems(toMediaItems(toAdd));
     bumpQueue();
