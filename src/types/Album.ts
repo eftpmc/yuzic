@@ -23,6 +23,10 @@ export interface AlbumBase {
     created: Date;
     /** MusicBrainz ID (release or release-group) when available from server */
     mbid?: string | null;
+    /** Server-reported play count — populated during sync, used to seed local stats */
+    serverPlayCount?: number;
+    /** Server-reported last played timestamp (unix ms) — populated during sync */
+    serverLastPlayedAt?: number;
 }
 
 export interface Album extends AlbumBase {

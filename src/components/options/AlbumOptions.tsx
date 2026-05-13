@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Linking,
 } from 'react-native';
 import {
   BottomSheetModal,
@@ -23,7 +22,6 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
-import { getAlbumMbidUrl } from '@/utils/musicbrainz/getAlbumMbidUrl';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
@@ -117,35 +115,24 @@ const AlbumOptions = forwardRef<
   };
 
   const handleGoToExternalAlbum = () => {
-    if (!album?.mbid) return;
+    if (!album?.artist?.name || !album.title) return;
     close();
     navigation.navigate('externalAlbumView', {
-      albumId: album.mbid,
+      albumId: album.id,
       artist: album.artist?.name,
       title: album.title,
     });
   };
 
   const handleGoToExternalArtist = () => {
-    if (!album?.artist?.mbid) return;
+    if (!album?.artist?.name) return;
     close();
     navigation.navigate('externalArtistView', {
-      mbid: album.artist.mbid,
       name: album.artist.name,
     });
   };
 
-  const handleViewExternal = async () => {
-    const mbid = album?.mbid ?? album?.artist?.mbid;
-    if (!mbid) return;
-    close();
-    const url = album?.mbid
-      ? await getAlbumMbidUrl(mbid)
-      : `https://musicbrainz.org/artist/${mbid}`;
-    Linking.openURL(url);
-  };
-
-  const hasExternalOptions = album?.mbid ?? album?.artist?.mbid;
+  const hasExternalOptions = Boolean(album?.artist?.name && album?.title);
 
   const handleDownload = async () => {
     if (!album || isDownloaded || isDownloading) return;
@@ -264,21 +251,13 @@ const AlbumOptions = forwardRef<
 
         {hasExternalOptions && (
           <>
-            {album?.mbid && (
-              <TouchableOpacity style={styles.option} onPress={handleGoToExternalAlbum}>
-                <Ionicons name="albums-outline" size={26} color={themeStyles.icon.color} />
-                <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalAlbum')}</Text>
-              </TouchableOpacity>
-            )}
-            {album?.artist?.mbid && (
-              <TouchableOpacity style={styles.option} onPress={handleGoToExternalArtist}>
-                <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
-                <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalArtist')}</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
-              <Ionicons name="open-outline" size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.viewExternal')}</Text>
+            <TouchableOpacity style={styles.option} onPress={handleGoToExternalAlbum}>
+              <Ionicons name="albums-outline" size={26} color={themeStyles.icon.color} />
+              <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalAlbum')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.option} onPress={handleGoToExternalArtist}>
+              <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
+              <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalArtist')}</Text>
             </TouchableOpacity>
           </>
         )}

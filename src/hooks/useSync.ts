@@ -13,6 +13,7 @@ import {
   setLibraryGenres,
   setLibraryStarred,
 } from '@/utils/redux/slices/librarySlice'
+import { setServerAlbumStats } from '@/utils/redux/slices/statsSlice'
 import { AlbumBase, Artist, PlaylistBase, SongBase, Song } from '@/types'
 import { useApi } from '@/api'
 import { staleTime } from '@/constants/staleTime'
@@ -149,7 +150,19 @@ export function useSync() {
         starred?.songs?.length
       )
 
-      if (albums) dispatch(setLibraryAlbums(albums))
+      if (albums) {
+        dispatch(setLibraryAlbums(albums))
+        const serverStats = albums
+          .filter(a => (a.serverPlayCount ?? 0) > 0 || (a.serverLastPlayedAt ?? 0) > 0)
+          .map(a => ({
+            id: a.id,
+            playCount: a.serverPlayCount ?? 0,
+            lastPlayedAt: a.serverLastPlayedAt ?? 0,
+          }))
+        if (serverStats.length > 0) {
+          dispatch(setServerAlbumStats({ serverId, stats: serverStats }))
+        }
+      }
       if (artists) dispatch(setLibraryArtists(artists))
       if (playlists) dispatch(setLibraryPlaylists(playlists))
       if (tracks) dispatch(setLibraryTracks(tracks))

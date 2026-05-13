@@ -184,7 +184,7 @@
       "usernamePlaceholder": "ListenBrainz 用户名",
       "tokenPlaceholder": "ListenBrainz 用户令牌",
       "connectivity": "连接状态",
-      "helperText": "ListenBrainz 用于记录播放记录和个性化发现。MusicBrainz 提供歌手、专辑、流派和发行信息等元数据。未经你的许可，不会发送任何播放数据。",
+      "helperText": "ListenBrainz 用于记录播放记录和正在播放更新。未经你的许可，不会发送任何播放数据。",
       "disconnect": "断开连接",
       "missingCredentials": "请先输入用户名和令牌。",
       "connectionSuccessful": "成功连接至 ListenBrainz。",
@@ -242,7 +242,7 @@
         },
         "how": {
           "title": "工作原理",
-          "body": "我们通过 MusicBrainz 和 ListenBrainz，根据你媒体库中的歌手找到风格相似的歌手。然后获取这些歌手的专辑和最新发行作品，并在「探索」页面随机展示。"
+          "body": "我们通过 Rawarr/LastFM 根据媒体库中的歌手找到相似歌手，然后通过 Deezer 解析歌手和专辑并显示在「探索」页面。"
         },
         "sync": {
           "title": "同步与刷新",
@@ -416,6 +416,7 @@
       "recentlyAdded": "最近添加",
       "favoriteAlbums": "收藏专辑",
       "randomAlbums": "随机专辑",
+      "mostPlayed": "最常播放",
       "newReleases": "新发行",
       "becauseYouListened": "因为你听了{{artist}}",
       "becauseYouListenedLabel": "因为你听了",
@@ -430,6 +431,7 @@
       "recentlyAdded": "媒体库中暂无专辑",
       "favoriteAlbums": "收藏曲目可将专辑添加至此",
       "randomAlbums": "媒体库中暂无专辑",
+      "mostPlayed": "播放专辑后将显示在此处",
       "albumsForYou": "正在发现专辑...",
       "artistsForYou": "正在发现艺术家..."
     }
@@ -560,7 +562,7 @@
     },
     "info": {
       "title": "关于外部专辑",
-      "body": "专辑元数据由 MusicBrainz 提供。曲目预览由 Deezer 提供——依据 Deezer API 条款提供的 30 秒片段。"
+      "body": "专辑元数据和曲目预览由 Deezer 提供——依据 Deezer API 条款提供的 30 秒片段。"
     }
   },
   "albumOptions": {

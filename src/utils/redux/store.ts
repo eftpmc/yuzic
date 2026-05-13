@@ -31,6 +31,18 @@ const statsMigrations: Record<number, (s: any) => any> = {
     artistLastPlayedAt: state?.artistLastPlayedAt && typeof state.artistLastPlayedAt === 'object' ? state.artistLastPlayedAt : {},
     playlistLastPlayedAt: state?.playlistLastPlayedAt && typeof state.playlistLastPlayedAt === 'object' ? state.playlistLastPlayedAt : {},
   }),
+  2: () => ({
+    songPlays: {},
+    albumPlays: {},
+    artistPlays: {},
+    playlistPlays: {},
+    songLastPlayedAt: {},
+    albumLastPlayedAt: {},
+    artistLastPlayedAt: {},
+    playlistLastPlayedAt: {},
+    serverAlbumPlays: {},
+    serverAlbumLastPlayedAt: {},
+  }),
 };
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -44,7 +56,7 @@ const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
 const statsPersistConfig = {
   key: 'stats',
   storage,
-  version: 1,
+  version: 2,
   migrate: createMigrate(statsMigrations, { debug: false }),
 };
 const libraryPersistConfig = {

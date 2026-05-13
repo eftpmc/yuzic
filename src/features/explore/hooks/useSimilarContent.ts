@@ -3,13 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { useArtists } from '@/hooks/artists'
 import * as deezer from '@/api/deezer'
-import * as listenbrainz from '@/api/listenbrainz'
-import * as musicbrainz from '@/api/musicbrainz'
-import { getArtistBasic, fetchArtistCommonsFilename } from '@/api/musicbrainz/artists/getArtist'
 import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists'
 import { RAWARR_URL } from '@/constants/rawarr'
-import { resolveArtistMbid } from '@/utils/musicbrainz/resolveArtistMbid'
-import { sharedMusicBrainzQueue } from '../utils/requestQueue'
 import { QueryKeys } from '@/enums/queryKeys'
 import { selectArtistPlayCounts } from '@/utils/redux/selectors/statsSelectors'
 import { getExploreDayKey, getExploreSeed, seededShuffle } from './useDailyLayout'
@@ -18,14 +13,12 @@ import type { CoverSource, ExternalArtistBase, ExternalAlbumBase } from '@/types
 const POOL_SIZE = 40
 const MIN_ITEMS = 8
 const TARGET_ARTISTS = 10
-const PICK_ALBUM_ARTISTS = 20
 const TARGET_ALBUMS = 10
 const MAX_ALBUMS_PER_ARTIST = 2
 const SEED_COUNT = 5
 const SEED_POOL_SIZE = 20
 const DEEZER_ARTIST_BATCH_SIZE = 4
 
-const LB_DELAY_MS = 500
 const SIMILAR_CONTENT_TIMEOUT_MS = 15000
 
 type SimilarContentResult = {
@@ -34,10 +27,7 @@ type SimilarContentResult = {
 }
 
 type Candidate = {
-  mbid: string | null
   name: string
-  area?: string
-  imagePromise: Promise<string | null>
 }
 
 function hasCover(cover: CoverSource): boolean {
@@ -50,10 +40,6 @@ function preferCovered<T extends { cover: CoverSource }>(items: T[], seed: numbe
     ...shuffled.filter(item => hasCover(item.cover)),
     ...shuffled.filter(item => !hasCover(item.cover)),
   ]
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms))
 }
 
 function emptySimilarContent(): SimilarContentResult {
@@ -88,20 +74,17 @@ async function fetchSimilarContentViaLastFm(
   )
 
   const seen = new Set<string>()
-  const candidates: (Candidate & { mbid: string })[] = []
+  const candidates: Candidate[] = []
 
   for (const similar of seedResults.map((r, index) => seededShuffle(r, dailySeed + 10 + index))) {
     for (const s of similar) {
+      const name = s.name.trim()
+      const key = name.toLowerCase()
       if (candidates.length >= POOL_SIZE) break
-      if (libraryArtistNames.has(s.name.toLowerCase())) continue
-      if (!s.mbid) continue
-      if (seen.has(s.mbid)) continue
-      seen.add(s.mbid)
-      candidates.push({
-        mbid: s.mbid,
-        name: s.name,
-        imagePromise: Promise.resolve(null),
-      })
+      if (!key || libraryArtistNames.has(key)) continue
+      if (seen.has(key)) continue
+      seen.add(key)
+      candidates.push({ name })
     }
     if (candidates.length >= POOL_SIZE) break
   }
@@ -154,9 +137,10 @@ async function fetchSimilarContentViaLastFm(
   const preferredArtists = preferCovered(artists, dailySeed + 30).slice(0, TARGET_ARTISTS)
   const preferredAlbums = preferCovered(albums, dailySeed + 31).slice(0, TARGET_ALBUMS)
 
-  if (preferredArtists.length < MIN_ITEMS || preferredAlbums.length < MIN_ITEMS) return null
-
-  return { artists: preferredArtists, albums: preferredAlbums }
+  return {
+    artists: preferredArtists.length >= MIN_ITEMS ? preferredArtists : [],
+    albums: preferredAlbums.length >= MIN_ITEMS ? preferredAlbums : [],
+  }
 }
 
 async function fetchSimilarContent(
@@ -164,102 +148,8 @@ async function fetchSimilarContent(
   libraryArtistNames: Set<string>,
   dailySeed: number
 ): Promise<SimilarContentResult> {
-  // Fast path: LastFM via rawarr-server
   const lastFmResult = await fetchSimilarContentViaLastFm(seeds, libraryArtistNames, dailySeed)
-  if (lastFmResult) return lastFmResult
-
-  // Fallback: ListenBrainz + MusicBrainz
-  const seen = new Set<string>()
-  const candidates: (Candidate & { mbid: string })[] = []
-
-  for (const seed of seededShuffle(seeds, dailySeed + 100)) {
-    if (candidates.length >= POOL_SIZE) break
-    if (seed.name.toLowerCase() === 'various artists') continue
-
-    const seedMbid = seed.mbid ?? await sharedMusicBrainzQueue.run(() =>
-      resolveArtistMbid(seed.id, seed.name)
-    )
-    if (!seedMbid) continue
-
-    await delay(LB_DELAY_MS)
-    const similar = await listenbrainz.getSimilarArtists(seedMbid, {
-      limit: Math.max(POOL_SIZE * 3, 48),
-    })
-
-    const similarMbids = seededShuffle(
-      similar.map(s => s.artist_mbid).filter(m => !seen.has(m)),
-      dailySeed + 110 + candidates.length
-    )
-
-    for (const similarMbid of similarMbids) {
-      if (candidates.length >= POOL_SIZE) break
-      if (seen.has(similarMbid)) continue
-      seen.add(similarMbid)
-
-      const basic = await sharedMusicBrainzQueue.run(() => getArtistBasic(similarMbid))
-      if (!basic) continue
-      if (libraryArtistNames.has(basic.name.toLowerCase())) continue
-
-      const imagePromise = basic.wikidataId
-        ? fetchArtistCommonsFilename(basic.wikidataId)
-        : Promise.resolve(null)
-
-      candidates.push({
-        mbid: basic.id,
-        name: basic.name,
-        area: basic.area,
-        imagePromise,
-      })
-    }
-  }
-
-  const displayCandidates = candidates.slice(0, TARGET_ARTISTS + 8)
-  const albumCandidates = candidates.slice(TARGET_ARTISTS, TARGET_ARTISTS + PICK_ALBUM_ARTISTS)
-
-  const [artists, albums] = await Promise.all([
-    Promise.all(
-      displayCandidates.map(async c => {
-        const filename = await c.imagePromise
-        return {
-          id: c.mbid,
-          name: c.name,
-          subtext: c.area ?? '',
-          cover: filename
-            ? { kind: 'commons' as const, filename }
-            : { kind: 'none' as const },
-        } as ExternalArtistBase
-      })
-    ),
-
-    (async (): Promise<ExternalAlbumBase[]> => {
-      const seenAlbums = new Set<string>()
-      const result: ExternalAlbumBase[] = []
-      for (const artist of albumCandidates) {
-        if (result.length >= TARGET_ALBUMS) break
-        const artistAlbums = await sharedMusicBrainzQueue.run(() =>
-          musicbrainz.getArtistAlbums(artist.mbid, artist.name, MAX_ALBUMS_PER_ARTIST + 2)
-        )
-        let taken = 0
-        for (const a of artistAlbums) {
-          if (taken >= MAX_ALBUMS_PER_ARTIST || result.length >= TARGET_ALBUMS) break
-          if (!seenAlbums.has(a.id)) {
-            seenAlbums.add(a.id)
-            result.push(a)
-            taken++
-          }
-        }
-      }
-      return seededShuffle(result, dailySeed + 130).slice(0, TARGET_ALBUMS)
-    })(),
-  ])
-
-  const preferredArtists = preferCovered(artists, dailySeed + 140).slice(0, TARGET_ARTISTS)
-  const preferredAlbums = preferCovered(albums, dailySeed + 141).slice(0, TARGET_ALBUMS)
-
-  return {
-    artists: preferredArtists.length >= MIN_ITEMS ? preferredArtists : [],
-    albums: preferredAlbums.length >= MIN_ITEMS ? preferredAlbums : [],
-  }
+  return lastFmResult ?? emptySimilarContent()
 }
 
 export function useSimilarContent() {

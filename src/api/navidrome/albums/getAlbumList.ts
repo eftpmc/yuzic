@@ -16,6 +16,8 @@ function normalizeAlbumEntry(a: any): AlbumBase {
     subtext: "Artist",
   }
 
+  const serverLastPlayedAt = a.played ? new Date(a.played).getTime() : undefined;
+
   return {
     id: a.id,
     cover,
@@ -28,6 +30,8 @@ function normalizeAlbumEntry(a: any): AlbumBase {
     year: a.year,
     genres: a.genre ? [a.genre] : [],
     created: a.created ? new Date(a.created) : new Date(0),
+    serverPlayCount: a.playCount ?? undefined,
+    serverLastPlayedAt: serverLastPlayedAt && !isNaN(serverLastPlayedAt) ? serverLastPlayedAt : undefined,
   };
 }
 

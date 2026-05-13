@@ -1,6 +1,5 @@
 export { useArtist } from './useArtist'
 export { useArtistAlbums } from './useArtistAlbums'
-export { useArtistMbid } from './useArtistMbid'
 export { useExternalArtist } from './useExternalArtist'
 export { useSimilarArtists } from './useSimilarArtists'
 export { useArtists } from './useArtists'

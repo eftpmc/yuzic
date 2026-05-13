@@ -184,7 +184,7 @@
       "usernamePlaceholder": "ListenBrainz ユーザー名",
       "tokenPlaceholder": "ListenBrainz ユーザートークン",
       "connectivity": "接続状況",
-      "helperText": "ListenBrainz はスクリブルとパーソナライズされた発見に使われます。MusicBrainz はアーティスト、アルバム、ジャンル、リリースのメタデータを提供します。許可なく再生データは送信されません。",
+      "helperText": "ListenBrainz はスクリブルと再生中情報の更新に使われます。許可なく再生データは送信されません。",
       "disconnect": "切断",
       "missingCredentials": "ユーザー名とトークンを入力してください。",
       "connectionSuccessful": "ListenBrainz の接続に成功しました。",
@@ -242,7 +242,7 @@
         },
         "how": {
           "title": "仕組み",
-          "body": "ライブラリ内のアーティストから MusicBrainz と ListenBrainz を使って類似アーティストを探し、そのアーティストのアルバムや新譜を取得して Explore に混ぜて表示します。"
+          "body": "ライブラリ内のアーティストから Rawarr/LastFM で類似アーティストを探し、Deezer でアーティストとアルバムを解決して Explore に表示します。"
         },
         "sync": {
           "title": "同期と更新",
@@ -416,6 +416,7 @@
       "recentlyAdded": "最近追加",
       "favoriteAlbums": "お気に入りのアルバム",
       "randomAlbums": "ランダムアルバム",
+      "mostPlayed": "最も再生された",
       "newReleases": "新着リリース",
       "becauseYouListened": "{{artist}}を聴いているあなたへ",
       "becauseYouListenedLabel": "最近聴いているから",
@@ -430,6 +431,7 @@
       "recentlyAdded": "ライブラリにアルバムがありません",
       "favoriteAlbums": "曲をお気に入りするとここに表示されます",
       "randomAlbums": "ライブラリにアルバムがありません",
+      "mostPlayed": "再生したアルバムがここに表示されます",
       "albumsForYou": "アルバムを探しています...",
       "artistsForYou": "アーティストを探しています..."
     }
@@ -560,7 +562,7 @@
     },
     "info": {
       "title": "外部アルバムについて",
-      "body": "アルバムのメタデータは MusicBrainz が提供しています。トラックのプレビューは Deezer によるもので、Deezer API 利用規約に基づく 30 秒のクリップです。"
+      "body": "アルバムのメタデータとトラックのプレビューは Deezer が提供しています。Deezer API 利用規約に基づく 30 秒のクリップです。"
     }
   },
   "albumOptions": {

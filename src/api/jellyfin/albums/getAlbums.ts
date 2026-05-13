@@ -23,6 +23,9 @@ function normalizeAlbum(a: any): AlbumBase | null {
     };
 
     const albumMbid = a.ProviderIds?.MusicBrainzAlbum ?? a.ProviderIds?.MusicBrainz ?? null;
+    const serverLastPlayedAt = a.UserData?.LastPlayedDate
+      ? new Date(a.UserData.LastPlayedDate).getTime()
+      : undefined;
 
     return {
       id: albumId,
@@ -37,6 +40,8 @@ function normalizeAlbum(a: any): AlbumBase | null {
         .filter(Boolean),
       created: a.DateCreated ? new Date(a.DateCreated) : new Date(0),
       mbid: albumMbid,
+      serverPlayCount: a.UserData?.PlayCount ?? undefined,
+      serverLastPlayedAt: serverLastPlayedAt && !isNaN(serverLastPlayedAt) ? serverLastPlayedAt : undefined,
     };
   } catch (error) {
     console.error(`Failed to normalize album:`, error);
@@ -53,7 +58,7 @@ export async function getAlbums(
     `IncludeItemTypes=MusicAlbum` +
     `&Recursive=true` +
     `&SortBy=SortName` +
-    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds`;
+    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds,UserData`;
 
   const path =
     `/Items?${baseParams}` +

@@ -16,7 +16,6 @@ import {
   SongBase,
 } from '@/types';
 
-import * as musicbrainz from '@/api/musicbrainz';
 import * as deezer from '@/api/deezer';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
@@ -289,23 +288,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         deezer.searchDeezerAlbums(query, 6),
       ]);
 
-      const deezerResults = [
+      return [
         ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
         ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
       ];
-
-      if (deezerResults.length >= 4) return deezerResults;
-
-      const albums = await musicbrainz.searchAlbums(query);
-      const musicBrainzResults = albums
-        .slice(0, 6 - deezerResults.length)
-        .map(album => albumToResult({
-          ...album,
-          externalSource: 'musicbrainz' as const,
-          externalIds: { mbid: album.id },
-        }, 'external', false));
-
-      return [...deezerResults, ...musicBrainzResults];
     } catch {
       return [];
     }

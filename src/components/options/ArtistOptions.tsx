@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Linking,
 } from 'react-native';
 import {
   BottomSheetModal,
@@ -21,7 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { useTheme } from '@/hooks/useTheme';
-import { useArtistAlbums, useArtistMbid } from '@/hooks/artists';
+import { useArtistAlbums } from '@/hooks/artists';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -52,10 +51,6 @@ const ArtistOptions = forwardRef<
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const { data: mbid } = useArtistMbid(
-    artist ? { id: artist.id, name: artist.name, mbid: artist.mbid } : null
-  );
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const playCount = useSelector(selectArtistPlayCount(artist?.id ?? ''));
@@ -131,18 +126,11 @@ const ArtistOptions = forwardRef<
   };
 
   const handleGoToExternalArtist = () => {
-    if (!artist || !mbid) return;
+    if (!artist) return;
     close();
     navigation.navigate('externalArtistView', {
-      mbid,
       name: artist.name,
     });
-  };
-
-  const handleViewExternal = () => {
-    if (!mbid) return;
-    close();
-    Linking.openURL(`https://musicbrainz.org/artist/${mbid}`);
   };
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(
@@ -290,18 +278,10 @@ const ArtistOptions = forwardRef<
           </TouchableOpacity>
         )}
 
-        {mbid && (
-          <>
-            <TouchableOpacity style={styles.option} onPress={handleGoToExternalArtist}>
-              <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.goToExternalArtist')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
-              <Ionicons name="open-outline" size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.viewExternal')}</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        <TouchableOpacity style={styles.option} onPress={handleGoToExternalArtist}>
+          <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
+          <Text style={[styles.optionText, themeStyles.optionText]}>{t('artistOptions.actions.goToExternalArtist')}</Text>
+        </TouchableOpacity>
 
         <View style={styles.divider} />
 

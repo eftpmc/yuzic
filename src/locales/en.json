@@ -188,7 +188,7 @@
       "usernamePlaceholder": "ListenBrainz username",
       "tokenPlaceholder": "ListenBrainz user token",
       "connectivity": "Connectivity",
-      "helperText": "ListenBrainz is used for scrobbling and personalized discovery. MusicBrainz provides artist, albums, genres, and release metadata. No listening data is sent without your permission.",
+      "helperText": "ListenBrainz is used for scrobbling and now playing updates. No listening data is sent without your permission.",
       "disconnect": "Disconnect",
       "missingCredentials": "Enter username and token first.",
       "connectionSuccessful": "ListenBrainz connection successful.",
@@ -283,7 +283,7 @@
         },
         "how": {
           "title": "How it works",
-          "body": "We use your library artists to find similar artists via MusicBrainz and ListenBrainz. From those we pull albums and new releases, then show a shuffled mix in Explore."
+          "body": "We use your library artists to find similar artists through Rawarr/LastFM, then resolve artists and albums through Deezer for Explore."
         },
         "sync": {
           "title": "Sync & refresh",
@@ -461,6 +461,7 @@
       "recentlyAdded": "Recently added",
       "favoriteAlbums": "Favorite albums",
       "randomAlbums": "Random albums",
+      "mostPlayed": "Most played",
       "newReleases": "New releases",
       "becauseYouListened": "Because you listened to {{artist}}",
       "becauseYouListenedLabel": "Because you listened to",
@@ -480,6 +481,7 @@
       "recentlyAdded": "No albums in your library yet",
       "favoriteAlbums": "Star songs to add albums here",
       "randomAlbums": "No albums in your library yet",
+      "mostPlayed": "Play albums to see them here",
       "albumsForYou": "Discovering albums...",
       "artistsForYou": "Discovering artists...",
       "recommendedExternal": "Nothing to discover yet"

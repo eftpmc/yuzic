@@ -1,1 +1,0 @@
-export { getSimilarArtists } from './getSimilarArtists'

@@ -28,13 +28,37 @@ export const selectSongPlayCounts = createSelector(
 );
 
 export const selectAlbumLastPlayedAt = createSelector(
-  [(s: RootState) => s.stats.albumLastPlayedAt, (s: RootState) => s.servers.activeServerId],
-  (map, serverId) => filterByServer(map, serverId)
+  [
+    (s: RootState) => s.stats.albumLastPlayedAt,
+    (s: RootState) => s.stats.serverAlbumLastPlayedAt,
+    (s: RootState) => s.servers.activeServerId,
+  ],
+  (localMap, serverMap, serverId) => {
+    const local = filterByServer(localMap, serverId);
+    const server = filterByServer(serverMap, serverId);
+    const merged: Record<string, number> = { ...server };
+    for (const [id, ts] of Object.entries(local)) {
+      merged[id] = Math.max(merged[id] ?? 0, ts);
+    }
+    return merged;
+  }
 );
 
 export const selectAlbumPlayCounts = createSelector(
-  [(s: RootState) => s.stats.albumPlays, (s: RootState) => s.servers.activeServerId],
-  (map, serverId) => filterByServer(map, serverId)
+  [
+    (s: RootState) => s.stats.albumPlays,
+    (s: RootState) => s.stats.serverAlbumPlays,
+    (s: RootState) => s.servers.activeServerId,
+  ],
+  (localMap, serverMap, serverId) => {
+    const local = filterByServer(localMap, serverId);
+    const server = filterByServer(serverMap, serverId);
+    const merged: Record<string, number> = { ...server };
+    for (const [id, count] of Object.entries(local)) {
+      merged[id] = Math.max(merged[id] ?? 0, count);
+    }
+    return merged;
+  }
 );
 
 export const selectArtistLastPlayedAt = createSelector(

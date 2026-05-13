@@ -13,7 +13,6 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import { useTheme } from '@/hooks/useTheme';
 import * as deezer from '@/api/deezer';
 import { QueryKeys } from '@/enums/queryKeys';
-import { staleTime } from '@/constants/staleTime';
 
 const H_PADDING = 16;
 const TILE_GAP = 12;
@@ -42,7 +41,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
   const { data: moreAlbums } = useQuery({
     queryKey: [QueryKeys.ExternalArtist, 'artist-albums', artistDeezerId ?? artistName ?? ''],
     enabled: !!(artistDeezerId || artistName),
-    staleTime: staleTime.musicbrainz,
+    staleTime: 1000 * 60 * 60 * 24,
     queryFn: async () => {
       let deezerId = artistDeezerId;
       if (!deezerId && artistName) {

@@ -18,6 +18,7 @@ export type SectionType =
   | 'artistsForYou'
   | 'favoriteAlbums'
   | 'randomAlbums'
+  | 'mostPlayed'
   | 'charts'
   | 'genre'
 
@@ -54,7 +55,13 @@ export function seededShuffle<T>(arr: T[], seed: number): T[] {
 }
 
 
-export function useDailyLayout(): SectionConfig[] {
+export type ExploreLayout = {
+  local: SectionConfig[]
+  deezer: SectionConfig[]
+  isOffline: boolean
+}
+
+export function useDailyLayout(): ExploreLayout {
   const isOffline = useIsOffline()
   const { albums: libraryAlbums } = useAlbums()
   const { artists: libraryArtists } = useArtists()
@@ -94,30 +101,34 @@ export function useDailyLayout(): SectionConfig[] {
     return seededShuffle(availableGenres, dailySeed).slice(0, GENRE_COUNT)
   }, [availableGenres, dailySeed])
 
-  return useMemo((): SectionConfig[] => {
+  const local = useMemo((): SectionConfig[] => [
+    { key: 'recentlyPlayed', type: 'recentlyPlayed' },
+    { key: 'recentlyAdded', type: 'recentlyAdded' },
+    { key: 'mostPlayed', type: 'mostPlayed' },
+    { key: 'favoriteAlbums', type: 'favoriteAlbums' },
+    { key: 'randomAlbums', type: 'randomAlbums' },
+  ], [])
+
+  const deezer = useMemo((): SectionConfig[] => {
+    if (isOffline) return []
     const hasLibrary = libraryArtists.length > 0
     const pool: SectionConfig[] = []
 
-    pool.push({ key: 'recentlyPlayed', type: 'recentlyPlayed' })
-    pool.push({ key: 'recentlyAdded', type: 'recentlyAdded' })
-    pool.push({ key: 'favoriteAlbums', type: 'favoriteAlbums' })
-    pool.push({ key: 'randomAlbums', type: 'randomAlbums' })
-
-    if (!isOffline) {
-      if (hasLibrary) {
-        pool.push({ key: 'newReleases', type: 'newReleases' })
-        pool.push({ key: 'artistsForYou', type: 'artistsForYou' })
-        for (const name of becauseSeeds) {
-          pool.push({ key: `becauseYouListened:${name}`, type: 'becauseYouListened', artistName: name })
-        }
-        for (const genre of topGenres) {
-          pool.push({ key: `genre:${genre}`, type: 'genre', genre })
-        }
-      } else {
-        pool.push({ key: 'charts', type: 'charts' })
+    if (hasLibrary) {
+      pool.push({ key: 'newReleases', type: 'newReleases' })
+      pool.push({ key: 'artistsForYou', type: 'artistsForYou' })
+      for (const name of becauseSeeds) {
+        pool.push({ key: `becauseYouListened:${name}`, type: 'becauseYouListened', artistName: name })
       }
+      for (const genre of topGenres) {
+        pool.push({ key: `genre:${genre}`, type: 'genre', genre })
+      }
+    } else {
+      pool.push({ key: 'charts', type: 'charts' })
     }
 
     return seededShuffle(pool, dailySeed)
   }, [dailySeed, isOffline, libraryArtists.length, becauseSeeds, topGenres])
+
+  return useMemo(() => ({ local, deezer, isOffline }), [local, deezer, isOffline])
 }

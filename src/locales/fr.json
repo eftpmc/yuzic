@@ -184,7 +184,7 @@
       "usernamePlaceholder": "Nom d'utilisateur ListenBrainz",
       "tokenPlaceholder": "Jeton utilisateur ListenBrainz",
       "connectivity": "Connectivité",
-      "helperText": "ListenBrainz est utilisé pour le scrobbling et la découverte personnalisée. MusicBrainz fournit les métadonnées des artistes, albums, genres et sorties. Aucune donnée d'écoute n'est envoyée sans votre permission.",
+      "helperText": "ListenBrainz est utilisé pour le scrobbling et les mises à jour de lecture en cours. Aucune donnée d'écoute n'est envoyée sans votre permission.",
       "disconnect": "Déconnecter",
       "missingCredentials": "Saisissez d'abord le nom d'utilisateur et le jeton.",
       "connectionSuccessful": "Connexion à ListenBrainz réussie.",
@@ -242,7 +242,7 @@
         },
         "how": {
           "title": "Comment ça marche",
-          "body": "Nous utilisons les artistes de votre bibliothèque pour trouver des artistes similaires via MusicBrainz et ListenBrainz. À partir de ceux-ci, nous récupérons des albums et les nouvelles sorties, puis affichons une sélection aléatoire dans Explorer."
+          "body": "Nous utilisons les artistes de votre bibliothèque pour trouver des artistes similaires via Rawarr/LastFM, puis nous résolvons les artistes et albums via Deezer pour Explorer."
         },
         "sync": {
           "title": "Synchronisation et actualisation",
@@ -416,6 +416,7 @@
       "recentlyAdded": "Ajoutés récemment",
       "favoriteAlbums": "Albums favoris",
       "randomAlbums": "Albums au hasard",
+      "mostPlayed": "Les plus écoutés",
       "newReleases": "Nouvelles sorties",
       "becauseYouListened": "Parce que vous écoutez {{artist}}",
       "becauseYouListenedLabel": "Parce que vous écoutez",
@@ -430,6 +431,7 @@
       "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment",
       "favoriteAlbums": "Marquez des morceaux comme favoris pour ajouter des albums ici",
       "randomAlbums": "Aucun album dans votre bibliothèque pour le moment",
+      "mostPlayed": "Écoutez des albums pour les voir ici",
       "albumsForYou": "Découverte des albums...",
       "artistsForYou": "Découverte des artistes..."
     }
@@ -560,7 +562,7 @@
     },
     "info": {
       "title": "À propos des albums externes",
-      "body": "Les métadonnées de l'album sont fournies par MusicBrainz. Les aperçus des pistes sont fournis par Deezer — des extraits de 30 secondes conformément aux conditions d'utilisation de l'API Deezer."
+      "body": "Les métadonnées de l'album et les aperçus des pistes sont fournis par Deezer — des extraits de 30 secondes conformément aux conditions d'utilisation de l'API Deezer."
     }
   },
   "albumOptions": {
