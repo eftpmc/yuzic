@@ -6,7 +6,7 @@ interface LibraryState {
   artists: Artist[];
   playlists: PlaylistBase[];
   tracks: SongBase[];
-  genres: string[];
+  genres: Record<string, string[]>;
   starred: Song[];
 }
 
@@ -15,7 +15,7 @@ const initialState: LibraryState = {
   artists: [],
   playlists: [],
   tracks: [],
-  genres: [],
+  genres: {},
   starred: [],
 };
 
@@ -35,8 +35,8 @@ const librarySlice = createSlice({
     setLibraryTracks(state, action: PayloadAction<SongBase[]>) {
       state.tracks = action.payload;
     },
-    setLibraryGenres(state, action: PayloadAction<string[]>) {
-      state.genres = action.payload;
+    setLibraryGenres(state, action: PayloadAction<{ serverId: string; genres: string[] }>) {
+      state.genres[action.payload.serverId] = action.payload.genres;
     },
     setLibraryStarred(state, action: PayloadAction<Song[]>) {
       state.starred = action.payload;

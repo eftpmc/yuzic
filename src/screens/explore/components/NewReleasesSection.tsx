@@ -14,6 +14,7 @@ import { getNewReleasesForArtists } from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
 import { useIsOffline } from '@/hooks/useIsOffline'
 import { getExploreDayKey, getExploreSeed, seededShuffle } from '@/features/explore/hooks/useDailyLayout'
+import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
 import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
@@ -29,6 +30,7 @@ export default function NewReleasesSection() {
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const isOffline = useIsOffline()
+  const isEnabled = useDeezerEnabled()
   const { artists } = useArtists()
   const artistPlayCounts = useSelector(selectArtistPlayCounts)
   const dayKey = getExploreDayKey()
@@ -57,7 +59,7 @@ export default function NewReleasesSection() {
   const query = useQuery<ExternalAlbumBase[]>({
     queryKey,
     queryFn: () => getNewReleasesForArtists(seedNames),
-    enabled: seedNames.length > 0 && !isOffline,
+    enabled: seedNames.length > 0 && isEnabled,
     staleTime: 1000 * 60 * 60 * 6,
     networkMode: 'online',
   })

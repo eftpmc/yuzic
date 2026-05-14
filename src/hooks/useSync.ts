@@ -166,7 +166,7 @@ export function useSync() {
       if (artists) dispatch(setLibraryArtists(artists))
       if (playlists) dispatch(setLibraryPlaylists(playlists))
       if (tracks) dispatch(setLibraryTracks(tracks))
-      if (genres) dispatch(setLibraryGenres(genres))
+      if (genres) dispatch(setLibraryGenres({ serverId, genres }))
       if (starred?.songs) dispatch(setLibraryStarred(starred.songs))
 
       if (hasAnyLibraryData) {

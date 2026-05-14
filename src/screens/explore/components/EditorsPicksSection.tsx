@@ -7,34 +7,31 @@ import { useQuery } from '@tanstack/react-query'
 import { useTheme } from '@/hooks/useTheme'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
-import { getDeezerChartAlbums } from '@/api/deezer'
+import { getDeezerEditorialSelection } from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
 import { getExploreDayKey } from '@/features/explore/hooks/useDailyLayout'
-import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
 import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
 const H_PADDING = 16
 const VISIBLE_ITEMS = 2.5
-const MIN_ALBUMS = 8
+const MIN_ALBUMS = 4
 
-export default function DeezerChartsSection() {
+export default function EditorsPicksSection() {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const dayKey = getExploreDayKey()
-  const isEnabled = useDeezerEnabled()
 
   const screenWidth = Dimensions.get('window').width
   const gridGap = 12
   const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreDeezerCharts, dayKey],
-    queryFn: () => getDeezerChartAlbums(10),
-    enabled: isEnabled,
-    staleTime: 1000 * 60 * 60 * 6,
+    queryKey: [QueryKeys.ExploreEditorsPicks, dayKey],
+    queryFn: () => getDeezerEditorialSelection(10),
+    staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
   })
 
@@ -64,7 +61,7 @@ export default function DeezerChartsSection() {
   return (
     <View style={styles.container}>
       <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-        {t('explore.sections.charts')}
+        {t('explore.sections.editorsPicks')}
       </Text>
       {query.isLoading ? (
         <ExploreLoadingTiles

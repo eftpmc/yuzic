@@ -259,6 +259,29 @@ export async function getDeezerArtistsByGenreId(genreId: number, limit = 20): Pr
   });
 }
 
+export async function getDeezerChartArtists(limit = 10): Promise<ExternalArtistBase[]> {
+  return cached(`chart-artists:${limit}`, CHART_CACHE_MS, async () => {
+    const artists = await requestList<DeezerArtist>(`/chart/0/artists?limit=${limit}`);
+    return artists.map(deezerArtistToExternal);
+  });
+}
+
+export async function getDeezerEditorialSelection(limit = 10): Promise<ExternalAlbumBase[]> {
+  return cached(`editorial-selection:${limit}`, DAY_MS, async () => {
+    const albums = await requestList<DeezerAlbum>(`/editorial/0/selection?limit=${limit * 2}`);
+    const seenArtists = new Set<string>();
+    const result: ExternalAlbumBase[] = [];
+    for (const album of albums) {
+      const artistKey = (album.artist?.name ?? '').toLowerCase();
+      if (artistKey && seenArtists.has(artistKey)) continue;
+      if (artistKey) seenArtists.add(artistKey);
+      result.push(deezerAlbumToExternal(album));
+      if (result.length >= limit) break;
+    }
+    return result;
+  });
+}
+
 export async function getDeezerChartAlbums(limit = 10): Promise<ExternalAlbumBase[]> {
   return cached(`chart-albums:${limit}`, CHART_CACHE_MS, async () => {
     const albums = await requestList<DeezerAlbum>(`/chart/0/albums?limit=${limit * 2}`);

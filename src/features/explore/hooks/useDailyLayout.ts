@@ -6,9 +6,9 @@ import { useIsOffline } from '@/hooks/useIsOffline'
 import { selectArtistPlayCounts } from '@/utils/redux/selectors/statsSelectors'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 
-const BECAUSE_SEED_COUNT = 3
+const BECAUSE_SEED_COUNT = 1
 const BECAUSE_SEED_POOL_SIZE = 20
-const GENRE_COUNT = 2
+const GENRE_COUNT = 1
 
 export type SectionType =
   | 'recentlyPlayed'
@@ -16,6 +16,7 @@ export type SectionType =
   | 'newReleases'
   | 'becauseYouListened'
   | 'artistsForYou'
+  | 'topArtists'
   | 'favoriteAlbums'
   | 'randomAlbums'
   | 'mostPlayed'
@@ -70,16 +71,20 @@ export function useDailyLayout(): ExploreLayout {
   const dayKey = getExploreDayKey()
   const dailySeed = getExploreSeed(dayKey)
 
-  const becauseSeeds = useMemo(() => {
-    const pool = [...libraryArtists]
-      .filter(a => a.name.trim() && a.name.toLowerCase() !== 'various artists')
-      .sort((a, b) => (artistPlayCounts[b.id] ?? 0) - (artistPlayCounts[a.id] ?? 0))
-      .slice(0, BECAUSE_SEED_POOL_SIZE)
-
-    return seededShuffle(pool, dailySeed)
-      .slice(0, BECAUSE_SEED_COUNT)
-      .map(a => a.name)
+  const artistSeedPool = useMemo(() => {
+    return seededShuffle(
+      [...libraryArtists]
+        .filter(a => a.name.trim() && a.name.toLowerCase() !== 'various artists')
+        .sort((a, b) => (artistPlayCounts[b.id] ?? 0) - (artistPlayCounts[a.id] ?? 0))
+        .slice(0, BECAUSE_SEED_POOL_SIZE),
+      dailySeed
+    )
   }, [dailySeed, libraryArtists, artistPlayCounts])
+
+  const becauseSeeds = useMemo(
+    () => artistSeedPool.slice(0, BECAUSE_SEED_COUNT).map(a => a.name),
+    [artistSeedPool]
+  )
 
   const availableGenres = useMemo(() => {
     const genres = new Set<string>()
@@ -114,17 +119,17 @@ export function useDailyLayout(): ExploreLayout {
     const hasLibrary = libraryArtists.length > 0
     const pool: SectionConfig[] = []
 
+    pool.push({ key: 'topArtists', type: 'topArtists' })
+    pool.push({ key: 'charts', type: 'charts' })
+
     if (hasLibrary) {
       pool.push({ key: 'newReleases', type: 'newReleases' })
-      pool.push({ key: 'artistsForYou', type: 'artistsForYou' })
       for (const name of becauseSeeds) {
         pool.push({ key: `becauseYouListened:${name}`, type: 'becauseYouListened', artistName: name })
       }
       for (const genre of topGenres) {
         pool.push({ key: `genre:${genre}`, type: 'genre', genre })
       }
-    } else {
-      pool.push({ key: 'charts', type: 'charts' })
     }
 
     return seededShuffle(pool, dailySeed)

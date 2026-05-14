@@ -7,6 +7,8 @@ export {
   getDeezerArtist,
   getDeezerArtistsByGenreId,
   getDeezerChartAlbums,
+  getDeezerChartArtists,
+  getDeezerEditorialSelection,
   getDeezerGenreList,
   getDeezerArtistAlbums,
   getNewReleasesForArtists,
