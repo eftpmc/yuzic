@@ -1,5 +1,5 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer, createMigrate } from 'redux-persist';
+import { persistStore, persistReducer } from 'redux-persist';
 import { reduxStorage as storage } from '@/utils/mmkvStorage';
 
 import serversReducer from './slices/serversSlice';
@@ -11,44 +11,26 @@ import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
 
-// ─── Migrations ───────────────────────────────────────────────────────────────
-// Version 1: normalize state shapes that changed during the redesign.
-// library  — always safe to reset; it re-syncs from the server on launch.
-// stats    — all fields must be plain objects (Records), sanitize if needed.
-
-const libraryMigrations: Record<number, (s: any) => any> = {
-  1: () => ({ albums: [], artists: [], playlists: [], tracks: [], genres: [], starred: [] }),
+// Returns undefined (→ initialState) only on version bump; otherwise passes state through.
+const resetMigrate = (state: any, currentVersion: number): Promise<any> => {
+  if (state?._persist?.version === currentVersion) return Promise.resolve(state);
+  return Promise.resolve(undefined as any);
 };
 
-const statsMigrations: Record<number, (s: any) => any> = {
-  1: (state: any) => ({
-    songPlays: state?.songPlays && typeof state.songPlays === 'object' ? state.songPlays : {},
-    albumPlays: state?.albumPlays && typeof state.albumPlays === 'object' ? state.albumPlays : {},
-    artistPlays: state?.artistPlays && typeof state.artistPlays === 'object' ? state.artistPlays : {},
-    playlistPlays: state?.playlistPlays && typeof state.playlistPlays === 'object' ? state.playlistPlays : {},
-    songLastPlayedAt: state?.songLastPlayedAt && typeof state.songLastPlayedAt === 'object' ? state.songLastPlayedAt : {},
-    albumLastPlayedAt: state?.albumLastPlayedAt && typeof state.albumLastPlayedAt === 'object' ? state.albumLastPlayedAt : {},
-    artistLastPlayedAt: state?.artistLastPlayedAt && typeof state.artistLastPlayedAt === 'object' ? state.artistLastPlayedAt : {},
-    playlistLastPlayedAt: state?.playlistLastPlayedAt && typeof state.playlistLastPlayedAt === 'object' ? state.playlistLastPlayedAt : {},
-  }),
-  2: () => ({
-    songPlays: {},
-    albumPlays: {},
-    artistPlays: {},
-    playlistPlays: {},
-    songLastPlayedAt: {},
-    albumLastPlayedAt: {},
-    artistLastPlayedAt: {},
-    playlistLastPlayedAt: {},
-    serverAlbumPlays: {},
-    serverAlbumLastPlayedAt: {},
-  }),
+// Patches specific fields on version bump while preserving all other user settings.
+const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
+  if (state?._persist?.version === currentVersion) return Promise.resolve(state);
+  return Promise.resolve({ ...state, syncOnAppStart: true });
 };
-// ──────────────────────────────────────────────────────────────────────────────
 
 const serversPersistConfig = { key: 'servers', storage };
 const downloadersPersistConfig = { key: 'downloaders', storage };
-const settingsPersistConfig = { key: 'settings', storage };
+const settingsPersistConfig = {
+  key: 'settings',
+  storage,
+  version: 1,
+  migrate: settingsMigrate,
+};
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
 const lastfmPersistConfig = { key: 'lastfm', storage };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
@@ -56,14 +38,14 @@ const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
 const statsPersistConfig = {
   key: 'stats',
   storage,
-  version: 2,
-  migrate: createMigrate(statsMigrations, { debug: false }),
+  version: 3,
+  migrate: resetMigrate,
 };
 const libraryPersistConfig = {
   key: 'library',
   storage,
-  version: 1,
-  migrate: createMigrate(libraryMigrations, { debug: false }),
+  version: 2,
+  migrate: resetMigrate,
 };
 
 export const rootReducer = combineReducers({

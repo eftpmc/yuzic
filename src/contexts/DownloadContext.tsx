@@ -152,6 +152,17 @@ function normalizeLocalUri(uri: string): string {
   return `file://${uri}`;
 }
 
+// Re-roots a stored localPath to the current documentDirectory so downloads
+// survive app reinstalls or updates that rotate the iOS container UUID.
+function rerootLocalPath(storedPath: string): string {
+  const docDir = FileSystem.documentDirectory;
+  if (!docDir || storedPath.startsWith(docDir)) return storedPath;
+  const marker = 'downloads/';
+  const idx = storedPath.indexOf(marker);
+  if (idx !== -1) return `${docDir}${storedPath.slice(idx)}`;
+  return storedPath;
+}
+
 function hasCurrentDownloadMetadata(track: LocalDownloadedTrackEntry): boolean {
   if (track.schemaVersion === DOWNLOAD_SCHEMA_VERSION) return true;
 
@@ -184,13 +195,17 @@ function loadInitialState(): DownloadState {
       }
 
       if (!hasCurrentDownloadMetadata(localTrack)) {
-        stalePaths.push(localPath);
+        stalePaths.push(rerootLocalPath(localPath));
         didMigrate = true;
         return null;
       }
 
+      const rerootedPath = rerootLocalPath(localPath);
+      if (rerootedPath !== localPath) didMigrate = true;
+
       return {
         ...localTrack,
+        localPath: rerootedPath,
         schemaVersion: DOWNLOAD_SCHEMA_VERSION,
       };
     })
@@ -277,6 +292,36 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       FileSystem.deleteAsync(path, { idempotent: true }).catch(() => {})
     ));
   }, []);
+
+  // Verify file existence on mount and purge entries whose files are missing.
+  // This handles cases where the app was reinstalled or files were deleted
+  // externally while the download metadata survived in MMKV.
+  useEffect(() => {
+    const verify = async () => {
+      const tracks = state.tracks;
+      if (!tracks.length) return;
+
+      const results = await Promise.all(
+        tracks.map(async track => {
+          const info = await FileSystem.getInfoAsync(track.localPath).catch(() => ({ exists: false }));
+          return info.exists ? null : track.trackId;
+        })
+      );
+
+      const missingIds = results.filter((id): id is string => id !== null);
+      if (!missingIds.length) return;
+
+      const missing = new Set(missingIds);
+      updateTracks(t => t.filter(track => !missing.has(track.trackId)));
+      updateCollections(cols =>
+        cols
+          .map(col => ({ ...col, trackIds: col.trackIds.filter(id => !missing.has(id)) }))
+          .filter(col => col.trackIds.length > 0)
+      );
+    };
+
+    void verify();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     jobsRef.current = state.jobs;

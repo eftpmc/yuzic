@@ -23,8 +23,20 @@ export const selectSongLastPlayedAt = createSelector(
 );
 
 export const selectSongPlayCounts = createSelector(
-  [(s: RootState) => s.stats.songPlays, (s: RootState) => s.servers.activeServerId],
-  (map, serverId) => filterByServer(map, serverId)
+  [
+    (s: RootState) => s.stats.songPlays,
+    (s: RootState) => s.stats.serverSongPlays,
+    (s: RootState) => s.servers.activeServerId,
+  ],
+  (localMap, serverMap, serverId) => {
+    const local = filterByServer(localMap, serverId);
+    const server = filterByServer(serverMap, serverId);
+    const merged: Record<string, number> = { ...server };
+    for (const [id, count] of Object.entries(local)) {
+      merged[id] = (merged[id] ?? 0) + count;
+    }
+    return merged;
+  }
 );
 
 export const selectAlbumLastPlayedAt = createSelector(
@@ -55,7 +67,7 @@ export const selectAlbumPlayCounts = createSelector(
     const server = filterByServer(serverMap, serverId);
     const merged: Record<string, number> = { ...server };
     for (const [id, count] of Object.entries(local)) {
-      merged[id] = Math.max(merged[id] ?? 0, count);
+      merged[id] = (merged[id] ?? 0) + count;
     }
     return merged;
   }
@@ -86,7 +98,9 @@ export const selectSongPlayCount =
   (state: RootState): number => {
     const serverId = state.servers.activeServerId;
     if (!serverId) return 0;
-    return state.stats.songPlays[`${serverId}:${songId}`] ?? 0;
+    const local = state.stats.songPlays[`${serverId}:${songId}`] ?? 0;
+    const server = state.stats.serverSongPlays[`${serverId}:${songId}`] ?? 0;
+    return server + local;
   };
 
 export const selectAlbumPlayCount =
@@ -94,7 +108,9 @@ export const selectAlbumPlayCount =
   (state: RootState): number => {
     const serverId = state.servers.activeServerId;
     if (!serverId) return 0;
-    return state.stats.albumPlays[`${serverId}:${albumId}`] ?? 0;
+    const local = state.stats.albumPlays[`${serverId}:${albumId}`] ?? 0;
+    const server = state.stats.serverAlbumPlays[`${serverId}:${albumId}`] ?? 0;
+    return server + local;
   };
 
 export const selectArtistPlayCount =

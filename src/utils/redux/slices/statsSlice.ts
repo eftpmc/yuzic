@@ -11,6 +11,11 @@ export type ServerAlbumStat = {
   lastPlayedAt: number; // unix ms, 0 if never played
 };
 
+export type ServerSongStat = {
+  id: string;
+  playCount: number;
+};
+
 interface StatsState {
   songPlays: PlayMap;
   albumPlays: PlayMap;
@@ -24,6 +29,8 @@ interface StatsState {
   serverAlbumPlays: PlayMap;
   /** Last played timestamps sourced from the server during sync. Key: "serverId:albumId" */
   serverAlbumLastPlayedAt: LastPlayedMap;
+  /** Play counts sourced from the server during sync. Key: "serverId:songId" */
+  serverSongPlays: PlayMap;
 }
 
 const initialState: StatsState = {
@@ -37,6 +44,7 @@ const initialState: StatsState = {
   playlistLastPlayedAt: {},
   serverAlbumPlays: {},
   serverAlbumLastPlayedAt: {},
+  serverSongPlays: {},
 };
 
 const statsSlice = createSlice({
@@ -89,8 +97,31 @@ const statsSlice = createSlice({
         if (lastPlayedAt > 0) state.serverAlbumLastPlayedAt[k] = lastPlayedAt;
       }
     },
+
+    setServerSongStats(
+      state,
+      action: PayloadAction<{ serverId: string; stats: ServerSongStat[] }>
+    ) {
+      const { serverId, stats } = action.payload;
+      for (const { id, playCount } of stats) {
+        state.serverSongPlays[key(serverId, id)] = playCount;
+      }
+    },
+
+    clearOfflinePlays(
+      state,
+      action: PayloadAction<{ serverId: string }>
+    ) {
+      const prefix = `${action.payload.serverId}:`;
+      for (const k of Object.keys(state.albumPlays)) {
+        if (k.startsWith(prefix)) delete state.albumPlays[k];
+      }
+      for (const k of Object.keys(state.songPlays)) {
+        if (k.startsWith(prefix)) delete state.songPlays[k];
+      }
+    },
   },
 });
 
-export const { incrementPlay, setServerAlbumStats } = statsSlice.actions;
+export const { incrementPlay, setServerAlbumStats, setServerSongStats, clearOfflinePlays } = statsSlice.actions;
 export default statsSlice.reducer;

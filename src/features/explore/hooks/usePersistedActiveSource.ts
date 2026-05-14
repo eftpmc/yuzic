@@ -13,18 +13,14 @@ function readPersistedSource(): ExternalSource | null {
 export function usePersistedActiveSource() {
   const [activeSource, setActiveSourceState] = useState<ExternalSource | null>(readPersistedSource)
 
-  const setActiveSource = useCallback((source: ExternalSource | null) => {
-    if (source === null) {
-      mmkv.remove(STORAGE_KEY)
-    } else {
-      mmkv.set(STORAGE_KEY, source)
-    }
-    setActiveSourceState(source)
-  }, [])
-
   const toggle = useCallback((source: ExternalSource) => {
-    setActiveSource(activeSource === source ? null : source)
-  }, [activeSource, setActiveSource])
+    setActiveSourceState(prev => {
+      const next = prev === source ? null : source
+      if (next === null) mmkv.remove(STORAGE_KEY)
+      else mmkv.set(STORAGE_KEY, next)
+      return next
+    })
+  }, [])
 
   return { activeSource, toggle }
 }

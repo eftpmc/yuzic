@@ -24,8 +24,6 @@ export enum QueryKeys {
 	SlskdQueue = 'slskd-queue',
 	RecommendedLocalSongs = 'recommended-local-songs',
 	RecommendedExternalSongs = 'recommended-external-songs',
-	RecommendedAlbums = 'recommended-albums',
-	ExploreNewReleases = 'explore-new-releases',
 	ExploreBecauseYouListened = 'explore-because-you-listened',
 	ExploreDeezerCharts = 'explore-deezer-charts',
 	ExploreTopArtists = 'explore-top-artists',

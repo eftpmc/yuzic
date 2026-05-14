@@ -12,6 +12,8 @@ export interface SongBase {
     albumId: string;
     year?: number;
     dateAdded?: string;
+    /** Server-reported play count — populated during sync, extracted into serverSongPlays Redux state. */
+    serverPlayCount?: number;
 }
 
 export interface Song extends SongBase {

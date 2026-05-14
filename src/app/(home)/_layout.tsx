@@ -7,6 +7,7 @@ import { Home, Library } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSync } from '@/hooks/useSync';
+import { useIsOffline } from '@/hooks/useIsOffline';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
@@ -47,6 +48,8 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
 
 export default function HomeLayout() {
     const { sync } = useSync()
+    const isOffline = useIsOffline()
+    const isOfflineRef = useRef(isOffline)
     const appState = useRef(AppState.currentState)
     const insets = useSafeAreaInsets()
     const router = useRouter()
@@ -56,9 +59,13 @@ export default function HomeLayout() {
     const tabRowHeight = 52 + Math.max(insets.bottom, 8)
 
     useEffect(() => {
+        isOfflineRef.current = isOffline
+    }, [isOffline])
+
+    useEffect(() => {
         const sub = AppState.addEventListener('change', nextState => {
             if (appState.current.match(/inactive|background/) && nextState === 'active') {
-                sync()
+                if (!isOfflineRef.current) sync()
             }
             appState.current = nextState
         })

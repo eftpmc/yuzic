@@ -13,7 +13,6 @@ const GENRE_COUNT = 1
 export type SectionType =
   | 'recentlyPlayed'
   | 'recentlyAdded'
-  | 'newReleases'
   | 'becauseYouListened'
   | 'artistsForYou'
   | 'topArtists'
@@ -123,7 +122,6 @@ export function useDailyLayout(): ExploreLayout {
     pool.push({ key: 'charts', type: 'charts' })
 
     if (hasLibrary) {
-      pool.push({ key: 'newReleases', type: 'newReleases' })
       for (const name of becauseSeeds) {
         pool.push({ key: `becauseYouListened:${name}`, type: 'becauseYouListened', artistName: name })
       }

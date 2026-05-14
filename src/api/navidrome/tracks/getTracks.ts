@@ -14,6 +14,7 @@ function mapToSongBase(song: any): SongBase {
     albumId: song.albumId ?? '',
     year: song.year ?? undefined,
     dateAdded: song.created,
+    serverPlayCount: song.playCount ?? undefined,
   };
 }
 

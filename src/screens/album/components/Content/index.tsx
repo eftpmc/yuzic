@@ -13,6 +13,8 @@ import MediaTile from '@/screens/explore/components/MediaTile';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useStarredSongs } from '@/hooks/starred';
+import { useSelector } from 'react-redux';
+import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 
 type Props = {
   album: Album;
@@ -35,6 +37,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
   const navigation = useNavigation<any>();
   const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
+  const albumPlayCount = useSelector(selectAlbumPlayCount(album.id));
 
   const { width: screenWidth } = useWindowDimensions();
   const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
@@ -62,7 +65,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
       <View>
         <View style={styles.statsFooter}>
           <Text style={[styles.statsText, isDarkMode ? styles.statsTextDark : styles.statsTextLight]}>
-            {songs.length} {label} · {duration}
+            {songs.length} {label} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${albumPlayCount === 1 ? 'play' : 'plays'}` : ''}
           </Text>
         </View>
         {moreAlbums.length > 0 && (

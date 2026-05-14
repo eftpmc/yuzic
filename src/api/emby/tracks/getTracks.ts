@@ -18,6 +18,7 @@ function normalizeTrack(item: any): SongBase {
     duration: String(Math.floor((item.RunTimeTicks ?? 0) / 10_000_000)),
     year: item.ProductionYear ?? undefined,
     dateAdded: item.DateCreated ?? undefined,
+    serverPlayCount: item.UserData?.PlayCount ?? undefined,
   };
 }
 
@@ -27,7 +28,7 @@ export async function getTracks(client: EmbyClient): Promise<SongBase[]> {
     `?IncludeItemTypes=Audio` +
     `&Recursive=true` +
     `&SortBy=SortName` +
-    `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated` +
+    `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated,UserData` +
     (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
   const raw = await client.request<any>(path);

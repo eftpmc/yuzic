@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNetInfo } from '@react-native-community/netinfo';
 import { Song } from '@/types';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
@@ -41,6 +42,10 @@ export function useScrobbling() {
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
 
+  const netInfo = useNetInfo();
+  const isOfflineRef = useRef(false);
+  isOfflineRef.current = netInfo.isConnected === false || netInfo.isInternetReachable === false;
+
   const lastScrobbledIdRef = useRef<string | null>(null);
 
   const resetLastScrobbled = useCallback(() => {
@@ -57,7 +62,7 @@ export function useScrobbling() {
     if (!passesScrobbleThreshold(opts.listenedSeconds, songDuration)) return;
     lastScrobbledIdRef.current = song.id;
 
-    if (activeServer?.id) {
+    if (activeServer?.id && isOfflineRef.current) {
       dispatch(incrementPlay({
         serverId: activeServer.id,
         songId: song.id,

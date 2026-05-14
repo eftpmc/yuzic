@@ -9,7 +9,6 @@ import RecentlyAdded from './components/RecentlyAdded'
 import FavoriteAlbums from './components/FavoriteAlbums'
 import RandomAlbums from './components/RandomAlbums'
 import MostPlayedAlbums from './components/MostPlayedAlbums'
-import NewReleasesSection from './components/NewReleasesSection'
 import BecauseYouListenedSection from './components/BecauseYouListenedSection'
 import ArtistsForYouSection from './components/ArtistsForYouSection'
 import TopArtistsSection from './components/TopArtistsSection'
@@ -30,8 +29,6 @@ function renderSection(config: SectionConfig) {
       return <RandomAlbums key={config.key} />
     case 'mostPlayed':
       return <MostPlayedAlbums key={config.key} />
-    case 'newReleases':
-      return <NewReleasesSection key={config.key} />
     case 'charts':
       return <DeezerChartsSection key={config.key} />
     case 'artistsForYou':

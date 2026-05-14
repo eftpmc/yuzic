@@ -45,11 +45,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
 
   const { playSongInCollection } = usePlaying();
   const albumStatus = useExternalAlbumStatus(album);
-  const previewsRaw = useExternalAlbumPreviews(album);
-  const previews = useMemo(
-    () => previewsRaw instanceof Map ? previewsRaw : new Map<string, string>(),
-    [previewsRaw]
-  );
+  const previews = useExternalAlbumPreviews(album);
 
   const downloadSheetRef = useSheetRef();
 
@@ -57,8 +53,8 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
 
   const previewSongs = useMemo<Song[]>(() => (
     songs
-      .filter(s => previews.has(s.id))
-      .map(s => externalSongToTrack(s, previews.get(s.id)!))
+      .filter(s => !!previews[s.id])
+      .map(s => externalSongToTrack(s, previews[s.id]))
   ), [songs, previews]);
 
   const previewCollection = useMemo<Playlist>(() => ({

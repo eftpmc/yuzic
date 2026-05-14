@@ -65,7 +65,7 @@ const initialState: SettingsState = {
   serverNowPlayingEnabled: true,
 
   lastSyncedAt: null,
-  syncOnAppStart: false,
+  syncOnAppStart: true,
 };
 
 const settingsSlice = createSlice({

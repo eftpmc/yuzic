@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { View, Text, StyleSheet, Dimensions } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -11,30 +11,36 @@ import { getDeezerChartArtists } from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
 import { getExploreDayKey } from '@/features/explore/hooks/useDailyLayout'
 import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
+import {
+  SECTION_H_PADDING as H_PADDING,
+  SECTION_GRID_GAP,
+  SECTION_VISIBLE_ITEMS,
+  STALE_DEEZER_CHARTS,
+} from '@/features/explore/constants'
 import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalArtistBase } from '@/types'
 
-const H_PADDING = 16
-const VISIBLE_ITEMS = 2.5
 const MIN_ARTISTS = 8
 
 export default function TopArtistsSection() {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
+  const { width: screenWidth } = useWindowDimensions()
   const dayKey = getExploreDayKey()
   const isEnabled = useDeezerEnabled()
 
-  const screenWidth = Dimensions.get('window').width
-  const gridGap = 12
-  const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
+  const gridItemWidth = useMemo(
+    () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
+    [screenWidth]
+  )
 
   const query = useQuery<ExternalArtistBase[]>({
     queryKey: [QueryKeys.ExploreTopArtists, dayKey],
     queryFn: () => getDeezerChartArtists(10),
     enabled: isEnabled,
-    staleTime: 1000 * 60 * 60 * 6,
+    staleTime: STALE_DEEZER_CHARTS,
     networkMode: 'online',
   })
 
@@ -60,6 +66,7 @@ export default function TopArtistsSection() {
     />
   ), [navigation, gridItemWidth])
 
+  if (query.isError) return null
   if (!query.isLoading && data.length < MIN_ARTISTS) return null
 
   return (
@@ -70,7 +77,7 @@ export default function TopArtistsSection() {
       {query.isLoading ? (
         <ExploreLoadingTiles
           itemSize={gridItemWidth}
-          gap={gridGap}
+          gap={SECTION_GRID_GAP}
           horizontalPadding={H_PADDING}
           variant="artist"
         />
@@ -81,7 +88,8 @@ export default function TopArtistsSection() {
           keyExtractor={item => item.id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
-          ItemSeparatorComponent={() => <View style={{ width: gridGap }} />}
+          ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
+          estimatedItemSize={gridItemWidth}
           renderItem={renderArtist}
         />
       )}

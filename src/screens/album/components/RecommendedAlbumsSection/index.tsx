@@ -1,61 +1,18 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
 
 import { useTheme } from '@/hooks/useTheme';
-import { useIsOffline } from '@/hooks/useIsOffline';
+import { useAlbums } from '@/hooks/albums';
+import { selectAlbumPlayCounts } from '@/utils/redux/selectors/statsSelectors';
 import MediaTile from '@/screens/explore/components/MediaTile';
-import ExploreLoadingTiles from '@/screens/explore/components/ExploreLoadingTiles';
-import * as deezer from '@/api/deezer';
-import { QueryKeys } from '@/enums/queryKeys';
-import type { Album, ExternalAlbumBase } from '@/types';
+import type { Album, AlbumBase } from '@/types';
 
 const H_PADDING = 16;
 const TILE_GAP = 12;
 const VISIBLE_TILES = 2.5;
 const MAX_ALBUMS = 8;
-
-async function fetchRecommendedAlbums(artistName: string): Promise<ExternalAlbumBase[]> {
-  try {
-    const artist = await deezer.resolveDeezerArtistByName(artistName);
-    if (!artist) return [];
-
-    const related = await deezer.getDeezerRelatedArtists(artist.id, 12);
-    if (!related.length) return [];
-
-    const albumGroups = await Promise.allSettled(
-      related.map(a => deezer.getDeezerArtistAlbums(a.id, 2, a))
-    );
-
-    const groups = albumGroups
-      .filter((result): result is PromiseFulfilledResult<ExternalAlbumBase[]> =>
-        result.status === 'fulfilled'
-      )
-      .map(result => result.value)
-      .filter(group => group.length > 0);
-
-    const seen = new Set<string>();
-    const albums: ExternalAlbumBase[] = [];
-
-    for (let albumIndex = 0; albumIndex < 2; albumIndex++) {
-      for (const group of groups) {
-        if (albums.length >= MAX_ALBUMS) break;
-        const album = group[albumIndex];
-        if (!album) continue;
-        if (!seen.has(album.id)) {
-          seen.add(album.id);
-          albums.push(album);
-        }
-      }
-      if (albums.length >= MAX_ALBUMS) break;
-    }
-
-    return albums;
-  } catch {
-    return [];
-  }
-}
 
 type Props = {
   album: Album;
@@ -63,30 +20,32 @@ type Props = {
 
 const RecommendedAlbumsSection: React.FC<Props> = ({ album }) => {
   const { isDarkMode } = useTheme();
-  const isOffline = useIsOffline();
   const navigation = useNavigation<any>();
-
-  const screenWidth = Dimensions.get('window').width;
+  const { width: screenWidth } = useWindowDimensions();
   const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
 
-  const artistName = album.artist?.name;
+  const { albums: allAlbums } = useAlbums();
+  const playCounts = useSelector(selectAlbumPlayCounts);
 
-  const { data, isLoading } = useQuery({
-    queryKey: [QueryKeys.RecommendedAlbums, album.id, artistName],
-    queryFn: () => fetchRecommendedAlbums(artistName!),
-    enabled: !!artistName,
-    staleTime: 1000 * 60 * 60 * 6,
-    networkMode: 'online',
-  });
-
-  if (!artistName || isOffline) return null;
-  if (isLoading) return (
-    <View style={styles.section}>
-      <Text style={[styles.title, isDarkMode && styles.titleDark]}>Recommended</Text>
-      <ExploreLoadingTiles itemSize={tileWidth} gap={TILE_GAP} horizontalPadding={H_PADDING} variant="album" count={3} />
-    </View>
+  const albumGenres = useMemo(
+    () => new Set((album.genres ?? []).map(g => g.toLowerCase().trim()).filter(Boolean)),
+    [album.genres]
   );
-  if (!data?.length) return null;
+
+  const recommended = useMemo<AlbumBase[]>(() => {
+    if (albumGenres.size === 0) return [];
+
+    return allAlbums
+      .filter(a =>
+        a.id !== album.id &&
+        a.artist.id !== album.artist?.id &&
+        (a.genres ?? []).some(g => albumGenres.has(g.toLowerCase().trim()))
+      )
+      .sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0))
+      .slice(0, MAX_ALBUMS);
+  }, [allAlbums, album.id, album.artist?.id, albumGenres, playCounts]);
+
+  if (recommended.length === 0) return null;
 
   return (
     <View style={styles.section}>
@@ -98,18 +57,15 @@ const RecommendedAlbumsSection: React.FC<Props> = ({ album }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.tileRow}
       >
-        {data.map(a => (
+        {recommended.map(a => (
           <MediaTile
             key={a.id}
             cover={a.cover}
             title={a.title}
-            subtitle={a.artist}
+            subtitle={a.artist.name}
             size={tileWidth}
             radius={6}
-            onPress={() => navigation.navigate('externalAlbumView', {
-              source: a.externalSource,
-              albumId: a.id,
-            })}
+            onPress={() => navigation.navigate('albumView', { id: a.id })}
           />
         ))}
       </ScrollView>

@@ -10,6 +10,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
 import { useTheme } from '@/hooks/useTheme'
 import { useSync } from '@/hooks/useSync'
+import { useIsOffline } from '@/hooks/useIsOffline'
 
 import HomeHeader from './components/Header'
 import AccountBottomSheet from './components/AccountBottomSheet'
@@ -33,12 +34,19 @@ export default function HomeScreen() {
 
   const { sync } = useSync()
   const syncOnAppStart = useSelector(selectSyncOnAppStart)
+  const isOffline = useIsOffline()
+  const isOfflineRef = useRef(isOffline)
+
+  useEffect(() => {
+    isOfflineRef.current = isOffline
+  }, [isOffline])
 
   useEffect(() => {
     if (!syncOnAppStart || !activeServer?.id || !activeServer.isAuthenticated) {
       if (!activeServer?.id) lastAutoSyncServerIdRef.current = null
       return
     }
+    if (isOfflineRef.current) return
 
     if (lastAutoSyncServerIdRef.current === activeServer.id) return
 

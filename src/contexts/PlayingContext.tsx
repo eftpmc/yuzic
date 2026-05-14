@@ -316,8 +316,6 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         serverType: song?.sourceServerType,
       });
 
-      removeFailedCurrentTrack();
-
       const now = Date.now();
       if (now - lastPlaybackErrorAtRef.current > 1500) {
         lastPlaybackErrorAtRef.current = now;
@@ -326,7 +324,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     return () => subscription.remove();
-  }, [removeFailedCurrentTrack, t]);
+  }, [t]);
 
   // Build a song lookup map from the library for queue reconciliation
   const librarySongByIdRef = useRef<Map<string, Song>>(new Map());

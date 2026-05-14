@@ -266,22 +266,6 @@ export async function getDeezerChartArtists(limit = 10): Promise<ExternalArtistB
   });
 }
 
-export async function getDeezerEditorialSelection(limit = 10): Promise<ExternalAlbumBase[]> {
-  return cached(`editorial-selection:${limit}`, DAY_MS, async () => {
-    const albums = await requestList<DeezerAlbum>(`/editorial/0/selection?limit=${limit * 2}`);
-    const seenArtists = new Set<string>();
-    const result: ExternalAlbumBase[] = [];
-    for (const album of albums) {
-      const artistKey = (album.artist?.name ?? '').toLowerCase();
-      if (artistKey && seenArtists.has(artistKey)) continue;
-      if (artistKey) seenArtists.add(artistKey);
-      result.push(deezerAlbumToExternal(album));
-      if (result.length >= limit) break;
-    }
-    return result;
-  });
-}
-
 export async function getDeezerChartAlbums(limit = 10): Promise<ExternalAlbumBase[]> {
   return cached(`chart-albums:${limit}`, CHART_CACHE_MS, async () => {
     const albums = await requestList<DeezerAlbum>(`/chart/0/albums?limit=${limit * 2}`);
@@ -296,48 +280,6 @@ export async function getDeezerChartAlbums(limit = 10): Promise<ExternalAlbumBas
     }
     return result;
   });
-}
-
-export async function getNewReleasesForArtists(
-  artistNames: string[],
-  maxResults = 10,
-  monthsBack = 6
-): Promise<ExternalAlbumBase[]> {
-  if (!artistNames.length) return [];
-
-  const cutoff = new Date();
-  cutoff.setMonth(cutoff.getMonth() - monthsBack);
-
-  const results = await Promise.allSettled(
-    artistNames.map(async name => {
-      const artist = await resolveDeezerArtistByName(name);
-      if (!artist) return [] as ExternalAlbumBase[];
-      return getDeezerArtistAlbums(artist.id, 10, artist);
-    })
-  );
-
-  const seenIds = new Set<string>();
-  const seenArtists = new Set<string>();
-  const recent: ExternalAlbumBase[] = [];
-
-  for (const result of results) {
-    if (result.status !== 'fulfilled') continue;
-    for (const album of result.value) {
-      if (!album.releaseDate) continue;
-      if (seenIds.has(album.id)) continue;
-      const date = new Date(album.releaseDate);
-      if (isNaN(date.getTime()) || date < cutoff) continue;
-      const artistKey = album.artist.toLowerCase();
-      if (seenArtists.has(artistKey)) continue;
-      seenIds.add(album.id);
-      seenArtists.add(artistKey);
-      recent.push(album);
-    }
-  }
-
-  return recent
-    .sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime())
-    .slice(0, maxResults);
 }
 
 export async function resolveDeezerAlbum(artist: string, title: string): Promise<ExternalAlbumBase | null> {

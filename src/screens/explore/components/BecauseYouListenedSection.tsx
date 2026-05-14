@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -11,6 +11,12 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import { mmkv } from '@/utils/mmkvStorage'
 import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
+import {
+  SECTION_H_PADDING as H_PADDING,
+  SECTION_GRID_GAP,
+  SECTION_VISIBLE_ITEMS,
+  STALE_DEEZER_DISCOVERY,
+} from '@/features/explore/constants'
 import * as deezer from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
 import { getExploreDayKey } from '@/features/explore/hooks/useDailyLayout'
@@ -20,8 +26,6 @@ import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
-const H_PADDING = 16
-const VISIBLE_ITEMS = 2.5
 const MIN_ALBUMS = 8
 const TARGET_ALBUMS = 10
 const RELATED_ARTIST_LIMIT = 40
@@ -49,12 +53,18 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const { artists: libraryArtists } = useArtists()
+  const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   const dayKey = getExploreDayKey()
   const isEnabled = useDeezerEnabled()
 
   const [selectedArtist, setSelectedArtist] = React.useState<string>(
     () => mmkv.getString(STORAGE_KEY) ?? artistName
+  )
+
+  const gridItemWidth = useMemo(
+    () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
+    [screenWidth]
   )
 
   const artistNames = useMemo(
@@ -72,9 +82,11 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
     [libraryArtists]
   )
 
+  // Write to MMKV before updating state so the persisted value is never behind
+  // the query key that derives from selectedArtist.
   const handleSelect = useCallback((value: string) => {
-    setSelectedArtist(value)
     mmkv.set(STORAGE_KEY, value)
+    setSelectedArtist(value)
     sheetRef.current?.dismiss()
   }, [])
 
@@ -83,21 +95,17 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
     const pool = eligible.length > 0 ? eligible : artistNames
     const random = pool[Math.floor(Math.random() * pool.length)]
     if (random) {
-      setSelectedArtist(random)
       mmkv.set(STORAGE_KEY, random)
+      setSelectedArtist(random)
     }
     sheetRef.current?.dismiss()
   }, [artistNames, selectedArtist])
-
-  const screenWidth = Dimensions.get('window').width
-  const gridGap = 12
-  const gridItemWidth = (screenWidth - H_PADDING * 2 - gridGap * 2) / VISIBLE_ITEMS
 
   const query = useQuery<ExternalAlbumBase[]>({
     queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist],
     queryFn: () => fetchAlbumsForSeed(selectedArtist, libraryArtistNames),
     enabled: isEnabled,
-    staleTime: 1000 * 60 * 60 * 12,
+    staleTime: STALE_DEEZER_DISCOVERY,
     networkMode: 'online',
   })
 
@@ -131,10 +139,7 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
           <Text style={[styles.titlePrefix, isDarkMode && styles.titlePrefixDark]}>
             {t('explore.sections.becauseYouListenedLabel')}
           </Text>
-          <TouchableOpacity
-            onPress={() => sheetRef.current?.present()}
-            hitSlop={8}
-          >
+          <TouchableOpacity onPress={() => sheetRef.current?.present()} hitSlop={8}>
             <Text
               style={[styles.artistName, isDarkMode && styles.artistNameDark]}
               numberOfLines={1}
@@ -147,10 +152,16 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
         {query.isLoading ? (
           <ExploreLoadingTiles
             itemSize={gridItemWidth}
-            gap={gridGap}
+            gap={SECTION_GRID_GAP}
             horizontalPadding={H_PADDING}
             variant="album"
           />
+        ) : query.isError ? (
+          <View style={styles.emptyState}>
+            <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+              Unable to load — try again later
+            </Text>
+          </View>
         ) : isEmpty ? (
           <View style={styles.emptyState}>
             <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
@@ -164,7 +175,8 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
             keyExtractor={item => item.id}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}
-            ItemSeparatorComponent={() => <View style={{ width: gridGap }} />}
+            ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
+            estimatedItemSize={gridItemWidth}
             renderItem={renderAlbum}
           />
         )}

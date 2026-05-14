@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Dimensions, Platform, Text, View, StyleSheet, ScrollView } from 'react-native';
+import { Platform, Text, View, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
@@ -26,13 +26,12 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation<any>();
   const { isDarkMode } = useTheme();
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
-  const screenWidth = Dimensions.get('window').width;
-  const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
-  const previewsRaw = useExternalAlbumPreviews(album);
-  const previews = useMemo(
-    () => previewsRaw instanceof Map ? previewsRaw : new Map<string, string>(),
-    [previewsRaw]
+  const { width: screenWidth } = useWindowDimensions();
+  const tileWidth = useMemo(
+    () => (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES,
+    [screenWidth]
   );
+  const previews = useExternalAlbumPreviews(album);
   const { toggleInAlbum } = usePreviewPlayer();
 
   const artistDeezerId = album.externalIds?.artistDeezerId;
@@ -66,13 +65,13 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
 
   const albumPreviewSongs = useMemo(() =>
     songs
-      .filter(s => previews.has(s.id))
-      .map(s => externalSongToTrack(s, previews.get(s.id)!)),
+      .filter(s => !!previews[s.id])
+      .map(s => externalSongToTrack(s, previews[s.id])),
     [previews, songs]
   );
 
   const handleSongPress = useCallback((song: ExternalSong) => {
-    const url = previews.get(song.id);
+    const url = previews[song.id];
     if (!url) return;
     toggleInAlbum(song, url, albumPreviewSongs, album.id, album.title);
   }, [previews, albumPreviewSongs, toggleInAlbum, album.id, album.title]);
@@ -124,7 +123,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
   }, [songs, moreAlbums, album.artist, isDarkMode, tileWidth, navigation]);
 
   const renderItem = useCallback(({ item }: { item: ExternalSong }) => {
-    const previewUrl = previews.get(item.id);
+    const previewUrl = previews[item.id];
 
     return (
       <ExternalSongRow
@@ -145,6 +144,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       extraData={handleSongPress}
       ListHeaderComponent={header}
       ListFooterComponent={footer}
+      estimatedItemSize={60}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />
