@@ -22,7 +22,7 @@ import {
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectListenBrainzAuthenticated } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { selectLastFmAuthenticated } from '@/utils/redux/selectors/lastfmSelectors';
-import { selectDeezerEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { selectAnyDeezerEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function Settings() {
@@ -34,7 +34,7 @@ export default function Settings() {
     const isSlskdConnected = useSelector(selectSlskdAuthenticated);
     const isLbConnected = useSelector(selectListenBrainzAuthenticated);
     const isLfmConnected = useSelector(selectLastFmAuthenticated);
-    const isDeezerEnabled = useSelector(selectDeezerEnabled);
+    const isDeezerEnabled = useSelector(selectAnyDeezerEnabled);
 
     const { isDarkMode } = useTheme();
     const appVersion = Constants.expoConfig?.version ?? '—';
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     sectionDark: {
-        backgroundColor: '#1C1C1E',
+        backgroundColor: '#111',
     },
     headerTitleWrapper: {
         position: 'absolute',
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     },
     rowText: {
         fontSize: 16,
-        color: '#1C1C1E',
+        color: '#000',
     },
     rowTextDark: {
         color: '#fff',
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     dividerDark: {
-        backgroundColor: '#2C2C2E',
+        backgroundColor: '#333',
     },
 
     profileCard: {
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     profileCardDark: {
-        backgroundColor: '#1C1C1E',
+        backgroundColor: '#111',
     },
     profileRow: {
         flexDirection: 'row',
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     profileName: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#1C1C1E',
+        color: '#000',
     },
     profileNameDark: {
         color: '#fff',

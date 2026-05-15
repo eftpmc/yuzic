@@ -5,11 +5,7 @@ export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist';
 export type ThemeMode = 'light' | 'dark' | 'system';
-export type SearchScope =
-  | 'client'
-  | 'client+external'
-  | 'server'
-  | 'server+external';
+export type SearchScope = 'client' | 'server';
 export type AppLanguage = string;
 
 export interface SettingsState {
@@ -41,7 +37,9 @@ export interface SettingsState {
   serverNowPlayingEnabled: boolean;
 
   /* Integrations */
-  deezerEnabled: boolean;
+  deezerDiscoveryEnabled: boolean;
+  deezerSearchEnabled: boolean;
+  deezerExternalScreensEnabled: boolean;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -57,7 +55,7 @@ const initialState: SettingsState = {
   playingBarAction: 'skip',
 
   librarySortOrder: 'title',
-  searchScope: 'server+external',
+  searchScope: 'server',
   hasSeenGetStarted: false,
 
   audioQuality: 'medium',
@@ -67,7 +65,9 @@ const initialState: SettingsState = {
   serverScrobbleEnabled: true,
   serverNowPlayingEnabled: true,
 
-  deezerEnabled: false,
+  deezerDiscoveryEnabled: false,
+  deezerSearchEnabled: false,
+  deezerExternalScreensEnabled: false,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -130,8 +130,14 @@ const settingsSlice = createSlice({
       state.serverNowPlayingEnabled = action.payload;
     },
 
-    setDeezerEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerEnabled = action.payload;
+    setDeezerDiscoveryEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerDiscoveryEnabled = action.payload;
+    },
+    setDeezerSearchEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerSearchEnabled = action.payload;
+    },
+    setDeezerExternalScreensEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerExternalScreensEnabled = action.payload;
     },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
@@ -159,7 +165,9 @@ export const {
   setLanguage,
   setServerScrobbleEnabled,
   setServerNowPlayingEnabled,
-  setDeezerEnabled,
+  setDeezerDiscoveryEnabled,
+  setDeezerSearchEnabled,
+  setDeezerExternalScreensEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

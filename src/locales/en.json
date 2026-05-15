@@ -41,9 +41,9 @@
       "searchScopeHelp": "Choose where search results come from",
       "searchScope": {
         "client": "On Device",
-        "clientExternal": "Device + External",
+        "clientDescription": "Search your local library only",
         "server": "Server",
-        "serverExternal": "Server + External"
+        "serverDescription": "Use your server’s search instead"
       }
     },
     "appearance": {
@@ -272,8 +272,12 @@
       "disabled": "Disabled"
     },
     "deezer": {
-      "enable": "Enable Deezer",
-      "enableDescription": "Show Deezer charts, artist recommendations, and genre mixes on the explore screen and in search."
+      "discovery": "Discovery",
+      "discoveryDescription": "Deezer charts and recommendations on the explore screen.",
+      "search": "Search",
+      "searchDescription": "Include Deezer results in search.",
+      "externalScreens": "External Screens",
+      "externalScreensDescription": "Show external album and artist pages from Deezer."
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -281,7 +285,9 @@
       "scrobble": "Scrobble",
       "nowPlaying": "Now Playing",
       "notConnected": "Not connected",
-      "configure": "Configure"
+      "configure": "Configure",
+      "scrobbleDescription": "Log completed tracks to your profile.",
+      "nowPlayingDescription": "Show what you're listening to in real time."
     },
     "discovery": {
       "title": "Discovery",
@@ -447,7 +453,8 @@
       "song": "Song",
       "album": "Album",
       "artist": "Artist",
-      "playlist": "Playlist"
+      "playlist": "Playlist",
+      "deezer": "Deezer"
     }
   },
   "media": {
@@ -492,7 +499,7 @@
     "empty": {
       "recentSongs": "Play something to see it here",
       "quickPicks": "Play some songs to see your quick picks",
-      "recentlyPlayed": "Play albums to see them here",
+      "recentlyPlayed": "Play albums or playlists to see them here",
       "recentlyAdded": "No albums in your library yet",
       "favoriteAlbums": "Star songs to add albums here",
       "randomAlbums": "No albums in your library yet",
@@ -635,7 +642,7 @@
       "songs": "{{count}} song",
       "songs_plural": "{{count}} songs",
       "externalMetadata": "External metadata"
-    },
+    }
   },
   "albumOptions": {
     "actions": {
@@ -721,5 +728,8 @@
       "plays": "Plays"
     },
     "downloadAllFailed": "Some albums failed to download."
+  },
+  "external": {
+    "notFound": "Couldn't find this in any connected source."
   }
 }

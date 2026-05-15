@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   subtitleDark: {
-    color: '#999',
+    color: '#aaa',
   },
   nowPlayingCover: {
     width: 64,

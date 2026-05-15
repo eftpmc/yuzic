@@ -188,24 +188,34 @@ const ListenBrainzView: React.FC = () => {
           <>
             <View style={[styles.section, isDarkMode && styles.sectionDark]}>
               <View style={styles.row}>
-                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                  {t('settings.scrobbling.scrobble')}
-                </Text>
+                <View style={styles.rowLeft}>
+                  <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                    {t('settings.scrobbling.scrobble')}
+                  </Text>
+                  <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                    {t('settings.scrobbling.scrobbleDescription')}
+                  </Text>
+                </View>
                 <Switch
                   value={scrobbleEnabled}
-                  onValueChange={v => dispatch(setScrobbleEnabled({ serverId, value: v }))}
+                  onValueChange={v => { dispatch(setScrobbleEnabled({ serverId, value: v })) }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
               </View>
               <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
               <View style={styles.row}>
-                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                  {t('settings.scrobbling.nowPlaying')}
-                </Text>
+                <View style={styles.rowLeft}>
+                  <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                    {t('settings.scrobbling.nowPlaying')}
+                  </Text>
+                  <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                    {t('settings.scrobbling.nowPlayingDescription')}
+                  </Text>
+                </View>
                 <Switch
                   value={nowPlayingEnabled}
-                  onValueChange={v => dispatch(setNowPlayingEnabled({ serverId, value: v }))}
+                  onValueChange={v => { dispatch(setNowPlayingEnabled({ serverId, value: v })) }}
                   trackColor={{ true: themeColor }}
                   thumbColor="#fff"
                 />
@@ -287,9 +297,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 10,
+    gap: 16,
   },
+  rowLeft: { flex: 1 },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: '#e0e0e0', marginVertical: 2 },
   dividerDark: { backgroundColor: '#333' },
+  rowSubtext: { fontSize: 13, color: '#6E6E73', marginTop: 2 },
+  rowSubtextDark: { color: '#aaa' },
   rowText: {
     fontSize: 16,
     color: '#000',

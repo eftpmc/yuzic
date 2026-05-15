@@ -9,8 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useArtists } from '@/hooks/artists'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
-import { mmkv } from '@/utils/mmkvStorage'
-import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
+import { useDeezerDiscoveryEnabled } from '@/features/explore/hooks/useDeezerEnabled'
 import {
   SECTION_H_PADDING as H_PADDING,
   SECTION_GRID_GAP,
@@ -26,10 +25,8 @@ import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
-const MIN_ALBUMS = 8
 const TARGET_ALBUMS = 10
 const RELATED_ARTIST_LIMIT = 40
-const STORAGE_KEY = 'explore:becauseArtist'
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -57,11 +54,9 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
   const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   const dayKey = getExploreDayKey()
-  const isEnabled = useDeezerEnabled()
+  const isEnabled = useDeezerDiscoveryEnabled()
 
-  const [selectedArtist, setSelectedArtist] = React.useState<string>(
-    () => mmkv.getString(STORAGE_KEY) ?? artistName
-  )
+  const [selectedArtist, setSelectedArtist] = React.useState<string>(artistName)
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
@@ -83,10 +78,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
     [libraryArtists]
   )
 
-  // Write to MMKV before updating state so the persisted value is never behind
-  // the query key that derives from selectedArtist.
   const handleSelect = useCallback((value: string) => {
-    mmkv.set(STORAGE_KEY, value)
     setSelectedArtist(value)
     sheetRef.current?.dismiss()
   }, [])
@@ -95,10 +87,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
     const eligible = artistNames.filter(n => n !== selectedArtist)
     const pool = eligible.length > 0 ? eligible : artistNames
     const random = pool[Math.floor(Math.random() * pool.length)]
-    if (random) {
-      mmkv.set(STORAGE_KEY, random)
-      setSelectedArtist(random)
-    }
+    if (random) setSelectedArtist(random)
     sheetRef.current?.dismiss()
   }, [artistNames, selectedArtist])
 

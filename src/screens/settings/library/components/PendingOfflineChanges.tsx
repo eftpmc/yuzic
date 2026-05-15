@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardDark: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: '#111',
   },
   iconWrap: {
     width: 38,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#000',
   },
   titleDark: {
     color: '#fff',

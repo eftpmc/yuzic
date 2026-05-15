@@ -25,7 +25,8 @@ const styles = StyleSheet.create({
   section: {
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
     backgroundColor: '#fff',
     marginBottom: 24,
   },

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   TextInput,
@@ -31,6 +31,7 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
+import { useDeezerSearchEnabled } from '@/features/explore/hooks/useDeezerEnabled';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -41,11 +42,12 @@ const Search = () => {
   const { isDarkMode } = useTheme();
   const { playSong } = usePlaying();
   const { resolvePlayableSong } = usePlayableSongResolver();
+  const deezerSearchEnabled = useDeezerSearchEnabled();
 
   const [query, setQuery] = useState('');
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const { searchResults, handleSearch, clearSearch, isLoading } = useSearch();
+  const { searchResults, handleSearchWithFilters, clearSearch, isLoading } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,36 +59,25 @@ const Search = () => {
 
   const onSearchChange = (text: string) => {
     setQuery(text);
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (!text.trim()) {
       clearSearch();
       setHasSearched(false);
       return;
     }
-
     typingTimeoutRef.current = setTimeout(async () => {
       clearSearch();
       setHasSearched(true);
-      await handleSearch(text);
+      await handleSearchWithFilters(text, { local: true, deezer: deezerSearchEnabled });
     }, 300);
   };
 
   const handleSongPress = async (result: SearchResult) => {
     try {
-      if (result.song) {
-        await playSong(result.song);
-        return;
-      }
+      if (result.song) { await playSong(result.song); return; }
       const song = await resolvePlayableSong(result.id);
-      if (song) {
-        await playSong(song);
-      }
-    } catch (error) {
-      console.warn('Failed to play searched song', error);
+      if (song) await playSong(song);
+    } catch {
       toast.error(t('common.playbackError'));
     }
   };
@@ -94,29 +85,23 @@ const Search = () => {
   const handleSongOptions = async (result: SearchResult) => {
     try {
       let song: Song | null = result.song ?? null;
-      if (!song) {
-        song = await resolvePlayableSong(result.id);
-      }
+      if (!song) song = await resolvePlayableSong(result.id);
       if (song) {
         setSelectedSong(song);
-        requestAnimationFrame(() => {
-          songOptionsRef.current?.present();
-        });
+        requestAnimationFrame(() => { songOptionsRef.current?.present(); });
       }
-    } catch (error) {
-      console.warn('Failed to open song options', error);
+    } catch {
       toast.error(t('common.songDetailsError'));
     }
   };
 
-  const getSourceLabel = (source: SearchResult['source']) =>
-    source === 'external'
-      ? t('search.chips.external')
-      : t('search.chips.local');
+  const localResults = useMemo(() => searchResults.filter(r => r.source === 'local'), [searchResults]);
+  const externalResults = useMemo(() => searchResults.filter(r => r.source === 'external'), [searchResults]);
 
-  const localResults = searchResults.filter(result => result.source === 'local');
-  const externalResults = searchResults.filter(result => result.source === 'external');
-  const coversToPrefetch = useMemo(() => searchResults.slice(0, 18).map(result => result.cover), [searchResults]);
+  const coversToPrefetch = useMemo(
+    () => searchResults.slice(0, 18).map(r => r.cover),
+    [searchResults]
+  );
   usePrefetchCovers(coversToPrefetch, 'thumb');
 
   const renderResult = (result: SearchResult) => {
@@ -129,43 +114,20 @@ const Search = () => {
               accessibilityRole="button"
               testID="search-song-result"
               style={styles.songInfo}
-              onPress={() => handleSongPress(result)}
+              onPress={() => { void handleSongPress(result); }}
             >
-              <MediaImage
-                cover={result.cover}
-                size="thumb"
-                style={styles.songCover}
-              />
+              <MediaImage cover={result.cover} size="thumb" style={styles.songCover} />
               <View style={styles.songText}>
-                <Text
-                  numberOfLines={1}
-                  style={[
-                    styles.songTitle,
-                    isDarkMode && styles.songTitleDark,
-                  ]}
-                >
+                <Text numberOfLines={1} style={[styles.songTitle, isDarkMode && styles.songTitleDark]}>
                   {result.title}
                 </Text>
-                <Text
-                  numberOfLines={1}
-                  style={[
-                    styles.songSubtitle,
-                    isDarkMode && styles.songSubtitleDark,
-                  ]}
-                >
+                <Text numberOfLines={1} style={[styles.songSubtitle, isDarkMode && styles.songSubtitleDark]}>
                   {result.subtext}
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.songOptionsButton}
-              onPress={() => handleSongOptions(result)}
-            >
-              <Ionicons
-                name="ellipsis-horizontal"
-                size={24}
-                color={isDarkMode ? '#fff' : '#000'}
-              />
+            <TouchableOpacity style={styles.songOptionsButton} onPress={() => { void handleSongOptions(result); }}>
+              <Ionicons name="ellipsis-horizontal" size={24} color={isDarkMode ? '#fff' : '#000'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -185,13 +147,9 @@ const Search = () => {
             externalIds: result.externalIds,
           }}
           artistName={result.subtext}
-          onPress={album =>
-          {
+          onPress={album => {
             prefetchCovers([album.cover], 'detail');
-            (navigation as any).navigate('externalAlbumView', {
-              source: album.externalSource,
-              albumId: album.id
-            });
+            navigation.navigate('externalAlbumView', { source: album.externalSource, albumId: album.id });
           }}
         />
       ) : (
@@ -201,20 +159,14 @@ const Search = () => {
             title: result.title,
             subtext: result.subtext,
             cover: result.cover,
-            artist: {
-              id: '',
-              name: result.subtext,
-              subtext: '',
-              cover: { kind: 'none' },
-            },
+            artist: { id: '', name: result.subtext, subtext: '', cover: { kind: 'none' } },
             year: 0,
             genres: [],
             created: new Date(0),
           }}
-          onPress={album =>
-          {
+          onPress={album => {
             prefetchCovers([album.cover], 'detail');
-            (navigation as any).navigate('albumView', { id: album.id });
+            navigation.navigate('albumView', { id: album.id });
           }}
         />
       );
@@ -223,25 +175,19 @@ const Search = () => {
     if (result.type === 'artist') {
       return (
         <ArtistRow
-          artist={{
-            id: result.id,
-            name: result.title,
-            subtext: result.subtext,
-            cover: result.cover,
-            albumIds: [],
-          }}
+          artist={{ id: result.id, name: result.title, subtext: result.subtext, cover: result.cover, albumIds: [] }}
           rounded
           onPress={() => {
             prefetchCovers([result.cover], 'detail');
             if (result.source === 'external') {
-              (navigation as any).navigate('externalArtistView', {
+              navigation.navigate('externalArtistView', {
                 source: result.externalSource,
                 artistId: result.externalIds?.deezerId,
                 mbid: result.externalIds?.mbid ?? result.id,
                 name: result.title,
               });
             } else {
-              (navigation as any).navigate('artistView', { id: result.id });
+              navigation.navigate('artistView', { id: result.id });
             }
           }}
         />
@@ -251,17 +197,10 @@ const Search = () => {
     if (result.type === 'playlist') {
       return (
         <PlaylistRow
-          playlist={{
-            id: result.id,
-            title: result.title,
-            subtext: result.subtext,
-            cover: result.cover,
-            changed: new Date(),
-            created: new Date(),
-          }}
+          playlist={{ id: result.id, title: result.title, subtext: result.subtext, cover: result.cover, changed: new Date(), created: new Date() }}
           onPress={() => {
             prefetchCovers([result.cover], 'detail');
-            (navigation as any).navigate('playlistView', { id: result.id });
+            navigation.navigate('playlistView', { id: result.id });
           }}
         />
       );
@@ -270,62 +209,24 @@ const Search = () => {
     return null;
   };
 
-  const renderSourceSection = (
-    results: SearchResult[],
-    source: SearchResult['source'],
-    isFirstSection: boolean
-  ) => (
-    <React.Fragment>
-      <Text
-        style={[
-          styles.sectionLabel,
-          isFirstSection && styles.sectionLabelFirst,
-          isDarkMode && styles.sectionLabelDark,
-        ]}
-      >
-        {getSourceLabel(source)}
-      </Text>
-      {results.map((result) => (
-        <React.Fragment key={`${result.source}:${result.type}:${result.id}`}>
-          <View style={styles.resultBlock}>{renderResult(result)}</View>
-        </React.Fragment>
-      ))}
-    </React.Fragment>
-  );
-
   return (
-    <SafeAreaView
-      testID="search-screen"
-      style={[styles.container, isDarkMode && styles.containerDark]}
-    >
-      <View style={styles.row}>
+    <SafeAreaView testID="search-screen" style={[styles.container, isDarkMode && styles.containerDark]}>
+      <View style={styles.headerRow}>
         <TouchableOpacity
           accessibilityLabel="Back"
           accessibilityRole="button"
-          style={{ marginRight: 16 }}
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={isDarkMode ? '#fff' : '#333'}
-          />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#333'} />
         </TouchableOpacity>
 
-        <View
-          style={[
-            styles.searchContainer,
-            isDarkMode && styles.searchContainerDark,
-          ]}
-        >
+        <View style={[styles.searchContainer, isDarkMode && styles.searchContainerDark]}>
           <TextInput
             accessibilityLabel="Search input"
             testID="search-input"
             ref={searchInputRef}
-            style={[
-              styles.searchInput,
-              isDarkMode && styles.searchInputDark,
-            ]}
+            style={[styles.searchInput, isDarkMode && styles.searchInputDark]}
             placeholder={t('search.placeholder')}
             placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
             value={query}
@@ -333,21 +234,12 @@ const Search = () => {
             returnKeyType="search"
             onSubmitEditing={Keyboard.dismiss}
           />
-
           {query !== '' && (
             <TouchableOpacity
               style={styles.clearButton}
-              onPress={() => {
-                setQuery('');
-                clearSearch();
-                setHasSearched(false);
-              }}
+              onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
-              <MaterialIcons
-                name="close"
-                size={20}
-                color={isDarkMode ? '#fff' : '#000'}
-              />
+              <MaterialIcons name="close" size={20} color={isDarkMode ? '#fff' : '#000'} />
             </TouchableOpacity>
           )}
         </View>
@@ -358,18 +250,35 @@ const Search = () => {
           ? [...Array(8)].map((_, i) => <LoadingAlbumRow key={i} />)
           : (
             <>
-              {localResults.length > 0 &&
-                renderSourceSection(localResults, 'local', true)}
-              {externalResults.length > 0 &&
-                renderSourceSection(externalResults, 'external', localResults.length === 0)}
+              {localResults.map(result => (
+                <View key={`local:${result.type}:${result.id}`} style={styles.resultBlock}>
+                  {renderResult(result)}
+                </View>
+              ))}
+
+              {externalResults.length > 0 && (
+                <>
+                  <View style={styles.sourceHeader}>
+                    <View style={styles.sourceBadge}>
+                      <Text style={styles.sourceBadgeLetter}>D</Text>
+                    </View>
+                    <Text style={[styles.sourceHeaderText, isDarkMode && styles.sourceHeaderTextDark]}>
+                      Deezer
+                    </Text>
+                  </View>
+                  {externalResults.map((result, i) => (
+                    <View key={`external:${result.type}:${result.id}`} style={[styles.resultBlock, i === 0 && styles.resultBlockFirst]}>
+                      {renderResult(result)}
+                    </View>
+                  ))}
+                </>
+              )}
             </>
-          )}
+          )
+        }
 
         {hasSearched && !isLoading && searchResults.length === 0 && (
-          <Text
-            testID="search-no-results"
-            style={[styles.noResults, isDarkMode && styles.noResultsDark]}
-          >
+          <Text testID="search-no-results" style={[styles.noResults, isDarkMode && styles.noResultsDark]}>
             {t('search.noResults')}
           </Text>
         )}
@@ -394,9 +303,6 @@ const Search = () => {
 export default Search;
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingVertical: 8,
-  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -405,11 +311,14 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: '#000',
   },
-  row: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
+  },
+  backButton: {
+    marginRight: 16,
   },
   searchContainer: {
     flex: 1,
@@ -436,6 +345,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  scrollContent: {
+    paddingVertical: 8,
+  },
+  resultBlock: {},
+  resultBlockFirst: {
+    paddingTop: 8,
+  },
+  sourceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 4,
+  },
+  sourceBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#A238CA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceBadgeLetter: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  sourceHeaderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#aaa',
+  },
+  sourceHeaderTextDark: {
+    color: '#555',
+  },
   noResults: {
     textAlign: 'center',
     marginTop: 24,
@@ -444,9 +389,6 @@ const styles = StyleSheet.create({
   },
   noResultsDark: {
     color: '#aaa',
-  },
-  resultBlock: {
-    paddingBottom: 0,
   },
   songWrapper: {
     paddingHorizontal: 16,
@@ -488,19 +430,5 @@ const styles = StyleSheet.create({
   },
   songOptionsButton: {
     padding: 8,
-  },
-  sectionLabel: {
-    paddingHorizontal: 16,
-    marginBottom: 10,
-    marginTop: 18,
-    fontSize: 18,
-    color: '#111',
-    fontWeight: '700',
-  },
-  sectionLabelFirst: {
-    marginTop: 8,
-  },
-  sectionLabelDark: {
-    color: '#fff',
   },
 });

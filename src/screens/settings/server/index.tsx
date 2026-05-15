@@ -6,16 +6,15 @@ import {
     Switch,
     StyleSheet,
     Platform,
-    TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
 import { CheckCircle, XCircle } from 'lucide-react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import Header from '../components/Header';
+import ChecklistSection from '../components/ChecklistSection';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -29,12 +28,13 @@ import {
     setSearchScope,
     setServerScrobbleEnabled,
     setServerNowPlayingEnabled,
+    type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 
 const ICON_SIZE = 20;
 
 const ServerSettings: React.FC = () => {
-    const { isDarkMode, colors } = useTheme();
+    const { isDarkMode } = useTheme();
     const { t } = useTranslation();
     const api = useApi();
     const dispatch = useDispatch();
@@ -128,68 +128,47 @@ const ServerSettings: React.FC = () => {
                     </View>
                 </View>
 
-                <View style={[styles.section, { backgroundColor: colors.card }]}>
-                    <Text style={[styles.infoText, { color: colors.subtext }]}>
-                        {t('settings.server.searchScopeHelp')}
-                    </Text>
+                <ChecklistSection
+                    infoText={t('settings.server.searchScopeHelp')}
+                    items={[
+                        { key: 'client', label: t('settings.server.searchScope.client') },
+                        { key: 'server', label: t('settings.server.searchScope.server') },
+                    ]}
+                    isSelected={key => searchScope === key}
+                    onSelect={key => dispatch(setSearchScope(key as SearchScope))}
+                />
 
-                    <View style={styles.optionList}>
-                        {[
-                            { key: 'client', label: t('settings.server.searchScope.client') },
-                            { key: 'client+external', label: t('settings.server.searchScope.clientExternal') },
-                            { key: 'server', label: t('settings.server.searchScope.server') },
-                            { key: 'server+external', label: t('settings.server.searchScope.serverExternal') },
-                        ].map(option => {
-                            const active = searchScope === option.key;
-                            return (
-                                <TouchableOpacity
-                                    key={option.key}
-                                    onPress={() => dispatch(setSearchScope(option.key as any))}
-                                    style={[
-                                        styles.optionRow,
-                                        {
-                                            backgroundColor: colors.muted,
-                                            borderColor: active ? themeColor : colors.border,
-                                        },
-                                    ]}
-                                >
-                                    <View style={[
-                                        styles.checkbox,
-                                        active
-                                            ? { backgroundColor: themeColor, borderColor: themeColor }
-                                            : { borderColor: colors.border },
-                                    ]}>
-                                        {active && <Ionicons name="checkmark" size={14} color="#fff" />}
-                                    </View>
-                                    <Text style={[styles.optionText, { color: colors.text }]}>
-                                        {option.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
-                </View>
                 {isNavidrome && (
                     <View style={[styles.section, isDarkMode && styles.sectionDark]}>
                         <View style={styles.row}>
-                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                                {t('settings.scrobbling.scrobble')}
-                            </Text>
+                            <View style={styles.rowLeft}>
+                                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                    {t('settings.scrobbling.scrobble')}
+                                </Text>
+                                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                    {t('settings.scrobbling.scrobbleDescription')}
+                                </Text>
+                            </View>
                             <Switch
                                 value={serverScrobbleEnabled}
-                                onValueChange={v => dispatch(setServerScrobbleEnabled(v))}
+                                onValueChange={v => { dispatch(setServerScrobbleEnabled(v)) }}
                                 trackColor={{ true: themeColor }}
                                 thumbColor="#fff"
                             />
                         </View>
                         <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
                         <View style={styles.row}>
-                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                                {t('settings.scrobbling.nowPlaying')}
-                            </Text>
+                            <View style={styles.rowLeft}>
+                                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                    {t('settings.scrobbling.nowPlaying')}
+                                </Text>
+                                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                    {t('settings.scrobbling.nowPlayingDescription')}
+                                </Text>
+                            </View>
                             <Switch
                                 value={serverNowPlayingEnabled}
-                                onValueChange={v => dispatch(setServerNowPlayingEnabled(v))}
+                                onValueChange={v => { dispatch(setServerNowPlayingEnabled(v)) }}
                                 trackColor={{ true: themeColor }}
                                 thumbColor="#fff"
                             />
@@ -209,26 +188,31 @@ const styles = StyleSheet.create({
     scrollContent: { padding: 16, paddingBottom: 100 },
     section: {
         backgroundColor: '#fff',
-        paddingVertical: 20,
-        paddingHorizontal: 16,
-        borderRadius: 10,
+        borderRadius: 12,
+        overflow: 'hidden',
         marginBottom: 24,
     },
     sectionDark: { backgroundColor: '#111' },
     divider: {
         height: StyleSheet.hairlineWidth,
-        backgroundColor: '#e0e0e0',
+        width: '92%',
+        backgroundColor: '#D1D1D6',
+        alignSelf: 'center',
     },
-    dividerDark: { backgroundColor: '#2a2a2a' },
+    dividerDark: { backgroundColor: '#333' },
     row: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 13,
-        gap: 12,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        gap: 16,
     },
+    rowLeft: { flex: 1 },
     rowText: { fontSize: 16, color: '#000' },
     rowTextDark: { color: '#fff' },
+    rowSubtext: { fontSize: 13, color: '#6E6E73', marginTop: 2 },
+    rowSubtextDark: { color: '#aaa' },
     rowValue: {
         fontSize: 15,
         color: '#888',
@@ -241,35 +225,5 @@ const styles = StyleSheet.create({
         height: ICON_SIZE,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    infoText: {
-        fontSize: 13,
-        color: '#555',
-        marginBottom: 12,
-    },
-    infoTextDark: { color: '#aaa' },
-    optionList: {
-        gap: 6,
-    },
-    optionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        borderWidth: 1,
-        gap: 10,
-    },
-    checkbox: {
-        width: 20,
-        height: 20,
-        borderRadius: 4,
-        borderWidth: 1.5,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    optionText: {
-        fontSize: 15,
-        flex: 1,
     },
 });

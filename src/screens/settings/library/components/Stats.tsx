@@ -106,7 +106,9 @@ const Stats: React.FC = () => {
         </Text>
       </View>
 
-      <View style={[styles.row, styles.rowBorder, isDarkMode && styles.rowBorderDark]}>
+      <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+
+      <View style={styles.row}>
         <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
           {t('settings.library.stats.syncOnAppStart')}
         </Text>
@@ -130,7 +132,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
     backgroundColor: '#fff',
   },
   sectionDark: {
@@ -161,18 +164,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
-  rowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#D1D1D6',
   },
-  rowBorderDark: {
-    borderTopColor: '#222',
+  dividerDark: {
+    backgroundColor: '#333',
   },
   rowText: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#000',
     flex: 1,
     marginRight: 12,
   },

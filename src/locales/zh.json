@@ -38,10 +38,10 @@
       "connectivity": "连接状态",
       "searchScopeHelp": "选择搜索结果的来源",
       "searchScope": {
-        "client": "本地设备",
-        "clientExternal": "设备 + 外部",
+        "client": "本地",
+        "clientDescription": "仅搜索本地音乐库",
         "server": "服务器",
-        "serverExternal": "服务器 + 外部"
+        "serverDescription": "使用服务器搜索"
       }
     },
     "appearance": {
@@ -231,8 +231,12 @@
       "disabled": "已禁用"
     },
     "deezer": {
-      "enable": "启用 Deezer",
-      "enableDescription": "在探索页面和搜索中显示 Deezer 排行榜、艺术家推荐和流派混合内容。"
+      "discovery": "发现",
+      "discoveryDescription": "Deezer 排行榜和推荐显示在探索页面。",
+      "search": "搜索",
+      "searchDescription": "在搜索中包含 Deezer 结果。",
+      "externalScreens": "外部页面",
+      "externalScreensDescription": "从 Deezer 显示外部专辑和艺术家页面。"
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -240,7 +244,9 @@
       "scrobble": "Scrobble",
       "nowPlaying": "正在播放",
       "notConnected": "未连接",
-      "configure": "配置"
+      "configure": "配置",
+      "scrobbleDescription": "将已播放的曲目记录到你的个人资料。",
+      "nowPlayingDescription": "实时显示正在播放的内容。"
     },
     "discovery": {
       "title": "发现",
@@ -402,7 +408,8 @@
       "song": "曲目",
       "album": "专辑",
       "artist": "歌手",
-      "playlist": "播放列表"
+      "playlist": "播放列表",
+      "deezer": "Deezer"
     }
   },
   "media": {
@@ -660,5 +667,8 @@
       "plays": "播放次数"
     },
     "downloadAllFailed": "部分专辑下载失败。"
+  },
+  "external": {
+    "notFound": "在已连接的来源中找不到此内容。"
   }
 }

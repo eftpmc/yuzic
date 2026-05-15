@@ -5,16 +5,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { selectDeezerEnabled } from '@/utils/redux/selectors/settingsSelectors';
-import { setDeezerEnabled } from '@/utils/redux/slices/settingsSlice';
+import {
+  selectThemeColor,
+  selectDeezerDiscoveryEnabled,
+  selectDeezerSearchEnabled,
+  selectDeezerExternalScreensEnabled,
+} from '@/utils/redux/selectors/settingsSelectors';
+import {
+  setDeezerDiscoveryEnabled,
+  setDeezerSearchEnabled,
+  setDeezerExternalScreensEnabled,
+} from '@/utils/redux/slices/settingsSlice';
 
 export default function DeezerSettings() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
-  const enabled = useSelector(selectDeezerEnabled);
+  const discoveryEnabled = useSelector(selectDeezerDiscoveryEnabled);
+  const searchEnabled = useSelector(selectDeezerSearchEnabled);
+  const externalScreensEnabled = useSelector(selectDeezerExternalScreensEnabled);
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
@@ -22,17 +32,55 @@ export default function DeezerSettings() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-                {t('settings.deezer.enable')}
+            <View style={styles.rowLeft}>
+              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                {t('settings.deezer.discovery')}
               </Text>
-              <Text style={[styles.sublabel, isDarkMode && styles.sublabelDark]}>
-                {t('settings.deezer.enableDescription')}
+              <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                {t('settings.deezer.discoveryDescription')}
               </Text>
             </View>
             <Switch
-              value={enabled}
-              onValueChange={v => dispatch(setDeezerEnabled(v))}
+              value={discoveryEnabled}
+              onValueChange={v => { dispatch(setDeezerDiscoveryEnabled(v)) }}
+              trackColor={{ true: themeColor }}
+              thumbColor="#fff"
+            />
+          </View>
+
+          <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                {t('settings.deezer.search')}
+              </Text>
+              <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                {t('settings.deezer.searchDescription')}
+              </Text>
+            </View>
+            <Switch
+              value={searchEnabled}
+              onValueChange={v => { dispatch(setDeezerSearchEnabled(v)) }}
+              trackColor={{ true: themeColor }}
+              thumbColor="#fff"
+            />
+          </View>
+
+          <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                {t('settings.deezer.externalScreens')}
+              </Text>
+              <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                {t('settings.deezer.externalScreensDescription')}
+              </Text>
+            </View>
+            <Switch
+              value={externalScreensEnabled}
+              onValueChange={v => { dispatch(setDeezerExternalScreensEnabled(v)) }}
               trackColor={{ true: themeColor }}
               thumbColor="#fff"
             />
@@ -44,26 +92,59 @@ export default function DeezerSettings() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F7' },
-  containerDark: { backgroundColor: '#000' },
-  scrollContent: { padding: 16, paddingBottom: 100 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  containerDark: {
+    backgroundColor: '#000',
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    paddingBottom: 120,
+  },
   section: {
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
   },
-  sectionDark: { backgroundColor: '#1C1C1E' },
+  sectionDark: {
+    backgroundColor: '#111',
+  },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 16,
   },
-  rowText: { flex: 1 },
-  label: { fontSize: 16, color: '#1C1C1E' },
-  labelDark: { color: '#fff' },
-  sublabel: { fontSize: 13, color: '#6E6E73', marginTop: 2 },
-  sublabelDark: { color: '#aaa' },
+  rowLeft: {
+    flex: 1,
+  },
+  rowText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  rowTextDark: {
+    color: '#fff',
+  },
+  rowSubtext: {
+    fontSize: 13,
+    color: '#6E6E73',
+    marginTop: 2,
+  },
+  rowSubtextDark: {
+    color: '#aaa',
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    width: '92%',
+    backgroundColor: '#D1D1D6',
+    alignSelf: 'center',
+  },
+  dividerDark: {
+    backgroundColor: '#333',
+  },
 });

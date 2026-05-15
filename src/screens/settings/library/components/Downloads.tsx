@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
     backgroundColor: '#fff',
   },
   sectionDark: {
@@ -163,7 +164,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    alignItems: 'center',
+    paddingVertical: 14,
   },
   rowText: {
     fontSize: 16,

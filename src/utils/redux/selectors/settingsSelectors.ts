@@ -64,5 +64,16 @@ export const selectLastSyncedAt = (state: RootState): number | null =>
 export const selectSyncOnAppStart = (state: RootState): boolean =>
   state.settings.syncOnAppStart ?? false;
 
-export const selectDeezerEnabled = (state: RootState): boolean =>
-  state.settings.deezerEnabled ?? false;
+export const selectDeezerDiscoveryEnabled = (state: RootState): boolean =>
+  state.settings.deezerDiscoveryEnabled ?? false;
+
+export const selectDeezerSearchEnabled = (state: RootState): boolean =>
+  state.settings.deezerSearchEnabled ?? false;
+
+export const selectDeezerExternalScreensEnabled = (state: RootState): boolean =>
+  state.settings.deezerExternalScreensEnabled ?? false;
+
+export const selectAnyDeezerEnabled = (state: RootState): boolean =>
+  (state.settings.deezerDiscoveryEnabled ||
+    state.settings.deezerSearchEnabled ||
+    state.settings.deezerExternalScreensEnabled) ?? false;

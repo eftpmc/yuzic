@@ -11,8 +11,7 @@ import { useAlbums } from '@/hooks/albums'
 import { useArtists } from '@/hooks/artists'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
-import { mmkv } from '@/utils/mmkvStorage'
-import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
+import { useDeezerDiscoveryEnabled } from '@/features/explore/hooks/useDeezerEnabled'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import {
   SECTION_H_PADDING as H_PADDING,
@@ -29,12 +28,10 @@ import MediaTile from './MediaTile'
 import ExploreLoadingTiles from './ExploreLoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
-const MIN_ALBUMS = 8
 const TARGET_ALBUMS = 10
 const SEED_ARTISTS = 4
 const RELATED_PER_SEED = 12
 const GENRE_ARTIST_LIMIT = 40
-const STORAGE_KEY = 'explore:genre'
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -132,11 +129,9 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
   const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   const dayKey = getExploreDayKey()
-  const isEnabled = useDeezerEnabled()
+  const isEnabled = useDeezerDiscoveryEnabled()
 
-  const [selectedGenre, setSelectedGenre] = React.useState<string>(
-    () => mmkv.getString(STORAGE_KEY) ?? genre
-  )
+  const [selectedGenre, setSelectedGenre] = React.useState<string>(genre)
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
@@ -171,10 +166,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
       .slice(0, SEED_ARTISTS)
   }, [selectedGenre, libraryAlbums])
 
-  // Write to MMKV before updating state so the persisted value is never behind
-  // the query key that derives from selectedGenre.
   const handleSelect = useCallback((value: string) => {
-    mmkv.set(STORAGE_KEY, value)
     setSelectedGenre(value)
     sheetRef.current?.dismiss()
   }, [])
@@ -183,10 +175,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
     const eligible = allGenres.filter(g => g !== selectedGenre)
     const pool = eligible.length > 0 ? eligible : allGenres
     const random = pool[Math.floor(Math.random() * pool.length)]
-    if (random) {
-      mmkv.set(STORAGE_KEY, random)
-      setSelectedGenre(random)
-    }
+    if (random) setSelectedGenre(random)
     sheetRef.current?.dismiss()
   }, [allGenres, selectedGenre])
 

@@ -294,7 +294,7 @@ export default function LibraryScreen() {
         onAccountPress={toggleAccountSheet}
       />
 
-      <View style={[styles.filterRow, { borderBottomColor: borderColor, backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+      <View style={[styles.filterRow, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -387,9 +387,7 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: '#000',
   },
-  filterRow: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
+  filterRow: {},
   pillRow: {
     flexDirection: 'row',
     alignItems: 'center',

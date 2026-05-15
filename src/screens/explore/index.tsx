@@ -2,8 +2,8 @@ import React, { useCallback, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/explore/hooks/useDailyLayout'
-import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
-import { useSync } from '@/hooks/useSync'
+import { useDeezerDiscoveryEnabled } from '@/features/explore/hooks/useDeezerEnabled'
+
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
@@ -48,13 +48,14 @@ export default function Explore() {
   const { isDarkMode } = useTheme()
   const [refreshKey, setRefreshKey] = useState(0)
   const { local, deezer, isOffline } = useDailyLayout(refreshKey)
-  const deezerEnabled = useDeezerEnabled()
-  const { sync, isSyncing } = useSync()
+  const deezerEnabled = useDeezerDiscoveryEnabled()
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const onRefresh = useCallback(() => {
+    setIsRefreshing(true)
     setRefreshKey(k => k + 1)
-    void sync(true)
-  }, [sync])
+    setTimeout(() => setIsRefreshing(false), 500)
+  }, [])
 
   const activeSources = [
     { id: 'deezer', label: 'Deezer', color: '#A238CA', letter: 'D', sections: deezer, enabled: deezerEnabled },
@@ -67,7 +68,7 @@ export default function Explore() {
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
-          refreshing={isSyncing}
+          refreshing={isRefreshing}
           onRefresh={onRefresh}
           tintColor={isDarkMode ? '#fff' : '#000'}
         />

@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo, useState } from 'react';
+import React, { forwardRef, useRef, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
+import { useEnabledExternalSources, type SourceResolvedAlbum, type SourceResolvedArtist } from '@/features/sources/registry';
+import ExternalSourcePickerSheet, { type PickerItem } from '@/components/ExternalSourcePickerSheet';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | null;
@@ -57,6 +59,13 @@ const AlbumOptions = forwardRef<
   const playCount = useSelector(selectAlbumPlayCount(album?.id ?? ''));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { albumWithSongs, songs, songsLoading } = useLazyAlbumDetail(album, isSheetOpen);
+
+  const enabledSources = useEnabledExternalSources();
+  const [isResolvingExternal, setIsResolvingExternal] = useState(false);
+  const [pickerAlbums, setPickerAlbums] = useState<PickerItem[]>([]);
+  const [pickerArtists, setPickerArtists] = useState<PickerItem[]>([]);
+  const albumPickerRef = useRef<BottomSheetModal>(null);
+  const artistPickerRef = useRef<BottomSheetModal>(null);
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -114,25 +123,57 @@ const AlbumOptions = forwardRef<
     navigation.navigate('(home)', { screen: 'albumView', params: { id: album.id } });
   };
 
-  const handleGoToExternalAlbum = () => {
-    if (!album?.artist?.name || !album.title) return;
-    close();
-    navigation.navigate('externalAlbumView', {
-      albumId: album.id,
-      artist: album.artist?.name,
-      title: album.title,
-    });
+  const handleGoToExternalAlbum = async () => {
+    if (!album?.artist?.name || !album.title || !enabledSources.length) return;
+    setIsResolvingExternal(true);
+    try {
+      const results = (await Promise.all(
+        enabledSources.map(s =>
+          s.resolveAlbum(album.artist!.name!, album.title!).catch(() => null)
+        )
+      )).filter(Boolean) as SourceResolvedAlbum[];
+      if (results.length === 0) {
+        toast.error(t('external.notFound'));
+        return;
+      }
+      if (results.length === 1) {
+        close();
+        navigation.navigate('externalAlbumView', { albumId: results[0].id, source: results[0].source });
+        return;
+      }
+      setPickerAlbums(results.map(r => ({ ...r, kind: 'album' as const })));
+      albumPickerRef.current?.present();
+    } finally {
+      setIsResolvingExternal(false);
+    }
   };
 
-  const handleGoToExternalArtist = () => {
-    if (!album?.artist?.name) return;
-    close();
-    navigation.navigate('externalArtistView', {
-      name: album.artist.name,
-    });
+  const handleGoToExternalArtist = async () => {
+    if (!album?.artist?.name || !enabledSources.length) return;
+    setIsResolvingExternal(true);
+    try {
+      const results = (await Promise.all(
+        enabledSources.map(s =>
+          s.resolveArtist(album.artist!.name!).catch(() => null)
+        )
+      )).filter(Boolean) as SourceResolvedArtist[];
+      if (results.length === 0) {
+        toast.error(t('external.notFound'));
+        return;
+      }
+      if (results.length === 1) {
+        close();
+        navigation.navigate('externalArtistView', { artistId: results[0].id, source: results[0].source });
+        return;
+      }
+      setPickerArtists(results.map(r => ({ ...r, kind: 'artist' as const })));
+      artistPickerRef.current?.present();
+    } finally {
+      setIsResolvingExternal(false);
+    }
   };
 
-  const hasExternalOptions = Boolean(album?.artist?.name && album?.title);
+  const hasExternalOptions = Boolean(album?.artist?.name && album?.title && enabledSources.length > 0);
 
   const handleDownload = async () => {
     if (!album || isDownloaded || isDownloading) return;
@@ -160,6 +201,7 @@ const AlbumOptions = forwardRef<
   }
 
   return (
+    <>
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
@@ -251,12 +293,28 @@ const AlbumOptions = forwardRef<
 
         {hasExternalOptions && (
           <>
-            <TouchableOpacity style={styles.option} onPress={handleGoToExternalAlbum}>
-              <Ionicons name="albums-outline" size={26} color={themeStyles.icon.color} />
+            <TouchableOpacity
+              style={[styles.option, isResolvingExternal && styles.optionDisabled]}
+              onPress={() => { void handleGoToExternalAlbum(); }}
+              disabled={isResolvingExternal}
+            >
+              {isResolvingExternal ? (
+                <ActivityIndicator size="small" color={themeStyles.artist.color} />
+              ) : (
+                <Ionicons name="albums-outline" size={26} color={themeStyles.icon.color} />
+              )}
               <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalAlbum')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.option} onPress={handleGoToExternalArtist}>
-              <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
+            <TouchableOpacity
+              style={[styles.option, isResolvingExternal && styles.optionDisabled]}
+              onPress={() => { void handleGoToExternalArtist(); }}
+              disabled={isResolvingExternal}
+            >
+              {isResolvingExternal ? (
+                <ActivityIndicator size="small" color={themeStyles.artist.color} />
+              ) : (
+                <Ionicons name="person-outline" size={26} color={themeStyles.icon.color} />
+              )}
               <Text style={[styles.optionText, themeStyles.optionText]}>{t('albumOptions.actions.goToExternalArtist')}</Text>
             </TouchableOpacity>
           </>
@@ -327,6 +385,27 @@ const AlbumOptions = forwardRef<
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
+    <ExternalSourcePickerSheet
+      ref={albumPickerRef}
+      items={pickerAlbums}
+      title={t('albumOptions.actions.goToExternalAlbum')}
+      onSelect={(item) => {
+        albumPickerRef.current?.dismiss();
+        close();
+        navigation.navigate('externalAlbumView', { albumId: item.id, source: item.source });
+      }}
+    />
+    <ExternalSourcePickerSheet
+      ref={artistPickerRef}
+      items={pickerArtists}
+      title={t('albumOptions.actions.goToExternalArtist')}
+      onSelect={(item) => {
+        artistPickerRef.current?.dismiss();
+        close();
+        navigation.navigate('externalArtistView', { artistId: item.id, source: item.source });
+      }}
+    />
+    </>
   );
 });
 

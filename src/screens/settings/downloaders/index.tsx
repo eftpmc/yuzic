@@ -108,5 +108,5 @@ const styles = StyleSheet.create({
   rowText: { fontSize: 17, fontWeight: '600', color: '#000', marginBottom: 2 },
   rowTextDark: { color: '#fff' },
   subtitle: { fontSize: 13, color: '#6E6E73' },
-  subtitleDark: { color: '#8E8E93' },
+  subtitleDark: { color: '#aaa' },
 });

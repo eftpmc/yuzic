@@ -68,7 +68,7 @@ export function useDailyLayout(refreshKey = 0): ExploreLayout {
   const artistPlayCounts = useSelector(selectArtistPlayCounts)
   const libraryGenres = useSelector(selectLibraryGenres)
   const dayKey = getExploreDayKey()
-  const dailySeed = getExploreSeed(dayKey) + refreshKey * 2147483647
+  const dailySeed = getExploreSeed(`${dayKey}:${refreshKey}`)
 
   const artistSeedPool = useMemo(() => {
     return seededShuffle(

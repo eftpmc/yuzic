@@ -38,10 +38,10 @@
       "connectivity": "接続状況",
       "searchScopeHelp": "検索結果の取得元を選択",
       "searchScope": {
-        "client": "端末内",
-        "clientExternal": "端末＋外部",
+        "client": "デバイス上",
+        "clientDescription": "ローカルライブラリのみを検索",
         "server": "サーバー",
-        "serverExternal": "サーバー＋外部"
+        "serverDescription": "サーバーの検索を使用する"
       }
     },
     "appearance": {
@@ -231,8 +231,12 @@
       "disabled": "無効"
     },
     "deezer": {
-      "enable": "Deezerを有効にする",
-      "enableDescription": "探索画面と検索にDeezerのチャート、アーティストのおすすめ、ジャンルミックスを表示します。"
+      "discovery": "ディスカバリー",
+      "discoveryDescription": "Deezer のチャートとおすすめを探索画面に表示。",
+      "search": "検索",
+      "searchDescription": "検索に Deezer の結果を含める。",
+      "externalScreens": "外部スクリーン",
+      "externalScreensDescription": "Deezer の外部アルバム・アーティストページを表示。"
     },
     "scrobbling": {
       "title": "スクロブル",
@@ -240,7 +244,9 @@
       "scrobble": "スクロブル",
       "nowPlaying": "再生中",
       "notConnected": "未接続",
-      "configure": "設定"
+      "configure": "設定",
+      "scrobbleDescription": "再生済みトラックをプロフィールに記録する。",
+      "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。"
     },
     "discovery": {
       "title": "ディスカバリー",
@@ -402,7 +408,8 @@
       "song": "曲",
       "album": "アルバム",
       "artist": "アーティスト",
-      "playlist": "プレイリスト"
+      "playlist": "プレイリスト",
+      "deezer": "Deezer"
     }
   },
   "media": {
@@ -660,5 +667,8 @@
       "plays": "再生回数"
     },
     "downloadAllFailed": "一部のアルバムのダウンロードに失敗しました。"
+  },
+  "external": {
+    "notFound": "接続されたソースで見つかりませんでした。"
   }
 }

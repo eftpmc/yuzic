@@ -39,9 +39,9 @@
       "searchScopeHelp": "Choisissez la source des résultats de recherche",
       "searchScope": {
         "client": "Sur l'appareil",
-        "clientExternal": "Appareil + Externe",
+        "clientDescription": "Rechercher uniquement dans la bibliothèque locale",
         "server": "Serveur",
-        "serverExternal": "Serveur + Externe"
+        "serverDescription": "Utiliser la recherche du serveur à la place"
       }
     },
     "appearance": {
@@ -231,8 +231,12 @@
       "disabled": "Désactivé"
     },
     "deezer": {
-      "enable": "Activer Deezer",
-      "enableDescription": "Afficher les charts Deezer, les recommandations d'artistes et les mixes de genres sur l'écran d'exploration et dans la recherche."
+      "discovery": "Découverte",
+      "discoveryDescription": "Classements et recommandations Deezer sur l'écran explorer.",
+      "search": "Recherche",
+      "searchDescription": "Inclure les résultats Deezer dans la recherche.",
+      "externalScreens": "Écrans externes",
+      "externalScreensDescription": "Afficher les pages d'album et d'artiste externes depuis Deezer."
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -240,7 +244,9 @@
       "scrobble": "Scrobble",
       "nowPlaying": "En cours de lecture",
       "notConnected": "Non connecté",
-      "configure": "Configurer"
+      "configure": "Configurer",
+      "scrobbleDescription": "Enregistrer les titres écoutés sur votre profil.",
+      "nowPlayingDescription": "Afficher ce que vous écoutez en temps réel."
     },
     "discovery": {
       "title": "Découverte",
@@ -402,7 +408,8 @@
       "song": "Morceau",
       "album": "Album",
       "artist": "Artiste",
-      "playlist": "Playlist"
+      "playlist": "Playlist",
+      "deezer": "Deezer"
     }
   },
   "media": {
@@ -660,5 +667,8 @@
       "plays": "Lectures"
     },
     "downloadAllFailed": "Certains albums n'ont pas pu être téléchargés."
+  },
+  "external": {
+    "notFound": "Introuvable dans les sources connectées."
   }
 }

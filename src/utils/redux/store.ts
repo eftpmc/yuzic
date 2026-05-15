@@ -20,7 +20,12 @@ const resetMigrate = (state: any, currentVersion: number): Promise<any> => {
 // Patches specific fields on version bump while preserving all other user settings.
 const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
   if (state?._persist?.version === currentVersion) return Promise.resolve(state);
-  return Promise.resolve({ ...state, syncOnAppStart: true });
+  const scope = state?.searchScope;
+  const migratedScope =
+    scope === 'client+external' ? 'client' :
+    scope === 'server+external' ? 'server' :
+    scope ?? 'server';
+  return Promise.resolve({ ...state, syncOnAppStart: true, searchScope: migratedScope });
 };
 
 const serversPersistConfig = { key: 'servers', storage };
@@ -28,7 +33,7 @@ const downloadersPersistConfig = { key: 'downloaders', storage };
 const settingsPersistConfig = {
   key: 'settings',
   storage,
-  version: 1,
+  version: 2,
   migrate: settingsMigrate,
 };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };

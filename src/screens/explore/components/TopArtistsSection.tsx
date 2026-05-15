@@ -10,7 +10,7 @@ import { prefetchCovers } from '@/utils/images/imageCache'
 import { getDeezerChartArtists } from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
 import { getExploreDayKey } from '@/features/explore/hooks/useDailyLayout'
-import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
+import { useDeezerDiscoveryEnabled } from '@/features/explore/hooks/useDeezerEnabled'
 import {
   SECTION_H_PADDING as H_PADDING,
   SECTION_GRID_GAP,
@@ -31,7 +31,7 @@ export default function TopArtistsSection({ refreshKey = 0 }: Props) {
   const { isDarkMode } = useTheme()
   const { width: screenWidth } = useWindowDimensions()
   const dayKey = getExploreDayKey()
-  const isEnabled = useDeezerEnabled()
+  const isEnabled = useDeezerDiscoveryEnabled()
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
