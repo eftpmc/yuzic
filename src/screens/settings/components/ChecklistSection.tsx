@@ -27,13 +27,13 @@ export default function ChecklistSection({
   isLoading = false,
   disabled = false,
 }: Props) {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
       {infoText && (
-        <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
+        <Text style={[styles.infoText, { color: colors.subtext }]}>
           {infoText}
         </Text>
       )}
@@ -57,8 +57,8 @@ export default function ChecklistSection({
                 style={[
                   styles.optionRow,
                   {
-                    backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
-                    borderColor: active ? themeColor : (isDarkMode ? '#333' : '#e0e0e0'),
+                    backgroundColor: colors.muted,
+                    borderColor: active ? themeColor : colors.border,
                     opacity: disabled ? 0.6 : 1,
                   },
                 ]}
@@ -67,11 +67,11 @@ export default function ChecklistSection({
                   styles.checkbox,
                   active
                     ? { backgroundColor: themeColor, borderColor: themeColor }
-                    : { borderColor: isDarkMode ? '#555' : '#ccc' },
+                    : { borderColor: colors.border },
                 ]}>
                   {active && <Ionicons name="checkmark" size={14} color="#fff" />}
                 </View>
-                <Text style={[styles.optionLabel, isDarkMode && styles.optionLabelDark]}>
+                <Text style={[styles.optionLabel, { color: colors.text }]}>
                   {item.label}
                 </Text>
               </TouchableOpacity>
@@ -85,22 +85,16 @@ export default function ChecklistSection({
 
 const styles = StyleSheet.create({
   section: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 24,
   },
-  sectionDark: {
-    backgroundColor: '#111',
-  },
   infoText: {
     fontSize: 13,
-    color: '#555',
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
   },
-  infoTextDark: { color: '#aaa' },
   optionList: {
     gap: 8,
     paddingHorizontal: 16,
@@ -133,8 +127,6 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#000',
     flex: 1,
   },
-  optionLabelDark: { color: '#fff' },
 });

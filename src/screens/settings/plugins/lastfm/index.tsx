@@ -45,7 +45,7 @@ const LastFmView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
 
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
@@ -100,12 +100,12 @@ const LastFmView: React.FC = () => {
   if (!activeServer) return null;
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.lastfm.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.lastfm.apiKey')}
           </Text>
           <TextInput
@@ -115,10 +115,10 @@ const LastFmView: React.FC = () => {
             autoCorrect={false}
             placeholder={t('settings.lastfm.apiKeyPlaceholder')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
           />
 
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.lastfm.apiSecret')}
           </Text>
           <TextInput
@@ -129,7 +129,7 @@ const LastFmView: React.FC = () => {
             autoCorrect={false}
             placeholder={t('settings.lastfm.apiSecretPlaceholder')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
           />
 
           <TouchableOpacity
@@ -138,7 +138,7 @@ const LastFmView: React.FC = () => {
             disabled={!pendingToken}
             activeOpacity={pendingToken ? 0.6 : 1}
           >
-            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+            <Text style={[styles.rowText, { color: colors.text }]}>
               {isAuthenticated
                 ? `${t('settings.lastfm.connectedAs')} ${username}`
                 : t('settings.lastfm.notConnected')}
@@ -156,7 +156,7 @@ const LastFmView: React.FC = () => {
         {!isAuthenticated && (
           <>
             {pendingToken && (
-              <Text style={[styles.pendingText, isDarkMode && styles.pendingTextDark]}>
+              <Text style={[styles.pendingText, { color: colors.subtext }]}>
                 {t('settings.lastfm.pendingInstruction')}
               </Text>
             )}
@@ -176,13 +176,13 @@ const LastFmView: React.FC = () => {
 
         {isAuthenticated && (
           <>
-            <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+            <View style={[styles.section, { backgroundColor: colors.card }]}>
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                  <Text style={[styles.rowText, { color: colors.text }]}>
                     {t('settings.scrobbling.scrobble')}
                   </Text>
-                  <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                  <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                     {t('settings.scrobbling.scrobbleDescription')}
                   </Text>
                 </View>
@@ -193,13 +193,13 @@ const LastFmView: React.FC = () => {
                   thumbColor="#fff"
                 />
               </View>
-              <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                  <Text style={[styles.rowText, { color: colors.text }]}>
                     {t('settings.scrobbling.nowPlaying')}
                   </Text>
-                  <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                  <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                     {t('settings.scrobbling.nowPlayingDescription')}
                   </Text>
                 </View>
@@ -213,7 +213,7 @@ const LastFmView: React.FC = () => {
             </View>
 
             <TouchableOpacity
-              style={[styles.disconnectButton, isDarkMode && styles.disconnectButtonDark]}
+              style={styles.disconnectButton}
               onPress={handleDisconnect}
             >
               <MaterialIcons name="logout" size={20} color="#fff" />
@@ -229,53 +229,38 @@ const LastFmView: React.FC = () => {
 export default LastFmView;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F7' },
-  containerDark: { backgroundColor: '#000' },
+  container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 16,
   },
-  sectionDark: { backgroundColor: '#111' },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#000',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
   },
-  sectionLabelDark: { color: '#fff' },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12, color: '#000' },
-  labelDark: { color: '#fff' },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12 },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     padding: 10,
     borderRadius: 8,
     marginBottom: 8,
-    color: '#000',
-    backgroundColor: '#fff',
   },
-  inputDark: { borderColor: '#444', backgroundColor: '#1a1a1a', color: '#fff' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, gap: 16 },
   rowLeft: { flex: 1 },
-  rowText: { fontSize: 16, color: '#000' },
-  rowSubtext: { fontSize: 13, color: '#6E6E73', marginTop: 2 },
-  rowSubtextDark: { color: '#aaa' },
-  rowTextDark: { color: '#fff' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: '#e0e0e0', marginVertical: 2 },
-  dividerDark: { backgroundColor: '#333' },
+  rowText: { fontSize: 16 },
+  rowSubtext: { fontSize: 13, marginTop: 2 },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: 2 },
   pendingText: {
     fontSize: 14,
-    color: '#555',
     marginBottom: 8,
     paddingHorizontal: 4,
     lineHeight: 20,
   },
-  pendingTextDark: { color: '#aaa' },
   connectButton: {
     paddingVertical: 12,
     borderRadius: 8,
@@ -283,8 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   connectButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  helperText: { fontSize: 14, lineHeight: 20, color: '#555' },
-  helperTextDark: { color: '#aaa' },
+  helperText: { fontSize: 14, lineHeight: 20 },
   disconnectButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -294,6 +278,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 4,
   },
-  disconnectButtonDark: { backgroundColor: '#FF453A' },
   disconnectButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', marginLeft: 8 },
 });

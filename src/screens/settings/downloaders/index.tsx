@@ -36,7 +36,7 @@ const DOWNLOADERS: {
 const DownloadersView: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
 
@@ -47,7 +47,7 @@ const DownloadersView: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.downloaders.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -57,7 +57,7 @@ const DownloadersView: React.FC = () => {
           return (
             <TouchableOpacity
               key={d.id}
-              style={[styles.row, isDarkMode && styles.rowDark]}
+              style={[styles.row, { backgroundColor: colors.card }]}
               onPress={() => router.push(d.route as any)}
               activeOpacity={0.7}
             >
@@ -68,17 +68,17 @@ const DownloadersView: React.FC = () => {
                 cachePolicy="memory-disk"
               />
               <View style={styles.rowContent}>
-                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                <Text style={[styles.rowText, { color: colors.text }]}>
                   {t(d.labelKey)}
                 </Text>
-                <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+                <Text style={[styles.subtitle, { color: colors.subtext }]}>
                   {isConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
                 </Text>
               </View>
               <MaterialIcons
                 name="chevron-right"
                 size={24}
-                color={isDarkMode ? '#fff' : '#6E6E73'}
+                color={colors.subtext}
               />
             </TouchableOpacity>
           );
@@ -91,22 +91,17 @@ const DownloadersView: React.FC = () => {
 export default DownloadersView;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F7' },
-  containerDark: { backgroundColor: '#000' },
+  container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 100 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
   },
-  rowDark: { backgroundColor: '#111' },
   downloaderIcon: { width: 40, height: 40, marginRight: 14 },
   rowContent: { flex: 1 },
-  rowText: { fontSize: 17, fontWeight: '600', color: '#000', marginBottom: 2 },
-  rowTextDark: { color: '#fff' },
-  subtitle: { fontSize: 13, color: '#6E6E73' },
-  subtitleDark: { color: '#aaa' },
+  rowText: { fontSize: 17, fontWeight: '600', marginBottom: 2 },
+  subtitle: { fontSize: 13 },
 });

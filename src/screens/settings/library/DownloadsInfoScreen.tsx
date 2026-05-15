@@ -21,7 +21,7 @@ import { formatBytes } from '@/utils/downloads/downloadStore';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
   const {
@@ -143,7 +143,7 @@ const DownloadsInfoScreen: React.FC = () => {
     <SafeAreaView
       style={[
         styles.container,
-        isDarkMode && styles.containerDark,
+        { backgroundColor: colors.background },
         Platform.OS === 'android' && { paddingTop: 24 },
       ]}
     >
@@ -153,51 +153,51 @@ const DownloadsInfoScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={[styles.summaryCard, isDarkMode && styles.summaryCardDark]}>
+        <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
               {t('settings.library.downloads.sizeLabel')}
             </Text>
-            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
               {formattedSize}
             </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
               {t('settings.library.downloads.availableLabel')}
             </Text>
-            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
               {formattedAvailable}
             </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
               {t('settings.library.downloads.table.playlists')}
             </Text>
-            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
               {String(downloadedPlaylistCount)}
             </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
               {t('settings.library.downloads.type.album')}
             </Text>
-            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
               {String(downloadedAlbumCount)}
             </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, isDarkMode && styles.summaryLabelDark]}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
               {t('settings.library.downloads.table.tracks')}
             </Text>
-            <Text style={[styles.summaryValue, isDarkMode && styles.summaryValueDark]}>
+            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
               {String(downloadedTrackCount)}
             </Text>
           </View>
         </View>
 
         {rows.length === 0 ? (
-          <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+          <Text style={[styles.emptyText, { color: colors.subtext }]}>
             {t('settings.library.downloads.table.empty')}
           </Text>
         ) : (
@@ -216,8 +216,8 @@ const DownloadsInfoScreen: React.FC = () => {
             return (
               <View key={item.id}>
                 {showSectionHeader && (
-                  <View style={[styles.providerHeader, isDarkMode && styles.providerHeaderDark]}>
-                    <Text style={[styles.providerHeaderText, isDarkMode && styles.providerHeaderTextDark]}>
+                  <View style={styles.providerHeader}>
+                    <Text style={[styles.providerHeaderText, { color: colors.text }]}>
                       {sectionTitle}
                     </Text>
                     <TouchableOpacity
@@ -229,29 +229,29 @@ const DownloadsInfoScreen: React.FC = () => {
                   </View>
                 )}
 
-                <View style={[styles.row, isDarkMode && styles.rowDark]}>
+                <View style={[styles.row, { backgroundColor: colors.card }]}>
                   <View style={styles.coverCell}>
                     <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
                   </View>
                   <View style={styles.trackCell}>
                     <View style={styles.titleLine}>
-                      <Text numberOfLines={1} style={[styles.title, isDarkMode && styles.titleDark]}>
+                      <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>
                         {item.title}
                       </Text>
-                      <Text numberOfLines={1} style={[styles.sizeText, isDarkMode && styles.valueDark]}>
+                      <Text numberOfLines={1} style={[styles.sizeText, { color: colors.text }]}>
                         {item.size}
                       </Text>
                     </View>
                     <View style={styles.metaLine}>
-                      <Text numberOfLines={1} style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+                      <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>
                         {item.subtitle}
                       </Text>
-                      <Text style={[styles.metaDot, isDarkMode && styles.subtitleDark]}>•</Text>
-                      <Text numberOfLines={1} style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+                      <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
+                      <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>
                         {item.trackCount} {item.trackCount === 1 ? t('common.song') : t('common.songs')}
                       </Text>
-                      <Text style={[styles.metaDot, isDarkMode && styles.subtitleDark]}>•</Text>
-                      <Text numberOfLines={1} style={[styles.subtitle, styles.downloadedDate, isDarkMode && styles.subtitleDark]}>
+                      <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
+                      <Text numberOfLines={1} style={[styles.subtitle, styles.downloadedDate, { color: colors.subtext }]}>
                         {item.downloaded}
                       </Text>
                     </View>

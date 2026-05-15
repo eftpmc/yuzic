@@ -24,11 +24,11 @@ export const useTheme = () => {
     () => ({
       themeColor,
       background: isDarkMode ? '#000' : '#F2F2F7',
-      card: isDarkMode ? '#111' : '#fff',
+      card: isDarkMode ? '#222' : '#fff',
       text: isDarkMode ? '#f2f2f2' : '#000',
       subtext: isDarkMode ? '#aaa' : '#555',
       border: isDarkMode ? '#444' : '#ccc',
-      muted: isDarkMode ? '#222' : '#eee',
+      muted: isDarkMode ? '#333' : '#eee',
     }),
     [isDarkMode, themeColor]
   );

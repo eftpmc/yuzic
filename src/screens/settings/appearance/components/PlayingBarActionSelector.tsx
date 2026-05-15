@@ -23,11 +23,11 @@ export const PlayingBarActionSelector: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const selected = useSelector(selectPlayingBarAction);
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-      <Text style={[styles.infoText, isDarkMode && styles.infoTextDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
+      <Text style={[styles.infoText, { color: colors.subtext }]}>
         {t('settings.appearance.playingBarAction.info')}
       </Text>
 
@@ -42,17 +42,13 @@ export const PlayingBarActionSelector: React.FC = () => {
               style={[
                 styles.button,
                 {
-                  backgroundColor: active
-                    ? themeColor
-                    : isDarkMode
-                    ? '#222'
-                    : '#eee',
-                  borderColor: isDarkMode ? '#444' : '#ccc',
+                  backgroundColor: active ? themeColor : colors.muted,
+                  borderColor: colors.border,
                 },
               ]}
             >
               {React.cloneElement(action.icon as React.ReactElement<any>, {
-                color: active ? '#fff' : isDarkMode ? '#ccc' : '#000',
+                color: active ? '#fff' : colors.text,
               })}
             </TouchableOpacity>
           );
@@ -64,23 +60,15 @@ export const PlayingBarActionSelector: React.FC = () => {
 
 const styles = StyleSheet.create({
   section: {
-    backgroundColor: '#fff',
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 24,
   },
-  sectionDark: {
-    backgroundColor: '#111',
-  },
   infoText: {
     fontSize: 13,
-    color: '#555',
     marginBottom: 12,
-  },
-  infoTextDark: {
-    color: '#aaa',
   },
   row: {
     flexDirection: 'row',

@@ -361,7 +361,7 @@
 				CODE_SIGN_ENTITLEMENTS = Yuzic/Yuzic.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = Y6YJ4P25H9;
 				ENABLE_BITCODE = NO;
@@ -405,7 +405,7 @@
 				CODE_SIGN_ENTITLEMENTS = Yuzic/Yuzic.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = Y6YJ4P25H9;
 				INFOPLIST_FILE = Yuzic/Info.plist;

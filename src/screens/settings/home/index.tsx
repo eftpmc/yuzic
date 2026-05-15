@@ -36,7 +36,7 @@ export default function Settings() {
     const isLfmConnected = useSelector(selectLastFmAuthenticated);
     const isDeezerEnabled = useSelector(selectAnyDeezerEnabled);
 
-    const { isDarkMode } = useTheme();
+    const { isDarkMode, colors } = useTheme();
     const appVersion = Constants.expoConfig?.version ?? '—';
 
     if (!activeServer) {
@@ -49,19 +49,19 @@ export default function Settings() {
     return (
         <SafeAreaView
             edges={['top']}
-            style={[styles.container, isDarkMode && styles.containerDark]}
+            style={[styles.container, { backgroundColor: colors.background }]}
         >
-            <View style={[styles.headerContainer, isDarkMode && styles.headerContainerDark]}>
+            <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
                     <Ionicons
                         name="chevron-back"
                         size={24}
-                        color={isDarkMode ? '#fff' : '#1C1C1E'}
+                        color={colors.text}
                     />
                 </TouchableOpacity>
 
                 <View pointerEvents="none" style={styles.headerTitleWrapper}>
-                    <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>
                         {t('settings.title')}
                     </Text>
                 </View>
@@ -70,20 +70,17 @@ export default function Settings() {
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                <View style={[styles.profileCard, isDarkMode && styles.profileCardDark]}>
+                <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
                     <View style={styles.profileRow}>
                         <View style={[styles.avatar, { backgroundColor: themeColor }]}>
                             <Text style={styles.avatarText}>{avatarLetter}</Text>
                         </View>
                         <View>
-                            <Text style={[styles.profileName, isDarkMode && styles.profileNameDark]}>
+                            <Text style={[styles.profileName, { color: colors.text }]}>
                                 {username || t('settings.profile.unknownUser')}
                             </Text>
                             <Text
-                                style={[
-                                    styles.profileSubtext,
-                                    isDarkMode && styles.profileSubtextDark,
-                                ]}
+                                style={[styles.profileSubtext, { color: colors.subtext }]}
                             >
                                 {t('settings.profile.connectedTo', { type, server: serverUrl?.replace(/^https?:\/\//, '') || t('settings.profile.noServer') })}
                             </Text>
@@ -91,10 +88,10 @@ export default function Settings() {
                     </View>
                 </View>
 
-                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
                     {t('settings.sections.general')}
                 </Text>
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                <View style={[styles.section, { backgroundColor: colors.card }]}>
                     {renderRow(t('settings.rows.server'), 'drive', '/settings/serverView')}
                     {renderDivider()}
                     {renderRow(t('settings.rows.library'), 'book', '/settings/libraryView')}
@@ -104,10 +101,10 @@ export default function Settings() {
                     {renderRow(t('settings.rows.appearance'), 'brush', '/settings/appearanceView')}
                 </View>
 
-                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
                     {t('settings.sections.integrations')}
                 </Text>
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                <View style={[styles.section, { backgroundColor: colors.card }]}>
                     {renderStatusRow('Deezer', '/settings/deezerView', isDeezerEnabled ? t('settings.integrations.enabled') : t('settings.integrations.disabled'))}
                     {renderDivider()}
                     {renderStatusRow('Last.fm', '/settings/lastfmView', isLfmConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected'))}
@@ -115,27 +112,27 @@ export default function Settings() {
                     {renderStatusRow('ListenBrainz', '/settings/listenbrainzView', isLbConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected'))}
                 </View>
 
-                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
                     {t('settings.sections.downloaders')}
                 </Text>
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                <View style={[styles.section, { backgroundColor: colors.card }]}>
                     <TouchableOpacity
                         style={styles.row}
                         onPress={() => router.push('/settings/lidarrView')}
                     >
                         <View style={styles.leftContent}>
-                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                            <Text style={[styles.rowText, { color: colors.text }]}>
                                 {t('settings.downloaders.lidarr.title')}
                             </Text>
                         </View>
                         <View style={styles.rowRight}>
-                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                            <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                                 {isLidarrConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
                             </Text>
                             <MaterialIcons
                                 name="chevron-right"
                                 size={24}
-                                color={isDarkMode ? '#fff' : '#6E6E73'}
+                                color={colors.subtext}
                             />
                         </View>
                     </TouchableOpacity>
@@ -145,27 +142,27 @@ export default function Settings() {
                         onPress={() => router.push('/settings/slskdView')}
                     >
                         <View style={styles.leftContent}>
-                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                            <Text style={[styles.rowText, { color: colors.text }]}>
                                 {t('settings.downloaders.slskd.title')}
                             </Text>
                         </View>
                         <View style={styles.rowRight}>
-                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                            <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                                 {isSlskdConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
                             </Text>
                             <MaterialIcons
                                 name="chevron-right"
                                 size={24}
-                                color={isDarkMode ? '#fff' : '#6E6E73'}
+                                color={colors.subtext}
                             />
                         </View>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
                     {t('settings.sections.about')}
                 </Text>
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                <View style={[styles.section, { backgroundColor: colors.card }]}>
                     {renderLinkRow(t('settings.rows.github'), 'https://github.com/eftpmc/yuzic')}
                     {renderDivider()}
                     {renderLinkRow(t('settings.rows.privacyPolicy'), 'https://eftpmc.github.io/yuzic-web/privacypolicy/')}
@@ -173,7 +170,7 @@ export default function Settings() {
                     {renderLinkRow(t('settings.rows.termsOfUse'), 'https://eftpmc.github.io/yuzic-web/tos/')}
                 </View>
 
-                <Text style={[styles.versionText, isDarkMode && styles.versionTextDark]}>
+                <Text style={[styles.versionText, { color: colors.subtext }]}>
                     Yuzic {appVersion}
                 </Text>
             </ScrollView>
@@ -187,17 +184,17 @@ export default function Settings() {
                     <Entypo
                         name={icon}
                         size={20}
-                        color={isDarkMode ? '#fff' : '#6E6E73'}
+                        color={colors.subtext}
                         style={styles.icon}
                     />
-                    <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                    <Text style={[styles.rowText, { color: colors.text }]}>
                         {label}
                     </Text>
                 </View>
                 <MaterialIcons
                     name="chevron-right"
                     size={24}
-                    color={isDarkMode ? '#fff' : '#6E6E73'}
+                    color={colors.subtext}
                 />
             </TouchableOpacity>
         );
@@ -207,18 +204,18 @@ export default function Settings() {
         return (
             <TouchableOpacity style={styles.row} onPress={() => router.push(route as any)}>
                 <View style={styles.leftContent}>
-                    <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                    <Text style={[styles.rowText, { color: colors.text }]}>
                         {label}
                     </Text>
                 </View>
                 <View style={styles.rowRight}>
-                    <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                    <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                         {status}
                     </Text>
                     <MaterialIcons
                         name="chevron-right"
                         size={24}
-                        color={isDarkMode ? '#fff' : '#6E6E73'}
+                        color={colors.subtext}
                     />
                 </View>
             </TouchableOpacity>
@@ -238,30 +235,26 @@ export default function Settings() {
                     }
                 }}
             >
-                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                <Text style={[styles.rowText, { color: colors.text }]}>
                     {label}
                 </Text>
                 <MaterialIcons
                     name="chevron-right"
                     size={24}
-                    color={isDarkMode ? '#fff' : '#6E6E73'}
+                    color={colors.subtext}
                 />
             </TouchableOpacity>
         );
     }
 
     function renderDivider() {
-        return <View style={[styles.divider, isDarkMode && styles.dividerDark]} />;
+        return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
     }
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F2F2F7',
-    },
-    containerDark: {
-        backgroundColor: '#000',
     },
 
     headerContainer: {
@@ -270,13 +263,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#F2F2F7',
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#D1D1D6',
-    },
-    headerContainerDark: {
-        backgroundColor: '#000',
-        borderBottomColor: '#1C1C1E',
     },
     headerButton: {
         padding: 6,
@@ -284,10 +271,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#1C1C1E',
-    },
-    headerTitleDark: {
-        color: '#fff',
     },
 
     scrollContent: {
@@ -302,19 +285,11 @@ const styles = StyleSheet.create({
         marginBottom: 6,
         marginTop: 16,
         marginLeft: 4,
-        color: '#6E6E73',
-    },
-    sectionTitleDark: {
-        color: '#aaa',
     },
 
     section: {
-        backgroundColor: '#fff',
         borderRadius: 12,
         overflow: 'hidden',
-    },
-    sectionDark: {
-        backgroundColor: '#111',
     },
     headerTitleWrapper: {
         position: 'absolute',
@@ -344,37 +319,21 @@ const styles = StyleSheet.create({
     },
     rowText: {
         fontSize: 16,
-        color: '#000',
-    },
-    rowTextDark: {
-        color: '#fff',
     },
     rowSubtext: {
         fontSize: 15,
-        color: '#6E6E73',
-    },
-    rowSubtextDark: {
-        color: '#aaa',
     },
 
     divider: {
         height: StyleSheet.hairlineWidth,
         width: '92%',
-        backgroundColor: '#D1D1D6',
         alignSelf: 'center',
-    },
-    dividerDark: {
-        backgroundColor: '#333',
     },
 
     profileCard: {
-        backgroundColor: '#fff',
         padding: 16,
         borderRadius: 12,
         marginBottom: 10,
-    },
-    profileCardDark: {
-        backgroundColor: '#111',
     },
     profileRow: {
         flexDirection: 'row',
@@ -396,17 +355,9 @@ const styles = StyleSheet.create({
     profileName: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#000',
-    },
-    profileNameDark: {
-        color: '#fff',
     },
     profileSubtext: {
         fontSize: 12,
-        color: '#6E6E73',
-    },
-    profileSubtextDark: {
-        color: '#aaa',
     },
 
     versionText: {
@@ -414,9 +365,5 @@ const styles = StyleSheet.create({
         marginTop: 40,
         marginBottom: 60,
         fontSize: 13,
-        color: '#aaa',
-    },
-    versionTextDark: {
-        color: '#555',
     },
 });

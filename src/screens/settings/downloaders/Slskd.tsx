@@ -44,7 +44,7 @@ const SlskdView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
 
@@ -187,13 +187,13 @@ const SlskdView: React.FC = () => {
         <View style={styles.itemHeader}>
           <View style={styles.itemMain}>
             <Text
-              style={[styles.itemTitle, isDarkMode && styles.itemTitleDark]}
+              style={[styles.itemTitle, { color: colors.text }]}
               numberOfLines={1}
             >
               {item.title || t('settings.downloaders.unknown')}
             </Text>
             <Text
-              style={[styles.itemSub, isDarkMode && styles.itemSubDark]}
+              style={[styles.itemSub, { color: colors.subtext }]}
               numberOfLines={1}
             >
               {[item.artistName, meta].filter(Boolean).join(' · ')}
@@ -202,17 +202,14 @@ const SlskdView: React.FC = () => {
           {isCompleted ? (
             <CheckCircle size={16} color="#34C759" />
           ) : (
-            <Text style={[styles.itemPct, isDarkMode && styles.itemPctDark]}>
+            <Text style={[styles.itemPct, { color: colors.subtext }]}>
               {percent}%
             </Text>
           )}
         </View>
         {!isCompleted && (
           <View
-            style={[
-              styles.progressTrack,
-              isDarkMode && styles.progressTrackDark,
-            ]}
+            style={[styles.progressTrack, { backgroundColor: colors.border }]}
           >
             <View
               style={[
@@ -229,12 +226,12 @@ const SlskdView: React.FC = () => {
   if (!activeServer) return null;
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.downloaders.slskd.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.downloaders.serverUrl')}
           </Text>
           <TextInput
@@ -242,10 +239,10 @@ const SlskdView: React.FC = () => {
             onChangeText={(v) => dispatch(setSlskdServerUrl({ serverId, value: v }))}
             placeholder={t('settings.downloaders.serverUrlPlaceholder.slskd')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
           />
 
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.downloaders.apiKey')}
           </Text>
           <TextInput
@@ -254,11 +251,11 @@ const SlskdView: React.FC = () => {
             placeholder={t('settings.downloaders.apiKeyPlaceholder')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
             secureTextEntry
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
           />
 
           <View style={styles.row}>
-            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+            <Text style={[styles.rowText, { color: colors.text }]}>
               {t('settings.downloaders.connectivity')}
             </Text>
 
@@ -272,8 +269,8 @@ const SlskdView: React.FC = () => {
           </View>
         </View>
 
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.downloaders.queue')}
           </Text>
 
@@ -285,10 +282,10 @@ const SlskdView: React.FC = () => {
                 transform: [{ rotate: spin }],
               }}
             >
-              <Loader2 size={32} color={isDarkMode ? '#fff' : '#000'} />
+              <Loader2 size={32} color={colors.text} />
             </Animated.View>
           ) : queue.length === 0 ? (
-            <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+            <Text style={[styles.emptyText, { color: colors.subtext }]}>
               {t('settings.downloaders.emptyQueue')}
             </Text>
           ) : (
@@ -318,42 +315,27 @@ const SlskdView: React.FC = () => {
 export default SlskdView;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F7' },
-  containerDark: { backgroundColor: '#000' },
+  container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 24,
   },
-  sectionDark: { backgroundColor: '#111' },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#000',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
   },
-  sectionLabelDark: { color: '#fff' },
-  helperText: { fontSize: 14, lineHeight: 20, color: '#555', marginBottom: 12 },
-  helperTextDark: { color: '#aaa' },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 4, color: '#000' },
-  labelDark: { color: '#fff' },
+  helperText: { fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 4 },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     padding: 10,
     borderRadius: 8,
     marginBottom: 16,
-    color: '#000',
-    backgroundColor: '#fff',
-  },
-  inputDark: {
-    borderColor: '#444',
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
   },
   row: {
     flexDirection: 'row',
@@ -361,15 +343,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
   },
-  rowText: { fontSize: 16, color: '#000' },
-  rowTextDark: { color: '#fff' },
+  rowText: { fontSize: 16 },
   emptyText: {
     textAlign: 'center',
     marginVertical: 12,
     fontSize: 14,
-    color: '#666',
   },
-  emptyTextDark: { color: '#aaa' },
   itemRow: {
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -383,20 +362,15 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   itemMain: { flex: 1, minWidth: 0, marginRight: 8 },
-  itemTitle: { fontSize: 14, fontWeight: '600', color: '#000' },
-  itemTitleDark: { color: '#fff' },
-  itemSub: { fontSize: 12, color: '#666', marginTop: 2 },
-  itemSubDark: { color: '#aaa' },
-  itemPct: { fontSize: 12, color: '#888' },
-  itemPctDark: { color: '#888' },
+  itemTitle: { fontSize: 14, fontWeight: '600' },
+  itemSub: { fontSize: 12, marginTop: 2 },
+  itemPct: { fontSize: 12 },
   progressTrack: {
     height: 4,
     width: '100%',
-    backgroundColor: '#e0e0e0',
     borderRadius: 2,
     overflow: 'hidden',
   },
-  progressTrackDark: { backgroundColor: '#333' },
   progressFill: { height: '100%', borderRadius: 2 },
   disconnectButton: {
     flexDirection: 'row',

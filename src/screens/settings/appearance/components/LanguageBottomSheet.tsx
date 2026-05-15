@@ -25,7 +25,7 @@ const LanguageBottomSheet = forwardRef<
   LanguageBottomSheetProps
 >(({ selected, onSelect }, ref) => {
   const themeColor = useSelector(selectThemeColor);
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const { t } = useTranslation();
 
   const snapPoints = useMemo(() => ['35%'], []);
@@ -38,18 +38,15 @@ const LanguageBottomSheet = forwardRef<
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{
-        backgroundColor: isDarkMode ? '#222' : '#f9f9f9',
+        backgroundColor: colors.card,
       }}
       handleIndicatorStyle={{
-        backgroundColor: isDarkMode ? '#555' : '#ccc',
+        backgroundColor: colors.border,
       }}
     >
       <BottomSheetView style={styles.sheetContainer}>
         <Text
-          style={[
-            styles.sheetTitle,
-            isDarkMode && styles.sheetTitleDark,
-          ]}
+          style={[styles.sheetTitle, { color: colors.text }]}
         >
           {t('settings.appearance.language.title')}
         </Text>
@@ -74,20 +71,13 @@ const LanguageBottomSheet = forwardRef<
                 <Ionicons
                   name="language-outline"
                   size={18}
-                  color={
-                    isSelected
-                      ? themeColor
-                      : isDarkMode
-                      ? '#ccc'
-                      : '#555'
-                  }
+                  color={isSelected ? themeColor : colors.subtext}
                   style={{ marginRight: 10 }}
                 />
                 <Text
                   style={[
                     styles.pickerText,
-                    isDarkMode && styles.pickerTextDark,
-                    { fontWeight: isSelected ? '600' : '400' },
+                    { color: colors.text, fontWeight: isSelected ? '600' : '400' },
                   ]}
                 >
                   {t(lang.translationKey)}
@@ -121,11 +111,7 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 10,
-  },
-  sheetTitleDark: {
-    color: '#fff',
   },
   pickerItem: {
     flexDirection: 'row',
@@ -141,9 +127,5 @@ const styles = StyleSheet.create({
   },
   pickerText: {
     fontSize: 16,
-    color: '#333',
-  },
-  pickerTextDark: {
-    color: '#fff',
   },
 });

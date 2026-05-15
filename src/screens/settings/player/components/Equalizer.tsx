@@ -5,14 +5,14 @@ import { useTranslation } from 'react-i18next';
 
 const Equalizer: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-      <Text style={[styles.title, isDarkMode && styles.titleDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
         {t('settings.player.equalizer.title')}
       </Text>
-      <Text style={[styles.body, isDarkMode && styles.bodyDark]}>
+      <Text style={[styles.body, { color: colors.subtext }]}>
         Equalizer controls are temporarily unavailable with the new playback engine.
       </Text>
     </View>
@@ -27,27 +27,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#fff',
     marginBottom: 24,
-  },
-  sectionDark: {
-    backgroundColor: '#111',
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111',
     marginBottom: 8,
-  },
-  titleDark: {
-    color: '#fff',
   },
   body: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#555',
-  },
-  bodyDark: {
-    color: '#aaa',
   },
 });

@@ -14,13 +14,13 @@ import { useTranslation } from 'react-i18next';
 
 const PlayerSettings: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
 
   return (
     <SafeAreaView
       style={[
         styles.container,
-        isDarkMode && styles.containerDark,
+        { backgroundColor: colors.background },
         Platform.OS === 'android' && { paddingTop: 24 },
       ]}
     >
@@ -39,10 +39,6 @@ export default PlayerSettings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  containerDark: {
-    backgroundColor: '#000',
   },
   scrollContent: {
     padding: 16,

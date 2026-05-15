@@ -16,7 +16,7 @@ import {
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
   const activeServerId = activeServer?.id;
   const themeColor = useSelector(selectThemeColor);
@@ -52,15 +52,15 @@ export default function PendingOfflineChanges() {
   };
 
   return (
-    <View style={[styles.card, isDarkMode && styles.cardDark]}>
+    <View style={[styles.card, { backgroundColor: colors.card }]}>
       <View style={[styles.iconWrap, { backgroundColor: `${themeColor}22` }]}>
         <CloudUpload size={21} color={themeColor} />
       </View>
       <View style={styles.textWrap}>
-        <Text style={[styles.title, isDarkMode && styles.titleDark]}>
+        <Text style={[styles.title, { color: colors.text }]}>
           {t('settings.library.offlineChanges.title')}
         </Text>
-        <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+        <Text style={[styles.subtitle, { color: colors.subtext }]}>
           {t(
             failedCount > 0
               ? 'settings.library.offlineChanges.failedSubtitle'
@@ -110,13 +110,9 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
     marginBottom: 12,
-  },
-  cardDark: {
-    backgroundColor: '#111',
   },
   iconWrap: {
     width: 38,
@@ -132,18 +128,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#000',
-  },
-  titleDark: {
-    color: '#fff',
   },
   subtitle: {
     marginTop: 3,
     fontSize: 13,
-    color: '#6E6E73',
-  },
-  subtitleDark: {
-    color: '#aaa',
   },
   actions: {
     flexDirection: 'row',

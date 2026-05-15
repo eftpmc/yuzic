@@ -19,7 +19,7 @@ import {
 
 export default function DeezerSettings() {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const discoveryEnabled = useSelector(selectDeezerDiscoveryEnabled);
@@ -27,16 +27,16 @@ export default function DeezerSettings() {
   const externalScreensEnabled = useSelector(selectDeezerExternalScreensEnabled);
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Deezer" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+              <Text style={[styles.rowText, { color: colors.text }]}>
                 {t('settings.deezer.discovery')}
               </Text>
-              <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+              <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                 {t('settings.deezer.discoveryDescription')}
               </Text>
             </View>
@@ -48,14 +48,14 @@ export default function DeezerSettings() {
             />
           </View>
 
-          <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <View style={styles.row}>
             <View style={styles.rowLeft}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+              <Text style={[styles.rowText, { color: colors.text }]}>
                 {t('settings.deezer.search')}
               </Text>
-              <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+              <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                 {t('settings.deezer.searchDescription')}
               </Text>
             </View>
@@ -67,14 +67,14 @@ export default function DeezerSettings() {
             />
           </View>
 
-          <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <View style={styles.row}>
             <View style={styles.rowLeft}>
-              <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+              <Text style={[styles.rowText, { color: colors.text }]}>
                 {t('settings.deezer.externalScreens')}
               </Text>
-              <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+              <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                 {t('settings.deezer.externalScreensDescription')}
               </Text>
             </View>
@@ -94,10 +94,6 @@ export default function DeezerSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  containerDark: {
-    backgroundColor: '#000',
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -105,12 +101,8 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   section: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-  },
-  sectionDark: {
-    backgroundColor: '#111',
   },
   row: {
     flexDirection: 'row',
@@ -125,26 +117,14 @@ const styles = StyleSheet.create({
   },
   rowText: {
     fontSize: 16,
-    color: '#000',
-  },
-  rowTextDark: {
-    color: '#fff',
   },
   rowSubtext: {
     fontSize: 13,
-    color: '#6E6E73',
     marginTop: 2,
-  },
-  rowSubtextDark: {
-    color: '#aaa',
   },
   divider: {
     height: StyleSheet.hairlineWidth,
     width: '92%',
-    backgroundColor: '#D1D1D6',
     alignSelf: 'center',
-  },
-  dividerDark: {
-    backgroundColor: '#333',
   },
 });

@@ -18,7 +18,7 @@ import { formatBytes } from '@/utils/downloads/downloadStore';
 
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const router = useRouter();
 
@@ -64,9 +64,9 @@ const Downloads: React.FC = () => {
   }, [clearAllDownloads, t]);
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
       <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t('settings.library.downloads.title')}
         </Text>
 
@@ -86,25 +86,25 @@ const Downloads: React.FC = () => {
       </View>
 
       <View style={styles.row}>
-        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+        <Text style={[styles.rowText, { color: colors.text }]}>
           {t('settings.library.downloads.sizeLabel')}
         </Text>
-        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
+        <Text style={[styles.rowValue, { color: colors.subtext }]}>
           {formattedSize}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+        <Text style={[styles.rowText, { color: colors.text }]}>
           {t('settings.library.downloads.availableLabel', { defaultValue: 'Available Space' })}
         </Text>
-        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
+        <Text style={[styles.rowValue, { color: colors.subtext }]}>
           {formattedAvailable}
         </Text>
       </View>
 
       {trackCount > 0 && (
-        <Text style={[styles.note, isDarkMode && styles.noteDark]}>
+        <Text style={[styles.note, { color: colors.subtext }]}>
           {t('settings.library.downloads.offlineNote')}
         </Text>
       )}
@@ -113,13 +113,13 @@ const Downloads: React.FC = () => {
         style={styles.moreInfoRow}
         onPress={() => router.push('/settings/downloadsInfoView')}
       >
-        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+        <Text style={[styles.rowText, { color: colors.text }]}>
           {t('settings.library.downloads.moreInfo')}
         </Text>
         <MaterialIcons
           name="chevron-right"
           size={22}
-          color={isDarkMode ? '#fff' : '#6E6E73'}
+          color={colors.subtext}
         />
       </TouchableOpacity>
     </View>
@@ -135,10 +135,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#fff',
-  },
-  sectionDark: {
-    backgroundColor: '#111',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -149,10 +145,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  sectionTitleDark: {
-    color: '#fff',
   },
   iconButton: {
     width: 36,
@@ -169,25 +161,13 @@ const styles = StyleSheet.create({
   },
   rowText: {
     fontSize: 16,
-    color: '#000',
-  },
-  rowTextDark: {
-    color: '#fff',
   },
   rowValue: {
     fontSize: 14,
-    color: '#666',
-  },
-  rowValueDark: {
-    color: '#aaa',
   },
   note: {
     marginTop: 10,
     fontSize: 12,
-    color: '#888',
-  },
-  noteDark: {
-    color: '#aaa',
   },
   moreInfoRow: {
     marginTop: 10,

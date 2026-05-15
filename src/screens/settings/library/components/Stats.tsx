@@ -31,7 +31,7 @@ function formatLastSynced(ts: number | null, t: TFunction, now = Date.now()): st
 const Stats: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const syncOnAppStart = useSelector(selectSyncOnAppStart);
   const { sync, isSyncing, lastSyncedAt } = useSync();
@@ -73,9 +73,9 @@ const Stats: React.FC = () => {
   });
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
       <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t('settings.library.stats.title')}
         </Text>
 
@@ -98,18 +98,18 @@ const Stats: React.FC = () => {
       </View>
 
       <View style={styles.row}>
-        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+        <Text style={[styles.rowText, { color: colors.text }]}>
           {t('settings.library.stats.lastSynced')}
         </Text>
-        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]}>
+        <Text style={[styles.rowValue, { color: colors.subtext }]}>
           {formatLastSynced(lastSyncedAt, t, now)}
         </Text>
       </View>
 
-      <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <View style={styles.row}>
-        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+        <Text style={[styles.rowText, { color: colors.text }]}>
           {t('settings.library.stats.syncOnAppStart')}
         </Text>
         <Switch
@@ -134,10 +134,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#fff',
-  },
-  sectionDark: {
-    backgroundColor: '#111',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -148,10 +144,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  sectionTitleDark: {
-    color: '#fff',
   },
   refreshButton: {
     width: 36,
@@ -168,25 +160,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#D1D1D6',
-  },
-  dividerDark: {
-    backgroundColor: '#333',
   },
   rowText: {
     fontSize: 16,
-    color: '#000',
     flex: 1,
     marginRight: 12,
   },
-  rowTextDark: {
-    color: '#fff',
-  },
   rowValue: {
     fontSize: 14,
-    color: '#666',
-  },
-  rowValueDark: {
-    color: '#aaa',
   },
 });

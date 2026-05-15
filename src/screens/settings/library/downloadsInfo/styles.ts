@@ -5,21 +5,13 @@ export const ESTIMATED_ROW_HEIGHT = 108;
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  containerDark: {
-    backgroundColor: '#000',
   },
   summaryCard: {
     margin: 16,
     marginBottom: 10,
     borderRadius: 10,
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 12,
-  },
-  summaryCardDark: {
-    backgroundColor: '#111',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -28,19 +20,11 @@ export const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   summaryLabel: {
-    color: '#000',
     fontSize: 14,
   },
-  summaryLabelDark: {
-    color: '#fff',
-  },
   summaryValue: {
-    color: '#555',
     fontSize: 13,
     fontWeight: '600',
-  },
-  summaryValueDark: {
-    color: '#aaa',
   },
   providerHeader: {
     flexDirection: 'row',
@@ -50,16 +34,9 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 2,
   },
-  providerHeaderDark: {
-    backgroundColor: 'transparent',
-  },
   providerHeaderText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111',
-  },
-  providerHeaderTextDark: {
-    color: '#fff',
   },
   providerHeaderDelete: {
     width: 24,
@@ -81,12 +58,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 10,
-    backgroundColor: '#fff',
     padding: 12,
     marginBottom: 10,
-  },
-  rowDark: {
-    backgroundColor: '#111',
   },
   cover: {
     width: 44,
@@ -110,19 +83,11 @@ export const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    color: '#111',
     fontSize: 15,
     fontWeight: '600',
   },
-  titleDark: {
-    color: '#fff',
-  },
   subtitle: {
-    color: '#666',
     fontSize: 12,
-  },
-  subtitleDark: {
-    color: '#aaa',
   },
   metaLine: {
     flexDirection: 'row',
@@ -131,7 +96,6 @@ export const styles = StyleSheet.create({
     minWidth: 0,
   },
   metaDot: {
-    color: '#666',
     fontSize: 12,
     marginHorizontal: 5,
   },
@@ -139,7 +103,6 @@ export const styles = StyleSheet.create({
     flexShrink: 1,
   },
   sizeText: {
-    color: '#333',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -154,16 +117,9 @@ export const styles = StyleSheet.create({
   removeButtonDisabled: {
     opacity: 0.45,
   },
-  valueDark: {
-    color: '#ddd',
-  },
   emptyText: {
     paddingTop: 20,
     textAlign: 'center',
-    color: '#666',
     fontSize: 13,
-  },
-  emptyTextDark: {
-    color: '#999',
   },
 });

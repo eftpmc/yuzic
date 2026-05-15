@@ -34,7 +34,7 @@ import {
 const ICON_SIZE = 20;
 
 const ServerSettings: React.FC = () => {
-    const { isDarkMode } = useTheme();
+    const { isDarkMode, colors } = useTheme();
     const { t } = useTranslation();
     const api = useApi();
     const dispatch = useDispatch();
@@ -82,38 +82,38 @@ const ServerSettings: React.FC = () => {
         <SafeAreaView
             style={[
                 styles.container,
-                isDarkMode && styles.containerDark,
+                { backgroundColor: colors.background },
                 Platform.OS === 'android' && { paddingTop: 24 },
             ]}
         >
             <Header title={t('settings.server.title')} />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                <View style={[styles.section, { backgroundColor: colors.card }]}>
                     <View style={styles.row}>
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                        <Text style={[styles.rowText, { color: colors.text }]}>
                             {t('settings.server.serverUrl')}
                         </Text>
-                        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]} numberOfLines={1}>
+                        <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
                             {serverUrl || t('settings.server.notSet')}
                         </Text>
                     </View>
 
-                    <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
                     <View style={styles.row}>
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                        <Text style={[styles.rowText, { color: colors.text }]}>
                             {t('settings.server.username')}
                         </Text>
-                        <Text style={[styles.rowValue, isDarkMode && styles.rowValueDark]} numberOfLines={1}>
+                        <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
                             {username || t('settings.server.notSet')}
                         </Text>
                     </View>
 
-                    <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
                     <View style={styles.row}>
-                        <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                        <Text style={[styles.rowText, { color: colors.text }]}>
                             {t('settings.server.connectivity')}
                         </Text>
                         <View style={styles.iconSlot}>
@@ -139,13 +139,13 @@ const ServerSettings: React.FC = () => {
                 />
 
                 {isNavidrome && (
-                    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                    <View style={[styles.section, { backgroundColor: colors.card }]}>
                         <View style={styles.row}>
                             <View style={styles.rowLeft}>
-                                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                <Text style={[styles.rowText, { color: colors.text }]}>
                                     {t('settings.scrobbling.scrobble')}
                                 </Text>
-                                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                                     {t('settings.scrobbling.scrobbleDescription')}
                                 </Text>
                             </View>
@@ -156,13 +156,13 @@ const ServerSettings: React.FC = () => {
                                 thumbColor="#fff"
                             />
                         </View>
-                        <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
                         <View style={styles.row}>
                             <View style={styles.rowLeft}>
-                                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                <Text style={[styles.rowText, { color: colors.text }]}>
                                     {t('settings.scrobbling.nowPlaying')}
                                 </Text>
-                                <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                                <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                                     {t('settings.scrobbling.nowPlayingDescription')}
                                 </Text>
                             </View>
@@ -183,23 +183,18 @@ const ServerSettings: React.FC = () => {
 export default ServerSettings;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F2F2F7' },
-    containerDark: { backgroundColor: '#000' },
+    container: { flex: 1 },
     scrollContent: { padding: 16, paddingBottom: 100 },
     section: {
-        backgroundColor: '#fff',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 24,
     },
-    sectionDark: { backgroundColor: '#111' },
     divider: {
         height: StyleSheet.hairlineWidth,
         width: '92%',
-        backgroundColor: '#D1D1D6',
         alignSelf: 'center',
     },
-    dividerDark: { backgroundColor: '#333' },
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -209,17 +204,13 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     rowLeft: { flex: 1 },
-    rowText: { fontSize: 16, color: '#000' },
-    rowTextDark: { color: '#fff' },
-    rowSubtext: { fontSize: 13, color: '#6E6E73', marginTop: 2 },
-    rowSubtextDark: { color: '#aaa' },
+    rowText: { fontSize: 16 },
+    rowSubtext: { fontSize: 13, marginTop: 2 },
     rowValue: {
         fontSize: 15,
-        color: '#888',
         flexShrink: 1,
         textAlign: 'right',
     },
-    rowValueDark: { color: '#666' },
     iconSlot: {
         width: ICON_SIZE,
         height: ICON_SIZE,

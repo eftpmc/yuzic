@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({
     rightAction,
 }) => {
     const router = useRouter();
-    const { isDarkMode } = useTheme();
+    const { isDarkMode, colors } = useTheme();
 
     const handleBack = () => {
         if (onBackPress) {
@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
     };
 
     return (
-        <View style={[styles.container, isDarkMode && styles.containerDark]}>
+        <View style={[styles.container, { borderBottomColor: colors.border }]}>
             <TouchableOpacity
                 onPress={handleBack}
                 style={styles.backButton}
@@ -40,16 +40,13 @@ const Header: React.FC<HeaderProps> = ({
                 <Ionicons
                     name="chevron-back"
                     size={24}
-                    color={isDarkMode ? '#fff' : '#000'}
+                    color={colors.text}
                 />
             </TouchableOpacity>
 
             <View pointerEvents="none" style={styles.titleWrapper}>
                 <Text
-                    style={[
-                        styles.title,
-                        isDarkMode && styles.titleDark,
-                    ]}
+                    style={[styles.title, { color: colors.text }]}
                     numberOfLines={1}
                 >
                     {title}
@@ -72,10 +69,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#D1D1D6',
-    },
-    containerDark: {
-        borderBottomColor: '#1C1C1E',
     },
     backButton: {
         padding: 6,
@@ -89,11 +82,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#000',
         maxWidth: '60%',
-    },
-    titleDark: {
-        color: '#fff',
     },
     rightSlot: {
         minWidth: 36,

@@ -47,7 +47,7 @@ const ListenBrainzView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
 
@@ -137,12 +137,12 @@ const ListenBrainzView: React.FC = () => {
   if (!activeServer) return null;
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.listenBrainz.title')} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.listenBrainz.username')}
           </Text>
           <TextInput
@@ -152,10 +152,10 @@ const ListenBrainzView: React.FC = () => {
             autoCorrect={false}
             placeholder={t('settings.listenBrainz.usernamePlaceholder')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
           />
 
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+          <Text style={[styles.label, { color: colors.text }]}>
             {t('settings.listenBrainz.userToken')}
           </Text>
           <TextInput
@@ -166,11 +166,11 @@ const ListenBrainzView: React.FC = () => {
             autoCorrect={false}
             placeholder={t('settings.listenBrainz.tokenPlaceholder')}
             placeholderTextColor={isDarkMode ? '#666' : '#999'}
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
           />
 
           <TouchableOpacity style={styles.row} onPress={handlePing}>
-            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+            <Text style={[styles.rowText, { color: colors.text }]}>
               {t('settings.listenBrainz.connectivity')}
             </Text>
 
@@ -186,13 +186,13 @@ const ListenBrainzView: React.FC = () => {
 
         {isAuthenticated && (
           <>
-            <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+            <View style={[styles.section, { backgroundColor: colors.card }]}>
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                  <Text style={[styles.rowText, { color: colors.text }]}>
                     {t('settings.scrobbling.scrobble')}
                   </Text>
-                  <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                  <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                     {t('settings.scrobbling.scrobbleDescription')}
                   </Text>
                 </View>
@@ -203,13 +203,13 @@ const ListenBrainzView: React.FC = () => {
                   thumbColor="#fff"
                 />
               </View>
-              <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
-                  <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                  <Text style={[styles.rowText, { color: colors.text }]}>
                     {t('settings.scrobbling.nowPlaying')}
                   </Text>
-                  <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                  <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
                     {t('settings.scrobbling.nowPlayingDescription')}
                   </Text>
                 </View>
@@ -223,7 +223,7 @@ const ListenBrainzView: React.FC = () => {
             </View>
 
             <TouchableOpacity
-              style={[styles.disconnectButton, isDarkMode && styles.disconnectButtonDark]}
+              style={styles.disconnectButton}
               onPress={handleDisconnect}
             >
               <MaterialIcons name="logout" size={20} color="#fff" />
@@ -241,56 +241,34 @@ export default ListenBrainzView;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  containerDark: {
-    backgroundColor: '#000',
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 100,
   },
   section: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 24,
   },
-  sectionDark: {
-    backgroundColor: '#111',
-  },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#000',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
   },
-  sectionLabelDark: { color: '#fff' },
   label: {
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
     marginTop: 4,
-    color: '#000',
-  },
-  labelDark: {
-    color: '#fff',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     padding: 10,
     borderRadius: 8,
     marginBottom: 16,
-    color: '#000',
-    backgroundColor: '#fff',
-  },
-  inputDark: {
-    borderColor: '#444',
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
   },
   row: {
     flexDirection: 'row',
@@ -300,24 +278,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   rowLeft: { flex: 1 },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: '#e0e0e0', marginVertical: 2 },
-  dividerDark: { backgroundColor: '#333' },
-  rowSubtext: { fontSize: 13, color: '#6E6E73', marginTop: 2 },
-  rowSubtextDark: { color: '#aaa' },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: 2 },
+  rowSubtext: { fontSize: 13, marginTop: 2 },
   rowText: {
     fontSize: 16,
-    color: '#000',
-  },
-  rowTextDark: {
-    color: '#fff',
   },
   helperText: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#555',
-  },
-  helperTextDark: {
-    color: '#aaa',
   },
   disconnectButton: {
     flexDirection: 'row',
@@ -327,9 +295,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     marginTop: 16,
-  },
-  disconnectButtonDark: {
-    backgroundColor: '#FF453A',
   },
   disconnectButtonText: {
     color: '#fff',

@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 const CurrentlyPlaying: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   const {
@@ -34,7 +34,7 @@ const CurrentlyPlaying: React.FC = () => {
   const disabled = !currentSong;
 
   return (
-    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+    <View style={[styles.section, { backgroundColor: colors.card }]}>
       <View style={styles.row}>
         <MediaImage
           cover={currentSong?.cover ?? { kind: 'none' }}
@@ -44,14 +44,14 @@ const CurrentlyPlaying: React.FC = () => {
 
         <View style={styles.info}>
           <Text
-            style={[styles.title, isDarkMode && styles.titleDark]}
+            style={[styles.title, { color: colors.text }]}
             numberOfLines={1}
           >
             {currentSong?.title ?? t('settings.player.nothingPlaying')}
           </Text>
 
           <Text
-            style={[styles.subtitle, isDarkMode && styles.subtitleDark]}
+            style={[styles.subtitle, { color: colors.subtext }]}
             numberOfLines={1}
           >
             {currentSong?.artist ?? t('settings.player.unknownArtist')}
@@ -66,12 +66,10 @@ const CurrentlyPlaying: React.FC = () => {
             size={24}
             color={
               disabled
-                ? '#555'
+                ? colors.subtext
                 : shuffleOn
                   ? themeColor
-                  : isDarkMode
-                    ? '#888'
-                    : '#aaa'
+                  : colors.subtext
             }
           />
         </TouchableOpacity>
@@ -80,7 +78,7 @@ const CurrentlyPlaying: React.FC = () => {
           <MaterialIcons
             name="skip-previous"
             size={28}
-            color={disabled ? '#555' : isDarkMode ? '#fff' : '#000'}
+            color={disabled ? colors.subtext : colors.text}
           />
         </TouchableOpacity>
 
@@ -100,7 +98,7 @@ const CurrentlyPlaying: React.FC = () => {
           <MaterialIcons
             name="skip-next"
             size={28}
-            color={disabled ? '#555' : isDarkMode ? '#fff' : '#000'}
+            color={disabled ? colors.subtext : colors.text}
           />
         </TouchableOpacity>
 
@@ -110,12 +108,10 @@ const CurrentlyPlaying: React.FC = () => {
             size={24}
             color={
               disabled
-                ? '#555'
+                ? colors.subtext
                 : repeatOn
                   ? themeColor
-                  : isDarkMode
-                    ? '#888'
-                    : '#aaa'
+                  : colors.subtext
             }
           />
         </TouchableOpacity>
@@ -130,11 +126,7 @@ const styles = StyleSheet.create({
   section: {
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#fff',
     marginBottom: 24,
-  },
-  sectionDark: {
-    backgroundColor: '#111',
   },
   row: {
     flexDirection: 'row',
@@ -147,18 +139,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  titleDark: {
-    color: '#fff',
   },
   subtitle: {
     fontSize: 14,
     marginTop: 2,
-    color: '#666',
-  },
-  subtitleDark: {
-    color: '#aaa',
   },
   nowPlayingCover: {
     width: 64,
