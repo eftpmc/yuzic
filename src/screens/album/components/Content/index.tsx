@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Album, Song } from '@/types';
 
 import AlbumHeader from '../Header';
-import RecommendedAlbumsSection from '../RecommendedAlbumsSection';
 import SongRow from '@/components/rows/SongRow';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
 import MediaTile from '@/screens/explore/components/MediaTile';
@@ -92,10 +91,9 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
             </ScrollView>
           </View>
         )}
-        <RecommendedAlbumsSection album={album} />
       </View>
     );
-  }, [album.songs, album.artist, isDarkMode, moreAlbums, tileWidth, navigation]);
+  }, [album.songs, album.artist, albumPlayCount, isDarkMode, moreAlbums, tileWidth, navigation]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
