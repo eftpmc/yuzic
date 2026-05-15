@@ -62,7 +62,7 @@ export function useScrobbling() {
     if (!passesScrobbleThreshold(opts.listenedSeconds, songDuration)) return;
     lastScrobbledIdRef.current = song.id;
 
-    if (activeServer?.id && isOfflineRef.current) {
+    if (activeServer?.id) {
       dispatch(incrementPlay({
         serverId: activeServer.id,
         songId: song.id,

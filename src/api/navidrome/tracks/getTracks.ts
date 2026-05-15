@@ -15,6 +15,7 @@ function mapToSongBase(song: any): SongBase {
     year: song.year ?? undefined,
     dateAdded: song.created,
     serverPlayCount: song.playCount ?? undefined,
+    serverLastPlayedAt: song.played ? (t => !isNaN(t) ? t : undefined)(new Date(song.played).getTime()) : undefined,
   };
 }
 

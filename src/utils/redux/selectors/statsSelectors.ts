@@ -18,8 +18,20 @@ export const selectAlbumPlays = (state: RootState) => state.stats.albumPlays;
 export const selectArtistPlays = (state: RootState) => state.stats.artistPlays;
 
 export const selectSongLastPlayedAt = createSelector(
-  [(s: RootState) => s.stats.songLastPlayedAt, (s: RootState) => s.servers.activeServerId],
-  (map, serverId) => filterByServer(map, serverId)
+  [
+    (s: RootState) => s.stats.songLastPlayedAt,
+    (s: RootState) => s.stats.serverSongLastPlayedAt,
+    (s: RootState) => s.servers.activeServerId,
+  ],
+  (localMap, serverMap, serverId) => {
+    const local = filterByServer(localMap, serverId);
+    const server = filterByServer(serverMap, serverId);
+    const merged: Record<string, number> = { ...server };
+    for (const [id, ts] of Object.entries(local)) {
+      merged[id] = Math.max(merged[id] ?? 0, ts);
+    }
+    return merged;
+  }
 );
 
 export const selectSongPlayCounts = createSelector(
@@ -121,21 +133,6 @@ export const selectArtistPlayCount =
     return state.stats.artistPlays[`${serverId}:${artistId}`] ?? 0;
   };
 
-export const selectSongLastPlayedAtById =
-  (songId: string) =>
-  (state: RootState): number => {
-    const serverId = state.servers.activeServerId;
-    if (!serverId) return 0;
-    return state.stats.songLastPlayedAt[`${serverId}:${songId}`] ?? 0;
-  };
-
-export const selectAlbumLastPlayedAtById =
-  (albumId: string) =>
-  (state: RootState): number => {
-    const serverId = state.servers.activeServerId;
-    if (!serverId) return 0;
-    return state.stats.albumLastPlayedAt[`${serverId}:${albumId}`] ?? 0;
-  };
 
 export const selectArtistLastPlayedAtById =
   (artistId: string) =>

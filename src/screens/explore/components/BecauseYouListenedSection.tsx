@@ -46,9 +46,10 @@ async function fetchAlbumsForSeed(
 
 type Props = {
   artistName: string
+  refreshKey?: number
 }
 
-export default function BecauseYouListenedSection({ artistName }: Props) {
+export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }: Props) {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
@@ -102,7 +103,7 @@ export default function BecauseYouListenedSection({ artistName }: Props) {
   }, [artistNames, selectedArtist])
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist],
+    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist, refreshKey],
     queryFn: () => fetchAlbumsForSeed(selectedArtist, libraryArtistNames),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_DISCOVERY,

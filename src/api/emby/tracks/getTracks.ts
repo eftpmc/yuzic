@@ -19,6 +19,9 @@ function normalizeTrack(item: any): SongBase {
     year: item.ProductionYear ?? undefined,
     dateAdded: item.DateCreated ?? undefined,
     serverPlayCount: item.UserData?.PlayCount ?? undefined,
+    serverLastPlayedAt: item.UserData?.LastPlayedDate
+      ? new Date(item.UserData.LastPlayedDate).getTime()
+      : undefined,
   };
 }
 

@@ -14,6 +14,8 @@ export interface SongBase {
     dateAdded?: string;
     /** Server-reported play count — populated during sync, extracted into serverSongPlays Redux state. */
     serverPlayCount?: number;
+    /** Server-reported last played timestamp (ms) — populated during sync. */
+    serverLastPlayedAt?: number;
 }
 
 export interface Song extends SongBase {

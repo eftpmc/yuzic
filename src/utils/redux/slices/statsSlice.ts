@@ -14,6 +14,7 @@ export type ServerAlbumStat = {
 export type ServerSongStat = {
   id: string;
   playCount: number;
+  lastPlayedAt?: number;
 };
 
 interface StatsState {
@@ -31,6 +32,8 @@ interface StatsState {
   serverAlbumLastPlayedAt: LastPlayedMap;
   /** Play counts sourced from the server during sync. Key: "serverId:songId" */
   serverSongPlays: PlayMap;
+  /** Last played timestamps sourced from the server during sync. Key: "serverId:songId" */
+  serverSongLastPlayedAt: LastPlayedMap;
 }
 
 const initialState: StatsState = {
@@ -45,6 +48,7 @@ const initialState: StatsState = {
   serverAlbumPlays: {},
   serverAlbumLastPlayedAt: {},
   serverSongPlays: {},
+  serverSongLastPlayedAt: {},
 };
 
 const statsSlice = createSlice({
@@ -103,12 +107,15 @@ const statsSlice = createSlice({
       action: PayloadAction<{ serverId: string; stats: ServerSongStat[] }>
     ) {
       const { serverId, stats } = action.payload;
-      for (const { id, playCount } of stats) {
+      for (const { id, playCount, lastPlayedAt } of stats) {
         state.serverSongPlays[key(serverId, id)] = playCount;
+        if (lastPlayedAt && lastPlayedAt > 0) {
+          state.serverSongLastPlayedAt[key(serverId, id)] = lastPlayedAt;
+        }
       }
     },
 
-    clearOfflinePlays(
+    clearLocalPlayCounts(
       state,
       action: PayloadAction<{ serverId: string }>
     ) {
@@ -123,5 +130,5 @@ const statsSlice = createSlice({
   },
 });
 
-export const { incrementPlay, setServerAlbumStats, setServerSongStats, clearOfflinePlays } = statsSlice.actions;
+export const { incrementPlay, setServerAlbumStats, setServerSongStats, clearLocalPlayCounts } = statsSlice.actions;
 export default statsSlice.reducer;

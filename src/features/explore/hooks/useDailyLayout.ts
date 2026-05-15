@@ -45,7 +45,7 @@ export function getExploreSeed(dayKey = getExploreDayKey()): number {
 
 export function seededShuffle<T>(arr: T[], seed: number): T[] {
   const a = [...arr]
-  let s = (seed * 2 ** 31) | 0
+  let s = Math.imul(seed | 0, 0x9e3779b9) | 0 || 1
   for (let i = a.length - 1; i > 0; i--) {
     s = Math.imul(s, 1664525) + 1013904223
     const j = Math.abs(s) % (i + 1)
@@ -61,14 +61,14 @@ export type ExploreLayout = {
   isOffline: boolean
 }
 
-export function useDailyLayout(): ExploreLayout {
+export function useDailyLayout(refreshKey = 0): ExploreLayout {
   const isOffline = useIsOffline()
   const { albums: libraryAlbums } = useAlbums()
   const { artists: libraryArtists } = useArtists()
   const artistPlayCounts = useSelector(selectArtistPlayCounts)
   const libraryGenres = useSelector(selectLibraryGenres)
   const dayKey = getExploreDayKey()
-  const dailySeed = getExploreSeed(dayKey)
+  const dailySeed = getExploreSeed(dayKey) + refreshKey * 2147483647
 
   const artistSeedPool = useMemo(() => {
     return seededShuffle(

@@ -23,7 +23,9 @@ import type { ExternalArtistBase } from '@/types'
 
 const MIN_ARTISTS = 8
 
-export default function TopArtistsSection() {
+type Props = { refreshKey?: number }
+
+export default function TopArtistsSection({ refreshKey = 0 }: Props) {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
@@ -37,7 +39,7 @@ export default function TopArtistsSection() {
   )
 
   const query = useQuery<ExternalArtistBase[]>({
-    queryKey: [QueryKeys.ExploreTopArtists, dayKey],
+    queryKey: [QueryKeys.ExploreTopArtists, dayKey, refreshKey],
     queryFn: () => getDeezerChartArtists(10),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_CHARTS,

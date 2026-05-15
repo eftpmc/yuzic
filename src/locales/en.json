@@ -457,6 +457,7 @@
   "explore": {
     "sections": {
       "dial": "Dial",
+      "quickPicks": "Quick picks",
       "recentlyPlayed": "Recently played",
       "recentlyAdded": "Recently added",
       "favoriteAlbums": "Favorite albums",
@@ -481,6 +482,7 @@
     },
     "empty": {
       "recentSongs": "Play something to see it here",
+      "quickPicks": "Play some songs to see your quick picks",
       "recentlyPlayed": "Play albums to see them here",
       "recentlyAdded": "No albums in your library yet",
       "favoriteAlbums": "Star songs to add albums here",

@@ -119,9 +119,10 @@ async function fetchAlbumsForGenre(
 
 type Props = {
   genre: string
+  refreshKey?: number
 }
 
-export default function GenreSection({ genre }: Props) {
+export default function GenreSection({ genre, refreshKey = 0 }: Props) {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
@@ -190,7 +191,7 @@ export default function GenreSection({ genre }: Props) {
   }, [allGenres, selectedGenre])
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreGenreRow, dayKey, selectedGenre, seedArtistNames.join('|')],
+    queryKey: [QueryKeys.ExploreGenreRow, dayKey, selectedGenre, seedArtistNames.join('|'), refreshKey],
     queryFn: () => fetchAlbumsForGenre(selectedGenre, seedArtistNames, libraryArtistNames),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_DISCOVERY,

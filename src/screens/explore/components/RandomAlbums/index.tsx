@@ -19,14 +19,16 @@ const getItemWidth = (width: number) => {
   return (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
 };
 
-export default function RandomAlbums() {
+type Props = { refreshKey?: number }
+
+export default function RandomAlbums({ refreshKey = 0 }: Props) {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const { width } = useWindowDimensions();
   const { albums } = useAlbums();
   const gridItemWidth = getItemWidth(width);
   const dayKey = getExploreDayKey();
-  const dailySeed = getExploreSeed(dayKey);
+  const dailySeed = getExploreSeed(dayKey) + refreshKey * 2147483647;
 
   const randomAlbums = useMemo(() => {
     if (albums.length === 0) return [];

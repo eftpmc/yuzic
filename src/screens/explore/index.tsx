@@ -1,9 +1,9 @@
-import React from 'react'
-import { StyleSheet, ScrollView, View, Text } from 'react-native'
+import React, { useCallback, useRef, useState } from 'react'
+import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/explore/hooks/useDailyLayout'
 import { usePersistedActiveSource } from '@/features/explore/hooks/usePersistedActiveSource'
-import RecentSongsSpeedDial from './components/RecentSongsSpeedDial'
+import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
 import FavoriteAlbums from './components/FavoriteAlbums'
@@ -17,7 +17,7 @@ import GenreSection from './components/GenreSection'
 import SourceToggleBar from './components/SourceToggleBar'
 import type { SectionConfig } from '@/features/explore/hooks/useDailyLayout'
 
-function renderSection(config: SectionConfig) {
+function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
     case 'recentlyPlayed':
       return <RecentlyPlayed key={config.key} />
@@ -26,19 +26,19 @@ function renderSection(config: SectionConfig) {
     case 'favoriteAlbums':
       return <FavoriteAlbums key={config.key} />
     case 'randomAlbums':
-      return <RandomAlbums key={config.key} />
+      return <RandomAlbums key={config.key} refreshKey={refreshKey} />
     case 'mostPlayed':
       return <MostPlayedAlbums key={config.key} />
     case 'charts':
-      return <DeezerChartsSection key={config.key} />
+      return <DeezerChartsSection key={config.key} refreshKey={refreshKey} />
     case 'artistsForYou':
       return <ArtistsForYouSection key={config.key} />
     case 'topArtists':
-      return <TopArtistsSection key={config.key} />
+      return <TopArtistsSection key={config.key} refreshKey={refreshKey} />
     case 'becauseYouListened':
-      return <BecauseYouListenedSection key={config.key} artistName={config.artistName!} />
+      return <BecauseYouListenedSection key={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
     case 'genre':
-      return <GenreSection key={config.key} genre={config.genre!} />
+      return <GenreSection key={config.key} genre={config.genre!} refreshKey={refreshKey} />
     default:
       return null
   }
@@ -46,8 +46,18 @@ function renderSection(config: SectionConfig) {
 
 export default function Explore() {
   const { isDarkMode } = useTheme()
-  const { local, deezer, isOffline } = useDailyLayout()
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { local, deezer, isOffline } = useDailyLayout(refreshKey)
   const { activeSource, toggle } = usePersistedActiveSource()
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true)
+    setRefreshKey(k => k + 1)
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current)
+    refreshTimeoutRef.current = setTimeout(() => setRefreshing(false), 600)
+  }, [])
 
   const externalSections =
     activeSource === 'deezer' ? deezer : []
@@ -57,9 +67,16 @@ export default function Explore() {
       style={[styles.container, isDarkMode && styles.containerDark]}
       contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={isDarkMode ? '#fff' : '#000'}
+        />
+      }
     >
-      <RecentSongsSpeedDial />
-      {local.map(renderSection)}
+      <QuickPicksSection refreshKey={refreshKey} />
+      {local.map(config => renderSection(config, refreshKey))}
 
       {externalSections.length > 0 && (
         <View style={styles.sourceHeader}>
@@ -71,7 +88,7 @@ export default function Explore() {
           </Text>
         </View>
       )}
-      {externalSections.map(renderSection)}
+      {externalSections.map(config => renderSection(config, refreshKey))}
 
       <SourceToggleBar
         activeSource={activeSource}

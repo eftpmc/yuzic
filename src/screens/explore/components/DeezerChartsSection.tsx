@@ -23,7 +23,9 @@ import type { ExternalAlbumBase } from '@/types'
 
 const MIN_ALBUMS = 8
 
-export default function DeezerChartsSection() {
+type Props = { refreshKey?: number }
+
+export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { isDarkMode } = useTheme()
@@ -37,7 +39,7 @@ export default function DeezerChartsSection() {
   )
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreDeezerCharts, dayKey],
+    queryKey: [QueryKeys.ExploreDeezerCharts, dayKey, refreshKey],
     queryFn: () => getDeezerChartAlbums(10),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_CHARTS,
