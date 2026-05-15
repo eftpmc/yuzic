@@ -1,8 +1,9 @@
+import { useSelector } from 'react-redux'
 import { useIsOffline } from '@/hooks/useIsOffline'
-import { usePersistedActiveSource } from './usePersistedActiveSource'
+import { selectDeezerEnabled } from '@/utils/redux/selectors/settingsSelectors'
 
 export function useDeezerEnabled(): boolean {
-  const { activeSource } = usePersistedActiveSource()
+  const enabled = useSelector(selectDeezerEnabled)
   const isOffline = useIsOffline()
-  return activeSource === 'deezer' && !isOffline
+  return enabled && !isOffline
 }

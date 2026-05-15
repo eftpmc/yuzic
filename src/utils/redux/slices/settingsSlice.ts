@@ -40,6 +40,9 @@ export interface SettingsState {
   serverScrobbleEnabled: boolean;
   serverNowPlayingEnabled: boolean;
 
+  /* Integrations */
+  deezerEnabled: boolean;
+
   /* Sync */
   lastSyncedAt: number | null;
   syncOnAppStart: boolean;
@@ -63,6 +66,8 @@ const initialState: SettingsState = {
 
   serverScrobbleEnabled: true,
   serverNowPlayingEnabled: true,
+
+  deezerEnabled: false,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -125,6 +130,10 @@ const settingsSlice = createSlice({
       state.serverNowPlayingEnabled = action.payload;
     },
 
+    setDeezerEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerEnabled = action.payload;
+    },
+
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
     },
@@ -150,6 +159,7 @@ export const {
   setLanguage,
   setServerScrobbleEnabled,
   setServerNowPlayingEnabled,
+  setDeezerEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

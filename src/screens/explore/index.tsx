@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/explore/hooks/useDailyLayout'
-import { usePersistedActiveSource } from '@/features/explore/hooks/usePersistedActiveSource'
+import { useDeezerEnabled } from '@/features/explore/hooks/useDeezerEnabled'
 import { useSync } from '@/hooks/useSync'
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
@@ -15,7 +15,6 @@ import ArtistsForYouSection from './components/ArtistsForYouSection'
 import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
-import SourceToggleBar from './components/SourceToggleBar'
 import type { SectionConfig } from '@/features/explore/hooks/useDailyLayout'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
@@ -49,7 +48,7 @@ export default function Explore() {
   const { isDarkMode } = useTheme()
   const [refreshKey, setRefreshKey] = useState(0)
   const { local, deezer, isOffline } = useDailyLayout(refreshKey)
-  const { activeSource, toggle } = usePersistedActiveSource()
+  const deezerEnabled = useDeezerEnabled()
   const { sync, isSyncing } = useSync()
 
   const onRefresh = useCallback(() => {
@@ -57,8 +56,9 @@ export default function Explore() {
     void sync(true)
   }, [sync])
 
-  const externalSections =
-    activeSource === 'deezer' ? deezer : []
+  const activeSources = [
+    { id: 'deezer', label: 'Deezer', color: '#A238CA', letter: 'D', sections: deezer, enabled: deezerEnabled },
+  ]
 
   return (
     <ScrollView
@@ -76,23 +76,22 @@ export default function Explore() {
       <QuickPicksSection refreshKey={refreshKey} />
       {local.map(config => renderSection(config, refreshKey))}
 
-      {externalSections.length > 0 && (
-        <View style={styles.sourceHeader}>
-          <View style={[styles.sourceBadge, { backgroundColor: '#A238CA' }]}>
-            <Text style={styles.sourceBadgeLetter}>D</Text>
-          </View>
-          <Text style={[styles.sourceHeaderText, isDarkMode && styles.sourceHeaderTextDark]}>
-            Deezer
-          </Text>
-        </View>
-      )}
-      {externalSections.map(config => renderSection(config, refreshKey))}
-
-      <SourceToggleBar
-        activeSource={activeSource}
-        onToggle={toggle}
-        isOffline={isOffline}
-      />
+      {activeSources.map(source => {
+        if (!source.enabled || source.sections.length === 0) return null
+        return (
+          <React.Fragment key={source.id}>
+            <View style={styles.sourceHeader}>
+              <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
+                <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
+              </View>
+              <Text style={[styles.sourceHeaderText, isDarkMode && styles.sourceHeaderTextDark]}>
+                {source.label}
+              </Text>
+            </View>
+            {source.sections.map(config => renderSection(config, refreshKey))}
+          </React.Fragment>
+        )
+      })}
     </ScrollView>
   )
 }

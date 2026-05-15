@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Switch,
   Linking,
   StyleSheet,
 } from 'react-native';
@@ -31,7 +32,13 @@ import {
   setApiSecret,
   setSessionData,
   disconnect,
+  setScrobbleEnabled,
+  setNowPlayingEnabled,
 } from '@/utils/redux/slices/lastfmSlice';
+import {
+  selectLastFmScrobbleEnabled,
+  selectLastFmNowPlayingEnabled,
+} from '@/utils/redux/selectors/lastfmSelectors';
 import * as lastfm from '@/api/lastfm';
 
 const LastFmView: React.FC = () => {
@@ -39,13 +46,15 @@ const LastFmView: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const { isDarkMode } = useTheme();
+
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
-
   const apiKey = useSelector(selectLastFmApiKey);
   const apiSecret = useSelector(selectLastFmApiSecret);
   const isAuthenticated = useSelector(selectLastFmAuthenticated);
   const username = useSelector(selectLastFmUsername);
+  const scrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
+  const nowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
 
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -166,13 +175,41 @@ const LastFmView: React.FC = () => {
         )}
 
         {isAuthenticated && (
-          <TouchableOpacity
-            style={[styles.disconnectButton, isDarkMode && styles.disconnectButtonDark]}
-            onPress={handleDisconnect}
-          >
-            <MaterialIcons name="logout" size={20} color="#fff" />
-            <Text style={styles.disconnectButtonText}>{t('settings.lastfm.disconnect')}</Text>
-          </TouchableOpacity>
+          <>
+            <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+              <View style={styles.row}>
+                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                  {t('settings.scrobbling.scrobble')}
+                </Text>
+                <Switch
+                  value={scrobbleEnabled}
+                  onValueChange={v => dispatch(setScrobbleEnabled({ serverId, value: v }))}
+                  trackColor={{ true: themeColor }}
+                  thumbColor="#fff"
+                />
+              </View>
+              <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+              <View style={styles.row}>
+                <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                  {t('settings.scrobbling.nowPlaying')}
+                </Text>
+                <Switch
+                  value={nowPlayingEnabled}
+                  onValueChange={v => dispatch(setNowPlayingEnabled({ serverId, value: v }))}
+                  trackColor={{ true: themeColor }}
+                  thumbColor="#fff"
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.disconnectButton, isDarkMode && styles.disconnectButtonDark]}
+              onPress={handleDisconnect}
+            >
+              <MaterialIcons name="logout" size={20} color="#fff" />
+              <Text style={styles.disconnectButtonText}>{t('settings.lastfm.disconnect')}</Text>
+            </TouchableOpacity>
+          </>
         )}
       </ScrollView>
     </SafeAreaView>

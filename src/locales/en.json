@@ -5,6 +5,7 @@
       "general": "General",
       "plugins": "Plugins",
       "connections": "Connections",
+      "integrations": "Integrations",
       "downloaders": "Downloaders",
       "about": "About"
     },
@@ -265,6 +266,14 @@
         "connectionFailed": "slskd connection failed",
         "disconnected": "Disconnected from slskd."
       }
+    },
+    "integrations": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "deezer": {
+      "enable": "Enable Deezer",
+      "enableDescription": "Show Deezer charts, artist recommendations, and genre mixes on the explore screen and in search."
     },
     "scrobbling": {
       "title": "Scrobbling",

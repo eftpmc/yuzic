@@ -3,6 +3,7 @@ import {
     View,
     Text,
     ScrollView,
+    Switch,
     StyleSheet,
     Platform,
     TouchableOpacity,
@@ -21,8 +22,14 @@ import { useTheme } from '@/hooks/useTheme';
 import {
     selectSearchScope,
     selectThemeColor,
+    selectServerScrobbleEnabled,
+    selectServerNowPlayingEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
-import { setSearchScope } from '@/utils/redux/slices/settingsSlice';
+import {
+    setSearchScope,
+    setServerScrobbleEnabled,
+    setServerNowPlayingEnabled,
+} from '@/utils/redux/slices/settingsSlice';
 
 const ICON_SIZE = 20;
 
@@ -35,6 +42,9 @@ const ServerSettings: React.FC = () => {
     const searchScope = useSelector(selectSearchScope);
     const themeColor = useSelector(selectThemeColor);
     const activeServer = useSelector(selectActiveServer);
+    const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
+    const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
+    const isNavidrome = activeServer?.type === 'navidrome';
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -159,6 +169,33 @@ const ServerSettings: React.FC = () => {
                         })}
                     </View>
                 </View>
+                {isNavidrome && (
+                    <View style={[styles.section, isDarkMode && styles.sectionDark]}>
+                        <View style={styles.row}>
+                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                {t('settings.scrobbling.scrobble')}
+                            </Text>
+                            <Switch
+                                value={serverScrobbleEnabled}
+                                onValueChange={v => dispatch(setServerScrobbleEnabled(v))}
+                                trackColor={{ true: themeColor }}
+                                thumbColor="#fff"
+                            />
+                        </View>
+                        <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
+                        <View style={styles.row}>
+                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                                {t('settings.scrobbling.nowPlaying')}
+                            </Text>
+                            <Switch
+                                value={serverNowPlayingEnabled}
+                                onValueChange={v => dispatch(setServerNowPlayingEnabled(v))}
+                                trackColor={{ true: themeColor }}
+                                thumbColor="#fff"
+                            />
+                        </View>
+                    </View>
+                )}
             </ScrollView>
         </SafeAreaView>
     );

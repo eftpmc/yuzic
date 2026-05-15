@@ -22,6 +22,7 @@ import {
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectListenBrainzAuthenticated } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { selectLastFmAuthenticated } from '@/utils/redux/selectors/lastfmSelectors';
+import { selectDeezerEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function Settings() {
@@ -33,6 +34,7 @@ export default function Settings() {
     const isSlskdConnected = useSelector(selectSlskdAuthenticated);
     const isLbConnected = useSelector(selectListenBrainzAuthenticated);
     const isLfmConnected = useSelector(selectLastFmAuthenticated);
+    const isDeezerEnabled = useSelector(selectDeezerEnabled);
 
     const { isDarkMode } = useTheme();
     const appVersion = Constants.expoConfig?.version ?? '—';
@@ -100,55 +102,17 @@ export default function Settings() {
                     {renderRow(t('settings.rows.player'), 'controller-play', '/settings/playerView')}
                     {renderDivider()}
                     {renderRow(t('settings.rows.appearance'), 'brush', '/settings/appearanceView')}
-                    {renderDivider()}
-                    {renderRow(t('settings.rows.scrobbling'), 'sound-mix', '/settings/scrobblingView')}
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                    {t('settings.sections.connections')}
+                    {t('settings.sections.integrations')}
                 </Text>
                 <View style={[styles.section, isDarkMode && styles.sectionDark]}>
-                    <TouchableOpacity
-                        style={styles.row}
-                        onPress={() => router.push('/settings/listenbrainzView')}
-                    >
-                        <View style={styles.leftContent}>
-                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                                {t('settings.rows.listenBrainz')}
-                            </Text>
-                        </View>
-                        <View style={styles.rowRight}>
-                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
-                                {isLbConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
-                            </Text>
-                            <MaterialIcons
-                                name="chevron-right"
-                                size={24}
-                                color={isDarkMode ? '#fff' : '#6E6E73'}
-                            />
-                        </View>
-                    </TouchableOpacity>
+                    {renderStatusRow('Deezer', '/settings/deezerView', isDeezerEnabled ? t('settings.integrations.enabled') : t('settings.integrations.disabled'))}
                     {renderDivider()}
-                    <TouchableOpacity
-                        style={styles.row}
-                        onPress={() => router.push('/settings/lastfmView')}
-                    >
-                        <View style={styles.leftContent}>
-                            <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
-                                {t('settings.rows.lastfm')}
-                            </Text>
-                        </View>
-                        <View style={styles.rowRight}>
-                            <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
-                                {isLfmConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected')}
-                            </Text>
-                            <MaterialIcons
-                                name="chevron-right"
-                                size={24}
-                                color={isDarkMode ? '#fff' : '#6E6E73'}
-                            />
-                        </View>
-                    </TouchableOpacity>
+                    {renderStatusRow('Last.fm', '/settings/lastfmView', isLfmConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected'))}
+                    {renderDivider()}
+                    {renderStatusRow('ListenBrainz', '/settings/listenbrainzView', isLbConnected ? t('settings.downloaders.connected') : t('settings.downloaders.notConnected'))}
                 </View>
 
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
@@ -235,6 +199,28 @@ export default function Settings() {
                     size={24}
                     color={isDarkMode ? '#fff' : '#6E6E73'}
                 />
+            </TouchableOpacity>
+        );
+    }
+
+    function renderStatusRow(label: string, route: string, status: string) {
+        return (
+            <TouchableOpacity style={styles.row} onPress={() => router.push(route as any)}>
+                <View style={styles.leftContent}>
+                    <Text style={[styles.rowText, isDarkMode && styles.rowTextDark]}>
+                        {label}
+                    </Text>
+                </View>
+                <View style={styles.rowRight}>
+                    <Text style={[styles.rowSubtext, isDarkMode && styles.rowSubtextDark]}>
+                        {status}
+                    </Text>
+                    <MaterialIcons
+                        name="chevron-right"
+                        size={24}
+                        color={isDarkMode ? '#fff' : '#6E6E73'}
+                    />
+                </View>
             </TouchableOpacity>
         );
     }

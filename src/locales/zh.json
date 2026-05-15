@@ -5,6 +5,7 @@
       "general": "通用",
       "plugins": "插件",
       "connections": "连接",
+      "integrations": "集成",
       "downloaders": "下载工具",
       "about": "关于"
     },
@@ -224,6 +225,14 @@
         "connectionFailed": "连接 slskd 失败",
         "disconnected": "已断开与 slskd 的连接。"
       }
+    },
+    "integrations": {
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
+    "deezer": {
+      "enable": "启用 Deezer",
+      "enableDescription": "在探索页面和搜索中显示 Deezer 排行榜、艺术家推荐和流派混合内容。"
     },
     "scrobbling": {
       "title": "Scrobbling",

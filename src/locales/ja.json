@@ -5,6 +5,7 @@
       "general": "一般",
       "plugins": "プラグイン",
       "connections": "接続",
+      "integrations": "連携",
       "downloaders": "ダウンローダー",
       "about": "情報"
     },
@@ -224,6 +225,14 @@
         "connectionFailed": "slskd の接続に失敗しました",
         "disconnected": "slskd から切断しました。"
       }
+    },
+    "integrations": {
+      "enabled": "有効",
+      "disabled": "無効"
+    },
+    "deezer": {
+      "enable": "Deezerを有効にする",
+      "enableDescription": "探索画面と検索にDeezerのチャート、アーティストのおすすめ、ジャンルミックスを表示します。"
     },
     "scrobbling": {
       "title": "スクロブル",

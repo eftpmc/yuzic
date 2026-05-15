@@ -6,7 +6,6 @@ export default function SettingsLayout() {
             <Stack.Screen name='index' options={{ headerShown: false, title: "Settings" }} />
             <Stack.Screen name='appearanceView' options={{ headerShown: false, title: "Appearances" }} />
             <Stack.Screen name='libraryView' options={{ headerShown: false, title: "Library" }} />
-            <Stack.Screen name='discoveryView' options={{ headerShown: false, title: "Discovery" }} />
             <Stack.Screen name='playerView' options={{ headerShown: false, title: "Player" }} />
             <Stack.Screen name='serverView' options={{ headerShown: false, title: "Server" }} />
             <Stack.Screen name='downloadersView' options={{ headerShown: false, title: "Downloaders" }} />
@@ -15,7 +14,7 @@ export default function SettingsLayout() {
             <Stack.Screen name='slskdView' options={{ headerShown: false, title: "slskd" }} />
             <Stack.Screen name='listenbrainzView' options={{ headerShown: false, title: "ListenBrainz" }} />
             <Stack.Screen name='lastfmView' options={{ headerShown: false, title: "Last.fm" }} />
-            <Stack.Screen name='scrobblingView' options={{ headerShown: false, title: "Scrobbling" }} />
+            <Stack.Screen name='deezerView' options={{ headerShown: false, title: "Deezer" }} />
             <Stack.Screen name='statsView' options={{ headerShown: false, title: "Listening Stats" }} />
         </Stack>
     );
