@@ -56,7 +56,7 @@ function useQuickPicks(refreshKey: number): SongBase[] {
     scored.sort((a, b) => b.score - a.score);
     const pool = scored.slice(0, CANDIDATE_POOL).map(s => s.song);
     if (refreshKey === 0) return pool.slice(0, TOTAL_PICKS);
-    return seededShuffle(pool, refreshKey * 2147483647).slice(0, TOTAL_PICKS);
+    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, TOTAL_PICKS);
   }, [songsById, playCounts, lastPlayedAt, refreshKey]);
 }
 

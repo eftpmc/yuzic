@@ -1,8 +1,9 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/explore/hooks/useDailyLayout'
 import { usePersistedActiveSource } from '@/features/explore/hooks/usePersistedActiveSource'
+import { useSync } from '@/hooks/useSync'
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
@@ -47,17 +48,14 @@ function renderSection(config: SectionConfig, refreshKey: number) {
 export default function Explore() {
   const { isDarkMode } = useTheme()
   const [refreshKey, setRefreshKey] = useState(0)
-  const [refreshing, setRefreshing] = useState(false)
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { local, deezer, isOffline } = useDailyLayout(refreshKey)
   const { activeSource, toggle } = usePersistedActiveSource()
+  const { sync, isSyncing } = useSync()
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true)
     setRefreshKey(k => k + 1)
-    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current)
-    refreshTimeoutRef.current = setTimeout(() => setRefreshing(false), 600)
-  }, [])
+    void sync(true)
+  }, [sync])
 
   const externalSections =
     activeSource === 'deezer' ? deezer : []
@@ -69,7 +67,7 @@ export default function Explore() {
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
+          refreshing={isSyncing}
           onRefresh={onRefresh}
           tintColor={isDarkMode ? '#fff' : '#000'}
         />
