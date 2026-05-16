@@ -7,11 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { selectOfflineMutationQueue } from '@/utils/redux/selectors/offlineMutationsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import {
   clearOfflineMutationsForServer,
   retryOfflineMutationsForServer,
 } from '@/utils/redux/slices/offlineMutationsSlice';
+import SettingsCard from '../../components/SettingsCard';
 
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
@@ -19,7 +19,6 @@ export default function PendingOfflineChanges() {
   const { isDarkMode, colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
   const activeServerId = activeServer?.id;
-  const themeColor = useSelector(selectThemeColor);
   const queue = useSelector(selectOfflineMutationQueue);
   const serverQueue = activeServerId
     ? queue.filter(item => item.serverId === activeServerId)
@@ -36,7 +35,6 @@ export default function PendingOfflineChanges() {
 
   const discardPending = () => {
     if (!activeServerId) return;
-
     Alert.alert(
       t('settings.library.offlineChanges.discardTitle'),
       t('settings.library.offlineChanges.discardBody'),
@@ -51,10 +49,16 @@ export default function PendingOfflineChanges() {
     );
   };
 
+  const discardIconColor = isDarkMode ? '#ffb4ad' : '#c7342f';
+  const discardBtnStyle = isDarkMode
+    ? { borderColor: '#54302d', backgroundColor: '#2a1716' }
+    : { borderColor: '#ead4d2', backgroundColor: '#fff1f0' };
+  const discardTextColor = isDarkMode ? '#ffb4ad' : '#c7342f';
+
   return (
-    <View style={[styles.card, { backgroundColor: colors.card }]}>
-      <View style={[styles.iconWrap, { backgroundColor: `${themeColor}22` }]}>
-        <CloudUpload size={21} color={themeColor} />
+    <SettingsCard style={styles.card}>
+      <View style={[styles.iconWrap, { backgroundColor: `${colors.themeColor}22` }]}>
+        <CloudUpload size={21} color={colors.themeColor} />
       </View>
       <View style={styles.textWrap}>
         <Text style={[styles.title, { color: colors.text }]}>
@@ -75,11 +79,11 @@ export default function PendingOfflineChanges() {
               onPress={retryFailed}
               style={[
                 styles.actionButton,
-                { backgroundColor: `${themeColor}18`, borderColor: `${themeColor}44` },
+                { backgroundColor: `${colors.themeColor}18`, borderColor: `${colors.themeColor}44` },
               ]}
             >
-              <RotateCcw size={14} color={themeColor} />
-              <Text style={[styles.actionText, { color: themeColor }]}>
+              <RotateCcw size={14} color={colors.themeColor} />
+              <Text style={[styles.actionText, { color: colors.themeColor }]}>
                 {t('settings.library.offlineChanges.retry')}
               </Text>
             </TouchableOpacity>
@@ -87,22 +91,19 @@ export default function PendingOfflineChanges() {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={discardPending}
-            style={[
-              styles.actionButton,
-              isDarkMode && styles.actionButtonDark,
-            ]}
+            style={[styles.actionButton, discardBtnStyle]}
           >
-            <Trash2 size={14} color={isDarkMode ? '#ffb4ad' : '#c7342f'} />
-            <Text style={[styles.actionText, isDarkMode && styles.discardTextDark]}>
+            <Trash2 size={14} color={discardIconColor} />
+            <Text style={[styles.actionText, { color: discardTextColor }]}>
               {t('settings.library.offlineChanges.discard')}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
-      <View style={[styles.badge, { backgroundColor: themeColor }]}>
+      <View style={[styles.badge, { backgroundColor: colors.themeColor }]}>
         <Text style={styles.badgeText}>{pendingCount}</Text>
       </View>
-    </View>
+    </SettingsCard>
   );
 }
 
@@ -110,7 +111,6 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
     padding: 14,
     marginBottom: 12,
   },
@@ -122,9 +122,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  textWrap: {
-    flex: 1,
-  },
+  textWrap: { flex: 1 },
   title: {
     fontSize: 15,
     fontWeight: '600',
@@ -143,24 +141,14 @@ const styles = StyleSheet.create({
     minHeight: 30,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ead4d2',
-    backgroundColor: '#fff1f0',
     paddingHorizontal: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  actionButtonDark: {
-    borderColor: '#54302d',
-    backgroundColor: '#2a1716',
-  },
   actionText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#c7342f',
-  },
-  discardTextDark: {
-    color: '#ffb4ad',
   },
   badge: {
     minWidth: 28,

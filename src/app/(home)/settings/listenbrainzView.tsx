@@ -1,4 +1,4 @@
-import ListenBrainzView from "@/screens/settings/plugins/listenbrainz";
+import ListenBrainzView from "@/screens/settings/integrations/listenbrainz";
 
 export default function LidarrPluginView() {
   return <ListenBrainzView />;

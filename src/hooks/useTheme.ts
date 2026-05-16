@@ -29,6 +29,7 @@ export const useTheme = () => {
       subtext: isDarkMode ? '#aaa' : '#555',
       border: isDarkMode ? '#444' : '#ccc',
       muted: isDarkMode ? '#333' : '#eee',
+      placeholder: isDarkMode ? '#666' : '#999',
     }),
     [isDarkMode, themeColor]
   );

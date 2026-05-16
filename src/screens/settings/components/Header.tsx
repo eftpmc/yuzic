@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({
     rightAction,
 }) => {
     const router = useRouter();
-    const { isDarkMode, colors } = useTheme();
+    const { colors } = useTheme();
 
     const handleBack = () => {
         if (onBackPress) {

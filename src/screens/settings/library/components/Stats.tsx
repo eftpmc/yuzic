@@ -13,26 +13,27 @@ import type { TFunction } from 'i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Loader2 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectThemeColor, selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
+import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
 import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useSync } from '@/hooks/useSync';
+import SettingsCard from '../../components/SettingsCard';
+import SettingsDivider from '../../components/SettingsDivider';
 
 function formatLastSynced(ts: number | null, t: TFunction, now = Date.now()): string {
-  if (ts === null) return t('settings.library.stats.neverSynced')
-  const mins = Math.floor((now - ts) / 60000)
-  if (mins < 1) return t('settings.library.stats.justNow')
-  if (mins < 60) return t('settings.library.stats.minsAgo', { count: mins })
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return t('settings.library.stats.hoursAgo', { count: hrs })
-  return t('settings.library.stats.daysAgo', { count: Math.floor(hrs / 24) })
+  if (ts === null) return t('settings.library.stats.neverSynced');
+  const mins = Math.floor((now - ts) / 60000);
+  if (mins < 1) return t('settings.library.stats.justNow');
+  if (mins < 60) return t('settings.library.stats.minsAgo', { count: mins });
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return t('settings.library.stats.hoursAgo', { count: hrs });
+  return t('settings.library.stats.daysAgo', { count: Math.floor(hrs / 24) });
 }
 
 const Stats: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { isDarkMode, colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const { colors } = useTheme();
   const syncOnAppStart = useSelector(selectSyncOnAppStart);
   const { sync, isSyncing, lastSyncedAt } = useSync();
   const [now, setNow] = useState(() => Date.now());
@@ -41,9 +42,7 @@ const Stats: React.FC = () => {
 
   useEffect(() => {
     setNow(Date.now());
-    const interval = setInterval(() => {
-      setNow(Date.now());
-    }, 60_000);
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(interval);
   }, [lastSyncedAt]);
 
@@ -62,7 +61,6 @@ const Stats: React.FC = () => {
         useNativeDriver: true,
       })
     );
-
     loop.start();
     return () => loop.stop();
   }, [isSyncing, spinValue]);
@@ -73,19 +71,15 @@ const Stats: React.FC = () => {
   });
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <SettingsCard style={styles.card}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t('settings.library.stats.title')}
         </Text>
-
         <TouchableOpacity
           onPress={() => sync(true)}
           disabled={isSyncing}
-          style={[
-            styles.refreshButton,
-            { backgroundColor: themeColor, opacity: isSyncing ? 0.6 : 1 },
-          ]}
+          style={[styles.refreshButton, { backgroundColor: colors.themeColor, opacity: isSyncing ? 0.6 : 1 }]}
         >
           {isSyncing ? (
             <Animated.View style={{ transform: [{ rotate: spin }] }}>
@@ -106,7 +100,7 @@ const Stats: React.FC = () => {
         </Text>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <SettingsDivider />
 
       <View style={styles.row}>
         <Text style={[styles.rowText, { color: colors.text }]}>
@@ -114,26 +108,21 @@ const Stats: React.FC = () => {
         </Text>
         <Switch
           value={syncOnAppStart}
-          onValueChange={(v) => {
-            dispatch(setSyncOnAppStart(v));
-          }}
-          trackColor={{ true: themeColor }}
+          onValueChange={v => { dispatch(setSyncOnAppStart(v)); }}
+          trackColor={{ true: colors.themeColor }}
           thumbColor="#fff"
         />
       </View>
-    </View>
+    </SettingsCard>
   );
 };
 
 export default Stats;
 
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: 24,
+  card: {
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -158,15 +147,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
   },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-  },
   rowText: {
     fontSize: 16,
     flex: 1,
     marginRight: 12,
   },
-  rowValue: {
-    fontSize: 14,
-  },
+  rowValue: { fontSize: 14 },
 });

@@ -27,7 +27,7 @@ export default function ChecklistSection({
   isLoading = false,
   disabled = false,
 }: Props) {
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 
   return (

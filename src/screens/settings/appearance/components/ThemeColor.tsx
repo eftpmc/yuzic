@@ -3,10 +3,11 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDispatch, useSelector } from 'react-redux';
+import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
+import SettingsCard from '../../components/SettingsCard';
 
 const DEFAULT_COLOR = '#ff7f7f';
 
@@ -24,10 +25,10 @@ export const ThemeColor: React.FC = () => {
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const [open, setOpen] = useState(false);
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <SettingsCard style={styles.card}>
       <Text style={[styles.infoText, { color: colors.subtext }]}>
         {t('settings.appearance.color.info')}
       </Text>
@@ -56,7 +57,6 @@ export const ThemeColor: React.FC = () => {
             {t('settings.appearance.color.change')}
           </Text>
         </View>
-
         <MaterialIcons
           name={open ? 'expand-less' : 'expand-more'}
           size={20}
@@ -76,17 +76,14 @@ export const ThemeColor: React.FC = () => {
           </ColorPicker>
         </View>
       )}
-    </View>
+    </SettingsCard>
   );
 };
 
 const styles = StyleSheet.create({
-  section: {
+  card: {
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 24,
   },
   infoText: {
     fontSize: 13,

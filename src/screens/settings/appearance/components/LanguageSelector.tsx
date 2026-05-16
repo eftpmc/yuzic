@@ -9,6 +9,7 @@ import { getLanguageByCode } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import LanguageBottomSheet from './LanguageBottomSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
+import SettingsCard from '../../components/SettingsCard';
 
 export const LanguageSelector: React.FC = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,7 @@ export const LanguageSelector: React.FC = () => {
 
   return (
     <>
-      <View style={[styles.section, { backgroundColor: colors.card }]}>
+      <SettingsCard style={styles.card}>
         <View style={styles.row}>
           <View style={styles.textColumn}>
             <Text style={[styles.title, { color: colors.text }]}>
@@ -47,26 +48,15 @@ export const LanguageSelector: React.FC = () => {
 
           <TouchableOpacity
             onPress={handleOpen}
-            style={[
-              styles.dropdown,
-              {
-                backgroundColor: colors.muted,
-                borderColor: colors.border,
-              },
-            ]}
+            style={[styles.dropdown, { backgroundColor: colors.muted, borderColor: colors.border }]}
           >
             <Text style={[styles.dropdownText, { color: colors.text }]}>
               {selectedLabel}
             </Text>
-            <Ionicons
-              name="chevron-down"
-              size={16}
-              color={colors.subtext}
-              style={styles.dropdownIcon}
-            />
+            <Ionicons name="chevron-down" size={16} color={colors.subtext} style={styles.dropdownIcon} />
           </TouchableOpacity>
         </View>
-      </View>
+      </SettingsCard>
 
       <LanguageBottomSheet
         ref={bottomSheetRef}
@@ -78,11 +68,9 @@ export const LanguageSelector: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  section: {
+  card: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 24,
   },
   row: {
     flexDirection: 'row',
@@ -114,7 +102,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  dropdownIcon: {
-    marginLeft: 6,
-  },
+  dropdownIcon: { marginLeft: 6 },
 });

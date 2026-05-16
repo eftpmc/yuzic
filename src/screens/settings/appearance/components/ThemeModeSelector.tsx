@@ -1,38 +1,27 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  selectThemeColor,
-  selectThemeMode,
-} from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeMode } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeMode, ThemeMode } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
+import SettingsCard from '../../components/SettingsCard';
 
 export const ThemeModeSelector: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const themeColor = useSelector(selectThemeColor);
   const themeMode = useSelector(selectThemeMode) as ThemeMode;
   const { colors } = useTheme();
 
-  const options: {
-    id: ThemeMode;
-    icon: keyof typeof Ionicons.glyphMap;
-  }[] = [
+  const options: { id: ThemeMode; icon: keyof typeof Ionicons.glyphMap }[] = [
     { id: 'light', icon: 'sunny' },
     { id: 'dark', icon: 'moon' },
     { id: 'system', icon: 'phone-portrait' },
   ];
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <SettingsCard style={styles.card}>
       <View style={styles.row}>
         <View style={styles.textColumn}>
           <Text style={[styles.title, { color: colors.text }]}>
@@ -46,7 +35,6 @@ export const ThemeModeSelector: React.FC = () => {
         <View style={styles.controls}>
           {options.map(option => {
             const active = themeMode === option.id;
-
             return (
               <TouchableOpacity
                 key={option.id}
@@ -54,12 +42,8 @@ export const ThemeModeSelector: React.FC = () => {
                 style={[
                   styles.modeButton,
                   {
-                    backgroundColor: active
-                      ? themeColor
-                      : colors.muted,
-                    borderColor: active
-                      ? themeColor
-                      : colors.border,
+                    backgroundColor: active ? colors.themeColor : colors.muted,
+                    borderColor: active ? colors.themeColor : colors.border,
                   },
                 ]}
               >
@@ -73,43 +57,35 @@ export const ThemeModeSelector: React.FC = () => {
           })}
         </View>
       </View>
-    </View>
+    </SettingsCard>
   );
 };
 
 const styles = StyleSheet.create({
-  section: {
+  card: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 24,
   },
-
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-
   textColumn: {
     flex: 1,
     paddingRight: 16,
   },
-
   title: {
     fontSize: 15,
     fontWeight: '600',
   },
-
   subtitle: {
     marginTop: 4,
     fontSize: 13,
   },
-
   controls: {
     flexDirection: 'row',
   },
-
   modeButton: {
     width: 44,
     height: 44,

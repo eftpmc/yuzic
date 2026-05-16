@@ -10,16 +10,14 @@ import { useTranslation } from 'react-i18next';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
+import SettingsCard from '../../components/SettingsCard';
 
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const { colors } = useTheme();
   const router = useRouter();
 
   const {
@@ -64,22 +62,15 @@ const Downloads: React.FC = () => {
   }, [clearAllDownloads, t]);
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <SettingsCard style={styles.card}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t('settings.library.downloads.title')}
         </Text>
-
         <TouchableOpacity
           onPress={handleClearDownloads}
           disabled={trackCount === 0}
-          style={[
-            styles.iconButton,
-            {
-              backgroundColor: themeColor,
-              opacity: trackCount === 0 ? 0.5 : 1,
-            },
-          ]}
+          style={[styles.iconButton, { backgroundColor: colors.themeColor, opacity: trackCount === 0 ? 0.5 : 1 }]}
         >
           <MaterialIcons name="delete" size={18} color="#fff" />
         </TouchableOpacity>
@@ -116,25 +107,18 @@ const Downloads: React.FC = () => {
         <Text style={[styles.rowText, { color: colors.text }]}>
           {t('settings.library.downloads.moreInfo')}
         </Text>
-        <MaterialIcons
-          name="chevron-right"
-          size={22}
-          color={colors.subtext}
-        />
+        <MaterialIcons name="chevron-right" size={22} color={colors.subtext} />
       </TouchableOpacity>
-    </View>
+    </SettingsCard>
   );
 };
 
 export default Downloads;
 
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: 24,
+  card: {
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -159,12 +143,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
   },
-  rowText: {
-    fontSize: 16,
-  },
-  rowValue: {
-    fontSize: 14,
-  },
+  rowText: { fontSize: 16 },
+  rowValue: { fontSize: 14 },
   note: {
     marginTop: 10,
     fontSize: 12,

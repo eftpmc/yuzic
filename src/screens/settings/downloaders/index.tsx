@@ -1,10 +1,8 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +11,7 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import Header from '../components/Header';
+import SettingsScreen from '../components/SettingsScreen';
 import { useTheme } from '@/hooks/useTheme';
 import {
   selectLidarrAuthenticated,
@@ -36,7 +34,7 @@ const DOWNLOADERS: {
 const DownloadersView: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
 
@@ -47,11 +45,8 @@ const DownloadersView: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title={t('settings.downloaders.title')} />
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {DOWNLOADERS.map((d) => {
+    <SettingsScreen title={t('settings.downloaders.title')}>
+      {DOWNLOADERS.map((d) => {
           const isConnected = getConnectionStatus(d.id);
 
           return (
@@ -83,16 +78,13 @@ const DownloadersView: React.FC = () => {
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
-    </SafeAreaView>
+    </SettingsScreen>
   );
 };
 
 export default DownloadersView;
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 100 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

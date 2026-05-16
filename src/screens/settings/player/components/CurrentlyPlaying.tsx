@@ -8,15 +8,13 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
-import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import SettingsCard from '../../components/SettingsCard';
 
 const CurrentlyPlaying: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const { colors } = useTheme();
 
   const {
     currentSong,
@@ -34,26 +32,18 @@ const CurrentlyPlaying: React.FC = () => {
   const disabled = !currentSong;
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <SettingsCard style={styles.card}>
       <View style={styles.row}>
         <MediaImage
           cover={currentSong?.cover ?? { kind: 'none' }}
           size="thumb"
           style={styles.nowPlayingCover}
         />
-
         <View style={styles.info}>
-          <Text
-            style={[styles.title, { color: colors.text }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
             {currentSong?.title ?? t('settings.player.nothingPlaying')}
           </Text>
-
-          <Text
-            style={[styles.subtitle, { color: colors.subtext }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>
             {currentSong?.artist ?? t('settings.player.unknownArtist')}
           </Text>
         </View>
@@ -64,13 +54,7 @@ const CurrentlyPlaying: React.FC = () => {
           <MaterialIcons
             name="shuffle"
             size={24}
-            color={
-              disabled
-                ? colors.subtext
-                : shuffleOn
-                  ? themeColor
-                  : colors.subtext
-            }
+            color={disabled ? colors.subtext : shuffleOn ? colors.themeColor : colors.subtext}
           />
         </TouchableOpacity>
 
@@ -85,12 +69,12 @@ const CurrentlyPlaying: React.FC = () => {
         <TouchableOpacity
           onPress={isPlaying ? pauseSong : resumeSong}
           disabled={disabled}
-          style={styles.playButton}
+          style={[styles.playButton, { backgroundColor: colors.muted }]}
         >
           <MaterialIcons
             name={isPlaying ? 'pause' : 'play-arrow'}
             size={28}
-            color="#fff"
+            color={colors.text}
           />
         </TouchableOpacity>
 
@@ -106,28 +90,18 @@ const CurrentlyPlaying: React.FC = () => {
           <MaterialIcons
             name="repeat"
             size={24}
-            color={
-              disabled
-                ? colors.subtext
-                : repeatOn
-                  ? themeColor
-                  : colors.subtext
-            }
+            color={disabled ? colors.subtext : repeatOn ? colors.themeColor : colors.subtext}
           />
         </TouchableOpacity>
       </View>
-    </View>
+    </SettingsCard>
   );
 };
 
 export default CurrentlyPlaying;
 
 const styles = StyleSheet.create({
-  section: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-  },
+  card: { padding: 16 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -158,7 +132,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playButton: {
-    backgroundColor: '#444',
     padding: 12,
     borderRadius: 32,
   },

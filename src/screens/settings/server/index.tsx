@@ -1,220 +1,165 @@
 import React, { useEffect, useState } from 'react';
-import {
-    View,
-    Text,
-    ScrollView,
-    Switch,
-    StyleSheet,
-    Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
 import { CheckCircle, XCircle } from 'lucide-react-native';
 
-import Header from '../components/Header';
+import SettingsScreen from '../components/SettingsScreen';
+import SettingsCard from '../components/SettingsCard';
+import SettingsDivider from '../components/SettingsDivider';
+import SettingsToggleRow from '../components/SettingsToggleRow';
 import ChecklistSection from '../components/ChecklistSection';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import {
-    selectSearchScope,
-    selectThemeColor,
-    selectServerScrobbleEnabled,
-    selectServerNowPlayingEnabled,
+  selectSearchScope,
+  selectServerScrobbleEnabled,
+  selectServerNowPlayingEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
-    setSearchScope,
-    setServerScrobbleEnabled,
-    setServerNowPlayingEnabled,
-    type SearchScope,
+  setSearchScope,
+  setServerScrobbleEnabled,
+  setServerNowPlayingEnabled,
+  type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 
 const ICON_SIZE = 20;
 
 const ServerSettings: React.FC = () => {
-    const { isDarkMode, colors } = useTheme();
-    const { t } = useTranslation();
-    const api = useApi();
-    const dispatch = useDispatch();
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const api = useApi();
+  const dispatch = useDispatch();
 
-    const searchScope = useSelector(selectSearchScope);
-    const themeColor = useSelector(selectThemeColor);
-    const activeServer = useSelector(selectActiveServer);
-    const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
-    const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
-    const isNavidrome = activeServer?.type === 'navidrome';
+  const searchScope = useSelector(selectSearchScope);
+  const activeServer = useSelector(selectActiveServer);
+  const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
+  const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
+  const isNavidrome = activeServer?.type === 'navidrome';
 
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const serverUrl = activeServer?.serverUrl;
-    const username = activeServer?.username;
-    const isAuthenticated = activeServer?.isAuthenticated;
+  const serverUrl = activeServer?.serverUrl;
+  const username = activeServer?.username;
+  const isAuthenticated = activeServer?.isAuthenticated;
 
-    useEffect(() => {
-        if (!api || !serverUrl) {
-            return;
-        }
+  useEffect(() => {
+    if (!api || !serverUrl) return;
 
-        let cancelled = false;
-        const timeout = setTimeout(async () => {
-            setIsLoading(true);
-            try {
-                await api.auth.ping();
-            } catch {
-            } finally {
-                if (!cancelled) {
-                    setIsLoading(false);
-                }
-            }
-        }, 500);
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        await api.auth.ping();
+      } catch {
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }, 500);
 
-        return () => {
-            cancelled = true;
-            clearTimeout(timeout);
-        };
-    }, [api, serverUrl]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [api, serverUrl]);
 
-    if (!activeServer) return null;
+  if (!activeServer) return null;
 
-    return (
-        <SafeAreaView
-            style={[
-                styles.container,
-                { backgroundColor: colors.background },
-                Platform.OS === 'android' && { paddingTop: 24 },
-            ]}
-        >
-            <Header title={t('settings.server.title')} />
+  return (
+    <SettingsScreen title={t('settings.server.title')}>
+      <SettingsCard>
+        <View style={styles.row}>
+          <Text style={[styles.rowText, { color: colors.text }]}>
+            {t('settings.server.serverUrl')}
+          </Text>
+          <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
+            {serverUrl || t('settings.server.notSet')}
+          </Text>
+        </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                <View style={[styles.section, { backgroundColor: colors.card }]}>
-                    <View style={styles.row}>
-                        <Text style={[styles.rowText, { color: colors.text }]}>
-                            {t('settings.server.serverUrl')}
-                        </Text>
-                        <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
-                            {serverUrl || t('settings.server.notSet')}
-                        </Text>
-                    </View>
+        <SettingsDivider />
 
-                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <View style={styles.row}>
+          <Text style={[styles.rowText, { color: colors.text }]}>
+            {t('settings.server.username')}
+          </Text>
+          <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
+            {username || t('settings.server.notSet')}
+          </Text>
+        </View>
 
-                    <View style={styles.row}>
-                        <Text style={[styles.rowText, { color: colors.text }]}>
-                            {t('settings.server.username')}
-                        </Text>
-                        <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
-                            {username || t('settings.server.notSet')}
-                        </Text>
-                    </View>
+        <SettingsDivider />
 
-                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <View style={styles.row}>
+          <Text style={[styles.rowText, { color: colors.text }]}>
+            {t('settings.server.connectivity')}
+          </Text>
+          <View style={styles.iconSlot}>
+            {isLoading ? (
+              <SpinningLoaderCircle size={ICON_SIZE} color={colors.themeColor} />
+            ) : isAuthenticated ? (
+              <CheckCircle size={ICON_SIZE} color={colors.themeColor} />
+            ) : (
+              <XCircle size={ICON_SIZE} color="red" />
+            )}
+          </View>
+        </View>
+      </SettingsCard>
 
-                    <View style={styles.row}>
-                        <Text style={[styles.rowText, { color: colors.text }]}>
-                            {t('settings.server.connectivity')}
-                        </Text>
-                        <View style={styles.iconSlot}>
-                            {isLoading ? (
-                                <SpinningLoaderCircle size={ICON_SIZE} color={themeColor} />
-                            ) : isAuthenticated ? (
-                                <CheckCircle size={ICON_SIZE} color={themeColor} />
-                            ) : (
-                                <XCircle size={ICON_SIZE} color="red" />
-                            )}
-                        </View>
-                    </View>
-                </View>
+      <ChecklistSection
+        infoText={t('settings.server.searchScopeHelp')}
+        items={[
+          { key: 'client', label: t('settings.server.searchScope.client') },
+          { key: 'server', label: t('settings.server.searchScope.server') },
+        ]}
+        isSelected={key => searchScope === key}
+        onSelect={key => dispatch(setSearchScope(key as SearchScope))}
+      />
 
-                <ChecklistSection
-                    infoText={t('settings.server.searchScopeHelp')}
-                    items={[
-                        { key: 'client', label: t('settings.server.searchScope.client') },
-                        { key: 'server', label: t('settings.server.searchScope.server') },
-                    ]}
-                    isSelected={key => searchScope === key}
-                    onSelect={key => dispatch(setSearchScope(key as SearchScope))}
-                />
-
-                {isNavidrome && (
-                    <View style={[styles.section, { backgroundColor: colors.card }]}>
-                        <View style={styles.row}>
-                            <View style={styles.rowLeft}>
-                                <Text style={[styles.rowText, { color: colors.text }]}>
-                                    {t('settings.scrobbling.scrobble')}
-                                </Text>
-                                <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
-                                    {t('settings.scrobbling.scrobbleDescription')}
-                                </Text>
-                            </View>
-                            <Switch
-                                value={serverScrobbleEnabled}
-                                onValueChange={v => { dispatch(setServerScrobbleEnabled(v)) }}
-                                trackColor={{ true: themeColor }}
-                                thumbColor="#fff"
-                            />
-                        </View>
-                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                        <View style={styles.row}>
-                            <View style={styles.rowLeft}>
-                                <Text style={[styles.rowText, { color: colors.text }]}>
-                                    {t('settings.scrobbling.nowPlaying')}
-                                </Text>
-                                <Text style={[styles.rowSubtext, { color: colors.subtext }]}>
-                                    {t('settings.scrobbling.nowPlayingDescription')}
-                                </Text>
-                            </View>
-                            <Switch
-                                value={serverNowPlayingEnabled}
-                                onValueChange={v => { dispatch(setServerNowPlayingEnabled(v)) }}
-                                trackColor={{ true: themeColor }}
-                                thumbColor="#fff"
-                            />
-                        </View>
-                    </View>
-                )}
-            </ScrollView>
-        </SafeAreaView>
-    );
+      {isNavidrome && (
+        <SettingsCard>
+          <SettingsToggleRow
+            label={t('settings.scrobbling.scrobble')}
+            subtext={t('settings.scrobbling.scrobbleDescription')}
+            value={serverScrobbleEnabled}
+            onValueChange={v => { dispatch(setServerScrobbleEnabled(v)); }}
+          />
+          <SettingsDivider />
+          <SettingsToggleRow
+            label={t('settings.scrobbling.nowPlaying')}
+            subtext={t('settings.scrobbling.nowPlayingDescription')}
+            value={serverNowPlayingEnabled}
+            onValueChange={v => { dispatch(setServerNowPlayingEnabled(v)); }}
+          />
+        </SettingsCard>
+      )}
+    </SettingsScreen>
+  );
 };
 
 export default ServerSettings;
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    scrollContent: { padding: 16, paddingBottom: 100 },
-    section: {
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 24,
-    },
-    divider: {
-        height: StyleSheet.hairlineWidth,
-        width: '92%',
-        alignSelf: 'center',
-    },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        gap: 16,
-    },
-    rowLeft: { flex: 1 },
-    rowText: { fontSize: 16 },
-    rowSubtext: { fontSize: 13, marginTop: 2 },
-    rowValue: {
-        fontSize: 15,
-        flexShrink: 1,
-        textAlign: 'right',
-    },
-    iconSlot: {
-        width: ICON_SIZE,
-        height: ICON_SIZE,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  rowText: { fontSize: 16 },
+  rowValue: {
+    fontSize: 15,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  iconSlot: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
