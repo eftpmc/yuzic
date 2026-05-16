@@ -31,7 +31,7 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
-import { useDeezerSearchEnabled } from '@/features/explore/hooks/useDeezerEnabled';
+import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);

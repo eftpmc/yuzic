@@ -1,106 +1,129 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { StyleSheet } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
-import { useRouter } from 'expo-router'
-import { useSelector } from 'react-redux'
-import { useSheetRef } from '@/utils/useSheetRef';
-
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
-import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
+import React, { useCallback, useState } from 'react'
+import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
-import { useSync } from '@/hooks/useSync'
-import { useIsOffline } from '@/hooks/useIsOffline'
+import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
 
-import HomeHeader from './components/Header'
-import AccountBottomSheet from './components/AccountBottomSheet'
-import Explore from '@/screens/explore'
+import QuickPicksSection from './components/QuickPicksSection'
+import RecentlyPlayed from './components/RecentlyPlayed'
+import RecentlyAdded from './components/RecentlyAdded'
+import FavoriteAlbums from './components/FavoriteAlbums'
+import RandomAlbums from './components/RandomAlbums'
+import MostPlayedAlbums from './components/MostPlayedAlbums'
+import BecauseYouListenedSection from './components/BecauseYouListenedSection'
+import ArtistsForYouSection from './components/ArtistsForYouSection'
+import TopArtistsSection from './components/TopArtistsSection'
+import DeezerChartsSection from './components/DeezerChartsSection'
+import GenreSection from './components/GenreSection'
+import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 
-export default function HomeScreen() {
-  const navigation = useNavigation<any>()
-  const router = useRouter()
+function renderSection(config: SectionConfig, refreshKey: number) {
+  switch (config.type) {
+    case 'recentlyPlayed':
+      return <RecentlyPlayed key={config.key} />
+    case 'recentlyAdded':
+      return <RecentlyAdded key={config.key} />
+    case 'favoriteAlbums':
+      return <FavoriteAlbums key={config.key} />
+    case 'randomAlbums':
+      return <RandomAlbums key={config.key} refreshKey={refreshKey} />
+    case 'mostPlayed':
+      return <MostPlayedAlbums key={config.key} />
+    case 'charts':
+      return <DeezerChartsSection key={config.key} refreshKey={refreshKey} />
+    case 'artistsForYou':
+      return <ArtistsForYouSection key={config.key} />
+    case 'topArtists':
+      return <TopArtistsSection key={config.key} refreshKey={refreshKey} />
+    case 'becauseYouListened':
+      return <BecauseYouListenedSection key={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
+    case 'genre':
+      return <GenreSection key={config.key} genre={config.genre!} refreshKey={refreshKey} />
+    default:
+      return null
+  }
+}
 
-  const activeServer = useSelector(selectActiveServer)
-  const isAuthenticated = activeServer?.isAuthenticated
-  const username = activeServer?.username
+export default function Explore() {
+  const { colors } = useTheme()
+  const [refreshKey, setRefreshKey] = useState(0)
+  const { local, deezer, isOffline } = useDailyLayout(refreshKey)
+  const deezerEnabled = useDeezerDiscoveryEnabled()
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const { isDarkMode } = useTheme()
-
-  const [isMounted, setIsMounted] = useState(false)
-  const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
-
-  const accountSheetRef = useSheetRef()
-  const lastAutoSyncServerIdRef = useRef<string | null>(null)
-
-  const { sync } = useSync()
-  const syncOnAppStart = useSelector(selectSyncOnAppStart)
-  const isOffline = useIsOffline()
-  const isOfflineRef = useRef(isOffline)
-
-  useEffect(() => {
-    isOfflineRef.current = isOffline
-  }, [isOffline])
-
-  useEffect(() => {
-    if (!syncOnAppStart || !activeServer?.id || !activeServer.isAuthenticated) {
-      if (!activeServer?.id) lastAutoSyncServerIdRef.current = null
-      return
-    }
-    if (isOfflineRef.current) return
-
-    if (lastAutoSyncServerIdRef.current === activeServer.id) return
-
-    lastAutoSyncServerIdRef.current = activeServer.id
-    sync()
-  }, [activeServer?.id, activeServer?.isAuthenticated, sync, syncOnAppStart])
-
-  useEffect(() => {
-    setIsMounted(true)
+  const onRefresh = useCallback(() => {
+    setIsRefreshing(true)
+    setRefreshKey(k => k + 1)
+    setTimeout(() => setIsRefreshing(false), 500)
   }, [])
 
-  useEffect(() => {
-    if (!isMounted) return
-    if (!isAuthenticated) {
-      router.replace('/(onboarding)')
-    }
-  }, [isMounted, isAuthenticated, router])
-
-  const toggleAccountSheet = () => {
-    if (isAccountSheetOpen) {
-      accountSheetRef.current?.dismiss()
-    } else {
-      setIsAccountSheetOpen(true)
-      accountSheetRef.current?.present()
-    }
-  }
+  const activeSources = [
+    { id: 'deezer', label: 'Deezer', color: '#A238CA', letter: 'D', sections: deezer, enabled: deezerEnabled },
+  ]
 
   return (
-    <SafeAreaView
-      testID="home-screen"
-      edges={['top']}
-      style={[styles.container, isDarkMode && styles.containerDark]}
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.text}
+        />
+      }
     >
-      <HomeHeader
-        title="yuzic"
-        username={username}
-        onSearch={() => (navigation as any).navigate('search')}
-        onAccountPress={toggleAccountSheet}
-      />
-      <Explore />
-      <AccountBottomSheet
-        ref={accountSheetRef}
-        onDismiss={() => setIsAccountSheetOpen(false)}
-      />
-    </SafeAreaView>
+      <QuickPicksSection refreshKey={refreshKey} />
+      {local.map(config => renderSection(config, refreshKey))}
+
+      {activeSources.map(source => {
+        if (!source.enabled || source.sections.length === 0) return null
+        return (
+          <React.Fragment key={source.id}>
+            <View style={styles.sourceHeader}>
+              <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
+                <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
+              </View>
+              <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
+                {source.label}
+              </Text>
+            </View>
+            {source.sections.map(config => renderSection(config, refreshKey))}
+          </React.Fragment>
+        )
+      })}
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  container: { flex: 1 },
+  content: {
+    paddingTop: 12,
   },
-  containerDark: {
-    backgroundColor: '#000',
+  sourceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 4,
+  },
+  sourceBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceBadgeLetter: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  sourceHeaderText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 })

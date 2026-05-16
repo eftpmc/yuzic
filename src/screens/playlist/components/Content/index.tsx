@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Playlist, Song } from '@/types';
 import SongRow from '@/components/rows/SongRow';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
-import SectionEmptyState from '@/screens/explore/components/SectionEmptyState';
+import SectionEmptyState from '@/screens/home/components/SectionEmptyState';
 import { useStarredSongs } from '@/hooks/starred';
 
 import Header from '../Header';

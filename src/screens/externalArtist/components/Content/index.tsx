@@ -8,7 +8,7 @@ import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
-import MediaTile from '@/screens/explore/components/MediaTile'
+import MediaTile from '@/screens/home/components/MediaTile'
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import { MediaImage } from '@/components/MediaImage'
 

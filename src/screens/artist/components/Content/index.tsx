@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useTracks } from '@/hooks/tracks'
-import MediaTile from '@/screens/explore/components/MediaTile'
+import MediaTile from '@/screens/home/components/MediaTile'
 
 type Props = {
   artist: Artist

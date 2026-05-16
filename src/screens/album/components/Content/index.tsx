@@ -8,7 +8,7 @@ import { Album, Song } from '@/types';
 import AlbumHeader from '../Header';
 import SongRow from '@/components/rows/SongRow';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
-import MediaTile from '@/screens/explore/components/MediaTile';
+import MediaTile from '@/screens/home/components/MediaTile';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useStarredSongs } from '@/hooks/starred';

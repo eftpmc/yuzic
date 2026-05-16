@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ExternalAlbum, ExternalAlbumBase, ExternalSong } from '@/types';
 import ExternalAlbumHeader from '../Header';
 import ExternalSongRow from '@/components/rows/ExternalSongRow';
-import MediaTile from '@/screens/explore/components/MediaTile';
+import MediaTile from '@/screens/home/components/MediaTile';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useTheme } from '@/hooks/useTheme';

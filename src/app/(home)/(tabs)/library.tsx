@@ -38,15 +38,15 @@ import {
 } from '@/utils/redux/selectors/statsSelectors'
 import type { AlbumBase, Artist, PlaylistBase, SongBase } from '@/types'
 
-import HomeHeader from '@/screens/home/components/Header'
-import AccountBottomSheet from '@/screens/home/components/AccountBottomSheet'
-import AlbumItem from '@/screens/home/components/Items/AlbumItem'
-import ArtistItem from '@/screens/home/components/Items/ArtistItem'
-import PlaylistItem from '@/screens/home/components/Items/PlaylistItem'
-import TrackItem from '@/screens/home/components/Items/TrackItem'
-import { FilterPill } from '@/screens/home/components/Filters/FilterPill'
-import SortBottomSheet from '@/screens/home/components/SortBottomSheet'
-import GridSettingsBottomSheet from '@/screens/home/components/GridSettingsBottomSheet'
+import HomeHeader from '@/screens/library/components/Header'
+import AccountBottomSheet from '@/screens/library/components/AccountBottomSheet'
+import AlbumItem from '@/screens/library/components/Items/AlbumItem'
+import ArtistItem from '@/screens/library/components/Items/ArtistItem'
+import PlaylistItem from '@/screens/library/components/Items/PlaylistItem'
+import TrackItem from '@/screens/library/components/Items/TrackItem'
+import { FilterPill } from '@/screens/library/components/Filters/FilterPill'
+import SortBottomSheet from '@/screens/library/components/SortBottomSheet'
+import GridSettingsBottomSheet from '@/screens/library/components/GridSettingsBottomSheet'
 import { useSheetRef } from '@/utils/useSheetRef'
 
 type Filter = 'playlists' | 'albums' | 'artists' | 'tracks' | 'downloaded' | null
@@ -122,7 +122,7 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
 export default function LibraryScreen() {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
-  const { isDarkMode } = useTheme()
+  const { colors } = useTheme()
   const themeColor = useSelector(selectThemeColor)
   const isGridView = useSelector(selectIsGridView)
   const gridColumns = useSelector(selectGridColumns)
@@ -223,10 +223,7 @@ export default function LibraryScreen() {
     userplays:     t('home.sort.mostPlayed'),
   }), [t])
 
-  const secondaryColor = isDarkMode ? '#aaa' : '#666'
-  const titleColor = isDarkMode ? '#e6e6e6' : '#000'
-  const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
-  const activeTextColor = isDarkMode ? '#000' : '#fff'
+  const activeTextColor = '#fff'
 
   const renderItem = useCallback(({ item }: { item: LibraryItem }) => {
     switch (item.kind) {
@@ -285,7 +282,7 @@ export default function LibraryScreen() {
     <SafeAreaView
       testID="library-screen"
       edges={['top']}
-      style={[styles.container, isDarkMode && styles.containerDark]}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       <HomeHeader
         title="yuzic"
@@ -294,7 +291,7 @@ export default function LibraryScreen() {
         onAccountPress={toggleAccountSheet}
       />
 
-      <View style={[styles.filterRow, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+      <View style={[styles.filterRow, { backgroundColor: colors.background }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -307,9 +304,9 @@ export default function LibraryScreen() {
               value={f.value}
               active={filter === f.value}
               activeBackgroundColor={themeColor}
-              inactiveBackgroundColor={isDarkMode ? '#1C1C1E' : '#F2F2F7'}
+              inactiveBackgroundColor={colors.card}
               activeTextColor={activeTextColor}
-              inactiveTextColor={secondaryColor}
+              inactiveTextColor={colors.subtext}
               onPress={(val) => {
                 const newFilter = filter === val ? null : val
                 setFilter(newFilter)
@@ -333,13 +330,13 @@ export default function LibraryScreen() {
         {...({ estimatedItemSize: isGridView ? gridWidth + 30 : 64 } as any)}
         getItemType={item => item.kind}
         ListHeaderComponent={
-          <View style={[styles.sortRow, { borderBottomColor: borderColor, backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+          <View style={[styles.sortRow, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>
             <TouchableOpacity
               style={styles.sortButton}
               onPress={() => sortSheetRef.current?.present()}
             >
-              <ArrowUpDown size={17} color={titleColor} />
-              <Text style={[styles.sortLabel, { color: titleColor }]}>
+              <ArrowUpDown size={17} color={colors.text} />
+              <Text style={[styles.sortLabel, { color: colors.text }]}>
                 {SORT_LABELS[sortOrder]}
               </Text>
             </TouchableOpacity>
@@ -348,8 +345,8 @@ export default function LibraryScreen() {
               onPress={() => gridSheetRef.current?.present()}
             >
               {isGridView
-                ? <List size={17} color={titleColor} />
-                : <Grid2x2 size={17} color={titleColor} />
+                ? <List size={17} color={colors.text} />
+                : <Grid2x2 size={17} color={colors.text} />
               }
             </TouchableOpacity>
           </View>
@@ -382,10 +379,6 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  containerDark: {
-    backgroundColor: '#000',
   },
   filterRow: {},
   pillRow: {
