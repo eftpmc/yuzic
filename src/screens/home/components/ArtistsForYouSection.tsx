@@ -8,7 +8,7 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import { useSimilarContent } from '@/features/home/hooks/useSimilarContent'
 import MediaTile from './MediaTile'
-import ExploreLoadingTiles from './ExploreLoadingTiles'
+import LoadingTiles from './LoadingTiles'
 import type { ExternalArtistBase } from '@/types'
 
 const H_PADDING = 16
@@ -55,7 +55,7 @@ export default function ArtistsForYouSection() {
         {t('explore.sections.artistsForYou')}
       </Text>
       {!artistsReady ? (
-        <ExploreLoadingTiles
+        <LoadingTiles
           itemSize={gridItemWidth}
           gap={gridGap}
           horizontalPadding={H_PADDING}

@@ -29,7 +29,7 @@ export type SectionConfig = {
   genre?: string
 }
 
-export function getExploreDayKey(date = new Date()): string {
+export function getDayKey(date = new Date()): string {
   return date.toDateString()
 }
 
@@ -39,7 +39,7 @@ function dateToSeed(dateStr: string): number {
   return Math.abs(hash)
 }
 
-export function getExploreSeed(dayKey = getExploreDayKey()): number {
+export function getDailySeed(dayKey = getDayKey()): number {
   return dateToSeed(dayKey)
 }
 
@@ -55,20 +55,20 @@ export function seededShuffle<T>(arr: T[], seed: number): T[] {
 }
 
 
-export type ExploreLayout = {
+export type HomeLayout = {
   local: SectionConfig[]
   deezer: SectionConfig[]
   isOffline: boolean
 }
 
-export function useDailyLayout(refreshKey = 0): ExploreLayout {
+export function useDailyLayout(refreshKey = 0): HomeLayout {
   const isOffline = useIsOffline()
   const { albums: libraryAlbums } = useAlbums()
   const { artists: libraryArtists } = useArtists()
   const artistPlayCounts = useSelector(selectArtistPlayCounts)
   const libraryGenres = useSelector(selectLibraryGenres)
-  const dayKey = getExploreDayKey()
-  const dailySeed = getExploreSeed(`${dayKey}:${refreshKey}`)
+  const dayKey = getDayKey()
+  const dailySeed = getDailySeed(`${dayKey}:${refreshKey}`)
 
   const artistSeedPool = useMemo(() => {
     return seededShuffle(

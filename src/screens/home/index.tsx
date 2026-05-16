@@ -44,10 +44,10 @@ function renderSection(config: SectionConfig, refreshKey: number) {
   }
 }
 
-export default function Explore() {
+export default function Home() {
   const { colors } = useTheme()
   const [refreshKey, setRefreshKey] = useState(0)
-  const { local, deezer, isOffline } = useDailyLayout(refreshKey)
+  const { local, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
   const [isRefreshing, setIsRefreshing] = useState(false)
 

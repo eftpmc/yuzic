@@ -18,11 +18,11 @@ import {
 } from '@/features/home/constants'
 import * as deezer from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
-import { getExploreDayKey } from '@/features/home/hooks/useDailyLayout'
+import { getDayKey } from '@/features/home/hooks/useDailyLayout'
 import { collectCoveredAlbumsForArtists } from '@/features/home/utils/albumDiscovery'
 import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
-import ExploreLoadingTiles from './ExploreLoadingTiles'
+import LoadingTiles from './LoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
 const TARGET_ALBUMS = 10
@@ -53,7 +53,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
   const { artists: libraryArtists } = useArtists()
   const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
-  const dayKey = getExploreDayKey()
+  const dayKey = getDayKey()
   const isEnabled = useDeezerDiscoveryEnabled()
 
   const [selectedArtist, setSelectedArtist] = React.useState<string>(artistName)
@@ -140,7 +140,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
         </View>
 
         {query.isLoading ? (
-          <ExploreLoadingTiles
+          <LoadingTiles
             itemSize={gridItemWidth}
             gap={SECTION_GRID_GAP}
             horizontalPadding={H_PADDING}

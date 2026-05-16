@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
 });

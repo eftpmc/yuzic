@@ -9,7 +9,7 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import { getDeezerChartAlbums } from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
-import { getExploreDayKey } from '@/features/home/hooks/useDailyLayout'
+import { getDayKey } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import {
   SECTION_H_PADDING as H_PADDING,
@@ -18,7 +18,7 @@ import {
   STALE_DEEZER_CHARTS,
 } from '@/features/home/constants'
 import MediaTile from './MediaTile'
-import ExploreLoadingTiles from './ExploreLoadingTiles'
+import LoadingTiles from './LoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
 const MIN_ALBUMS = 8
@@ -30,7 +30,7 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
   const { t } = useTranslation()
   const { colors } = useTheme()
   const { width: screenWidth } = useWindowDimensions()
-  const dayKey = getExploreDayKey()
+  const dayKey = getDayKey()
   const isEnabled = useDeezerDiscoveryEnabled()
 
   const gridItemWidth = useMemo(
@@ -76,7 +76,7 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
         {t('explore.sections.charts')}
       </Text>
       {query.isLoading ? (
-        <ExploreLoadingTiles
+        <LoadingTiles
           itemSize={gridItemWidth}
           gap={SECTION_GRID_GAP}
           horizontalPadding={H_PADDING}

@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
 import { useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -17,7 +16,6 @@ import AccountBottomSheet from './components/AccountBottomSheet'
 import Explore from '@/screens/home'
 
 export default function HomeScreen() {
-  const navigation = useNavigation<any>()
   const router = useRouter()
 
   const activeServer = useSelector(selectActiveServer)
@@ -65,14 +63,14 @@ export default function HomeScreen() {
     }
   }, [isMounted, isAuthenticated, router])
 
-  const toggleAccountSheet = () => {
+  const toggleAccountSheet = useCallback(() => {
     if (isAccountSheetOpen) {
       accountSheetRef.current?.dismiss()
     } else {
       setIsAccountSheetOpen(true)
       accountSheetRef.current?.present()
     }
-  }
+  }, [accountSheetRef, isAccountSheetOpen])
 
   return (
     <SafeAreaView
@@ -83,7 +81,7 @@ export default function HomeScreen() {
       <HomeHeader
         title="yuzic"
         username={username}
-        onSearch={() => (navigation as any).navigate('search')}
+        onSearch={() => router.push('/search')}
         onAccountPress={toggleAccountSheet}
       />
       <Explore />

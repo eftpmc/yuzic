@@ -231,10 +231,6 @@ export default function LibraryScreen() {
         return (
           <AlbumItem
             album={item.data}
-            id={item.data.id}
-            title={item.data.title}
-            subtext={item.data.subtext}
-            cover={item.data.cover}
             isGridView={isGridView}
             gridWidth={gridWidth}
             gridSpacing={gridSpacing}

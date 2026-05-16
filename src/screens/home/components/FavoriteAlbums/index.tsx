@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, useWindowDimensions } from 'react-native';
 import { useAlbums } from '@/hooks/albums';
 import { useStarredSongs } from '@/hooks/starred';
 import { useTheme } from '@/hooks/useTheme';
@@ -7,17 +7,10 @@ import AlbumItem from '@/screens/library/components/Items/AlbumItem';
 import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
+import { sectionStyles, getSectionItemWidth } from '../sectionStyles';
 
-const H_PADDING = 12;
-const GAP = 12;
-const VISIBLE_ITEMS = 2.5;
 const MIN_ALBUMS = 8;
 const MAX_ALBUMS = 10;
-
-const getItemWidth = (width: number) => {
-  const availableWidth = width - H_PADDING * 2;
-  return (availableWidth - GAP * (VISIBLE_ITEMS - 1)) / VISIBLE_ITEMS;
-};
 
 export default function FavoriteAlbums() {
   const { t } = useTranslation();
@@ -25,20 +18,17 @@ export default function FavoriteAlbums() {
   const { width } = useWindowDimensions();
   const { albums } = useAlbums();
   const { songs: starredSongs } = useStarredSongs();
-  const gridItemWidth = getItemWidth(width);
+  const gridItemWidth = getSectionItemWidth(width);
 
   const favoriteAlbums = useMemo(() => {
     const albumFavoriteCount = new Map<string, number>();
     for (const song of starredSongs) {
       if (song.albumId) {
-        albumFavoriteCount.set(
-          song.albumId,
-          (albumFavoriteCount.get(song.albumId) ?? 0) + 1
-        );
+        albumFavoriteCount.set(song.albumId, (albumFavoriteCount.get(song.albumId) ?? 0) + 1);
       }
     }
     return [...albums]
-      .filter((a) => albumFavoriteCount.has(a.id))
+      .filter(a => albumFavoriteCount.has(a.id))
       .sort((a, b) => {
         const countA = albumFavoriteCount.get(a.id) ?? 0;
         const countB = albumFavoriteCount.get(b.id) ?? 0;
@@ -47,58 +37,30 @@ export default function FavoriteAlbums() {
       })
       .slice(0, MAX_ALBUMS);
   }, [albums, starredSongs]);
-  const coversToPrefetch = useMemo(() => favoriteAlbums.map(album => album.cover), [favoriteAlbums]);
+
+  const coversToPrefetch = useMemo(() => favoriteAlbums.map(a => a.cover), [favoriteAlbums]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>
+    <View style={sectionStyles.container}>
+      <Text style={[sectionStyles.title, { color: colors.text }]}>
         {t('explore.sections.favoriteAlbums')}
       </Text>
       {favoriteAlbums.length < MIN_ALBUMS ? (
         <SectionEmptyState message={t('explore.empty.favoriteAlbums')} />
       ) : (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {favoriteAlbums.map((album) => (
-          <View key={album.id} style={[styles.item, { width: gridItemWidth }]}>
-            <AlbumItem
-              album={album}
-              id={album.id}
-              title={album.title}
-              subtext={album.subtext}
-              cover={album.cover}
-              isGridView
-              gridWidth={gridItemWidth}
-              gridSpacing={0}
-            />
-          </View>
-        ))}
-      </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={sectionStyles.scrollContent}
+        >
+          {favoriteAlbums.map(album => (
+            <View key={album.id} style={[sectionStyles.item, { width: gridItemWidth }]}>
+              <AlbumItem album={album} isGridView gridWidth={gridItemWidth} gridSpacing={0} />
+            </View>
+          ))}
+        </ScrollView>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
-    marginLeft: H_PADDING,
-  },
-  scrollContent: {
-    paddingHorizontal: H_PADDING,
-  },
-  item: {
-    marginRight: GAP,
-    minWidth: 0,
-  },
-});

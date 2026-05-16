@@ -7,7 +7,7 @@ import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists'
 import { RAWARR_URL } from '@/constants/rawarr'
 import { QueryKeys } from '@/enums/queryKeys'
 import { selectArtistPlayCounts } from '@/utils/redux/selectors/statsSelectors'
-import { getExploreDayKey, getExploreSeed, seededShuffle } from './useDailyLayout'
+import { getDayKey, getDailySeed, seededShuffle } from './useDailyLayout'
 import type { CoverSource, ExternalArtistBase, ExternalAlbumBase } from '@/types'
 
 const POOL_SIZE = 40
@@ -155,8 +155,8 @@ async function fetchSimilarContent(
 export function useSimilarContent() {
   const { artists } = useArtists()
   const artistPlayCounts = useSelector(selectArtistPlayCounts)
-  const dayKey = getExploreDayKey()
-  const dailySeed = getExploreSeed(dayKey)
+  const dayKey = getDayKey()
+  const dailySeed = getDailySeed(dayKey)
   const libraryArtistNames = useMemo(
     () => new Set(artists.map(a => a.name.toLowerCase())),
     [artists]
