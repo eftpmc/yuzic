@@ -4,7 +4,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     StatusBar,
-    Dimensions,
+    useWindowDimensions,
     InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -90,7 +90,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const { playerStyle, queueStyle } =
         usePlayingTransitions(mode);
 
-    const { width, height } = Dimensions.get('window');
+    const { width, height } = useWindowDimensions();
     const isTablet = width >= 768;
     const layoutWidth = width - 24;
     const contentWidth = isTablet ? 500 : width - 48;

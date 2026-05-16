@@ -24,20 +24,13 @@ import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { formatSongDuration } from '@/utils/formatDuration';
 
 type SongOptionsProps = {
   selectedSong: Song;
   onAddToPlaylist: () => void;
   onNavigate?: () => void;
 };
-
-function formatDuration(seconds: string): string {
-  const n = parseInt(seconds, 10);
-  if (isNaN(n)) return seconds;
-  const m = Math.floor(n / 60);
-  const s = n % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 function formatDate(value: string): string {
   if (!value) return value;
@@ -55,9 +48,8 @@ const SongOptions = forwardRef<
   SongOptionsProps
 >(({ selectedSong, onAddToPlaylist, onNavigate }, ref) => {
     const { t } = useTranslation();
-    const { isDarkMode } = useTheme();
+    const { isDarkMode, colors } = useTheme();
     const isOffline = useIsOffline();
-    const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
     const snapPoints = useMemo(() => ['55%', '90%'], []);
 
@@ -73,6 +65,8 @@ const SongOptions = forwardRef<
     const isStarred = starredSongs.some(
       s => s.id === selectedSong.id
     );
+
+    const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
     const close = () => {
       (ref as any)?.current?.dismiss();
@@ -170,6 +164,10 @@ const SongOptions = forwardRef<
       }
     };
 
+    const genreChipBg = isDarkMode
+      ? 'rgba(255,255,255,0.12)'
+      : 'rgba(0,0,0,0.08)';
+
     return (
       <BottomSheetModal
         ref={ref}
@@ -177,17 +175,12 @@ const SongOptions = forwardRef<
         enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{
-          backgroundColor: isDarkMode ? '#555' : '#ccc',
-        }}
-        backgroundStyle={[
-          styles.sheetBackground,
-          themeStyles.sheetBackground,
-        ]}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[styles.sheetBackground, sheetBg]}
         stackBehavior='push'
       >
         <BottomSheetScrollView
-          style={themeStyles.sheetBackground}
+          style={sheetBg}
           contentContainerStyle={styles.sheetContent}
         >
           <View style={styles.header}>
@@ -198,13 +191,13 @@ const SongOptions = forwardRef<
             />
             <View style={styles.headerText}>
               <Text
-                style={[styles.title, themeStyles.title]}
+                style={[styles.title, { color: colors.text }]}
                 numberOfLines={1}
               >
                 {selectedSong.title}
               </Text>
               <Text
-                style={[styles.artist, themeStyles.artist]}
+                style={[styles.artist, { color: colors.subtext }]}
                 numberOfLines={1}
               >
                 {selectedSong.artist || t('songOptions.unknownArtist')}
@@ -212,7 +205,7 @@ const SongOptions = forwardRef<
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <TouchableOpacity
             style={styles.option}
@@ -223,9 +216,7 @@ const SongOptions = forwardRef<
               size={26}
               color="#ff3b30"
             />
-            <Text
-              style={[styles.optionText, themeStyles.optionText]}
-            >
+            <Text style={[styles.optionText, { color: colors.text }]}>
               {isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             </Text>
           </TouchableOpacity>
@@ -234,13 +225,8 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleAddToQueue}
           >
-            <ListStart
-              size={26}
-              color={themeStyles.icon.color}
-            />
-            <Text
-              style={[styles.optionText, themeStyles.optionText]}
-            >
+            <ListStart size={26} color={colors.text} />
+            <Text style={[styles.optionText, { color: colors.text }]}>
               {t('songOptions.actions.addToQueue')}
             </Text>
           </TouchableOpacity>
@@ -249,13 +235,8 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleAddToEndQueue}
           >
-            <ListEnd
-              size={26}
-              color={themeStyles.icon.color}
-            />
-            <Text
-              style={[styles.optionText, themeStyles.optionText]}
-            >
+            <ListEnd size={26} color={colors.text} />
+            <Text style={[styles.optionText, { color: colors.text }]}>
               {t('songOptions.actions.addToEnd')}
             </Text>
           </TouchableOpacity>
@@ -267,11 +248,9 @@ const SongOptions = forwardRef<
             <Ionicons
               name="add-circle-outline"
               size={26}
-              color={themeStyles.icon.color}
+              color={colors.text}
             />
-            <Text
-              style={[styles.optionText, themeStyles.optionText]}
-            >
+            <Text style={[styles.optionText, { color: colors.text }]}>
               {t('songOptions.actions.addToPlaylist')}
             </Text>
           </TouchableOpacity>
@@ -284,11 +263,9 @@ const SongOptions = forwardRef<
               <Ionicons
                 name="albums"
                 size={26}
-                color={themeStyles.icon.color}
+                color={colors.text}
               />
-              <Text
-                style={[styles.optionText, themeStyles.optionText]}
-              >
+              <Text style={[styles.optionText, { color: colors.text }]}>
                 {t('songOptions.actions.goToAlbum')}
               </Text>
             </TouchableOpacity>
@@ -301,66 +278,64 @@ const SongOptions = forwardRef<
             <Ionicons
               name="radio-outline"
               size={26}
-              color={themeStyles.icon.color}
+              color={colors.text}
             />
-            <Text
-              style={[styles.optionText, themeStyles.optionText]}
-            >
+            <Text style={[styles.optionText, { color: colors.text }]}>
               {t('songOptions.actions.instantMix')}
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-          <Text style={[styles.sectionLabel, themeStyles.artist]}>{t('songOptions.sections.media')}</Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('songOptions.sections.media')}</Text>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.duration')}</Text>
-            <Text style={[styles.infoValue, themeStyles.title]}>
-              {formatDuration(selectedSong.duration)}
+            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.duration')}</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {formatSongDuration(selectedSong.duration)}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.plays')}</Text>
-            <Text style={[styles.infoValue, themeStyles.title]}>{playCount}</Text>
+            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.plays')}</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>{playCount}</Text>
           </View>
           {selectedSong.bitrate != null && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.bitrate')}</Text>
-              <Text style={[styles.infoValue, themeStyles.title]}>{t('songOptions.media.kbps', { value: selectedSong.bitrate })}</Text>
+              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.bitrate')}</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>{t('songOptions.media.kbps', { value: selectedSong.bitrate })}</Text>
             </View>
           )}
           {selectedSong.sampleRate != null && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.sampleRate')}</Text>
-              <Text style={[styles.infoValue, themeStyles.title]}>{t('songOptions.media.hz', { value: selectedSong.sampleRate })}</Text>
+              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.sampleRate')}</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>{t('songOptions.media.hz', { value: selectedSong.sampleRate })}</Text>
             </View>
           )}
           {selectedSong.bitsPerSample != null && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.bitsPerSample')}</Text>
-              <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.bitsPerSample}</Text>
+              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.bitsPerSample')}</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.bitsPerSample}</Text>
             </View>
           )}
           {selectedSong.mimeType && (
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.format')}</Text>
-              <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>{selectedSong.mimeType}</Text>
+              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.format')}</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={1}>{selectedSong.mimeType}</Text>
             </View>
           )}
 
           {(selectedSong.disc != null || selectedSong.trackNumber != null) && (
             <>
-              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>{t('songOptions.sections.track')}</Text>
+              <Text style={[styles.sectionLabel, { color: colors.subtext }, styles.sectionLabelSpaced]}>{t('songOptions.sections.track')}</Text>
               {selectedSong.disc != null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.track.disc')}</Text>
-                  <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.disc}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.track.disc')}</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.disc}</Text>
                 </View>
               )}
               {selectedSong.trackNumber != null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.track.track')}</Text>
-                  <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.trackNumber}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.track.track')}</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.trackNumber}</Text>
                 </View>
               )}
             </>
@@ -368,17 +343,17 @@ const SongOptions = forwardRef<
 
           {(selectedSong.dateReleased || selectedSong.dateAdded) && (
             <>
-              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>{t('songOptions.sections.dates')}</Text>
+              <Text style={[styles.sectionLabel, { color: colors.subtext }, styles.sectionLabelSpaced]}>{t('songOptions.sections.dates')}</Text>
               {selectedSong.dateReleased && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.dates.released')}</Text>
-                  <Text style={[styles.infoValue, themeStyles.title]}>{formatDate(selectedSong.dateReleased)}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.dates.released')}</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{formatDate(selectedSong.dateReleased)}</Text>
                 </View>
               )}
               {selectedSong.dateAdded && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.dates.added')}</Text>
-                  <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={1}>{formatDate(selectedSong.dateAdded)}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.dates.added')}</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={1}>{formatDate(selectedSong.dateAdded)}</Text>
                 </View>
               )}
             </>
@@ -386,20 +361,20 @@ const SongOptions = forwardRef<
 
           {(selectedSong.bpm != null || selectedSong.genres?.length || selectedSong.filePath) && (
             <>
-              <Text style={[styles.sectionLabel, themeStyles.artist, styles.sectionLabelSpaced]}>{t('songOptions.sections.other')}</Text>
+              <Text style={[styles.sectionLabel, { color: colors.subtext }, styles.sectionLabelSpaced]}>{t('songOptions.sections.other')}</Text>
               {selectedSong.bpm != null && (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.other.bpm')}</Text>
-                  <Text style={[styles.infoValue, themeStyles.title]}>{selectedSong.bpm}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.bpm')}</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.bpm}</Text>
                 </View>
               )}
               {selectedSong.genres?.length ? (
                 <View style={styles.genreRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.other.genres')}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.genres')}</Text>
                   <View style={styles.genreList}>
                     {selectedSong.genres.map((g, i) => (
-                      <View key={`${g}-${i}`} style={[styles.genreChip, themeStyles.genreChip]}>
-                        <Text style={[styles.genreChipText, themeStyles.title]}>{g}</Text>
+                      <View key={`${g}-${i}`} style={[styles.genreChip, { backgroundColor: genreChipBg }]}>
+                        <Text style={[styles.genreChipText, { color: colors.text }]}>{g}</Text>
                       </View>
                     ))}
                   </View>
@@ -407,8 +382,8 @@ const SongOptions = forwardRef<
               ) : null}
               {selectedSong.filePath ? (
                 <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.other.filePath')}</Text>
-                  <Text style={[styles.infoValue, themeStyles.title]} numberOfLines={2}>
+                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.filePath')}</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={2}>
                     {selectedSong.filePath}
                   </Text>
                 </View>
@@ -457,7 +432,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#444',
     marginVertical: 12,
   },
   option: {
@@ -509,47 +483,5 @@ const styles = StyleSheet.create({
   genreChipText: {
     fontSize: 13,
     fontWeight: '500',
-  },
-});
-
-const stylesLight = StyleSheet.create({
-  sheetBackground: {
-    backgroundColor: '#F2F2F7',
-  },
-  title: {
-    color: '#000',
-  },
-  artist: {
-    color: '#666',
-  },
-  optionText: {
-    color: '#000',
-  },
-  icon: {
-    color: '#000',
-  },
-  genreChip: {
-    backgroundColor: 'rgba(0,0,0,0.08)',
-  },
-});
-
-const stylesDark = StyleSheet.create({
-  sheetBackground: {
-    backgroundColor: '#222',
-  },
-  title: {
-    color: '#fff',
-  },
-  artist: {
-    color: '#aaa',
-  },
-  optionText: {
-    color: '#fff',
-  },
-  icon: {
-    color: '#999',
-  },
-  genreChip: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
   },
 });

@@ -16,6 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { formatSongDuration } from '@/utils/formatDuration';
 
 type Props = {
   song: Song;
@@ -26,13 +27,6 @@ type Props = {
   isFavorite?: boolean;
 };
 
-function formatDuration(duration?: number): string {
-  if (!duration) return '';
-  const minutes = Math.floor(duration / 60);
-  const seconds = Math.floor(duration % 60);
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
-
 const SongRow: React.FC<Props> = ({
   song,
   collection,
@@ -42,7 +36,7 @@ const SongRow: React.FC<Props> = ({
   isFavorite = false,
 }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
   const { isTrackDownloaded } = useDownload();
   const isAlbumCompact = variant === 'albumCompact';
@@ -80,8 +74,6 @@ const SongRow: React.FC<Props> = ({
     setPlaylistSong(null);
   }, [playlistRef]);
 
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
-
   return (
     <>
       <View style={[styles.row, isAlbumCompact && styles.rowAlbumCompact]}>
@@ -102,18 +94,18 @@ const SongRow: React.FC<Props> = ({
 
           <View style={styles.textContainer}>
             <Text
-              style={[styles.title, themeStyles.title]}
+              style={[styles.title, { color: colors.text }]}
               numberOfLines={1}
             >
               {song.title}
             </Text>
 
             <Text
-              style={[styles.subtitle, themeStyles.subtitle]}
+              style={[styles.subtitle, { color: colors.subtext }]}
               numberOfLines={1}
             >
               {song.artist || t('songOptions.unknownArtist')}
-              {!isAlbumCompact && ` • ${formatDuration(Number(song.duration))}`}
+              {!isAlbumCompact && ` • ${formatSongDuration(song.duration)}`}
             </Text>
           </View>
         </TouchableOpacity>
@@ -130,14 +122,14 @@ const SongRow: React.FC<Props> = ({
             <Ionicons
               name="arrow-down-circle"
               size={16}
-              color={isDarkMode ? '#aaa' : '#8e8e93'}
+              color={colors.subtext}
             />
           )}
           <TouchableOpacity onPress={openOptions} hitSlop={10}>
             <Ionicons
               name="ellipsis-horizontal"
               size={18}
-              color={isDarkMode ? '#fff' : '#000'}
+              color={colors.text}
             />
           </TouchableOpacity>
         </View>
@@ -203,30 +195,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
-  },
-});
-
-const stylesLight = StyleSheet.create({
-  title: {
-    color: '#000',
-  },
-  trackNumber: {
-    color: '#666',
-  },
-  subtitle: {
-    color: '#666',
-  },
-});
-
-const stylesDark = StyleSheet.create({
-  title: {
-    color: '#fff',
-  },
-  trackNumber: {
-    color: '#aaa',
-  },
-  subtitle: {
-    color: '#aaa',
   },
 });
 

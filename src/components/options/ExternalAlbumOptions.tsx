@@ -33,8 +33,7 @@ interface ExternalAlbumOptionsProps {
 
 const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const { isDarkMode, colors } = useTheme();
 
   const bottomSheetRef = useSheetRef();
   const downloadSheetRef = useSheetRef();
@@ -46,6 +45,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
 
   const canDownload = isLidarrConnected || isSlskdConnected;
+  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
   return (
     <>
@@ -56,7 +56,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
         <Ionicons
           name="ellipsis-horizontal"
           size={24}
-          color={isDarkMode ? '#fff' : '#000'}
+          color={colors.text}
         />
       </TouchableOpacity>
 
@@ -66,35 +66,35 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
         enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
-        backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[styles.sheetBackground, sheetBg]}
       >
-        <BottomSheetView style={[styles.sheetContent, themeStyles.sheetBackground]}>
+        <BottomSheetView style={[styles.sheetContent, sheetBg]}>
           <View style={styles.header}>
             <MediaImage cover={album.cover} size="grid" style={styles.cover} />
             <View style={styles.headerText}>
-              <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
+              <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
                 {album.title}
               </Text>
-              <Text style={[styles.artist, themeStyles.artist]} numberOfLines={1}>
+              <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
                 {album.artist}
               </Text>
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           {status.kind === 'in_library' ? (
             <View style={styles.option}>
               <Ionicons name="link" size={26} color="#34C759" />
-              <Text style={[styles.optionText, themeStyles.optionText]}>
+              <Text style={[styles.optionText, { color: colors.text }]}>
                 {t('externalAlbum.menu.inLibrary')}
               </Text>
             </View>
           ) : status.kind === 'downloading' ? (
             <View style={styles.option}>
               <SpinningLoaderCircle size={26} color="#007AFF" />
-              <Text style={[styles.optionText, themeStyles.optionText]}>
+              <Text style={[styles.optionText, { color: colors.text }]}>
                 {t('externalAlbum.menu.downloading', { progress: status.progress })}
               </Text>
             </View>
@@ -103,15 +103,15 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
               style={styles.option}
               onPress={() => downloadSheetRef.current?.present()}
             >
-              <CloudDownload size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>
+              <CloudDownload size={26} color={colors.text} />
+              <Text style={[styles.optionText, { color: colors.text }]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={isDarkMode ? '#555' : '#bbb'} style={styles.chevron} />
+              <Ionicons name="chevron-forward" size={16} color={colors.placeholder} style={styles.chevron} />
             </TouchableOpacity>
           ) : (
             <View style={styles.option}>
-              <CloudDownload size={26} color={isDarkMode ? '#444' : '#ccc'} />
+              <CloudDownload size={26} color={colors.muted} />
               <Text style={[styles.optionText, styles.disabledText]}>
                 {t('externalAlbum.menu.noServiceConnected')}
               </Text>
@@ -154,7 +154,6 @@ const styles = StyleSheet.create({
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#444',
     marginVertical: 12,
   },
   option: {
@@ -165,20 +164,4 @@ const styles = StyleSheet.create({
   optionText: { marginLeft: 16, fontSize: 16, flex: 1 },
   disabledText: { color: '#888', fontSize: 14 },
   chevron: { marginLeft: 4 },
-});
-
-const stylesLight = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#F2F2F7' },
-  title: { color: '#000' },
-  artist: { color: '#666' },
-  optionText: { color: '#000' },
-  icon: { color: '#000' },
-});
-
-const stylesDark = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#222' },
-  title: { color: '#fff' },
-  artist: { color: '#aaa' },
-  optionText: { color: '#fff' },
-  icon: { color: '#999' },
 });

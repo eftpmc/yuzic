@@ -485,7 +485,17 @@
     "favoritesTitle": "收藏",
     "subtext": "播放列表 • {{count}} 首曲目",
     "subtext_plural": "播放列表 • {{count}} 首曲目",
-    "empty": "此播放列表暂无歌曲。"
+    "empty": "此播放列表暂无歌曲。",
+    "recommended": {
+      "title": "推荐",
+      "local": "来自您的音乐库",
+      "external": "发现",
+      "deezerTitle": "来自 Deezer",
+      "added": "已添加到播放列表",
+      "addFailed": "添加歌曲失败",
+      "externalEmpty": "暂无可发现的内容",
+      "refresh": "刷新"
+    }
   },
   "playlistList": {
     "title": "添加至播放列表",

@@ -545,6 +545,7 @@
       "title": "Recommended",
       "local": "From your library",
       "external": "Discover",
+      "deezerTitle": "From Deezer",
       "added": "Added to playlist",
       "addFailed": "Failed to add song",
       "externalEmpty": "Nothing to discover yet",

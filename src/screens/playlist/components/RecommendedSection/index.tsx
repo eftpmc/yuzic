@@ -31,6 +31,7 @@ import {
   selectLidarrAuthenticated,
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
+import { selectDeezerDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { CloudDownload } from 'lucide-react-native';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
@@ -226,26 +227,22 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
   );
 };
 
-// ── Main section ───────────────────────────────────────────────────────────────
+// ── Local recommendations section ──────────────────────────────────────────────
 
-type Props = {
+type LocalRecommendedSectionProps = {
   playlist: Playlist;
+  localSeed: number;
+  onRefresh: () => void;
 };
 
-const RecommendedSection: React.FC<Props> = ({ playlist }) => {
+export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = ({
+  playlist,
+  localSeed,
+  onRefresh,
+}) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
   const { tracks } = useTracks();
-  const queryClient = useQueryClient();
-  const isOffline = useIsOffline();
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
-  const hasDownloader = isLidarrConnected || isSlskdConnected;
-  const downloadSheetRef = useSheetRef();
-
-  const [localSeed, setLocalSeed] = useState(() => Math.random());
-  const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
 
   const playlistSongIds = useMemo(
     () => new Set((playlist.songs ?? []).map(s => s.id)),
@@ -270,6 +267,64 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
     return seededShuffle(pool, localSeed).slice(0, LOCAL_COUNT);
   }, [tracks, playlistSongIds, playlistArtistNames, localSeed]);
 
+  if (localSongs.length === 0) return null;
+
+  return (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        {t('playlist.recommended.local')}
+      </Text>
+
+      {localSongs.map(song => (
+        <LocalRow key={song.id} song={song} playlistId={playlist.id} />
+      ))}
+
+      <TouchableOpacity
+        style={[styles.refreshBtn, { borderColor: colors.border }]}
+        onPress={onRefresh}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="refresh" size={16} color={colors.subtext} />
+        <Text style={[styles.refreshText, { color: colors.subtext }]}>
+          {t('playlist.recommended.refresh')}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// ── Deezer recommendations section ─────────────────────────────────────────────
+
+type DeezerRecommendedSectionProps = {
+  playlist: Playlist;
+  onRefreshExternal: () => void;
+};
+
+export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> = ({
+  playlist,
+  onRefreshExternal,
+}) => {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const themeColor = useSelector(selectThemeColor);
+  const isOffline = useIsOffline();
+  const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
+  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
+  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const hasDownloader = isLidarrConnected || isSlskdConnected;
+  const downloadSheetRef = useSheetRef();
+  const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
+
+  const playlistArtistNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const song of playlist.songs ?? []) {
+      if (song.artist && song.artist.toLowerCase() !== 'various artists') {
+        names.add(song.artist);
+      }
+    }
+    return [...names].slice(0, 3);
+  }, [playlist.songs]);
+
   const externalQueryKey = useMemo(
     () => [QueryKeys.RecommendedExternalSongs, 'playlist', playlist.id, playlistArtistNames.join(',')],
     [playlist.id, playlistArtistNames]
@@ -278,15 +333,10 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
   const externalQuery = useQuery({
     queryKey: externalQueryKey,
     queryFn: () => fetchExternalRecs(playlistArtistNames),
-    enabled: playlistArtistNames.length > 0,
+    enabled: deezerEnabled && !isOffline && playlistArtistNames.length > 0,
     staleTime: 1000 * 60 * 60 * 6,
     networkMode: 'online',
   });
-
-  const handleRefresh = useCallback(() => {
-    setLocalSeed(Math.random());
-    queryClient.invalidateQueries({ queryKey: externalQueryKey });
-  }, [queryClient, externalQueryKey]);
 
   const handleDownloadExternalSong = useCallback(async (song: ExternalSong) => {
     if (!hasDownloader) return;
@@ -311,43 +361,34 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
     }
   }, [downloadSheetRef, hasDownloader, t]);
 
-  const showLocal = localSongs.length > 0;
-  const showExternal = !isOffline && playlistArtistNames.length > 0;
-
-  if (!showLocal && !showExternal) return null;
+  if (!deezerEnabled || isOffline || playlistArtistNames.length === 0) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        {t('playlist.recommended.title')}
+        {t('playlist.recommended.deezerTitle')}
       </Text>
 
-      {showLocal && localSongs.map(song => (
-        <LocalRow key={song.id} song={song} playlistId={playlist.id} />
-      ))}
-
-      {showExternal && (
-        externalQuery.isLoading ? (
-          <ActivityIndicator color={themeColor} style={styles.loader} />
-        ) : (externalQuery.data ?? []).length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.placeholder }]}>
-            {t('playlist.recommended.externalEmpty')}
-          </Text>
-        ) : (
-          (externalQuery.data ?? []).map(song => (
-            <ExternalRow
-              key={song.id}
-              song={song}
-              hasDownloader={hasDownloader}
-              onDownload={handleDownloadExternalSong}
-            />
-          ))
-        )
+      {externalQuery.isLoading ? (
+        <ActivityIndicator color={themeColor} style={styles.loader} />
+      ) : (externalQuery.data ?? []).length === 0 ? (
+        <Text style={[styles.emptyText, { color: colors.placeholder }]}>
+          {t('playlist.recommended.externalEmpty')}
+        </Text>
+      ) : (
+        (externalQuery.data ?? []).map(song => (
+          <ExternalRow
+            key={song.id}
+            song={song}
+            hasDownloader={hasDownloader}
+            onDownload={handleDownloadExternalSong}
+          />
+        ))
       )}
 
       <TouchableOpacity
         style={[styles.refreshBtn, { borderColor: colors.border }]}
-        onPress={handleRefresh}
+        onPress={onRefreshExternal}
         activeOpacity={0.7}
         disabled={externalQuery.isFetching}
       >
@@ -372,12 +413,62 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
   );
 };
 
+// ── Combined footer (used in PlaylistContent) ──────────────────────────────────
+
+type RecommendedSectionProps = {
+  playlist: Playlist;
+};
+
+const RecommendedSection: React.FC<RecommendedSectionProps> = ({ playlist }) => {
+  const queryClient = useQueryClient();
+  const [localSeed, setLocalSeed] = useState(() => Math.random());
+
+  const playlistArtistNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const song of playlist.songs ?? []) {
+      if (song.artist && song.artist.toLowerCase() !== 'various artists') {
+        names.add(song.artist);
+      }
+    }
+    return [...names].slice(0, 3);
+  }, [playlist.songs]);
+
+  const externalQueryKey = useMemo(
+    () => [QueryKeys.RecommendedExternalSongs, 'playlist', playlist.id, playlistArtistNames.join(',')],
+    [playlist.id, playlistArtistNames]
+  );
+
+  const handleRefreshLocal = useCallback(() => {
+    setLocalSeed(Math.random());
+  }, []);
+
+  const handleRefreshExternal = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: externalQueryKey });
+  }, [queryClient, externalQueryKey]);
+
+  return (
+    <View style={styles.container}>
+      <LocalRecommendedSection
+        playlist={playlist}
+        localSeed={localSeed}
+        onRefresh={handleRefreshLocal}
+      />
+      <DeezerRecommendedSection
+        playlist={playlist}
+        onRefreshExternal={handleRefreshExternal}
+      />
+    </View>
+  );
+};
+
 export default RecommendedSection;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 24,
     paddingBottom: 40,
+  },
+  section: {
+    paddingTop: 24,
   },
   sectionTitle: {
     fontSize: 20,

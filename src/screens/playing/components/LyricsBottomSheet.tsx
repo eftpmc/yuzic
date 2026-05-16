@@ -43,11 +43,13 @@ function getCurrentLineIndex(
 function LyricLine({
   text,
   variant,
-  isDarkMode,
+  activeColor,
+  inactiveColor,
 }: {
   text: string;
   variant: 'active' | 'adjacent' | 'inactive';
-  isDarkMode: boolean;
+  activeColor: string;
+  inactiveColor: string;
 }) {
   const opacityTarget =
     variant === 'active' ? 1 : variant === 'adjacent' ? 0.85 : 0.5;
@@ -61,15 +63,13 @@ function LyricLine({
     opacity: opacity.value,
   }));
 
-  const baseStyle =
-    variant === 'active'
-      ? (isDarkMode ? styles.activeLineDark : styles.activeLineLight)
-      : (isDarkMode ? styles.inactiveLineDark : styles.inactiveLineLight);
+  const color = variant === 'active' ? activeColor : inactiveColor;
+  const fontWeight = variant === 'active' ? '700' : '500';
 
   return (
     <Animated.Text
       numberOfLines={4}
-      style={[styles.line, baseStyle, animatedStyle]}
+      style={[styles.line, { color, fontWeight }, animatedStyle]}
     >
       {text}
     </Animated.Text>
@@ -79,7 +79,7 @@ function LyricLine({
 const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
   ({ lyrics, onClose }, ref) => {
     const { t } = useTranslation();
-    const { isDarkMode } = useTheme();
+    const { colors } = useTheme();
     const progress = usePlayingProgress();
     const insets = useSafeAreaInsets();
     const scrollRef = useRef<BottomSheetScrollViewMethods>(null);
@@ -143,19 +143,15 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         backdropComponent={renderBackdrop}
         stackBehavior="push"
         onDismiss={onClose}
-        backgroundStyle={{
-          backgroundColor: isDarkMode ? '#1c1c1e' : '#fff',
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: isDarkMode ? '#666' : '#ccc',
-        }}
+        backgroundStyle={{ backgroundColor: colors.card }}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
         <View style={[styles.header, { paddingTop: 12 }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <ChevronDown size={28} color={isDarkMode ? '#fff' : '#000'} />
+            <ChevronDown size={28} color={colors.text} />
           </TouchableOpacity>
           <Text
-            style={[styles.title, isDarkMode && styles.titleDark]}
+            style={[styles.title, { color: colors.text }]}
             numberOfLines={1}
           >
             {t('playing.lyrics.title')}
@@ -183,7 +179,8 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
               <LyricLine
                 text={line.text}
                 variant={getVariant(index)}
-                isDarkMode={isDarkMode}
+                activeColor={colors.text}
+                inactiveColor={colors.subtext}
               />
             </View>
           ))}
@@ -212,11 +209,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
     textAlign: 'center',
-  },
-  titleDark: {
-    color: '#fff',
   },
   scrollView: {
     flex: 1,
@@ -228,23 +221,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 24,
     marginVertical: 10,
-    fontWeight: '500',
-  },
-  activeLineDark: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  activeLineLight: {
-    color: '#000',
-    fontWeight: '700',
-  },
-  inactiveLineDark: {
-    color: '#999',
-    fontWeight: '500',
-  },
-  inactiveLineLight: {
-    color: '#666',
-    fontWeight: '500',
   },
 });
 

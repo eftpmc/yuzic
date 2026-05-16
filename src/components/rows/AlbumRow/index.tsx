@@ -22,7 +22,7 @@ const AlbumRow: React.FC<Props> = ({
   album,
   onPress,
 }) => {
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
 
   const handlePress = useCallback(() => onPress?.(album), [onPress, album]);
@@ -48,10 +48,7 @@ const AlbumRow: React.FC<Props> = ({
             <View style={styles.titleRow}>
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.albumTitle,
-                  isDarkMode && styles.albumTitleDark,
-                ]}
+                style={[styles.albumTitle, { color: colors.text }]}
               >
                 {album.title}
               </Text>
@@ -59,10 +56,7 @@ const AlbumRow: React.FC<Props> = ({
 
             <Text
               numberOfLines={1}
-              style={[
-                styles.albumSubtext,
-                isDarkMode && styles.albumSubtextDark,
-              ]}
+              style={[styles.albumSubtext, { color: colors.subtext }]}
             >
               {album.subtext}
             </Text>
@@ -77,7 +71,7 @@ const AlbumRow: React.FC<Props> = ({
             <Ionicons
               name="ellipsis-horizontal"
               size={24}
-              color={isDarkMode ? '#fff' : '#000'}
+              color={colors.text}
             />
           </TouchableOpacity>
         </View>
@@ -124,18 +118,10 @@ const styles = StyleSheet.create({
   albumTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  albumTitleDark: {
-    color: '#fff',
   },
   albumSubtext: {
     fontSize: 14,
-    color: '#666',
     marginTop: 2,
-  },
-  albumSubtextDark: {
-    color: '#aaa',
   },
   optionsContainer: {
     flexDirection: 'row',

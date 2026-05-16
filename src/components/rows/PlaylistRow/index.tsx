@@ -19,7 +19,7 @@ type Props = {
 };
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
 
   const handlePress = useCallback(() => onPress?.(playlist), [onPress, playlist]);
@@ -44,20 +44,14 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
           <View style={styles.textContainer}>
             <Text
               numberOfLines={1}
-              style={[
-                styles.title,
-                isDarkMode && styles.titleDark,
-              ]}
+              style={[styles.title, { color: colors.text }]}
             >
               {playlist.title}
             </Text>
 
             <Text
               numberOfLines={1}
-              style={[
-                styles.subtext,
-                isDarkMode && styles.subtextDark,
-              ]}
+              style={[styles.subtext, { color: colors.subtext }]}
             >
               {playlist.subtext}
             </Text>
@@ -72,7 +66,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
             <Ionicons
               name="ellipsis-horizontal"
               size={24}
-              color={isDarkMode ? '#fff' : '#000'}
+              color={colors.text}
             />
           </TouchableOpacity>
         </View>
@@ -115,18 +109,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  titleDark: {
-    color: '#fff',
   },
   subtext: {
     fontSize: 14,
-    color: '#666',
     marginTop: 2,
-  },
-  subtextDark: {
-    color: '#aaa',
   },
   optionsContainer: {
     flexDirection: 'row',

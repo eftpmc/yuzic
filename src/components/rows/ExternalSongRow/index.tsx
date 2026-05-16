@@ -25,8 +25,7 @@ const ExternalSongRow: React.FC<Props> = ({
   previewUrl,
   onPress,
 }) => {
-  const { isDarkMode } = useTheme();
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const { colors } = useTheme();
 
   return (
     <View style={styles.row}>
@@ -37,10 +36,10 @@ const ExternalSongRow: React.FC<Props> = ({
         activeOpacity={onPress ? 0.6 : 1}
       >
         <View style={styles.textContainer}>
-          <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
             {song.title}
           </Text>
-          <Text style={[styles.subtitle, themeStyles.subtitle]} numberOfLines={1}>
+          <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>
             {song.artist || albumArtist}
           </Text>
         </View>
@@ -82,14 +81,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 1,
   },
-});
-
-const stylesLight = StyleSheet.create({
-  title: { color: '#000' },
-  subtitle: { color: '#666' },
-});
-
-const stylesDark = StyleSheet.create({
-  title: { color: '#fff' },
-  subtitle: { color: '#aaa' },
 });

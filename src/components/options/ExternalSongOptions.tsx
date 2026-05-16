@@ -25,14 +25,7 @@ import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
 import { ExternalSong } from '@/types';
 import type { ExternalAlbumBase } from '@/types';
 import { useSheetRef } from '@/utils/useSheetRef';
-
-function formatDuration(seconds: string): string {
-  const n = parseInt(seconds, 10);
-  if (isNaN(n)) return seconds;
-  const m = Math.floor(n / 60);
-  const s = n % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+import { formatSongDuration } from '@/utils/formatDuration';
 
 interface ExternalSongOptionsProps {
   song: ExternalSong;
@@ -48,8 +41,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   onPlay,
 }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const { isDarkMode, colors } = useTheme();
 
   const bottomSheetRef = useSheetRef();
   const downloadSheetRef = useSheetRef();
@@ -59,6 +51,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
   const canDownload = isLidarrConnected || isSlskdConnected;
 
+  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
   const albumBase = useMemo<ExternalAlbumBase>(() => ({
     id: song.albumId,
@@ -77,7 +70,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         <Ionicons
           name="ellipsis-horizontal"
           size={18}
-          color={isDarkMode ? '#fff' : '#000'}
+          color={colors.text}
         />
       </TouchableOpacity>
 
@@ -87,27 +80,27 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
-        backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[styles.sheetBackground, sheetBg]}
         stackBehavior="push"
       >
         <BottomSheetScrollView
-          style={themeStyles.sheetBackground}
+          style={sheetBg}
           contentContainerStyle={styles.sheetContent}
         >
           <View style={styles.header}>
             <MediaImage cover={song.cover} size="grid" style={styles.cover} />
             <View style={styles.headerText}>
-              <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
+              <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
                 {song.title}
               </Text>
-              <Text style={[styles.artist, themeStyles.artist]} numberOfLines={1}>
+              <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
                 {albumArtist} — {albumTitle}
               </Text>
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           {onPlay && (
             <TouchableOpacity
@@ -117,8 +110,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
                 onPlay();
               }}
             >
-              <Ionicons name="play" size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>
+              <Ionicons name="play" size={26} color={colors.text} />
+              <Text style={[styles.optionText, { color: colors.text }]}>
                 {t('songOptions.actions.play')}
               </Text>
             </TouchableOpacity>
@@ -129,21 +122,21 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
               style={styles.option}
               onPress={() => downloadSheetRef.current?.present()}
             >
-              <CloudDownload size={26} color={themeStyles.icon.color} />
-              <Text style={[styles.optionText, themeStyles.optionText]}>
+              <CloudDownload size={26} color={colors.text} />
+              <Text style={[styles.optionText, { color: colors.text }]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={isDarkMode ? '#555' : '#bbb'} style={styles.chevron} />
+              <Ionicons name="chevron-forward" size={16} color={colors.placeholder} style={styles.chevron} />
             </TouchableOpacity>
           )}
 
-          {(!!onPlay || canDownload) && <View style={styles.divider} />}
+          {(!!onPlay || canDownload) && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
 
-          <Text style={[styles.sectionLabel, themeStyles.artist]}>{t('songOptions.sections.media')}</Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('songOptions.sections.media')}</Text>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, themeStyles.artist]}>{t('songOptions.media.duration')}</Text>
-            <Text style={[styles.infoValue, themeStyles.title]}>
-              {formatDuration(song.duration)}
+            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.duration')}</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {formatSongDuration(song.duration)}
             </Text>
           </View>
         </BottomSheetScrollView>
@@ -180,7 +173,6 @@ const styles = StyleSheet.create({
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#444',
     marginVertical: 12,
   },
   option: {
@@ -205,20 +197,4 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: 14 },
   infoValue: { fontSize: 14, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
-});
-
-const stylesLight = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#F2F2F7' },
-  title: { color: '#000' },
-  artist: { color: '#666' },
-  optionText: { color: '#000' },
-  icon: { color: '#000' },
-});
-
-const stylesDark = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#222' },
-  title: { color: '#fff' },
-  artist: { color: '#aaa' },
-  optionText: { color: '#fff' },
-  icon: { color: '#999' },
 });

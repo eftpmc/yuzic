@@ -186,7 +186,7 @@ function darkenHexColor(hex: string, amount = 0.3) {
 
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
 
@@ -272,7 +272,7 @@ export default function PlayingBarBase({ variant }: Props) {
           <Ionicons
             name="musical-notes"
             size={stylesForVariant.placeholderIconSize}
-            color={isDarkMode ? '#fff' : '#333'}
+            color={colors.text}
           />
         </View>
       )}
@@ -283,7 +283,7 @@ export default function PlayingBarBase({ variant }: Props) {
           style={[
             styles.title,
             stylesForVariant.title,
-            isDarkMode ? styles.textDark : styles.textLight,
+            { color: colors.text },
           ]}
         >
           {currentSong?.title || t('playing.bar.noSong')}
@@ -293,7 +293,7 @@ export default function PlayingBarBase({ variant }: Props) {
           style={[
             styles.artist,
             stylesForVariant.artist,
-            isDarkMode ? styles.textDarkSecondary : styles.textLightSecondary,
+            { color: colors.subtext },
           ]}
         >
           {currentSong?.artist || t('playing.bar.selectTrack')}
@@ -312,7 +312,7 @@ export default function PlayingBarBase({ variant }: Props) {
           <FontAwesome6
             name={isPlaying ? 'pause' : 'play'}
             size={20}
-            color={isDarkMode ? '#fff' : '#000'}
+            color={colors.text}
           />
         </TouchableOpacity>
       )}
@@ -414,18 +414,6 @@ const styles = StyleSheet.create({
   },
   artist: {
     marginTop: 2,
-  },
-  textLight: {
-    color: '#000',
-  },
-  textDark: {
-    color: '#fff',
-  },
-  textLightSecondary: {
-    color: '#666',
-  },
-  textDarkSecondary: {
-    color: '#aaa',
   },
   iconPlaceholder: {
     justifyContent: 'center',

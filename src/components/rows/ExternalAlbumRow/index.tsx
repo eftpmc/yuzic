@@ -20,7 +20,7 @@ type Props = {
 };
 
 const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const status = useExternalAlbumStatus(album);
 
   const handlePress = useCallback(() => onPress?.(album), [onPress, album]);
@@ -37,7 +37,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
           <View style={styles.albumTextContainer}>
             <Text
               numberOfLines={1}
-              style={[styles.albumTitle, isDarkMode && styles.albumTitleDark]}
+              style={[styles.albumTitle, { color: colors.text }]}
             >
               {album.title}
             </Text>
@@ -45,7 +45,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
             <View style={styles.subtextRow}>
               <Text
                 numberOfLines={1}
-                style={[styles.albumSubtext, isDarkMode && styles.albumSubtextDark, styles.subtextFlex]}
+                style={[styles.albumSubtext, { color: colors.subtext }, styles.subtextFlex]}
               >
                 {album.subtext}
               </Text>
@@ -97,10 +97,6 @@ const styles = StyleSheet.create({
   albumTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  albumTitleDark: {
-    color: '#fff',
   },
   subtextRow: {
     flexDirection: 'row',
@@ -113,10 +109,6 @@ const styles = StyleSheet.create({
   },
   albumSubtext: {
     fontSize: 14,
-    color: '#666',
-  },
-  albumSubtextDark: {
-    color: '#aaa',
   },
   badge: {
     flexDirection: 'row',

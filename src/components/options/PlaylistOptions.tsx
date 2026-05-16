@@ -48,8 +48,7 @@ const PlaylistOptions = forwardRef<
   PlaylistOptionsProps
 >(({ playlist, hideGoToPlaylist }, ref) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const { isDarkMode, colors } = useTheme();
   const navigation = useNavigation<any>();
 
   const {
@@ -67,6 +66,8 @@ const PlaylistOptions = forwardRef<
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { playlistWithSongs, songs, songsLoading } = useLazyPlaylistDetail(playlist, isSheetOpen);
+
+  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -151,13 +152,11 @@ const PlaylistOptions = forwardRef<
         enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{
-          backgroundColor: isDarkMode ? '#555' : '#ccc',
-        }}
-        backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[styles.sheetBackground, sheetBg]}
       >
-        <View style={[styles.loading, themeStyles.sheetBackground]}>
-          <ActivityIndicator size="large" color={themeStyles.artist.color} />
+        <View style={[styles.loading, sheetBg]}>
+          <ActivityIndicator size="large" color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );
@@ -170,31 +169,29 @@ const PlaylistOptions = forwardRef<
       enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      handleIndicatorStyle={{
-        backgroundColor: isDarkMode ? '#555' : '#ccc',
-      }}
-      backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
+      handleIndicatorStyle={{ backgroundColor: colors.border }}
+      backgroundStyle={[styles.sheetBackground, sheetBg]}
       stackBehavior="push"
       onChange={(index) => setIsSheetOpen(index >= 0)}
     >
       <BottomSheetScrollView
-        style={themeStyles.sheetBackground}
+        style={sheetBg}
         contentContainerStyle={styles.sheetContent}
       >
         <View style={styles.header}>
           <MediaImage cover={playlist.cover} size="grid" style={styles.cover} />
           <View style={styles.headerText}>
             <Text
-              style={[styles.title, themeStyles.title]}
+              style={[styles.title, { color: colors.text }]}
               numberOfLines={2}
             >
               {playlist.title}
             </Text>
-            <Text style={[styles.artist, themeStyles.artist]}>{t('playlistOptions.playlistLabel')}</Text>
+            <Text style={[styles.artist, { color: colors.subtext }]}>{t('playlistOptions.playlistLabel')}</Text>
           </View>
         </View>
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
@@ -202,41 +199,41 @@ const PlaylistOptions = forwardRef<
           disabled={playbackDisabled}
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={themeStyles.artist.color} />
+            <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
-            <Ionicons name="play" size={26} color={themeStyles.icon.color} />
+            <Ionicons name="play" size={26} color={colors.text} />
           )}
-          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.play')}</Text>
+          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.play')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.shuffle')}</Text>
+          <Ionicons name="shuffle" size={26} color={colors.text} />
+          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={handleAddToQueue}
           disabled={playbackDisabled}
         >
-          <ListEnd size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.addToQueue')}</Text>
+          <ListEnd size={26} color={colors.text} />
+          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.addToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={themeStyles.icon.color} />
-          <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.shuffleToQueue')}</Text>
+          <Ionicons name="shuffle" size={26} color={colors.text} />
+          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
 
         {!hideGoToPlaylist && (
           <TouchableOpacity style={styles.option} onPress={handleGoToPlaylist}>
-            <Ionicons name="list" size={26} color={themeStyles.icon.color} />
-            <Text style={[styles.optionText, themeStyles.optionText]}>{t('playlistOptions.actions.goToPlaylist')}</Text>
+            <Ionicons name="list" size={26} color={colors.text} />
+            <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.goToPlaylist')}</Text>
           </TouchableOpacity>
         )}
 
@@ -246,18 +243,18 @@ const PlaylistOptions = forwardRef<
           disabled={isDownloaded || isDownloading}
         >
           {isDownloading ? (
-            <ActivityIndicator size="small" color={themeStyles.artist.color} />
+            <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
             <Ionicons
               name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
               size={26}
-              color={isDownloaded || isDownloading ? themeStyles.artist.color : themeStyles.icon.color}
+              color={isDownloaded || isDownloading ? colors.subtext : colors.text}
             />
           )}
           <Text
             style={[
               styles.optionText,
-              themeStyles.optionText,
+              { color: colors.text },
               (isDownloaded || isDownloading) && { opacity: 0.6 },
             ]}
           >
@@ -272,7 +269,7 @@ const PlaylistOptions = forwardRef<
             disabled={deletePlaylist.isPending}
           >
             {deletePlaylist.isPending ? (
-              <ActivityIndicator size="small" color={themeStyles.artist.color} />
+              <ActivityIndicator size="small" color={colors.subtext} />
             ) : (
               <Ionicons name="trash-outline" size={26} color="#ff3b30" />
             )}
@@ -288,24 +285,24 @@ const PlaylistOptions = forwardRef<
           </TouchableOpacity>
         )}
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <Text style={[styles.sectionLabel, themeStyles.artist]}>{t('playlistOptions.sections.info')}</Text>
+        <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('playlistOptions.sections.info')}</Text>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('playlistOptions.info.lastChanged')}</Text>
-          <Text style={[styles.infoValue, themeStyles.title]}>
+          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('playlistOptions.info.lastChanged')}</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>
             {formatDate(playlist.changed)}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('playlistOptions.info.created')}</Text>
-          <Text style={[styles.infoValue, themeStyles.title]}>
+          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('playlistOptions.info.created')}</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>
             {formatDate(playlist.created)}
           </Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, themeStyles.artist]}>{t('playlistOptions.info.songs')}</Text>
-          <Text style={[styles.infoValue, themeStyles.title]}>{songs.length}</Text>
+          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('playlistOptions.info.songs')}</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>{songs.length}</Text>
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -346,7 +343,6 @@ const styles = StyleSheet.create({
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#444',
     marginVertical: 12,
   },
   option: {
@@ -373,20 +369,4 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: 14 },
   infoValue: { fontSize: 14, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
-});
-
-const stylesLight = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#F2F2F7' },
-  title: { color: '#000' },
-  artist: { color: '#666' },
-  optionText: { color: '#000' },
-  icon: { color: '#000' },
-});
-
-const stylesDark = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#222' },
-  title: { color: '#fff' },
-  artist: { color: '#aaa' },
-  optionText: { color: '#fff' },
-  icon: { color: '#999' },
 });

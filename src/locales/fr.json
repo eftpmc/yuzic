@@ -485,7 +485,17 @@
     "favoritesTitle": "Favoris",
     "subtext": "Liste de lecture • {{count}} morceau",
     "subtext_plural": "Liste de lecture • {{count}} morceaux",
-    "empty": "Cette liste de lecture n'a pas encore de morceaux."
+    "empty": "Cette liste de lecture n'a pas encore de morceaux.",
+    "recommended": {
+      "title": "Recommandé",
+      "local": "De votre bibliothèque",
+      "external": "Découvrir",
+      "deezerTitle": "Via Deezer",
+      "added": "Ajouté à la liste de lecture",
+      "addFailed": "Impossible d'ajouter la chanson",
+      "externalEmpty": "Rien à découvrir pour l'instant",
+      "refresh": "Actualiser"
+    }
   },
   "playlistList": {
     "title": "Ajouter à une liste de lecture",

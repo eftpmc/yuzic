@@ -21,7 +21,7 @@ type Props = {
 
 const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
 
   const sheetRef = useSheetRef();
 
@@ -48,20 +48,14 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
             <View style={styles.textContainer}>
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.title,
-                  isDarkMode && styles.titleDark,
-                ]}
+                style={[styles.title, { color: colors.text }]}
               >
                 {artist.name}
               </Text>
 
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.subtext,
-                  isDarkMode && styles.subtextDark,
-                ]}
+                style={[styles.subtext, { color: colors.subtext }]}
               >
                 {artist.subtext === 'Artist' ? t('common.artist') : artist.subtext}
               </Text>
@@ -76,7 +70,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
               <Ionicons
                 name="ellipsis-horizontal"
                 size={24}
-                color={isDarkMode ? '#fff' : '#000'}
+                color={colors.text}
               />
             </TouchableOpacity>
           </View>
@@ -119,18 +113,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
-  },
-  titleDark: {
-    color: '#fff',
   },
   subtext: {
     fontSize: 14,
-    color: '#666',
     marginTop: 2,
-  },
-  subtextDark: {
-    color: '#aaa',
   },
   optionsContainer: {
     flexDirection: 'row',

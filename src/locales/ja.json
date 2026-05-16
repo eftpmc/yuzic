@@ -485,7 +485,17 @@
     "favoritesTitle": "お気に入り",
     "subtext": "プレイリスト・{{count}}曲",
     "subtext_plural": "プレイリスト・{{count}}曲",
-    "empty": "このプレイリストにはまだ曲がありません。"
+    "empty": "このプレイリストにはまだ曲がありません。",
+    "recommended": {
+      "title": "おすすめ",
+      "local": "ライブラリから",
+      "external": "ディスカバー",
+      "deezerTitle": "Deezerより",
+      "added": "プレイリストに追加しました",
+      "addFailed": "曲の追加に失敗しました",
+      "externalEmpty": "まだ発見するものがありません",
+      "refresh": "更新"
+    }
   },
   "playlistList": {
     "title": "プレイリストに追加",
