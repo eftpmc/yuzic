@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
+    marginTop: 2,
   },
 });
 

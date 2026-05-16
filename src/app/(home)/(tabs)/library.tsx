@@ -223,7 +223,7 @@ export default function LibraryScreen() {
     userplays:     t('home.sort.mostPlayed'),
   }), [t])
 
-  const activeTextColor = '#fff'
+  const activeTextColor = colors.background
 
   const renderItem = useCallback(({ item }: { item: LibraryItem }) => {
     switch (item.kind) {
@@ -300,7 +300,7 @@ export default function LibraryScreen() {
               value={f.value}
               active={filter === f.value}
               activeBackgroundColor={themeColor}
-              inactiveBackgroundColor={colors.card}
+              inactiveBackgroundColor={colors.muted}
               activeTextColor={activeTextColor}
               inactiveTextColor={colors.subtext}
               onPress={(val) => {

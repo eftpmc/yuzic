@@ -80,7 +80,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
+      <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -177,7 +177,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     width: '100%',
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitleWrapper: {
     position: 'absolute',
@@ -194,17 +193,17 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   coverWrapper: {
-    width: 260,
-    height: 260,
-    borderRadius: 14,
-    marginTop: 24,
+    width: 280,
+    height: 280,
+    borderRadius: 16,
+    marginTop: 32,
     marginBottom: 18,
     overflow: 'hidden',
   },
   coverImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 14,
+    borderRadius: 16,
   },
   titleInfo: {
     width: '100%',

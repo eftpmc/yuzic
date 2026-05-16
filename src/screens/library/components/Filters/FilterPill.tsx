@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   activeText: {
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });

@@ -94,7 +94,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   return (
     <>
       <View style={styles.container}>
-        <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
+        <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -217,7 +217,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     width: '100%',
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitleWrapper: {
     position: 'absolute',
