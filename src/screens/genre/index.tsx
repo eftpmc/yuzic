@@ -11,7 +11,7 @@ import GenreContent from './components/Content'
 const GenreScreen: React.FC = () => {
   const route = useRoute<any>()
   const { genre } = route.params
-  const { isDarkMode } = useTheme()
+  const { colors } = useTheme()
   const { albums } = useAlbums()
 
   const genreAlbums = albums.filter((a) => a.genres.includes(genre))
@@ -21,7 +21,7 @@ const GenreScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <GenreContent genre={genre} albums={genreAlbums} />
     </SafeAreaView>
   )
@@ -32,11 +32,5 @@ export default GenreScreen
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  screenDark: {
-    backgroundColor: '#000',
-  },
-  screenLight: {
-    backgroundColor: '#fff',
   },
 })

@@ -23,7 +23,7 @@ type Props = {
 
 const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, onSelect, onRandomize, placeholder }, ref) => {
-    const { isDarkMode } = useTheme()
+    const { colors } = useTheme()
     const [query, setQuery] = useState('')
 
     const snapPoints = useMemo(() => ['60%'], [])
@@ -45,14 +45,14 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
 
     const renderItem = useCallback(({ item }: { item: string }) => (
       <TouchableOpacity
-        style={[styles.item, isDarkMode && styles.itemDark]}
+        style={[styles.item, { borderBottomColor: colors.muted }]}
         onPress={() => onSelect(item)}
       >
-        <Text style={[styles.itemText, isDarkMode && styles.itemTextDark]}>
+        <Text style={[styles.itemText, { color: colors.text }]}>
           {item}
         </Text>
       </TouchableOpacity>
-    ), [onSelect, isDarkMode])
+    ), [onSelect, colors])
 
     return (
       <BottomSheetModal
@@ -62,23 +62,23 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
         enablePanDownToClose
         onDismiss={handleDismiss}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: isDarkMode ? '#1c1c1c' : '#f9f9f9' }}
-        handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
+        backgroundStyle={{ backgroundColor: colors.card }}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
-        <View style={[styles.inputRow, isDarkMode && styles.inputRowDark]}>
+        <View style={[styles.inputRow, { backgroundColor: colors.muted }]}>
           <BottomSheetTextInput
-            style={[styles.input, isDarkMode && styles.inputDark]}
+            style={[styles.input, { color: colors.text }]}
             value={query}
             onChangeText={setQuery}
             placeholder={placeholder ?? 'Search…'}
-            placeholderTextColor={isDarkMode ? '#555' : '#aaa'}
+            placeholderTextColor={colors.placeholder}
             autoCapitalize="words"
             autoCorrect={false}
             returnKeyType="done"
             onSubmitEditing={handleSubmit}
           />
           <TouchableOpacity onPress={onRandomize} style={styles.shuffleButton} hitSlop={8}>
-            <Dices size={18} color={isDarkMode ? '#888' : '#666'} />
+            <Dices size={18} color={colors.subtext} />
           </TouchableOpacity>
         </View>
 
@@ -105,21 +105,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 12,
     borderRadius: 10,
-    backgroundColor: '#efefef',
     paddingHorizontal: 12,
     paddingVertical: 4,
-  },
-  inputRowDark: {
-    backgroundColor: '#2a2a2a',
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#000',
     paddingVertical: 8,
-  },
-  inputDark: {
-    color: '#fff',
   },
   shuffleButton: {
     paddingLeft: 10,
@@ -132,16 +124,8 @@ const styles = StyleSheet.create({
   item: {
     paddingVertical: 13,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e5e5e5',
-  },
-  itemDark: {
-    borderBottomColor: '#2e2e2e',
   },
   itemText: {
     fontSize: 15,
-    color: '#111',
-  },
-  itemTextDark: {
-    color: '#eee',
   },
 })

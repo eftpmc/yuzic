@@ -11,25 +11,19 @@ type Props = {
 
 export default function NotFoundView({ message = 'Not found' }: Props) {
   const navigation = useNavigation<any>()
-  const { isDarkMode } = useTheme()
-
-  const bg = isDarkMode ? '#000' : '#fff'
-  const iconColor = isDarkMode ? '#fff' : '#1C1C1E'
-  const borderColor = isDarkMode ? '#1C1C1E' : '#D1D1D6'
+  const { colors } = useTheme()
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: bg }]}>
-      {/* Back button row matching other screens */}
-      <View style={[styles.headerRow, { borderBottomColor: borderColor }]}>
+    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+      <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={iconColor} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Centered error state */}
       <View style={styles.body}>
-        <Text style={[styles.message, { color: isDarkMode ? '#e6e6e6' : '#1C1C1E' }]}>{message}</Text>
+        <Text style={[styles.message, { color: colors.text }]}>{message}</Text>
       </View>
     </SafeAreaView>
   )

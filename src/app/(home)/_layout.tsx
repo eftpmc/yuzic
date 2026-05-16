@@ -54,7 +54,7 @@ export default function HomeLayout() {
     const insets = useSafeAreaInsets()
     const router = useRouter()
     const pathname = usePathname()
-    const { isDarkMode } = useTheme()
+    const { isDarkMode, colors } = useTheme()
     const themeColor = useSelector(selectThemeColor)
     const tabRowHeight = 52 + Math.max(insets.bottom, 8)
 
@@ -75,8 +75,11 @@ export default function HomeLayout() {
     const isLibrary = pathname === '/library'
     const isHome = !isLibrary
     const activeColor = themeColor
-    const inactiveColor = isDarkMode ? '#555' : '#aaa'
+    const inactiveColor = colors.subtext
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
+    const bg = colors.background.length === 4
+      ? `#${colors.background[1]}${colors.background[1]}${colors.background[2]}${colors.background[2]}${colors.background[3]}${colors.background[3]}`
+      : colors.background
 
     return (
         <View style={{ flex: 1 }}>
@@ -97,9 +100,7 @@ export default function HomeLayout() {
                 onStartShouldSetResponder={() => true}
             >
                 <LinearGradient
-                    colors={isDarkMode
-                        ? ['#00000000', '#000000F0', '#000000F0', '#000000']
-                        : ['#ffffff00', '#fffffff0', '#fffffff0', '#ffffff']}
+                    colors={[`${bg}00`, `${bg}F0`, `${bg}F0`, bg] as any}
                     locations={[0, 0.2, 0.45, 0.6]}
                     style={StyleSheet.absoluteFill}
                 />

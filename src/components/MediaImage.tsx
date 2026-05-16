@@ -6,6 +6,7 @@ import { buildCover, buildCoverArtArchiveUrl } from '@/utils/builders/buildCover
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { useTheme } from '@/hooks/useTheme';
 import {
   hasImageUrlFailed,
   IMAGE_CACHE_POLICY,
@@ -28,6 +29,7 @@ export function MediaImage({
   // buildCover() reads from the store; without this, URLs stay null until
   // some other state (e.g. list data) causes a re-render.
   const activeServerId = useSelector(selectActiveServerId);
+  const { colors } = useTheme();
   const uri = useMemo(() => {
     void activeServerId;
     return buildCover(cover, size);
@@ -66,7 +68,7 @@ export function MediaImage({
       <View style={[style, { overflow: 'hidden' }]}>
         <Image
           source={placeholder}
-          style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#1e1e1e' }}
+          style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.card }}
           resizeMode="cover"
         />
       </View>

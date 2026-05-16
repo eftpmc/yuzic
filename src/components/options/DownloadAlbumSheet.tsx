@@ -39,8 +39,7 @@ interface Props {
 
 const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const { colors } = useTheme();
 
   const lidarrConfig = useSelector(selectLidarrConfig);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -97,25 +96,25 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
       enablePanDownToClose={!anyLoading}
       backdropComponent={renderBackdrop}
       stackBehavior="push"
-      handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
-      backgroundStyle={[styles.sheetBackground, themeStyles.sheetBackground]}
+      handleIndicatorStyle={{ backgroundColor: colors.border }}
+      backgroundStyle={[styles.sheetBackground, { backgroundColor: colors.card }]}
     >
-      <BottomSheetView style={[styles.content, themeStyles.sheetBackground]}>
+      <BottomSheetView style={[styles.content, { backgroundColor: colors.card }]}>
         <View style={styles.header}>
           <MediaImage cover={album.cover} size="thumb" style={styles.cover} />
           <View style={styles.headerText}>
-            <Text style={[styles.title, themeStyles.title]} numberOfLines={1}>
+            <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
               {album.title}
             </Text>
-            <Text style={[styles.artist, themeStyles.artist]} numberOfLines={1}>
+            <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
               {album.artist}
             </Text>
           </View>
         </View>
 
-        <View style={[styles.divider, themeStyles.divider]} />
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <Text style={[styles.sectionLabel, themeStyles.sectionLabel]}>
+        <Text style={[styles.sectionLabel, { color: colors.placeholder }]}>
           {t('externalAlbum.download.chooseService')}
         </Text>
 
@@ -132,15 +131,15 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
               cachePolicy="memory-disk"
             />
             <View style={styles.serviceText}>
-              <Text style={[styles.serviceName, themeStyles.serviceName]}>Lidarr</Text>
-              <Text style={[styles.serviceDesc, themeStyles.serviceDesc]}>
+              <Text style={[styles.serviceName, { color: colors.text }]}>Lidarr</Text>
+              <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
                 {t('externalAlbum.download.lidarrDesc')}
               </Text>
             </View>
             {lidarrLoading ? (
-              <SpinningLoaderCircle size={18} color={isDarkMode ? '#aaa' : '#888'} />
+              <SpinningLoaderCircle size={18} color={colors.subtext} />
             ) : (
-              <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#555' : '#bbb'} />
+              <Ionicons name="chevron-forward" size={18} color={colors.border} />
             )}
           </TouchableOpacity>
         )}
@@ -158,15 +157,15 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
               cachePolicy="memory-disk"
             />
             <View style={styles.serviceText}>
-              <Text style={[styles.serviceName, themeStyles.serviceName]}>Soulseek</Text>
-              <Text style={[styles.serviceDesc, themeStyles.serviceDesc]}>
+              <Text style={[styles.serviceName, { color: colors.text }]}>Soulseek</Text>
+              <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
                 {t('externalAlbum.download.slskdDesc')}
               </Text>
             </View>
             {slskdLoading ? (
-              <SpinningLoaderCircle size={18} color={isDarkMode ? '#aaa' : '#888'} />
+              <SpinningLoaderCircle size={18} color={colors.subtext} />
             ) : (
-              <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#555' : '#bbb'} />
+              <Ionicons name="chevron-forward" size={18} color={colors.border} />
             )}
           </TouchableOpacity>
         )}
@@ -242,24 +241,3 @@ const styles = StyleSheet.create({
   },
 });
 
-const stylesLight = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#F2F2F7' },
-  title: { color: '#000' },
-  artist: { color: '#666' },
-  divider: { backgroundColor: '#D1D1D6' },
-  sectionLabel: { color: '#999' },
-  serviceName: { color: '#000' },
-  serviceDesc: { color: '#888' },
-  icon: { color: '#000' },
-});
-
-const stylesDark = StyleSheet.create({
-  sheetBackground: { backgroundColor: '#222' },
-  title: { color: '#fff' },
-  artist: { color: '#aaa' },
-  divider: { backgroundColor: '#3a3a3c' },
-  sectionLabel: { color: '#666' },
-  serviceName: { color: '#fff' },
-  serviceDesc: { color: '#888' },
-  icon: { color: '#999' },
-});

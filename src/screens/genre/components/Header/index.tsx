@@ -36,7 +36,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
   const navigation = useNavigation<any>()
   const queryClient = useQueryClient()
   const api = useApi()
-  const { isDarkMode } = useTheme()
+  const { isDarkMode, colors } = useTheme()
   const themeColor = useSelector(selectThemeColor)
   const activeServer = useSelector(selectActiveServer)
   const { playSongInCollection } = usePlaying()
@@ -161,16 +161,16 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color="#fff" style={{ marginLeft: -2 }} />
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.content}>
-        <Text style={[styles.genreName, isDarkMode && styles.genreNameDark]}>
+        <Text style={[styles.genreName, { color: colors.text }]}>
           {genre}
         </Text>
-        <Text style={[styles.subtext, isDarkMode && styles.subtextDark]}>
+        <Text style={[styles.subtext, { color: colors.subtext }]}>
           {albums.length} {albums.length === 1 ? 'album' : 'albums'}
         </Text>
       </View>
@@ -182,9 +182,9 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+            <ActivityIndicator size="small" color={colors.text} />
           ) : (
-            <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+            <Ionicons name="shuffle" size={18} color={colors.text} />
           )}
         </TouchableOpacity>
 
@@ -206,12 +206,12 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {isDownloadingAll || isDownloading ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+            <ActivityIndicator size="small" color={colors.text} />
           ) : (
             <Ionicons
               name={isFullyDownloaded ? 'checkmark' : 'download-outline'}
               size={18}
-              color={isDarkMode ? '#fff' : '#000'}
+              color={colors.text}
             />
           )}
         </TouchableOpacity>
@@ -242,6 +242,8 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   content: {
     alignItems: 'center',
@@ -252,19 +254,11 @@ const styles = StyleSheet.create({
   genreName: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
     textAlign: 'center',
-  },
-  genreNameDark: {
-    color: '#fff',
   },
   subtext: {
     fontSize: 14,
-    color: '#666',
     marginTop: 6,
-  },
-  subtextDark: {
-    color: '#aaa',
   },
   buttonRow: {
     flexDirection: 'row',

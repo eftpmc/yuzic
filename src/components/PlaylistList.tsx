@@ -48,7 +48,7 @@ type PlaylistListProps = {
 const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
     const { t } = useTranslation();
-    const { isDarkMode } = useTheme();
+    const { colors } = useTheme();
     const isOffline = useIsOffline();
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
@@ -214,51 +214,32 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         stackBehavior="push"
         handleComponent={null}
         onChange={(index) => setIsSheetOpen(index >= 0)}
-        backgroundStyle={{
-          backgroundColor: isDarkMode ? '#1c1c1e' : '#E5E5EA',
-        }}
+        backgroundStyle={{ backgroundColor: colors.muted }}
       >
         <View
           style={[
             styles.headerContainer,
             {
-              backgroundColor: isDarkMode ? '#2c2c2e' : '#F2F2F7',
+              backgroundColor: colors.card,
             },
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-            <X
-              size={20}
-              color={isDarkMode ? '#fff' : '#000'}
-              strokeWidth={2.5}
-            />
+            <X size={20} color={colors.text} strokeWidth={2.5} />
           </TouchableOpacity>
 
-          <Text
-            style={[
-              styles.headerTitle,
-              isDarkMode && styles.textDark,
-            ]}
-          >
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
             {t('playlistList.title')}
           </Text>
         </View>
 
         <View style={styles.content}>
-          <View
-            style={[
-              styles.searchContainer,
-              isDarkMode && styles.inputDark,
-            ]}
-          >
-            <Ionicons name="search" size={20} color="#aaa" />
+          <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+            <Ionicons name="search" size={20} color={colors.placeholder} />
             <TextInput
-              style={[
-                styles.searchInput,
-                isDarkMode && styles.textDark,
-              ]}
+              style={[styles.searchInput, { color: colors.text }]}
               placeholder={t('playlistList.searchPlaceholder')}
-              placeholderTextColor="#aaa"
+              placeholderTextColor={colors.placeholder}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
@@ -266,22 +247,14 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
           <View style={styles.createContainer}>
             <TextInput
-              style={[
-                styles.newPlaylistInput,
-                isDarkMode && styles.inputDark,
-                isDarkMode && styles.textDark,
-              ]}
+              style={[styles.newPlaylistInput, { backgroundColor: colors.card, color: colors.text }]}
               placeholder={t('playlistList.newPlaceholder')}
-              placeholderTextColor="#aaa"
+              placeholderTextColor={colors.placeholder}
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
             <TouchableOpacity onPress={handleCreatePlaylist}>
-              <Ionicons
-                name="add"
-                size={26}
-                color={isDarkMode ? '#fff' : '#000'}
-              />
+              <Ionicons name="add" size={26} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -304,12 +277,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
                     style={styles.playlistCover}
                   />
 
-                  <Text
-                    style={[
-                      styles.optionText,
-                      isDarkMode && styles.textDark,
-                    ]}
-                  >
+                  <Text style={[styles.optionText, { color: colors.text }]}>
                     {item.title}
                   </Text>
 
@@ -374,10 +342,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#000',
-  },
-  textDark: {
-    color: '#fff',
   },
   content: {
     flex: 1,
@@ -386,19 +350,14 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
     marginBottom: 16,
-  },
-  inputDark: {
-    backgroundColor: '#2c2c2e',
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: 16,
-    color: '#000',
   },
   createContainer: {
     flexDirection: 'row',
@@ -410,9 +369,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     fontSize: 16,
-    backgroundColor: '#fff',
     marginRight: 8,
-    color: '#000',
   },
   option: {
     flexDirection: 'row',
@@ -428,7 +385,6 @@ const styles = StyleSheet.create({
   optionText: {
     flex: 1,
     fontSize: 16,
-    color: '#000',
   },
   doneWrapper: {
     paddingHorizontal: 16,

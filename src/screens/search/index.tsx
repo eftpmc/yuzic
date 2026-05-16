@@ -39,7 +39,7 @@ const Search = () => {
   const playlistListRef = useSheetRef();
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { playSong } = usePlaying();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const deezerSearchEnabled = useDeezerSearchEnabled();
@@ -118,16 +118,16 @@ const Search = () => {
             >
               <MediaImage cover={result.cover} size="thumb" style={styles.songCover} />
               <View style={styles.songText}>
-                <Text numberOfLines={1} style={[styles.songTitle, isDarkMode && styles.songTitleDark]}>
+                <Text numberOfLines={1} style={[styles.songTitle, { color: colors.text }]}>
                   {result.title}
                 </Text>
-                <Text numberOfLines={1} style={[styles.songSubtitle, isDarkMode && styles.songSubtitleDark]}>
+                <Text numberOfLines={1} style={[styles.songSubtitle, { color: colors.subtext }]}>
                   {result.subtext}
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.songOptionsButton} onPress={() => { void handleSongOptions(result); }}>
-              <Ionicons name="ellipsis-horizontal" size={24} color={isDarkMode ? '#fff' : '#000'} />
+              <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -210,7 +210,7 @@ const Search = () => {
   };
 
   return (
-    <SafeAreaView testID="search-screen" style={[styles.container, isDarkMode && styles.containerDark]}>
+    <SafeAreaView testID="search-screen" style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerRow}>
         <TouchableOpacity
           accessibilityLabel="Back"
@@ -218,17 +218,17 @@ const Search = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#333'} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
-        <View style={[styles.searchContainer, isDarkMode && styles.searchContainerDark]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
           <TextInput
             accessibilityLabel="Search input"
             testID="search-input"
             ref={searchInputRef}
-            style={[styles.searchInput, isDarkMode && styles.searchInputDark]}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder={t('search.placeholder')}
-            placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+            placeholderTextColor={colors.placeholder}
             value={query}
             onChangeText={onSearchChange}
             returnKeyType="search"
@@ -239,7 +239,7 @@ const Search = () => {
               style={styles.clearButton}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
-              <MaterialIcons name="close" size={20} color={isDarkMode ? '#fff' : '#000'} />
+              <MaterialIcons name="close" size={20} color={colors.text} />
             </TouchableOpacity>
           )}
         </View>
@@ -262,7 +262,7 @@ const Search = () => {
                     <View style={styles.sourceBadge}>
                       <Text style={styles.sourceBadgeLetter}>D</Text>
                     </View>
-                    <Text style={[styles.sourceHeaderText, isDarkMode && styles.sourceHeaderTextDark]}>
+                    <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
                       Deezer
                     </Text>
                   </View>
@@ -278,7 +278,7 @@ const Search = () => {
         }
 
         {hasSearched && !isLoading && searchResults.length === 0 && (
-          <Text testID="search-no-results" style={[styles.noResults, isDarkMode && styles.noResultsDark]}>
+          <Text testID="search-no-results" style={[styles.noResults, { color: colors.subtext }]}>
             {t('search.noResults')}
           </Text>
         )}
@@ -305,11 +305,7 @@ export default Search;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     marginBottom: Platform.OS === 'ios' ? 80 : 16,
-  },
-  containerDark: {
-    backgroundColor: '#000',
   },
   headerRow: {
     flexDirection: 'row',
@@ -324,21 +320,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#eee',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
-  searchContainerDark: {
-    backgroundColor: '#222',
-  },
   searchInput: {
     flex: 1,
-    color: '#000',
     fontSize: 16,
     paddingVertical: 8,
-  },
-  searchInputDark: {
-    color: '#fff',
   },
   clearButton: {
     padding: 4,
@@ -376,19 +364,11 @@ const styles = StyleSheet.create({
   sourceHeaderText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#aaa',
-  },
-  sourceHeaderTextDark: {
-    color: '#555',
   },
   noResults: {
     textAlign: 'center',
     marginTop: 24,
-    color: '#777',
     fontSize: 16,
-  },
-  noResultsDark: {
-    color: '#aaa',
   },
   songWrapper: {
     paddingHorizontal: 16,
@@ -413,20 +393,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   songTitle: {
-    color: '#000',
     fontSize: 16,
     fontWeight: '600',
   },
-  songTitleDark: {
-    color: '#fff',
-  },
   songSubtitle: {
-    color: '#666',
     fontSize: 14,
     marginTop: 2,
-  },
-  songSubtitleDark: {
-    color: '#aaa',
   },
   songOptionsButton: {
     padding: 8,

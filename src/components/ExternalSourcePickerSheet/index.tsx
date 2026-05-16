@@ -22,8 +22,7 @@ const SOURCE_COLORS: Record<string, string> = {
 
 const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, isLoading, onSelect, title = 'Choose Source' }, ref) => {
-    const { isDarkMode } = useTheme()
-    const themeStyles = isDarkMode ? stylesDark : stylesLight
+    const { colors } = useTheme()
 
     return (
       <BottomSheetModal
@@ -32,40 +31,40 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#555' : '#ccc' }}
-        backgroundStyle={[styles.sheet, themeStyles.sheet]}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[styles.sheet, { backgroundColor: colors.card }]}
         stackBehavior="push"
       >
-        <BottomSheetScrollView style={themeStyles.sheet} contentContainerStyle={styles.content}>
-          <Text style={[styles.title, themeStyles.title]}>{title}</Text>
+        <BottomSheetScrollView style={{ backgroundColor: colors.card }} contentContainerStyle={styles.content}>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
 
           {isLoading && (
             <View style={styles.loading}>
-              <ActivityIndicator size="large" color={isDarkMode ? '#fff' : '#000'} />
+              <ActivityIndicator size="large" color={colors.text} />
             </View>
           )}
 
           {!isLoading && items.length === 0 && (
-            <Text style={[styles.empty, themeStyles.empty]}>No sources resolved this item.</Text>
+            <Text style={[styles.empty, { color: colors.subtext }]}>No sources resolved this item.</Text>
           )}
 
           {!isLoading && items.map((item, i) => {
             const label = item.kind === 'album' ? item.title : item.name
             const sublabel = item.kind === 'album' ? item.artist : undefined
-            const color = SOURCE_COLORS[item.source] ?? '#888'
+            const color = SOURCE_COLORS[item.source] ?? colors.subtext
             return (
               <TouchableOpacity
                 key={`${item.source}-${i}`}
-                style={[styles.row, themeStyles.row]}
+                style={styles.row}
                 onPress={() => onSelect(item)}
               >
                 <View style={[styles.badge, { backgroundColor: color }]}>
                   <Text style={styles.badgeLetter}>{item.source[0].toUpperCase()}</Text>
                 </View>
                 <View style={styles.rowText}>
-                  <Text style={[styles.rowLabel, themeStyles.title]} numberOfLines={1}>{label}</Text>
+                  <Text style={[styles.rowLabel, { color: colors.text }]} numberOfLines={1}>{label}</Text>
                   {sublabel ? (
-                    <Text style={[styles.rowSublabel, themeStyles.empty]} numberOfLines={1}>{sublabel}</Text>
+                    <Text style={[styles.rowSublabel, { color: colors.subtext }]} numberOfLines={1}>{sublabel}</Text>
                   ) : null}
                 </View>
               </TouchableOpacity>
@@ -138,16 +137,3 @@ const styles = StyleSheet.create({
   },
 })
 
-const stylesLight = StyleSheet.create({
-  sheet: { backgroundColor: '#F2F2F7' },
-  title: { color: '#000' },
-  empty: { color: '#888' },
-  row: { backgroundColor: 'transparent' },
-})
-
-const stylesDark = StyleSheet.create({
-  sheet: { backgroundColor: '#222' },
-  title: { color: '#fff' },
-  empty: { color: '#777' },
-  row: { backgroundColor: 'transparent' },
-})

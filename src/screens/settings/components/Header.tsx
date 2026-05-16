@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
     };
 
     return (
-        <View style={[styles.container, { borderBottomColor: colors.border }]}>
+        <View style={styles.container}>
             <TouchableOpacity
                 onPress={handleBack}
                 style={styles.backButton}
@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderBottomWidth: StyleSheet.hairlineWidth,
     },
     backButton: {
         padding: 6,

@@ -14,7 +14,7 @@ type Props = {
 
 export default function GenreContent({ genre, albums }: Props) {
   const navigation = useNavigation<any>()
-  const { isDarkMode } = useTheme()
+  const { colors } = useTheme()
 
   const header = useMemo(
     () => <GenreHeader genre={genre} albums={albums} />,
@@ -35,7 +35,7 @@ export default function GenreContent({ genre, albums }: Props) {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: 140,
-        backgroundColor: isDarkMode ? '#000' : '#fff',
+        backgroundColor: colors.background,
       }}
     />
   )
