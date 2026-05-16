@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -38,7 +38,7 @@ function isCountLikeAlbumText(value?: string | null): boolean {
 const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
@@ -46,16 +46,14 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { playSongInCollection } = usePlaying();
   const albumStatus = useExternalAlbumStatus(album);
   const previews = useExternalAlbumPreviews(album);
-
   const downloadSheetRef = useSheetRef();
 
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
 
-  const previewSongs = useMemo<Song[]>(() => (
-    songs
-      .filter(s => !!previews[s.id])
-      .map(s => externalSongToTrack(s, previews[s.id]))
-  ), [songs, previews]);
+  const previewSongs = useMemo<Song[]>(
+    () => songs.filter(s => !!previews[s.id]).map(s => externalSongToTrack(s, previews[s.id])),
+    [songs, previews]
+  );
 
   const previewCollection = useMemo<Playlist>(() => ({
     id: `preview-${album.id}`,
@@ -67,22 +65,22 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
     songs: previewSongs,
   }), [album, previewSongs]);
 
-  const handlePlay = () => {
-    if (!previewSongs.length) return;
-    playSongInCollection(previewSongs[0], previewCollection);
-  };
-
-  const handleShuffle = () => {
-    if (!previewSongs.length) return;
-    playSongInCollection(previewSongs[0], previewCollection, true);
-  };
-
   const canDownload = isLidarrConnected || isSlskdConnected;
 
-  const handleDownload = () => {
+  const handlePlay = useCallback(() => {
+    if (!previewSongs.length) return;
+    playSongInCollection(previewSongs[0], previewCollection);
+  }, [previewSongs, previewCollection, playSongInCollection]);
+
+  const handleShuffle = useCallback(() => {
+    if (!previewSongs.length) return;
+    playSongInCollection(previewSongs[0], previewCollection, true);
+  }, [previewSongs, previewCollection, playSongInCollection]);
+
+  const handleDownload = useCallback(() => {
     if (!canDownload || albumStatus.kind !== 'none') return;
     downloadSheetRef.current?.present();
-  };
+  }, [canDownload, albumStatus.kind, downloadSheetRef]);
 
   const metadataItems = useMemo(() => {
     const items: string[] = [];
@@ -91,42 +89,38 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
     return [...new Set(items.map(item => item.trim()).filter(Boolean))];
   }, [album.artist, songs.length, t]);
 
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  const serverStatusBg = isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)';
 
   return (
     <>
       <View style={styles.container}>
-        {/* Header nav */}
-        <View style={[styles.headerRow, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
+        <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#fff' : '#1C1C1E'} />
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
 
           <View pointerEvents="none" style={styles.headerTitleWrapper}>
-            <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
+            <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
               {album.title}
             </Text>
           </View>
 
-          {/* Spacer to balance the back button */}
           <View style={styles.headerButton} />
         </View>
 
-        {/* Cover */}
         <View style={styles.coverWrapper}>
           <MediaImage cover={album.cover} size="detail" style={styles.coverImage} />
         </View>
 
-        {/* Title + metadata */}
         <View style={styles.titleInfo}>
-          <Text style={[styles.title, themeStyles.title]} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
             {album.title}
           </Text>
           <View style={styles.metaRow}>
             {metadataItems.map((item, index) => (
               <React.Fragment key={`${item}-${index}`}>
                 {index > 0 && (
-                  <Text style={[styles.metaDot, themeStyles.subtext]}>•</Text>
+                  <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
                 )}
                 {index === 0 && album.artist ? (
                   <TouchableOpacity
@@ -139,12 +133,12 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
                       })
                     }
                   >
-                    <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                    <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                       {item}
                     </Text>
                   </TouchableOpacity>
                 ) : (
-                  <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                  <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                     {item}
                   </Text>
                 )}
@@ -153,9 +147,8 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           </View>
         </View>
 
-        {/* Server status row */}
         {albumStatus.kind !== 'none' && (
-          <View style={[styles.serverStatusRow, themeStyles.serverStatusRow]}>
+          <View style={[styles.serverStatusRow, { backgroundColor: serverStatusBg }]}>
             {albumStatus.kind === 'in_library' ? (
               <>
                 <Ionicons name="link" size={14} color="#34C759" />
@@ -174,15 +167,14 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           </View>
         )}
 
-        {/* Actions */}
         <View style={styles.actionsRow}>
           <View style={styles.actions}>
             <TouchableOpacity
-              style={[styles.secondaryButton, themeStyles.secondaryButton]}
+              style={[styles.secondaryButton, { backgroundColor: colors.card }]}
               onPress={handleShuffle}
               disabled={!previewSongs.length}
             >
-              <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+              <Ionicons name="shuffle" size={18} color={colors.text} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -194,17 +186,13 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.secondaryButton, themeStyles.secondaryButton]}
+              style={[styles.secondaryButton, { backgroundColor: colors.card }]}
               onPress={handleDownload}
               disabled={!canDownload || albumStatus.kind !== 'none'}
             >
               <CloudDownload
                 size={18}
-                color={
-                  !canDownload || albumStatus.kind !== 'none'
-                    ? (isDarkMode ? '#555' : '#bbb')
-                    : (isDarkMode ? '#fff' : '#000')
-                }
+                color={!canDownload || albumStatus.kind !== 'none' ? colors.placeholder : colors.text}
               />
             </TouchableOpacity>
           </View>
@@ -240,11 +228,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1C1C1E',
     maxWidth: '60%',
-  },
-  headerTitleDark: {
-    color: '#fff',
   },
   headerButton: {
     padding: 6,
@@ -270,7 +254,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 6,
     textAlign: 'center',
   },
@@ -326,18 +310,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-});
-
-const stylesLight = StyleSheet.create({
-  title: { color: '#000' },
-  subtext: { color: '#666' },
-  secondaryButton: { backgroundColor: '#f0f0f0' },
-  serverStatusRow: { backgroundColor: 'rgba(0,0,0,0.05)' },
-});
-
-const stylesDark = StyleSheet.create({
-  title: { color: '#fff' },
-  subtext: { color: '#aaa' },
-  secondaryButton: { backgroundColor: '#1c1c1e' },
-  serverStatusRow: { backgroundColor: 'rgba(255,255,255,0.07)' },
 });

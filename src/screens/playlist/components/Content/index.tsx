@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
@@ -32,9 +32,6 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
     [starredSongs]
   );
 
-  const header = useMemo(() => <Header playlist={playlist} />, [playlist]);
-  const footer = useMemo(() => <RecommendedSection playlist={playlist} />, [playlist]);
-
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
       return Array.from({ length: 8 }, (_, i) => ({ type: 'skeleton' as const, id: `sk-${i}` }));
@@ -43,7 +40,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
     return songs.map(song => ({ type: 'song', song }));
   }, [songs, songsLoading]);
 
-  const renderItem = ({ item }: { item: ListItem }) => {
+  const renderItem = useCallback(({ item }: { item: ListItem }) => {
     if (item.type === 'skeleton') {
       return <LoadingSongRow />;
     }
@@ -56,7 +53,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
         isFavorite={starredSongIds.has(item.song.id)}
       />
     );
-  };
+  }, [starredSongIds, playlist]);
 
   return (
     <FlashList<ListItem>
@@ -64,8 +61,8 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
       keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
       renderItem={renderItem}
       {...({ estimatedItemSize: ESTIMATED_ROW_HEIGHT } as any)}
-      ListHeaderComponent={header}
-      ListFooterComponent={footer}
+      ListHeaderComponent={<Header playlist={playlist} />}
+      ListFooterComponent={<RecommendedSection playlist={playlist} />}
       ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}

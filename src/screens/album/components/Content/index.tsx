@@ -32,7 +32,7 @@ const TILE_GAP = 12;
 const VISIBLE_TILES = 2.5;
 
 const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
@@ -44,10 +44,6 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
     () => new Set(starredSongs.map(song => song.id)),
     [starredSongs]
   );
-
-  const header = useMemo(() => {
-    return <AlbumHeader album={album} />;
-  }, [album]);
 
   const moreAlbums = useMemo(() => {
     return artistAlbums.filter(a => a.id !== album.id);
@@ -63,13 +59,13 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
     return (
       <View>
         <View style={styles.statsFooter}>
-          <Text style={[styles.statsText, isDarkMode ? styles.statsTextDark : styles.statsTextLight]}>
+          <Text style={[styles.statsText, { color: colors.subtext }]}>
             {songs.length} {label} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${albumPlayCount === 1 ? 'play' : 'plays'}` : ''}
           </Text>
         </View>
         {moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
-            <Text style={[styles.moreSectionTitle, isDarkMode && styles.moreSectionTitleDark]}>
+            <Text style={[styles.moreSectionTitle, { color: colors.text }]}>
               More by {album.artist?.name}
             </Text>
             <ScrollView
@@ -93,7 +89,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
         )}
       </View>
     );
-  }, [album.songs, album.artist, albumPlayCount, isDarkMode, moreAlbums, tileWidth, navigation]);
+  }, [album.songs, album.artist, albumPlayCount, colors, moreAlbums, tileWidth, navigation]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -131,7 +127,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
 
     if (item.type === 'disc-header') {
       return (
-        <Text style={[styles.discHeader, isDarkMode ? styles.discHeaderDark : styles.discHeaderLight]}>
+        <Text style={[styles.discHeader, { color: colors.subtext }]}>
           Disc {item.disc}
         </Text>
       );
@@ -145,7 +141,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
         isFavorite={starredSongIds.has(item.song.id)}
       />
     );
-  }, [isDarkMode, starredSongIds, album]);
+  }, [colors, starredSongIds, album]);
 
   return (
     <FlashList
@@ -162,7 +158,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
         (layout as { size?: number }).size =
           item.type === 'disc-header' ? DISC_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT;
       }}
-      ListHeaderComponent={header}
+      ListHeaderComponent={<AlbumHeader album={album} />}
       ListFooterComponent={footer}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
@@ -178,12 +174,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  discHeaderLight: {
-    color: '#6b6b70',
-  },
-  discHeaderDark: {
-    color: '#a7a7ad',
-  },
   statsFooter: {
     paddingHorizontal: H_PADDING,
     paddingTop: 16,
@@ -192,12 +182,6 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 13,
   },
-  statsTextLight: {
-    color: '#8e8e93',
-  },
-  statsTextDark: {
-    color: '#666',
-  },
   moreSection: {
     paddingTop: 24,
     paddingBottom: 8,
@@ -205,12 +189,8 @@ const styles = StyleSheet.create({
   moreSectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000',
     paddingHorizontal: H_PADDING,
     marginBottom: 12,
-  },
-  moreSectionTitleDark: {
-    color: '#fff',
   },
   moreTileRow: {
     paddingHorizontal: H_PADDING,

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -39,7 +39,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const api = useApi();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
 
@@ -57,12 +57,8 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
       .map(track => track.id),
     [allTracks, artist.id]
   );
-  const songCount = useMemo(
-    () => artistTrackIds.length,
-    [artistTrackIds]
-  );
 
-  const fetchArtistSongs = async (): Promise<Song[]> => {
+  const fetchArtistSongs = useCallback(async (): Promise<Song[]> => {
     if (!activeServer?.id || !artistAlbums.length) return [];
 
     const fullAlbums = await fetchAlbumDetailsSettled({
@@ -73,9 +69,9 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     });
 
     return fullAlbums.flatMap(a => a.songs ?? []);
-  };
+  }, [queryClient, activeServer, artistAlbums, api.albums.get]);
 
-  const playArtist = async (shuffle = false) => {
+  const playArtist = useCallback(async (shuffle = false) => {
     if (songsLoading) return;
 
     const songs = await (async () => {
@@ -113,23 +109,24 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
       },
       shuffle
     );
-  };
+  }, [songsLoading, fetchArtistSongs, playSongInCollection, artist, t]);
 
   const metadataItems = useMemo(() => {
     const albumCount = artistAlbums.length;
+    const songCount = artistTrackIds.length;
     const items = [`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`];
     if (songCount > 0) {
       items.push(`${songCount} ${songCount === 1 ? t('common.song') : t('common.songs')}`);
     }
     return items;
-  }, [artistAlbums.length, songCount, t]);
+  }, [artistAlbums.length, artistTrackIds.length, t]);
 
   const {
     isDownloaded: isArtistFullyDownloaded,
     isDownloading: isArtistDownloading,
   } = getCollectionDownloadState(artistTrackIds);
 
-  const handleDownloadAll = async () => {
+  const handleDownloadAll = useCallback(async () => {
     if (isDownloadingAll || isArtistDownloading || isArtistFullyDownloaded || !artistAlbums.length) return;
     setIsDownloadingAll(true);
     try {
@@ -139,7 +136,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     } finally {
       setIsDownloadingAll(false);
     }
-  };
+  }, [isDownloadingAll, isArtistDownloading, isArtistFullyDownloaded, artistAlbums, downloadAlbumById]);
 
   return (
     <>
@@ -201,7 +198,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
           <Text
-            style={[styles.artistName, isDarkMode && styles.artistNameDark]}
+            style={[styles.artistName, { color: colors.text }]}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.65}
@@ -212,10 +209,10 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
             {metadataItems.map((item, index) => (
               <React.Fragment key={`${item}-${index}`}>
                 {index > 0 && (
-                  <Text style={[styles.metaDot, isDarkMode && styles.metaTextDark]}>•</Text>
+                  <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
                 )}
                 <Text
-                  style={[styles.metaText, isDarkMode && styles.metaTextDark]}
+                  style={[styles.metaText, { color: colors.subtext }]}
                   numberOfLines={1}
                 >
                   {item}
@@ -228,19 +225,19 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
       <View style={styles.buttonRow}>
         <TouchableOpacity
-          onPress={() => { void playArtist(true); }}
+          onPress={() => void playArtist(true)}
           disabled={songsLoading}
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+            <ActivityIndicator size="small" color={colors.text} />
           ) : (
-            <Ionicons name="shuffle" size={18} color={isDarkMode ? '#fff' : '#000'} />
+            <Ionicons name="shuffle" size={18} color={colors.text} />
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => { void playArtist(false); }}
+          onPress={() => void playArtist(false)}
           disabled={songsLoading}
           style={[styles.playButton, { backgroundColor: themeColor }]}
         >
@@ -252,17 +249,17 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => { void handleDownloadAll(); }}
+          onPress={() => void handleDownloadAll()}
           disabled={isDownloadingAll || isArtistDownloading}
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {isDownloadingAll || isArtistDownloading ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+            <ActivityIndicator size="small" color={colors.text} />
           ) : (
             <Ionicons
               name={isArtistFullyDownloaded ? 'checkmark' : 'download-outline'}
               size={18}
-              color={isDarkMode ? '#fff' : '#000'}
+              color={colors.text}
             />
           )}
         </TouchableOpacity>
@@ -323,13 +320,9 @@ const styles = StyleSheet.create({
   },
   artistName: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: '700',
     textAlign: 'center',
     width: '100%',
-  },
-  artistNameDark: {
-    color: '#fff',
   },
   metaRow: {
     flexDirection: 'row',
@@ -340,15 +333,10 @@ const styles = StyleSheet.create({
   },
   metaDot: {
     fontSize: 14,
-    color: '#666',
     marginHorizontal: 6,
   },
   metaText: {
     fontSize: 14,
-    color: '#666',
-  },
-  metaTextDark: {
-    color: '#aaa',
   },
   buttonRow: {
     flexDirection: 'row',

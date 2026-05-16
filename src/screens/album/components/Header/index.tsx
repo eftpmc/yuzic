@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { formatDuration } from '@/utils/formatDuration';
 
 type Props = {
   album: Album;
@@ -26,7 +27,7 @@ type Props = {
 
 const AlbumHeader: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation<any>();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useSheetRef();
 
@@ -37,23 +38,10 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
     getCollectionDownloadState(songs.map((song) => song.id));
 
-  const totalDuration = useMemo(() => {
-    return songs.reduce((sum, song) => sum + Number(song.duration), 0);
-  }, [songs]);
-
-  const formatDuration = (duration: number) => {
-    const hours = Math.floor(duration / 3600);
-    const minutes = Math.floor((duration % 3600) / 60);
-    const seconds = duration % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
-        .toString()
-        .padStart(2, '0')}`;
-    }
-
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  const totalDuration = useMemo(
+    () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
+    [songs]
+  );
 
   const metadataItems = useMemo(() => {
     const items: { label: string; type: 'artist' | 'genre' | 'info' }[] = [];
@@ -69,33 +57,24 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
     return items;
   }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
 
-  const handleGenrePress = (genre: string) => {
+  const handleGenrePress = useCallback((genre: string) => {
     (navigation as any).navigate('genreView', { genre });
-  };
+  }, [navigation]);
 
-  const toggleDownload = async () => {
+  const toggleDownload = useCallback(async () => {
     if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
     await downloadAlbumById(album.id, songs);
-  };
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
+  }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, album.id]);
 
   return (
     <View style={styles.container}>
-      {/* Header buttons */}
-      <View style={[styles.headerRow, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.headerButton}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={isDarkMode ? '#fff' : '#1C1C1E'}
-          />
+      <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
+          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
             {album.title}
           </Text>
         </View>
@@ -104,32 +83,18 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           onPress={() => optionsSheetRef.current?.present()}
           style={styles.headerButton}
         >
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={24}
-            color={isDarkMode ? '#fff' : '#1C1C1E'}
-          />
+          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
-      <AlbumOptions
-        ref={optionsSheetRef}
-        album={album}
-        hideGoToAlbum
-      />
+      <AlbumOptions ref={optionsSheetRef} album={album} hideGoToAlbum />
 
-      {/* Album cover */}
       <View style={styles.coverWrapper}>
-        <MediaImage
-          cover={album.cover}
-          size="detail"
-          style={styles.coverImage}
-        />
+        <MediaImage cover={album.cover} size="detail" style={styles.coverImage} />
       </View>
 
-      {/* Title + artist/subtext metadata */}
       <View style={styles.titleInfo}>
-        <Text style={[styles.title, themeStyles.title]} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
           {album.title}
         </Text>
 
@@ -137,30 +102,26 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           {metadataItems.map((item, index) => (
             <React.Fragment key={`${item.label}-${index}`}>
               {index > 0 && (
-                <Text style={[styles.metaDot, themeStyles.subtext]} numberOfLines={1}>
+                <Text style={[styles.metaDot, { color: colors.subtext }]} numberOfLines={1}>
                   •
                 </Text>
               )}
               {item.type === 'artist' && album.artist ? (
                 <TouchableOpacity
-                  onPress={() =>
-                    (navigation as any).navigate('artistView', {
-                      id: album.artist.id,
-                    })
-                  }
+                  onPress={() => (navigation as any).navigate('artistView', { id: album.artist.id })}
                 >
-                  <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                  <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
               ) : item.type === 'genre' ? (
                 <TouchableOpacity onPress={() => handleGenrePress(item.label)}>
-                  <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                  <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
               ) : (
-                <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+                <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                   {item.label}
                 </Text>
               )}
@@ -169,55 +130,34 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
         </View>
       </View>
 
-      {/* Action buttons */}
       <View style={styles.actionsRow}>
         <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.secondaryButton, themeStyles.secondaryButton]}
-            onPress={() => {
-              if (songs.length > 0) {
-                playSongInCollection(songs[0], album, true);
-              }
-            }}
+            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
+            onPress={() => songs.length > 0 && playSongInCollection(songs[0], album, true)}
           >
-            <Ionicons
-              name="shuffle"
-              size={18}
-              color={isDarkMode ? '#fff' : '#000'}
-            />
+            <Ionicons name="shuffle" size={18} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.playButton,
-              { backgroundColor: themeColor },
-            ]}
-            onPress={() => {
-              if (songs.length > 0) {
-                playSongInCollection(songs[0], album);
-              }
-            }}
+            style={[styles.playButton, { backgroundColor: themeColor }]}
+            onPress={() => songs.length > 0 && playSongInCollection(songs[0], album)}
           >
             <Ionicons name="play" size={24} color="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.secondaryButton, themeStyles.secondaryButton]}
-            onPress={() => {
-              void toggleDownload();
-            }}
+            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
+            onPress={() => void toggleDownload()}
             disabled={isAlbumDownloading}
           >
             {isAlbumDownloading ? (
-              <ActivityIndicator
-                size="small"
-                color={isDarkMode ? '#fff' : '#000'}
-              />
+              <ActivityIndicator size="small" color={colors.text} />
             ) : (
               <Ionicons
                 name={isAlbumDownloaded ? 'checkmark' : 'download-outline'}
                 size={18}
-                color={isDarkMode ? '#fff' : '#000'}
+                color={colors.text}
               />
             )}
           </TouchableOpacity>
@@ -226,6 +166,8 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
     </View>
   );
 };
+
+export default AlbumHeader;
 
 const styles = StyleSheet.create({
   container: {
@@ -250,11 +192,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1C1C1E',
     maxWidth: '60%',
-  },
-  headerTitleDark: {
-    color: '#fff',
   },
   headerButton: {
     padding: 6,
@@ -279,7 +217,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 6,
     textAlign: 'center',
   },
@@ -324,29 +262,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-const stylesLight = StyleSheet.create({
-  title: {
-    color: '#000',
-  },
-  subtext: {
-    color: '#666',
-  },
-  secondaryButton: {
-    backgroundColor: '#f0f0f0',
-  },
-});
-
-const stylesDark = StyleSheet.create({
-  title: {
-    color: '#fff',
-  },
-  subtext: {
-    color: '#aaa',
-  },
-  secondaryButton: {
-    backgroundColor: '#1c1c1e',
-  },
-});
-
-export default AlbumHeader;

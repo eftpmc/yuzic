@@ -14,13 +14,13 @@ const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
   const { id } = route.params;
 
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
 
   const { album, isLoading, songsLoading, error } = useAlbum(id);
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+      <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
         <LoadingAlbumContent />
       </SafeAreaView>
     );
@@ -31,7 +31,7 @@ const AlbumScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <AlbumContent album={album} songsLoading={songsLoading} />
     </SafeAreaView>
   );
@@ -42,11 +42,5 @@ export default AlbumScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  screenDark: {
-    backgroundColor: '#000',
-  },
-  screenLight: {
-    backgroundColor: '#fff',
   },
 });

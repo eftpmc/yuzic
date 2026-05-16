@@ -32,6 +32,7 @@ import {
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { CloudDownload } from 'lucide-react-native';
+import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
 const LOCAL_COUNT = 4;
@@ -51,14 +52,6 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
-}
-
-function formatDuration(dur?: string | number): string {
-  const n = Number(dur);
-  if (!n) return '';
-  const m = Math.floor(n / 60);
-  const s = Math.floor(n % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]> {
@@ -133,11 +126,11 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
 type LocalRowProps = {
   song: SongBase;
   playlistId: string;
-  isDarkMode: boolean;
 };
 
-const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId, isDarkMode }) => {
+const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const { playSimilar } = usePlaying();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const addToPlaylist = useAddSongToPlaylist();
@@ -171,18 +164,18 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId, isDarkMode }) => 
     <TouchableOpacity style={styles.row} onPress={() => void handlePress()} activeOpacity={0.7}>
       <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
       <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, isDarkMode && styles.rowTitleDark]} numberOfLines={1}>
+        <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={1}>
           {song.title}
         </Text>
-        <Text style={[styles.rowSub, isDarkMode && styles.rowSubDark]} numberOfLines={1}>
-          {song.artist}{song.duration ? ` · ${formatDuration(song.duration)}` : ''}
+        <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
+          {song.artist}{song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}
         </Text>
       </View>
       <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
         <Ionicons
           name={added ? 'checkmark-circle-outline' : 'add-circle-outline'}
           size={22}
-          color={(adding || added) ? (isDarkMode ? '#444' : '#ccc') : (isDarkMode ? '#aaa' : '#666')}
+          color={(adding || added) ? colors.placeholder : colors.subtext}
         />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -193,17 +186,12 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId, isDarkMode }) => 
 
 type ExternalRowProps = {
   song: ExternalSong;
-  isDarkMode: boolean;
   hasDownloader: boolean;
   onDownload: (song: ExternalSong) => void;
 };
 
-const ExternalRow: React.FC<ExternalRowProps> = ({
-  song,
-  isDarkMode,
-  hasDownloader,
-  onDownload,
-}) => {
+const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownload }) => {
+  const { colors } = useTheme();
   const { toggle } = usePreviewPlayer();
   const hasPreview = !!song.previewUrl;
 
@@ -216,11 +204,11 @@ const ExternalRow: React.FC<ExternalRowProps> = ({
     >
       <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
       <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, isDarkMode && styles.rowTitleDark]} numberOfLines={1}>
+        <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={1}>
           {song.title}
         </Text>
-        <Text style={[styles.rowSub, isDarkMode && styles.rowSubDark]} numberOfLines={1}>
-          {song.artist}{song.duration ? ` · ${formatDuration(song.duration)}` : ''}
+        <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
+          {song.artist}{song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}
         </Text>
       </View>
       <TouchableOpacity
@@ -231,7 +219,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({
       >
         <CloudDownload
           size={22}
-          color={hasDownloader ? (isDarkMode ? '#aaa' : '#666') : (isDarkMode ? '#333' : '#ddd')}
+          color={hasDownloader ? colors.subtext : colors.muted}
         />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -246,7 +234,7 @@ type Props = {
 
 const RecommendedSection: React.FC<Props> = ({ playlist }) => {
   const { t } = useTranslation();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const { tracks } = useTracks();
   const queryClient = useQueryClient();
@@ -274,7 +262,6 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
     return [...names].slice(0, 3);
   }, [playlist.songs]);
 
-  // Local: songs from same artists not already in playlist
   const localSongs = useMemo<SongBase[]>(() => {
     const artistSet = new Set(playlistArtistNames.map(n => n.toLowerCase()));
     const pool = tracks.filter(
@@ -283,7 +270,6 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
     return seededShuffle(pool, localSeed).slice(0, LOCAL_COUNT);
   }, [tracks, playlistSongIds, playlistArtistNames, localSeed]);
 
-  // External: similar artist tracks from Deezer
   const externalQueryKey = useMemo(
     () => [QueryKeys.RecommendedExternalSongs, 'playlist', playlist.id, playlistArtistNames.join(',')],
     [playlist.id, playlistArtistNames]
@@ -332,19 +318,19 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
         {t('playlist.recommended.title')}
       </Text>
 
       {showLocal && localSongs.map(song => (
-        <LocalRow key={song.id} song={song} playlistId={playlist.id} isDarkMode={isDarkMode} />
+        <LocalRow key={song.id} song={song} playlistId={playlist.id} />
       ))}
 
       {showExternal && (
         externalQuery.isLoading ? (
           <ActivityIndicator color={themeColor} style={styles.loader} />
         ) : (externalQuery.data ?? []).length === 0 ? (
-          <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+          <Text style={[styles.emptyText, { color: colors.placeholder }]}>
             {t('playlist.recommended.externalEmpty')}
           </Text>
         ) : (
@@ -352,7 +338,6 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
             <ExternalRow
               key={song.id}
               song={song}
-              isDarkMode={isDarkMode}
               hasDownloader={hasDownloader}
               onDownload={handleDownloadExternalSong}
             />
@@ -361,7 +346,7 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
       )}
 
       <TouchableOpacity
-        style={[styles.refreshBtn, isDarkMode && styles.refreshBtnDark]}
+        style={[styles.refreshBtn, { borderColor: colors.border }]}
         onPress={handleRefresh}
         activeOpacity={0.7}
         disabled={externalQuery.isFetching}
@@ -369,10 +354,10 @@ const RecommendedSection: React.FC<Props> = ({ playlist }) => {
         <Ionicons
           name="refresh"
           size={16}
-          color={isDarkMode ? '#aaa' : '#666'}
+          color={colors.subtext}
           style={{ opacity: externalQuery.isFetching ? 0.3 : 1 }}
         />
-        <Text style={[styles.refreshText, isDarkMode && styles.refreshTextDark, { opacity: externalQuery.isFetching ? 0.3 : 1 }]}>
+        <Text style={[styles.refreshText, { color: colors.subtext, opacity: externalQuery.isFetching ? 0.3 : 1 }]}>
           {t('playlist.recommended.refresh')}
         </Text>
       </TouchableOpacity>
@@ -397,13 +382,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000',
     paddingHorizontal: 16,
     marginBottom: 12,
-  },
-  sectionTitleDark: { color: '#fff' },
-  groupGap: {
-    height: 16,
   },
   row: {
     flexDirection: 'row',
@@ -425,25 +405,19 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     fontWeight: '400',
-    color: '#000',
   },
-  rowTitleDark: { color: '#fff' },
   rowSub: {
     fontSize: 13,
-    color: '#666',
     marginTop: 1,
   },
-  rowSubDark: { color: '#aaa' },
   actionBtn: { padding: 4 },
   loader: { marginVertical: 24 },
   emptyText: {
     fontSize: 13,
-    color: '#999',
     textAlign: 'center',
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
-  emptyTextDark: { color: '#555' },
   refreshBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -453,14 +427,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     borderRadius: 10,
   },
-  refreshBtnDark: { borderColor: '#2a2a2a' },
   refreshText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
   },
-  refreshTextDark: { color: '#aaa' },
 });

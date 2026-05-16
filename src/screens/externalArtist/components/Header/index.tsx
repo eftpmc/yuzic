@@ -28,7 +28,7 @@ function isAlbumCountText(value?: string | null): boolean {
 export default function ExternalArtistHeader({ artist }: Props) {
   const { t } = useTranslation()
   const navigation = useNavigation<any>()
-  const { isDarkMode } = useTheme()
+  const { isDarkMode, colors } = useTheme()
   const [bioExpanded, setBioExpanded] = useState(false)
 
   const bgUri = buildCover(artist.cover, 'background')
@@ -88,7 +88,7 @@ export default function ExternalArtistHeader({ artist }: Props) {
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
           <Text
-            style={[styles.artistName, isDarkMode && styles.artistNameDark]}
+            style={[styles.artistName, { color: colors.text }]}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.65}
@@ -99,9 +99,9 @@ export default function ExternalArtistHeader({ artist }: Props) {
             {metadataItems.map((item, index) => (
               <React.Fragment key={`${item}-${index}`}>
                 {index > 0 && (
-                  <Text style={[styles.metaDot, isDarkMode && styles.metaTextDark]}>•</Text>
+                  <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
                 )}
-                <Text style={[styles.metaText, isDarkMode && styles.metaTextDark]} numberOfLines={1}>
+                <Text style={[styles.metaText, { color: colors.subtext }]} numberOfLines={1}>
                   {item}
                 </Text>
               </React.Fragment>
@@ -110,12 +110,12 @@ export default function ExternalArtistHeader({ artist }: Props) {
           {!!artist.biography && (
             <TouchableOpacity onPress={() => setBioExpanded(e => !e)} activeOpacity={0.7} style={styles.bioContainer}>
               <Text
-                style={[styles.bioText, isDarkMode && styles.bioTextDark]}
+                style={[styles.bioText, { color: colors.subtext }]}
                 numberOfLines={bioExpanded ? undefined : 3}
               >
                 {artist.biography}
               </Text>
-              <Text style={[styles.bioToggle, isDarkMode && styles.bioToggleDark]}>
+              <Text style={[styles.bioToggle, { color: colors.subtext }]}>
                 {bioExpanded ? t('common.less') : t('common.more')}
               </Text>
             </TouchableOpacity>
@@ -176,13 +176,9 @@ const styles = StyleSheet.create({
   },
   artistName: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: '700',
     textAlign: 'center',
     width: '100%',
-  },
-  artistNameDark: {
-    color: '#fff',
   },
   metaRow: {
     flexDirection: 'row',
@@ -193,15 +189,10 @@ const styles = StyleSheet.create({
   },
   metaDot: {
     fontSize: 14,
-    color: '#666',
     marginHorizontal: 6,
   },
   metaText: {
     fontSize: 14,
-    color: '#666',
-  },
-  metaTextDark: {
-    color: '#aaa',
   },
   bioContainer: {
     marginTop: 12,
@@ -210,20 +201,12 @@ const styles = StyleSheet.create({
   bioText: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#555',
     textAlign: 'center',
-  },
-  bioTextDark: {
-    color: '#aaa',
   },
   bioToggle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
     marginTop: 4,
     textAlign: 'center',
-  },
-  bioToggleDark: {
-    color: '#888',
   },
 })

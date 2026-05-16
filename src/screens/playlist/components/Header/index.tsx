@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { formatDuration } from '@/utils/formatDuration';
 
 type Props = {
   playlist: Playlist;
@@ -30,7 +31,7 @@ type Props = {
 const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useSheetRef();
 
@@ -43,23 +44,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
     getCollectionDownloadState(songs.map((song) => song.id));
 
-  const totalDuration = useMemo(() => {
-    return songs.reduce((sum, song) => sum + Number(song.duration), 0);
-  }, [songs]);
+  const totalDuration = useMemo(
+    () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
+    [songs]
+  );
 
-  const formatDuration = (duration: number) => {
-    const hours = Math.floor(duration / 3600);
-    const minutes = Math.floor((duration % 3600) / 60);
-    const seconds = duration % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
-        .toString()
-        .padStart(2, '0')}`;
-    }
-
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
   const metadataItems = useMemo(
     () => [
       `${songs.length} ${songs.length === 1 ? t('common.song') : t('common.songs')}`,
@@ -67,30 +56,37 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
     ],
     [songs.length, totalDuration, t]
   );
-  const themeStyles = isDarkMode ? stylesDark : stylesLight;
 
-  const toggleDownload = async () => {
+  const toggleDownload = useCallback(async () => {
     if (!songs.length || isPlaylistDownloading || isPlaylistDownloaded) return;
     await downloadPlaylistById(playlist.id, songs);
-  };
+  }, [songs, isPlaylistDownloading, isPlaylistDownloaded, downloadPlaylistById, playlist.id]);
+
+  const handleShuffle = useCallback(() => {
+    if (!songs.length) return;
+    playSongInCollection(songs[0], playlist, true);
+    if (activeServer) {
+      dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
+    }
+  }, [songs, playlist, playSongInCollection, activeServer, dispatch]);
+
+  const handlePlay = useCallback(() => {
+    if (!songs.length) return;
+    playSongInCollection(songs[0], playlist);
+    if (activeServer) {
+      dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
+    }
+  }, [songs, playlist, playSongInCollection, activeServer, dispatch]);
 
   return (
     <View style={styles.container}>
-      {/* Header buttons */}
-      <View style={[styles.headerRow, { borderBottomColor: isDarkMode ? '#1C1C1E' : '#D1D1D6' }]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.headerButton}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={isDarkMode ? '#fff' : '#1C1C1E'}
-          />
+      <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
+          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
             {playlist.title}
           </Text>
         </View>
@@ -99,32 +95,18 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           onPress={() => optionsSheetRef.current?.present()}
           style={styles.headerButton}
         >
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={24}
-            color={isDarkMode ? '#fff' : '#1C1C1E'}
-          />
+          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
-      <PlaylistOptions
-        ref={optionsSheetRef}
-        playlist={playlist}
-        hideGoToPlaylist
-      />
+      <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist />
 
-      {/* Playlist cover */}
       <View style={styles.coverWrapper}>
-        <MediaImage
-          cover={playlist.cover}
-          size="detail"
-          style={styles.coverImage}
-        />
+        <MediaImage cover={playlist.cover} size="detail" style={styles.coverImage} />
       </View>
 
-      {/* Title + actions */}
       <View style={styles.titleInfo}>
-        <Text style={[styles.title, themeStyles.title]} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
           {playlist.title}
         </Text>
 
@@ -132,11 +114,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           {metadataItems.map((item, index) => (
             <React.Fragment key={`${item}-${index}`}>
               {index > 0 && (
-                <Text style={[styles.metaDot, themeStyles.subtext]} numberOfLines={1}>
+                <Text style={[styles.metaDot, { color: colors.subtext }]} numberOfLines={1}>
                   •
                 </Text>
               )}
-              <Text style={[styles.subtext, themeStyles.subtext]} numberOfLines={1}>
+              <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                 {item}
               </Text>
             </React.Fragment>
@@ -144,55 +126,34 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
         </View>
       </View>
 
-      {/* Action buttons */}
       <View style={styles.actionsRow}>
         <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.secondaryButton, themeStyles.secondaryButton]}
-            onPress={() => {
-              if (songs.length > 0) {
-                playSongInCollection(songs[0], playlist, true);
-                if (activeServer) {
-                  dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
-                }
-              }
-            }}
+            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
+            onPress={handleShuffle}
           >
-            <Ionicons
-              name="shuffle"
-              size={18}
-              color={isDarkMode ? '#fff' : '#000'}
-            />
+            <Ionicons name="shuffle" size={18} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.playButton, { backgroundColor: themeColor }]}
-            onPress={() => {
-              if (songs.length > 0) {
-                playSongInCollection(songs[0], playlist);
-                if (activeServer) {
-                  dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
-                }
-              }
-            }}
+            onPress={handlePlay}
           >
             <Ionicons name="play" size={24} color="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.secondaryButton, themeStyles.secondaryButton]}
-            onPress={() => {
-              void toggleDownload();
-            }}
+            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
+            onPress={() => void toggleDownload()}
             disabled={isPlaylistDownloading}
           >
             {isPlaylistDownloading ? (
-              <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+              <ActivityIndicator size="small" color={colors.text} />
             ) : (
               <Ionicons
                 name={isPlaylistDownloaded ? 'checkmark' : 'download-outline'}
                 size={18}
-                color={isDarkMode ? '#fff' : '#000'}
+                color={colors.text}
               />
             )}
           </TouchableOpacity>
@@ -202,12 +163,13 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   );
 };
 
+export default PlaylistHeader;
+
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
     alignItems: 'center',
   },
-
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -226,16 +188,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1C1C1E',
     maxWidth: '60%',
-  },
-  headerTitleDark: {
-    color: '#fff',
   },
   headerButton: {
     padding: 6,
   },
-
   coverWrapper: {
     width: 260,
     height: 260,
@@ -249,7 +206,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 14,
   },
-
   titleInfo: {
     width: '100%',
     marginBottom: 10,
@@ -257,7 +213,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 6,
     textAlign: 'center',
   },
@@ -302,29 +258,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-const stylesLight = StyleSheet.create({
-  title: {
-    color: '#000',
-  },
-  subtext: {
-    color: '#666',
-  },
-  secondaryButton: {
-    backgroundColor: '#f0f0f0',
-  },
-});
-
-const stylesDark = StyleSheet.create({
-  title: {
-    color: '#fff',
-  },
-  subtext: {
-    color: '#aaa',
-  },
-  secondaryButton: {
-    backgroundColor: '#1c1c1e',
-  },
-});
-
-export default PlaylistHeader;

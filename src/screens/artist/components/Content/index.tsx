@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -34,14 +34,14 @@ function isSingleOrEp(album: AlbumBase, songCount: number): boolean {
 function SimilarArtistsSection({ artist }: { artist: Artist }) {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
-  const { isDarkMode } = useTheme()
+  const { colors } = useTheme()
   const { data = [] } = useSimilarArtists({
     mbid: artist.mbid,
     name: artist.name,
     excludeName: artist.name,
     limit: 8,
   })
-  const screenWidth = Dimensions.get('window').width
+  const { width: screenWidth } = useWindowDimensions()
   const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
 
   const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
@@ -64,7 +64,7 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
 
   return (
     <View style={styles.similarSection}>
-      <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
         {t('artist.sections.similarArtists')}
       </Text>
       <FlashList
@@ -82,7 +82,7 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
 
 export default function ArtistContent({ artist }: Props) {
   const navigation = useNavigation<any>()
-  const { isDarkMode } = useTheme()
+  const { colors } = useTheme()
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
@@ -134,59 +134,59 @@ export default function ArtistContent({ artist }: Props) {
     return rows
   }, [artistAlbums, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
 
+  const renderItem = useCallback(({ item }: { item: ArtistContentItem }) => {
+    if (item.kind === 'section') {
+      return (
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {item.title}
+          </Text>
+        </View>
+      )
+    }
+
+    if (item.kind === 'similar') {
+      return <SimilarArtistsSection artist={artist} />
+    }
+
+    if (item.kind === 'showMore') {
+      return (
+        <TouchableOpacity
+          style={styles.showMoreRow}
+          onPress={() => {
+            if (item.target === 'albums') setVisibleAlbumsCount(c => c + 5)
+            else setVisibleSinglesCount(c => c + 5)
+          }}
+          activeOpacity={0.65}
+        >
+          <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
+            <Ionicons name="ellipsis-horizontal" size={18} color={colors.text} />
+          </View>
+          <Text style={[styles.showMoreText, { color: colors.text }]}>
+            {item.remaining} more
+          </Text>
+        </TouchableOpacity>
+      )
+    }
+
+    return (
+      <AlbumRow
+        album={item.album}
+        onPress={(album) => navigation.navigate('albumView', { id: album.id })}
+      />
+    )
+  }, [colors, artist, navigation, setVisibleAlbumsCount, setVisibleSinglesCount])
+
   return (
     <FlashList
       data={items}
       keyExtractor={(item) => item.id}
       ListHeaderComponent={<Header artist={artist} />}
-      renderItem={({ item }) => {
-        if (item.kind === 'section') {
-          return (
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                {item.title}
-              </Text>
-            </View>
-          )
-        }
-
-        if (item.kind === 'similar') {
-          return <SimilarArtistsSection artist={artist} />
-        }
-
-        if (item.kind === 'showMore') {
-          return (
-            <TouchableOpacity
-              style={styles.showMoreRow}
-              onPress={() => {
-                if (item.target === 'albums') setVisibleAlbumsCount(c => c + 5)
-                else setVisibleSinglesCount(c => c + 5)
-              }}
-              activeOpacity={0.65}
-            >
-              <View style={[styles.showMoreIcon, isDarkMode && styles.showMoreIconDark]}>
-                <Ionicons name="ellipsis-horizontal" size={18} color={isDarkMode ? '#fff' : '#111'} />
-              </View>
-              <Text style={[styles.showMoreText, isDarkMode && styles.showMoreTextDark]}>
-                {item.remaining} more
-              </Text>
-            </TouchableOpacity>
-          )
-        }
-
-        return (
-          <AlbumRow
-            album={item.album}
-            onPress={(album) =>
-              navigation.navigate('albumView', { id: album.id })
-            }
-          />
-        )
-      }}
+      renderItem={renderItem}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: Platform.OS === 'android' ? 180 : 140,
-        backgroundColor: isDarkMode ? '#000' : '#fff',
+        backgroundColor: colors.background,
       }}
     />
   )
@@ -198,13 +198,9 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   sectionTitle: {
-    color: '#111',
     fontSize: 18,
     fontWeight: '700',
     paddingHorizontal: 16,
-  },
-  sectionTitleDark: {
-    color: '#fff',
   },
   similarSection: {
     paddingTop: 20,
@@ -231,17 +227,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  showMoreIconDark: {
-    backgroundColor: '#242426',
   },
   showMoreText: {
-    color: '#111',
     fontSize: 15,
     fontWeight: '600',
-  },
-  showMoreTextDark: {
-    color: '#fff',
   },
 })

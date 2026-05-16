@@ -14,12 +14,12 @@ const ArtistScreen: React.FC = () => {
   const route = useRoute<any>();
   const { id } = route.params;
 
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { artist, isLoading } = useArtist(id);
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+      <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
         <LoadingArtistContent />
       </SafeAreaView>
     );
@@ -30,7 +30,7 @@ const ArtistScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <ArtistContent artist={artist} />
     </SafeAreaView>
   );
@@ -41,11 +41,5 @@ export default ArtistScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  screenDark: {
-    backgroundColor: '#000',
-  },
-  screenLight: {
-    backgroundColor: '#fff',
   },
 });

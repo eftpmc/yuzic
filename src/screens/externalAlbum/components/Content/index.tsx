@@ -24,7 +24,7 @@ type Props = {
 
 const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
   const navigation = useNavigation<any>();
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const { width: screenWidth } = useWindowDimensions();
   const tileWidth = useMemo(
@@ -76,8 +76,6 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
     toggleInAlbum(song, url, albumPreviewSongs, album.id, album.title);
   }, [previews, albumPreviewSongs, toggleInAlbum, album.id, album.title]);
 
-  const header = useMemo(() => <ExternalAlbumHeader album={album} />, [album]);
-
   const footer = useMemo(() => {
     const totalSec = songs.reduce((acc, s) => acc + (Number(s.duration) || 0), 0);
     const hrs = Math.floor(totalSec / 3600);
@@ -87,13 +85,13 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
     return (
       <View>
         <View style={styles.statsFooter}>
-          <Text style={[styles.statsText, isDarkMode ? styles.statsTextDark : styles.statsTextLight]}>
+          <Text style={[styles.statsText, { color: colors.subtext }]}>
             {songs.length} {label} · {duration}
           </Text>
         </View>
         {moreAlbums && moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
-            <Text style={[styles.moreSectionTitle, isDarkMode && styles.moreSectionTitleDark]}>
+            <Text style={[styles.moreSectionTitle, { color: colors.text }]}>
               More by {album.artist}
             </Text>
             <ScrollView
@@ -120,7 +118,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
         )}
       </View>
     );
-  }, [songs, moreAlbums, album.artist, isDarkMode, tileWidth, navigation]);
+  }, [songs, moreAlbums, album.artist, colors, tileWidth, navigation]);
 
   const renderItem = useCallback(({ item }: { item: ExternalSong }) => {
     const previewUrl = previews[item.id];
@@ -142,7 +140,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
       extraData={handleSongPress}
-      ListHeaderComponent={header}
+      ListHeaderComponent={<ExternalAlbumHeader album={album} />}
       ListFooterComponent={footer}
       estimatedItemSize={60}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
@@ -160,12 +158,6 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 13,
   },
-  statsTextLight: {
-    color: '#8e8e93',
-  },
-  statsTextDark: {
-    color: '#666',
-  },
   moreSection: {
     paddingTop: 24,
     paddingBottom: 8,
@@ -173,12 +165,8 @@ const styles = StyleSheet.create({
   moreSectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000',
     paddingHorizontal: H_PADDING,
     marginBottom: 12,
-  },
-  moreSectionTitleDark: {
-    color: '#fff',
   },
   moreTileRow: {
     paddingHorizontal: H_PADDING,

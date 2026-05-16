@@ -18,7 +18,7 @@ type RouteParams = {
 export default function ExternalArtistScreen() {
   const route = useRoute<any>()
   const { source, artistId, mbid, name } = (route.params ?? {}) as RouteParams
-  const { isDarkMode } = useTheme()
+  const { colors } = useTheme()
 
   const { data: artist, isLoading, error } = useExternalArtist(
     artistId || mbid || name ? { source, artistId, mbid, name: name ?? null } : null
@@ -30,7 +30,7 @@ export default function ExternalArtistScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+      <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
         <LoadingExternalArtistContent />
       </SafeAreaView>
     )
@@ -45,7 +45,7 @@ export default function ExternalArtistScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, isDarkMode && styles.screenDark]}>
+    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <ExternalArtistContent artist={artist} />
     </SafeAreaView>
   )
@@ -54,11 +54,5 @@ export default function ExternalArtistScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  screenDark: {
-    backgroundColor: '#000',
-  },
-  screenLight: {
-    backgroundColor: '#fff',
   },
 })

@@ -20,7 +20,7 @@ const ExternalAlbumScreen: React.FC = () => {
   const route = useRoute<any>();
   const { albumId, source, artist, title } = route.params as RouteParams;
 
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
 
   const {
     album: externalAlbum,
@@ -30,10 +30,7 @@ const ExternalAlbumScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        edges={['top']}
-        style={[styles.screen, isDarkMode && styles.screenDark]}
-      >
+      <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
         <LoadingExternalAlbumContent />
       </SafeAreaView>
     );
@@ -48,10 +45,7 @@ const ExternalAlbumScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      style={[styles.screen, isDarkMode && styles.screenDark]}
-    >
+    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <ExternalAlbumContent album={externalAlbum} />
     </SafeAreaView>
   );
@@ -62,11 +56,5 @@ export default ExternalAlbumScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  screenDark: {
-    backgroundColor: '#000',
-  },
-  screenLight: {
-    backgroundColor: '#fff',
   },
 });
