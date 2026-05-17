@@ -1,6 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+  ext {
+    // Exposed so that Expo library modules can read rootProject.ext.kotlinVersion
+    // instead of falling back to their own outdated default (e.g. "1.6.10").
+    kotlinVersion = rootProject.properties['android.kotlinVersion'] ?: '2.0.21'
+  }
+
   repositories {
     google()
     mavenCentral()
@@ -8,7 +14,7 @@ buildscript {
   dependencies {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
-    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
   }
 }
 
