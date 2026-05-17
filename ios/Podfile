@@ -64,7 +64,7 @@ target 'Yuzic' do
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
 
-    # fmt 11.0.2 trips Apple clang's C++20 consteval path in Xcode 26.4.
+    # fmt 11.0.2 trips Apple clang's C++20 consteval path in Xcode 26.x.
     # Compile only fmt as C++17; React Native pods remain on their normal C++20 setting.
     installer.pods_project.targets.each do |target|
       next unless target.name == 'fmt'
