@@ -74,16 +74,38 @@ target 'Yuzic' do
       end
     end
 
-    # expo-modules-core uses Swift 6 syntax throughout. Keeping SWIFT_VERSION=6 preserves
-    # that syntax as valid; setting SWIFT_STRICT_CONCURRENCY=minimal suppresses the strict
-    # concurrency errors the Xcode 16.x compiler raises against it.
+    # expo-modules-core sets swift_version='6.0' but its source uses @MainActor in protocol
+    # conformance position (e.g. "class Foo: @MainActor Protocol"), which is Swift-6-only
+    # syntax. Compiling in Swift 5 mode with minimal strict concurrency lets us fix just
+    # those three parse errors below without needing a patch file.
     installer.pods_project.targets.each do |target|
       next unless target.name == 'ExpoModulesCore'
 
       target.build_configurations.each do |build_configuration|
-        build_configuration.build_settings['SWIFT_VERSION'] = '6'
+        build_configuration.build_settings['SWIFT_VERSION'] = '5'
         build_configuration.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
       end
+    end
+
+    # Remove @MainActor from protocol conformance positions — syntax only valid in Swift 6.
+    # Done here so it self-heals after npm ci without needing a patch file.
+    expo_ios = File.join(__dir__, '..', 'node_modules', 'expo-modules-core', 'ios')
+    [
+      ['Core/Views/ViewDefinition.swift',
+       'extension UIView: @MainActor AnyArgument',
+       'extension UIView: AnyArgument'],
+      ['Core/Views/SwiftUI/SwiftUIVirtualView.swift',
+       'extension ExpoSwiftUI.SwiftUIVirtualView: @MainActor ExpoSwiftUI.ViewWrapper',
+       'extension ExpoSwiftUI.SwiftUIVirtualView: ExpoSwiftUI.ViewWrapper'],
+      ['Core/Views/SwiftUI/SwiftUIHostingView.swift',
+       'ExpoView, @MainActor AnyExpoSwiftUIHostingView',
+       'ExpoView, AnyExpoSwiftUIHostingView'],
+    ].each do |rel, from, to|
+      path = File.join(expo_ios, rel)
+      next unless File.exist?(path)
+      src = File.read(path)
+      next unless src.include?(from)
+      File.write(path, src.gsub(from, to))
     end
   end
 end
