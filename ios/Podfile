@@ -74,17 +74,14 @@ target 'Yuzic' do
       end
     end
 
-    # expo-modules-core sets swift_version='6.0' in its podspec, but Xcode 16.4's Swift 6.1
-    # compiler enforces strict concurrency that expo-modules-core violates.
-    # Compile in Swift 5 mode with minimal concurrency checking to suppress these errors.
-    # Note: SE-0420 @MainActor conformance clause syntax (e.g. "class Foo: @MainActor Protocol")
-    # is Swift-6-only; the patches in patches/expo-modules-core+*.patch replace those with
-    # @MainActor on the protocol declarations, which is valid in both Swift 5 and Swift 6.
+    # expo-modules-core uses Swift 6 syntax throughout. Keeping SWIFT_VERSION=6 preserves
+    # that syntax as valid; setting SWIFT_STRICT_CONCURRENCY=minimal suppresses the strict
+    # concurrency errors the Xcode 16.x compiler raises against it.
     installer.pods_project.targets.each do |target|
       next unless target.name == 'ExpoModulesCore'
 
       target.build_configurations.each do |build_configuration|
-        build_configuration.build_settings['SWIFT_VERSION'] = '5'
+        build_configuration.build_settings['SWIFT_VERSION'] = '6'
         build_configuration.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
       end
     end

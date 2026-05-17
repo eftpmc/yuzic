@@ -23,16 +23,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Homebrew Ruby
-        run: echo "/opt/homebrew/opt/ruby/bin" >> $GITHUB_PATH
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
 
       - name: Install Node dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Install Ruby dependencies
-        run: |
-          gem install bundler
-          bundle install
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: pods-
 
       - name: Install CocoaPods
         run: |
