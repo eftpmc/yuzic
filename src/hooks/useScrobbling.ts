@@ -91,7 +91,7 @@ export function useScrobbling() {
           }
         }
       }
-    } else {
+    } else if (serverScrobbleEnabled) {
       try {
         await api.songs.scrobble(song.id, opts.startTime);
       } catch {

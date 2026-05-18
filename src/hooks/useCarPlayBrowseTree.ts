@@ -125,6 +125,35 @@ export function useCarPlayBrowseTree() {
   }, [activeServer, tracks]);
 
   useEffect(() => {
+    if (!activeServer?.id || !albums.length) return;
+
+    const serverId = activeServer.id;
+    const missingAlbums = albums
+      .slice(0, CARPLAY_ALBUM_LIMIT)
+      .filter(album => {
+        const hasCached = !!queryClient.getQueryData<Album>([QueryKeys.Album, serverId, album.id]);
+        const hasLibraryTracks = !!tracksByAlbumId.get(album.id)?.length;
+        return !hasCached && !hasLibraryTracks;
+      })
+      .slice(0, 20);
+
+    if (!missingAlbums.length) return;
+
+    let cancelled = false;
+    Promise.allSettled(
+      missingAlbums.map(album =>
+        queryClient.fetchQuery({
+          queryKey: [QueryKeys.Album, serverId, album.id],
+          queryFn: () => apiRef.current.albums.get(album.id),
+          staleTime: staleTime.albums,
+        })
+      )
+    ).then(() => { if (!cancelled) { /* browse tree effect re-runs via queryClient cache */ } });
+
+    return () => { cancelled = true; };
+  }, [activeServer?.id, albums, queryClient, tracksByAlbumId]);
+
+  useEffect(() => {
     if (!activeServer?.id || !playlists.length) {
       setHydratedPlaylists(current => current.length ? [] : current);
       return;

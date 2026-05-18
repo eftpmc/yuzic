@@ -64,7 +64,7 @@ export default function OfflineMutationReplayer() {
 
     (async () => {
       let syncedCount = 0;
-      let failed = false;
+      let failedCount = 0;
 
       for (const mutation of pending) {
         try {
@@ -82,8 +82,7 @@ export default function OfflineMutationReplayer() {
             failedAt,
             nextRetryAt: failedAt + delay,
           }));
-          failed = true;
-          break;
+          failedCount += 1;
         }
       }
 
@@ -99,7 +98,7 @@ export default function OfflineMutationReplayer() {
         });
       }
 
-      if (failed) {
+      if (failedCount > 0) {
         toast.error(i18n.t('common.offline.syncQueuedChangesFailed'), {
           id: FAILED_TOAST_ID,
         });

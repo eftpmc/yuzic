@@ -35,6 +35,7 @@ const ServerSettings: React.FC = () => {
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
   const isNavidrome = activeServer?.type === 'navidrome';
+  const supportsServerScrobble = activeServer?.type === 'navidrome' || activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
@@ -92,7 +93,7 @@ const ServerSettings: React.FC = () => {
         onSelect={key => dispatch(setSearchScope(key as SearchScope))}
       />
 
-      {isNavidrome && (
+      {supportsServerScrobble && (
         <View style={styles.scrobbleSection}>
           <SettingsToggleGroup
             items={[
