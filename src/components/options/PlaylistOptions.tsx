@@ -182,7 +182,7 @@ const PlaylistOptions = forwardRef<
           <MediaImage cover={playlist.cover} size="grid" style={styles.cover} />
           <View style={styles.headerText}>
             <Text
-              style={[styles.title, { color: colors.text }]}
+              style={[styles.title, { color: colors.secondary }]}
               numberOfLines={2}
             >
               {playlist.title}
@@ -201,39 +201,39 @@ const PlaylistOptions = forwardRef<
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
-            <Ionicons name="play" size={26} color={colors.text} />
+            <Ionicons name="play" size={26} color={colors.secondary} />
           )}
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.play')}</Text>
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.play')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.shuffle')}</Text>
+          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={handleAddToQueue}
           disabled={playbackDisabled}
         >
-          <ListEnd size={26} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.addToQueue')}</Text>
+          <ListEnd size={26} color={colors.secondary} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.addToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.shuffleToQueue')}</Text>
+          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
 
         {!hideGoToPlaylist && (
           <TouchableOpacity style={styles.option} onPress={handleGoToPlaylist}>
-            <Ionicons name="list" size={26} color={colors.text} />
-            <Text style={[styles.optionText, { color: colors.text }]}>{t('playlistOptions.actions.goToPlaylist')}</Text>
+            <Ionicons name="list" size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.goToPlaylist')}</Text>
           </TouchableOpacity>
         )}
 
@@ -248,13 +248,13 @@ const PlaylistOptions = forwardRef<
             <Ionicons
               name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
               size={26}
-              color={isDownloaded || isDownloading ? colors.subtext : colors.text}
+              color={isDownloaded || isDownloading ? colors.subtext : colors.secondary}
             />
           )}
           <Text
             style={[
               styles.optionText,
-              { color: colors.text },
+              { color: colors.secondary },
               (isDownloaded || isDownloading) && { opacity: 0.6 },
             ]}
           >
@@ -290,19 +290,19 @@ const PlaylistOptions = forwardRef<
         <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('playlistOptions.sections.info')}</Text>
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('playlistOptions.info.lastChanged')}</Text>
-          <Text style={[styles.infoValue, { color: colors.text }]}>
+          <Text style={[styles.infoValue, { color: colors.secondary }]}>
             {formatDate(playlist.changed)}
           </Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('playlistOptions.info.created')}</Text>
-          <Text style={[styles.infoValue, { color: colors.text }]}>
+          <Text style={[styles.infoValue, { color: colors.secondary }]}>
             {formatDate(playlist.created)}
           </Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('playlistOptions.info.songs')}</Text>
-          <Text style={[styles.infoValue, { color: colors.text }]}>{songs.length}</Text>
+          <Text style={[styles.infoValue, { color: colors.secondary }]}>{songs.length}</Text>
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '600' },
+  title: { fontSize: 16, fontWeight: '500' },
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -353,13 +353,11 @@ const styles = StyleSheet.create({
   optionDisabled: {
     opacity: 0.55,
   },
-  optionText: { marginLeft: 16, fontSize: 16 },
+  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500' },
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   infoRow: {
     flexDirection: 'row',

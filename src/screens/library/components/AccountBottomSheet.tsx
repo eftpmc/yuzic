@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
+import { Settings, RefreshCw, LogOut } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
@@ -21,7 +21,7 @@ type Props = {
 
 const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, ref) => {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const router = useRouter();
   const dispatch = useDispatch();
   const api = useApi();
@@ -31,12 +31,14 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
   const activeServer = useSelector(selectActiveServer);
   const username = activeServer?.username;
   const serverUrl = activeServer?.serverUrl;
+  const type = activeServer?.type;
   const themeColor = useSelector(selectThemeColor);
 
   const queryClient = useQueryClient();
   const { pauseSong, resetQueue } = usePlaying();
 
   const initial = username?.[0]?.toUpperCase() ?? '?';
+  const cleanUrl = serverUrl?.replace(/^https?:\/\//, '');
   const close = () => (ref as any)?.current?.dismiss();
 
   const handleSettings = () => {
@@ -68,6 +70,8 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
     }
   };
 
+  const destructiveColor = isDarkMode ? '#FF453A' : '#FF3B30';
+
   return (
     <BottomSheetModal
       ref={ref}
@@ -80,33 +84,42 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
       handleIndicatorStyle={{ backgroundColor: colors.border }}
     >
       <BottomSheetView style={styles.container}>
+        {/* Profile */}
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: themeColor }]}>
             <Text style={styles.avatarText}>{initial}</Text>
           </View>
-          <View>
-            <Text style={[styles.username, { color: colors.text }]}>{username}</Text>
-            <Text style={[styles.subtext, { color: colors.subtext }]}>
-              {serverUrl?.replace(/^https?:\/\//, '')}
-            </Text>
+          <View style={styles.headerInfo}>
+            <Text style={[styles.username, { color: colors.secondary }]}>{username}</Text>
+            <View style={styles.serverMeta}>
+              {type && (
+                <View style={[styles.typeBadge, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.typeBadgeText, { color: colors.subtext }]}>{type}</Text>
+                </View>
+              )}
+              <Text style={[styles.serverUrl, { color: colors.subtext }]} numberOfLines={1}>
+                {cleanUrl}
+              </Text>
+            </View>
           </View>
         </View>
 
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <TouchableOpacity style={styles.row} onPress={handleSettings}>
-          <Ionicons name="settings-outline" size={18} color={themeColor} />
-          <Text style={[styles.rowText, { color: colors.text }]}>{t('home.account.settings')}</Text>
+        {/* Actions */}
+        <TouchableOpacity style={styles.row} onPress={handleSettings} activeOpacity={0.7}>
+          <Settings size={18} color={colors.subtext} />
+          <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.settings')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row} onPress={handleScan}>
-          <Ionicons name="sync-outline" size={18} color={themeColor} />
-          <Text style={[styles.rowText, { color: colors.text }]}>{t('home.account.triggerScan')}</Text>
+        <TouchableOpacity style={styles.row} onPress={handleScan} activeOpacity={0.7}>
+          <RefreshCw size={18} color={colors.subtext} />
+          <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.triggerScan')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row} onPress={handleSignOut}>
-          <Ionicons name="log-out-outline" size={18} color={themeColor} />
-          <Text style={[styles.rowText, { color: colors.text }]}>{t('home.account.signOut')}</Text>
+        <TouchableOpacity style={styles.row} onPress={handleSignOut} activeOpacity={0.7}>
+          <LogOut size={18} color={destructiveColor} />
+          <Text style={[styles.rowText, { color: destructiveColor }]}>{t('home.account.signOut')}</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>
@@ -121,18 +134,18 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    gap: 10,
+    paddingBottom: 8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -141,22 +154,46 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 18,
   },
+  headerInfo: {
+    flex: 1,
+  },
   username: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 4,
   },
-  subtext: { fontSize: 13 },
+  serverMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  typeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  typeBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  serverUrl: {
+    fontSize: 12,
+    flex: 1,
+  },
   divider: {
-    height: 1,
-    marginVertical: 6,
+    height: StyleSheet.hairlineWidth,
+    marginBottom: 8,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    gap: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 4,
   },
-  rowText: { fontSize: 15 },
+  rowText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
 });

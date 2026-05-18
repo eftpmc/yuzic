@@ -70,7 +70,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         <Ionicons
           name="ellipsis-horizontal"
           size={18}
-          color={colors.text}
+          color={colors.secondary}
         />
       </TouchableOpacity>
 
@@ -91,7 +91,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
           <View style={styles.header}>
             <MediaImage cover={song.cover} size="grid" style={styles.cover} />
             <View style={styles.headerText}>
-              <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+              <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
                 {song.title}
               </Text>
               <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
@@ -110,8 +110,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
                 onPlay();
               }}
             >
-              <Ionicons name="play" size={26} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>
+              <Ionicons name="play" size={26} color={colors.secondary} />
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('songOptions.actions.play')}
               </Text>
             </TouchableOpacity>
@@ -122,8 +122,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
               style={styles.option}
               onPress={() => downloadSheetRef.current?.present()}
             >
-              <CloudDownload size={26} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>
+              <CloudDownload size={26} color={colors.secondary} />
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
               <Ionicons name="chevron-forward" size={16} color={colors.placeholder} style={styles.chevron} />
@@ -135,7 +135,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
           <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('songOptions.sections.media')}</Text>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.duration')}</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
+            <Text style={[styles.infoValue, { color: colors.secondary }]}>
               {formatSongDuration(song.duration)}
             </Text>
           </View>
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '600' },
+  title: { fontSize: 16, fontWeight: '500' },
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -180,14 +180,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
   },
-  optionText: { marginLeft: 16, fontSize: 16, flex: 1 },
+  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500', flex: 1 },
   chevron: { marginLeft: 4 },
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   infoRow: {
     flexDirection: 'row',

@@ -215,7 +215,7 @@ const ArtistOptions = forwardRef<
           <MediaImage cover={artist.cover} size="grid" style={styles.cover} />
           <View style={styles.headerText}>
             <Text
-              style={[styles.title, { color: colors.text }]}
+              style={[styles.title, { color: colors.secondary }]}
               numberOfLines={2}
             >
               {artist.name}
@@ -234,33 +234,33 @@ const ArtistOptions = forwardRef<
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
-            <Ionicons name="play" size={26} color={colors.text} />
+            <Ionicons name="play" size={26} color={colors.secondary} />
           )}
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('artistOptions.actions.play')}</Text>
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.play')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('artistOptions.actions.shuffle')}</Text>
+          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={handleAddToQueue}
           disabled={playbackDisabled}
         >
-          <ListEnd size={26} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('artistOptions.actions.addToQueue')}</Text>
+          <ListEnd size={26} color={colors.secondary} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.addToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>{t('artistOptions.actions.shuffleToQueue')}</Text>
+          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.option}
@@ -273,13 +273,13 @@ const ArtistOptions = forwardRef<
             <Ionicons
               name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
               size={26}
-              color={isDownloaded || isDownloading ? colors.subtext : colors.text}
+              color={isDownloaded || isDownloading ? colors.subtext : colors.secondary}
             />
           )}
           <Text
             style={[
               styles.optionText,
-              { color: colors.text },
+              { color: colors.secondary },
               (isDownloaded || isDownloading) && { opacity: 0.6 },
             ]}
           >
@@ -293,8 +293,8 @@ const ArtistOptions = forwardRef<
 
         {!hideGoToArtist && (
           <TouchableOpacity style={styles.option} onPress={handleGoToArtist}>
-            <Ionicons name="person" size={26} color={colors.text} />
-            <Text style={[styles.optionText, { color: colors.text }]}>{t('artistOptions.actions.goToArtist')}</Text>
+            <Ionicons name="person" size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToArtist')}</Text>
           </TouchableOpacity>
         )}
 
@@ -307,9 +307,9 @@ const ArtistOptions = forwardRef<
             {isResolvingExternal ? (
               <ActivityIndicator size="small" color={colors.subtext} />
             ) : (
-              <Ionicons name="person-outline" size={26} color={colors.text} />
+              <Ionicons name="person-outline" size={26} color={colors.secondary} />
             )}
-            <Text style={[styles.optionText, { color: colors.text }]}>{t('artistOptions.actions.goToExternalArtist')}</Text>
+            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToExternalArtist')}</Text>
           </TouchableOpacity>
         )}
 
@@ -318,13 +318,13 @@ const ArtistOptions = forwardRef<
         <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('artistOptions.sections.info')}</Text>
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('artistOptions.info.albums')}</Text>
-          <Text style={[styles.infoValue, { color: colors.text }]}>
+          <Text style={[styles.infoValue, { color: colors.secondary }]}>
             {artistAlbums.length}
           </Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('artistOptions.info.plays')}</Text>
-          <Text style={[styles.infoValue, { color: colors.text }]}>{playCount}</Text>
+          <Text style={[styles.infoValue, { color: colors.secondary }]}>{playCount}</Text>
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '600' },
+  title: { fontSize: 16, fontWeight: '500' },
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -386,13 +386,11 @@ const styles = StyleSheet.create({
   optionDisabled: {
     opacity: 0.55,
   },
-  optionText: { marginLeft: 16, fontSize: 16 },
+  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500' },
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   infoRow: {
     flexDirection: 'row',

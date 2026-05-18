@@ -191,7 +191,7 @@ const SongOptions = forwardRef<
             />
             <View style={styles.headerText}>
               <Text
-                style={[styles.title, { color: colors.text }]}
+                style={[styles.title, { color: colors.secondary }]}
                 numberOfLines={1}
               >
                 {selectedSong.title}
@@ -216,7 +216,7 @@ const SongOptions = forwardRef<
               size={26}
               color="#ff3b30"
             />
-            <Text style={[styles.optionText, { color: colors.text }]}>
+            <Text style={[styles.optionText, { color: colors.secondary }]}>
               {isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             </Text>
           </TouchableOpacity>
@@ -225,8 +225,8 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleAddToQueue}
           >
-            <ListStart size={26} color={colors.text} />
-            <Text style={[styles.optionText, { color: colors.text }]}>
+            <ListStart size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.addToQueue')}
             </Text>
           </TouchableOpacity>
@@ -235,8 +235,8 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleAddToEndQueue}
           >
-            <ListEnd size={26} color={colors.text} />
-            <Text style={[styles.optionText, { color: colors.text }]}>
+            <ListEnd size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.addToEnd')}
             </Text>
           </TouchableOpacity>
@@ -248,9 +248,9 @@ const SongOptions = forwardRef<
             <Ionicons
               name="add-circle-outline"
               size={26}
-              color={colors.text}
+              color={colors.secondary}
             />
-            <Text style={[styles.optionText, { color: colors.text }]}>
+            <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.addToPlaylist')}
             </Text>
           </TouchableOpacity>
@@ -263,9 +263,9 @@ const SongOptions = forwardRef<
               <Ionicons
                 name="albums"
                 size={26}
-                color={colors.text}
+                color={colors.secondary}
               />
-              <Text style={[styles.optionText, { color: colors.text }]}>
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('songOptions.actions.goToAlbum')}
               </Text>
             </TouchableOpacity>
@@ -278,9 +278,9 @@ const SongOptions = forwardRef<
             <Ionicons
               name="radio-outline"
               size={26}
-              color={colors.text}
+              color={colors.secondary}
             />
-            <Text style={[styles.optionText, { color: colors.text }]}>
+            <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.instantMix')}
             </Text>
           </TouchableOpacity>
@@ -290,36 +290,36 @@ const SongOptions = forwardRef<
           <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('songOptions.sections.media')}</Text>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.duration')}</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
+            <Text style={[styles.infoValue, { color: colors.secondary }]}>
               {formatSongDuration(selectedSong.duration)}
             </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.plays')}</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>{playCount}</Text>
+            <Text style={[styles.infoValue, { color: colors.secondary }]}>{playCount}</Text>
           </View>
           {selectedSong.bitrate != null && (
             <View style={styles.infoRow}>
               <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.bitrate')}</Text>
-              <Text style={[styles.infoValue, { color: colors.text }]}>{t('songOptions.media.kbps', { value: selectedSong.bitrate })}</Text>
+              <Text style={[styles.infoValue, { color: colors.secondary }]}>{t('songOptions.media.kbps', { value: selectedSong.bitrate })}</Text>
             </View>
           )}
           {selectedSong.sampleRate != null && (
             <View style={styles.infoRow}>
               <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.sampleRate')}</Text>
-              <Text style={[styles.infoValue, { color: colors.text }]}>{t('songOptions.media.hz', { value: selectedSong.sampleRate })}</Text>
+              <Text style={[styles.infoValue, { color: colors.secondary }]}>{t('songOptions.media.hz', { value: selectedSong.sampleRate })}</Text>
             </View>
           )}
           {selectedSong.bitsPerSample != null && (
             <View style={styles.infoRow}>
               <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.bitsPerSample')}</Text>
-              <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.bitsPerSample}</Text>
+              <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.bitsPerSample}</Text>
             </View>
           )}
           {selectedSong.mimeType && (
             <View style={styles.infoRow}>
               <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.format')}</Text>
-              <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={1}>{selectedSong.mimeType}</Text>
+              <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={1}>{selectedSong.mimeType}</Text>
             </View>
           )}
 
@@ -329,13 +329,13 @@ const SongOptions = forwardRef<
               {selectedSong.disc != null && (
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.track.disc')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.disc}</Text>
+                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.disc}</Text>
                 </View>
               )}
               {selectedSong.trackNumber != null && (
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.track.track')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.trackNumber}</Text>
+                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.trackNumber}</Text>
                 </View>
               )}
             </>
@@ -347,13 +347,13 @@ const SongOptions = forwardRef<
               {selectedSong.dateReleased && (
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.dates.released')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]}>{formatDate(selectedSong.dateReleased)}</Text>
+                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{formatDate(selectedSong.dateReleased)}</Text>
                 </View>
               )}
               {selectedSong.dateAdded && (
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.dates.added')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={1}>{formatDate(selectedSong.dateAdded)}</Text>
+                  <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={1}>{formatDate(selectedSong.dateAdded)}</Text>
                 </View>
               )}
             </>
@@ -365,7 +365,7 @@ const SongOptions = forwardRef<
               {selectedSong.bpm != null && (
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.bpm')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]}>{selectedSong.bpm}</Text>
+                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.bpm}</Text>
                 </View>
               )}
               {selectedSong.genres?.length ? (
@@ -374,7 +374,7 @@ const SongOptions = forwardRef<
                   <View style={styles.genreList}>
                     {selectedSong.genres.map((g, i) => (
                       <View key={`${g}-${i}`} style={[styles.genreChip, { backgroundColor: genreChipBg }]}>
-                        <Text style={[styles.genreChipText, { color: colors.text }]}>{g}</Text>
+                        <Text style={[styles.genreChipText, { color: colors.secondary }]}>{g}</Text>
                       </View>
                     ))}
                   </View>
@@ -383,7 +383,7 @@ const SongOptions = forwardRef<
               {selectedSong.filePath ? (
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.filePath')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={2}>
+                  <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={2}>
                     {selectedSong.filePath}
                   </Text>
                 </View>
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   artist: {
     fontSize: 14,
@@ -445,10 +445,8 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   sectionLabelSpaced: {
     marginTop: 16,

@@ -56,7 +56,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
         <Ionicons
           name="ellipsis-horizontal"
           size={24}
-          color={colors.text}
+          color={colors.secondary}
         />
       </TouchableOpacity>
 
@@ -73,7 +73,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
           <View style={styles.header}>
             <MediaImage cover={album.cover} size="grid" style={styles.cover} />
             <View style={styles.headerText}>
-              <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+              <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
                 {album.title}
               </Text>
               <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
@@ -87,14 +87,14 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
           {status.kind === 'in_library' ? (
             <View style={styles.option}>
               <Ionicons name="link" size={26} color="#34C759" />
-              <Text style={[styles.optionText, { color: colors.text }]}>
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.inLibrary')}
               </Text>
             </View>
           ) : status.kind === 'downloading' ? (
             <View style={styles.option}>
               <SpinningLoaderCircle size={26} color="#007AFF" />
-              <Text style={[styles.optionText, { color: colors.text }]}>
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.downloading', { progress: status.progress })}
               </Text>
             </View>
@@ -103,8 +103,8 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
               style={styles.option}
               onPress={() => downloadSheetRef.current?.present()}
             >
-              <CloudDownload size={26} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>
+              <CloudDownload size={26} color={colors.secondary} />
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
               <Ionicons name="chevron-forward" size={16} color={colors.placeholder} style={styles.chevron} />
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '600' },
+  title: { fontSize: 16, fontWeight: '500' },
   artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
   },
-  optionText: { marginLeft: 16, fontSize: 16, flex: 1 },
+  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500', flex: 1 },
   disabledText: { color: '#888', fontSize: 14 },
   chevron: { marginLeft: 4 },
 });
