@@ -26,6 +26,7 @@ export const useTheme = () => {
       background: isDarkMode ? '#000' : '#F2F2F7',
       card: isDarkMode ? '#222' : '#fff',
       text: isDarkMode ? '#f2f2f2' : '#000',
+      secondary: isDarkMode ? '#dcdcdc' : '#111',
       subtext: isDarkMode ? '#aaa' : '#555',
       border: isDarkMode ? '#444' : '#ccc',
       muted: isDarkMode ? '#333' : '#eee',

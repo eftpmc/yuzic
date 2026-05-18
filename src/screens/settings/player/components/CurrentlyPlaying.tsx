@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -37,13 +32,13 @@ const CurrentlyPlaying: React.FC = () => {
         <MediaImage
           cover={currentSong?.cover ?? { kind: 'none' }}
           size="thumb"
-          style={styles.nowPlayingCover}
+          style={styles.cover}
         />
         <View style={styles.info}>
-          <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
             {currentSong?.title ?? t('settings.player.nothingPlaying')}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>
+          <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
             {currentSong?.artist ?? t('settings.player.unknownArtist')}
           </Text>
         </View>
@@ -51,19 +46,11 @@ const CurrentlyPlaying: React.FC = () => {
 
       <View style={styles.controls}>
         <TouchableOpacity onPress={toggleShuffle} disabled={disabled}>
-          <MaterialIcons
-            name="shuffle"
-            size={24}
-            color={disabled ? colors.subtext : shuffleOn ? colors.themeColor : colors.subtext}
-          />
+          <MaterialIcons name="shuffle" size={24} color={disabled ? colors.subtext : shuffleOn ? colors.themeColor : colors.subtext} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={skipToPrevious} disabled={disabled}>
-          <MaterialIcons
-            name="skip-previous"
-            size={28}
-            color={disabled ? colors.subtext : colors.text}
-          />
+          <MaterialIcons name="skip-previous" size={28} color={disabled ? colors.subtext : colors.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -71,27 +58,15 @@ const CurrentlyPlaying: React.FC = () => {
           disabled={disabled}
           style={[styles.playButton, { backgroundColor: colors.muted }]}
         >
-          <MaterialIcons
-            name={isPlaying ? 'pause' : 'play-arrow'}
-            size={28}
-            color={colors.text}
-          />
+          <MaterialIcons name={isPlaying ? 'pause' : 'play-arrow'} size={28} color={disabled ? colors.subtext : colors.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={skipToNext} disabled={disabled}>
-          <MaterialIcons
-            name="skip-next"
-            size={28}
-            color={disabled ? colors.subtext : colors.text}
-          />
+          <MaterialIcons name="skip-next" size={28} color={disabled ? colors.subtext : colors.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={toggleRepeat} disabled={disabled}>
-          <MaterialIcons
-            name="repeat"
-            size={24}
-            color={disabled ? colors.subtext : repeatOn ? colors.themeColor : colors.subtext}
-          />
+          <MaterialIcons name="repeat" size={24} color={disabled ? colors.subtext : repeatOn ? colors.themeColor : colors.subtext} />
         </TouchableOpacity>
       </View>
     </SettingsCard>
@@ -106,23 +81,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  cover: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   info: {
     flex: 1,
     marginLeft: 12,
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  subtitle: {
+  artist: {
     fontSize: 14,
     marginTop: 2,
-  },
-  nowPlayingCover: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    overflow: 'hidden',
   },
   controls: {
     marginTop: 16,

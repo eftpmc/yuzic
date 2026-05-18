@@ -22,6 +22,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 18,
   },
 });

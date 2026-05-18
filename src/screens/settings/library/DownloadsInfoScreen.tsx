@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Trash2 } from 'lucide-react-native';
 import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
@@ -15,14 +14,15 @@ import { MediaImage } from '@/components/MediaImage';
 import { useDownload } from '@/contexts/DownloadContext';
 import { DownloadRow } from './downloadsInfo/types';
 import { buildDownloadRows } from './downloadsInfo/buildRows';
-import { styles } from './downloadsInfo/styles';
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
+import SettingsCard from '../components/SettingsCard';
+import SettingsDivider from '../components/SettingsDivider';
+import SettingsInfoRow from '../components/SettingsInfoRow';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const { colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
   const {
     removeDownloadByCollectionId,
@@ -50,28 +50,12 @@ const DownloadsInfoScreen: React.FC = () => {
   const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
 
   const rows = useMemo(
-    () =>
-      buildDownloadRows({
-        albums,
-        tracks,
-        playlists: fullPlaylists,
-        fullPlaylists,
-        downloadedTracks,
-        downloadedCollections,
-        t,
-      }),
+    () => buildDownloadRows({ albums, tracks, playlists: fullPlaylists, fullPlaylists, downloadedTracks, downloadedCollections, t }),
     [albums, tracks, fullPlaylists, downloadedTracks, downloadedCollections, t]
   );
 
-  const downloadedAlbumCount = useMemo(
-    () => rows.filter(item => item.type === 'album').length,
-    [rows]
-  );
-
-  const downloadedPlaylistCount = useMemo(
-    () => rows.filter(item => item.type === 'playlist').length,
-    [rows]
-  );
+  const downloadedAlbumCount = useMemo(() => rows.filter(r => r.type === 'album').length, [rows]);
+  const downloadedPlaylistCount = useMemo(() => rows.filter(r => r.type === 'playlist').length, [rows]);
 
   const confirmRemove = (row: DownloadRow) => {
     Alert.alert(
@@ -90,10 +74,7 @@ const DownloadsInfoScreen: React.FC = () => {
                 serverType: row.provider === 'unknown' ? null : row.provider,
               });
             } catch {
-              Alert.alert(
-                t('settings.library.downloads.removeFailedTitle'),
-                t('settings.library.downloads.removeFailedBody')
-              );
+              Alert.alert(t('settings.library.downloads.removeFailedTitle'), t('settings.library.downloads.removeFailedBody'));
             } finally {
               setRemovingId(null);
             }
@@ -105,13 +86,10 @@ const DownloadsInfoScreen: React.FC = () => {
 
   const confirmClearProvider = (row: DownloadRow) => {
     const providerLabel =
-      row.provider === 'navidrome'
-        ? t('settings.library.downloads.provider.navidrome')
-        : row.provider === 'jellyfin'
-          ? t('settings.library.downloads.provider.jellyfin')
-          : row.provider === 'emby'
-            ? t('settings.library.downloads.provider.emby')
-            : t('settings.library.downloads.provider.unknown');
+      row.provider === 'navidrome' ? t('settings.library.downloads.provider.navidrome') :
+      row.provider === 'jellyfin' ? t('settings.library.downloads.provider.jellyfin') :
+      row.provider === 'emby' ? t('settings.library.downloads.provider.emby') :
+      t('settings.library.downloads.provider.unknown');
 
     Alert.alert(
       t('settings.library.downloads.clearTitle'),
@@ -128,10 +106,7 @@ const DownloadsInfoScreen: React.FC = () => {
                 serverType: row.provider === 'unknown' ? null : row.provider,
               });
             } catch {
-              Alert.alert(
-                t('settings.library.downloads.clearFailedTitle'),
-                t('settings.library.downloads.clearFailedBody')
-              );
+              Alert.alert(t('settings.library.downloads.clearFailedTitle'), t('settings.library.downloads.clearFailedBody'));
             }
           },
         },
@@ -140,61 +115,21 @@ const DownloadsInfoScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: colors.background },
-        Platform.OS === 'android' && { paddingTop: 24 },
-      ]}
-    >
+    <SafeAreaView edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.library.downloads.detailsTitle')} />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              {t('settings.library.downloads.sizeLabel')}
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
-              {formattedSize}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              {t('settings.library.downloads.availableLabel')}
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
-              {formattedAvailable}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              {t('settings.library.downloads.table.playlists')}
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
-              {String(downloadedPlaylistCount)}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              {t('settings.library.downloads.type.album')}
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
-              {String(downloadedAlbumCount)}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              {t('settings.library.downloads.table.tracks')}
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.subtext }]}>
-              {String(downloadedTrackCount)}
-            </Text>
-          </View>
-        </View>
+        <SettingsCard>
+          <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
+          <SettingsDivider />
+          <SettingsInfoRow label={t('settings.library.downloads.availableLabel', { defaultValue: 'Available Space' })} value={formattedAvailable} stacked />
+          <SettingsDivider />
+          <SettingsInfoRow label={t('settings.library.downloads.table.playlists')} value={String(downloadedPlaylistCount)} stacked />
+          <SettingsDivider />
+          <SettingsInfoRow label={t('settings.library.downloads.type.album')} value={String(downloadedAlbumCount)} stacked />
+          <SettingsDivider />
+          <SettingsInfoRow label={t('settings.library.downloads.table.tracks')} value={String(downloadedTrackCount)} stacked />
+        </SettingsCard>
 
         {rows.length === 0 ? (
           <Text style={[styles.emptyText, { color: colors.subtext }]}>
@@ -205,63 +140,46 @@ const DownloadsInfoScreen: React.FC = () => {
             const prev = index > 0 ? rows[index - 1] : null;
             const showSectionHeader = !prev || prev.provider !== item.provider;
             const sectionTitle =
-              item.provider === 'navidrome'
-                ? t('settings.library.downloads.provider.navidrome')
-                : item.provider === 'jellyfin'
-                  ? t('settings.library.downloads.provider.jellyfin')
-                  : item.provider === 'emby'
-                    ? t('settings.library.downloads.provider.emby')
-                    : t('settings.library.downloads.provider.unknown');
+              item.provider === 'navidrome' ? t('settings.library.downloads.provider.navidrome') :
+              item.provider === 'jellyfin' ? t('settings.library.downloads.provider.jellyfin') :
+              item.provider === 'emby' ? t('settings.library.downloads.provider.emby') :
+              t('settings.library.downloads.provider.unknown');
 
             return (
               <View key={item.id}>
                 {showSectionHeader && (
                   <View style={styles.providerHeader}>
-                    <Text style={[styles.providerHeaderText, { color: colors.text }]}>
-                      {sectionTitle}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => confirmClearProvider(item)}
-                      style={styles.providerHeaderDelete}
-                    >
-                      <MaterialIcons name="delete-outline" size={16} color={themeColor} />
+                    <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
+                    <TouchableOpacity onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
+                      <Trash2 size={16} color={colors.subtext} />
                     </TouchableOpacity>
                   </View>
                 )}
-
                 <View style={[styles.row, { backgroundColor: colors.card }]}>
                   <View style={styles.coverCell}>
                     <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
                   </View>
                   <View style={styles.trackCell}>
                     <View style={styles.titleLine}>
-                      <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>
-                        {item.title}
-                      </Text>
-                      <Text numberOfLines={1} style={[styles.sizeText, { color: colors.text }]}>
-                        {item.size}
-                      </Text>
+                      <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{item.title}</Text>
+                      <Text numberOfLines={1} style={[styles.sizeText, { color: colors.subtext }]}>{item.size}</Text>
                     </View>
                     <View style={styles.metaLine}>
-                      <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>
-                        {item.subtitle}
-                      </Text>
-                      <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
-                      <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>
+                      <Text numberOfLines={1} style={[styles.meta, { color: colors.subtext }]}>{item.subtitle}</Text>
+                      <Text style={[styles.metaDot, { color: colors.subtext }]}>·</Text>
+                      <Text numberOfLines={1} style={[styles.meta, { color: colors.subtext }]}>
                         {item.trackCount} {item.trackCount === 1 ? t('common.song') : t('common.songs')}
                       </Text>
-                      <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
-                      <Text numberOfLines={1} style={[styles.subtitle, styles.downloadedDate, { color: colors.subtext }]}>
-                        {item.downloaded}
-                      </Text>
+                      <Text style={[styles.metaDot, { color: colors.subtext }]}>·</Text>
+                      <Text numberOfLines={1} style={[styles.meta, styles.shrink, { color: colors.subtext }]}>{item.downloaded}</Text>
                     </View>
                   </View>
                   <TouchableOpacity
-                    style={[styles.removeButton, removingId === item.id && styles.removeButtonDisabled]}
+                    style={[styles.removeButton, removingId === item.id && styles.disabled]}
                     onPress={() => confirmRemove(item)}
                     disabled={removingId === item.id}
                   >
-                    <MaterialIcons name="delete-outline" size={18} color={themeColor} />
+                    <Trash2 size={16} color={colors.subtext} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -274,3 +192,88 @@ const DownloadsInfoScreen: React.FC = () => {
 };
 
 export default DownloadsInfoScreen;
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 100,
+  },
+  emptyText: {
+    paddingTop: 20,
+    textAlign: 'center',
+    fontSize: 13,
+  },
+  providerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
+  providerTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  providerDelete: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+  },
+  coverCell: {
+    width: 44,
+    marginRight: 12,
+  },
+  cover: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  trackCell: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 8,
+  },
+  titleLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  sizeText: {
+    fontSize: 12,
+  },
+  metaLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  meta: { fontSize: 12 },
+  metaDot: {
+    fontSize: 12,
+    marginHorizontal: 4,
+  },
+  shrink: { flexShrink: 1 },
+  removeButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabled: { opacity: 0.4 },
+});

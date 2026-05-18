@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
-import { CheckCircle, XCircle } from 'lucide-react-native';
-
 import SettingsScreen from '../components/SettingsScreen';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
-import SettingsToggleRow from '../components/SettingsToggleRow';
-import ChecklistSection from '../components/ChecklistSection';
+import SettingsInfoRow from '../components/SettingsInfoRow';
+import SettingsSelectCard from '../components/SettingsSelectCard';
+import SettingsToggleGroup from '../components/SettingsToggleGroup';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -25,8 +24,6 @@ import {
   type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 
-const ICON_SIZE = 20;
-
 const ServerSettings: React.FC = () => {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -38,31 +35,22 @@ const ServerSettings: React.FC = () => {
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
   const isNavidrome = activeServer?.type === 'navidrome';
-
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
   const username = activeServer?.username;
   const isAuthenticated = activeServer?.isAuthenticated;
+  const cleanUrl = serverUrl?.replace(/^https?:\/\//, '') ?? t('settings.server.notSet');
 
   useEffect(() => {
     if (!api || !serverUrl) return;
-
     let cancelled = false;
     const timeout = setTimeout(async () => {
       setIsLoading(true);
-      try {
-        await api.auth.ping();
-      } catch {
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
+      try { await api.auth.ping(); } catch {}
+      finally { if (!cancelled) setIsLoading(false); }
     }, 500);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeout);
-    };
+    return () => { cancelled = true; clearTimeout(timeout); };
   }, [api, serverUrl]);
 
   if (!activeServer) return null;
@@ -70,46 +58,32 @@ const ServerSettings: React.FC = () => {
   return (
     <SettingsScreen title={t('settings.server.title')}>
       <SettingsCard>
-        <View style={styles.row}>
-          <Text style={[styles.rowText, { color: colors.text }]}>
-            {t('settings.server.serverUrl')}
-          </Text>
-          <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
-            {serverUrl || t('settings.server.notSet')}
-          </Text>
-        </View>
-
+        <SettingsInfoRow
+          label={t('settings.server.serverUrl')}
+          value={cleanUrl}
+          stacked
+        />
         <SettingsDivider />
-
-        <View style={styles.row}>
-          <Text style={[styles.rowText, { color: colors.text }]}>
-            {t('settings.server.username')}
-          </Text>
-          <Text style={[styles.rowValue, { color: colors.subtext }]} numberOfLines={1}>
-            {username || t('settings.server.notSet')}
-          </Text>
-        </View>
-
+        <SettingsInfoRow
+          label={t('settings.server.username')}
+          value={username || t('settings.server.notSet')}
+          stacked
+        />
         <SettingsDivider />
-
-        <View style={styles.row}>
-          <Text style={[styles.rowText, { color: colors.text }]}>
-            {t('settings.server.connectivity')}
-          </Text>
-          <View style={styles.iconSlot}>
-            {isLoading ? (
-              <SpinningLoaderCircle size={ICON_SIZE} color={colors.themeColor} />
-            ) : isAuthenticated ? (
-              <CheckCircle size={ICON_SIZE} color={colors.themeColor} />
+        <SettingsInfoRow
+          label={t('settings.server.connectivity')}
+          right={
+            isLoading ? (
+              <SpinningLoaderCircle size={14} color={colors.themeColor} />
             ) : (
-              <XCircle size={ICON_SIZE} color="red" />
-            )}
-          </View>
-        </View>
+              <View style={[styles.dot, { backgroundColor: isAuthenticated ? '#34C759' : '#FF3B30' }]} />
+            )
+          }
+        />
       </SettingsCard>
 
-      <ChecklistSection
-        infoText={t('settings.server.searchScopeHelp')}
+      <SettingsSelectCard
+        title={t('settings.server.searchScopeHelp')}
         items={[
           { key: 'client', label: t('settings.server.searchScope.client') },
           { key: 'server', label: t('settings.server.searchScope.server') },
@@ -119,21 +93,14 @@ const ServerSettings: React.FC = () => {
       />
 
       {isNavidrome && (
-        <SettingsCard>
-          <SettingsToggleRow
-            label={t('settings.scrobbling.scrobble')}
-            subtext={t('settings.scrobbling.scrobbleDescription')}
-            value={serverScrobbleEnabled}
-            onValueChange={v => { dispatch(setServerScrobbleEnabled(v)); }}
+        <View style={styles.scrobbleSection}>
+          <SettingsToggleGroup
+            items={[
+              { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
+              { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: v => { dispatch(setServerNowPlayingEnabled(v)); } },
+            ]}
           />
-          <SettingsDivider />
-          <SettingsToggleRow
-            label={t('settings.scrobbling.nowPlaying')}
-            subtext={t('settings.scrobbling.nowPlayingDescription')}
-            value={serverNowPlayingEnabled}
-            onValueChange={v => { dispatch(setServerNowPlayingEnabled(v)); }}
-          />
-        </SettingsCard>
+        </View>
       )}
     </SettingsScreen>
   );
@@ -142,24 +109,12 @@ const ServerSettings: React.FC = () => {
 export default ServerSettings;
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 16,
+  scrobbleSection: {
+    marginTop: 8,
   },
-  rowText: { fontSize: 16 },
-  rowValue: {
-    fontSize: 15,
-    flexShrink: 1,
-    textAlign: 'right',
-  },
-  iconSlot: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
 });

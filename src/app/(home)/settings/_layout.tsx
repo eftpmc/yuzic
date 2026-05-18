@@ -12,6 +12,7 @@ export default function SettingsLayout() {
             <Stack.Screen name='downloadsInfoView' options={{ headerShown: false, title: "Downloads" }} />
             <Stack.Screen name='lidarrView' options={{ headerShown: false, title: "Lidarr" }} />
             <Stack.Screen name='slskdView' options={{ headerShown: false, title: "slskd" }} />
+            <Stack.Screen name='integrationsView' options={{ headerShown: false, title: "Integrations" }} />
             <Stack.Screen name='listenbrainzView' options={{ headerShown: false, title: "ListenBrainz" }} />
             <Stack.Screen name='lastfmView' options={{ headerShown: false, title: "Last.fm" }} />
             <Stack.Screen name='deezerView' options={{ headerShown: false, title: "Deezer" }} />

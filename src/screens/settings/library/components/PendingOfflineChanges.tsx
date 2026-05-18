@@ -61,7 +61,7 @@ export default function PendingOfflineChanges() {
         <CloudUpload size={21} color={colors.themeColor} />
       </View>
       <View style={styles.textWrap}>
-        <Text style={[styles.title, { color: colors.text }]}>
+        <Text style={[styles.title, { color: colors.secondary }]}>
           {t('settings.library.offlineChanges.title')}
         </Text>
         <Text style={[styles.subtitle, { color: colors.subtext }]}>

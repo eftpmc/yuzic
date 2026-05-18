@@ -2,9 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import SettingsScreen from '../../components/SettingsScreen';
-import SettingsCard from '../../components/SettingsCard';
-import SettingsDivider from '../../components/SettingsDivider';
-import SettingsToggleRow from '../../components/SettingsToggleRow';
+import SettingsToggleGroup from '../../components/SettingsToggleGroup';
 import {
   selectDeezerDiscoveryEnabled,
   selectDeezerSearchEnabled,
@@ -25,28 +23,28 @@ export default function DeezerSettings() {
 
   return (
     <SettingsScreen title="Deezer">
-      <SettingsCard>
-        <SettingsToggleRow
-          label={t('settings.deezer.discovery')}
-          subtext={t('settings.deezer.discoveryDescription')}
-          value={discoveryEnabled}
-          onValueChange={v => { dispatch(setDeezerDiscoveryEnabled(v)); }}
-        />
-        <SettingsDivider />
-        <SettingsToggleRow
-          label={t('settings.deezer.search')}
-          subtext={t('settings.deezer.searchDescription')}
-          value={searchEnabled}
-          onValueChange={v => { dispatch(setDeezerSearchEnabled(v)); }}
-        />
-        <SettingsDivider />
-        <SettingsToggleRow
-          label={t('settings.deezer.externalScreens')}
-          subtext={t('settings.deezer.externalScreensDescription')}
-          value={externalScreensEnabled}
-          onValueChange={v => { dispatch(setDeezerExternalScreensEnabled(v)); }}
-        />
-      </SettingsCard>
+      <SettingsToggleGroup
+        items={[
+          {
+            label: t('settings.deezer.discovery'),
+            subtext: t('settings.deezer.discoveryDescription'),
+            value: discoveryEnabled,
+            onValueChange: v => { dispatch(setDeezerDiscoveryEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.search'),
+            subtext: t('settings.deezer.searchDescription'),
+            value: searchEnabled,
+            onValueChange: v => { dispatch(setDeezerSearchEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.externalScreens'),
+            subtext: t('settings.deezer.externalScreensDescription'),
+            value: externalScreensEnabled,
+            onValueChange: v => { dispatch(setDeezerExternalScreensEnabled(v)); },
+          },
+        ]}
+      />
     </SettingsScreen>
   );
 }

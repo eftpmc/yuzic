@@ -1,98 +1,31 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectThemeMode } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeMode, ThemeMode } from '@/utils/redux/slices/settingsSlice';
-import { useTheme } from '@/hooks/useTheme';
-import SettingsCard from '../../components/SettingsCard';
+import SettingsButtonSelect from '../../components/SettingsButtonSelect';
+
+const OPTIONS: { id: ThemeMode; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { id: 'light', icon: 'sunny' },
+  { id: 'dark', icon: 'moon' },
+  { id: 'system', icon: 'phone-portrait' },
+];
 
 export const ThemeModeSelector: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeMode = useSelector(selectThemeMode) as ThemeMode;
-  const { colors } = useTheme();
-
-  const options: { id: ThemeMode; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { id: 'light', icon: 'sunny' },
-    { id: 'dark', icon: 'moon' },
-    { id: 'system', icon: 'phone-portrait' },
-  ];
 
   return (
-    <SettingsCard style={styles.card}>
-      <View style={styles.row}>
-        <View style={styles.textColumn}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {t('settings.appearance.theme.title')}
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.subtext }]}>
-            {t('settings.appearance.theme.subtitle')}
-          </Text>
-        </View>
-
-        <View style={styles.controls}>
-          {options.map(option => {
-            const active = themeMode === option.id;
-            return (
-              <TouchableOpacity
-                key={option.id}
-                onPress={() => dispatch(setThemeMode(option.id))}
-                style={[
-                  styles.modeButton,
-                  {
-                    backgroundColor: active ? colors.themeColor : colors.muted,
-                    borderColor: active ? colors.themeColor : colors.border,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={option.icon}
-                  size={20}
-                  color={active ? '#fff' : colors.text}
-                />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-    </SettingsCard>
+    <SettingsButtonSelect
+      title={t('settings.appearance.theme.title')}
+      items={OPTIONS.map(o => ({
+        id: o.id,
+        icon: <Ionicons name={o.icon} size={18} />,
+      }))}
+      selected={themeMode}
+      onSelect={id => dispatch(setThemeMode(id as ThemeMode))}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  textColumn: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  subtitle: {
-    marginTop: 4,
-    fontSize: 13,
-  },
-  controls: {
-    flexDirection: 'row',
-  },
-  modeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 8,
-  },
-});

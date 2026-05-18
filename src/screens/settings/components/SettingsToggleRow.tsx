@@ -15,7 +15,7 @@ const SettingsToggleRow: React.FC<Props> = ({ label, subtext, value, onValueChan
   return (
     <View style={styles.row}>
       <View style={styles.left}>
-        <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+        <Text style={[styles.label, { color: colors.secondary }]}>{label}</Text>
         {subtext && (
           <Text style={[styles.subtext, { color: colors.subtext }]}>{subtext}</Text>
         )}
@@ -42,6 +42,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   left: { flex: 1 },
-  label: { fontSize: 16 },
+  label: { fontSize: 16, fontWeight: '500' },
   subtext: { fontSize: 13, marginTop: 2 },
 });

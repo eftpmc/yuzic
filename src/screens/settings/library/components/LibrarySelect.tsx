@@ -6,7 +6,7 @@ import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/jellyfin/auth/getMusicLibraries';
 import { useSync } from '@/hooks/useSync';
-import ChecklistSection from '@/screens/settings/components/ChecklistSection';
+import SettingsSelectCard from '../../components/SettingsSelectCard';
 
 type Library = { id: string; name: string };
 
@@ -64,9 +64,10 @@ const LibrarySelect: React.FC = () => {
   if (!activeServer) return null;
 
   const isAll = selectedIds.length === 0;
-
-  const allItem = { key: '__all__', label: t('settings.library.librarySelect.all') };
-  const items = [allItem, ...libraries.map(l => ({ key: l.id, label: l.name }))];
+  const items = [
+    { key: '__all__', label: t('settings.library.librarySelect.all') },
+    ...libraries.map(l => ({ key: l.id, label: l.name })),
+  ];
 
   const handleSelect = (key: string) => {
     let next: string[];
@@ -88,11 +89,12 @@ const LibrarySelect: React.FC = () => {
   };
 
   return (
-    <ChecklistSection
-      infoText={t('settings.library.librarySelect.info')}
+    <SettingsSelectCard
+      title={t('settings.library.librarySelect.info')}
       items={items}
       isSelected={key => key === '__all__' ? isAll : selectedIds.includes(key)}
       onSelect={handleSelect}
+      multiSelect
       isLoading={isLoading}
       disabled={isSyncing}
     />

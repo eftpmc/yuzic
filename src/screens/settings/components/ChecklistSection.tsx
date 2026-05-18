@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   section: {
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 18,
   },
   infoText: {
     fontSize: 13,

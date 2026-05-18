@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
-import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Linking,
-  StyleSheet,
-} from 'react-native';
+import { Text, TouchableOpacity, Linking, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { MaterialIcons } from '@expo/vector-icons';
-import { CheckCircle, XCircle } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import SettingsScreen from '../../components/SettingsScreen';
-import SettingsCard from '../../components/SettingsCard';
-import SettingsDivider from '../../components/SettingsDivider';
-import SettingsToggleRow from '../../components/SettingsToggleRow';
-import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import SettingsAuthCard from '../../components/SettingsAuthCard';
+import SettingsToggleGroup from '../../components/SettingsToggleGroup';
+import SettingsDisconnectButton from '../../components/SettingsDisconnectButton';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -42,7 +33,7 @@ const LastFmView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
 
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
@@ -98,59 +89,20 @@ const LastFmView: React.FC = () => {
 
   return (
     <SettingsScreen title={t('settings.lastfm.title')}>
-      <SettingsCard style={styles.inputCard}>
-        <Text style={[styles.label, { color: colors.text }]}>
-          {t('settings.lastfm.apiKey')}
-        </Text>
-        <TextInput
-          value={apiKey}
-          onChangeText={v => dispatch(setApiKey({ serverId, value: v.trim() }))}
-          autoCapitalize="none"
-          autoCorrect={false}
-          placeholder={t('settings.lastfm.apiKeyPlaceholder')}
-          placeholderTextColor={isDarkMode ? '#666' : '#999'}
-          style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
-        />
-
-        <Text style={[styles.label, { color: colors.text }]}>
-          {t('settings.lastfm.apiSecret')}
-        </Text>
-        <TextInput
-          value={apiSecret}
-          onChangeText={v => dispatch(setApiSecret({ serverId, value: v.trim() }))}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-          placeholder={t('settings.lastfm.apiSecretPlaceholder')}
-          placeholderTextColor={isDarkMode ? '#666' : '#999'}
-          style={[styles.input, { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text }]}
-        />
-
-        <TouchableOpacity
-          style={styles.connectivityRow}
-          onPress={pendingToken ? handleFinishAuth : undefined}
-          disabled={!pendingToken}
-          activeOpacity={pendingToken ? 0.6 : 1}
-        >
-          <Text style={[styles.rowText, { color: colors.text }]}>
-            {isAuthenticated
-              ? `${t('settings.lastfm.connectedAs')} ${username}`
-              : t('settings.lastfm.notConnected')}
-          </Text>
-          {isLoading ? (
-            <SpinningLoaderCircle size={20} color={themeColor} />
-          ) : isAuthenticated ? (
-            <CheckCircle size={20} color={themeColor} />
-          ) : (
-            <XCircle size={20} color="red" />
-          )}
-        </TouchableOpacity>
-      </SettingsCard>
+      <SettingsAuthCard
+        fields={[
+          { label: t('settings.lastfm.apiKey'), value: apiKey, onChangeText: v => dispatch(setApiKey({ serverId, value: v.trim() })), placeholder: t('settings.lastfm.apiKeyPlaceholder') },
+          { label: t('settings.lastfm.apiSecret'), value: apiSecret, onChangeText: v => dispatch(setApiSecret({ serverId, value: v.trim() })), placeholder: t('settings.lastfm.apiSecretPlaceholder'), secureTextEntry: true },
+        ]}
+        isAuthenticated={isAuthenticated}
+        isLoading={isLoading}
+        connectivityLabel={isAuthenticated ? `${t('settings.lastfm.connectedAs')} ${username}` : t('settings.lastfm.notConnected')}
+      />
 
       {!isAuthenticated && (
         <>
           {pendingToken && (
-            <Text style={[styles.pendingText, { color: colors.subtext }]}>
+            <Text style={[styles.hint, { color: colors.subtext }]}>
               {t('settings.lastfm.pendingInstruction')}
             </Text>
           )}
@@ -168,26 +120,17 @@ const LastFmView: React.FC = () => {
 
       {isAuthenticated && (
         <>
-          <SettingsCard>
-            <SettingsToggleRow
-              label={t('settings.scrobbling.scrobble')}
-              subtext={t('settings.scrobbling.scrobbleDescription')}
-              value={scrobbleEnabled}
-              onValueChange={v => { dispatch(setScrobbleEnabled({ serverId, value: v })); }}
-            />
-            <SettingsDivider />
-            <SettingsToggleRow
-              label={t('settings.scrobbling.nowPlaying')}
-              subtext={t('settings.scrobbling.nowPlayingDescription')}
-              value={nowPlayingEnabled}
-              onValueChange={v => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }}
-            />
-          </SettingsCard>
+          <SettingsToggleGroup
+            items={[
+              { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: v => { dispatch(setScrobbleEnabled({ serverId, value: v })); } },
+              { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: v => { dispatch(setNowPlayingEnabled({ serverId, value: v })); } },
+            ]}
+          />
 
-          <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnect}>
-            <MaterialIcons name="logout" size={20} color="#fff" />
-            <Text style={styles.disconnectButtonText}>{t('settings.lastfm.disconnect')}</Text>
-          </TouchableOpacity>
+          <SettingsDisconnectButton
+            label={t('settings.lastfm.disconnect')}
+            onPress={handleDisconnect}
+          />
         </>
       )}
     </SettingsScreen>
@@ -197,43 +140,22 @@ const LastFmView: React.FC = () => {
 export default LastFmView;
 
 const styles = StyleSheet.create({
-  inputCard: { padding: 16 },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12 },
-  input: {
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  connectivityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    gap: 16,
-  },
-  rowText: { fontSize: 16 },
-  pendingText: {
-    fontSize: 14,
-    marginBottom: 8,
-    paddingHorizontal: 4,
+  divider: { marginTop: 8 },
+  hint: {
+    fontSize: 13,
     lineHeight: 20,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   connectButton: {
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginBottom: 16,
   },
-  connectButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  disconnectButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FF3B30',
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 4,
+  connectButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  disconnectButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', marginLeft: 8 },
 });

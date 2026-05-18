@@ -14,8 +14,8 @@ const LibrarySettings: React.FC = () => {
     <SettingsScreen title={t('settings.library.title')}>
       <PendingOfflineChanges />
       <Stats />
-      <LibrarySelect />
       <Downloads />
+      <LibrarySelect />
       <AudioQuality />
     </SettingsScreen>
   );
