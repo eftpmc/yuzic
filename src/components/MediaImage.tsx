@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Image } from 'react-native';
 import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
-import { buildCover, buildCoverArtArchiveUrl } from '@/utils/builders/buildCover';
+import { buildCover, buildCoverArtArchiveUrl, buildCoverCacheKey } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import ThemedHeartCover from '@/components/ThemedHeartCover';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
@@ -33,6 +33,10 @@ export function MediaImage({
   const uri = useMemo(() => {
     void activeServerId;
     return buildCover(cover, size);
+  }, [cover, size, activeServerId]);
+  const cacheKey = useMemo(() => {
+    void activeServerId;
+    return buildCoverCacheKey(cover, size);
   }, [cover, size, activeServerId]);
   const fallbackUri = useMemo(() => {
     if (cover.kind !== 'coverartarchive' || cover.mbidType !== 'unknown') return null;
@@ -83,7 +87,7 @@ export function MediaImage({
         resizeMode="cover"
       />
       <TurboImage
-        source={{ uri: sourceUri, cacheKey: sourceUri }}
+        source={{ uri: sourceUri, cacheKey: cacheKey ?? sourceUri }}
         style={{ width: '100%', height: '100%' }}
         resizeMode="cover"
         cachePolicy={IMAGE_CACHE_POLICY}

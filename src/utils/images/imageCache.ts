@@ -1,5 +1,5 @@
 import TurboImage from 'react-native-turbo-image';
-import { buildCover } from '@/utils/builders/buildCover';
+import { buildCover, buildCoverCacheKey } from '@/utils/builders/buildCover';
 import type { CoverSource } from '@/types';
 
 const IMAGE_CACHE_POLICY = 'dataCache' as const;
@@ -45,7 +45,25 @@ export function prefetchCovers(
   covers: readonly (CoverSource | null | undefined)[],
   size: 'thumb' | 'grid' | 'detail' | 'background',
 ) {
-  prefetchImageUrls(covers.map(cover => (cover ? buildCover(cover, size) : null)));
+  const sources = covers
+    .filter((cover): cover is CoverSource => !!cover)
+    .flatMap(cover => {
+      const uri = buildCover(cover, size);
+      if (!uri || hasImageUrlFailed(uri)) return [];
+      const cacheKey = buildCoverCacheKey(cover, size) ?? uri;
+      return [{ uri, cacheKey }];
+    });
+
+  const seen = new Set<string>();
+  const deduped = sources.filter(s => {
+    if (seen.has(s.cacheKey)) return false;
+    seen.add(s.cacheKey);
+    return true;
+  });
+
+  if (!deduped.length) return;
+
+  TurboImage.prefetch(deduped, IMAGE_CACHE_POLICY).catch(() => {});
 }
 
 export function clearImageMemoryCache() {
