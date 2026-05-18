@@ -70,11 +70,11 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
             {album.title}
           </Text>
         </View>
@@ -83,7 +83,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           onPress={() => optionsSheetRef.current?.present()}
           style={styles.headerButton}
         >
-          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
+          <Ionicons name="ellipsis-horizontal" size={24} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -94,7 +94,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
       </View>
 
       <View style={styles.titleInfo}>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
           {album.title}
         </Text>
 
@@ -136,7 +136,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
             style={[styles.secondaryButton, { backgroundColor: colors.card }]}
             onPress={() => songs.length > 0 && playSongInCollection(songs[0], album, true)}
           >
-            <Ionicons name="shuffle" size={18} color={colors.text} />
+            <Ionicons name="shuffle" size={18} color={colors.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -152,12 +152,12 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
             disabled={isAlbumDownloading}
           >
             {isAlbumDownloading ? (
-              <ActivityIndicator size="small" color={colors.text} />
+              <ActivityIndicator size="small" color={colors.secondary} />
             ) : (
               <Ionicons
                 name={isAlbumDownloaded ? 'checkmark' : 'download-outline'}
                 size={18}
-                color={colors.text}
+                color={colors.secondary}
               />
             )}
           </TouchableOpacity>
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     maxWidth: '60%',
   },
   headerButton: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 6,
     textAlign: 'center',
   },

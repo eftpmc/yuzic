@@ -126,12 +126,12 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
     <>
       <View style={styles.container}>
         <View style={styles.titleRow}>
-          <Text style={[styles.titlePrefix, { color: colors.text }]}>
+          <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.becauseYouListenedLabel')}
           </Text>
           <TouchableOpacity onPress={() => sheetRef.current?.present()} hitSlop={8}>
             <Text
-              style={[styles.artistName, { color: colors.text, borderBottomColor: colors.text }]}
+              style={[styles.artistName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}
             >
               {selectedArtist}
@@ -199,11 +199,11 @@ const styles = StyleSheet.create({
   },
   titlePrefix: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   artistName: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     borderBottomWidth: 1.5,
     paddingBottom: 1,
   },

@@ -331,8 +331,8 @@ export default function LibraryScreen() {
               style={styles.sortButton}
               onPress={() => sortSheetRef.current?.present()}
             >
-              <ArrowUpDown size={17} color={colors.text} />
-              <Text style={[styles.sortLabel, { color: colors.text }]}>
+              <ArrowUpDown size={17} color={colors.secondary} />
+              <Text style={[styles.sortLabel, { color: colors.secondary }]}>
                 {SORT_LABELS[sortOrder]}
               </Text>
             </TouchableOpacity>
@@ -341,8 +341,8 @@ export default function LibraryScreen() {
               onPress={() => gridSheetRef.current?.present()}
             >
               {isGridView
-                ? <List size={17} color={colors.text} />
-                : <Grid2x2 size={17} color={colors.text} />
+                ? <List size={17} color={colors.secondary} />
+                : <Grid2x2 size={17} color={colors.secondary} />
               }
             </TouchableOpacity>
           </View>

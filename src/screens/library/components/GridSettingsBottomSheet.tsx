@@ -58,7 +58,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
         <BottomSheetView style={styles.container}>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={[styles.title, { color: colors.secondary }]}>
             {t('home.displaySheet.title', { defaultValue: 'Display' })}
           </Text>
 
@@ -88,7 +88,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                     style={{ marginRight: 10 }}
                   />
                   <Text
-                    style={[styles.pickerText, { color: colors.text, fontWeight: isSelected ? '600' : '400' }]}
+                    style={[styles.pickerText, { color: colors.secondary, fontWeight: isSelected ? '600' : '400' }]}
                   >
                     {option.label}
                   </Text>
@@ -107,7 +107,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
               {/* Columns slider */}
               <View style={styles.sliderRow}>
                 <View style={styles.sliderHeader}>
-                  <Text style={[styles.sliderLabel, { color: colors.text }]}>
+                  <Text style={[styles.sliderLabel, { color: colors.secondary }]}>
                     {t('home.displaySheet.columns', { defaultValue: 'Columns' })}
                   </Text>
                   <View style={[styles.badge, { backgroundColor: themeColor + '22' }]}>

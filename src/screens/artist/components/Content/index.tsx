@@ -64,7 +64,7 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
 
   return (
     <View style={styles.similarSection}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
         {t('artist.sections.similarArtists')}
       </Text>
       <FlashList
@@ -138,7 +138,7 @@ export default function ArtistContent({ artist }: Props) {
     if (item.kind === 'section') {
       return (
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
             {item.title}
           </Text>
         </View>
@@ -160,9 +160,9 @@ export default function ArtistContent({ artist }: Props) {
           activeOpacity={0.65}
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={colors.text} />
+            <Ionicons name="ellipsis-horizontal" size={18} color={colors.secondary} />
           </View>
-          <Text style={[styles.showMoreText, { color: colors.text }]}>
+          <Text style={[styles.showMoreText, { color: colors.secondary }]}>
             {item.remaining} more
           </Text>
         </TouchableOpacity>
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     paddingHorizontal: 16,
   },
   similarSection: {

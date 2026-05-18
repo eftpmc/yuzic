@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
 
   nowPlayingTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#fff',
   },
 
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
 
   sectionLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#fff',
     marginBottom: 2,
   },
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
 
   titleActive: {
-    fontWeight: '700',
+    fontWeight: '500',
   },
 
   artist: {

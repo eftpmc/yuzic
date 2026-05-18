@@ -70,7 +70,7 @@ export default function Home() {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={onRefresh}
-          tintColor={colors.text}
+          tintColor={colors.secondary}
         />
       }
     >
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   sourceBadgeLetter: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '600',
     color: '#fff',
   },
   sourceHeaderText: {

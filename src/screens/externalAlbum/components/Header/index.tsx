@@ -96,11 +96,11 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
+            <Ionicons name="chevron-back" size={24} color={colors.secondary} />
           </TouchableOpacity>
 
           <View pointerEvents="none" style={styles.headerTitleWrapper}>
-            <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+            <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
               {album.title}
             </Text>
           </View>
@@ -113,7 +113,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
         </View>
 
         <View style={styles.titleInfo}>
-          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
             {album.title}
           </Text>
           <View style={styles.metaRow}>
@@ -174,7 +174,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
               onPress={handleShuffle}
               disabled={!previewSongs.length}
             >
-              <Ionicons name="shuffle" size={18} color={colors.text} />
+              <Ionicons name="shuffle" size={18} color={colors.secondary} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -192,7 +192,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
             >
               <CloudDownload
                 size={18}
-                color={!canDownload || albumStatus.kind !== 'none' ? colors.placeholder : colors.text}
+                color={!canDownload || albumStatus.kind !== 'none' ? colors.placeholder : colors.secondary}
               />
             </TouchableOpacity>
           </View>
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     maxWidth: '60%',
   },
   headerButton: {
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 6,
     textAlign: 'center',
   },

@@ -103,7 +103,7 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
         <View style={styles.header}>
           <MediaImage cover={album.cover} size="thumb" style={styles.cover} />
           <View style={styles.headerText}>
-            <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+            <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
               {album.title}
             </Text>
             <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
@@ -131,7 +131,7 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
               cachePolicy="memory-disk"
             />
             <View style={styles.serviceText}>
-              <Text style={[styles.serviceName, { color: colors.text }]}>Lidarr</Text>
+              <Text style={[styles.serviceName, { color: colors.secondary }]}>Lidarr</Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
                 {t('externalAlbum.download.lidarrDesc')}
               </Text>
@@ -157,7 +157,7 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
               cachePolicy="memory-disk"
             />
             <View style={styles.serviceText}>
-              <Text style={[styles.serviceName, { color: colors.text }]}>Soulseek</Text>
+              <Text style={[styles.serviceName, { color: colors.secondary }]}>Soulseek</Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
                 {t('externalAlbum.download.slskdDesc')}
               </Text>

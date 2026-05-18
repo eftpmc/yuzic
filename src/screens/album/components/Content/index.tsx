@@ -65,7 +65,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
         </View>
         {moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
-            <Text style={[styles.moreSectionTitle, { color: colors.text }]}>
+            <Text style={[styles.moreSectionTitle, { color: colors.secondary }]}>
               More by {album.artist?.name}
             </Text>
             <ScrollView
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   moreSectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     paddingHorizontal: H_PADDING,
     marginBottom: 12,
   },

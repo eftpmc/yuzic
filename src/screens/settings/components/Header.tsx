@@ -40,13 +40,13 @@ const Header: React.FC<HeaderProps> = ({
                 <Ionicons
                     name="chevron-back"
                     size={24}
-                    color={colors.text}
+                    color={colors.secondary}
                 />
             </TouchableOpacity>
 
             <View pointerEvents="none" style={styles.titleWrapper}>
                 <Text
-                    style={[styles.title, { color: colors.text }]}
+                    style={[styles.title, { color: colors.secondary }]}
                     numberOfLines={1}
                 >
                     {title}

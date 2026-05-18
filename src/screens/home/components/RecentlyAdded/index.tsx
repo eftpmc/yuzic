@@ -29,7 +29,7 @@ export default function RecentlyAdded() {
 
   return (
     <View style={sectionStyles.container}>
-      <Text style={[sectionStyles.title, { color: colors.text }]}>
+      <Text style={[sectionStyles.title, { color: colors.secondary }]}>
         {t('explore.sections.recentlyAdded')}
       </Text>
       {recentlyAdded.length < MIN_ALBUMS ? (

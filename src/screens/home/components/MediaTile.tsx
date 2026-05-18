@@ -35,7 +35,7 @@ function MediaTile({ cover, title, subtitle, size, radius, onPress }: Props) {
   return (
     <Wrapper onPress={onPress} activeOpacity={onPress ? 0.7 : undefined} style={containerStyle}>
       <MediaImage cover={cover} size="grid" style={imageStyle} />
-      <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>{title}</Text>
+      <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{title}</Text>
       <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>{subtitle}</Text>
     </Wrapper>
   );
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 6,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '500',
   },
   subtitle: {
     marginTop: 2,

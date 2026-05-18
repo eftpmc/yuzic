@@ -82,11 +82,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
             {playlist.title}
           </Text>
         </View>
@@ -95,7 +95,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           onPress={() => optionsSheetRef.current?.present()}
           style={styles.headerButton}
         >
-          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
+          <Ionicons name="ellipsis-horizontal" size={24} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -106,7 +106,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
       </View>
 
       <View style={styles.titleInfo}>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
           {playlist.title}
         </Text>
 
@@ -132,7 +132,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             style={[styles.secondaryButton, { backgroundColor: colors.card }]}
             onPress={handleShuffle}
           >
-            <Ionicons name="shuffle" size={18} color={colors.text} />
+            <Ionicons name="shuffle" size={18} color={colors.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -148,12 +148,12 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             disabled={isPlaylistDownloading}
           >
             {isPlaylistDownloading ? (
-              <ActivityIndicator size="small" color={colors.text} />
+              <ActivityIndicator size="small" color={colors.secondary} />
             ) : (
               <Ionicons
                 name={isPlaylistDownloaded ? 'checkmark' : 'download-outline'}
                 size={18}
-                color={colors.text}
+                color={colors.secondary}
               />
             )}
           </TouchableOpacity>
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     maxWidth: '60%',
   },
   headerButton: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 6,
     textAlign: 'center',
   },

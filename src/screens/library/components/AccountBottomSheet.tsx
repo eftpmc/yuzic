@@ -80,7 +80,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
       enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: colors.card }}
+      backgroundStyle={[{ backgroundColor: colors.card }, styles.sheetBackground]}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
     >
       <BottomSheetView style={styles.container}>
@@ -131,10 +131,13 @@ AccountBottomSheet.displayName = 'AccountBottomSheet';
 export default AccountBottomSheet;
 
 const styles = StyleSheet.create({
+  sheetBackground: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
+    padding: 16,
+    paddingBottom: 32,
   },
   header: {
     flexDirection: 'row',

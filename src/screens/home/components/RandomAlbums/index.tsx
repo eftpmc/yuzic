@@ -33,7 +33,7 @@ export default function RandomAlbums({ refreshKey = 0 }: Props) {
 
   return (
     <View style={sectionStyles.container}>
-      <Text style={[sectionStyles.title, { color: colors.text }]}>
+      <Text style={[sectionStyles.title, { color: colors.secondary }]}>
         {t('explore.sections.randomAlbums')}
       </Text>
       {randomAlbums.length < MIN_ALBUMS ? (

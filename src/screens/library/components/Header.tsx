@@ -18,7 +18,7 @@ export default function HomeHeader({ title, username, onSearch, onAccountPress }
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
 
       <View style={styles.actions}>
         <TouchableOpacity
@@ -27,7 +27,7 @@ export default function HomeHeader({ title, username, onSearch, onAccountPress }
           onPress={onSearch}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="search" size={24} color={colors.text} />
+          <Ionicons name="search" size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#fff',
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });

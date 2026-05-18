@@ -272,7 +272,7 @@ export default function PlayingBarBase({ variant }: Props) {
           <Ionicons
             name="musical-notes"
             size={stylesForVariant.placeholderIconSize}
-            color={colors.text}
+            color={colors.secondary}
           />
         </View>
       )}
@@ -283,7 +283,7 @@ export default function PlayingBarBase({ variant }: Props) {
           style={[
             styles.title,
             stylesForVariant.title,
-            { color: colors.text },
+            { color: colors.secondary },
           ]}
         >
           {currentSong?.title || t('playing.bar.noSong')}
@@ -312,7 +312,7 @@ export default function PlayingBarBase({ variant }: Props) {
           <FontAwesome6
             name={isPlaying ? 'pause' : 'play'}
             size={20}
-            color={colors.text}
+            color={colors.secondary}
           />
         </TouchableOpacity>
       )}
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontWeight: '600',
+    fontWeight: '500',
   },
   artist: {
     marginTop: 2,

@@ -17,13 +17,13 @@ export default function NotFoundView({ message = 'Not found' }: Props) {
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
         </TouchableOpacity>
         <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.body}>
-        <Text style={[styles.message, { color: colors.text }]}>{message}</Text>
+        <Text style={[styles.message, { color: colors.secondary }]}>{message}</Text>
       </View>
     </SafeAreaView>
   )
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 })

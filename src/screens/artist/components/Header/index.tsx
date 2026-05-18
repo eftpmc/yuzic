@@ -198,7 +198,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
           <Text
-            style={[styles.artistName, { color: colors.text }]}
+            style={[styles.artistName, { color: colors.secondary }]}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.65}
@@ -230,9 +230,9 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.text} />
+            <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
-            <Ionicons name="shuffle" size={18} color={colors.text} />
+            <Ionicons name="shuffle" size={18} color={colors.secondary} />
           )}
         </TouchableOpacity>
 
@@ -254,12 +254,12 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {isDownloadingAll || isArtistDownloading ? (
-            <ActivityIndicator size="small" color={colors.text} />
+            <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
             <Ionicons
               name={isArtistFullyDownloaded ? 'checkmark' : 'download-outline'}
               size={18}
-              color={colors.text}
+              color={colors.secondary}
             />
           )}
         </TouchableOpacity>
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   artistName: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     width: '100%',
   },

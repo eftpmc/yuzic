@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   activeLine: {
     color: '#fff',
-    fontWeight: '700',
+    fontWeight: '600',
   },
   inactiveLine: {
     color: 'rgba(255,255,255,0.6)',

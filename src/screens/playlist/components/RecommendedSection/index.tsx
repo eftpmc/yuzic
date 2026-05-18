@@ -165,7 +165,7 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
     <TouchableOpacity style={styles.row} onPress={() => void handlePress()} activeOpacity={0.7}>
       <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
       <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.rowTitle, { color: colors.secondary }]} numberOfLines={1}>
           {song.title}
         </Text>
         <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
@@ -205,7 +205,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
     >
       <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
       <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.rowTitle, { color: colors.secondary }]} numberOfLines={1}>
           {song.title}
         </Text>
         <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
@@ -271,7 +271,7 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
         {t('playlist.recommended.local')}
       </Text>
 
@@ -365,7 +365,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
         {t('playlist.recommended.deezerTitle')}
       </Text>
 
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     paddingHorizontal: 16,
     marginBottom: 12,
   },

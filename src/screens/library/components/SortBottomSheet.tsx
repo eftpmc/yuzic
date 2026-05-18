@@ -51,7 +51,7 @@ const SortBottomSheet = forwardRef<
     >
       <BottomSheetView style={styles.sheetContainer}>
         <Text
-          style={[styles.sheetTitle, { color: colors.text }]}
+          style={[styles.sheetTitle, { color: colors.secondary }]}
         >
           {t('home.sortSheet.title')}
         </Text>
@@ -79,7 +79,7 @@ const SortBottomSheet = forwardRef<
                   style={{ marginRight: 10 }}
                 />
                 <Text
-                  style={[styles.pickerText, { color: colors.text, fontWeight: isSelected ? '600' : '400' }]}
+                  style={[styles.pickerText, { color: colors.secondary, fontWeight: isSelected ? '600' : '400' }]}
                 >
                   {option.label}
                 </Text>

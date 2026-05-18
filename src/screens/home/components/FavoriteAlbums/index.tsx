@@ -43,7 +43,7 @@ export default function FavoriteAlbums() {
 
   return (
     <View style={sectionStyles.container}>
-      <Text style={[sectionStyles.title, { color: colors.text }]}>
+      <Text style={[sectionStyles.title, { color: colors.secondary }]}>
         {t('explore.sections.favoriteAlbums')}
       </Text>
       {favoriteAlbums.length < MIN_ALBUMS ? (

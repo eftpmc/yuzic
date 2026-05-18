@@ -48,7 +48,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
         style={[styles.item, { borderBottomColor: colors.muted }]}
         onPress={() => onSelect(item)}
       >
-        <Text style={[styles.itemText, { color: colors.text }]}>
+        <Text style={[styles.itemText, { color: colors.secondary }]}>
           {item}
         </Text>
       </TouchableOpacity>
@@ -67,7 +67,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
       >
         <View style={[styles.inputRow, { backgroundColor: colors.muted }]}>
           <BottomSheetTextInput
-            style={[styles.input, { color: colors.text }]}
+            style={[styles.input, { color: colors.secondary }]}
             value={query}
             onChangeText={setQuery}
             placeholder={placeholder ?? 'Search…'}

@@ -16,7 +16,7 @@ export const sectionStyles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 12,
     marginLeft: SECTION_H_PADDING,
   },

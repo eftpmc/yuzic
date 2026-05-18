@@ -72,7 +72,7 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>
+      <Text style={[styles.title, { color: colors.secondary }]}>
         {t('explore.sections.charts')}
       </Text>
       {query.isLoading ? (
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 12,
     marginLeft: H_PADDING,
   },

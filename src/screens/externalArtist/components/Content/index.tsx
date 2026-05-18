@@ -54,7 +54,7 @@ function SimilarArtistsSection({ artists }: { artists: ExternalArtistBase[] }) {
 
   return (
     <View style={styles.similarSection}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
         {t('artist.sections.similarArtists')}
       </Text>
       <FlashList
@@ -96,7 +96,7 @@ function TopTrackRow({
       </Text>
       <MediaImage cover={song.cover} size="thumb" style={styles.trackCover} />
       <View style={styles.trackText}>
-        <Text style={[styles.trackTitle, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.trackTitle, { color: colors.secondary }]} numberOfLines={1}>
           {song.title}
         </Text>
         <Text style={[styles.trackSubtitle, { color: colors.subtext }]} numberOfLines={1}>
@@ -105,7 +105,7 @@ function TopTrackRow({
       </View>
       {song.previewUrl ? (
         <View style={[styles.previewButton, { backgroundColor: colors.card }]}>
-          <Ionicons name="play" size={13} color={colors.text} />
+          <Ionicons name="play" size={13} color={colors.secondary} />
         </View>
       ) : null}
     </TouchableOpacity>
@@ -190,7 +190,7 @@ export default function ExternalArtistContent({ artist }: Props) {
     if (item.kind === 'section') {
       return (
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
             {item.title}
           </Text>
         </View>
@@ -222,7 +222,7 @@ export default function ExternalArtistContent({ artist }: Props) {
             onPress={() => setShowAllTracks(v => !v)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.toggleTracksText, { color: colors.text }]}>
+            <Text style={[styles.toggleTracksText, { color: colors.secondary }]}>
               {item.expanded ? 'See less' : 'See more'}
             </Text>
           </TouchableOpacity>
@@ -241,9 +241,9 @@ export default function ExternalArtistContent({ artist }: Props) {
           activeOpacity={0.65}
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={colors.text} />
+            <Ionicons name="ellipsis-horizontal" size={18} color={colors.secondary} />
           </View>
-          <Text style={[styles.showMoreText, { color: colors.text }]}>
+          <Text style={[styles.showMoreText, { color: colors.secondary }]}>
             {item.remaining} more
           </Text>
         </TouchableOpacity>
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     paddingHorizontal: 16,
   },
   similarSection: {

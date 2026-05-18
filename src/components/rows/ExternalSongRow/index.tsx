@@ -36,7 +36,7 @@ const ExternalSongRow: React.FC<Props> = ({
         activeOpacity={onPress ? 0.6 : 1}
       >
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
             {song.title}
           </Text>
           <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>

@@ -225,10 +225,10 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-            <X size={20} color={colors.text} strokeWidth={2.5} />
+            <X size={20} color={colors.secondary} strokeWidth={2.5} />
           </TouchableOpacity>
 
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
+          <Text style={[styles.headerTitle, { color: colors.secondary }]}>
             {t('playlistList.title')}
           </Text>
         </View>
@@ -237,7 +237,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
             <Ionicons name="search" size={20} color={colors.placeholder} />
             <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
+              style={[styles.searchInput, { color: colors.secondary }]}
               placeholder={t('playlistList.searchPlaceholder')}
               placeholderTextColor={colors.placeholder}
               value={searchQuery}
@@ -247,14 +247,14 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
           <View style={styles.createContainer}>
             <TextInput
-              style={[styles.newPlaylistInput, { backgroundColor: colors.card, color: colors.text }]}
+              style={[styles.newPlaylistInput, { backgroundColor: colors.card, color: colors.secondary }]}
               placeholder={t('playlistList.newPlaceholder')}
               placeholderTextColor={colors.placeholder}
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
             <TouchableOpacity onPress={handleCreatePlaylist}>
-              <Ionicons name="add" size={26} color={colors.text} />
+              <Ionicons name="add" size={26} color={colors.secondary} />
             </TouchableOpacity>
           </View>
 
@@ -277,7 +277,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
                     style={styles.playlistCover}
                   />
 
-                  <Text style={[styles.optionText, { color: colors.text }]}>
+                  <Text style={[styles.optionText, { color: colors.secondary }]}>
                     {item.title}
                   </Text>
 
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   content: {
     flex: 1,
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   doneButtonText: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#fff',
   },
 });

@@ -48,7 +48,7 @@ const AlbumRow: React.FC<Props> = ({
             <View style={styles.titleRow}>
               <Text
                 numberOfLines={1}
-                style={[styles.albumTitle, { color: colors.text }]}
+                style={[styles.albumTitle, { color: colors.secondary }]}
               >
                 {album.title}
               </Text>
@@ -71,7 +71,7 @@ const AlbumRow: React.FC<Props> = ({
             <Ionicons
               name="ellipsis-horizontal"
               size={24}
-              color={colors.text}
+              color={colors.secondary}
             />
           </TouchableOpacity>
         </View>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   albumTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   albumSubtext: {
     fontSize: 14,

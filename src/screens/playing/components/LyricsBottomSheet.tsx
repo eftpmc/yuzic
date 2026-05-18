@@ -148,10 +148,10 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
       >
         <View style={[styles.header, { paddingTop: 12 }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <ChevronDown size={28} color={colors.text} />
+            <ChevronDown size={28} color={colors.secondary} />
           </TouchableOpacity>
           <Text
-            style={[styles.title, { color: colors.text }]}
+            style={[styles.title, { color: colors.secondary }]}
             numberOfLines={1}
           >
             {t('playing.lyrics.title')}
@@ -179,7 +179,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
               <LyricLine
                 text={line.text}
                 variant={getVariant(index)}
-                activeColor={colors.text}
+                activeColor={colors.secondary}
                 inactiveColor={colors.subtext}
               />
             </View>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
   },
   scrollView: {

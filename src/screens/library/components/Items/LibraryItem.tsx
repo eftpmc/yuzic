@@ -56,7 +56,7 @@ const LibraryItem: React.FC<Props> = ({
       />
 
       <View style={isGridView ? styles.gridText : styles.listText}>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
           {title}
         </Text>
         <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   subtext: {
     fontSize: 13,

@@ -37,7 +37,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
           <View style={styles.albumTextContainer}>
             <Text
               numberOfLines={1}
-              style={[styles.albumTitle, { color: colors.text }]}
+              style={[styles.albumTitle, { color: colors.secondary }]}
             >
               {album.title}
             </Text>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   albumTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   subtextRow: {
     flexDirection: 'row',

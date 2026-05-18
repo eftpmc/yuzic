@@ -46,7 +46,7 @@ const LanguageBottomSheet = forwardRef<
     >
       <BottomSheetView style={styles.sheetContainer}>
         <Text
-          style={[styles.sheetTitle, { color: colors.text }]}
+          style={[styles.sheetTitle, { color: colors.secondary }]}
         >
           {t('settings.appearance.language.title')}
         </Text>
@@ -77,7 +77,7 @@ const LanguageBottomSheet = forwardRef<
                 <Text
                   style={[
                     styles.pickerText,
-                    { color: colors.text, fontWeight: isSelected ? '600' : '400' },
+                    { color: colors.secondary, fontWeight: isSelected ? '600' : '400' },
                   ]}
                 >
                   {t(lang.translationKey)}

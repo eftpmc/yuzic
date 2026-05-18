@@ -203,7 +203,7 @@ function AppShell() {
                       backgroundColor: 'transparent',
                     },
                     text: {
-                      color: colors.text,
+                      color: colors.secondary,
                       fontSize: 16,
                       fontWeight: '500',
                     },

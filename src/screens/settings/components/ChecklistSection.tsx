@@ -71,7 +71,7 @@ export default function ChecklistSection({
                 ]}>
                   {active && <Ionicons name="checkmark" size={14} color="#fff" />}
                 </View>
-                <Text style={[styles.optionLabel, { color: colors.text }]}>
+                <Text style={[styles.optionLabel, { color: colors.secondary }]}>
                   {item.label}
                 </Text>
               </TouchableOpacity>

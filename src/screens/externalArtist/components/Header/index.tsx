@@ -88,7 +88,7 @@ export default function ExternalArtistHeader({ artist }: Props) {
       <View style={{ paddingHorizontal: 16 }}>
         <View style={styles.content}>
           <Text
-            style={[styles.artistName, { color: colors.text }]}
+            style={[styles.artistName, { color: colors.secondary }]}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.65}
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   artistName: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     width: '100%',
   },

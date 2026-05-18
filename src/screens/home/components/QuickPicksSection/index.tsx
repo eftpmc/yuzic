@@ -125,7 +125,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
   return (
     <>
       <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>
+        <Text style={[styles.title, { color: colors.secondary }]}>
           {t('explore.sections.quickPicks')}
         </Text>
 
@@ -150,7 +150,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
                   >
                     <MediaImage cover={song.cover} size="thumb" style={styles.art} />
                     <View style={styles.info}>
-                      <Text style={[styles.trackTitle, { color: colors.text }]} numberOfLines={1}>
+                      <Text style={[styles.trackTitle, { color: colors.secondary }]} numberOfLines={1}>
                         {song.title}
                       </Text>
                       <Text style={[styles.trackArtist, { color: colors.subtext }]} numberOfLines={1}>
@@ -164,7 +164,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
                       <Ionicons
                         name="ellipsis-horizontal"
                         size={18}
-                        color={colors.text}
+                        color={colors.secondary}
                       />
                     </TouchableOpacity>
                   </TouchableOpacity>
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 8,
     paddingHorizontal: H_PADDING,
   },

@@ -167,7 +167,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
       </View>
 
       <View style={styles.content}>
-        <Text style={[styles.genreName, { color: colors.text }]}>
+        <Text style={[styles.genreName, { color: colors.secondary }]}>
           {genre}
         </Text>
         <Text style={[styles.subtext, { color: colors.subtext }]}>
@@ -182,9 +182,9 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.text} />
+            <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
-            <Ionicons name="shuffle" size={18} color={colors.text} />
+            <Ionicons name="shuffle" size={18} color={colors.secondary} />
           )}
         </TouchableOpacity>
 
@@ -206,12 +206,12 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
         >
           {isDownloadingAll || isDownloading ? (
-            <ActivityIndicator size="small" color={colors.text} />
+            <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
             <Ionicons
               name={isFullyDownloaded ? 'checkmark' : 'download-outline'}
               size={18}
-              color={colors.text}
+              color={colors.secondary}
             />
           )}
         </TouchableOpacity>

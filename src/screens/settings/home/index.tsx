@@ -58,7 +58,7 @@ export default function Settings() {
                             <Text style={styles.avatarText}>{avatarLetter}</Text>
                         </View>
                         <View style={styles.profileInfo}>
-                            <Text style={[styles.profileName, { color: colors.text }]}>
+                            <Text style={[styles.profileName, { color: colors.secondary }]}>
                                 {username || t('settings.profile.unknownUser')}
                             </Text>
                             <View style={styles.serverMeta}>

@@ -118,7 +118,7 @@ const Search = () => {
             >
               <MediaImage cover={result.cover} size="thumb" style={styles.songCover} />
               <View style={styles.songText}>
-                <Text numberOfLines={1} style={[styles.songTitle, { color: colors.text }]}>
+                <Text numberOfLines={1} style={[styles.songTitle, { color: colors.secondary }]}>
                   {result.title}
                 </Text>
                 <Text numberOfLines={1} style={[styles.songSubtitle, { color: colors.subtext }]}>
@@ -127,7 +127,7 @@ const Search = () => {
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.songOptionsButton} onPress={() => { void handleSongOptions(result); }}>
-              <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
+              <Ionicons name="ellipsis-horizontal" size={24} color={colors.secondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -218,7 +218,7 @@ const Search = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
@@ -226,7 +226,7 @@ const Search = () => {
             accessibilityLabel="Search input"
             testID="search-input"
             ref={searchInputRef}
-            style={[styles.searchInput, { color: colors.text }]}
+            style={[styles.searchInput, { color: colors.secondary }]}
             placeholder={t('search.placeholder')}
             placeholderTextColor={colors.placeholder}
             value={query}
@@ -239,7 +239,7 @@ const Search = () => {
               style={styles.clearButton}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
-              <MaterialIcons name="close" size={20} color={colors.text} />
+              <MaterialIcons name="close" size={20} color={colors.secondary} />
             </TouchableOpacity>
           )}
         </View>
@@ -358,12 +358,12 @@ const styles = StyleSheet.create({
   },
   sourceBadgeLetter: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '500',
     color: '#fff',
   },
   sourceHeaderText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   noResults: {
     textAlign: 'center',
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   songTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   songSubtitle: {
     fontSize: 14,

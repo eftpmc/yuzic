@@ -51,7 +51,7 @@ export default function ArtistsForYouSection() {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>
+      <Text style={[styles.title, { color: colors.secondary }]}>
         {t('explore.sections.artistsForYou')}
       </Text>
       {!artistsReady ? (
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 12,
     marginLeft: H_PADDING,
   },

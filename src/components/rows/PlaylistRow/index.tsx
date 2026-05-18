@@ -44,7 +44,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
           <View style={styles.textContainer}>
             <Text
               numberOfLines={1}
-              style={[styles.title, { color: colors.text }]}
+              style={[styles.title, { color: colors.secondary }]}
             >
               {playlist.title}
             </Text>
@@ -66,7 +66,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
             <Ionicons
               name="ellipsis-horizontal"
               size={24}
-              color={colors.text}
+              color={colors.secondary}
             />
           </TouchableOpacity>
         </View>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   subtext: {
     fontSize: 14,

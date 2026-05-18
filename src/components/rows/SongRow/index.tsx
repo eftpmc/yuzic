@@ -94,7 +94,7 @@ const SongRow: React.FC<Props> = ({
 
           <View style={styles.textContainer}>
             <Text
-              style={[styles.title, { color: colors.text }]}
+              style={[styles.title, { color: colors.secondary }]}
               numberOfLines={1}
             >
               {song.title}
@@ -129,7 +129,7 @@ const SongRow: React.FC<Props> = ({
             <Ionicons
               name="ellipsis-horizontal"
               size={18}
-              color={colors.text}
+              color={colors.secondary}
             />
           </TouchableOpacity>
         </View>
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 15,
-    fontWeight: '400',
+    fontWeight: '500',
   },
   subtitle: {
     fontSize: 13,

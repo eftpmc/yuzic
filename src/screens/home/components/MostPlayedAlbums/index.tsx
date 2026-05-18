@@ -33,7 +33,7 @@ export default function MostPlayedAlbums() {
 
   return (
     <View style={sectionStyles.container}>
-      <Text style={[sectionStyles.title, { color: colors.text }]}>
+      <Text style={[sectionStyles.title, { color: colors.secondary }]}>
         {t('explore.sections.mostPlayed')}
       </Text>
       {itemsToRender.length < MIN_ALBUMS ? (

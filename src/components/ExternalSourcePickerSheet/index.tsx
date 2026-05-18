@@ -36,11 +36,11 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         stackBehavior="push"
       >
         <BottomSheetScrollView style={{ backgroundColor: colors.card }} contentContainerStyle={styles.content}>
-          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
 
           {isLoading && (
             <View style={styles.loading}>
-              <ActivityIndicator size="large" color={colors.text} />
+              <ActivityIndicator size="large" color={colors.secondary} />
             </View>
           )}
 
@@ -62,7 +62,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
                   <Text style={styles.badgeLetter}>{item.source[0].toUpperCase()}</Text>
                 </View>
                 <View style={styles.rowText}>
-                  <Text style={[styles.rowLabel, { color: colors.text }]} numberOfLines={1}>{label}</Text>
+                  <Text style={[styles.rowLabel, { color: colors.secondary }]} numberOfLines={1}>{label}</Text>
                   {sublabel ? (
                     <Text style={[styles.rowSublabel, { color: colors.subtext }]} numberOfLines={1}>{sublabel}</Text>
                   ) : null}
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   badgeLetter: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#fff',
   },
   rowText: {
