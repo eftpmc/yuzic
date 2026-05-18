@@ -29,7 +29,7 @@ import { queryStorage } from '@/utils/mmkvStorage';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { QueryKeys } from '@/enums/queryKeys';
-import { clearImageMemoryCache } from '@/utils/images/imageCache';
+import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -131,6 +131,7 @@ const OFFLINE_TOAST_ID = 'offline-banner';
 
 function useImageMemoryCleanup() {
   useEffect(() => {
+    runImageCacheMigration();
     const appStateSubscription = AppState.addEventListener('change', state => {
       if (state === 'background') {
         clearImageMemoryCache();

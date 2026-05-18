@@ -1,6 +1,15 @@
 import TurboImage from 'react-native-turbo-image';
 import { buildCover, buildCoverCacheKey } from '@/utils/builders/buildCover';
+import { mmkv } from '@/utils/mmkvStorage';
 import type { CoverSource } from '@/types';
+
+const DISK_CACHE_MIGRATION_KEY = 'image_cache_stable_keys_v1';
+
+export function runImageCacheMigration() {
+  if (mmkv.getBoolean(DISK_CACHE_MIGRATION_KEY)) return;
+  TurboImage.clearDiskCache().catch(() => {});
+  mmkv.set(DISK_CACHE_MIGRATION_KEY, true);
+}
 
 const IMAGE_CACHE_POLICY = 'dataCache' as const;
 const MAX_FAILED_URLS = 300;
