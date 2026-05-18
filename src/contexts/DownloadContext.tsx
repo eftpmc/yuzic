@@ -34,19 +34,22 @@ import {
 } from '@/utils/downloads/localDownloadStore';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 
-export type DownloadedTrack = {
-  trackId: string;
+export type DownloadedTrack = DownloadedTrackEntry & {
   localPath: string;
-  fileSize: number;
-  downloadedAt: number;
-  originalTrack?: { id?: string };
+  originalTrack?: {
+    id?: string;
+    extraPayload?: {
+      serverId?: string;
+      serverType?: string;
+      coverKind?: string;
+    };
+  };
 };
 
 type DownloadContextType = {
   configure: (config: Record<string, unknown>) => void;
   downloadTrack: (track: Song, playlistId?: string) => Promise<void>;
   downloadPlaylist: (playlistId: string, tracks: Song[]) => Promise<void>;
-  pauseDownload: (downloadId: string) => Promise<void>;
   resumeDownload: (downloadId: string) => Promise<void>;
   cancelDownload: (downloadId: string) => Promise<void>;
   isTrackDownloaded: (trackId: string) => boolean;
@@ -701,6 +704,11 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     localPath: normalizeLocalUri(track.localPath),
     fileSize: track.fileSize,
     downloadedAt: track.downloadedAt,
+    albumId: track.albumId,
+    artistId: track.artistId,
+    serverId: track.serverId,
+    serverType: track.serverType,
+    coverKind: track.coverKind,
     originalTrack: track.originalTrack,
   })), [state.tracks]);
 
@@ -708,7 +716,6 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     configure: () => {},
     downloadTrack,
     downloadPlaylist,
-    pauseDownload: async () => {},
     resumeDownload,
     cancelDownload,
     isTrackDownloaded,

@@ -377,7 +377,11 @@
         "navidrome": "A lightweight, self-hosted music server.",
         "jellyfin": "A full-featured media server for music, movies, and TV.",
         "emby": "A personal media server for music, movies, and TV."
-      }
+      },
+      "serverUrlRequired": "Server URL is required.",
+      "serverConnectionFailed": "Failed to connect to the server.",
+      "missingCredentials": "Missing credentials or server URL.",
+      "serverErrorStatus": "Server returned {{status}}"
     },
     "address": {
       "title": "Server Address",

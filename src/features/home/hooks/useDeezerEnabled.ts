@@ -5,8 +5,9 @@ import {
   selectDeezerSearchEnabled,
   selectDeezerExternalScreensEnabled,
 } from '@/utils/redux/selectors/settingsSelectors'
+import { RootState } from '@/utils/redux/store'
 
-function useDeezerBase(selector: (s: any) => boolean): boolean {
+function useDeezerBase(selector: (s: RootState) => boolean): boolean {
   const enabled = useSelector(selector)
   const isOffline = useIsOffline()
   return enabled && !isOffline

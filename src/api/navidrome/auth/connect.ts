@@ -1,4 +1,5 @@
 import { buildTokenParams } from "../client";
+import i18n from '@/i18n';
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -14,7 +15,7 @@ export async function connect(
   basicAuth?: { username: string; password: string }
 ): Promise<ConnectResult> {
   if (!serverUrl || !username || !password) {
-    return { success: false, message: "Missing credentials or server URL." };
+    return { success: false, message: i18n.t('onboarding.connect.missingCredentials') };
   }
 
   const cleanUrl = serverUrl.replace(/\/+$/, "");
@@ -35,7 +36,7 @@ export async function connect(
   try {
     const res = await fetch(url, { headers });
     if (!res.ok) {
-      return { success: false, message: `Navidrome returned ${res.status}` };
+      return { success: false, message: i18n.t('onboarding.connect.serverErrorStatus', { status: res.status }) };
     }
 
     const data = await res.json();
@@ -70,12 +71,12 @@ export async function connect(
 
     return {
       success: false,
-      message: response?.error?.message ?? "Navidrome authentication failed.",
+      message: response?.error?.message ?? i18n.t('onboarding.credentials.authFailed'),
     };
   } catch {
     return {
       success: false,
-      message: "Failed to reach Navidrome server.",
+      message: i18n.t('onboarding.connect.serverConnectionFailed'),
     };
   }
 }
