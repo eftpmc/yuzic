@@ -5,7 +5,7 @@ import SettingsCard from './SettingsCard';
 
 export type ButtonSelectItem = {
   id: string;
-  icon: React.ReactElement;
+  icon: React.ReactElement<{ color?: string }>;
 };
 
 type Props = {

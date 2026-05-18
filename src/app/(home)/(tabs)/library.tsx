@@ -323,7 +323,6 @@ export default function LibraryScreen() {
         keyExtractor={item => `${item.kind}-${item.data.id}`}
         renderItem={renderItem}
         numColumns={isGridView ? gridColumns : 1}
-        {...({ estimatedItemSize: isGridView ? gridWidth + 30 : 64 } as any)}
         getItemType={item => item.kind}
         ListHeaderComponent={
           <View style={[styles.sortRow, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>

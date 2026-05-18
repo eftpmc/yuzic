@@ -90,7 +90,6 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
           ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
-          estimatedItemSize={gridItemWidth}
           renderItem={renderAlbum}
         />
       )}

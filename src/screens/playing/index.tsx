@@ -112,8 +112,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         setLyrics(res);
                         setLyricsAvailable(true);
                     }
-                } catch (err) {
-                    console.error("❌ Lyrics fetch failed", err);
+                } catch {
                 }
             })();
         });

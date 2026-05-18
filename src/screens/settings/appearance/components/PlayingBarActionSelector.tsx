@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectPlayingBarAction } from '@/utils/redux/selectors/settingsSelectors';
-import { setPlayingBarAction } from '@/utils/redux/slices/settingsSlice';
+import { setPlayingBarAction, PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
 import { PLAYING_BAR_ACTIONS } from '@/screens/playing/playingBar/actions/Actions';
 import SettingsButtonSelect from '../../components/SettingsButtonSelect';
 
@@ -16,10 +16,10 @@ export const PlayingBarActionSelector: React.FC = () => {
       caption={t('settings.appearance.playingBarAction.info')}
       items={PLAYING_BAR_ACTIONS.map(action => ({
         id: action.id,
-        icon: action.icon as React.ReactElement,
+        icon: action.icon as React.ReactElement<{ color?: string }>,
       }))}
       selected={selected}
-      onSelect={id => dispatch(setPlayingBarAction(id))}
+      onSelect={id => dispatch(setPlayingBarAction(id as PlayingBarAction))}
     />
   );
 };

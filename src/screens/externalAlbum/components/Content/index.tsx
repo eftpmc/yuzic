@@ -142,7 +142,6 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       extraData={handleSongPress}
       ListHeaderComponent={<ExternalAlbumHeader album={album} />}
       ListFooterComponent={footer}
-      estimatedItemSize={60}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
     />

@@ -166,7 +166,6 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}
             ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
-            estimatedItemSize={gridItemWidth}
             renderItem={renderAlbum}
           />
         )}
