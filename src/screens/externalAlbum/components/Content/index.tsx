@@ -11,7 +11,7 @@ import MediaTile from '@/screens/home/components/MediaTile';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useTheme } from '@/hooks/useTheme';
-import * as deezer from '@/api/deezer';
+import { ALL_SOURCES } from '@/features/sources/registry';
 import { QueryKeys } from '@/enums/queryKeys';
 
 const H_PADDING = 16;
@@ -34,31 +34,23 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
   const previews = useExternalAlbumPreviews(album);
   const { toggleInAlbum } = usePreviewPlayer();
 
-  const artistDeezerId = album.externalIds?.artistDeezerId;
   const artistName = album.artist;
+  const sourceDef = ALL_SOURCES.find(s => s.id === album.externalSource);
+  const knownArtistId = album.externalIds?.artistDeezerId;
 
   const { data: moreAlbums } = useQuery({
-    queryKey: [QueryKeys.ExternalArtist, 'artist-albums', artistDeezerId ?? artistName ?? ''],
-    enabled: !!(artistDeezerId || artistName),
+    queryKey: [QueryKeys.ExternalArtist, 'artist-albums', album.externalSource ?? '', knownArtistId ?? artistName ?? ''],
+    enabled: !!(sourceDef && (knownArtistId || artistName)),
     staleTime: 1000 * 60 * 60 * 24,
     queryFn: async () => {
-      let deezerId = artistDeezerId;
-      if (!deezerId && artistName) {
-        const resolved = await deezer.resolveDeezerArtistByName(artistName);
-        deezerId = resolved?.externalIds?.deezerId;
+      if (!sourceDef) return [];
+      let artistId = knownArtistId;
+      if (!artistId && artistName) {
+        const resolved = await sourceDef.resolveArtist(artistName);
+        artistId = resolved?.id;
       }
-      if (!deezerId) return [];
-      const fallbackArtist = artistName
-        ? {
-            id: deezerId,
-            name: artistName,
-            subtext: '',
-            cover: { kind: 'none' as const },
-            externalSource: 'deezer' as const,
-            externalIds: { deezerId },
-          }
-        : null;
-      return deezer.getDeezerArtistAlbums(deezerId, 50, fallbackArtist);
+      if (!artistId) return [];
+      return sourceDef.fetchArtistAlbums(artistId, 50, artistName);
     },
     select: (albums) => albums.filter(a => a.id !== album.id),
   });
