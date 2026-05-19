@@ -7,13 +7,14 @@ import { ThemeColor } from './components/ThemeColor';
 import { ThemeModeSelector } from './components/ThemeModeSelector';
 import { PlayingBarActionSelector } from './components/PlayingBarActionSelector';
 import { LanguageSelector } from './components/LanguageSelector';
-import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
-import { setShowQualityBadge } from '@/utils/redux/slices/settingsSlice';
+import { selectShowQualityBadge, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
+import { setShowQualityBadge, setShowSourceHeaders } from '@/utils/redux/slices/settingsSlice';
 
 const AppearanceSettings: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const showQualityBadge = useSelector(selectShowQualityBadge);
+  const showSourceHeaders = useSelector(selectShowSourceHeaders);
 
   return (
     <SettingsScreen title={t('settings.appearance.title')}>
@@ -28,6 +29,12 @@ const AppearanceSettings: React.FC = () => {
             subtext: t('settings.appearance.showQualityBadgeSubtext'),
             value: showQualityBadge,
             onValueChange: v => dispatch(setShowQualityBadge(v)),
+          },
+          {
+            label: t('settings.appearance.showSourceHeaders'),
+            subtext: t('settings.appearance.showSourceHeadersSubtext'),
+            value: showSourceHeaders,
+            onValueChange: v => dispatch(setShowSourceHeaders(v)),
           },
         ]}
       />

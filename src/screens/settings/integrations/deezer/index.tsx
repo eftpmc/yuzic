@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import SettingsScreen from '../../components/SettingsScreen';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import {
   selectDeezerDiscoveryEnabled,
   selectDeezerSearchEnabled,
@@ -11,6 +12,7 @@ import {
   selectDeezerSimilarArtistsEnabled,
   selectDeezerAlbumRecommendationsEnabled,
   selectDeezerSamplesEnabled,
+  selectDeezerPlaylistRecommendationsEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setDeezerDiscoveryEnabled,
@@ -20,6 +22,7 @@ import {
   setDeezerSimilarArtistsEnabled,
   setDeezerAlbumRecommendationsEnabled,
   setDeezerSamplesEnabled,
+  setDeezerPlaylistRecommendationsEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
 export default function DeezerSettings() {
@@ -32,6 +35,7 @@ export default function DeezerSettings() {
   const similarArtistsEnabled = useSelector(selectDeezerSimilarArtistsEnabled);
   const albumRecommendationsEnabled = useSelector(selectDeezerAlbumRecommendationsEnabled);
   const samplesEnabled = useSelector(selectDeezerSamplesEnabled);
+  const playlistRecommendationsEnabled = useSelector(selectDeezerPlaylistRecommendationsEnabled);
 
   return (
     <SettingsScreen title="Deezer">
@@ -55,6 +59,12 @@ export default function DeezerSettings() {
             value: externalEnabled,
             onValueChange: v => { dispatch(setDeezerExternalEnabled(v)); },
           },
+        ]}
+      />
+
+      <SettingsCardHeader subtle title={t('settings.deezer.artistSection')} />
+      <SettingsToggleGroup
+        items={[
           {
             label: t('settings.deezer.topTracks'),
             subtext: t('settings.deezer.topTracksDescription'),
@@ -67,6 +77,12 @@ export default function DeezerSettings() {
             value: similarArtistsEnabled,
             onValueChange: v => { dispatch(setDeezerSimilarArtistsEnabled(v)); },
           },
+        ]}
+      />
+
+      <SettingsCardHeader subtle title={t('settings.deezer.albumSection')} />
+      <SettingsToggleGroup
+        items={[
           {
             label: t('settings.deezer.albumRecommendations'),
             subtext: t('settings.deezer.albumRecommendationsDescription'),
@@ -78,6 +94,18 @@ export default function DeezerSettings() {
             subtext: t('settings.deezer.samplesDescription'),
             value: samplesEnabled,
             onValueChange: v => { dispatch(setDeezerSamplesEnabled(v)); },
+          },
+        ]}
+      />
+
+      <SettingsCardHeader subtle title={t('settings.deezer.playlistSection')} />
+      <SettingsToggleGroup
+        items={[
+          {
+            label: t('settings.deezer.playlistRecommendations'),
+            subtext: t('settings.deezer.playlistRecommendationsDescription'),
+            value: playlistRecommendationsEnabled,
+            onValueChange: v => { dispatch(setDeezerPlaylistRecommendationsEnabled(v)); },
           },
         ]}
       />

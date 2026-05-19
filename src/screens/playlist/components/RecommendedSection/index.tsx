@@ -16,7 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeColor, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -307,6 +307,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const { t } = useTranslation();
   const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -365,9 +366,16 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
-        {t('playlist.recommended.deezerTitle')}
-      </Text>
+      <View style={styles.sectionTitleRow}>
+        {showSourceHeaders && (
+          <View style={styles.sourceBadge}>
+            <Text style={styles.sourceBadgeLetter}>D</Text>
+          </View>
+        )}
+        <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
+          {t('playlist.recommended.deezerTitle')}
+        </Text>
+      </View>
 
       {externalQuery.isLoading ? (
         <ActivityIndicator color={themeColor} style={styles.loader} />
@@ -470,11 +478,29 @@ const styles = StyleSheet.create({
   section: {
     paddingTop: 24,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    gap: 8,
+  },
+  sourceBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#A238CA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceBadgeLetter: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    paddingHorizontal: 16,
-    marginBottom: 12,
   },
   row: {
     flexDirection: 'row',

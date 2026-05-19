@@ -7,6 +7,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import SettingsScreen from '../../components/SettingsScreen';
 import SettingsAuthCard from '../../components/SettingsAuthCard';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsDisconnectButton from '../../components/SettingsDisconnectButton';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -121,6 +122,7 @@ const LastFmView: React.FC = () => {
         </>
       )}
 
+      <SettingsCardHeader subtle title={t('common.artist')} />
       <SettingsToggleGroup
         items={[
           { label: t('settings.lastfm.similarArtists'), subtext: t('settings.lastfm.similarArtistsDescription'), value: similarArtistsEnabled, onValueChange: v => { dispatch(setSimilarArtistsEnabled({ serverId, value: v })); } },

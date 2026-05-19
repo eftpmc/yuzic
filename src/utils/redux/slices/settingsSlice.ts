@@ -19,6 +19,7 @@ export interface SettingsState {
 
   playingBarAction: PlayingBarAction;
   showQualityBadge: boolean;
+  showSourceHeaders: boolean;
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
@@ -49,6 +50,7 @@ export interface SettingsState {
   deezerSimilarArtistsEnabled: boolean;
   deezerAlbumRecommendationsEnabled: boolean;
   deezerSamplesEnabled: boolean;
+  deezerPlaylistRecommendationsEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
 
   /* Sync */
@@ -64,6 +66,7 @@ const initialState: SettingsState = {
   isGridView: true,
   playingBarAction: 'skip',
   showQualityBadge: false,
+  showSourceHeaders: true,
 
   librarySortOrder: 'title',
   searchScope: 'server',
@@ -86,6 +89,7 @@ const initialState: SettingsState = {
   deezerSimilarArtistsEnabled: false,
   deezerAlbumRecommendationsEnabled: false,
   deezerSamplesEnabled: false,
+  deezerPlaylistRecommendationsEnabled: false,
   musicbrainzExternalEnabled: false,
 
   lastSyncedAt: null,
@@ -120,6 +124,9 @@ const settingsSlice = createSlice({
     },
     setShowQualityBadge(state, action: PayloadAction<boolean>) {
       state.showQualityBadge = action.payload;
+    },
+    setShowSourceHeaders(state, action: PayloadAction<boolean>) {
+      state.showSourceHeaders = action.payload;
     },
 
     /* Library */
@@ -185,6 +192,9 @@ const settingsSlice = createSlice({
     setDeezerSamplesEnabled(state, action: PayloadAction<boolean>) {
       state.deezerSamplesEnabled = action.payload;
     },
+    setDeezerPlaylistRecommendationsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerPlaylistRecommendationsEnabled = action.payload;
+    },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
@@ -205,6 +215,7 @@ export const {
   setIsGridView,
   setPlayingBarAction,
   setShowQualityBadge,
+  setShowSourceHeaders,
   setLibrarySortOrder,
   setSearchScope,
   setHasSeenGetStarted,
@@ -223,6 +234,7 @@ export const {
   setDeezerSimilarArtistsEnabled,
   setDeezerAlbumRecommendationsEnabled,
   setDeezerSamplesEnabled,
+  setDeezerPlaylistRecommendationsEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

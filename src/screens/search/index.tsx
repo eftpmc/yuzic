@@ -32,6 +32,8 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useSelector } from 'react-redux';
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 
@@ -46,6 +48,7 @@ const Search = () => {
   const { playSong } = usePlaying();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const deezerSearchEnabled = useDeezerSearchEnabled();
+  const showSourceHeaders = useSelector(selectShowSourceHeaders);
 
   const [query, setQuery] = useState('');
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -273,9 +276,11 @@ const Search = () => {
                 return (
                   <React.Fragment key={sourceId}>
                     <View style={styles.sourceHeader}>
-                      <View style={[styles.sourceBadge, { backgroundColor: color }]}>
-                        <Text style={styles.sourceBadgeLetter}>{letter}</Text>
-                      </View>
+                      {showSourceHeaders && (
+                        <View style={[styles.sourceBadge, { backgroundColor: color }]}>
+                          <Text style={styles.sourceBadgeLetter}>{letter}</Text>
+                        </View>
+                      )}
                       <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>{label}</Text>
                     </View>
                     {results.map((result, i) => (

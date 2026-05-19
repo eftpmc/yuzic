@@ -1,8 +1,10 @@
 import React, { useCallback, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
@@ -49,6 +51,7 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0)
   const { local, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
+  const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const onRefresh = useCallback(() => {
@@ -82,9 +85,11 @@ export default function Home() {
         return (
           <React.Fragment key={source.id}>
             <View style={styles.sourceHeader}>
-              <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
-                <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
-              </View>
+              {showSourceHeaders && (
+                <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
+                  <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
+                </View>
+              )}
               <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
                 {source.label}
               </Text>

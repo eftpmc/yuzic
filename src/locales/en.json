@@ -79,7 +79,9 @@
         "chinese": "Chinese"
       },
       "showQualityBadge": "Show quality badge",
-      "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen."
+      "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen.",
+      "showSourceHeaders": "Show source headers",
+      "showSourceHeadersSubtext": "Shows the source badge next to section titles from external services."
     },
     "library": {
       "title": "Library",
@@ -310,11 +312,16 @@
       "topTracksDescription": "Show Deezer top tracks on artist pages.",
       "similarArtists": "Similar Artists",
       "similarArtistsDescription": "Show Deezer similar artists on artist pages.",
-      "albumRecommendations": "Album Recommendations",
+      "albumRecommendations": "Recommendations",
       "albumRecommendationsDescription": "Show Deezer recommended albums on album pages.",
       "samples": "Samples",
       "samplesDescription": "Fetch 30s preview samples for external album pages.",
-      "enableSamplesToPreview": "Enable Samples in Settings to hear previews"
+      "enableSamplesToPreview": "Enable Samples in Settings to hear previews",
+      "playlistRecommendations": "Recommendations",
+      "playlistRecommendationsDescription": "Show Deezer recommended playlists.",
+      "artistSection": "Artist",
+      "albumSection": "Album",
+      "playlistSection": "Playlist"
     },
     "scrobbling": {
       "title": "Scrobbling",

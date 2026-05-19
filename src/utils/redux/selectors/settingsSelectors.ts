@@ -56,6 +56,9 @@ export const selectAudioQuality = (
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
 
+export const selectShowSourceHeaders = (state: RootState): boolean =>
+  state.settings.showSourceHeaders ?? true;
+
 export const selectPreferredCodec = (state: RootState): PreferredCodec =>
   state.settings.preferredCodec ?? 'mp3';
 
@@ -102,6 +105,9 @@ export const selectDeezerAlbumRecommendationsEnabled = (state: RootState): boole
 
 export const selectDeezerSamplesEnabled = (state: RootState): boolean =>
   state.settings.deezerSamplesEnabled ?? false;
+
+export const selectDeezerPlaylistRecommendationsEnabled = (state: RootState): boolean =>
+  state.settings.deezerPlaylistRecommendationsEnabled ?? false;
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||

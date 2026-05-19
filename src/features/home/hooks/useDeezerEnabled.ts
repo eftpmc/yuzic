@@ -7,6 +7,7 @@ import {
   selectDeezerSimilarArtistsEnabled,
   selectDeezerAlbumRecommendationsEnabled,
   selectDeezerSamplesEnabled,
+  selectDeezerPlaylistRecommendationsEnabled,
 } from '@/utils/redux/selectors/settingsSelectors'
 import { RootState } from '@/utils/redux/store'
 
@@ -38,4 +39,8 @@ export function useDeezerAlbumRecommendationsEnabled(): boolean {
 
 export function useDeezerSamplesEnabled(): boolean {
   return useDeezerBase(selectDeezerSamplesEnabled)
+}
+
+export function useDeezerPlaylistRecommendationsEnabled(): boolean {
+  return useDeezerBase(selectDeezerPlaylistRecommendationsEnabled)
 }

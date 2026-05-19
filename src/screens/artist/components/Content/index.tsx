@@ -17,6 +17,7 @@ import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import { useDeezerSimilarArtistsEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import { useSelector } from 'react-redux'
 import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 
 type Props = {
   artist: Artist
@@ -49,6 +50,7 @@ function SimilarArtistsSubSection({ data, itemSize, keyPrefix, badge }: {
   const { t } = useTranslation()
   const { colors } = useTheme()
   const { navigateToArtist } = useMatchedNavigation()
+  const showSourceHeaders = useSelector(selectShowSourceHeaders)
 
   const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
     <MediaTile
@@ -66,9 +68,11 @@ function SimilarArtistsSubSection({ data, itemSize, keyPrefix, badge }: {
   return (
     <View style={styles.similarSection}>
       <View style={styles.similarTitleRow}>
-        <View style={[styles.sourceBadge, { backgroundColor: badge.color }]}>
-          <Text style={styles.sourceBadgeLetter}>{badge.letter}</Text>
-        </View>
+        {showSourceHeaders && (
+          <View style={[styles.sourceBadge, { backgroundColor: badge.color }]}>
+            <Text style={styles.sourceBadgeLetter}>{badge.letter}</Text>
+          </View>
+        )}
         <Text style={[styles.sectionTitle, styles.sectionTitleNopad, { color: colors.secondary }]}>
           {t('artist.sections.similarArtists')}
         </Text>

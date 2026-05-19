@@ -1,9 +1,11 @@
 import React, { useCallback, useMemo } from 'react'
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useQuery } from '@tanstack/react-query'
 import { useTheme } from '@/hooks/useTheme'
 import { useArtists } from '@/hooks/artists'
 import { useDeezerAlbumRecommendationsEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
@@ -41,6 +43,7 @@ export default function AlbumRecommendedSection({ artistName, artistId, excludeA
   const { colors } = useTheme()
   const { width: screenWidth } = useWindowDimensions()
   const enabled = useDeezerAlbumRecommendationsEnabled()
+  const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const { artists } = useArtists()
   const { navigateToAlbum } = useMatchedNavigation()
 
@@ -68,9 +71,11 @@ export default function AlbumRecommendedSection({ artistName, artistId, excludeA
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
-          <Text style={styles.badgeLetter}>D</Text>
-        </View>
+        {showSourceHeaders && (
+          <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
+            <Text style={styles.badgeLetter}>D</Text>
+          </View>
+        )}
         <Text style={[styles.title, { color: colors.secondary }]}>You Might Also Like</Text>
       </View>
       <ScrollView

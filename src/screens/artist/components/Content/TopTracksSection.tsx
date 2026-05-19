@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useDeezerTopTracksEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
@@ -16,6 +18,7 @@ export default function TopTracksSection({ artist }: Props) {
   const { colors } = useTheme()
   const { t } = useTranslation()
   const enabled = useDeezerTopTracksEnabled()
+  const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const { topTracks, biography } = useArtistTopTracks({ name: artist.name, mbid: artist.mbid, enabled })
   const { toggleInAlbum } = usePreviewPlayer()
   const [showAll, setShowAll] = useState(false)
@@ -53,9 +56,11 @@ export default function TopTracksSection({ artist }: Props) {
       {allTracks.length > 0 && (
         <>
           <View style={styles.sectionHeader}>
-            <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
-              <Text style={styles.badgeLetter}>D</Text>
-            </View>
+            {showSourceHeaders && (
+              <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
+                <Text style={styles.badgeLetter}>D</Text>
+              </View>
+            )}
             <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
               {t('artist.sections.topTracks')}
             </Text>

@@ -7,6 +7,7 @@ import {
   Text,
   LayoutChangeEvent,
 } from 'react-native';
+import TrackPlayer from '@rntp/player';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -175,14 +176,19 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
         >
           {lines.map((line, index) => (
-            <View key={index} onLayout={onLineLayout(index)}>
+            <TouchableOpacity
+              key={index}
+              onLayout={onLineLayout(index)}
+              onPress={() => TrackPlayer.seekTo(line.startMs / 1000)}
+              activeOpacity={0.6}
+            >
               <LyricLine
                 text={line.text}
                 variant={getVariant(index)}
                 activeColor={colors.secondary}
                 inactiveColor={colors.subtext}
               />
-            </View>
+            </TouchableOpacity>
           ))}
         </BottomSheetScrollView>
       </BottomSheetModal>
