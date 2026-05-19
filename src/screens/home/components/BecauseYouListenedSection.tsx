@@ -164,6 +164,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
             data={albums}
             keyExtractor={item => item.id}
             showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}
             ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
             renderItem={renderAlbum}

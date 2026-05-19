@@ -38,6 +38,7 @@ export default function RecentlyAdded() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
           contentContainerStyle={sectionStyles.scrollContent}
         >
           {recentlyAdded.map(album => (

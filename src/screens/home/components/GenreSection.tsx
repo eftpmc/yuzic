@@ -252,6 +252,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
             data={albums}
             keyExtractor={item => item.id}
             showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}
             ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
             renderItem={renderAlbum}

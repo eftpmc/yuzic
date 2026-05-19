@@ -71,6 +71,7 @@ export default function RecentlyPlayed() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
           contentContainerStyle={styles.scrollContent}
         >
           {items.map(item => (

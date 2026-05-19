@@ -42,6 +42,7 @@ export default function RandomAlbums({ refreshKey = 0 }: Props) {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
           contentContainerStyle={sectionStyles.scrollContent}
         >
           {randomAlbums.map(album => (

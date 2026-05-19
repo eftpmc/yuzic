@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -60,6 +66,23 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const handleGenrePress = useCallback((genre: string) => {
     (navigation as any).navigate('genreView', { genre });
   }, [navigation]);
+
+  const checkmarkScale = useSharedValue(isAlbumDownloaded ? 1 : 0);
+
+  useEffect(() => {
+    if (isAlbumDownloaded) {
+      checkmarkScale.value = withSequence(
+        withSpring(1.2, { damping: 8, stiffness: 200 }),
+        withSpring(1, { damping: 10, stiffness: 200 })
+      );
+    } else {
+      checkmarkScale.value = 0;
+    }
+  }, [isAlbumDownloaded, checkmarkScale]);
+
+  const checkmarkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: checkmarkScale.value }],
+  }));
 
   const toggleDownload = useCallback(async () => {
     if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
@@ -153,12 +176,12 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           >
             {isAlbumDownloading ? (
               <ActivityIndicator size="small" color={colors.secondary} />
+            ) : isAlbumDownloaded ? (
+              <Animated.View style={checkmarkStyle}>
+                <Ionicons name="checkmark" size={18} color={colors.secondary} />
+              </Animated.View>
             ) : (
-              <Ionicons
-                name={isAlbumDownloaded ? 'checkmark' : 'download-outline'}
-                size={18}
-                color={colors.secondary}
-              />
+              <Ionicons name="download-outline" size={18} color={colors.secondary} />
             )}
           </TouchableOpacity>
         </View>
