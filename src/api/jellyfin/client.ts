@@ -1,3 +1,6 @@
+import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
+import { qualityToStreamParams } from '@/utils/audio/streamQuality';
+
 export interface JellyfinClientConfig {
   serverUrl: string;
   token: string;
@@ -83,8 +86,14 @@ export function createJellyfinClient(config: JellyfinClientConfig) {
     }
   }
 
-  function buildStreamUrl(songId: string): string {
-    return `${baseUrl}/Audio/${songId}/stream.mp3?X-Emby-Token=${token}`;
+  function buildStreamUrl(songId: string, quality: AudioQuality = 'high', codec: 'mp3' | 'opus' = 'mp3'): string {
+    const { format, maxBitRate } = qualityToStreamParams(quality);
+    if (format === 'raw') {
+      return `${baseUrl}/Audio/${songId}/stream?Static=true&X-Emby-Token=${token}`;
+    }
+    const bitrate = (maxBitRate ?? 320) * 1000;
+    const ext = codec === 'opus' ? 'opus' : 'mp3';
+    return `${baseUrl}/Audio/${songId}/stream.${ext}?AudioCodec=${codec}&MaxStreamingBitrate=${bitrate}&X-Emby-Token=${token}`;
   }
 
   return {

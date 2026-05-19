@@ -193,6 +193,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const songs: SongsApi = {
     get: async (id: string) => getSong(client, id),
     scrobble: async (songId, timestamp) => scrobble(client, songId, timestamp),
+    buildStreamUrl: (songId, quality) => client.buildStreamUrl(songId, quality),
   };
 
   const tracks: TracksApi = {

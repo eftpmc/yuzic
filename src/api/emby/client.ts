@@ -1,3 +1,6 @@
+import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
+import { qualityToStreamParams } from '@/utils/audio/streamQuality';
+
 export interface EmbyClientConfig {
   serverUrl: string;
   token: string;
@@ -83,8 +86,14 @@ export function createEmbyClient(config: EmbyClientConfig) {
     }
   }
 
-  function buildStreamUrl(songId: string): string {
-    return `${baseUrl}/Audio/${songId}/stream.mp3?api_key=${token}`;
+  function buildStreamUrl(songId: string, quality: AudioQuality = 'high', codec: 'mp3' | 'opus' = 'mp3'): string {
+    const { format, maxBitRate } = qualityToStreamParams(quality);
+    if (format === 'raw') {
+      return `${baseUrl}/Audio/${songId}/stream?Static=true&api_key=${token}`;
+    }
+    const bitrate = (maxBitRate ?? 320) * 1000;
+    const ext = codec === 'opus' ? 'opus' : 'mp3';
+    return `${baseUrl}/Audio/${songId}/stream.${ext}?AudioCodec=${codec}&MaxStreamingBitrate=${bitrate}&api_key=${token}`;
   }
 
   return {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
@@ -9,9 +9,8 @@ import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import SettingsSelectCard from '../components/SettingsSelectCard';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
-import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import ConnectivityIndicator from '../components/ConnectivityIndicator';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { useTheme } from '@/hooks/useTheme';
 import {
   selectSearchScope,
   selectServerScrobbleEnabled,
@@ -25,7 +24,6 @@ import {
 } from '@/utils/redux/slices/settingsSlice';
 
 const ServerSettings: React.FC = () => {
-  const { colors } = useTheme();
   const { t } = useTranslation();
   const api = useApi();
   const dispatch = useDispatch();
@@ -35,13 +33,20 @@ const ServerSettings: React.FC = () => {
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
   const isNavidrome = activeServer?.type === 'navidrome';
-  const supportsServerScrobble = activeServer?.type === 'navidrome' || activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
+  const isJellyfinOrEmby = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
   const username = activeServer?.username;
   const isAuthenticated = activeServer?.isAuthenticated;
   const cleanUrl = serverUrl?.replace(/^https?:\/\//, '') ?? t('settings.server.notSet');
+
+  const ping = async () => {
+    if (!api || !serverUrl || isLoading) return;
+    setIsLoading(true);
+    try { await api.auth.ping(); } catch {}
+    finally { setIsLoading(false); }
+  };
 
   useEffect(() => {
     if (!api || !serverUrl) return;
@@ -74,11 +79,9 @@ const ServerSettings: React.FC = () => {
         <SettingsInfoRow
           label={t('settings.server.connectivity')}
           right={
-            isLoading ? (
-              <SpinningLoaderCircle size={14} color={colors.themeColor} />
-            ) : (
-              <View style={[styles.dot, { backgroundColor: isAuthenticated ? '#34C759' : '#FF3B30' }]} />
-            )
+            <TouchableOpacity onPress={ping} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <ConnectivityIndicator isLoading={isLoading} isConnected={!!isAuthenticated} />
+            </TouchableOpacity>
           }
         />
       </SettingsCard>
@@ -93,12 +96,22 @@ const ServerSettings: React.FC = () => {
         onSelect={key => dispatch(setSearchScope(key as SearchScope))}
       />
 
-      {supportsServerScrobble && (
+      {isNavidrome && (
         <View style={styles.scrobbleSection}>
           <SettingsToggleGroup
             items={[
               { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
               { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: v => { dispatch(setServerNowPlayingEnabled(v)); } },
+            ]}
+          />
+        </View>
+      )}
+
+      {isJellyfinOrEmby && (
+        <View style={styles.scrobbleSection}>
+          <SettingsToggleGroup
+            items={[
+              { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
             ]}
           />
         </View>
@@ -112,10 +125,5 @@ export default ServerSettings;
 const styles = StyleSheet.create({
   scrobbleSection: {
     marginTop: 8,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
   },
 });

@@ -129,6 +129,22 @@ export function useScrobbling() {
 
   const submitNowPlaying = useCallback((song: Song) => {
     const songDuration = Number(song.duration) || undefined;
+
+    if (activeServer?.type === 'navidrome' && serverNowPlayingEnabled) {
+      const password = activeServer.auth?.password as string | undefined;
+      if (activeServer.serverUrl && activeServer.username && password) {
+        navidromeScrobble.nowPlaying(
+          {
+            serverUrl: activeServer.serverUrl,
+            username: activeServer.username,
+            password,
+            basicAuth: activeServer.basicAuth,
+          },
+          song.id
+        ).catch(() => {});
+      }
+    }
+
     if (listenBrainzConfig?.token && lbNowPlayingEnabled) {
       listenbrainz.submitNowPlaying(listenBrainzConfig, {
         artist: song.artist,
@@ -143,7 +159,7 @@ export function useScrobbling() {
         duration: songDuration,
       }).catch(() => {});
     }
-  }, [listenBrainzConfig, lbNowPlayingEnabled, lastFmConfig, lastFmNowPlayingEnabled]);
+  }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled, lastFmConfig, lastFmNowPlayingEnabled]);
 
   return { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled };
 }

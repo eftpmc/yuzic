@@ -8,7 +8,7 @@ import {
     Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Server, Library, Music, Palette, Puzzle, Download, Github, ShieldCheck, ScrollText } from 'lucide-react-native';
+import { Server, Library, Volume2, Palette, Puzzle, Download, Github, ShieldCheck, ScrollText } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -94,7 +94,7 @@ export default function Settings() {
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.player')}
-                        leftIcon={<Music size={22} color={colors.secondary} />}
+                        leftIcon={<Volume2 size={22} color={colors.secondary} />}
                         onPress={() => router.push('/settings/playerView')}
                     />
                     <SettingsDivider />

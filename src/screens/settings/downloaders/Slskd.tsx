@@ -96,6 +96,20 @@ const SlskdView: React.FC = () => {
     return () => { cancelled = true; clearTimeout(timeout); };
   }, [apiKey, config, dispatch, isAuthenticated, serverId, serverUrl, t]);
 
+  const handlePing = useCallback(async () => {
+    if (!config.serverUrl || !config.apiKey || isLoading) return;
+    setIsLoading(true);
+    try {
+      await slskd.testConnection(config);
+      dispatch(connectSlskd({ serverId }));
+    } catch {
+      dispatch(setSlskdAuthenticated({ serverId, value: false }));
+      toast.error(t('settings.downloaders.slskd.connectionFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [config, dispatch, isLoading, serverId, t]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       setQueue([]);
@@ -178,6 +192,7 @@ const SlskdView: React.FC = () => {
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}
         connectivityLabel={t('settings.downloaders.connectivity')}
+        onConnectivityPress={handlePing}
       />
 
       <SettingsCard>

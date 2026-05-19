@@ -174,6 +174,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   const songs: SongsApi = {
     get: async (id: string) => getSong(client, id),
     scrobble: async (songId) => markPlayed(client, songId),
+    buildStreamUrl: (songId, quality, codec) => client.buildStreamUrl(songId, quality, codec),
   };
 
   const tracks: TracksApi = {

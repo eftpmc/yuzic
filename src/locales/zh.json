@@ -12,7 +12,7 @@
     "rows": {
       "server": "服务器",
       "library": "媒体库",
-      "player": "播放器",
+      "player": "播放",
       "appearance": "外观",
       "scrobbling": "Scrobbling",
       "downloaders": "下载管理",
@@ -55,7 +55,14 @@
         "change": "修改主题颜色"
       },
       "playingBarAction": {
-        "info": "选择播放栏显示的操作按钮"
+        "info": "选择播放栏显示的操作按钮",
+        "actions": {
+          "none": "无",
+          "skip": "跳过",
+          "favorite": "收藏",
+          "randomAlbum": "随机",
+          "addToPlaylist": "添加"
+        }
       },
       "columns": {
         "info": "设置网格视图的列数",
@@ -68,7 +75,9 @@
         "japanese": "日语",
         "french": "法语",
         "chinese": "中文"
-      }
+      },
+      "showQualityBadge": "显示音质标签",
+      "showQualityBadgeSubtext": "在正在播放界面显示音频格式和比特率。"
     },
     "library": {
       "title": "媒体库",
@@ -169,14 +178,27 @@
       }
     },
     "player": {
-      "title": "播放器",
+      "title": "播放设置",
       "nothingPlaying": "当前无播放内容",
       "unknownArtist": "—",
       "equalizer": {
         "title": "均衡器",
         "reset": "重置",
         "presets": "预设"
-      }
+      },
+      "streamingQuality": {
+        "wifi": "WiFi音质",
+        "cellular": "蜂窝网络音质",
+        "caption": "若服务器支持，原始音质将以无损音频流式传输。建议仅在WiFi下使用。",
+        "options": {
+          "low": "低 · 128kbps",
+          "medium": "中 · 192kbps",
+          "high": "高 · 320kbps",
+          "original": "原始（无损）"
+        }
+      },
+      "opusCodec": "Opus编解码器",
+      "opusCodecSubtext": "相同比特率下音质优于MP3，在低比特率下效果尤为明显。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -246,7 +268,9 @@
       "notConnected": "未连接",
       "configure": "配置",
       "scrobbleDescription": "将已播放的曲目记录到你的个人资料。",
-      "nowPlayingDescription": "实时显示正在播放的内容。"
+      "nowPlayingDescription": "实时显示正在播放的内容。",
+      "markAsPlayed": "标记为已播放",
+      "markAsPlayedDescription": "更新服务器上的播放次数。"
     },
     "discovery": {
       "title": "发现",

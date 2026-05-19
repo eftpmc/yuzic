@@ -3,6 +3,7 @@ import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
+export type PreferredCodec = 'mp3' | 'opus';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type SearchScope = 'client' | 'server';
@@ -17,6 +18,7 @@ export interface SettingsState {
   isGridView: boolean;
 
   playingBarAction: PlayingBarAction;
+  showQualityBadge: boolean;
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
@@ -29,6 +31,9 @@ export interface SettingsState {
 
   /* Audio */
   audioQuality: AudioQuality;
+  wifiStreamQuality: AudioQuality;
+  cellularStreamQuality: AudioQuality;
+  preferredCodec: PreferredCodec;
 
   language: AppLanguage;
 
@@ -53,12 +58,16 @@ const initialState: SettingsState = {
   gridSpacing: 8,
   isGridView: true,
   playingBarAction: 'skip',
+  showQualityBadge: false,
 
   librarySortOrder: 'title',
   searchScope: 'server',
   hasSeenGetStarted: false,
 
   audioQuality: 'medium',
+  wifiStreamQuality: 'original',
+  cellularStreamQuality: 'high',
+  preferredCodec: 'mp3',
 
   language: DEFAULT_LANGUAGE,
 
@@ -99,6 +108,9 @@ const settingsSlice = createSlice({
     ) {
       state.playingBarAction = action.payload;
     },
+    setShowQualityBadge(state, action: PayloadAction<boolean>) {
+      state.showQualityBadge = action.payload;
+    },
 
     /* Library */
     setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
@@ -117,6 +129,15 @@ const settingsSlice = createSlice({
     /* Audio */
     setAudioQuality(state, action: PayloadAction<AudioQuality>) {
       state.audioQuality = action.payload;
+    },
+    setWifiStreamQuality(state, action: PayloadAction<AudioQuality>) {
+      state.wifiStreamQuality = action.payload;
+    },
+    setCellularStreamQuality(state, action: PayloadAction<AudioQuality>) {
+      state.cellularStreamQuality = action.payload;
+    },
+    setPreferredCodec(state, action: PayloadAction<PreferredCodec>) {
+      state.preferredCodec = action.payload;
     },
 
     setLanguage(state, action: PayloadAction<AppLanguage>) {
@@ -158,10 +179,14 @@ export const {
   setGridSpacing,
   setIsGridView,
   setPlayingBarAction,
+  setShowQualityBadge,
   setLibrarySortOrder,
   setSearchScope,
   setHasSeenGetStarted,
   setAudioQuality,
+  setWifiStreamQuality,
+  setCellularStreamQuality,
+  setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
   setServerNowPlayingEnabled,

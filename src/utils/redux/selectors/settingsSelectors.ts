@@ -1,6 +1,7 @@
 import { RootState } from '@/utils/redux/store';
 import {
   AudioQuality,
+  PreferredCodec,
   LibrarySortOrder,
   ThemeMode,
   SearchScope,
@@ -51,6 +52,18 @@ export const selectAudioQuality = (
   state: RootState
 ): AudioQuality =>
   state.settings.audioQuality;
+
+export const selectShowQualityBadge = (state: RootState): boolean =>
+  state.settings.showQualityBadge ?? false;
+
+export const selectPreferredCodec = (state: RootState): PreferredCodec =>
+  state.settings.preferredCodec ?? 'mp3';
+
+export const selectWifiStreamQuality = (state: RootState): AudioQuality =>
+  state.settings.wifiStreamQuality ?? 'original';
+
+export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
+  state.settings.cellularStreamQuality ?? 'high';
 
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;

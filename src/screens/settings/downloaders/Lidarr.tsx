@@ -99,6 +99,20 @@ const LidarrView: React.FC = () => {
     return () => { cancelled = true; clearTimeout(timeout); };
   }, [apiKey, config, dispatch, isAuthenticated, serverId, serverUrl, t]);
 
+  const handlePing = useCallback(async () => {
+    if (!config.serverUrl || !config.apiKey || isLoading) return;
+    setIsLoading(true);
+    try {
+      await lidarr.testConnection(config);
+      dispatch(connectLidarr({ serverId }));
+    } catch {
+      dispatch(setLidarrAuthenticated({ serverId, value: false }));
+      toast.error(t('settings.downloaders.lidarr.connectionFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [config, dispatch, isLoading, serverId, t]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       setQueue([]);
@@ -186,6 +200,7 @@ const LidarrView: React.FC = () => {
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}
         connectivityLabel={t('settings.downloaders.connectivity')}
+        onConnectivityPress={handlePing}
       />
 
       <SettingsCard>

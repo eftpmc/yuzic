@@ -12,7 +12,7 @@
     "rows": {
       "server": "Server",
       "library": "Library",
-      "player": "Player",
+      "player": "Playback",
       "appearance": "Appearance",
       "scrobbling": "Scrobbling",
       "downloaders": "Downloaders",
@@ -57,7 +57,14 @@
         "change": "Change Theme Color"
       },
       "playingBarAction": {
-        "info": "Choose which action appears in the playing bar"
+        "info": "Choose which action appears in the playing bar",
+        "actions": {
+          "none": "None",
+          "skip": "Skip",
+          "favorite": "Favorite",
+          "randomAlbum": "Random",
+          "addToPlaylist": "Add"
+        }
       },
       "columns": {
         "info": "Set how many columns are shown in grid view",
@@ -70,7 +77,9 @@
         "japanese": "Japanese",
         "french": "French",
         "chinese": "Chinese"
-      }
+      },
+      "showQualityBadge": "Show quality badge",
+      "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen."
     },
     "library": {
       "title": "Library",
@@ -171,14 +180,27 @@
       }
     },
     "player": {
-      "title": "Player",
+      "title": "Playback",
       "nothingPlaying": "Nothing playing",
       "unknownArtist": "—",
       "equalizer": {
         "title": "Equalizer",
         "reset": "Reset",
         "presets": "Presets"
-      }
+      },
+      "streamingQuality": {
+        "wifi": "WiFi Quality",
+        "cellular": "Cellular Quality",
+        "caption": "Original streams lossless audio when your server supports it. Recommended for WiFi only.",
+        "options": {
+          "low": "Low · 128kbps",
+          "medium": "Medium · 192kbps",
+          "high": "High · 320kbps",
+          "original": "Original (lossless)"
+        }
+      },
+      "opusCodec": "Opus Codec",
+      "opusCodecSubtext": "Better quality than MP3 at the same bitrate. Sounds noticeably better at lower bitrates."
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -287,7 +309,9 @@
       "notConnected": "Not connected",
       "configure": "Configure",
       "scrobbleDescription": "Log completed tracks to your profile.",
-      "nowPlayingDescription": "Show what you're listening to in real time."
+      "nowPlayingDescription": "Show what you're listening to in real time.",
+      "markAsPlayed": "Mark as Played",
+      "markAsPlayedDescription": "Update play count on your server."
     },
     "discovery": {
       "title": "Discovery",
