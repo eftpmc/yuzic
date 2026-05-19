@@ -25,7 +25,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
-import { useExternalNavigation } from '@/features/sources/useExternalNavigation';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | null;
@@ -58,7 +57,6 @@ const AlbumOptions = forwardRef<
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { albumWithSongs, songs, songsLoading } = useLazyAlbumDetail(album, isSheetOpen);
 
-  const { isResolving: isResolvingExternal, hasExternalSources, navigateToExternalAlbum, navigateToExternalArtist, pickerElement } = useExternalNavigation({ onClose: close });
 
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
   const genreChipBg = isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
@@ -119,7 +117,6 @@ const AlbumOptions = forwardRef<
     navigation.navigate('(home)', { screen: 'albumView', params: { id: album.id } });
   };
 
-  const hasExternalOptions = hasExternalSources && Boolean(album?.artist?.name && album?.title);
 
   const handleDownload = async () => {
     if (!album || isDownloaded || isDownloading) return;
@@ -233,35 +230,6 @@ const AlbumOptions = forwardRef<
           </TouchableOpacity>
         )}
 
-        {hasExternalOptions && (
-          <>
-            <TouchableOpacity
-              style={[styles.option, isResolvingExternal && styles.optionDisabled]}
-              onPress={() => { void navigateToExternalAlbum(album.artist!.name!, album.title!, t('albumOptions.actions.goToExternalAlbum')); }}
-              disabled={isResolvingExternal}
-            >
-              {isResolvingExternal ? (
-                <ActivityIndicator size="small" color={colors.subtext} />
-              ) : (
-                <Ionicons name="albums-outline" size={26} color={colors.secondary} />
-              )}
-              <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.goToExternalAlbum')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.option, isResolvingExternal && styles.optionDisabled]}
-              onPress={() => { void navigateToExternalArtist(album.artist!.name!, t('albumOptions.actions.goToExternalArtist')); }}
-              disabled={isResolvingExternal}
-            >
-              {isResolvingExternal ? (
-                <ActivityIndicator size="small" color={colors.subtext} />
-              ) : (
-                <Ionicons name="person-outline" size={26} color={colors.secondary} />
-              )}
-              <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.goToExternalArtist')}</Text>
-            </TouchableOpacity>
-          </>
-        )}
-
         <TouchableOpacity
           style={styles.option}
           onPress={handleDownload}
@@ -327,7 +295,6 @@ const AlbumOptions = forwardRef<
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
-    {pickerElement}
     </>
   );
 });

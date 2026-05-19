@@ -26,7 +26,6 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyArtistSongs } from './useLazyCollectionDetails';
-import { useExternalNavigation } from '@/features/sources/useExternalNavigation';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -62,7 +61,6 @@ const ArtistOptions = forwardRef<
     isSheetOpen
   );
 
-  const { isResolving: isResolvingExternal, hasExternalSources, navigateToExternalArtist, pickerElement } = useExternalNavigation({ onClose: close });
 
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
@@ -272,21 +270,6 @@ const ArtistOptions = forwardRef<
           </TouchableOpacity>
         )}
 
-        {hasExternalSources && (
-          <TouchableOpacity
-            style={[styles.option, isResolvingExternal && styles.optionDisabled]}
-            onPress={() => { void navigateToExternalArtist(artist.name, t('artistOptions.actions.goToExternalArtist')); }}
-            disabled={isResolvingExternal}
-          >
-            {isResolvingExternal ? (
-              <ActivityIndicator size="small" color={colors.subtext} />
-            ) : (
-              <Ionicons name="person-outline" size={26} color={colors.secondary} />
-            )}
-            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToExternalArtist')}</Text>
-          </TouchableOpacity>
-        )}
-
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
         <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('artistOptions.sections.info')}</Text>
@@ -302,7 +285,6 @@ const ArtistOptions = forwardRef<
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
-    {pickerElement}
     </>
   );
 });

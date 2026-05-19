@@ -9,14 +9,21 @@ import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
+import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
 import { useTracks } from '@/hooks/tracks'
 import MediaTile from '@/screens/home/components/MediaTile'
+import TopTracksSection from './TopTracksSection'
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
+import { useDeezerSimilarArtistsEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useSelector } from 'react-redux'
+import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
 
 type Props = {
   artist: Artist
 }
 
 type ArtistContentItem =
+  | { kind: 'topTracks'; id: string }
   | { kind: 'section'; id: string; title: string }
   | { kind: 'album'; id: string; album: AlbumBase }
   | { kind: 'showMore'; id: string; target: 'albums' | 'singles'; remaining: number }
@@ -31,18 +38,17 @@ function isSingleOrEp(album: AlbumBase, songCount: number): boolean {
   return title.includes('single') || title.includes(' ep')
 }
 
-function SimilarArtistsSection({ artist }: { artist: Artist }) {
-  const navigation = useNavigation<any>()
+const LASTFM_COLOR = '#D51007'
+
+function SimilarArtistsSubSection({ data, itemSize, keyPrefix, badge }: {
+  data: ExternalArtistBase[]
+  itemSize: number
+  keyPrefix: string
+  badge: { color: string; letter: string }
+}) {
   const { t } = useTranslation()
   const { colors } = useTheme()
-  const { data = [] } = useSimilarArtists({
-    mbid: artist.mbid,
-    name: artist.name,
-    excludeName: artist.name,
-    limit: 8,
-  })
-  const { width: screenWidth } = useWindowDimensions()
-  const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
+  const { navigateToArtist } = useMatchedNavigation()
 
   const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
     <MediaTile
@@ -51,32 +57,75 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
       subtitle={item.subtext}
       size={itemSize}
       radius={itemSize / 2}
-      onPress={() => navigation.navigate('externalArtistView', {
-        source: item.externalSource,
-        artistId: item.externalIds?.deezerId,
-        mbid: item.externalIds?.mbid ?? item.id,
-        name: item.name,
-      })}
+      onPress={() => navigateToArtist(item)}
     />
-  ), [itemSize, navigation])
+  ), [itemSize, navigateToArtist])
 
   if (data.length === 0) return null
 
   return (
     <View style={styles.similarSection}>
-      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
-        {t('artist.sections.similarArtists')}
-      </Text>
+      <View style={styles.similarTitleRow}>
+        <View style={[styles.sourceBadge, { backgroundColor: badge.color }]}>
+          <Text style={styles.sourceBadgeLetter}>{badge.letter}</Text>
+        </View>
+        <Text style={[styles.sectionTitle, styles.sectionTitleNopad, { color: colors.secondary }]}>
+          {t('artist.sections.similarArtists')}
+        </Text>
+      </View>
       <FlashList
         horizontal
         data={data}
-        keyExtractor={item => item.id}
+        keyExtractor={item => `${keyPrefix}-${item.id}`}
         renderItem={renderArtist}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.similarListContent}
         ItemSeparatorComponent={() => <View style={styles.similarGap} />}
       />
     </View>
+  )
+}
+
+function SimilarArtistsSection({ artist }: { artist: Artist }) {
+  const { width: screenWidth } = useWindowDimensions()
+  const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
+
+  const deezerEnabled = useDeezerSimilarArtistsEnabled()
+  const lastfmEnabled = useSelector(selectLastFmSimilarArtistsEnabled)
+
+  const { similarArtists: deezerSimilar } = useArtistTopTracks({
+    name: artist.name,
+    mbid: artist.mbid,
+    enabled: deezerEnabled,
+  })
+
+  const { data: lastfmSimilar = [] } = useSimilarArtists({
+    mbid: artist.mbid,
+    name: artist.name,
+    excludeName: artist.name,
+    limit: 8,
+    enabled: lastfmEnabled,
+  })
+
+  return (
+    <>
+      {deezerEnabled && deezerSimilar.length > 0 && (
+        <SimilarArtistsSubSection
+          data={deezerSimilar}
+          itemSize={itemSize}
+          keyPrefix="deezer"
+          badge={{ color: '#A238CA', letter: 'D' }}
+        />
+      )}
+      {lastfmEnabled && lastfmSimilar.length > 0 && (
+        <SimilarArtistsSubSection
+          data={lastfmSimilar}
+          itemSize={itemSize}
+          keyPrefix="lastfm"
+          badge={{ color: LASTFM_COLOR, letter: 'L' }}
+        />
+      )}
+    </>
   )
 }
 
@@ -101,6 +150,8 @@ export default function ArtistContent({ artist }: Props) {
     const albums = artistAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
     const singles = artistAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
     const rows: ArtistContentItem[] = []
+
+    rows.push({ kind: 'topTracks', id: 'top-tracks' })
 
     if (albums.length > 0) {
       rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
@@ -135,6 +186,10 @@ export default function ArtistContent({ artist }: Props) {
   }, [artistAlbums, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
 
   const renderItem = useCallback(({ item }: { item: ArtistContentItem }) => {
+    if (item.kind === 'topTracks') {
+      return <TopTracksSection artist={artist} />
+    }
+
     if (item.kind === 'section') {
       return (
         <View style={styles.sectionHeader}>
@@ -202,13 +257,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     paddingHorizontal: 16,
   },
+  sectionTitleNopad: {
+    paddingHorizontal: 0,
+  },
   similarSection: {
     paddingTop: 20,
     paddingBottom: 10,
   },
+  similarTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  sourceBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceBadgeLetter: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+  },
   similarListContent: {
     paddingHorizontal: 16,
-    paddingTop: 10,
   },
   similarGap: {
     width: 12,

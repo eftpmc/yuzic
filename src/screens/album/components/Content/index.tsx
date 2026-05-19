@@ -14,6 +14,10 @@ import { useArtistAlbums } from '@/hooks/artists';
 import { useStarredSongs } from '@/hooks/starred';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
+import { useDeezerAlbumPreviewsEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useLocalAlbumPreviews } from '@/hooks/albums/useLocalAlbumPreviews';
+import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
+import AlbumRecommendedSection from '../AlbumRecommendedSection';
 
 type Props = {
   album: Album;
@@ -37,6 +41,19 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
   const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
   const albumPlayCount = useSelector(selectAlbumPlayCount(album.id));
+  const previewsEnabled = useDeezerAlbumPreviewsEnabled();
+  const previews = useLocalAlbumPreviews({ album, enabled: previewsEnabled });
+  const { toggleInAlbum } = usePreviewPlayer();
+
+  const previewQueue = useMemo(() =>
+    (album.songs ?? [])
+      .filter(s => !!previews[s.id])
+      .map(s => externalSongToTrack(
+        { id: s.id, title: s.title, artist: s.artist ?? '', cover: s.cover, duration: s.duration, albumId: s.albumId, previewUrl: previews[s.id] },
+        previews[s.id]
+      )),
+    [album.songs, previews]
+  );
 
   const { width: screenWidth } = useWindowDimensions();
   const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
@@ -87,9 +104,16 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
             </ScrollView>
           </View>
         )}
+        {album.artist?.name && (
+          <AlbumRecommendedSection
+            artistName={album.artist.name}
+            artistId={album.artist.id}
+            excludeAlbumId={album.id}
+          />
+        )}
       </View>
     );
-  }, [album.songs, album.artist, albumPlayCount, colors, moreAlbums, tileWidth, navigation]);
+  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -133,15 +157,25 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
       );
     }
 
+    const previewUrl = previews[item.song.id];
     return (
       <SongRow
         song={item.song}
         collection={album}
         variant="albumCompact"
         isFavorite={starredSongIds.has(item.song.id)}
+        onPreviewPress={previewUrl
+          ? () => toggleInAlbum(
+              { id: item.song.id, title: item.song.title, artist: item.song.artist ?? '', cover: item.song.cover, duration: item.song.duration, albumId: item.song.albumId, previewUrl },
+              previewUrl,
+              previewQueue,
+              album.id,
+              album.title,
+            )
+          : undefined}
       />
     );
-  }, [colors, starredSongIds, album]);
+  }, [colors, starredSongIds, album, previews, previewQueue, toggleInAlbum]);
 
   return (
     <FlashList

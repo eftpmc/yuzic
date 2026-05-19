@@ -44,7 +44,12 @@ export interface SettingsState {
   /* Integrations */
   deezerDiscoveryEnabled: boolean;
   deezerSearchEnabled: boolean;
-  deezerExternalScreensEnabled: boolean;
+  deezerExternalEnabled: boolean;
+  deezerTopTracksEnabled: boolean;
+  deezerSimilarArtistsEnabled: boolean;
+  deezerAlbumPreviewsEnabled: boolean;
+  deezerAlbumRecommendationsEnabled: boolean;
+  musicbrainzExternalEnabled: boolean;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -76,7 +81,12 @@ const initialState: SettingsState = {
 
   deezerDiscoveryEnabled: false,
   deezerSearchEnabled: false,
-  deezerExternalScreensEnabled: false,
+  deezerExternalEnabled: false,
+  deezerTopTracksEnabled: false,
+  deezerSimilarArtistsEnabled: false,
+  deezerAlbumPreviewsEnabled: false,
+  deezerAlbumRecommendationsEnabled: false,
+  musicbrainzExternalEnabled: false,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -157,8 +167,23 @@ const settingsSlice = createSlice({
     setDeezerSearchEnabled(state, action: PayloadAction<boolean>) {
       state.deezerSearchEnabled = action.payload;
     },
-    setDeezerExternalScreensEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerExternalScreensEnabled = action.payload;
+    setDeezerExternalEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerExternalEnabled = action.payload;
+    },
+    setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
+      state.musicbrainzExternalEnabled = action.payload;
+    },
+    setDeezerTopTracksEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerTopTracksEnabled = action.payload;
+    },
+    setDeezerSimilarArtistsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerSimilarArtistsEnabled = action.payload;
+    },
+    setDeezerAlbumPreviewsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerAlbumPreviewsEnabled = action.payload;
+    },
+    setDeezerAlbumRecommendationsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerAlbumRecommendationsEnabled = action.payload;
     },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
@@ -192,7 +217,12 @@ export const {
   setServerNowPlayingEnabled,
   setDeezerDiscoveryEnabled,
   setDeezerSearchEnabled,
-  setDeezerExternalScreensEnabled,
+  setDeezerExternalEnabled,
+  setMusicbrainzExternalEnabled,
+  setDeezerTopTracksEnabled,
+  setDeezerSimilarArtistsEnabled,
+  setDeezerAlbumPreviewsEnabled,
+  setDeezerAlbumRecommendationsEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
@@ -12,6 +11,7 @@ import { useArtists } from '@/hooks/artists'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import {
   SECTION_H_PADDING as H_PADDING,
@@ -120,8 +120,8 @@ type Props = {
 }
 
 export default function GenreSection({ genre, refreshKey = 0 }: Props) {
-  const navigation = useNavigation<any>()
   const { t } = useTranslation()
+  const { navigateToAlbum } = useMatchedNavigation()
   const { colors } = useTheme()
   const { albums: libraryAlbums } = useAlbums()
   const { artists: libraryArtists } = useArtists()
@@ -200,13 +200,10 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
       radius={6}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
-        navigation.navigate('externalAlbumView', {
-          source: item.externalSource,
-          albumId: item.id,
-        })
+        navigateToAlbum(item)
       }}
     />
-  ), [navigation, gridItemWidth])
+  ), [navigateToAlbum, gridItemWidth])
 
   const isEmpty = !query.isLoading && albums.length === 0
 

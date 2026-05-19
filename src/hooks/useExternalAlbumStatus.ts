@@ -13,10 +13,7 @@ import {
   selectSlskdConfig,
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
-
-function normalize(s: string) {
-  return s.toLowerCase().trim().replace(/\s+/g, ' ');
-}
+import { normalize } from '@/utils/normalize';
 
 export type ExternalAlbumStatus =
   | { kind: 'in_library' }

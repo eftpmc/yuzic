@@ -16,6 +16,7 @@ export default function SettingsLayout() {
             <Stack.Screen name='listenbrainzView' options={{ headerShown: false, title: "ListenBrainz" }} />
             <Stack.Screen name='lastfmView' options={{ headerShown: false, title: "Last.fm" }} />
             <Stack.Screen name='deezerView' options={{ headerShown: false, title: "Deezer" }} />
+            <Stack.Screen name='musicbrainzView' options={{ headerShown: false, title: "MusicBrainz" }} />
         </Stack>
     );
 }

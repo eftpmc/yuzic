@@ -9,7 +9,7 @@ import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
 import { selectListenBrainzAuthenticated } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { selectLastFmAuthenticated } from '@/utils/redux/selectors/lastfmSelectors';
-import { selectAnyDeezerEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { selectAnyDeezerEnabled, selectMusicbrainzExternalEnabled } from '@/utils/redux/selectors/settingsSelectors';
 
 const IntegrationsView: React.FC = () => {
   const { t } = useTranslation();
@@ -17,6 +17,7 @@ const IntegrationsView: React.FC = () => {
   const isLbConnected = useSelector(selectListenBrainzAuthenticated);
   const isLfmConnected = useSelector(selectLastFmAuthenticated);
   const isDeezerEnabled = useSelector(selectAnyDeezerEnabled);
+  const isMusicbrainzEnabled = useSelector(selectMusicbrainzExternalEnabled);
 
   return (
     <SettingsScreen title={t('settings.sections.integrations')}>
@@ -25,6 +26,12 @@ const IntegrationsView: React.FC = () => {
           label="Deezer"
           status={isDeezerEnabled ? 'enabled' : 'disabled'}
           onPress={() => router.push('/settings/deezerView')}
+        />
+        <SettingsDivider />
+        <SettingsRow
+          label="MusicBrainz"
+          status={isMusicbrainzEnabled ? 'enabled' : 'disabled'}
+          onPress={() => router.push('/settings/musicbrainzView')}
         />
         <SettingsDivider />
         <SettingsRow

@@ -8,10 +8,14 @@ import {
   getDeezerArtistTopTracks,
   getDeezerRelatedArtists,
 } from '@/api/deezer'
-import { selectDeezerExternalScreensEnabled } from '@/utils/redux/selectors/settingsSelectors'
+import {
+  selectDeezerExternalEnabled,
+  selectMusicbrainzExternalEnabled,
+} from '@/utils/redux/selectors/settingsSelectors'
+import * as mb from '@/api/musicbrainz'
 import type { CoverSource, ExternalAlbum, ExternalAlbumBase, ExternalArtist } from '@/types'
 
-export type SourceId = 'deezer'
+export type SourceId = 'deezer' | 'musicbrainz'
 
 export type SourceResolvedArtist = {
   source: SourceId
@@ -90,16 +94,121 @@ const deezerSource: SourceDefinition = {
   },
 }
 
-export const ALL_SOURCES: SourceDefinition[] = [deezerSource]
+function releaseGroupToCover(rg: mb.MbReleaseGroup): CoverSource {
+  return { kind: 'coverartarchive', mbid: rg.id, mbidType: 'release-group' }
+}
+
+function releaseGroupToAlbumBase(rg: mb.MbReleaseGroup, fallbackArtist: string): ExternalAlbumBase {
+  const artistName = rg['artist-credit']?.[0]?.artist.name ?? fallbackArtist
+  return {
+    id: rg.id,
+    title: rg.title,
+    artist: artistName,
+    cover: releaseGroupToCover(rg),
+    subtext: rg['first-release-date']?.slice(0, 4) ?? '',
+    releaseType: rg['primary-type']?.toLowerCase() === 'single' ? 'single' : 'album',
+    externalSource: 'musicbrainz',
+    externalIds: { mbid: rg.id },
+  }
+}
+
+const musicbrainzSource: SourceDefinition = {
+  id: 'musicbrainz',
+  label: 'MusicBrainz',
+  color: '#BA478F',
+
+  async resolveArtist(name) {
+    const results = await mb.searchArtist(name, 5)
+    const best = results[0]
+    if (!best) return null
+    return { source: 'musicbrainz', id: best.id, name: best.name }
+  },
+
+  async resolveAlbum(artist, title) {
+    const results = await mb.searchReleaseGroup(artist, title, 5)
+    const best = results[0]
+    if (!best) return null
+    return {
+      source: 'musicbrainz',
+      id: best.id,
+      title: best.title,
+      artist,
+      coverUrl: mb.coverArtArchiveUrl(best.id),
+    }
+  },
+
+  async fetchAlbum(id) {
+    const [rg, tracks] = await Promise.all([
+      mb.getReleaseGroup(id),
+      mb.getTracksForReleaseGroup(id),
+    ])
+    const artistName = rg['artist-credit']?.[0]?.artist.name ?? ''
+    const songs = tracks.map(track => ({
+      id: track.recording?.id ?? track.id,
+      title: track.title,
+      artist: track['artist-credit']?.[0]?.artist.name ?? artistName,
+      cover: { kind: 'none' as const },
+      duration: track.length ? String(Math.round(track.length / 1000)) : '0',
+      albumId: id,
+      externalSource: 'musicbrainz' as const,
+    }))
+    return {
+      id: rg.id,
+      title: rg.title,
+      artist: artistName,
+      cover: releaseGroupToCover(rg),
+      subtext: rg['first-release-date']?.slice(0, 4) ?? '',
+      externalSource: 'musicbrainz',
+      externalIds: { mbid: rg.id },
+      songs,
+    }
+  },
+
+  async fetchArtistAlbums(artistId, limit) {
+    const artist = await mb.getArtistWithReleases(artistId)
+    const rgs = artist['release-groups'] ?? []
+    return rgs
+      .slice(0, limit)
+      .map(rg => releaseGroupToAlbumBase(rg, artist.name))
+  },
+
+  async fetchArtist(id) {
+    const artist = await mb.getArtistWithReleases(id)
+    const rgs = artist['release-groups'] ?? []
+    const albums = rgs
+      .filter(rg => !rg['primary-type'] || rg['primary-type'] === 'Album')
+      .map(rg => releaseGroupToAlbumBase(rg, artist.name))
+    const singles = rgs
+      .filter(rg => rg['primary-type'] === 'Single' || rg['primary-type'] === 'EP')
+      .map(rg => releaseGroupToAlbumBase(rg, artist.name))
+    return {
+      id: artist.id,
+      name: artist.name,
+      cover: { kind: 'none' },
+      subtext: '',
+      biography: artist.annotation ?? undefined,
+      externalSource: 'musicbrainz',
+      externalIds: { mbid: artist.id },
+      topTracks: [],
+      albums,
+      singles,
+      similarArtists: [],
+    }
+  },
+}
+
+export const ALL_SOURCES: SourceDefinition[] = [deezerSource, musicbrainzSource]
 
 export function getSourceMeta(id: string): Pick<SourceDefinition, 'label' | 'color'> | null {
   return ALL_SOURCES.find(s => s.id === id) ?? null
 }
 
 export function useEnabledExternalSources(): SourceDefinition[] {
-  const deezerEnabled = useSelector(selectDeezerExternalScreensEnabled)
+  const deezerEnabled = useSelector(selectDeezerExternalEnabled)
+  const musicbrainzEnabled = useSelector(selectMusicbrainzExternalEnabled)
   return ALL_SOURCES.filter(s => {
     if (s.id === 'deezer') return deezerEnabled
+    if (s.id === 'musicbrainz') return musicbrainzEnabled
     return false
   })
 }

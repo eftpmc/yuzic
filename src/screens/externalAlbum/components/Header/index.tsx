@@ -22,6 +22,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { CloudDownload } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { externalSongToTrack } from '@/hooks/usePreviewPlayer';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
@@ -39,6 +40,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
+  const { navigateToArtist } = useMatchedNavigation();
   const themeColor = useSelector(selectThemeColor);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
@@ -125,11 +127,13 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
                 {index === 0 && album.artist ? (
                   <TouchableOpacity
                     onPress={() =>
-                      (navigation as any).navigate('externalArtistView', {
-                        source: album.externalSource,
-                        artistId: album.externalIds?.artistDeezerId,
-                        mbid: album.artistMbid,
+                      navigateToArtist({
+                        id: album.externalIds?.artistDeezerId ?? '',
                         name: album.artist,
+                        cover: { kind: 'none' },
+                        subtext: '',
+                        externalSource: album.externalSource,
+                        externalIds: { deezerId: album.externalIds?.artistDeezerId, mbid: album.artistMbid },
                       })
                     }
                   >

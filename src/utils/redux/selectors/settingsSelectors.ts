@@ -83,10 +83,29 @@ export const selectDeezerDiscoveryEnabled = (state: RootState): boolean =>
 export const selectDeezerSearchEnabled = (state: RootState): boolean =>
   state.settings.deezerSearchEnabled ?? false;
 
-export const selectDeezerExternalScreensEnabled = (state: RootState): boolean =>
-  state.settings.deezerExternalScreensEnabled ?? false;
+export const selectDeezerExternalEnabled = (state: RootState): boolean =>
+  state.settings.deezerExternalEnabled ?? false;
+
+export const selectMusicbrainzExternalEnabled = (state: RootState): boolean =>
+  state.settings.musicbrainzExternalEnabled ?? false;
+
+
+export const selectDeezerTopTracksEnabled = (state: RootState): boolean =>
+  state.settings.deezerTopTracksEnabled ?? false;
+
+export const selectDeezerSimilarArtistsEnabled = (state: RootState): boolean =>
+  state.settings.deezerSimilarArtistsEnabled ?? false;
+
+export const selectDeezerAlbumPreviewsEnabled = (state: RootState): boolean =>
+  state.settings.deezerAlbumPreviewsEnabled ?? false;
+
+export const selectDeezerAlbumRecommendationsEnabled = (state: RootState): boolean =>
+  state.settings.deezerAlbumRecommendationsEnabled ?? false;
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||
     state.settings.deezerSearchEnabled ||
-    state.settings.deezerExternalScreensEnabled) ?? false;
+    state.settings.deezerExternalEnabled ||
+    state.settings.deezerTopTracksEnabled ||
+    state.settings.deezerSimilarArtistsEnabled ||
+    state.settings.deezerAlbumPreviewsEnabled) ?? false;

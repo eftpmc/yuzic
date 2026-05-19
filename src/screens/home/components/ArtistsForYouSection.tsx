@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
 import { View, Text, StyleSheet, Dimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import { useSimilarContent } from '@/features/home/hooks/useSimilarContent'
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import MediaTile from './MediaTile'
 import LoadingTiles from './LoadingTiles'
 import type { ExternalArtistBase } from '@/types'
@@ -16,10 +16,10 @@ const VISIBLE_ITEMS = 2.5
 const MIN_ITEMS = 8
 
 export default function ArtistsForYouSection() {
-  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const { artists, artistsReady } = useSimilarContent()
+  const { navigateToArtist } = useMatchedNavigation()
 
   const screenWidth = Dimensions.get('window').width
   const gridGap = 12
@@ -37,12 +37,7 @@ export default function ArtistsForYouSection() {
       radius={gridItemWidth / 2}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
-        navigation.navigate('externalArtistView', {
-          source: item.externalSource,
-          artistId: item.externalIds?.deezerId,
-          mbid: item.externalIds?.mbid ?? item.id,
-          name: item.name,
-        })
+        navigateToArtist(item)
       }}
     />
   ), [navigation, gridItemWidth])

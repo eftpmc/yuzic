@@ -18,6 +18,7 @@ import {
   selectLastFmUsername,
   selectLastFmScrobbleEnabled,
   selectLastFmNowPlayingEnabled,
+  selectLastFmSimilarArtistsEnabled,
 } from '@/utils/redux/selectors/lastfmSelectors';
 import {
   setApiKey,
@@ -26,6 +27,7 @@ import {
   disconnect,
   setScrobbleEnabled,
   setNowPlayingEnabled,
+  setSimilarArtistsEnabled,
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
 
@@ -43,6 +45,7 @@ const LastFmView: React.FC = () => {
   const username = useSelector(selectLastFmUsername);
   const scrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
   const nowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
+  const similarArtistsEnabled = useSelector(selectLastFmSimilarArtistsEnabled);
 
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,6 +120,12 @@ const LastFmView: React.FC = () => {
           </TouchableOpacity>
         </>
       )}
+
+      <SettingsToggleGroup
+        items={[
+          { label: t('settings.lastfm.similarArtists'), subtext: t('settings.lastfm.similarArtistsDescription'), value: similarArtistsEnabled, onValueChange: v => { dispatch(setSimilarArtistsEnabled({ serverId, value: v })); } },
+        ]}
+      />
 
       {isAuthenticated && (
         <>

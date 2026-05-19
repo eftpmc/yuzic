@@ -8,6 +8,7 @@ export interface PerServerLastFmState {
   isAuthenticated: boolean;
   scrobbleEnabled: boolean;
   nowPlayingEnabled: boolean;
+  similarArtistsEnabled: boolean;
 }
 
 export interface LastFmState {
@@ -22,6 +23,7 @@ const defaultPerServer: PerServerLastFmState = {
   isAuthenticated: false,
   scrobbleEnabled: true,
   nowPlayingEnabled: true,
+  similarArtistsEnabled: false,
 };
 
 const initialState: LastFmState = {
@@ -68,6 +70,9 @@ const lastfmSlice = createSlice({
     setNowPlayingEnabled(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
       getOrCreate(state, action.payload.serverId).nowPlayingEnabled = action.payload.value;
     },
+    setSimilarArtistsEnabled(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
+      getOrCreate(state, action.payload.serverId).similarArtistsEnabled = action.payload.value;
+    },
     disconnect(state, action: PayloadAction<{ serverId: string }>) {
       state.byServer[action.payload.serverId] = { ...defaultPerServer };
     },
@@ -81,6 +86,7 @@ export const {
   setAuthenticated,
   setScrobbleEnabled,
   setNowPlayingEnabled,
+  setSimilarArtistsEnabled,
   disconnect,
 } = lastfmSlice.actions;
 

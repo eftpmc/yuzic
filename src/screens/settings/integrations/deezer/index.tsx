@@ -6,12 +6,20 @@ import SettingsToggleGroup from '../../components/SettingsToggleGroup';
 import {
   selectDeezerDiscoveryEnabled,
   selectDeezerSearchEnabled,
-  selectDeezerExternalScreensEnabled,
+  selectDeezerExternalEnabled,
+  selectDeezerTopTracksEnabled,
+  selectDeezerSimilarArtistsEnabled,
+  selectDeezerAlbumPreviewsEnabled,
+  selectDeezerAlbumRecommendationsEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setDeezerDiscoveryEnabled,
   setDeezerSearchEnabled,
-  setDeezerExternalScreensEnabled,
+  setDeezerExternalEnabled,
+  setDeezerTopTracksEnabled,
+  setDeezerSimilarArtistsEnabled,
+  setDeezerAlbumPreviewsEnabled,
+  setDeezerAlbumRecommendationsEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
 export default function DeezerSettings() {
@@ -19,7 +27,11 @@ export default function DeezerSettings() {
   const dispatch = useDispatch();
   const discoveryEnabled = useSelector(selectDeezerDiscoveryEnabled);
   const searchEnabled = useSelector(selectDeezerSearchEnabled);
-  const externalScreensEnabled = useSelector(selectDeezerExternalScreensEnabled);
+  const externalEnabled = useSelector(selectDeezerExternalEnabled);
+  const topTracksEnabled = useSelector(selectDeezerTopTracksEnabled);
+  const similarArtistsEnabled = useSelector(selectDeezerSimilarArtistsEnabled);
+  const albumPreviewsEnabled = useSelector(selectDeezerAlbumPreviewsEnabled);
+  const albumRecommendationsEnabled = useSelector(selectDeezerAlbumRecommendationsEnabled);
 
   return (
     <SettingsScreen title="Deezer">
@@ -38,10 +50,34 @@ export default function DeezerSettings() {
             onValueChange: v => { dispatch(setDeezerSearchEnabled(v)); },
           },
           {
-            label: t('settings.deezer.externalScreens'),
-            subtext: t('settings.deezer.externalScreensDescription'),
-            value: externalScreensEnabled,
-            onValueChange: v => { dispatch(setDeezerExternalScreensEnabled(v)); },
+            label: t('settings.deezer.external'),
+            subtext: t('settings.deezer.externalDescription'),
+            value: externalEnabled,
+            onValueChange: v => { dispatch(setDeezerExternalEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.topTracks'),
+            subtext: t('settings.deezer.topTracksDescription'),
+            value: topTracksEnabled,
+            onValueChange: v => { dispatch(setDeezerTopTracksEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.similarArtists'),
+            subtext: t('settings.deezer.similarArtistsDescription'),
+            value: similarArtistsEnabled,
+            onValueChange: v => { dispatch(setDeezerSimilarArtistsEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.albumPreviews'),
+            subtext: t('settings.deezer.albumPreviewsDescription'),
+            value: albumPreviewsEnabled,
+            onValueChange: v => { dispatch(setDeezerAlbumPreviewsEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.albumRecommendations'),
+            subtext: t('settings.deezer.albumRecommendationsDescription'),
+            value: albumRecommendationsEnabled,
+            onValueChange: v => { dispatch(setDeezerAlbumRecommendationsEnabled(v)); },
           },
         ]}
       />

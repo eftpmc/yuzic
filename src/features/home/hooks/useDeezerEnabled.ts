@@ -3,7 +3,10 @@ import { useIsOffline } from '@/hooks/useIsOffline'
 import {
   selectDeezerDiscoveryEnabled,
   selectDeezerSearchEnabled,
-  selectDeezerExternalScreensEnabled,
+  selectDeezerTopTracksEnabled,
+  selectDeezerSimilarArtistsEnabled,
+  selectDeezerAlbumPreviewsEnabled,
+  selectDeezerAlbumRecommendationsEnabled,
 } from '@/utils/redux/selectors/settingsSelectors'
 import { RootState } from '@/utils/redux/store'
 
@@ -21,6 +24,18 @@ export function useDeezerSearchEnabled(): boolean {
   return useDeezerBase(selectDeezerSearchEnabled)
 }
 
-export function useDeezerExternalScreensEnabled(): boolean {
-  return useDeezerBase(selectDeezerExternalScreensEnabled)
+export function useDeezerTopTracksEnabled(): boolean {
+  return useDeezerBase(selectDeezerTopTracksEnabled)
+}
+
+export function useDeezerSimilarArtistsEnabled(): boolean {
+  return useDeezerBase(selectDeezerSimilarArtistsEnabled)
+}
+
+export function useDeezerAlbumPreviewsEnabled(): boolean {
+  return useDeezerBase(selectDeezerAlbumPreviewsEnabled)
+}
+
+export function useDeezerAlbumRecommendationsEnabled(): boolean {
+  return useDeezerBase(selectDeezerAlbumRecommendationsEnabled)
 }

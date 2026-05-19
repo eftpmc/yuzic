@@ -27,6 +27,7 @@ type Props = {
   song: Song;
   collection?: any;
   onPress?: () => void;
+  onPreviewPress?: () => void;
   variant?: 'default' | 'albumCompact';
   showDownloadedDot?: boolean;
   isFavorite?: boolean;
@@ -36,6 +37,7 @@ const SongRow: React.FC<Props> = ({
   song,
   collection,
   onPress,
+  onPreviewPress,
   variant = 'default',
   showDownloadedDot = false,
   isFavorite = false,
@@ -132,6 +134,15 @@ const SongRow: React.FC<Props> = ({
               color={colors.subtext}
             />
           )}
+          {onPreviewPress && (
+            <TouchableOpacity
+              onPress={onPreviewPress}
+              hitSlop={8}
+              style={[styles.previewButton, { backgroundColor: colors.card }]}
+            >
+              <Ionicons name="play" size={12} color={colors.secondary} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={openOptions} hitSlop={10}>
             <Ionicons
               name="ellipsis-horizontal"
@@ -191,6 +202,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  previewButton: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   trackNumber: {
     fontSize: 13,

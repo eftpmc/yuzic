@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Image } from 'react-native';
+import { View, Image, StyleSheet as RNStyleSheet } from 'react-native';
+import LetterCover from '@/components/LetterCover';
 import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
 import { buildCover, buildCoverArtArchiveUrl, buildCoverCacheKey } from '@/utils/builders/buildCover';
@@ -58,6 +59,13 @@ export function MediaImage({
     setUseFallback(false);
     setFailedVersion(version => version + 1);
   }, [uri, fallbackUri]);
+
+  if (cover.kind === 'letter') {
+    const flat = RNStyleSheet.flatten(style);
+    const size = typeof flat?.width === 'number' ? flat.width : 80;
+    const radius = typeof flat?.borderRadius === 'number' ? flat.borderRadius : 0;
+    return <LetterCover name={cover.name} size={size} radius={radius} style={style} />;
+  }
 
   if (uri === 'heart-icon') {
     return (

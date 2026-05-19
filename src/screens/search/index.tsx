@@ -32,6 +32,7 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 
 const Search = () => {
@@ -39,6 +40,7 @@ const Search = () => {
   const songOptionsRef = useSheetRef();
   const playlistListRef = useSheetRef();
   const navigation = useNavigation<any>();
+  const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSong } = usePlaying();
@@ -161,7 +163,7 @@ const Search = () => {
           artistName={result.subtext}
           onPress={album => {
             prefetchCovers([album.cover], 'detail');
-            navigation.navigate('externalAlbumView', { source: album.externalSource, albumId: album.id });
+            navigateToAlbum(album);
           }}
         />
       ) : (
@@ -192,12 +194,7 @@ const Search = () => {
           onPress={() => {
             prefetchCovers([result.cover], 'detail');
             if (result.source === 'external') {
-              navigation.navigate('externalArtistView', {
-                source: result.externalSource,
-                artistId: result.externalIds?.deezerId,
-                mbid: result.externalIds?.mbid ?? result.id,
-                name: result.title,
-              });
+              navigateToArtist({ id: result.id, name: result.title, cover: result.cover, subtext: result.subtext, externalSource: result.externalSource, externalIds: result.externalIds });
             } else {
               navigation.navigate('artistView', { id: result.id });
             }
