@@ -11,6 +11,7 @@ import ImageColors from 'react-native-image-colors';
 import PlaylistList from '@/components/PlaylistList';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingState, usePlayingActions, usePlayingProgress } from '@/contexts/PlayingContext';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import PlayingScreen from '@/screens/playing';
 import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 import { useTheme } from '@/hooks/useTheme';
@@ -41,10 +42,20 @@ const ProgressBarStrip = memo(({
 }) => {
   const { position, duration } = usePlayingProgress();
   const effectiveDuration = duration > 0 ? duration : fallbackDuration;
-  const progress = effectiveDuration > 0 ? position / effectiveDuration : 0;
+  const displayRatio = useSharedValue(0);
+
+  useEffect(() => {
+    const ratio = effectiveDuration > 0 ? Math.max(0, Math.min(1, position / effectiveDuration)) : 0;
+    displayRatio.value = withTiming(ratio, { duration: 1000, easing: Easing.linear });
+  }, [position, effectiveDuration]);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${displayRatio.value * 100}%`,
+  }));
+
   return (
     <View style={[styles.progressBarContainer, containerStyle]}>
-      <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: themeColor }]} />
+      <Animated.View style={[styles.progressBar, fillStyle, { backgroundColor: themeColor }]} />
     </View>
   );
 });
