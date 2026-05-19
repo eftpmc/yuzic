@@ -5,16 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import TrackPlayer from '@rntp/player';
 import TurboImage from 'react-native-turbo-image';
 
+import TrackPlayer from '@rntp/player';
 import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+import { SeekableProgressBar } from './SeekableProgressBar';
 import { useSelector } from 'react-redux';
 import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
-import { SeekableProgressBar } from './SeekableProgressBar';
 
 type PlayingMainProps = {
   width: number;
