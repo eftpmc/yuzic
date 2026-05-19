@@ -74,11 +74,6 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
     playSongInCollection(previewSongs[0], previewCollection);
   }, [previewSongs, previewCollection, playSongInCollection]);
 
-  const handleShuffle = useCallback(() => {
-    if (!previewSongs.length) return;
-    playSongInCollection(previewSongs[0], previewCollection, true);
-  }, [previewSongs, previewCollection, playSongInCollection]);
-
   const handleDownload = useCallback(() => {
     if (!canDownload || albumStatus.kind !== 'none') return;
     downloadSheetRef.current?.present();
@@ -174,31 +169,24 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
         <View style={styles.actionsRow}>
           <View style={styles.actions}>
             <TouchableOpacity
-              style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-              onPress={handleShuffle}
-              disabled={!previewSongs.length}
-            >
-              <Ionicons name="shuffle" size={18} color={colors.secondary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
               style={[styles.playButton, { backgroundColor: themeColor }]}
-              onPress={handlePlay}
-              disabled={!previewSongs.length}
-            >
-              <Ionicons name="play" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.secondaryButton, { backgroundColor: colors.card }]}
               onPress={handleDownload}
               disabled={!canDownload || albumStatus.kind !== 'none'}
             >
               <CloudDownload
-                size={18}
-                color={!canDownload || albumStatus.kind !== 'none' ? colors.placeholder : colors.secondary}
+                size={20}
+                color={!canDownload || albumStatus.kind !== 'none' ? 'rgba(255,255,255,0.4)' : '#fff'}
               />
             </TouchableOpacity>
+
+            {previewSongs.length > 0 && (
+              <TouchableOpacity
+                style={[styles.secondaryButton, { backgroundColor: colors.card }]}
+                onPress={handlePlay}
+              >
+                <Ionicons name="play" size={18} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -252,7 +240,7 @@ const styles = StyleSheet.create({
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 20,
     alignItems: 'center',
   },
   title: {
@@ -286,6 +274,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  playButton: {
+    borderRadius: 22,
+    width: 112,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   secondaryButton: {
     width: 40,
     height: 40,
@@ -306,11 +301,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });
+

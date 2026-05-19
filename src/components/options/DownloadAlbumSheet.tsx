@@ -9,7 +9,6 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Image } from 'expo-image';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
@@ -28,8 +27,6 @@ import {
 } from '@/utils/redux/selectors/downloadersSelectors';
 import type { ExternalAlbumBase } from '@/types';
 
-const LIDARR_ICON = require('@assets/images/lidarr.png');
-const SLSKD_ICON = require('@assets/images/slskd.png');
 
 interface Props {
   album: ExternalAlbumBase;
@@ -122,7 +119,6 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
             onPress={handleLidarr}
             disabled={anyLoading}
           >
-            <Image source={LIDARR_ICON} style={styles.serviceIcon} contentFit="contain" cachePolicy="memory-disk" />
             <View style={styles.serviceText}>
               <Text style={[styles.optionText, { color: colors.secondary }]}>Lidarr</Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
@@ -141,7 +137,6 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
             onPress={handleSlskd}
             disabled={anyLoading}
           >
-            <Image source={SLSKD_ICON} style={styles.serviceIcon} contentFit="contain" cachePolicy="memory-disk" />
             <View style={styles.serviceText}>
               <Text style={[styles.optionText, { color: colors.secondary }]}>Soulseek</Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
@@ -198,11 +193,6 @@ const styles = StyleSheet.create({
   },
   optionDisabled: {
     opacity: 0.55,
-  },
-  serviceIcon: {
-    width: 26,
-    height: 26,
-    marginRight: 16,
   },
   serviceText: {
     flex: 1,

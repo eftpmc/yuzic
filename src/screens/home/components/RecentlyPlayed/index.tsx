@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +11,9 @@ import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { AlbumBase, PlaylistBase } from '@/types';
+import AlbumOptions from '@/components/options/AlbumOptions';
+import PlaylistOptions from '@/components/options/PlaylistOptions';
+import { useSheetRef } from '@/utils/useSheetRef';
 
 const H_PADDING = 12;
 const GAP = 10;
@@ -27,11 +30,53 @@ type RecentItem =
   | { kind: 'album'; data: AlbumBase; ts: number }
   | { kind: 'playlist'; data: PlaylistBase; ts: number };
 
+type TileProps = {
+  item: RecentItem;
+  itemWidth: number;
+};
+
+const RecentTile = memo(({ item, itemWidth }: TileProps) => {
+  const navigation = useNavigation<any>();
+  const sheetRef = useSheetRef();
+
+  const handlePress = useCallback(() => {
+    if (item.kind === 'album') {
+      navigation.navigate('albumView', { id: item.data.id });
+    } else {
+      navigation.navigate('playlistView', { id: item.data.id });
+    }
+  }, [item, navigation]);
+
+  const handleLongPress = useCallback(() => {
+    sheetRef.current?.present();
+  }, [sheetRef]);
+
+  return (
+    <>
+      <View style={[styles.item, { width: itemWidth }]}>
+        <MediaTile
+          cover={item.data.cover}
+          title={item.data.title}
+          subtitle={item.data.subtext}
+          size={itemWidth}
+          radius={item.kind === 'playlist' ? 6 : 8}
+          onPress={handlePress}
+          onLongPress={handleLongPress}
+        />
+      </View>
+      {item.kind === 'album' ? (
+        <AlbumOptions ref={sheetRef} album={item.data} hideGoToAlbum={false} />
+      ) : (
+        <PlaylistOptions ref={sheetRef} playlist={item.data} />
+      )}
+    </>
+  );
+});
+
 export default function RecentlyPlayed() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
-  const navigation = useNavigation<any>();
   const itemWidth = getItemWidth(width);
 
   const albumLastPlayedAt = useSelector(selectAlbumLastPlayedAt);
@@ -75,20 +120,7 @@ export default function RecentlyPlayed() {
           contentContainerStyle={styles.scrollContent}
         >
           {items.map(item => (
-            <View key={`${item.kind}-${item.data.id}`} style={[styles.item, { width: itemWidth }]}>
-              <MediaTile
-                cover={item.data.cover}
-                title={item.data.title}
-                subtitle={item.data.subtext}
-                size={itemWidth}
-                radius={item.kind === 'playlist' ? 6 : 8}
-                onPress={() =>
-                  item.kind === 'album'
-                    ? navigation.navigate('albumView', { id: item.data.id })
-                    : navigation.navigate('playlistView', { id: item.data.id })
-                }
-              />
-            </View>
+            <RecentTile key={`${item.kind}-${item.data.id}`} item={item} itemWidth={itemWidth} />
           ))}
         </ScrollView>
       )}

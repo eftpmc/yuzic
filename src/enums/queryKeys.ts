@@ -28,5 +28,4 @@ export enum QueryKeys {
 	ExploreDeezerCharts = 'explore-deezer-charts',
 	ExploreTopArtists = 'explore-top-artists',
 	LocalArtistTopTracks = 'local-artist-top-tracks',
-	LocalAlbumPreviews = 'local-album-previews',
 }

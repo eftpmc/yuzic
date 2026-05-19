@@ -403,6 +403,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [activeMediaItem, bumpQueue]);
 
   const resolvePlayableSong = useCallback((song: Song): Song => {
+    if (song.isPreview) return song;
     const localPath = getLocalPath(song.id);
     if (localPath) return { ...song, streamUrl: localPath };
     const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);

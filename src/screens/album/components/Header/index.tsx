@@ -166,7 +166,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
             style={[styles.playButton, { backgroundColor: themeColor }]}
             onPress={() => songs.length > 0 && playSongInCollection(songs[0], album)}
           >
-            <Ionicons name="play" size={24} color="#fff" />
+            <Ionicons name="play" size={20} color="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 20,
     alignItems: 'center',
   },
   title: {

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { PlayCircle } from 'lucide-react-native';
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
@@ -26,9 +27,10 @@ const ExternalSongRow: React.FC<Props> = ({
   onPress,
 }) => {
   const { colors } = useTheme();
+  const hasPreview = !!previewUrl;
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, !hasPreview && styles.rowDisabled]}>
       <TouchableOpacity
         style={styles.songInfo}
         onPress={onPress}
@@ -36,21 +38,32 @@ const ExternalSongRow: React.FC<Props> = ({
         activeOpacity={onPress ? 0.6 : 1}
       >
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
+          <Text
+            style={[styles.title, { color: colors.secondary }, !hasPreview && styles.textDisabled]}
+            numberOfLines={1}
+          >
             {song.title}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>
+          <Text
+            style={[styles.subtitle, { color: colors.subtext }, !hasPreview && styles.textDisabled]}
+            numberOfLines={1}
+          >
             {song.artist || albumArtist}
           </Text>
         </View>
       </TouchableOpacity>
 
-      <ExternalSongOptions
-        song={song}
-        albumTitle={albumTitle}
-        albumArtist={albumArtist}
-        onPlay={previewUrl ? onPress : undefined}
-      />
+      <View style={styles.rowRight}>
+        {hasPreview && (
+          <PlayCircle size={16} color={colors.subtext} />
+        )}
+        <ExternalSongOptions
+          song={song}
+          albumTitle={albumTitle}
+          albumArtist={albumArtist}
+          onPlay={previewUrl ? onPress : undefined}
+        />
+      </View>
     </View>
   );
 };
@@ -64,6 +77,9 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 16,
   },
+  rowDisabled: {
+    opacity: 0.4,
+  },
   songInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -73,6 +89,11 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     fontSize: 15,
     fontWeight: '400',
@@ -80,5 +101,8 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 13,
     marginTop: 1,
+  },
+  textDisabled: {
+    opacity: 1,
   },
 });

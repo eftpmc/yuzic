@@ -17,12 +17,13 @@ type Props = {
   size: number;
   radius: number;
   onPress?: () => void;
+  onLongPress?: () => void;
 };
 
-function MediaTile({ cover, title, subtitle, size, radius, onPress }: Props) {
+function MediaTile({ cover, title, subtitle, size, radius, onPress, onLongPress }: Props) {
   const { colors } = useTheme();
 
-  const Wrapper: React.ComponentType<any> = onPress ? TouchableOpacity : View;
+  const Wrapper: React.ComponentType<any> = onPress || onLongPress ? TouchableOpacity : View;
 
   const containerStyle: StyleProp<ViewStyle> = { width: size };
   const imageStyle: StyleProp<ViewStyle> = {
@@ -33,7 +34,7 @@ function MediaTile({ cover, title, subtitle, size, radius, onPress }: Props) {
   };
 
   return (
-    <Wrapper onPress={onPress} activeOpacity={onPress ? 0.7 : undefined} style={containerStyle}>
+    <Wrapper onPress={onPress} onLongPress={onLongPress} activeOpacity={onPress || onLongPress ? 0.7 : undefined} style={containerStyle}>
       <MediaImage cover={cover} size="grid" style={imageStyle} />
       <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{title}</Text>
       <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>{subtitle}</Text>

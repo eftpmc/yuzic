@@ -307,13 +307,13 @@
       "external": "External Artist & Album Pages",
       "externalDescription": "Browse artist and album pages from Deezer.",
       "topTracks": "Top Tracks",
-      "topTracksDescription": "Show Deezer top tracks and biography on artist pages.",
+      "topTracksDescription": "Show Deezer top tracks on artist pages.",
       "similarArtists": "Similar Artists",
       "similarArtistsDescription": "Show Deezer similar artists on artist pages.",
-      "albumPreviews": "Track Previews",
-      "albumPreviewsDescription": "Show 30-second Deezer previews on album pages.",
       "albumRecommendations": "Album Recommendations",
-      "albumRecommendationsDescription": "Show Deezer recommended albums on album pages."
+      "albumRecommendationsDescription": "Show Deezer recommended albums on album pages.",
+      "samples": "Samples",
+      "samplesDescription": "Fetch 30s preview samples for external album pages."
     },
     "scrobbling": {
       "title": "Scrobbling",

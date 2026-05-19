@@ -96,16 +96,16 @@ export const selectDeezerTopTracksEnabled = (state: RootState): boolean =>
 export const selectDeezerSimilarArtistsEnabled = (state: RootState): boolean =>
   state.settings.deezerSimilarArtistsEnabled ?? false;
 
-export const selectDeezerAlbumPreviewsEnabled = (state: RootState): boolean =>
-  state.settings.deezerAlbumPreviewsEnabled ?? false;
 
 export const selectDeezerAlbumRecommendationsEnabled = (state: RootState): boolean =>
   state.settings.deezerAlbumRecommendationsEnabled ?? false;
+
+export const selectDeezerSamplesEnabled = (state: RootState): boolean =>
+  state.settings.deezerSamplesEnabled ?? false;
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||
     state.settings.deezerSearchEnabled ||
     state.settings.deezerExternalEnabled ||
     state.settings.deezerTopTracksEnabled ||
-    state.settings.deezerSimilarArtistsEnabled ||
-    state.settings.deezerAlbumPreviewsEnabled) ?? false;
+    state.settings.deezerSimilarArtistsEnabled) ?? false;

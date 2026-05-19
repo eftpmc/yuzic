@@ -47,8 +47,8 @@ export interface SettingsState {
   deezerExternalEnabled: boolean;
   deezerTopTracksEnabled: boolean;
   deezerSimilarArtistsEnabled: boolean;
-  deezerAlbumPreviewsEnabled: boolean;
   deezerAlbumRecommendationsEnabled: boolean;
+  deezerSamplesEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
 
   /* Sync */
@@ -84,8 +84,8 @@ const initialState: SettingsState = {
   deezerExternalEnabled: false,
   deezerTopTracksEnabled: false,
   deezerSimilarArtistsEnabled: false,
-  deezerAlbumPreviewsEnabled: false,
   deezerAlbumRecommendationsEnabled: false,
+  deezerSamplesEnabled: false,
   musicbrainzExternalEnabled: false,
 
   lastSyncedAt: null,
@@ -179,11 +179,11 @@ const settingsSlice = createSlice({
     setDeezerSimilarArtistsEnabled(state, action: PayloadAction<boolean>) {
       state.deezerSimilarArtistsEnabled = action.payload;
     },
-    setDeezerAlbumPreviewsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerAlbumPreviewsEnabled = action.payload;
-    },
     setDeezerAlbumRecommendationsEnabled(state, action: PayloadAction<boolean>) {
       state.deezerAlbumRecommendationsEnabled = action.payload;
+    },
+    setDeezerSamplesEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerSamplesEnabled = action.payload;
     },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
@@ -221,8 +221,8 @@ export const {
   setMusicbrainzExternalEnabled,
   setDeezerTopTracksEnabled,
   setDeezerSimilarArtistsEnabled,
-  setDeezerAlbumPreviewsEnabled,
   setDeezerAlbumRecommendationsEnabled,
+  setDeezerSamplesEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

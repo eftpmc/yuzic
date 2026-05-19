@@ -4,7 +4,7 @@ import type { ExternalAlbum } from '@/types';
 /**
  * Fetches 30s preview URLs for all tracks in an external album.
  * Returns Record<songId, previewUrl>.
- * Shared between useExternalAlbumPreviews and useLocalAlbumPreviews.
+ * Used by useExternalAlbumPreviews.
  */
 export async function fetchPreviewsForExternalAlbum(
   album: ExternalAlbum

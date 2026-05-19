@@ -9,8 +9,8 @@ import {
   selectDeezerExternalEnabled,
   selectDeezerTopTracksEnabled,
   selectDeezerSimilarArtistsEnabled,
-  selectDeezerAlbumPreviewsEnabled,
   selectDeezerAlbumRecommendationsEnabled,
+  selectDeezerSamplesEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setDeezerDiscoveryEnabled,
@@ -18,8 +18,8 @@ import {
   setDeezerExternalEnabled,
   setDeezerTopTracksEnabled,
   setDeezerSimilarArtistsEnabled,
-  setDeezerAlbumPreviewsEnabled,
   setDeezerAlbumRecommendationsEnabled,
+  setDeezerSamplesEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
 export default function DeezerSettings() {
@@ -30,8 +30,8 @@ export default function DeezerSettings() {
   const externalEnabled = useSelector(selectDeezerExternalEnabled);
   const topTracksEnabled = useSelector(selectDeezerTopTracksEnabled);
   const similarArtistsEnabled = useSelector(selectDeezerSimilarArtistsEnabled);
-  const albumPreviewsEnabled = useSelector(selectDeezerAlbumPreviewsEnabled);
   const albumRecommendationsEnabled = useSelector(selectDeezerAlbumRecommendationsEnabled);
+  const samplesEnabled = useSelector(selectDeezerSamplesEnabled);
 
   return (
     <SettingsScreen title="Deezer">
@@ -68,16 +68,16 @@ export default function DeezerSettings() {
             onValueChange: v => { dispatch(setDeezerSimilarArtistsEnabled(v)); },
           },
           {
-            label: t('settings.deezer.albumPreviews'),
-            subtext: t('settings.deezer.albumPreviewsDescription'),
-            value: albumPreviewsEnabled,
-            onValueChange: v => { dispatch(setDeezerAlbumPreviewsEnabled(v)); },
-          },
-          {
             label: t('settings.deezer.albumRecommendations'),
             subtext: t('settings.deezer.albumRecommendationsDescription'),
             value: albumRecommendationsEnabled,
             onValueChange: v => { dispatch(setDeezerAlbumRecommendationsEnabled(v)); },
+          },
+          {
+            label: t('settings.deezer.samples'),
+            subtext: t('settings.deezer.samplesDescription'),
+            value: samplesEnabled,
+            onValueChange: v => { dispatch(setDeezerSamplesEnabled(v)); },
           },
         ]}
       />
