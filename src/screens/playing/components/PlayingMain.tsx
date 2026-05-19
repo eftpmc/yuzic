@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import MarqueeText from '@/components/MarqueeText';
 import TurboImage from 'react-native-turbo-image';
 
 import TrackPlayer from '@rntp/player';
@@ -82,15 +83,15 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 
       <View style={styles.titleRow}>
         <View style={styles.textContainer}>
-          <Text style={styles.title} numberOfLines={2}>
+          <MarqueeText style={styles.title}>
             {currentSong.title}
-          </Text>
+          </MarqueeText>
 
           {currentSong.artist && (
             <TouchableOpacity onPress={onPressArtist} activeOpacity={0.7}>
-              <Text style={styles.artist} numberOfLines={1}>
+              <MarqueeText style={styles.artist}>
                 {currentSong.artist}
-              </Text>
+              </MarqueeText>
             </TouchableOpacity>
           )}
         </View>
