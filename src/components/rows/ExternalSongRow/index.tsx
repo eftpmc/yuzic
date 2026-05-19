@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { PlayCircle } from 'lucide-react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
+import { useTranslation } from 'react-i18next';
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
+import { useDeezerSamplesEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
 type Props = {
   song: ExternalSong;
@@ -27,25 +30,34 @@ const ExternalSongRow: React.FC<Props> = ({
   onPress,
 }) => {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const samplesEnabled = useDeezerSamplesEnabled();
   const hasPreview = !!previewUrl;
 
+  const handlePress = useCallback(() => {
+    if (onPress) {
+      onPress();
+    } else if (!samplesEnabled) {
+      toast(t('settings.deezer.enableSamplesToPreview'));
+    }
+  }, [onPress, samplesEnabled, t]);
+
   return (
-    <View style={[styles.row, !hasPreview && styles.rowDisabled]}>
+    <View style={styles.row}>
       <TouchableOpacity
         style={styles.songInfo}
-        onPress={onPress}
-        disabled={!onPress}
-        activeOpacity={onPress ? 0.6 : 1}
+        onPress={handlePress}
+        activeOpacity={0.6}
       >
         <View style={styles.textContainer}>
           <Text
-            style={[styles.title, { color: colors.secondary }, !hasPreview && styles.textDisabled]}
+            style={[styles.title, { color: colors.secondary }]}
             numberOfLines={1}
           >
             {song.title}
           </Text>
           <Text
-            style={[styles.subtitle, { color: colors.subtext }, !hasPreview && styles.textDisabled]}
+            style={[styles.subtitle, { color: colors.subtext }]}
             numberOfLines={1}
           >
             {song.artist || albumArtist}
@@ -77,9 +89,6 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 16,
   },
-  rowDisabled: {
-    opacity: 0.4,
-  },
   songInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,8 +110,5 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 13,
     marginTop: 1,
-  },
-  textDisabled: {
-    opacity: 1,
   },
 });

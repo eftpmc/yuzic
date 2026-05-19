@@ -224,6 +224,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     opts: { listenedSeconds: number; startTime: number }
   ) => Promise<void>>(async () => {});
   const submitNowPlayingRef = useRef<(song: Song) => void>(() => {});
+  const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
 
   const { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled } = useScrobbling();
 
@@ -316,6 +317,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       TrackPlayer.play();
     }
   }, [bumpQueue, clearPlaybackState]);
+  removeFailedCurrentTrackRef.current = removeFailedCurrentTrack;
 
   useEffect(() => {
     const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
@@ -335,6 +337,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         lastPlaybackErrorAtRef.current = now;
         toast.error(t('common.playbackError'));
       }
+
+      removeFailedCurrentTrackRef.current();
     });
 
     return () => subscription.remove();

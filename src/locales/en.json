@@ -313,7 +313,8 @@
       "albumRecommendations": "Album Recommendations",
       "albumRecommendationsDescription": "Show Deezer recommended albums on album pages.",
       "samples": "Samples",
-      "samplesDescription": "Fetch 30s preview samples for external album pages."
+      "samplesDescription": "Fetch 30s preview samples for external album pages.",
+      "enableSamplesToPreview": "Enable Samples in Settings to hear previews"
     },
     "scrobbling": {
       "title": "Scrobbling",
