@@ -227,6 +227,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   ) => Promise<void>>(async () => {});
   const submitNowPlayingRef = useRef<(song: Song) => void>(() => {});
   const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
+  const resolvePlayableSongRef = useRef<(song: Song) => Song>((s) => s);
 
   const { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled } = useScrobbling();
 
@@ -338,16 +339,25 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       const now = Date.now();
 
-      // First error: try reloading the track in place (recovers AirPlay route-change failures)
-      // before giving up and removing it from the queue.
+      // Preview URLs (Deezer etc.) can't be refreshed — remove immediately.
+      if (song?.isPreview) {
+        removeFailedCurrentTrackRef.current();
+        return;
+      }
+
+      // First error: refresh every URL in the queue (catches stale Navidrome tokens
+      // after JS context restarts) then retry from the current index.
       if (now - lastRecoveryAtRef.current > 3000) {
         lastRecoveryAtRef.current = now;
-        TrackPlayer.skipToIndex(currentIndexRef.current);
+        const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
+        queueRef.current = freshQueue;
+        currentSongRef.current = freshQueue[currentIndexRef.current] ?? song;
+        TrackPlayer.setMediaItems(toMediaItems(freshQueue), currentIndexRef.current);
         TrackPlayer.play();
         return;
       }
 
-      // Second error within 3s — genuine failure, remove the track and show toast.
+      // Second error within 3s — URL refresh didn't help, genuine failure.
       if (now - lastPlaybackErrorAtRef.current > 1500) {
         lastPlaybackErrorAtRef.current = now;
         toast.error(t('common.playbackError'));
@@ -380,11 +390,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const nativeQueueSongs = nativeQueue
       .map(item => {
         const id = getMediaItemId(item);
-        return (
-          queueRef.current.find(song => song.id === id) ??
-          librarySongByIdRef.current.get(id) ??
-          mediaItemToFallbackSong(item)
-        );
+        // Prefer in-memory queue (fresh URLs) over native cache (potentially stale tokens)
+        const known = queueRef.current.find(song => song.id === id)
+          ?? librarySongByIdRef.current.get(id);
+        if (known) return known;
+        // Fallback: build from native item, then immediately refresh the URL
+        const fallback = mediaItemToFallbackSong(item);
+        return fallback ? resolvePlayableSongRef.current(fallback) : null;
       })
       .filter((song): song is Song => Boolean(song));
 
@@ -428,6 +440,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);
     return freshUrl ? { ...song, streamUrl: freshUrl } : song;
   }, [api, getLocalPath]);
+  // Keep ref in sync during render so effects/handlers always have the latest version
+  resolvePlayableSongRef.current = resolvePlayableSong;
 
   const loadQueue = useCallback(async (songs: Song[], startIndex: number, play = true, seekToPosition?: number) => {
     assertPlayableSongs(songs);
