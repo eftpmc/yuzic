@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
@@ -9,6 +9,7 @@ import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import SettingsSelectCard from '../components/SettingsSelectCard';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
+import SettingsCardHeader from '../components/SettingsCardHeader';
 import ConnectivityIndicator from '../components/ConnectivityIndicator';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
@@ -96,25 +97,25 @@ const ServerSettings: React.FC = () => {
         onSelect={key => dispatch(setSearchScope(key as SearchScope))}
       />
 
+      {(isNavidrome || isJellyfinOrEmby) && (
+        <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
+      )}
+
       {isNavidrome && (
-        <View style={styles.scrobbleSection}>
-          <SettingsToggleGroup
-            items={[
-              { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
-              { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: v => { dispatch(setServerNowPlayingEnabled(v)); } },
-            ]}
-          />
-        </View>
+        <SettingsToggleGroup
+          items={[
+            { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
+            { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: v => { dispatch(setServerNowPlayingEnabled(v)); } },
+          ]}
+        />
       )}
 
       {isJellyfinOrEmby && (
-        <View style={styles.scrobbleSection}>
-          <SettingsToggleGroup
-            items={[
-              { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
-            ]}
-          />
-        </View>
+        <SettingsToggleGroup
+          items={[
+            { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
+          ]}
+        />
       )}
     </SettingsScreen>
   );
@@ -122,8 +123,4 @@ const ServerSettings: React.FC = () => {
 
 export default ServerSettings;
 
-const styles = StyleSheet.create({
-  scrobbleSection: {
-    marginTop: 8,
-  },
-});
+const styles = StyleSheet.create({});

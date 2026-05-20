@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import SettingsScreen from '../components/SettingsScreen';
+import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
 import { ThemeColor } from './components/ThemeColor';
 import { ThemeModeSelector } from './components/ThemeModeSelector';
@@ -21,7 +22,7 @@ const AppearanceSettings: React.FC = () => {
       <LanguageSelector />
       <ThemeModeSelector />
       <ThemeColor />
-      <PlayingBarActionSelector />
+      <SettingsCardHeader subtle title={t('settings.appearance.playing')} />
       <SettingsToggleGroup
         items={[
           {
@@ -30,6 +31,12 @@ const AppearanceSettings: React.FC = () => {
             value: showQualityBadge,
             onValueChange: v => dispatch(setShowQualityBadge(v)),
           },
+        ]}
+      />
+      <PlayingBarActionSelector />
+      <SettingsCardHeader subtle title={t('settings.appearance.display')} />
+      <SettingsToggleGroup
+        items={[
           {
             label: t('settings.appearance.showSourceHeaders'),
             subtext: t('settings.appearance.showSourceHeadersSubtext'),

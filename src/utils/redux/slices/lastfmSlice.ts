@@ -21,8 +21,8 @@ const defaultPerServer: PerServerLastFmState = {
   sessionKey: '',
   username: '',
   isAuthenticated: false,
-  scrobbleEnabled: true,
-  nowPlayingEnabled: true,
+  scrobbleEnabled: false,
+  nowPlayingEnabled: false,
   similarArtistsEnabled: false,
 };
 

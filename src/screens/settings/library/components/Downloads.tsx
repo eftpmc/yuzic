@@ -5,6 +5,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
 import SettingsCard from '../../components/SettingsCard';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsDivider from '../../components/SettingsDivider';
 import SettingsInfoRow from '../../components/SettingsInfoRow';
 import SettingsRow from '../../components/SettingsRow';
@@ -23,6 +24,8 @@ const Downloads: React.FC = () => {
   const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
 
   return (
+    <>
+    <SettingsCardHeader subtle title={t('settings.library.downloads.title')} />
     <SettingsCard>
       <SettingsInfoRow
         label={t('settings.library.downloads.sizeLabel')}
@@ -41,6 +44,7 @@ const Downloads: React.FC = () => {
         onPress={() => router.push('/settings/downloadsInfoView')}
       />
     </SettingsCard>
+    </>
   );
 };
 

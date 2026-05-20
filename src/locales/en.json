@@ -78,6 +78,8 @@
         "french": "French",
         "chinese": "Chinese"
       },
+      "display": "Display",
+      "playing": "Playing",
       "showQualityBadge": "Show quality badge",
       "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen.",
       "showSourceHeaders": "Show source headers",
