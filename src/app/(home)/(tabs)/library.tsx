@@ -175,21 +175,24 @@ export default function LibraryScreen() {
     return ids
   }, [getAllDownloadedCollections])
 
-  const sortedByFilter = useMemo(() => ({
-    playlists:  sortItems(playlists.map(p => ({ kind: 'playlist'  as const, data: p })), sortOrder, stats),
-    albums:     sortItems(albums.map(a => ({ kind: 'album'        as const, data: a })), sortOrder, stats),
-    artists:    sortItems(artists.map(a => ({ kind: 'artist'       as const, data: a })), sortOrder, stats),
-    tracks:     sortItems(tracks.map(tr => ({ kind: 'track'        as const, data: tr })), sortOrder, stats),
-    downloaded: sortItems([
-      ...albums.filter(a => downloadedCollectionIds.has(a.id)).map(a => ({ kind: 'album' as const, data: a })),
-      ...playlists.filter(p => downloadedCollectionIds.has(p.id)).map(p => ({ kind: 'playlist' as const, data: p })),
-    ], sortOrder, stats),
-  }), [sortOrder, stats, albums, artists, playlists, tracks, downloadedCollectionIds])
-
-  const items = useMemo(
-    () => listFilter ? sortedByFilter[listFilter] : sortedAll,
-    [listFilter, sortedAll, sortedByFilter],
-  )
+  const items = useMemo(() => {
+    if (!listFilter) return sortedAll
+    switch (listFilter) {
+      case 'playlists':
+        return sortItems(playlists.map(p => ({ kind: 'playlist' as const, data: p })), sortOrder, stats)
+      case 'albums':
+        return sortItems(albums.map(a => ({ kind: 'album' as const, data: a })), sortOrder, stats)
+      case 'artists':
+        return sortItems(artists.map(a => ({ kind: 'artist' as const, data: a })), sortOrder, stats)
+      case 'tracks':
+        return sortItems(tracks.map(tr => ({ kind: 'track' as const, data: tr })), sortOrder, stats)
+      case 'downloaded':
+        return sortItems([
+          ...albums.filter(a => downloadedCollectionIds.has(a.id)).map(a => ({ kind: 'album' as const, data: a })),
+          ...playlists.filter(p => downloadedCollectionIds.has(p.id)).map(p => ({ kind: 'playlist' as const, data: p })),
+        ], sortOrder, stats)
+    }
+  }, [listFilter, sortedAll, sortOrder, stats, albums, artists, playlists, tracks, downloadedCollectionIds])
 
   const applyFilterAndFadeIn = useCallback((newFilter: Filter) => {
     setListFilter(newFilter)

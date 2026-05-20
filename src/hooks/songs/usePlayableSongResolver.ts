@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
-import { useDownload } from '@/contexts/DownloadContext';
+import { useDownloadActions } from '@/contexts/DownloadContext';
 import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import type { Song, SongBase } from '@/types';
@@ -42,7 +42,7 @@ export function usePlayableSongResolver() {
   const queryClient = useQueryClient();
   const activeServer = useSelector(selectActiveServer);
   const songsById = useSelector(selectSongsById);
-  const { getLocalPath } = useDownload();
+  const { getLocalPath } = useDownloadActions();
 
   const resolvePlayableSong = useCallback(async (
     input: PlayableSongInput,

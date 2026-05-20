@@ -25,7 +25,7 @@ import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent } from './playingQueue';
-import { useDownload } from './DownloadContext';
+import { useDownloadActions } from './DownloadContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
@@ -187,7 +187,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const isPlaying = useIsPlaying();
   const activeMediaItem = useActiveMediaItem();
   const api = useApi();
-  const { getLocalPath } = useDownload();
+  const { getLocalPath } = useDownloadActions();
   const networkType = useNetworkType();
   const wifiQuality = useSelector(selectWifiStreamQuality);
   const cellularQuality = useSelector(selectCellularStreamQuality);

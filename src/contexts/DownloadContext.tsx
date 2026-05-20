@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -46,47 +47,46 @@ export type DownloadedTrack = DownloadedTrackEntry & {
   };
 };
 
-type DownloadContextType = {
+// Stable operations — reference never changes after mount.
+export type DownloadActionsType = {
   configure: (config: Record<string, unknown>) => void;
   downloadTrack: (track: Song, playlistId?: string) => Promise<void>;
   downloadPlaylist: (playlistId: string, tracks: Song[]) => Promise<void>;
   resumeDownload: (downloadId: string) => Promise<void>;
   cancelDownload: (downloadId: string) => Promise<void>;
-  isTrackDownloaded: (trackId: string) => boolean;
-  getAllDownloadedTracks: () => DownloadedTrack[];
   deleteDownloadedTrack: (trackId: string) => Promise<void>;
-  getStorageInfo: () => Promise<{
-    totalBytes: number;
-    downloadedTracks: number;
-    availableBytes?: number;
-  }>;
   setPlaybackSourcePreference: (pref: 'auto' | 'download' | 'network') => void;
   downloadAlbumById: (albumId: string, songs?: Song[]) => Promise<void>;
   downloadPlaylistById: (playlistId: string, songs?: Song[]) => Promise<void>;
-  isTrackDownloading: (trackId: string) => boolean;
-  getCollectionDownloadState: (trackIds: string[]) => {
-    isDownloaded: boolean;
-    isDownloading: boolean;
-  };
   cancelCollectionDownloads: (collectionId: string) => Promise<void>;
-  removeDownloadByCollectionId: (
-    id: string,
-    trackIds: string[],
-    scope?: DownloadProviderScope
-  ) => Promise<void>;
+  removeDownloadByCollectionId: (id: string, trackIds: string[], scope?: DownloadProviderScope) => Promise<void>;
   cancelDownloadAll: () => Promise<void>;
   clearDownloadsForProvider: (scope?: DownloadProviderScope) => Promise<void>;
   clearAllDownloads: () => Promise<void>;
-  downloadStateVersion: number;
-  downloadedTracks: DownloadedTrack[];
+  // Stable O(1) lookup via internal Map ref — safe for playback resolution.
   getLocalPath: (trackId: string) => string | null;
-  getSongLocalUri: (songId: string) => Promise<string | null>;
+};
+
+// Reactive state — updates when downloads change.
+export type DownloadStateType = {
+  isTrackDownloaded: (trackId: string) => boolean;
+  isTrackDownloading: (trackId: string) => boolean;
+  getCollectionDownloadState: (trackIds: string[]) => { isDownloaded: boolean; isDownloading: boolean };
+  getAllDownloadedTracks: () => DownloadedTrack[];
   getAllDownloadedCollections: () => DownloadedCollectionEntry[];
+  getStorageInfo: () => Promise<{ totalBytes: number; downloadedTracks: number; availableBytes?: number }>;
+  getSongLocalUri: (songId: string) => Promise<string | null>;
+  downloadedTracks: DownloadedTrack[];
+  downloadStateVersion: number;
   totalDownloadedBytes: number;
   downloadedTrackCount: number;
 };
 
-const DownloadContext = createContext<DownloadContextType | undefined>(undefined);
+// Backward-compatible combined type.
+export type DownloadContextType = DownloadActionsType & DownloadStateType;
+
+const DownloadActionsContext = createContext<DownloadActionsType | undefined>(undefined);
+const DownloadStateContext = createContext<DownloadStateType | undefined>(undefined);
 
 const DOWNLOAD_DIR = `${FileSystem.documentDirectory ?? ''}downloads/audio/`;
 const TEMP_DOWNLOAD_DIR = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? ''}downloads/rawarr-source/`;
@@ -271,16 +271,39 @@ async function transcodeViaHostedRawarr(sourcePath: string): Promise<string> {
   return data.downloadUrl;
 }
 
-export const useDownload = (): DownloadContextType => {
-  const ctx = useContext(DownloadContext);
-  if (!ctx) throw new Error('useDownload must be used within DownloadProvider');
+export const useDownloadActions = (): DownloadActionsType => {
+  const ctx = useContext(DownloadActionsContext);
+  if (!ctx) throw new Error('useDownloadActions must be used within DownloadProvider');
   return ctx;
 };
 
+export const useDownloadState = (): DownloadStateType => {
+  const ctx = useContext(DownloadStateContext);
+  if (!ctx) throw new Error('useDownloadState must be used within DownloadProvider');
+  return ctx;
+};
+
+// Backward-compatible hook — prefer useDownloadActions or useDownloadState for new code.
+export const useDownload = (): DownloadContextType => {
+  const actions = useDownloadActions();
+  const state = useDownloadState();
+  return useMemo(() => ({ ...actions, ...state }), [actions, state]);
+};
+
 export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
-  const [state, setState] = useState<DownloadState>(() => loadInitialState());
+  const localPathMapRef = useRef<Map<string, string>>(new Map());
+  const [state, setState] = useState<DownloadState>(() => {
+    const initial = loadInitialState();
+    const map = new Map<string, string>();
+    for (const track of initial.tracks) {
+      map.set(track.trackId, normalizeLocalUri(track.localPath));
+    }
+    localPathMapRef.current = map;
+    return initial;
+  });
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(() => new Set());
   const jobsRef = useRef<PersistedDownloadJob[]>(state.jobs);
   const processingQueueRef = useRef(false);
@@ -334,6 +357,11 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     setState(current => {
       const tracks = updater(current.tracks);
       persistTracks(tracks);
+      const map = new Map<string, string>();
+      for (const track of tracks) {
+        map.set(track.trackId, normalizeLocalUri(track.localPath));
+      }
+      localPathMapRef.current = map;
       return { ...current, tracks };
     });
   }, []);
@@ -353,12 +381,16 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     setState(current => ({ ...current, jobs }));
   }, []);
 
+  // Stable O(1) lookup — reads from ref kept in sync inside updateTracks.
   const getLocalPath = useCallback((trackId: string): string | null => {
-    const entry = state.tracks.find(track => track.trackId === trackId);
-    return entry ? normalizeLocalUri(entry.localPath) : null;
-  }, [state.tracks]);
+    return localPathMapRef.current.get(trackId) ?? null;
+  }, []);
 
-  const isTrackDownloaded = useCallback((trackId: string) => !!getLocalPath(trackId), [getLocalPath]);
+  // Reactive — reference updates when tracks change so consumers re-render correctly.
+  const isTrackDownloaded = useCallback(
+    (trackId: string) => localPathMapRef.current.has(trackId),
+    [state.tracks], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const isTrackDownloading = useCallback(
     (trackId: string) => downloadingIds.has(trackId),
@@ -552,12 +584,12 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     try {
       await downloadCollection(albumId, 'album', tracks);
-      toast.success('Download complete!');
+      toast.success(t('settings.downloaders.downloadComplete'));
     } catch (error) {
       console.warn('Album download failed', error);
-      toast.error('Download failed.');
+      toast.error(t('externalAlbum.download.failed'));
     }
-  }, [api, downloadCollection]);
+  }, [api, downloadCollection, t]);
 
   const downloadPlaylistById = useCallback(async (playlistId: string, songs?: Song[]) => {
     const tracks = songs?.length
@@ -567,12 +599,12 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     try {
       await downloadCollection(playlistId, 'playlist', tracks);
-      toast.success('Download complete!');
+      toast.success(t('settings.downloaders.downloadComplete'));
     } catch (error) {
       console.warn('Playlist download failed', error);
-      toast.error('Download failed.');
+      toast.error(t('externalAlbum.download.failed'));
     }
-  }, [api, downloadCollection]);
+  }, [api, downloadCollection, t]);
 
   const downloadPlaylist = useCallback(
     (playlistId: string, tracks: Song[]) => downloadPlaylistById(playlistId, tracks),
@@ -712,62 +744,69 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     originalTrack: track.originalTrack,
   })), [state.tracks]);
 
-  const value = useMemo<DownloadContextType>(() => ({
+  const actionsValue = useMemo<DownloadActionsType>(() => ({
     configure: () => {},
+    setPlaybackSourcePreference: () => {},
     downloadTrack,
     downloadPlaylist,
     resumeDownload,
     cancelDownload,
-    isTrackDownloaded,
-    getAllDownloadedTracks: () => downloadedTracks,
     deleteDownloadedTrack,
+    downloadAlbumById,
+    downloadPlaylistById,
+    cancelCollectionDownloads,
+    removeDownloadByCollectionId,
+    cancelDownloadAll,
+    clearDownloadsForProvider,
+    clearAllDownloads,
+    getLocalPath,
+  }), [
+    cancelCollectionDownloads,
+    cancelDownload,
+    cancelDownloadAll,
+    clearAllDownloads,
+    clearDownloadsForProvider,
+    deleteDownloadedTrack,
+    downloadAlbumById,
+    downloadPlaylist,
+    downloadPlaylistById,
+    downloadTrack,
+    getLocalPath,
+    removeDownloadByCollectionId,
+    resumeDownload,
+  ]);
+
+  const stateValue = useMemo<DownloadStateType>(() => ({
+    isTrackDownloaded,
+    isTrackDownloading,
+    getCollectionDownloadState,
+    getAllDownloadedTracks: () => downloadedTracks,
+    getAllDownloadedCollections: () => state.collections,
     getStorageInfo: async () => ({
       totalBytes: state.tracks.reduce((sum, track) => sum + track.fileSize, 0),
       downloadedTracks: state.tracks.length,
       availableBytes: undefined,
     }),
-    setPlaybackSourcePreference: () => {},
-    downloadAlbumById,
-    downloadPlaylistById,
-    isTrackDownloading,
-    getCollectionDownloadState,
-    cancelCollectionDownloads,
-    removeDownloadByCollectionId,
-    cancelDownloadAll,
-    clearDownloadsForProvider,
-    clearAllDownloads,
-    downloadStateVersion: downloadedTracks.length,
-    downloadedTracks,
-    getLocalPath,
     getSongLocalUri: async (songId: string) => getLocalPath(songId),
-    getAllDownloadedCollections: () => state.collections,
+    downloadedTracks,
+    downloadStateVersion: downloadedTracks.length,
     totalDownloadedBytes: state.tracks.reduce((sum, track) => sum + track.fileSize, 0),
     downloadedTrackCount: state.tracks.length,
   }), [
-    clearAllDownloads,
-    cancelCollectionDownloads,
-    cancelDownload,
-    cancelDownloadAll,
-    clearDownloadsForProvider,
-    deleteDownloadedTrack,
-    downloadAlbumById,
-    downloadPlaylist,
-    downloadPlaylistById,
-    downloadTrack,
     downloadedTracks,
     getCollectionDownloadState,
     getLocalPath,
     isTrackDownloaded,
     isTrackDownloading,
-    removeDownloadByCollectionId,
-    resumeDownload,
     state.collections,
     state.tracks,
   ]);
 
   return (
-    <DownloadContext.Provider value={value}>
-      {children}
-    </DownloadContext.Provider>
+    <DownloadActionsContext.Provider value={actionsValue}>
+      <DownloadStateContext.Provider value={stateValue}>
+        {children}
+      </DownloadStateContext.Provider>
+    </DownloadActionsContext.Provider>
   );
 };
