@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,18 @@ const ServerSettings: React.FC = () => {
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
   const isNavidrome = activeServer?.type === 'navidrome';
   const isJellyfinOrEmby = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
+
+  const toggleScrobble = useCallback((v: boolean) => { dispatch(setServerScrobbleEnabled(v)); }, [dispatch]);
+  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setServerNowPlayingEnabled(v)); }, [dispatch]);
+
+  const navidromeScrobbleItems = useMemo(() => [
+    { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
+    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: toggleNowPlaying },
+  ], [t, serverScrobbleEnabled, serverNowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
+
+  const jellyfinScrobbleItems = useMemo(() => [
+    { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
+  ], [t, serverScrobbleEnabled, toggleScrobble]);
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
@@ -101,22 +113,8 @@ const ServerSettings: React.FC = () => {
         <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
       )}
 
-      {isNavidrome && (
-        <SettingsToggleGroup
-          items={[
-            { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
-            { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: v => { dispatch(setServerNowPlayingEnabled(v)); } },
-          ]}
-        />
-      )}
-
-      {isJellyfinOrEmby && (
-        <SettingsToggleGroup
-          items={[
-            { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: v => { dispatch(setServerScrobbleEnabled(v)); } },
-          ]}
-        />
-      )}
+      {isNavidrome && <SettingsToggleGroup items={navidromeScrobbleItems} />}
+      {isJellyfinOrEmby && <SettingsToggleGroup items={jellyfinScrobbleItems} />}
     </SettingsScreen>
   );
 };

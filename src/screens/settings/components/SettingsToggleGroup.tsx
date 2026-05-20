@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -42,7 +42,7 @@ const SettingsToggleGroup: React.FC<Props> = ({ items }) => {
   );
 };
 
-export default SettingsToggleGroup;
+export default memo(SettingsToggleGroup);
 
 const styles = StyleSheet.create({
   container: {

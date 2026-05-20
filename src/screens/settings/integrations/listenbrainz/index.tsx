@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -40,6 +40,14 @@ const ListenBrainzView: React.FC = () => {
   const config = useSelector(selectListenBrainzConfig);
   const scrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
   const nowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
+
+  const toggleScrobble = useCallback((v: boolean) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+
+  const scrobbleItems = useMemo(() => [
+    { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: toggleScrobble },
+    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: toggleNowPlaying },
+  ], [t, scrobbleEnabled, nowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -120,10 +128,7 @@ const ListenBrainzView: React.FC = () => {
       {isAuthenticated && (
         <>
           <SettingsToggleGroup
-            items={[
-              { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: v => { dispatch(setScrobbleEnabled({ serverId, value: v })); } },
-              { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: v => { dispatch(setNowPlayingEnabled({ serverId, value: v })); } },
-            ]}
+            items={scrobbleItems}
           />
 
           <SettingsDisconnectButton

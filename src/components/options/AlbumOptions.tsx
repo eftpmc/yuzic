@@ -65,9 +65,8 @@ const AlbumOptions = forwardRef<
     (ref as any)?.current?.dismiss();
   };
 
-  const { isDownloaded, isDownloading } = getCollectionDownloadState(
-    songs.map((song) => song.id)
-  );
+  const songIds = useMemo(() => songs.map(s => s.id), [songs]);
+  const { isDownloaded, isDownloading } = getCollectionDownloadState(songIds);
   const playbackDisabled = songsLoading || !songs.length;
 
   const handlePlay = (shuffle: boolean) => {

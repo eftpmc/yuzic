@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { Song } from '@/types';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { useSelector } from 'react-redux';
 import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { MediaImage } from '@/components/MediaImage';
@@ -54,7 +54,8 @@ const SongOptions = forwardRef<
     const snapPoints = useMemo(() => ['55%', '90%'], []);
 
     const router = useRouter();
-    const { currentSong, addToQueue, playNext, playSimilar } = usePlaying();
+    const { currentSong } = usePlayingState();
+    const { addToQueue, playNext, playSimilar } = usePlayingActions();
     const instantMixInFlightRef = useRef(false);
     const playCount = useSelector(selectSongPlayCount(selectedSong.id));
 

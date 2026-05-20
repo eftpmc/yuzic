@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     StyleSheet,
@@ -8,7 +8,7 @@ import {
     InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
@@ -74,7 +74,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     onClose,
 }) => {
     const router = useRouter();
-    const { currentSong } = usePlaying();
+    const { currentSong } = usePlayingState();
     const progress = usePlayingProgress();
     const api = useApi();
     const insets = useSafeAreaInsets();
@@ -128,7 +128,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     }
 
     const artistId = currentSong.artistId ?? album?.artist?.id;
-    const navigateToArtist = () => {
+
+    const navigateToArtist = useCallback(() => {
         if (artistId) {
             onClose();
             router.push({
@@ -136,13 +137,13 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 params: { id: artistId },
             });
         }
-    };
+    }, [artistId, onClose, router]);
 
-    const openLyricsSheet = () => {
+    const openLyricsSheet = useCallback(() => {
         if (lyricsAvailable && lyrics) {
             lyricsSheetRef.current?.present();
         }
-    };
+    }, [lyricsAvailable, lyrics, lyricsSheetRef]);
 
     return (
         <View style={styles.gradientContainer}>

@@ -1,6 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
+import React, { useEffect } from 'react';
 import { LoaderCircle } from 'lucide-react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  Easing,
+  cancelAnimation,
+} from 'react-native-reanimated';
 
 type Props = {
   size: number;
@@ -8,31 +15,23 @@ type Props = {
 };
 
 export default function SpinningLoaderCircle({ size, color }: Props) {
-  const rotation = useRef(new Animated.Value(0)).current;
+  const rotation = useSharedValue(0);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(rotation, {
-        toValue: 1,
-        duration: 900,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
+    rotation.value = withRepeat(
+      withTiming(360, { duration: 900, easing: Easing.linear }),
+      -1,
+      false
     );
-
-    animation.start();
-    return () => {
-      animation.stop();
-    };
+    return () => cancelAnimation(rotation);
   }, [rotation]);
 
-  const spin = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   return (
-    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+    <Animated.View style={spinStyle}>
       <LoaderCircle size={size} color={color} />
     </Animated.View>
   );

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { RefreshCw } from 'lucide-react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, cancelAnimation } from 'react-native-reanimated';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors';
 import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
@@ -30,8 +30,7 @@ const Stats: React.FC = () => {
   const syncOnAppStart = useSelector(selectSyncOnAppStart);
   const { sync, isSyncing, lastSyncedAt } = useSync();
   const [now, setNow] = useState(() => Date.now());
-
-  const spinValue = useRef(new Animated.Value(0)).current;
+  const rotation = useSharedValue(0);
 
   useEffect(() => {
     setNow(Date.now());
@@ -40,19 +39,21 @@ const Stats: React.FC = () => {
   }, [lastSyncedAt]);
 
   useEffect(() => {
-    if (!isSyncing) {
-      spinValue.stopAnimation();
-      spinValue.setValue(0);
-      return;
+    if (isSyncing) {
+      rotation.value = withRepeat(
+        withTiming(360, { duration: 1000, easing: Easing.linear }),
+        -1,
+        false
+      );
+    } else {
+      cancelAnimation(rotation);
+      rotation.value = 0;
     }
-    const loop = Animated.loop(
-      Animated.timing(spinValue, { toValue: 1, duration: 1000, easing: Easing.linear, useNativeDriver: true })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [isSyncing, spinValue]);
+  }, [isSyncing, rotation]);
 
-  const spin = spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   return (
     <>
@@ -62,7 +63,7 @@ const Stats: React.FC = () => {
           value={formatLastSynced(lastSyncedAt, t, now)}
           stacked
           right={
-            <Animated.View style={{ transform: [{ rotate: spin }] }}>
+            <Animated.View style={spinStyle}>
               <RefreshCw
                 size={18}
                 color={isSyncing ? colors.themeColor : colors.secondary}

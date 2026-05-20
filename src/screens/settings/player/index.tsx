@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import SettingsScreen from '../components/SettingsScreen';
@@ -15,21 +15,18 @@ const PlayerSettings: React.FC = () => {
   const activeServer = useSelector(selectActiveServer);
   const supportsOpus = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
 
+  const toggleOpus = useCallback((v: boolean) => { dispatch(setPreferredCodec(v ? 'opus' : 'mp3')); }, [dispatch]);
+  const opusItems = useMemo(() => [{
+    label: t('settings.player.opusCodec'),
+    subtext: t('settings.player.opusCodecSubtext'),
+    value: preferredCodec === 'opus',
+    onValueChange: toggleOpus,
+  }], [t, preferredCodec, toggleOpus]);
+
   return (
     <SettingsScreen title={t('settings.player.title')}>
       <StreamingQuality />
-      {supportsOpus && (
-        <SettingsToggleGroup
-          items={[
-            {
-              label: t('settings.player.opusCodec'),
-              subtext: t('settings.player.opusCodecSubtext'),
-              value: preferredCodec === 'opus',
-              onValueChange: v => dispatch(setPreferredCodec(v ? 'opus' : 'mp3')),
-            },
-          ]}
-        />
-      )}
+      {supportsOpus && <SettingsToggleGroup items={opusItems} />}
     </SettingsScreen>
   );
 };

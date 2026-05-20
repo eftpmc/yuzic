@@ -15,7 +15,7 @@ import { ListEnd } from 'lucide-react-native';
 
 import { Artist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
@@ -46,7 +46,7 @@ const ArtistOptions = forwardRef<
     addCollectionToQueue,
     shuffleCollectionToQueue,
     getQueue,
-  } = usePlaying();
+  } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);

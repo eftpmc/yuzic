@@ -4,9 +4,15 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  Animated,
-  Easing,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  cancelAnimation,
+  Easing,
+} from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { CheckCircle, Loader2 } from 'lucide-react-native';
@@ -56,17 +62,16 @@ const SlskdView: React.FC = () => {
   const previousQueueRef = useRef<SlskdQueueRecord[]>([]);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const spinAnim = useRef(new Animated.Value(0)).current;
+  const rotation = useSharedValue(0);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(spinAnim, { toValue: 1, duration: 1000, easing: Easing.linear, useNativeDriver: true })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [spinAnim]);
+    rotation.value = withRepeat(withTiming(360, { duration: 1000, easing: Easing.linear }), -1, false);
+    return () => cancelAnimation(rotation);
+  }, [rotation]);
 
-  const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   useEffect(() => {
     if (!serverUrl || !apiKey) {
@@ -198,7 +203,7 @@ const SlskdView: React.FC = () => {
       <SettingsCard>
         <SettingsCardHeader title={t('settings.downloaders.queue')} />
         {loadingQueue ? (
-          <Animated.View style={[styles.queueLoading, { transform: [{ rotate: spin }] }]}>
+          <Animated.View style={[styles.queueLoading, spinStyle]}>
             <Loader2 size={32} color={colors.secondary} />
           </Animated.View>
         ) : queue.length === 0 ? (

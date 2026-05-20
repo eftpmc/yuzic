@@ -19,7 +19,7 @@ import { Album } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import AlbumOptions from '@/components/options/AlbumOptions';
 
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -37,12 +37,13 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useSheetRef();
 
-  const { playSongInCollection } = usePlaying();
+  const { playSongInCollection } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
+  const songIds = useMemo(() => songs.map(s => s.id), [songs]);
   const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
-    getCollectionDownloadState(songs.map((song) => song.id));
+    getCollectionDownloadState(songIds);
 
   const totalDuration = useMemo(
     () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
@@ -88,6 +89,14 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
     if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
     await downloadAlbumById(album.id, songs);
   }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, album.id]);
+
+  const handlePlay = useCallback(() => {
+    if (songs.length > 0) playSongInCollection(songs[0], album, false);
+  }, [songs, album, playSongInCollection]);
+
+  const handleShuffle = useCallback(() => {
+    if (songs.length > 0) playSongInCollection(songs[0], album, true);
+  }, [songs, album, playSongInCollection]);
 
   return (
     <View style={styles.container}>
@@ -157,14 +166,14 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
         <View style={styles.actions}>
           <TouchableOpacity
             style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-            onPress={() => songs.length > 0 && playSongInCollection(songs[0], album, true)}
+            onPress={handleShuffle}
           >
             <Ionicons name="shuffle" size={18} color={colors.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.playButton, { backgroundColor: themeColor }]}
-            onPress={() => songs.length > 0 && playSongInCollection(songs[0], album)}
+            onPress={handlePlay}
           >
             <Ionicons name="play" size={20} color="#fff" />
           </TouchableOpacity>
