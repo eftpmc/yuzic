@@ -120,10 +120,13 @@ const statsSlice = createSlice({
       action: PayloadAction<{ serverId: string }>
     ) {
       const prefix = `${action.payload.serverId}:`;
-      for (const map of [state.albumPlays, state.songPlays, state.artistPlays, state.playlistPlays] as PlayMap[]) {
-        for (const k of Object.keys(map)) {
-          if (k.startsWith(prefix)) delete map[k];
+      for (const mapKey of ['albumPlays', 'songPlays', 'artistPlays', 'playlistPlays'] as const) {
+        const current = state[mapKey] as PlayMap;
+        const next: PlayMap = {};
+        for (const k of Object.keys(current)) {
+          if (!k.startsWith(prefix)) next[k] = current[k];
         }
+        (state as any)[mapKey] = next;
       }
     },
   },

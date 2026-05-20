@@ -62,6 +62,18 @@ const LIST_PADDING = 12
 
 const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
 
+// Stable empty stats used for sort orders that don't need play data (title, year,
+// recentlyAdded). Keeps a constant reference so sortedAll / items don't recompute
+// on every play count change when the user is on a non-stats sort.
+const EMPTY_SORT_STATS: SortStats = {
+  songLastPlayed: {},
+  songPlays: {},
+  albumLastPlayed: {},
+  albumPlays: {},
+  artistLastPlayed: {},
+  artistPlays: {},
+}
+
 type StatsMap = Record<string, number>
 
 interface SortStats {
@@ -163,11 +175,15 @@ export default function LibraryScreen() {
     [songLastPlayed, songPlays, albumLastPlayed, albumPlays, artistLastPlayed, artistPlays],
   )
 
+  // For sort orders that don't use play data, use the stable empty constant so that
+  // sortedAll and items don't recompute every time a song is played.
+  const statsForSort = (sortOrder === 'recent' || sortOrder === 'userplays') ? stats : EMPTY_SORT_STATS
+
   const sortedAll = useMemo(() => sortItems([
     ...playlists.map(p => ({ kind: 'playlist' as const, data: p })),
     ...albums.map(a => ({ kind: 'album' as const, data: a })),
     ...artists.map(a => ({ kind: 'artist' as const, data: a })),
-  ], sortOrder, stats), [sortOrder, stats, albums, artists, playlists])
+  ], sortOrder, statsForSort), [sortOrder, statsForSort, albums, artists, playlists])
 
   const downloadedCollectionIds = useMemo(() => {
     const ids = new Set<string>()
@@ -179,20 +195,20 @@ export default function LibraryScreen() {
     if (!listFilter) return sortedAll
     switch (listFilter) {
       case 'playlists':
-        return sortItems(playlists.map(p => ({ kind: 'playlist' as const, data: p })), sortOrder, stats)
+        return sortItems(playlists.map(p => ({ kind: 'playlist' as const, data: p })), sortOrder, statsForSort)
       case 'albums':
-        return sortItems(albums.map(a => ({ kind: 'album' as const, data: a })), sortOrder, stats)
+        return sortItems(albums.map(a => ({ kind: 'album' as const, data: a })), sortOrder, statsForSort)
       case 'artists':
-        return sortItems(artists.map(a => ({ kind: 'artist' as const, data: a })), sortOrder, stats)
+        return sortItems(artists.map(a => ({ kind: 'artist' as const, data: a })), sortOrder, statsForSort)
       case 'tracks':
-        return sortItems(tracks.map(tr => ({ kind: 'track' as const, data: tr })), sortOrder, stats)
+        return sortItems(tracks.map(tr => ({ kind: 'track' as const, data: tr })), sortOrder, statsForSort)
       case 'downloaded':
         return sortItems([
           ...albums.filter(a => downloadedCollectionIds.has(a.id)).map(a => ({ kind: 'album' as const, data: a })),
           ...playlists.filter(p => downloadedCollectionIds.has(p.id)).map(p => ({ kind: 'playlist' as const, data: p })),
-        ], sortOrder, stats)
+        ], sortOrder, statsForSort)
     }
-  }, [listFilter, sortedAll, sortOrder, stats, albums, artists, playlists, tracks, downloadedCollectionIds])
+  }, [listFilter, sortedAll, sortOrder, statsForSort, albums, artists, playlists, tracks, downloadedCollectionIds])
 
   const applyFilterAndFadeIn = useCallback((newFilter: Filter) => {
     setListFilter(newFilter)

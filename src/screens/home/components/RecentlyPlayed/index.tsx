@@ -85,17 +85,19 @@ export default function RecentlyPlayed() {
   const { playlists } = usePlaylists();
 
   const items = useMemo<RecentItem[]>(() => {
+    const albumMap = new Map(albums.map(a => [a.id, a]));
+    const playlistMap = new Map(playlists.map(p => [p.id, p]));
     const result: RecentItem[] = [];
 
     for (const [id, ts] of Object.entries(albumLastPlayedAt)) {
       if (ts <= 0) continue;
-      const album = albums.find(a => a.id === id);
+      const album = albumMap.get(id);
       if (album) result.push({ kind: 'album', data: album, ts });
     }
 
     for (const [id, ts] of Object.entries(playlistLastPlayedAt)) {
       if (ts <= 0) continue;
-      const playlist = playlists.find(p => p.id === id);
+      const playlist = playlistMap.get(id);
       if (playlist) result.push({ kind: 'playlist', data: playlist, ts });
     }
 

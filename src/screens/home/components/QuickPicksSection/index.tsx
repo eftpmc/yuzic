@@ -44,14 +44,19 @@ function useQuickPicks(refreshKey: number): SongBase[] {
     const now = Date.now();
     const scored: { song: SongBase; score: number }[] = [];
 
-    songsById.forEach(song => {
-      const count = playCounts[song.id] ?? 0;
-      const ts = lastPlayedAt[song.id] ?? 0;
-      if (count === 0 && ts === 0) return;
+    // Only iterate songs that actually have stats — avoids scanning the full 9000-song
+    // library on every play count change (O(played) instead of O(library)).
+    const idsWithStats = new Set([...Object.keys(playCounts), ...Object.keys(lastPlayedAt)]);
+
+    for (const id of idsWithStats) {
+      const song = songsById.get(id);
+      if (!song) continue;
+      const count = playCounts[id] ?? 0;
+      const ts = lastPlayedAt[id] ?? 0;
       const recency = ts > 0 ? Math.exp(-(now - ts) / DECAY_MS) : 0;
       const freq = count > 0 ? Math.min(1, Math.log(count + 1) / Math.log(50)) : 0;
       scored.push({ song, score: recency * 0.8 + freq * 0.2 });
-    });
+    }
 
     scored.sort((a, b) => b.score - a.score);
     const pool = scored.slice(0, CANDIDATE_POOL).map(s => s.song);
