@@ -493,8 +493,7 @@
       "genrePrefix": "More",
       "charts": "What's trending",
       "genre": "More {{genre}}",
-      "topArtists": "Top artists",
-      "artistsForYou": "Artists for you"
+      "topArtists": "Top artists"
     },
     "empty": {
       "quickPicks": "Play some songs to see your quick picks",
