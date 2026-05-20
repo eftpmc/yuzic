@@ -26,6 +26,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent } from './playingQueue';
 import { useDownloadActions } from './DownloadContext';
+import { useCast } from './CastContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
@@ -188,6 +189,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const activeMediaItem = useActiveMediaItem();
   const api = useApi();
   const { getLocalPath } = useDownloadActions();
+  const { activeDevice, castPause, castResume } = useCast();
   const networkType = useNetworkType();
   const wifiQuality = useSelector(selectWifiStreamQuality);
   const cellularQuality = useSelector(selectCellularStreamQuality);
@@ -319,6 +321,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [bumpQueue, clearPlaybackState]);
   removeFailedCurrentTrackRef.current = removeFailedCurrentTrack;
 
+  const lastRecoveryAtRef = useRef(0);
+
   useEffect(() => {
     const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
       const song = currentSongRef.current;
@@ -333,6 +337,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
 
       const now = Date.now();
+
+      // First error: try reloading the track in place (recovers AirPlay route-change failures)
+      // before giving up and removing it from the queue.
+      if (now - lastRecoveryAtRef.current > 3000) {
+        lastRecoveryAtRef.current = now;
+        TrackPlayer.skipToIndex(currentIndexRef.current);
+        TrackPlayer.play();
+        return;
+      }
+
+      // Second error within 3s — genuine failure, remove the track and show toast.
       if (now - lastPlaybackErrorAtRef.current > 1500) {
         lastPlaybackErrorAtRef.current = now;
         toast.error(t('common.playbackError'));
@@ -534,8 +549,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (isPlayingRef.current) TrackPlayer.play();
   }, []);
 
-  const pauseSong = useCallback(async () => { TrackPlayer.pause(); }, []);
-  const resumeSong = useCallback(async () => { TrackPlayer.play(); }, []);
+  const pauseSong = useCallback(async () => {
+    TrackPlayer.pause();
+    if (activeDevice) castPause();
+  }, [activeDevice, castPause]);
+
+  const resumeSong = useCallback(async () => {
+    TrackPlayer.play();
+    if (activeDevice) castResume();
+  }, [activeDevice, castResume]);
   const getQueue = useCallback(() => [...queueRef.current], []);
 
   const moveTrack = useCallback((from: number, to: number) => {

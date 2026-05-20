@@ -20,7 +20,8 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocalNetworkUsageDescription": "Yuzic uses your local network to discover DLNA speakers and displays to cast music to."
       }
     },
     "android": {
