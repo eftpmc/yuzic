@@ -60,7 +60,6 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
       data={items}
       keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
       renderItem={renderItem}
-      {...({ estimatedItemSize: ESTIMATED_ROW_HEIGHT } as any)}
       ListHeaderComponent={<Header playlist={playlist} />}
       ListFooterComponent={<RecommendedSection playlist={playlist} />}
       ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}

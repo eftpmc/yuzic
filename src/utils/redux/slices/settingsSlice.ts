@@ -3,6 +3,7 @@ import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
+export type PreferredCodec = 'mp3' | 'opus';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type SearchScope = 'client' | 'server';
@@ -17,6 +18,8 @@ export interface SettingsState {
   isGridView: boolean;
 
   playingBarAction: PlayingBarAction;
+  showQualityBadge: boolean;
+  showSourceHeaders: boolean;
 
   /* Library */
   librarySortOrder: LibrarySortOrder;
@@ -29,6 +32,9 @@ export interface SettingsState {
 
   /* Audio */
   audioQuality: AudioQuality;
+  wifiStreamQuality: AudioQuality;
+  cellularStreamQuality: AudioQuality;
+  preferredCodec: PreferredCodec;
 
   language: AppLanguage;
 
@@ -39,7 +45,13 @@ export interface SettingsState {
   /* Integrations */
   deezerDiscoveryEnabled: boolean;
   deezerSearchEnabled: boolean;
-  deezerExternalScreensEnabled: boolean;
+  deezerExternalEnabled: boolean;
+  deezerTopTracksEnabled: boolean;
+  deezerSimilarArtistsEnabled: boolean;
+  deezerAlbumRecommendationsEnabled: boolean;
+  deezerSamplesEnabled: boolean;
+  deezerPlaylistRecommendationsEnabled: boolean;
+  musicbrainzExternalEnabled: boolean;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -53,12 +65,17 @@ const initialState: SettingsState = {
   gridSpacing: 8,
   isGridView: true,
   playingBarAction: 'skip',
+  showQualityBadge: false,
+  showSourceHeaders: true,
 
   librarySortOrder: 'title',
   searchScope: 'server',
   hasSeenGetStarted: false,
 
   audioQuality: 'medium',
+  wifiStreamQuality: 'original',
+  cellularStreamQuality: 'high',
+  preferredCodec: 'mp3',
 
   language: DEFAULT_LANGUAGE,
 
@@ -67,7 +84,13 @@ const initialState: SettingsState = {
 
   deezerDiscoveryEnabled: false,
   deezerSearchEnabled: false,
-  deezerExternalScreensEnabled: false,
+  deezerExternalEnabled: false,
+  deezerTopTracksEnabled: false,
+  deezerSimilarArtistsEnabled: false,
+  deezerAlbumRecommendationsEnabled: false,
+  deezerSamplesEnabled: false,
+  deezerPlaylistRecommendationsEnabled: false,
+  musicbrainzExternalEnabled: false,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -99,6 +122,12 @@ const settingsSlice = createSlice({
     ) {
       state.playingBarAction = action.payload;
     },
+    setShowQualityBadge(state, action: PayloadAction<boolean>) {
+      state.showQualityBadge = action.payload;
+    },
+    setShowSourceHeaders(state, action: PayloadAction<boolean>) {
+      state.showSourceHeaders = action.payload;
+    },
 
     /* Library */
     setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
@@ -118,6 +147,15 @@ const settingsSlice = createSlice({
     setAudioQuality(state, action: PayloadAction<AudioQuality>) {
       state.audioQuality = action.payload;
     },
+    setWifiStreamQuality(state, action: PayloadAction<AudioQuality>) {
+      state.wifiStreamQuality = action.payload;
+    },
+    setCellularStreamQuality(state, action: PayloadAction<AudioQuality>) {
+      state.cellularStreamQuality = action.payload;
+    },
+    setPreferredCodec(state, action: PayloadAction<PreferredCodec>) {
+      state.preferredCodec = action.payload;
+    },
 
     setLanguage(state, action: PayloadAction<AppLanguage>) {
       state.language = action.payload;
@@ -136,8 +174,26 @@ const settingsSlice = createSlice({
     setDeezerSearchEnabled(state, action: PayloadAction<boolean>) {
       state.deezerSearchEnabled = action.payload;
     },
-    setDeezerExternalScreensEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerExternalScreensEnabled = action.payload;
+    setDeezerExternalEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerExternalEnabled = action.payload;
+    },
+    setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
+      state.musicbrainzExternalEnabled = action.payload;
+    },
+    setDeezerTopTracksEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerTopTracksEnabled = action.payload;
+    },
+    setDeezerSimilarArtistsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerSimilarArtistsEnabled = action.payload;
+    },
+    setDeezerAlbumRecommendationsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerAlbumRecommendationsEnabled = action.payload;
+    },
+    setDeezerSamplesEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerSamplesEnabled = action.payload;
+    },
+    setDeezerPlaylistRecommendationsEnabled(state, action: PayloadAction<boolean>) {
+      state.deezerPlaylistRecommendationsEnabled = action.payload;
     },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
@@ -158,16 +214,27 @@ export const {
   setGridSpacing,
   setIsGridView,
   setPlayingBarAction,
+  setShowQualityBadge,
+  setShowSourceHeaders,
   setLibrarySortOrder,
   setSearchScope,
   setHasSeenGetStarted,
   setAudioQuality,
+  setWifiStreamQuality,
+  setCellularStreamQuality,
+  setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
   setServerNowPlayingEnabled,
   setDeezerDiscoveryEnabled,
   setDeezerSearchEnabled,
-  setDeezerExternalScreensEnabled,
+  setDeezerExternalEnabled,
+  setMusicbrainzExternalEnabled,
+  setDeezerTopTracksEnabled,
+  setDeezerSimilarArtistsEnabled,
+  setDeezerAlbumRecommendationsEnabled,
+  setDeezerSamplesEnabled,
+  setDeezerPlaylistRecommendationsEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

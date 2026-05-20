@@ -12,7 +12,7 @@
     "rows": {
       "server": "サーバー",
       "library": "ライブラリ",
-      "player": "プレーヤー",
+      "player": "再生",
       "appearance": "外観",
       "scrobbling": "スクロブル",
       "downloaders": "ダウンローダー",
@@ -55,7 +55,14 @@
         "change": "テーマカラーを変更"
       },
       "playingBarAction": {
-        "info": "再生バーに表示するアクションを選択"
+        "info": "再生バーに表示するアクションを選択",
+        "actions": {
+          "none": "なし",
+          "skip": "スキップ",
+          "favorite": "お気に入り",
+          "randomAlbum": "ランダム",
+          "addToPlaylist": "追加"
+        }
       },
       "columns": {
         "info": "グリッド表示の列数を設定",
@@ -68,7 +75,9 @@
         "japanese": "日本語",
         "french": "フランス語",
         "chinese": "中国語"
-      }
+      },
+      "showQualityBadge": "音質バッジを表示",
+      "showQualityBadgeSubtext": "再生画面に音声フォーマットとビットレートを表示します。"
     },
     "library": {
       "title": "ライブラリ",
@@ -169,14 +178,27 @@
       }
     },
     "player": {
-      "title": "プレーヤー",
+      "title": "再生設定",
       "nothingPlaying": "再生中の曲はありません",
       "unknownArtist": "—",
       "equalizer": {
         "title": "イコライザー",
         "reset": "リセット",
         "presets": "プリセット"
-      }
+      },
+      "streamingQuality": {
+        "wifi": "WiFi音質",
+        "cellular": "モバイル音質",
+        "caption": "サーバーが対応している場合、オリジナルはロスレス音声でストリーミングされます。WiFi専用推奨。",
+        "options": {
+          "low": "低 · 128kbps",
+          "medium": "中 · 192kbps",
+          "high": "高 · 320kbps",
+          "original": "オリジナル（ロスレス）"
+        }
+      },
+      "opusCodec": "Opusコーデック",
+      "opusCodecSubtext": "同じビットレートでMP3より高音質。低ビットレートで特に効果的。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -246,7 +268,9 @@
       "notConnected": "未接続",
       "configure": "設定",
       "scrobbleDescription": "再生済みトラックをプロフィールに記録する。",
-      "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。"
+      "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。",
+      "markAsPlayed": "再生済みにする",
+      "markAsPlayedDescription": "サーバーの再生回数を更新します。"
     },
     "discovery": {
       "title": "ディスカバリー",

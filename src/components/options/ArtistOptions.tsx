@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,9 +15,11 @@ import { ListEnd } from 'lucide-react-native';
 
 import { Artist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import { useEnabledExternalSources } from '@/features/sources/registry';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
@@ -26,8 +28,6 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyArtistSongs } from './useLazyCollectionDetails';
-import { useEnabledExternalSources, type SourceResolvedArtist } from '@/features/sources/registry';
-import ExternalSourcePickerSheet, { type PickerItem } from '@/components/ExternalSourcePickerSheet';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -48,8 +48,10 @@ const ArtistOptions = forwardRef<
     addCollectionToQueue,
     shuffleCollectionToQueue,
     getQueue,
-  } = usePlaying();
+  } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
+  const enabledSources = useEnabledExternalSources();
+  const { navigateToArtist } = useMatchedNavigation();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -63,10 +65,6 @@ const ArtistOptions = forwardRef<
     isSheetOpen
   );
 
-  const enabledSources = useEnabledExternalSources();
-  const [isResolvingExternal, setIsResolvingExternal] = useState(false);
-  const [pickerItems, setPickerItems] = useState<PickerItem[]>([]);
-  const pickerRef = useRef<BottomSheetModal>(null);
 
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
@@ -133,28 +131,18 @@ const ArtistOptions = forwardRef<
     });
   };
 
-  const handleGoToExternalArtist = async () => {
-    if (!artist || !enabledSources.length) return;
-    setIsResolvingExternal(true);
-    try {
-      const results = (await Promise.all(
-        enabledSources.map(s => s.resolveArtist(artist.name).catch(() => null))
-      )).filter(Boolean) as SourceResolvedArtist[];
-      if (results.length === 0) {
-        toast.error(t('external.notFound'));
-        return;
-      }
-      if (results.length === 1) {
-        close();
-        navigation.navigate('externalArtistView', { artistId: results[0].id, source: results[0].source });
-        return;
-      }
-      setPickerItems(results.map(r => ({ ...r, kind: 'artist' as const })));
-      pickerRef.current?.present();
-    } finally {
-      setIsResolvingExternal(false);
-    }
-  };
+  const handleViewExternal = useCallback(() => {
+    if (!artist) return;
+    close();
+    navigateToArtist({
+      id: artist.mbid ?? artist.name,
+      name: artist.name,
+      cover: artist.cover,
+      subtext: artist.subtext,
+      externalIds: artist.mbid ? { mbid: artist.mbid } : undefined,
+    });
+  }, [artist, navigateToArtist]);
+
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(
     artistSongs.map(s => s.id)
@@ -299,17 +287,9 @@ const ArtistOptions = forwardRef<
         )}
 
         {enabledSources.length > 0 && (
-          <TouchableOpacity
-            style={[styles.option, isResolvingExternal && styles.optionDisabled]}
-            onPress={() => { void handleGoToExternalArtist(); }}
-            disabled={isResolvingExternal}
-          >
-            {isResolvingExternal ? (
-              <ActivityIndicator size="small" color={colors.subtext} />
-            ) : (
-              <Ionicons name="person-outline" size={26} color={colors.secondary} />
-            )}
-            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToExternalArtist')}</Text>
+          <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
+            <Ionicons name="earth" size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.viewExternal')}</Text>
           </TouchableOpacity>
         )}
 
@@ -328,16 +308,6 @@ const ArtistOptions = forwardRef<
         </View>
       </BottomSheetScrollView>
     </BottomSheetModal>
-    <ExternalSourcePickerSheet
-      ref={pickerRef}
-      items={pickerItems}
-      title={t('artistOptions.actions.goToExternalArtist')}
-      onSelect={(item) => {
-        pickerRef.current?.dismiss();
-        close();
-        navigation.navigate('externalArtistView', { artistId: item.id, source: item.source });
-      }}
-    />
     </>
   );
 });

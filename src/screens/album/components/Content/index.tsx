@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { Platform, Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 
@@ -14,6 +15,7 @@ import { useArtistAlbums } from '@/hooks/artists';
 import { useStarredSongs } from '@/hooks/starred';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
+import AlbumRecommendedSection from '../AlbumRecommendedSection';
 
 type Props = {
   album: Album;
@@ -32,12 +34,12 @@ const TILE_GAP = 12;
 const VISIBLE_TILES = 2.5;
 
 const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
   const albumPlayCount = useSelector(selectAlbumPlayCount(album.id));
-
   const { width: screenWidth } = useWindowDimensions();
   const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
   const starredSongIds = useMemo(
@@ -54,19 +56,22 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
     const totalSec = songs.reduce((acc, s) => acc + (Number(s.duration) || 0), 0);
     const hrs = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
-    const duration = hrs > 0 ? `${hrs} hr ${mins} min` : `${mins} min`;
-    const label = songs.length === 1 ? 'song' : 'songs';
+    const duration = hrs > 0
+      ? t('album.duration.hrMin', { hrs, mins })
+      : t('album.duration.min', { mins });
+    const songLabel = t(songs.length === 1 ? 'common.song' : 'common.songs');
+    const playLabel = t(albumPlayCount === 1 ? 'album.play' : 'album.plays');
     return (
       <View>
         <View style={styles.statsFooter}>
           <Text style={[styles.statsText, { color: colors.subtext }]}>
-            {songs.length} {label} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${albumPlayCount === 1 ? 'play' : 'plays'}` : ''}
+            {songs.length} {songLabel} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${playLabel}` : ''}
           </Text>
         </View>
         {moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
             <Text style={[styles.moreSectionTitle, { color: colors.secondary }]}>
-              More by {album.artist?.name}
+              {t('album.moreBy', { name: album.artist?.name })}
             </Text>
             <ScrollView
               horizontal
@@ -87,9 +92,16 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
             </ScrollView>
           </View>
         )}
+        {album.artist?.name && (
+          <AlbumRecommendedSection
+            artistName={album.artist.name}
+            artistId={album.artist.id}
+            excludeAlbumId={album.id}
+          />
+        )}
       </View>
     );
-  }, [album.songs, album.artist, albumPlayCount, colors, moreAlbums, tileWidth, navigation]);
+  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -128,7 +140,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
     if (item.type === 'disc-header') {
       return (
         <Text style={[styles.discHeader, { color: colors.subtext }]}>
-          Disc {item.disc}
+          {t('album.disc', { number: item.disc })}
         </Text>
       );
     }

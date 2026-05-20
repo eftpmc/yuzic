@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -13,7 +19,7 @@ import { Album } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import AlbumOptions from '@/components/options/AlbumOptions';
 
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -31,12 +37,13 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useSheetRef();
 
-  const { playSongInCollection } = usePlaying();
+  const { playSongInCollection } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
+  const songIds = useMemo(() => songs.map(s => s.id), [songs]);
   const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
-    getCollectionDownloadState(songs.map((song) => song.id));
+    getCollectionDownloadState(songIds);
 
   const totalDuration = useMemo(
     () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
@@ -61,10 +68,35 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
     (navigation as any).navigate('genreView', { genre });
   }, [navigation]);
 
+  const checkmarkScale = useSharedValue(isAlbumDownloaded ? 1 : 0);
+
+  useEffect(() => {
+    if (isAlbumDownloaded) {
+      checkmarkScale.value = withSequence(
+        withSpring(1.2, { damping: 8, stiffness: 200 }),
+        withSpring(1, { damping: 10, stiffness: 200 })
+      );
+    } else {
+      checkmarkScale.value = 0;
+    }
+  }, [isAlbumDownloaded, checkmarkScale]);
+
+  const checkmarkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: checkmarkScale.value }],
+  }));
+
   const toggleDownload = useCallback(async () => {
     if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
     await downloadAlbumById(album.id, songs);
   }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, album.id]);
+
+  const handlePlay = useCallback(() => {
+    if (songs.length > 0) playSongInCollection(songs[0], album, false);
+  }, [songs, album, playSongInCollection]);
+
+  const handleShuffle = useCallback(() => {
+    if (songs.length > 0) playSongInCollection(songs[0], album, true);
+  }, [songs, album, playSongInCollection]);
 
   return (
     <View style={styles.container}>
@@ -134,16 +166,16 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
         <View style={styles.actions}>
           <TouchableOpacity
             style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-            onPress={() => songs.length > 0 && playSongInCollection(songs[0], album, true)}
+            onPress={handleShuffle}
           >
             <Ionicons name="shuffle" size={18} color={colors.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.playButton, { backgroundColor: themeColor }]}
-            onPress={() => songs.length > 0 && playSongInCollection(songs[0], album)}
+            onPress={handlePlay}
           >
-            <Ionicons name="play" size={24} color="#fff" />
+            <Ionicons name="play" size={20} color="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -153,12 +185,12 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           >
             {isAlbumDownloading ? (
               <ActivityIndicator size="small" color={colors.secondary} />
+            ) : isAlbumDownloaded ? (
+              <Animated.View style={checkmarkStyle}>
+                <Ionicons name="checkmark" size={18} color={colors.secondary} />
+              </Animated.View>
             ) : (
-              <Ionicons
-                name={isAlbumDownloaded ? 'checkmark' : 'download-outline'}
-                size={18}
-                color={colors.secondary}
-              />
+              <Ionicons name="download-outline" size={18} color={colors.secondary} />
             )}
           </TouchableOpacity>
         </View>
@@ -211,7 +243,7 @@ const styles = StyleSheet.create({
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 20,
     alignItems: 'center',
   },
   title: {

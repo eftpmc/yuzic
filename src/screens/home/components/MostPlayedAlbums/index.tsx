@@ -42,6 +42,7 @@ export default function MostPlayedAlbums() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
           contentContainerStyle={sectionStyles.scrollContent}
         >
           {itemsToRender.map(album => (

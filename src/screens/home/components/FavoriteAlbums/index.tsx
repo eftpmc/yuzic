@@ -52,6 +52,7 @@ export default function FavoriteAlbums() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
           contentContainerStyle={sectionStyles.scrollContent}
         >
           {favoriteAlbums.map(album => (

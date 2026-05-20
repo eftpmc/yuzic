@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -57,7 +57,7 @@ const DownloadsInfoScreen: React.FC = () => {
   const downloadedAlbumCount = useMemo(() => rows.filter(r => r.type === 'album').length, [rows]);
   const downloadedPlaylistCount = useMemo(() => rows.filter(r => r.type === 'playlist').length, [rows]);
 
-  const confirmRemove = (row: DownloadRow) => {
+  const confirmRemove = useCallback((row: DownloadRow) => {
     Alert.alert(
       t('settings.library.downloads.removeTitle'),
       t('settings.library.downloads.removeBody', { title: row.title }),
@@ -82,9 +82,9 @@ const DownloadsInfoScreen: React.FC = () => {
         },
       ]
     );
-  };
+  }, [t, removeDownloadByCollectionId]);
 
-  const confirmClearProvider = (row: DownloadRow) => {
+  const confirmClearProvider = useCallback((row: DownloadRow) => {
     const providerLabel =
       row.provider === 'navidrome' ? t('settings.library.downloads.provider.navidrome') :
       row.provider === 'jellyfin' ? t('settings.library.downloads.provider.jellyfin') :
@@ -112,7 +112,7 @@ const DownloadsInfoScreen: React.FC = () => {
         },
       ]
     );
-  };
+  }, [t, clearDownloadsForProvider, activeServer?.type, activeServer?.id]);
 
   return (
     <SafeAreaView edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>

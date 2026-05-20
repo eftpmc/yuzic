@@ -1,10 +1,15 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Song } from '@/types';
@@ -14,7 +19,7 @@ import { usePlayingActions } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useDownload } from '@/contexts/DownloadContext';
+import { useDownloadState } from '@/contexts/DownloadContext';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatSongDuration } from '@/utils/formatDuration';
 
@@ -38,7 +43,7 @@ const SongRow: React.FC<Props> = ({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
-  const { isTrackDownloaded } = useDownload();
+  const { isTrackDownloaded } = useDownloadState();
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
 
@@ -46,6 +51,12 @@ const SongRow: React.FC<Props> = ({
   const playlistRef = useSheetRef();
 
   const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
+
+  const heartOpacity = useSharedValue(isFavorite ? 1 : 0);
+  useEffect(() => {
+    heartOpacity.value = withTiming(isFavorite ? 1 : 0, { duration: 200 });
+  }, [isFavorite, heartOpacity]);
+  const heartStyle = useAnimatedStyle(() => ({ opacity: heartOpacity.value }));
 
   const handlePress = useCallback(() => {
     if (onPress) {
@@ -111,13 +122,9 @@ const SongRow: React.FC<Props> = ({
         </TouchableOpacity>
 
         <View style={styles.rowRight}>
-          {isFavorite && (
-            <Ionicons
-              name="heart"
-              size={15}
-              color="#ff4d67"
-            />
-          )}
+          <Animated.View style={heartStyle}>
+            <Ionicons name="heart" size={15} color="#ff4d67" />
+          </Animated.View>
           {downloaded && (isAlbumCompact || showDownloadedDot) && (
             <Ionicons
               name="arrow-down-circle"

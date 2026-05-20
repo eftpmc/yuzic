@@ -16,7 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeColor, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -36,8 +36,8 @@ import { CloudDownload } from 'lucide-react-native';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
-const LOCAL_COUNT = 4;
-const EXTERNAL_COUNT = 4;
+const LOCAL_COUNT = 8;
+const EXTERNAL_COUNT = 8;
 const COVER_SIZE = 44;
 
 function shuffle<T>(arr: T[]): T[] {
@@ -121,6 +121,23 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
     return [];
   }
 }
+
+// ── Shared section header ──────────────────────────────────────────────────────
+
+type SectionHeaderProps = {
+  title: string;
+  badge?: React.ReactNode;
+};
+
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, badge }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.sectionTitleRow}>
+      {badge}
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>{title}</Text>
+    </View>
+  );
+};
 
 // ── Local song row ─────────────────────────────────────────────────────────────
 
@@ -271,9 +288,7 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
-        {t('playlist.recommended.local')}
-      </Text>
+      <SectionHeader title={t('playlist.recommended.local')} />
 
       {localSongs.map(song => (
         <LocalRow key={song.id} song={song} playlistId={playlist.id} />
@@ -307,6 +322,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const { t } = useTranslation();
   const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -365,9 +381,16 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>
-        {t('playlist.recommended.deezerTitle')}
-      </Text>
+      <SectionHeader
+        title={t('playlist.recommended.deezerTitle')}
+        badge={
+          showSourceHeaders ? (
+            <View style={[styles.sourceBadge, styles.sourceBadgeDeezer]}>
+              <Text style={styles.sourceBadgeLetter}>D</Text>
+            </View>
+          ) : undefined
+        }
+      />
 
       {externalQuery.isLoading ? (
         <ActivityIndicator color={themeColor} style={styles.loader} />
@@ -470,11 +493,31 @@ const styles = StyleSheet.create({
   section: {
     paddingTop: 24,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    gap: 8,
+  },
+  sourceBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceBadgeDeezer: {
+    backgroundColor: '#A238CA',
+  },
+  sourceBadgeLetter: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    paddingHorizontal: 16,
-    marginBottom: 12,
   },
   row: {
     flexDirection: 'row',

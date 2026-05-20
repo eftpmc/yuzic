@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,8 @@ import {
 } from 'react-native';
 import {
   BottomSheetModal,
-  BottomSheetView,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
@@ -29,8 +27,6 @@ import {
 } from '@/utils/redux/selectors/downloadersSelectors';
 import type { ExternalAlbumBase } from '@/types';
 
-const LIDARR_ICON = require('@assets/images/lidarr.png');
-const SLSKD_ICON = require('@assets/images/slskd.png');
 
 interface Props {
   album: ExternalAlbumBase;
@@ -39,7 +35,7 @@ interface Props {
 
 const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { isDarkMode, colors } = useTheme();
 
   const lidarrConfig = useSelector(selectLidarrConfig);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
@@ -49,8 +45,8 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
   const [lidarrLoading, setLidarrLoading] = useState(false);
   const [slskdLoading, setSlskdLoading] = useState(false);
 
-  const snapPoints = useMemo(() => ['35%'], []);
   const anyLoading = lidarrLoading || slskdLoading;
+  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
   const handleLidarr = async () => {
     if (anyLoading) return;
@@ -91,17 +87,16 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={snapPoints}
-      enableDynamicSizing={false}
+      enableDynamicSizing
       enablePanDownToClose={!anyLoading}
       backdropComponent={renderBackdrop}
       stackBehavior="push"
       handleIndicatorStyle={{ backgroundColor: colors.border }}
-      backgroundStyle={[styles.sheetBackground, { backgroundColor: colors.card }]}
+      backgroundStyle={[styles.sheetBackground, sheetBg]}
     >
-      <BottomSheetView style={[styles.content, { backgroundColor: colors.card }]}>
+      <BottomSheetScrollView style={sheetBg} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <MediaImage cover={album.cover} size="thumb" style={styles.cover} />
+          <MediaImage cover={album.cover} size="grid" style={styles.cover} />
           <View style={styles.headerText}>
             <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
               {album.title}
@@ -114,62 +109,46 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
 
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <Text style={[styles.sectionLabel, { color: colors.placeholder }]}>
+        <Text style={[styles.sectionLabel, { color: colors.subtext }]}>
           {t('externalAlbum.download.chooseService')}
         </Text>
 
         {isLidarrConnected && (
           <TouchableOpacity
-            style={styles.serviceRow}
+            style={[styles.option, anyLoading && styles.optionDisabled]}
             onPress={handleLidarr}
             disabled={anyLoading}
           >
-            <Image
-              source={LIDARR_ICON}
-              style={styles.serviceIcon}
-              contentFit="contain"
-              cachePolicy="memory-disk"
-            />
             <View style={styles.serviceText}>
-              <Text style={[styles.serviceName, { color: colors.secondary }]}>Lidarr</Text>
+              <Text style={[styles.optionText, { color: colors.secondary }]}>Lidarr</Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
                 {t('externalAlbum.download.lidarrDesc')}
               </Text>
             </View>
-            {lidarrLoading ? (
-              <SpinningLoaderCircle size={18} color={colors.subtext} />
-            ) : (
-              <Ionicons name="chevron-forward" size={18} color={colors.border} />
-            )}
+            {lidarrLoading
+              ? <SpinningLoaderCircle size={18} color={colors.subtext} />
+              : null}
           </TouchableOpacity>
         )}
 
         {isSlskdConnected && (
           <TouchableOpacity
-            style={styles.serviceRow}
+            style={[styles.option, anyLoading && styles.optionDisabled]}
             onPress={handleSlskd}
             disabled={anyLoading}
           >
-            <Image
-              source={SLSKD_ICON}
-              style={styles.serviceIcon}
-              contentFit="contain"
-              cachePolicy="memory-disk"
-            />
             <View style={styles.serviceText}>
-              <Text style={[styles.serviceName, { color: colors.secondary }]}>Soulseek</Text>
+              <Text style={[styles.optionText, { color: colors.secondary }]}>Soulseek</Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
                 {t('externalAlbum.download.slskdDesc')}
               </Text>
             </View>
-            {slskdLoading ? (
-              <SpinningLoaderCircle size={18} color={colors.subtext} />
-            ) : (
-              <Ionicons name="chevron-forward" size={18} color={colors.border} />
-            )}
+            {slskdLoading
+              ? <SpinningLoaderCircle size={18} color={colors.subtext} />
+              : null}
           </TouchableOpacity>
         )}
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 };
@@ -182,56 +161,43 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
   },
   content: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    padding: 16,
+    paddingBottom: 48,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-  },
-  headerText: {
-    flex: 1,
-    marginLeft: 12,
   },
   cover: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     borderRadius: 6,
+    marginRight: 12,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  artist: {
-    fontSize: 14,
-    marginTop: 2,
-  },
+  headerText: { flex: 1 },
+  title: { fontSize: 16, fontWeight: '500' },
+  artist: { fontSize: 14, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
     marginVertical: 12,
   },
   sectionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    fontWeight: '500',
     marginBottom: 8,
   },
-  serviceRow: {
+  option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    gap: 12,
+    paddingVertical: 14,
   },
-  serviceIcon: {
-    width: 36,
-    height: 36,
+  optionDisabled: {
+    opacity: 0.55,
   },
   serviceText: {
     flex: 1,
   },
-  serviceName: {
+  optionText: {
     fontSize: 16,
     fontWeight: '500',
   },
@@ -240,4 +206,3 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 });
-

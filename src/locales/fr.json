@@ -12,7 +12,7 @@
     "rows": {
       "server": "Serveur",
       "library": "Bibliothèque",
-      "player": "Lecteur",
+      "player": "Lecture",
       "appearance": "Apparence",
       "scrobbling": "Scrobbling",
       "downloaders": "Téléchargements",
@@ -55,7 +55,14 @@
         "change": "Modifier la couleur du thème"
       },
       "playingBarAction": {
-        "info": "Choisissez l'action affichée dans la barre de lecture"
+        "info": "Choisissez l'action affichée dans la barre de lecture",
+        "actions": {
+          "none": "Aucune",
+          "skip": "Suivant",
+          "favorite": "Favori",
+          "randomAlbum": "Aléatoire",
+          "addToPlaylist": "Ajouter"
+        }
       },
       "columns": {
         "info": "Définissez le nombre de colonnes en mode grille",
@@ -68,7 +75,9 @@
         "japanese": "Japonais",
         "french": "Français",
         "chinese": "Chinois"
-      }
+      },
+      "showQualityBadge": "Afficher le badge qualité",
+      "showQualityBadgeSubtext": "Affiche le format audio et le débit binaire dans le lecteur."
     },
     "library": {
       "title": "Bibliothèque",
@@ -169,14 +178,27 @@
       }
     },
     "player": {
-      "title": "Lecteur",
+      "title": "Lecture",
       "nothingPlaying": "Aucune lecture en cours",
       "unknownArtist": "—",
       "equalizer": {
         "title": "Égaliseur",
         "reset": "Réinitialiser",
         "presets": "Préréglages"
-      }
+      },
+      "streamingQuality": {
+        "wifi": "Qualité WiFi",
+        "cellular": "Qualité cellulaire",
+        "caption": "Original diffuse en audio sans perte si votre serveur le prend en charge. Recommandé uniquement en WiFi.",
+        "options": {
+          "low": "Faible · 128kbps",
+          "medium": "Moyenne · 192kbps",
+          "high": "Élevée · 320kbps",
+          "original": "Original (sans perte)"
+        }
+      },
+      "opusCodec": "Codec Opus",
+      "opusCodecSubtext": "Meilleure qualité que le MP3 au même débit. Nettement meilleur aux débits bas."
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -246,7 +268,9 @@
       "notConnected": "Non connecté",
       "configure": "Configurer",
       "scrobbleDescription": "Enregistrer les titres écoutés sur votre profil.",
-      "nowPlayingDescription": "Afficher ce que vous écoutez en temps réel."
+      "nowPlayingDescription": "Afficher ce que vous écoutez en temps réel.",
+      "markAsPlayed": "Marquer comme écouté",
+      "markAsPlayedDescription": "Mettre à jour le nombre de lectures sur votre serveur."
     },
     "discovery": {
       "title": "Découverte",

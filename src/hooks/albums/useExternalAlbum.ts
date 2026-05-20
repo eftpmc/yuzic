@@ -1,9 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-
 import { QueryKeys } from '@/enums/queryKeys';
 import { ExternalAlbum } from '@/types';
+import { ALL_SOURCES } from '@/features/sources/registry';
 
-import * as deezer from '@/api/deezer';
+type UseExternalAlbumInput = {
+  source?: string;
+  albumId: string;
+  artist?: string;
+  title?: string;
+};
 
 type UseExternalAlbumResult = {
   album: ExternalAlbum | null;
@@ -12,32 +17,19 @@ type UseExternalAlbumResult = {
 };
 
 export function useExternalAlbum(
-  albumIdOrInput: string | { source?: 'deezer' | 'musicbrainz' | 'lastfm'; albumId: string; artist?: string; title?: string }
+  albumIdOrInput: string | UseExternalAlbumInput
 ): UseExternalAlbumResult {
   const albumId = typeof albumIdOrInput === 'string' ? albumIdOrInput : albumIdOrInput.albumId;
   const source = typeof albumIdOrInput === 'string' ? undefined : albumIdOrInput.source;
-  const artist = typeof albumIdOrInput === 'string' ? undefined : albumIdOrInput.artist;
-  const title = typeof albumIdOrInput === 'string' ? undefined : albumIdOrInput.title;
 
   const query = useQuery<ExternalAlbum | null, Error>({
-    queryKey: [QueryKeys.ExternalAlbum, source ?? 'deezer', albumId],
+    queryKey: [QueryKeys.ExternalAlbum, source ?? 'unknown', albumId],
     enabled: !!albumId,
     staleTime: 1000 * 60 * 60 * 24,
 
     queryFn: async () => {
-      if (source === 'deezer') {
-        return deezer.getDeezerAlbum(albumId);
-      }
-
-      // Try Deezer first when we have enough metadata to resolve it
-      if (artist && title) {
-        const deezerMatch = await deezer.resolveDeezerAlbum(artist, title);
-        if (deezerMatch) {
-          const full = await deezer.getDeezerAlbum(deezerMatch.id);
-          if (full) return full;
-        }
-      }
-
+      const sourceDef = ALL_SOURCES.find(s => s.id === source);
+      if (sourceDef) return sourceDef.fetchAlbum(albumId);
       return null;
     },
   });

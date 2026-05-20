@@ -1,6 +1,7 @@
 import { RootState } from '@/utils/redux/store';
 import {
   AudioQuality,
+  PreferredCodec,
   LibrarySortOrder,
   ThemeMode,
   SearchScope,
@@ -52,6 +53,21 @@ export const selectAudioQuality = (
 ): AudioQuality =>
   state.settings.audioQuality;
 
+export const selectShowQualityBadge = (state: RootState): boolean =>
+  state.settings.showQualityBadge ?? false;
+
+export const selectShowSourceHeaders = (state: RootState): boolean =>
+  state.settings.showSourceHeaders ?? true;
+
+export const selectPreferredCodec = (state: RootState): PreferredCodec =>
+  state.settings.preferredCodec ?? 'mp3';
+
+export const selectWifiStreamQuality = (state: RootState): AudioQuality =>
+  state.settings.wifiStreamQuality ?? 'original';
+
+export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
+  state.settings.cellularStreamQuality ?? 'high';
+
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;
 
@@ -70,10 +86,32 @@ export const selectDeezerDiscoveryEnabled = (state: RootState): boolean =>
 export const selectDeezerSearchEnabled = (state: RootState): boolean =>
   state.settings.deezerSearchEnabled ?? false;
 
-export const selectDeezerExternalScreensEnabled = (state: RootState): boolean =>
-  state.settings.deezerExternalScreensEnabled ?? false;
+export const selectDeezerExternalEnabled = (state: RootState): boolean =>
+  state.settings.deezerExternalEnabled ?? false;
+
+export const selectMusicbrainzExternalEnabled = (state: RootState): boolean =>
+  state.settings.musicbrainzExternalEnabled ?? false;
+
+
+export const selectDeezerTopTracksEnabled = (state: RootState): boolean =>
+  state.settings.deezerTopTracksEnabled ?? false;
+
+export const selectDeezerSimilarArtistsEnabled = (state: RootState): boolean =>
+  state.settings.deezerSimilarArtistsEnabled ?? false;
+
+
+export const selectDeezerAlbumRecommendationsEnabled = (state: RootState): boolean =>
+  state.settings.deezerAlbumRecommendationsEnabled ?? false;
+
+export const selectDeezerSamplesEnabled = (state: RootState): boolean =>
+  state.settings.deezerSamplesEnabled ?? false;
+
+export const selectDeezerPlaylistRecommendationsEnabled = (state: RootState): boolean =>
+  state.settings.deezerPlaylistRecommendationsEnabled ?? false;
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||
     state.settings.deezerSearchEnabled ||
-    state.settings.deezerExternalScreensEnabled) ?? false;
+    state.settings.deezerExternalEnabled ||
+    state.settings.deezerTopTracksEnabled ||
+    state.settings.deezerSimilarArtistsEnabled) ?? false;

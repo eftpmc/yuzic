@@ -32,9 +32,15 @@ export default function LibrariesOnboarding() {
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!server) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+    setError(false);
 
     const load = async () => {
       try {
@@ -46,14 +52,17 @@ export default function LibrariesOnboarding() {
         } else if (server.type === 'emby') {
           result = await getEmbyMusicLibraries(server);
         }
-        setLibraries(result);
+        if (!cancelled) setLibraries(result);
+      } catch {
+        if (!cancelled) setError(true);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     load();
-  }, [server]);
+    return () => { cancelled = true; };
+  }, [server, retryCount]);
 
   const toggle = (id: string) => {
     setSelectedIds(prev =>
@@ -87,6 +96,13 @@ export default function LibrariesOnboarding() {
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#fff" style={styles.loader} />
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Could not load libraries. Check your connection and try again.</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={() => setRetryCount(c => c + 1)}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.optionList}>
             <TouchableOpacity onPress={selectAll} style={styles.optionRow}>
@@ -196,6 +212,28 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#000',
     alignItems: 'center',
+  },
+  errorContainer: {
+    marginTop: 40,
+    alignItems: 'center' as const,
+    gap: 16,
+  },
+  errorText: {
+    color: '#888',
+    fontSize: 15,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+  },
+  retryButton: {
+    backgroundColor: '#333',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 999,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600' as const,
   },
   continueButton: {
     backgroundColor: '#fff',

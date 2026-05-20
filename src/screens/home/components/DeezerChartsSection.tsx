@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useTheme } from '@/hooks/useTheme'
@@ -11,6 +10,7 @@ import { getDeezerChartAlbums } from '@/api/deezer'
 import { QueryKeys } from '@/enums/queryKeys'
 import { getDayKey } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import {
   SECTION_H_PADDING as H_PADDING,
   SECTION_GRID_GAP,
@@ -26,12 +26,12 @@ const MIN_ALBUMS = 8
 type Props = { refreshKey?: number }
 
 export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
-  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const { width: screenWidth } = useWindowDimensions()
   const dayKey = getDayKey()
   const isEnabled = useDeezerDiscoveryEnabled()
+  const { navigateToAlbum } = useMatchedNavigation()
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
@@ -59,13 +59,10 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
       radius={6}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
-        navigation.navigate('externalAlbumView', {
-          source: item.externalSource,
-          albumId: item.id,
-        })
+        navigateToAlbum(item)
       }}
     />
-  ), [navigation, gridItemWidth])
+  ), [navigateToAlbum, gridItemWidth])
 
   if (query.isError) return null
   if (!query.isLoading && data.length < MIN_ALBUMS) return null
@@ -88,9 +85,9 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
           data={data}
           keyExtractor={item => item.id}
           showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
           ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
-          estimatedItemSize={gridItemWidth}
           renderItem={renderAlbum}
         />
       )}

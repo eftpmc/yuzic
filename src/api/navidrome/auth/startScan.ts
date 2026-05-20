@@ -6,7 +6,7 @@ export async function startScan(
   try {
     const startData = await client.request<any>("startScan.view", {}, { method: "POST" });
     const ok = startData["subsonic-response"]?.status === "ok";
-    if (!ok) return { success: false, message: "Failed to start scan." };
+    if (!ok) return { success: false };
 
     const poll = async () => {
       const json = await client.request<any>("getScanStatus.view");
@@ -20,9 +20,9 @@ export async function startScan(
     }
 
     return retry >= 60
-      ? { success: false, message: "Scan timed out." }
-      : { success: true, message: "Scan completed." };
+      ? { success: false }
+      : { success: true };
   } catch {
-    return { success: false, message: "Navidrome scan failed." };
+    return { success: false };
   }
 }

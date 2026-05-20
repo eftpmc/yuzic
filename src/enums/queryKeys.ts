@@ -27,4 +27,5 @@ export enum QueryKeys {
 	ExploreBecauseYouListened = 'explore-because-you-listened',
 	ExploreDeezerCharts = 'explore-deezer-charts',
 	ExploreTopArtists = 'explore-top-artists',
+	LocalArtistTopTracks = 'local-artist-top-tracks',
 }

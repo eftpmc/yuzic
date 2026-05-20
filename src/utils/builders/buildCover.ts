@@ -19,6 +19,30 @@ export function buildCoverArtArchiveUrl(
   return `https://coverartarchive.org/${endpoint}/${mbid}/front-${mbSize}`
 }
 
+export function buildCoverCacheKey(
+  cover: CoverSource,
+  size: 'thumb' | 'grid' | 'detail' | 'background'
+): string | null {
+  const px = COVER_PX[size];
+
+  if (!cover || cover.kind === 'none' || cover.kind === 'special') return null;
+
+  if (cover.kind === 'url') return `url:${cover.url}:${px}`;
+  if (cover.kind === 'commons') return `commons:${cover.filename}:${px}`;
+  if (cover.kind === 'musicbrainz') return `musicbrainz:${cover.releaseGroupId}:${px}`;
+  if (cover.kind === 'coverartarchive') return `coverartarchive:${cover.mbid}:${cover.mbidType}:${px}`;
+
+  const state = store.getState();
+  const active = selectActiveServer(state);
+  if (!active) return null;
+
+  if (cover.kind === 'navidrome') return `navidrome:${active.id}:${cover.coverArtId}:${px}`;
+  if (cover.kind === 'jellyfin') return `jellyfin:${active.id}:${cover.itemId}:${px}`;
+  if (cover.kind === 'emby') return `emby:${active.id}:${cover.itemId}:${cover.tag ?? ''}:${px}`;
+
+  return null;
+}
+
 export function buildCover(
   cover: CoverSource,
   size: 'thumb' | 'grid' | 'detail' | 'background'

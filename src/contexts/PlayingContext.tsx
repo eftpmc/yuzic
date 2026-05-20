@@ -25,9 +25,12 @@ import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent } from './playingQueue';
-import { useDownload } from './DownloadContext';
+import { useDownloadActions } from './DownloadContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
+import { useSelector } from 'react-redux';
+import { selectWifiStreamQuality, selectCellularStreamQuality, selectPreferredCodec } from '@/utils/redux/selectors/settingsSelectors';
+import { useNetworkType } from '@/hooks/useNetworkType';
 
 export interface PlaybackProgress {
   position: number;
@@ -184,7 +187,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const isPlaying = useIsPlaying();
   const activeMediaItem = useActiveMediaItem();
   const api = useApi();
-  const { getLocalPath } = useDownload();
+  const { getLocalPath } = useDownloadActions();
+  const networkType = useNetworkType();
+  const wifiQuality = useSelector(selectWifiStreamQuality);
+  const cellularQuality = useSelector(selectCellularStreamQuality);
+  const streamQuality = networkType === 'wifi' ? wifiQuality
+    : networkType === 'cellular' ? cellularQuality
+    : 'high';
+  const streamQualityRef = useRef(streamQuality);
+  streamQualityRef.current = streamQuality;
+  const preferredCodec = useSelector(selectPreferredCodec);
+  const preferredCodecRef = useRef(preferredCodec);
+  preferredCodecRef.current = preferredCodec;
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -210,6 +224,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     opts: { listenedSeconds: number; startTime: number }
   ) => Promise<void>>(async () => {});
   const submitNowPlayingRef = useRef<(song: Song) => void>(() => {});
+  const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
 
   const { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled } = useScrobbling();
 
@@ -302,6 +317,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       TrackPlayer.play();
     }
   }, [bumpQueue, clearPlaybackState]);
+  removeFailedCurrentTrackRef.current = removeFailedCurrentTrack;
 
   useEffect(() => {
     const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
@@ -321,6 +337,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         lastPlaybackErrorAtRef.current = now;
         toast.error(t('common.playbackError'));
       }
+
+      removeFailedCurrentTrackRef.current();
     });
 
     return () => subscription.remove();
@@ -389,16 +407,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [activeMediaItem, bumpQueue]);
 
   const resolvePlayableSong = useCallback((song: Song): Song => {
+    if (song.isPreview) return song;
     const localPath = getLocalPath(song.id);
-    return localPath ? { ...song, streamUrl: localPath } : song;
-  }, [getLocalPath]);
+    if (localPath) return { ...song, streamUrl: localPath };
+    const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);
+    return freshUrl ? { ...song, streamUrl: freshUrl } : song;
+  }, [api, getLocalPath]);
 
-  const loadQueue = useCallback(async (songs: Song[], startIndex: number, play = true) => {
+  const loadQueue = useCallback(async (songs: Song[], startIndex: number, play = true, seekToPosition?: number) => {
     assertPlayableSongs(songs);
     resetLastScrobbled();
     scrobbleStartTimeRef.current = Date.now();
     TrackPlayer.setMediaItems(toMediaItems(songs), startIndex);
     if (repeatOnRef.current) TrackPlayer.setRepeatMode(RepeatMode.All);
+    if (seekToPosition !== undefined && seekToPosition > 0) TrackPlayer.seekTo(seekToPosition);
     if (play) TrackPlayer.play();
   }, [resetLastScrobbled]);
 
@@ -597,8 +619,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         setCurrentIndex(0);
         setShuffleOn(true);
         bumpQueue();
-        await loadQueue(shuffled, 0, wasPlaying);
-        TrackPlayer.seekTo(savedPosition);
+        await loadQueue(shuffled, 0, wasPlaying, savedPosition);
       } else if (originalQueueRef.current) {
         const original = originalQueueRef.current;
         const currentId = currentSongRef.current?.id;
@@ -610,8 +631,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         setShuffleOn(false);
         originalQueueRef.current = null;
         bumpQueue();
-        await loadQueue(original, adjustedIdx, wasPlaying);
-        TrackPlayer.seekTo(savedPosition);
+        await loadQueue(original, adjustedIdx, wasPlaying, savedPosition);
       }
     } finally {
       isShufflingRef.current = false;

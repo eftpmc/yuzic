@@ -1,6 +1,8 @@
 // md5 does not ship TypeScript declarations in this project.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const md5 = require("md5") as (s: string) => string;
+import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
+import { qualityToStreamParams } from '@/utils/audio/streamQuality';
 
 export interface NavidromeClientConfig {
   serverUrl: string;
@@ -75,9 +77,12 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
     }
   }
 
-  function buildStreamUrl(songId: string): string {
+  function buildStreamUrl(songId: string, quality: AudioQuality = 'high'): string {
+    const { format, maxBitRate } = qualityToStreamParams(quality);
     const auth = buildTokenParams(username, password);
-    const params = buildParams(auth, { id: songId, format: 'mp3' }, { format: null });
+    const extra: Record<string, string | number> = { id: songId, format };
+    if (maxBitRate) extra.maxBitRate = maxBitRate;
+    const params = buildParams(auth, extra, { format: null });
     return `${baseUrl}/rest/stream.view?${params}`;
   }
 

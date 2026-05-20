@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectThemeMode } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeMode, ThemeMode } from '@/utils/redux/slices/settingsSlice';
-import SettingsButtonSelect from '../../components/SettingsButtonSelect';
+import SettingsIconSelectCard from '../../components/SettingsIconSelectCard';
 
 const OPTIONS: { id: ThemeMode; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'light', icon: 'sunny' },
@@ -18,7 +18,7 @@ export const ThemeModeSelector: React.FC = () => {
   const themeMode = useSelector(selectThemeMode) as ThemeMode;
 
   return (
-    <SettingsButtonSelect
+    <SettingsIconSelectCard
       title={t('settings.appearance.theme.title')}
       items={OPTIONS.map(o => ({
         id: o.id,

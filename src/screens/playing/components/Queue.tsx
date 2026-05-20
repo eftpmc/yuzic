@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -8,11 +8,12 @@ import {
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GripVertical } from 'lucide-react-native';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAlbums } from '@/hooks/albums';
+import { useSelector } from 'react-redux';
+import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
 
 type QueueItemProps = {
@@ -75,19 +76,10 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   width,
 }) => {
   const { t } = useTranslation();
-  const {
-    getQueue,
-    currentSong,
-    skipTo,
-    moveTrack,
-    isPlaying,
-    pauseSong,
-    resumeSong,
-    skipToNext,
-    queueVersion,
-  } = usePlaying();
+  const { currentSong, isPlaying, queueVersion } = usePlayingState();
+  const { getQueue, skipTo, moveTrack, pauseSong, resumeSong, skipToNext } = usePlayingActions();
 
-  const { albums } = useAlbums();
+  const albumsById = useSelector(selectAlbumsById);
   const insets = useSafeAreaInsets();
 
   const [queue, setQueue] = useState<Song[]>([]);
@@ -96,13 +88,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
     setQueue(getQueue());
   }, [getQueue, queueVersion]);
 
-  const currentAlbum = useMemo(
-    () =>
-      albums.find(
-        album => album.id === currentSong?.albumId
-      ),
-    [albums, currentSong?.albumId]
-  );
+  const currentAlbum = currentSong?.albumId ? albumsById.get(currentSong.albumId) : undefined;
 
   const handleSongClick = useCallback(
     (index: number) => {

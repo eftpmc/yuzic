@@ -5,14 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import TrackPlayer from '@rntp/player';
 import TurboImage from 'react-native-turbo-image';
 
-import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+import TrackPlayer from '@rntp/player';
+import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
+import { SeekableProgressBar } from './SeekableProgressBar';
+import { useSelector } from 'react-redux';
+import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
-import { SeekableProgressBar } from './SeekableProgressBar';
 
 type PlayingMainProps = {
   width: number;
@@ -33,7 +35,8 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressOptions,
   onPressAdd
 }) => {
-  const { currentSong } = usePlaying();
+  const { currentSong } = usePlayingState();
+  const showQualityBadge = useSelector(selectShowQualityBadge);
   const progress = usePlayingProgress();
   const nativeDuration = progress.duration
   const songDuration = currentSong ? Number(currentSong.duration) : 1
@@ -43,6 +46,17 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   if (!currentSong) {
     return null;
   }
+
+  const qualityLabel = (() => {
+    const parts: string[] = [];
+    if (currentSong.mimeType) {
+      const fmt = currentSong.mimeType.split('/')[1]?.toUpperCase().replace('MPEG', 'MP3').replace('X-FLAC', 'FLAC') ?? '';
+      if (fmt) parts.push(fmt);
+    }
+    if (currentSong.bitrate) parts.push(`${currentSong.bitrate}kbps`);
+    else if (currentSong.sampleRate) parts.push(`${(currentSong.sampleRate / 1000).toFixed(1)}kHz`);
+    return parts.join(' · ') || null;
+  })();
 
   const coverUri =
     buildCover(currentSong.cover, 'detail') ??
@@ -95,6 +109,12 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         </View>
       </View>
 
+      {showQualityBadge && qualityLabel && (
+        <Text style={styles.qualityBadge} numberOfLines={1}>
+          {qualityLabel}
+        </Text>
+      )}
+
       <SeekableProgressBar
         value={position}
         duration={duration}
@@ -143,6 +163,13 @@ const styles = StyleSheet.create({
   artist: {
     fontSize: 14,
     color: '#ccc',
+  },
+  qualityBadge: {
+    fontSize: 11,
+    color: '#888',
+    textAlign: 'left',
+    marginBottom: 8,
+    letterSpacing: 0.3,
   },
   optionsButton: {
     padding: 6,

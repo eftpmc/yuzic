@@ -16,8 +16,8 @@ const defaultPerServer: PerServerListenBrainzState = {
   username: '',
   token: '',
   isAuthenticated: false,
-  scrobbleEnabled: true,
-  nowPlayingEnabled: true,
+  scrobbleEnabled: false,
+  nowPlayingEnabled: false,
 };
 
 const initialState: ListenBrainzState = {

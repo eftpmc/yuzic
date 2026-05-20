@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, Linking, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,6 +7,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import SettingsScreen from '../../components/SettingsScreen';
 import SettingsAuthCard from '../../components/SettingsAuthCard';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsDisconnectButton from '../../components/SettingsDisconnectButton';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -18,6 +19,7 @@ import {
   selectLastFmUsername,
   selectLastFmScrobbleEnabled,
   selectLastFmNowPlayingEnabled,
+  selectLastFmSimilarArtistsEnabled,
 } from '@/utils/redux/selectors/lastfmSelectors';
 import {
   setApiKey,
@@ -26,6 +28,7 @@ import {
   disconnect,
   setScrobbleEnabled,
   setNowPlayingEnabled,
+  setSimilarArtistsEnabled,
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
 
@@ -43,6 +46,20 @@ const LastFmView: React.FC = () => {
   const username = useSelector(selectLastFmUsername);
   const scrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
   const nowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
+  const similarArtistsEnabled = useSelector(selectLastFmSimilarArtistsEnabled);
+
+  const toggleSimilarArtists = useCallback((v: boolean) => { dispatch(setSimilarArtistsEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+  const toggleScrobble = useCallback((v: boolean) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+
+  const similarArtistsItems = useMemo(() => [
+    { label: t('settings.lastfm.similarArtists'), subtext: t('settings.lastfm.similarArtistsDescription'), value: similarArtistsEnabled, onValueChange: toggleSimilarArtists },
+  ], [t, similarArtistsEnabled, toggleSimilarArtists]);
+
+  const scrobbleItems = useMemo(() => [
+    { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: toggleScrobble },
+    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: toggleNowPlaying },
+  ], [t, scrobbleEnabled, nowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
 
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -118,14 +135,12 @@ const LastFmView: React.FC = () => {
         </>
       )}
 
+      <SettingsCardHeader subtle title={t('common.artist')} />
+      <SettingsToggleGroup items={similarArtistsItems} />
+
       {isAuthenticated && (
         <>
-          <SettingsToggleGroup
-            items={[
-              { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: v => { dispatch(setScrobbleEnabled({ serverId, value: v })); } },
-              { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: v => { dispatch(setNowPlayingEnabled({ serverId, value: v })); } },
-            ]}
-          />
+          <SettingsToggleGroup items={scrobbleItems} />
 
           <SettingsDisconnectButton
             label={t('settings.lastfm.disconnect')}

@@ -1,12 +1,10 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { CheckCircle, XCircle } from 'lucide-react-native';
-import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
 import SettingsInputField from './SettingsInputField';
 import SettingsInfoRow from './SettingsInfoRow';
+import ConnectivityIndicator from './ConnectivityIndicator';
 
 export type AuthField = {
   label: string;
@@ -31,14 +29,8 @@ const SettingsAuthCard: React.FC<Props> = ({
   connectivityLabel,
   onConnectivityPress,
 }) => {
-  const { colors } = useTheme();
-
-  const statusIcon = isLoading ? (
-    <SpinningLoaderCircle size={20} color={colors.themeColor} />
-  ) : isAuthenticated ? (
-    <CheckCircle size={20} color={colors.themeColor} />
-  ) : (
-    <XCircle size={20} color="#FF3B30" />
+  const indicator = (
+    <ConnectivityIndicator isLoading={isLoading} isConnected={isAuthenticated} />
   );
 
   return (
@@ -51,10 +43,10 @@ const SettingsAuthCard: React.FC<Props> = ({
         label={connectivityLabel}
         right={
           onConnectivityPress ? (
-            <TouchableOpacity onPress={onConnectivityPress}>
-              {statusIcon}
+            <TouchableOpacity onPress={onConnectivityPress} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              {indicator}
             </TouchableOpacity>
-          ) : statusIcon
+          ) : indicator
         }
       />
     </SettingsCard>

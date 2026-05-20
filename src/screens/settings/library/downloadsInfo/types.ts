@@ -1,4 +1,5 @@
 import { DownloadProviderType } from '@/utils/downloads/provider';
+import { CoverSource } from '@/types';
 
 export type DownloadRow = {
   id: string;
@@ -6,7 +7,7 @@ export type DownloadRow = {
   type: 'album' | 'playlist';
   provider: DownloadProviderType;
   serverId: string | null;
-  cover: any;
+  cover: CoverSource;
   title: string;
   subtitle: string;
   trackIds: string[];

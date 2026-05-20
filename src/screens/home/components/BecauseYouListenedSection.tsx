@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
@@ -10,6 +9,7 @@ import { useArtists } from '@/hooks/artists'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
 import { prefetchCovers } from '@/utils/images/imageCache'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import {
   SECTION_H_PADDING as H_PADDING,
   SECTION_GRID_GAP,
@@ -47,10 +47,10 @@ type Props = {
 }
 
 export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }: Props) {
-  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const { artists: libraryArtists } = useArtists()
+  const { navigateToAlbum } = useMatchedNavigation()
   const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   const dayKey = getDayKey()
@@ -112,13 +112,10 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
       radius={6}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
-        navigation.navigate('externalAlbumView', {
-          source: item.externalSource,
-          albumId: item.id,
-        })
+        navigateToAlbum(item)
       }}
     />
-  ), [navigation, gridItemWidth])
+  ), [navigateToAlbum, gridItemWidth])
 
   const isEmpty = !query.isLoading && albums.length === 0
 
@@ -164,9 +161,9 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
             data={albums}
             keyExtractor={item => item.id}
             showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}
             ItemSeparatorComponent={() => <View style={{ width: SECTION_GRID_GAP }} />}
-            estimatedItemSize={gridItemWidth}
             renderItem={renderAlbum}
           />
         )}

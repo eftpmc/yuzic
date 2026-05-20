@@ -11,6 +11,7 @@ import { useIsOffline } from '@/hooks/useIsOffline';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
+import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -82,6 +83,7 @@ export default function HomeLayout() {
       : colors.background
 
     return (
+        <ExternalResolutionProvider>
         <View style={{ flex: 1 }}>
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
@@ -141,6 +143,7 @@ export default function HomeLayout() {
             </View>
 
         </View>
+        </ExternalResolutionProvider>
     );
 }
 

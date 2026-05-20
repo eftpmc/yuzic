@@ -9,14 +9,19 @@ import {
   buildDownloadedTrackIdSet,
 } from '@/utils/downloads/collectionState';
 import { DownloadedCollectionEntry } from '@/utils/downloads/downloadStore';
+import type { DownloadedTrack } from '@/contexts/DownloadContext';
+import { AlbumBase } from '@/types/Album';
+import { SongBase } from '@/types/Song';
+import { PlaylistBase } from '@/types/Playlist';
+import type { Song } from '@/types/Song';
 import { DownloadRow } from './types';
 
 type BuildDownloadRowsArgs = {
-  albums: any[];
-  tracks: any[];
-  playlists: any[];
-  fullPlaylists: any[];
-  downloadedTracks: any[];
+  albums: AlbumBase[];
+  tracks: SongBase[];
+  playlists: PlaylistBase[];
+  fullPlaylists: (PlaylistBase & { songs?: Song[] })[];
+  downloadedTracks: DownloadedTrack[];
   downloadedCollections: DownloadedCollectionEntry[];
   t: TFunction;
 };
@@ -107,30 +112,31 @@ export function buildDownloadRows({
               .filter((trackId: string) => Boolean(trackId) && downloadedTrackIds.has(trackId));
             if (fromLibraryTracks.length) return fromLibraryTracks;
             return downloadedTracks
-              .filter(track => String(track?.albumId ?? track?.originalTrack?.extraPayload?.albumId ?? '') === id)
-              .map(track => String(track?.trackId ?? track?.originalTrack?.id ?? ''))
+              .filter(track => String(track.albumId ?? '') === id)
+              .map(track => track.trackId)
               .filter(Boolean);
           })()
         : (() => {
-            const playlistSongs = fullPlaylists.find((playlist: any) => String(playlist.id) === id)?.songs;
+            const playlistSongs = fullPlaylists.find(playlist => String(playlist.id) === id)?.songs;
             const fromPlaylist = Array.isArray(playlistSongs) ? playlistSongs
-              .map((song: any) => String(song.id ?? '').trim())
-              .filter((songId: string) => Boolean(songId) && downloadedTrackIds.has(songId)) : [];
+              .map(song => String(song.id ?? '').trim())
+              .filter(songId => Boolean(songId) && downloadedTrackIds.has(songId)) : [];
             if (fromPlaylist.length) return fromPlaylist;
             return (downloaded?.trackIds ?? []).filter((id: string) => downloadedTrackIds.has(id));
           })();
 
     const downloadTracksForRow =
       item.type === 'album'
-        ? downloadedTracks.filter(track => String(track?.albumId ?? track?.originalTrack?.extraPayload?.albumId ?? '') === id)
+        ? downloadedTracks.filter(track => downloadedTrackIdsForCollection.includes(track.trackId))
         : downloadedTracks.filter(track => downloadedTrackIdsForCollection.includes(String(track?.trackId ?? track?.originalTrack?.id ?? '')));
 
+    const firstTrack = downloadTracksForRow[0];
     const provider: DownloadProviderType = (
-      getDownloadedTrackServerType(downloadTracksForRow[0]) ??
+      (firstTrack ? getDownloadedTrackServerType(firstTrack) : null) ??
       inferServerTypeFromCoverKind(item?.cover?.kind) ??
       null
     ) ?? 'unknown';
-    const serverId = getDownloadedTrackServerId(downloadTracksForRow[0]);
+    const serverId = firstTrack ? getDownloadedTrackServerId(firstTrack) : null;
     const title = item.title || id;
     const updatedAt = toTimestamp(updatedAtRaw);
 

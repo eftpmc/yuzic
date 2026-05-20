@@ -41,8 +41,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
+  const songIds = useMemo(() => songs.map(s => s.id), [songs]);
   const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
-    getCollectionDownloadState(songs.map((song) => song.id));
+    getCollectionDownloadState(songIds);
 
   const totalDuration = useMemo(
     () => songs.reduce((sum, song) => sum + Number(song.duration), 0),

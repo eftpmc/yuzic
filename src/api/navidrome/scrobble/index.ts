@@ -12,3 +12,14 @@ export async function scrobble(
     submission: 'true',
   });
 }
+
+export async function nowPlaying(
+  config: NavidromeClientConfig,
+  songId: string
+): Promise<void> {
+  const client = createNavidromeClient(config);
+  await client.request('scrobble.view', {
+    id: songId,
+    submission: 'false',
+  });
+}

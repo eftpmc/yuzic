@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'rea
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
+import { getSourceMeta } from '@/features/sources/registry'
+import { MediaImage } from '@/components/MediaImage'
 import type { SourceResolvedAlbum, SourceResolvedArtist } from '@/features/sources/registry'
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
@@ -13,61 +15,83 @@ type Props = {
   items: PickerItem[]
   isLoading?: boolean
   onSelect: (item: PickerItem) => void
-  title?: string
 }
 
-const SOURCE_COLORS: Record<string, string> = {
-  deezer: '#A238CA',
-}
+const COVER_SIZE = 48
 
 const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
-  ({ items, isLoading, onSelect, title = 'Choose Source' }, ref) => {
-    const { colors } = useTheme()
+  ({ items, isLoading, onSelect }, ref) => {
+    const { isDarkMode, colors } = useTheme()
+    const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background }
+
+    const grouped = items.reduce<Record<string, PickerItem[]>>((acc, item) => {
+      if (!acc[item.source]) acc[item.source] = []
+      acc[item.source].push(item)
+      return acc
+    }, {})
 
     return (
       <BottomSheetModal
         ref={ref}
-        snapPoints={['40%', '70%']}
-        enableDynamicSizing={false}
+        enableDynamicSizing
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
-        backgroundStyle={[styles.sheet, { backgroundColor: colors.card }]}
+        backgroundStyle={[styles.sheetBackground, sheetBg]}
         stackBehavior="push"
       >
-        <BottomSheetScrollView style={{ backgroundColor: colors.card }} contentContainerStyle={styles.content}>
-          <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
-
+        <BottomSheetScrollView style={sheetBg} contentContainerStyle={styles.sheetContent}>
           {isLoading && (
             <View style={styles.loading}>
-              <ActivityIndicator size="large" color={colors.secondary} />
+              <ActivityIndicator size="large" color={colors.subtext} />
             </View>
           )}
 
           {!isLoading && items.length === 0 && (
-            <Text style={[styles.empty, { color: colors.subtext }]}>No sources resolved this item.</Text>
+            <Text style={[styles.empty, { color: colors.subtext }]}>
+              No sources could resolve this item.
+            </Text>
           )}
 
-          {!isLoading && items.map((item, i) => {
-            const label = item.kind === 'album' ? item.title : item.name
-            const sublabel = item.kind === 'album' ? item.artist : undefined
-            const color = SOURCE_COLORS[item.source] ?? colors.subtext
+          {!isLoading && Object.entries(grouped).map(([sourceId, sourceItems], groupIndex) => {
+            const meta = getSourceMeta(sourceId)
+            const sourceLabel = meta?.label ?? sourceId
             return (
-              <TouchableOpacity
-                key={`${item.source}-${i}`}
-                style={styles.row}
-                onPress={() => onSelect(item)}
-              >
-                <View style={[styles.badge, { backgroundColor: color }]}>
-                  <Text style={styles.badgeLetter}>{item.source[0].toUpperCase()}</Text>
-                </View>
-                <View style={styles.rowText}>
-                  <Text style={[styles.rowLabel, { color: colors.secondary }]} numberOfLines={1}>{label}</Text>
-                  {sublabel ? (
-                    <Text style={[styles.rowSublabel, { color: colors.subtext }]} numberOfLines={1}>{sublabel}</Text>
-                  ) : null}
-                </View>
-              </TouchableOpacity>
+              <View key={sourceId}>
+                {groupIndex > 0 && (
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                )}
+                <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{sourceLabel}</Text>
+                {sourceItems.map((item, i) => {
+                  const label = item.kind === 'album' ? item.title : item.name
+                  const sublabel = item.kind === 'album' ? (item as SourceResolvedAlbum).artist : undefined
+                  const isArtist = item.kind === 'artist'
+                  return (
+                    <TouchableOpacity
+                      key={`${item.source}-${i}`}
+                      style={styles.option}
+                      onPress={() => onSelect(item)}
+                      activeOpacity={0.7}
+                    >
+                      <MediaImage
+                        cover={item.coverUrl ? { kind: 'url', url: item.coverUrl } : { kind: 'letter', name: label }}
+                        size="thumb"
+                        style={[styles.cover, { borderRadius: isArtist ? COVER_SIZE / 2 : 6 }]}
+                      />
+                      <View style={styles.optionText}>
+                        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
+                          {label}
+                        </Text>
+                        {sublabel && (
+                          <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
+                            {sublabel}
+                          </Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
             )
           })}
         </BottomSheetScrollView>
@@ -81,18 +105,13 @@ ExternalSourcePickerSheet.displayName = 'ExternalSourcePickerSheet'
 export default ExternalSourcePickerSheet
 
 const styles = StyleSheet.create({
-  sheet: {
+  sheetBackground: {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
   },
-  content: {
+  sheetContent: {
     padding: 16,
     paddingBottom: 32,
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 16,
   },
   loading: {
     paddingVertical: 32,
@@ -103,37 +122,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 24,
   },
-  row: {
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: 12,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    marginVertical: 2,
+    paddingVertical: 10,
   },
-  badge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+  cover: {
+    width: COVER_SIZE,
+    height: COVER_SIZE,
     marginRight: 12,
   },
-  badgeLetter: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  rowText: {
+  optionText: {
     flex: 1,
   },
-  rowLabel: {
+  title: {
     fontSize: 16,
     fontWeight: '500',
   },
-  rowSublabel: {
-    fontSize: 13,
+  artist: {
+    fontSize: 14,
     marginTop: 2,
   },
 })
-

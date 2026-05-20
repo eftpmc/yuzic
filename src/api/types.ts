@@ -9,6 +9,7 @@ import {
 } from "@/types";
 import { AddSongToPlaylistResult } from "./navidrome/playlists/addSongToPlaylist";
 import { RemoveSongFromPlaylistResult } from "./navidrome/playlists/removeSongFromPlaylist";
+import type { AudioQuality, PreferredCodec } from '@/utils/redux/slices/settingsSlice';
 
 export type Library = {
   id: string;
@@ -19,6 +20,7 @@ export type Library = {
 export interface SongsApi {
   get(id: string): Promise<Song | null>;
   scrobble(songId: string, timestamp: number): Promise<void>;
+  buildStreamUrl(songId: string, quality: AudioQuality, codec?: PreferredCodec): string;
 }
 
 export interface TracksApi {

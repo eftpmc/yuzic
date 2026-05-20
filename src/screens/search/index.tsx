@@ -32,17 +32,23 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useSelector } from 'react-redux';
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
+import { getSourceMeta } from '@/features/sources/registry';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
   const songOptionsRef = useSheetRef();
   const playlistListRef = useSheetRef();
   const navigation = useNavigation<any>();
+  const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSong } = usePlaying();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const deezerSearchEnabled = useDeezerSearchEnabled();
+  const showSourceHeaders = useSelector(selectShowSourceHeaders);
 
   const [query, setQuery] = useState('');
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -96,7 +102,18 @@ const Search = () => {
   };
 
   const localResults = useMemo(() => searchResults.filter(r => r.source === 'local'), [searchResults]);
-  const externalResults = useMemo(() => searchResults.filter(r => r.source === 'external'), [searchResults]);
+
+  // Group external results by their source so each gets its own labelled section
+  const externalResultsBySource = useMemo(() => {
+    const groups = new Map<string, typeof searchResults>();
+    for (const r of searchResults) {
+      if (r.source !== 'external' || !r.externalSource) continue;
+      const existing = groups.get(r.externalSource);
+      if (existing) existing.push(r);
+      else groups.set(r.externalSource, [r]);
+    }
+    return groups;
+  }, [searchResults]);
 
   const coversToPrefetch = useMemo(
     () => searchResults.slice(0, 18).map(r => r.cover),
@@ -149,7 +166,7 @@ const Search = () => {
           artistName={result.subtext}
           onPress={album => {
             prefetchCovers([album.cover], 'detail');
-            navigation.navigate('externalAlbumView', { source: album.externalSource, albumId: album.id });
+            navigateToAlbum(album);
           }}
         />
       ) : (
@@ -180,12 +197,7 @@ const Search = () => {
           onPress={() => {
             prefetchCovers([result.cover], 'detail');
             if (result.source === 'external') {
-              navigation.navigate('externalArtistView', {
-                source: result.externalSource,
-                artistId: result.externalIds?.deezerId,
-                mbid: result.externalIds?.mbid ?? result.id,
-                name: result.title,
-              });
+              navigateToArtist({ id: result.id, name: result.title, cover: result.cover, subtext: result.subtext, externalSource: result.externalSource, externalIds: result.externalIds });
             } else {
               navigation.navigate('artistView', { id: result.id });
             }
@@ -256,23 +268,29 @@ const Search = () => {
                 </View>
               ))}
 
-              {externalResults.length > 0 && (
-                <>
-                  <View style={styles.sourceHeader}>
-                    <View style={styles.sourceBadge}>
-                      <Text style={styles.sourceBadgeLetter}>D</Text>
+              {Array.from(externalResultsBySource.entries()).map(([sourceId, results]) => {
+                const meta = getSourceMeta(sourceId);
+                const label = meta?.label ?? sourceId;
+                const color = meta?.color ?? colors.subtext;
+                const letter = label.charAt(0).toUpperCase();
+                return (
+                  <React.Fragment key={sourceId}>
+                    <View style={styles.sourceHeader}>
+                      {showSourceHeaders && (
+                        <View style={[styles.sourceBadge, { backgroundColor: color }]}>
+                          <Text style={styles.sourceBadgeLetter}>{letter}</Text>
+                        </View>
+                      )}
+                      <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>{label}</Text>
                     </View>
-                    <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
-                      Deezer
-                    </Text>
-                  </View>
-                  {externalResults.map((result, i) => (
-                    <View key={`external:${result.type}:${result.id}`} style={[styles.resultBlock, i === 0 && styles.resultBlockFirst]}>
-                      {renderResult(result)}
-                    </View>
-                  ))}
-                </>
-              )}
+                    {results.map((result, i) => (
+                      <View key={`external:${result.type}:${result.id}`} style={[styles.resultBlock, i === 0 && styles.resultBlockFirst]}>
+                        {renderResult(result)}
+                      </View>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </>
           )
         }
@@ -352,7 +370,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#A238CA',
     alignItems: 'center',
     justifyContent: 'center',
   },

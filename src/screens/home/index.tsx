@@ -1,8 +1,10 @@
 import React, { useCallback, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
@@ -11,7 +13,6 @@ import FavoriteAlbums from './components/FavoriteAlbums'
 import RandomAlbums from './components/RandomAlbums'
 import MostPlayedAlbums from './components/MostPlayedAlbums'
 import BecauseYouListenedSection from './components/BecauseYouListenedSection'
-import ArtistsForYouSection from './components/ArtistsForYouSection'
 import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
@@ -31,8 +32,6 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <MostPlayedAlbums key={config.key} />
     case 'charts':
       return <DeezerChartsSection key={config.key} refreshKey={refreshKey} />
-    case 'artistsForYou':
-      return <ArtistsForYouSection key={config.key} />
     case 'topArtists':
       return <TopArtistsSection key={config.key} refreshKey={refreshKey} />
     case 'becauseYouListened':
@@ -49,6 +48,7 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0)
   const { local, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
+  const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const onRefresh = useCallback(() => {
@@ -82,9 +82,11 @@ export default function Home() {
         return (
           <React.Fragment key={source.id}>
             <View style={styles.sourceHeader}>
-              <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
-                <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
-              </View>
+              {showSourceHeaders && (
+                <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
+                  <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
+                </View>
+              )}
               <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
                 {source.label}
               </Text>

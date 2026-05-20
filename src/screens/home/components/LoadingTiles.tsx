@@ -24,6 +24,7 @@ export default function LoadingTiles({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
       contentContainerStyle={[styles.content, { paddingHorizontal: horizontalPadding }]}
     >
       {Array.from({ length: count }).map((_, index) => (

@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 export type ToggleItem = {
   label: string;
-  subtext?: string;
+  subtext: string;
   value: boolean;
   onValueChange: (v: boolean) => void;
 };
@@ -22,9 +22,7 @@ const SettingsToggleGroup: React.FC<Props> = ({ items }) => {
         {items.map((item, i) => (
           <View key={i} style={styles.item}>
             <Text style={[styles.label, { color: colors.secondary }]}>{item.label}</Text>
-            {item.subtext && (
-              <Text style={[styles.subtext, { color: colors.subtext }]}>{item.subtext}</Text>
-            )}
+            <Text style={[styles.subtext, { color: colors.subtext }]}>{item.subtext}</Text>
           </View>
         ))}
       </View>
@@ -44,7 +42,7 @@ const SettingsToggleGroup: React.FC<Props> = ({ items }) => {
   );
 };
 
-export default SettingsToggleGroup;
+export default memo(SettingsToggleGroup);
 
 const styles = StyleSheet.create({
   container: {

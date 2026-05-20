@@ -22,6 +22,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { CloudDownload } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { externalSongToTrack } from '@/hooks/usePreviewPlayer';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
@@ -39,6 +40,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
+  const { navigateToArtist } = useMatchedNavigation();
   const themeColor = useSelector(selectThemeColor);
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
@@ -70,11 +72,6 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const handlePlay = useCallback(() => {
     if (!previewSongs.length) return;
     playSongInCollection(previewSongs[0], previewCollection);
-  }, [previewSongs, previewCollection, playSongInCollection]);
-
-  const handleShuffle = useCallback(() => {
-    if (!previewSongs.length) return;
-    playSongInCollection(previewSongs[0], previewCollection, true);
   }, [previewSongs, previewCollection, playSongInCollection]);
 
   const handleDownload = useCallback(() => {
@@ -125,11 +122,13 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
                 {index === 0 && album.artist ? (
                   <TouchableOpacity
                     onPress={() =>
-                      (navigation as any).navigate('externalArtistView', {
-                        source: album.externalSource,
-                        artistId: album.externalIds?.artistDeezerId,
-                        mbid: album.artistMbid,
+                      navigateToArtist({
+                        id: album.externalIds?.artistDeezerId ?? '',
                         name: album.artist,
+                        cover: { kind: 'none' },
+                        subtext: '',
+                        externalSource: album.externalSource,
+                        externalIds: { deezerId: album.externalIds?.artistDeezerId, mbid: album.artistMbid },
                       })
                     }
                   >
@@ -170,31 +169,24 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
         <View style={styles.actionsRow}>
           <View style={styles.actions}>
             <TouchableOpacity
-              style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-              onPress={handleShuffle}
-              disabled={!previewSongs.length}
-            >
-              <Ionicons name="shuffle" size={18} color={colors.secondary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
               style={[styles.playButton, { backgroundColor: themeColor }]}
-              onPress={handlePlay}
-              disabled={!previewSongs.length}
-            >
-              <Ionicons name="play" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.secondaryButton, { backgroundColor: colors.card }]}
               onPress={handleDownload}
               disabled={!canDownload || albumStatus.kind !== 'none'}
             >
               <CloudDownload
-                size={18}
-                color={!canDownload || albumStatus.kind !== 'none' ? colors.placeholder : colors.secondary}
+                size={20}
+                color={!canDownload || albumStatus.kind !== 'none' ? 'rgba(255,255,255,0.4)' : '#fff'}
               />
             </TouchableOpacity>
+
+            {previewSongs.length > 0 && (
+              <TouchableOpacity
+                style={[styles.secondaryButton, { backgroundColor: colors.card }]}
+                onPress={handlePlay}
+              >
+                <Ionicons name="play" size={18} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -248,7 +240,7 @@ const styles = StyleSheet.create({
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 20,
     alignItems: 'center',
   },
   title: {
@@ -282,6 +274,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  playButton: {
+    borderRadius: 22,
+    width: 112,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   secondaryButton: {
     width: 40,
     height: 40,
@@ -302,11 +301,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });
+

@@ -10,6 +10,7 @@ const defaultEntry: PerServerLastFmState = {
   isAuthenticated: false,
   scrobbleEnabled: true,
   nowPlayingEnabled: true,
+  similarArtistsEnabled: false,
 };
 
 const selectLastFmForActiveServer = createSelector(
@@ -46,6 +47,11 @@ export const selectLastFmScrobbleEnabled = createSelector(
 export const selectLastFmNowPlayingEnabled = createSelector(
   [selectLastFmForActiveServer],
   (entry) => entry.nowPlayingEnabled ?? true
+);
+
+export const selectLastFmSimilarArtistsEnabled = createSelector(
+  [selectLastFmForActiveServer],
+  (entry) => entry.similarArtistsEnabled ?? false
 );
 
 export const selectLastFmConfig = createSelector(
