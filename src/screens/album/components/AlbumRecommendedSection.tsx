@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { useArtists } from '@/hooks/artists'
 import { useDeezerAlbumRecommendationsEnabled } from '@/features/home/hooks/useDeezerEnabled'
@@ -40,6 +41,7 @@ async function fetchRelatedAlbums(
 }
 
 export default function AlbumRecommendedSection({ artistName, artistId, excludeAlbumId }: Props) {
+  const { t } = useTranslation()
   const { colors } = useTheme()
   const { width: screenWidth } = useWindowDimensions()
   const enabled = useDeezerAlbumRecommendationsEnabled()
@@ -76,7 +78,7 @@ export default function AlbumRecommendedSection({ artistName, artistId, excludeA
             <Text style={styles.badgeLetter}>D</Text>
           </View>
         )}
-        <Text style={[styles.title, { color: colors.secondary }]}>You Might Also Like</Text>
+        <Text style={[styles.title, { color: colors.secondary }]}>{t('album.mightAlsoLike')}</Text>
       </View>
       <ScrollView
         horizontal

@@ -14,15 +14,9 @@
       "library": "Library",
       "player": "Playback",
       "appearance": "Appearance",
-      "scrobbling": "Scrobbling",
-      "downloaders": "Downloaders",
-      "listenBrainz": "ListenBrainz",
-      "lastfm": "Last.fm",
-      "stats": "Listening Stats",
       "github": "Github",
       "privacyPolicy": "Privacy Policy",
-      "termsOfUse": "Terms of Use",
-      "version": "Version"
+      "termsOfUse": "Terms of Use"
     },
     "profile": {
       "unknownUser": "Unknown User",
@@ -254,13 +248,6 @@
       "similarArtists": "Similar Artists",
       "similarArtistsDescription": "Show similar artists on artist pages using Last.fm data."
     },
-    "stats": {
-      "title": "Listening Stats",
-      "topArtists": "Top Artists",
-      "topAlbums": "Top Albums",
-      "topSongs": "Top Songs",
-      "empty": "Play some music to see your listening stats here."
-    },
     "downloaders": {
       "title": "Downloaders",
       "connected": "Connected",
@@ -299,10 +286,6 @@
         "disconnected": "Disconnected from slskd."
       }
     },
-    "integrations": {
-      "enabled": "Enabled",
-      "disabled": "Disabled"
-    },
     "deezer": {
       "discovery": "Discovery",
       "discoveryDescription": "Deezer charts and recommendations on the explore screen.",
@@ -336,23 +319,6 @@
       "nowPlayingDescription": "Show what you're listening to in real time.",
       "markAsPlayed": "Mark as Played",
       "markAsPlayedDescription": "Update play count on your server."
-    },
-    "discovery": {
-      "title": "Discovery",
-      "sections": {
-        "about": {
-          "title": "Discovery",
-          "body": "The Discovery tab suggests artists and albums based on your library. You see similar artists, albums you might like, and new releases from those artists."
-        },
-        "how": {
-          "title": "How it works",
-          "body": "We use your library artists to find similar artists through Rawarr/LastFM, then resolve artists and albums through Deezer for Explore."
-        },
-        "sync": {
-          "title": "Sync & refresh",
-          "body": "Discovery syncs when you connect to a server. Pull to refresh on Discovery only shuffles what’s already loaded; it doesn’t re-fetch. If something fails, you’ll see a message and can tap “Try again” to retry."
-        }
-      }
     }
   },
   "common": {
@@ -456,12 +422,7 @@
     }
   },
   "library": {
-    "title": "Library",
-    "shuffle": {
-      "all": "Shuffle All",
-      "favorites": "Shuffle Favorites",
-      "downloaded": "Shuffle Downloaded"
-    }
+    "title": "Library"
   },
   "home": {
     "title": "Home",
@@ -471,21 +432,18 @@
       "artists": "Artists",
       "playlists": "Playlists",
       "tracks": "Tracks",
-      "downloaded": "Downloaded",
-      "genres": "Genres"
+      "downloaded": "Downloaded"
     },
     "sort": {
       "alphabetical": "Alphabetical",
       "mostRecent": "Most Recent",
       "mostPlayed": "Most Played",
       "releaseYear": "Release Year",
-      "recentlyAdded": "Recently Added",
-      "lastModified": "Last Modified"
+      "recentlyAdded": "Recently Added"
     },
     "sortSheet": {
       "title": "Sort by"
     },
-    "empty": "No content available.",
     "account": {
       "settings": "Settings",
       "triggerScan": "Trigger Scan",
@@ -498,21 +456,7 @@
   },
   "search": {
     "placeholder": "Search for music, artists, or playlists...",
-    "noResults": "No results found",
-    "chips": {
-      "local": "Local",
-      "external": "External",
-      "song": "Song",
-      "album": "Album",
-      "artist": "Artist",
-      "playlist": "Playlist",
-      "deezer": "Deezer"
-    }
-  },
-  "media": {
-    "albumNotFound": "Album not found",
-    "artistNotFound": "Artist not found.",
-    "playlistNotFound": "Playlist not found."
+    "noResults": "No results found"
   },
   "artist": {
     "sections": {
@@ -520,18 +464,28 @@
       "singles": "Singles & EPs",
       "topTracks": "Top tracks",
       "similarArtists": "Similar artists"
-    }
+    },
+    "showMore": "{{count}} more"
+  },
+  "album": {
+    "disc": "Disc {{number}}",
+    "moreBy": "More by {{name}}",
+    "mightAlsoLike": "You Might Also Like",
+    "duration": {
+      "hrMin": "{{hrs}} hr {{mins}} min",
+      "min": "{{mins}} min"
+    },
+    "play": "play",
+    "plays": "plays"
   },
   "explore": {
     "sections": {
-      "dial": "Dial",
       "quickPicks": "Quick picks",
       "recentlyPlayed": "Recents",
       "recentlyAdded": "Recently added",
       "favoriteAlbums": "Favorite albums",
       "randomAlbums": "Random albums",
       "mostPlayed": "Most played",
-      "newReleases": "New releases",
       "becauseYouListened": "More like {{artist}}",
       "becauseYouListenedLabel": "More like",
       "searchArtists": "Search artists…",
@@ -540,25 +494,15 @@
       "charts": "What's trending",
       "genre": "More {{genre}}",
       "topArtists": "Top artists",
-      "albumsForYou": "Albums for you",
-      "artistsForYou": "Artists for you",
-      "playlists": "Playlists",
-      "recommended": "Recommended",
-      "recommendedLocal": "From your library",
-      "recommendedExternal": "Discover",
-      "refresh": "Refresh"
+      "artistsForYou": "Artists for you"
     },
     "empty": {
-      "recentSongs": "Play something to see it here",
       "quickPicks": "Play some songs to see your quick picks",
       "recentlyPlayed": "Play albums or playlists to see them here",
       "recentlyAdded": "No albums in your library yet",
       "favoriteAlbums": "Star songs to add albums here",
       "randomAlbums": "No albums in your library yet",
-      "mostPlayed": "Play albums to see them here",
-      "albumsForYou": "Discovering albums...",
-      "artistsForYou": "Discovering artists...",
-      "recommendedExternal": "Nothing to discover yet"
+      "mostPlayed": "Play albums to see them here"
     }
   },
   "playing": {
@@ -705,9 +649,6 @@
       "addToEnd": "Add to End",
       "shuffleToQueue": "Shuffle to Queue",
       "goToAlbum": "Go to Album",
-      "goToExternalAlbum": "Go to External Album",
-      "goToExternalArtist": "Go to External Artist",
-      "viewExternal": "View External",
       "download": "Download",
       "downloading": "Downloading…",
       "downloaded": "Downloaded"
@@ -769,9 +710,7 @@
       "download": "Download",
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
-      "goToArtist": "Go to Artist",
-      "goToExternalArtist": "Go to External Artist",
-      "viewExternal": "View External"
+      "goToArtist": "Go to Artist"
     },
     "sections": {
       "info": "Artist Info"

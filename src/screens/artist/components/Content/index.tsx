@@ -222,7 +222,7 @@ export default function ArtistContent({ artist }: Props) {
             <Ionicons name="ellipsis-horizontal" size={18} color={colors.secondary} />
           </View>
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>
-            {item.remaining} more
+            {t('artist.showMore', { count: item.remaining })}
           </Text>
         </TouchableOpacity>
       )
