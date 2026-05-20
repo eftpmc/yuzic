@@ -8,7 +8,7 @@ import {
 import TurboImage from 'react-native-turbo-image';
 
 import TrackPlayer from '@rntp/player';
-import { usePlaying, usePlayingProgress } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { SeekableProgressBar } from './SeekableProgressBar';
 import { useSelector } from 'react-redux';
 import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
@@ -35,7 +35,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressOptions,
   onPressAdd
 }) => {
-  const { currentSong } = usePlaying();
+  const { currentSong } = usePlayingState();
   const showQualityBadge = useSelector(selectShowQualityBadge);
   const progress = usePlayingProgress();
   const nativeDuration = progress.duration

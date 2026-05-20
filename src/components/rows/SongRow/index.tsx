@@ -19,7 +19,7 @@ import { usePlayingActions } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useDownload } from '@/contexts/DownloadContext';
+import { useDownloadState } from '@/contexts/DownloadContext';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatSongDuration } from '@/utils/formatDuration';
 
@@ -43,7 +43,7 @@ const SongRow: React.FC<Props> = ({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
-  const { isTrackDownloaded } = useDownload();
+  const { isTrackDownloaded } = useDownloadState();
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
 

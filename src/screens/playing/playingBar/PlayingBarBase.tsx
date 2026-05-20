@@ -181,6 +181,7 @@ const variantStyles = {
   },
 };
 
+const GRADIENT_CACHE_MAX = 150;
 const gradientCache = new Map<string, string[]>();
 
 function darkenHexColor(hex: string, amount = 0.3) {
@@ -232,6 +233,9 @@ export default function PlayingBarBase({ variant }: Props) {
         dominant = (colors as any).primary || dominant;
       }
       const gradient = [darkenHexColor(dominant), '#000'];
+      if (gradientCache.size >= GRADIENT_CACHE_MAX) {
+        gradientCache.delete(gradientCache.keys().next().value!);
+      }
       gradientCache.set(uri, gradient);
       setNextGradient(gradient);
     } catch {

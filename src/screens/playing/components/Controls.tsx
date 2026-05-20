@@ -6,20 +6,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 
 const Controls: React.FC = () => {
-  const {
-    isPlaying,
-    pauseSong,
-    resumeSong,
-    skipToNext,
-    skipToPrevious,
-    shuffleOn,
-    toggleShuffle,
-    repeatOn,
-    toggleRepeat,
-  } = usePlaying();
+  const { isPlaying, shuffleOn, repeatOn } = usePlayingState();
+  const { pauseSong, resumeSong, skipToNext, skipToPrevious, toggleShuffle, toggleRepeat } = usePlayingActions();
 
   return (
     <View style={styles.container}>
