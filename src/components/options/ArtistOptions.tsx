@@ -18,6 +18,8 @@ import { MediaImage } from '@/components/MediaImage';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import { useEnabledExternalSources } from '@/features/sources/registry';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
@@ -48,6 +50,8 @@ const ArtistOptions = forwardRef<
     getQueue,
   } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
+  const enabledSources = useEnabledExternalSources();
+  const { navigateToArtist } = useMatchedNavigation();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -126,6 +130,18 @@ const ArtistOptions = forwardRef<
       params: { id: artist.id },
     });
   };
+
+  const handleViewExternal = useCallback(() => {
+    if (!artist) return;
+    close();
+    navigateToArtist({
+      id: artist.mbid ?? artist.name,
+      name: artist.name,
+      cover: artist.cover,
+      subtext: artist.subtext,
+      externalIds: artist.mbid ? { mbid: artist.mbid } : undefined,
+    });
+  }, [artist, navigateToArtist]);
 
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(
@@ -267,6 +283,13 @@ const ArtistOptions = forwardRef<
           <TouchableOpacity style={styles.option} onPress={handleGoToArtist}>
             <Ionicons name="person" size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToArtist')}</Text>
+          </TouchableOpacity>
+        )}
+
+        {enabledSources.length > 0 && (
+          <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
+            <Ionicons name="earth" size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.viewExternal')}</Text>
           </TouchableOpacity>
         )}
 

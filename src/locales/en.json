@@ -710,7 +710,8 @@
       "download": "Download",
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
-      "goToArtist": "Go to Artist"
+      "goToArtist": "Go to Artist",
+      "viewExternal": "View External"
     },
     "sections": {
       "info": "Artist Info"

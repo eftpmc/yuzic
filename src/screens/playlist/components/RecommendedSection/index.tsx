@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Library } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -285,22 +284,11 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
     return seededShuffle(pool, localSeed).slice(0, LOCAL_COUNT);
   }, [tracks, playlistSongIds, playlistArtistNames, localSeed]);
 
-  const showSourceHeaders = useSelector(selectShowSourceHeaders);
-
   if (localSongs.length === 0) return null;
 
   return (
     <View style={styles.section}>
-      <SectionHeader
-        title={t('playlist.recommended.local')}
-        badge={
-          showSourceHeaders ? (
-            <View style={[styles.sourceBadge, styles.sourceBadgeLibrary]}>
-              <Library size={12} color="#fff" strokeWidth={2} />
-            </View>
-          ) : undefined
-        }
-      />
+      <SectionHeader title={t('playlist.recommended.local')} />
 
       {localSongs.map(song => (
         <LocalRow key={song.id} song={song} playlistId={playlist.id} />
@@ -518,9 +506,6 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  sourceBadgeLibrary: {
-    backgroundColor: '#3B82F6',
   },
   sourceBadgeDeezer: {
     backgroundColor: '#A238CA',
