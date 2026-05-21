@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -38,6 +38,7 @@ type TileProps = {
 const RecentTile = memo(({ item, itemWidth }: TileProps) => {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
+  const [optionsMounted, setOptionsMounted] = useState(false);
 
   const handlePress = useCallback(() => {
     if (item.kind === 'album') {
@@ -48,8 +49,13 @@ const RecentTile = memo(({ item, itemWidth }: TileProps) => {
   }, [item, navigation]);
 
   const handleLongPress = useCallback(() => {
-    sheetRef.current?.present();
-  }, [sheetRef]);
+    if (!optionsMounted) {
+      setOptionsMounted(true);
+      requestAnimationFrame(() => sheetRef.current?.present());
+    } else {
+      sheetRef.current?.present();
+    }
+  }, [optionsMounted, sheetRef]);
 
   return (
     <>
@@ -64,11 +70,11 @@ const RecentTile = memo(({ item, itemWidth }: TileProps) => {
           onLongPress={handleLongPress}
         />
       </View>
-      {item.kind === 'album' ? (
+      {optionsMounted && (item.kind === 'album' ? (
         <AlbumOptions ref={sheetRef} album={item.data} hideGoToAlbum={false} />
       ) : (
         <PlaylistOptions ref={sheetRef} playlist={item.data} />
-      )}
+      ))}
     </>
   );
 });

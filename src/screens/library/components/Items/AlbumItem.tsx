@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
@@ -16,6 +16,7 @@ interface ItemProps {
 const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpacing }) => {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
+  const [optionsMounted, setOptionsMounted] = useState(false);
 
   const handlePress = useCallback(() => {
     prefetchCovers([album.cover], 'detail');
@@ -23,8 +24,13 @@ const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpac
   }, [album, navigation]);
 
   const handleLongPress = useCallback(() => {
-    sheetRef.current?.present();
-  }, [sheetRef]);
+    if (!optionsMounted) {
+      setOptionsMounted(true);
+      requestAnimationFrame(() => sheetRef.current?.present());
+    } else {
+      sheetRef.current?.present();
+    }
+  }, [optionsMounted, sheetRef]);
 
   return (
     <>
@@ -38,7 +44,7 @@ const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpac
         onPress={handlePress}
         onLongPress={handleLongPress}
       />
-      <AlbumOptions ref={sheetRef} album={album} hideGoToAlbum={false} />
+      {optionsMounted && <AlbumOptions ref={sheetRef} album={album} hideGoToAlbum={false} />}
     </>
   );
 };

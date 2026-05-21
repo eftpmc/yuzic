@@ -386,10 +386,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     return localPathMapRef.current.get(trackId) ?? null;
   }, []);
 
-  // Reactive — reference updates when tracks change so consumers re-render correctly.
   const isTrackDownloaded = useCallback(
     (trackId: string) => localPathMapRef.current.has(trackId),
-    [state.tracks], // eslint-disable-line react-hooks/exhaustive-deps
+    [], // ref reads never need deps — localPathMapRef.current is always current
   );
 
   const isTrackDownloading = useCallback(
@@ -497,6 +496,8 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     updateJobs(jobs => jobs.filter(job => job.id !== jobId));
   }, [updateJobs]);
 
+  const CONCURRENT_TRACK_DOWNLOADS = 3;
+
   const processDownloadQueue = useCallback(async () => {
     if (processingQueueRef.current) return;
     processingQueueRef.current = true;
@@ -509,15 +510,21 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         const [job] = jobsRef.current;
         if (!job) break;
 
-        try {
-          for (const track of job.tracks) {
-            await performDownloadTrack(track, job.collectionId);
+        let failed = false;
+        for (let i = 0; i < job.tracks.length; i += CONCURRENT_TRACK_DOWNLOADS) {
+          const chunk = job.tracks.slice(i, i + CONCURRENT_TRACK_DOWNLOADS);
+          const results = await Promise.allSettled(
+            chunk.map(track => performDownloadTrack(track, job.collectionId))
+          );
+          if (results.some(r => r.status === 'rejected')) {
+            console.warn('Download job paused until next resume');
+            failed = true;
+            break;
           }
-          removeJob(job.id);
-        } catch (error) {
-          console.warn('Download job paused until next resume', error);
-          break;
         }
+
+        if (failed) break;
+        removeJob(job.id);
       }
     } finally {
       processingQueueRef.current = false;
