@@ -296,7 +296,7 @@ export default function Credentials() {
                                     activeOpacity={0.7}
                                 >
                                     <Ionicons name="qr-code-outline" size={16} color="#666" style={styles.proxyToggleIcon} />
-                                    <Text style={styles.proxyToggleText}>Use Quick Connect instead</Text>
+                                    <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
                                     <Ionicons name="chevron-forward" size={16} color="#666" />
                                 </TouchableOpacity>
                             )}
