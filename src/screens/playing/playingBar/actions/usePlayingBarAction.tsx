@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { PlusCircle } from 'lucide-react-native';
+import { Cast, PlusCircle } from 'lucide-react-native';
+import { useCast } from '@/contexts/CastContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useStarSong, useUnstarSong, useStarredSongs } from '@/hooks/starred';
 import { PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
@@ -18,6 +19,7 @@ export type PlayingBarActionConfig = {
 
 type UsePlayingBarActionOptions = {
   presentAddToPlaylist?: () => void;
+  presentCast?: () => void;
 };
 
 export function usePlayingBarAction(
@@ -33,6 +35,9 @@ export function usePlayingBarAction(
   const { songs: starredSongs } = useStarredSongs();
   const star = useStarSong();
   const unstar = useUnstarSong();
+
+  const { activeDevice, isGoogleCastConnected } = useCast();
+  const isCasting = activeDevice != null || isGoogleCastConnected;
 
   const isFavorite =
     !!currentSong &&
@@ -131,6 +136,13 @@ export function usePlayingBarAction(
         id,
         icon: <PlusCircle size={20} color="#fff" />,
         onPress: options?.presentAddToPlaylist ?? (() => {}),
+      };
+
+    case 'cast':
+      return {
+        id,
+        icon: <Cast size={20} color={isCasting ? '#fff' : '#fff'} />,
+        onPress: options?.presentCast ?? (() => {}),
       };
 
     case 'none':
