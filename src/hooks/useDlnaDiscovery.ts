@@ -34,7 +34,9 @@ function extractTag(xml: string, tag: string): string {
 
 async function resolveDevice(location: string): Promise<DiscoveredDevice | null> {
   try {
-    const res = await fetch(location, { signal: AbortSignal.timeout(5000) });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(location, { signal: controller.signal }).finally(() => clearTimeout(timer));
     const xml = await res.text();
 
     if (!xml.includes('AVTransport')) return null;
@@ -57,7 +59,7 @@ async function resolveDevice(location: string): Promise<DiscoveredDevice | null>
   }
 }
 
-const PROBE_PORTS = [36866, 8200, 8080, 44444, 49152, 49153, 49154, 49155, 1400];
+const PROBE_PORTS = [1505, 36866, 8200, 8080, 44444, 49152, 49153, 49154, 49155, 1400];
 const PROBE_PATHS = ['/dmr', '/description.xml', '/', '/upnp/desc.html'];
 
 async function probeIp(ip: string): Promise<DiscoveredDevice | null> {
@@ -107,18 +109,37 @@ export function useDlnaDiscovery() {
       console.warn('[DLNA] Socket error', err?.message ?? err);
     });
 
+    // Track IPs that have responded — probe them for renderer ports after SSDP
+    const respondedIps = new Set<string>();
+
     socket.on('message', (msg: Buffer, rinfo: { address: string; port: number }) => {
       const text = msg.toString();
-      console.log('[DLNA] Got response from', rinfo?.address);
       const location = parseLocation(text);
-      if (!location) { console.log('[DLNA] No LOCATION in response'); return; }
+      if (!location) return;
+
+      const ip = rinfo?.address;
+
+      // Queue a direct probe on renderer ports for this IP if not already doing so.
+      // LG TVs often don't include their renderer in all SSDP responses.
+      if (ip && !respondedIps.has(ip)) {
+        respondedIps.add(ip);
+        const probe = probeIp(ip).then(device => {
+          if (!device) return;
+          console.log('[DLNA] Found renderer via IP probe:', device.name, 'at', ip);
+          setDevices(prev => {
+            if (prev.some(d => d.udn === device.udn)) return prev;
+            return [...prev, device];
+          });
+        });
+        pending.push(probe);
+      }
+
       if (seen.has(location)) return;
       seen.add(location);
-      console.log('[DLNA] Resolving device at', location);
 
       const p = resolveDevice(location).then(device => {
-        if (!device) { console.log('[DLNA] Device has no AVTransport, skipping'); return; }
-        console.log('[DLNA] Found renderer:', device.name);
+        if (!device) return;
+        console.log('[DLNA] Found renderer via SSDP:', device.name);
         setDevices(prev => {
           if (prev.some(d => d.udn === device.udn)) return prev;
           return [...prev, device];

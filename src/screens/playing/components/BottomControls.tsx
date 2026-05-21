@@ -10,13 +10,14 @@ type BottomControlsProps = {
 };
 
 const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
-  const { activeDevice } = useCast();
+  const { activeDevice, isGoogleCastConnected } = useCast();
+  const isCasting = activeDevice != null || isGoogleCastConnected;
   const iconColor = (active: boolean) => (active ? '#fff' : '#ccc');
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onOpenOutputSheet} style={styles.leftButton}>
-        <Cast size={24} color={activeDevice ? '#fff' : '#ccc'} />
+        <Cast size={24} color={isCasting ? '#fff' : '#ccc'} />
       </TouchableOpacity>
 
       <TouchableOpacity
