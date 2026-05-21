@@ -68,6 +68,14 @@ const librarySlice = createSlice({
     removeLibraryPlaylist(state, action: PayloadAction<string>) {
       state.playlists = state.playlists.filter(p => p.id !== action.payload);
     },
+    clearLibrary(state) {
+      state.albums = [];
+      state.artists = [];
+      state.playlists = [];
+      state.tracks = [];
+      state.starred = [];
+      // genres are keyed by serverId so no need to clear them
+    },
   },
 });
 
@@ -83,6 +91,7 @@ export const {
   addLibraryPlaylistSong,
   removeLibraryPlaylistSong,
   removeLibraryPlaylist,
+  clearLibrary,
 } = librarySlice.actions;
 
 export default librarySlice.reducer;

@@ -2,7 +2,7 @@ import { Stack, useRouter, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Home, Library } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
@@ -10,6 +10,8 @@ import { useSync } from '@/hooks/useSync';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { clearLibrary } from '@/utils/redux/slices/librarySlice';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
 
@@ -49,9 +51,12 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
 
 export default function HomeLayout() {
     const { sync } = useSync()
+    const dispatch = useDispatch()
     const isOffline = useIsOffline()
     const isOfflineRef = useRef(isOffline)
     const appState = useRef(AppState.currentState)
+    const activeServerId = useSelector(selectActiveServerId)
+    const prevServerIdRef = useRef<string | null | undefined>(undefined)
     const insets = useSafeAreaInsets()
     const router = useRouter()
     const pathname = usePathname()
@@ -72,6 +77,18 @@ export default function HomeLayout() {
         })
         return () => sub.remove()
     }, [sync])
+
+    // Clear stale library data and re-sync when switching between two real servers.
+    // Both values must be non-null to avoid triggering during persist rehydration
+    // (null → real-id on cold start would otherwise be treated as a server switch).
+    useEffect(() => {
+        const prev = prevServerIdRef.current
+        prevServerIdRef.current = activeServerId
+        if (prev && activeServerId && prev !== activeServerId) {
+            dispatch(clearLibrary())
+            if (!isOfflineRef.current) sync()
+        }
+    }, [activeServerId, dispatch, sync])
 
     const isLibrary = pathname === '/library'
     const isHome = !isLibrary
