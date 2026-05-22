@@ -110,7 +110,7 @@ Screenshots taken on iPhone 13
   <img src="screenshots/servers.png" alt="Yuzic Servers" width="275" height="600">
   <img src="screenshots/servertype.png" alt="Yuzic Server Type" width="275" height="600">
   <img src="screenshots/serveraddress.png" alt="Yuzic Server Address" width="275" height="600">
-  <img src="screenshots/credentials.png" alt="Yuzic Credentials" width="275" height="600">
+  <img src="screenshots/credentials-screen.png" alt="Yuzic Credentials" width="275" height="600">
   <img src="screenshots/chooselibrary.png" alt="Yuzic Choose Library" width="275" height="600">
 </p>
 
