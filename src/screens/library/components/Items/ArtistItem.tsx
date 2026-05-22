@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Artist, CoverSource } from '@/types';
 import ArtistOptions from '@/components/options/ArtistOptions';
@@ -29,6 +29,7 @@ const ArtistItem: React.FC<ItemProps> = ({
 }) => {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
+  const [optionsMounted, setOptionsMounted] = useState(false);
 
   const artistForOptions = useMemo(() => artist ?? {
     id,
@@ -44,8 +45,13 @@ const ArtistItem: React.FC<ItemProps> = ({
   }, [cover, navigation, id]);
 
   const handleLongPress = useCallback(() => {
-    sheetRef.current?.present();
-  }, [sheetRef]);
+    if (!optionsMounted) {
+      setOptionsMounted(true);
+      requestAnimationFrame(() => sheetRef.current?.present());
+    } else {
+      sheetRef.current?.present();
+    }
+  }, [optionsMounted, sheetRef]);
 
   return (
     <>
@@ -60,7 +66,7 @@ const ArtistItem: React.FC<ItemProps> = ({
         onPress={handlePress}
         onLongPress={handleLongPress}
       />
-      <ArtistOptions ref={sheetRef} artist={artistForOptions} hideGoToArtist={false} />
+      {optionsMounted && <ArtistOptions ref={sheetRef} artist={artistForOptions} hideGoToArtist={false} />}
     </>
   );
 };

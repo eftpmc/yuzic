@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-    View,
+    ActivityIndicator,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet,
-    ActivityIndicator,
+    View,
 } from 'react-native';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -17,17 +17,19 @@ import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import {
+    initiateQuickConnect,
+    pollQuickConnect,
+    authenticateWithQuickConnect,
+} from '@/api/jellyfin/auth/quickConnect';
 
 export default function Credentials() {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const router = useRouter();
 
-    const params = useLocalSearchParams<{
-        type: ServerType;
-        serverUrl: string;
-    }>();
-
+    const params = useLocalSearchParams<{ type: ServerType; serverUrl: string }>();
     const { type, serverUrl } = params;
 
     const [localUsername, setLocalUsername] = useState('');
@@ -38,9 +40,18 @@ export default function Credentials() {
     const [proxyUsername, setProxyUsername] = useState('');
     const [proxyPassword, setProxyPassword] = useState('');
 
+    // Quick Connect state (Jellyfin only)
+    const [quickConnectMode, setQuickConnectMode] = useState(false);
+    const [quickCode, setQuickCode] = useState('');
+    const [quickSecret, setQuickSecret] = useState('');
+    const [isPolling, setIsPolling] = useState(false);
+    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
     const passwordRef = useRef<TextInput>(null);
     const proxyUsernameRef = useRef<TextInput>(null);
     const proxyPasswordRef = useRef<TextInput>(null);
+
+    const isJellyfin = type === 'jellyfin';
 
     const insecureWithProxy =
         proxyUsername.trim().length > 0 &&
@@ -48,10 +59,13 @@ export default function Credentials() {
         serverUrl.startsWith('http://');
 
     useEffect(() => {
-        if (!type || !serverUrl) {
-            router.replace('/(onboarding)/servers');
-        }
+        if (!type || !serverUrl) router.replace('/(onboarding)/servers');
     }, [router, type, serverUrl]);
+
+    // Clean up polling on unmount
+    useEffect(() => {
+        return () => { if (pollIntervalRef.current) clearInterval(pollIntervalRef.current); };
+    }, []);
 
     const buildBasicAuth = (): BasicAuth | undefined => {
         const u = proxyUsername.trim();
@@ -59,55 +73,41 @@ export default function Credentials() {
         return u && p ? { username: u, password: p } : undefined;
     };
 
-    const saveServer = (auth: ProviderAuth) => {
+    const saveServer = (auth: ProviderAuth, usernameOverride?: string) => {
         const id = nanoid();
-        dispatch(
-            addServer({
-                id,
-                type,
-                serverUrl,
-                username: localUsername,
-                auth,
-                basicAuth: buildBasicAuth(),
-                isAuthenticated: true,
-            })
-        );
+        dispatch(addServer({
+            id, type, serverUrl,
+            username: usernameOverride ?? localUsername,
+            auth,
+            basicAuth: buildBasicAuth(),
+            isAuthenticated: true,
+        }));
         dispatch(setActiveServer(id));
         router.push(`/(onboarding)/libraries?serverId=${id}`);
     };
 
+    // ── Username / password ──────────────────────────────────────────────────
+
     const handleNext = async () => {
         if (!type || !serverUrl) return;
-
         if (!localUsername || !localPassword) {
             toast.error(t('onboarding.credentials.missingCredentials'));
             return;
         }
-
         const provider = SERVER_PROVIDERS[type];
         const basicAuth = buildBasicAuth();
         setIsTesting(true);
-
         try {
-            const result = await provider.connect(
-                serverUrl,
-                localUsername,
-                localPassword,
-                basicAuth
-            );
-
+            const result = await provider.connect(serverUrl, localUsername, localPassword, basicAuth);
             if (!result.success || !result.auth) {
                 toast.error(result.message || t('onboarding.credentials.authFailed'));
                 return;
             }
-
             const pingOk = await provider.ping(serverUrl, localUsername, result.auth, basicAuth);
-
             if (!pingOk) {
                 toast.error(t('onboarding.credentials.apiNotResponding'));
                 return;
             }
-
             saveServer(result.auth);
         } catch {
             toast.error(t('onboarding.credentials.connectError'));
@@ -116,133 +116,215 @@ export default function Credentials() {
         }
     };
 
-    const handleBack = () => {
-        router.back();
+    // ── Quick Connect ────────────────────────────────────────────────────────
+
+    const stopPolling = () => {
+        if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+        }
+        setIsPolling(false);
     };
+
+    const handleStartQuickConnect = async () => {
+        if (!serverUrl) return;
+        setQuickConnectMode(true);
+        setIsTesting(true);
+        try {
+            const { secret, code } = await initiateQuickConnect(serverUrl, buildBasicAuth());
+            setQuickCode(code);
+            setQuickSecret(secret);
+            setIsPolling(true);
+
+            pollIntervalRef.current = setInterval(async () => {
+                const authenticated = await pollQuickConnect(serverUrl, secret, buildBasicAuth());
+                if (!authenticated) return;
+
+                stopPolling();
+                try {
+                    const { token, userId, username } = await authenticateWithQuickConnect(
+                        serverUrl, secret, buildBasicAuth()
+                    );
+                    const auth: ProviderAuth = { token, userId };
+                    saveServer(auth, username);
+                } catch (err: any) {
+                    toast.error(err?.message ?? 'Authentication failed');
+                    setQuickConnectMode(false);
+                    setQuickCode('');
+                    setQuickSecret('');
+                }
+            }, 3000);
+        } catch (err: any) {
+            toast.error(err?.message ?? 'Quick Connect unavailable');
+            setQuickConnectMode(false);
+        } finally {
+            setIsTesting(false);
+        }
+    };
+
+    const handleCancelQuickConnect = () => {
+        stopPolling();
+        setQuickConnectMode(false);
+        setQuickCode('');
+        setQuickSecret('');
+    };
+
+    // ────────────────────────────────────────────────────────────────────────
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
                 <View style={styles.mainContent}>
                     <Text style={styles.title}>{t('onboarding.credentials.title')}</Text>
+                    <Text style={styles.subtitle}>{t('onboarding.credentials.subtitle')}</Text>
 
-                    <Text style={styles.subtitle}>
-                        {t('onboarding.credentials.subtitle')}
-                    </Text>
-
-                    <View style={styles.inputWrapper}>
-                        <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder={t('onboarding.credentials.usernamePlaceholder')}
-                            placeholderTextColor="#888"
-                            value={localUsername}
-                            onChangeText={setLocalUsername}
-                            autoCapitalize="none"
-                            returnKeyType="next"
-                            onSubmitEditing={() => passwordRef.current?.focus()}
-                        />
-                    </View>
-
-                    <View style={styles.inputWrapper}>
-                        <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
-                        <TextInput
-                            ref={passwordRef}
-                            style={styles.input}
-                            placeholder={t('onboarding.credentials.passwordPlaceholder')}
-                            placeholderTextColor="#888"
-                            secureTextEntry
-                            value={localPassword}
-                            onChangeText={setLocalPassword}
-                            autoCapitalize="none"
-                            returnKeyType="done"
-                            onSubmitEditing={handleNext}
-                        />
-                    </View>
-
-                    {/* Reverse proxy auth */}
-                    <TouchableOpacity
-                        style={styles.proxyToggle}
-                        onPress={() => setProxyExpanded(v => !v)}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons
-                            name="shield-outline"
-                            size={16}
-                            color="#666"
-                            style={styles.proxyToggleIcon}
-                        />
-                        <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
-                        <Ionicons
-                            name={proxyExpanded ? 'chevron-up' : 'chevron-down'}
-                            size={16}
-                            color="#666"
-                        />
-                    </TouchableOpacity>
-
-                    {proxyExpanded && (
-                        <View style={styles.proxySection}>
-                            {insecureWithProxy && (
-                                <View style={styles.warningRow}>
-                                    <Ionicons name="warning-outline" size={15} color="#f59e0b" />
-                                    <Text style={styles.warningText}>
-                                        Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
+                    {quickConnectMode ? (
+                        // ── Quick Connect panel ──────────────────────────────
+                        <View style={styles.quickConnectPanel}>
+                            <Text style={styles.quickConnectLabel}>
+                                Enter this code on your Jellyfin server
+                            </Text>
+                            {quickCode ? (
+                                <Text style={styles.quickConnectCode}>{quickCode}</Text>
+                            ) : (
+                                <ActivityIndicator color="#fff" style={{ marginVertical: 20 }} />
+                            )}
+                            {isPolling && quickCode ? (
+                                <View style={styles.quickConnectWaiting}>
+                                    <SpinningLoaderCircle size={16} color="#888" />
+                                    <Text style={styles.quickConnectWaitingText}>
+                                        Waiting for approval…
                                     </Text>
                                 </View>
-                            )}
-
+                            ) : null}
+                            <Text style={styles.quickConnectHint}>
+                                Go to your Jellyfin dashboard → Quick Connect, then enter the code above.
+                            </Text>
+                        </View>
+                    ) : (
+                        // ── Username / password form ──────────────────────────
+                        <>
                             <View style={styles.inputWrapper}>
-                                <AntDesign name="user" size={20} color="#555" style={styles.inputIcon} />
+                                <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
                                 <TextInput
-                                    ref={proxyUsernameRef}
                                     style={styles.input}
-                                    placeholder="Proxy username"
-                                    placeholderTextColor="#555"
-                                    value={proxyUsername}
-                                    onChangeText={setProxyUsername}
+                                    placeholder={t('onboarding.credentials.usernamePlaceholder')}
+                                    placeholderTextColor="#888"
+                                    value={localUsername}
+                                    onChangeText={setLocalUsername}
                                     autoCapitalize="none"
                                     returnKeyType="next"
-                                    onSubmitEditing={() => proxyPasswordRef.current?.focus()}
+                                    onSubmitEditing={() => passwordRef.current?.focus()}
                                 />
                             </View>
 
                             <View style={styles.inputWrapper}>
-                                <AntDesign name="lock" size={20} color="#555" style={styles.inputIcon} />
+                                <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
                                 <TextInput
-                                    ref={proxyPasswordRef}
+                                    ref={passwordRef}
                                     style={styles.input}
-                                    placeholder="Proxy password"
-                                    placeholderTextColor="#555"
+                                    placeholder={t('onboarding.credentials.passwordPlaceholder')}
+                                    placeholderTextColor="#888"
                                     secureTextEntry
-                                    value={proxyPassword}
-                                    onChangeText={setProxyPassword}
+                                    value={localPassword}
+                                    onChangeText={setLocalPassword}
                                     autoCapitalize="none"
                                     returnKeyType="done"
                                     onSubmitEditing={handleNext}
                                 />
                             </View>
-                        </View>
+
+                            {/* Reverse proxy auth */}
+                            <TouchableOpacity
+                                style={styles.proxyToggle}
+                                onPress={() => setProxyExpanded(v => !v)}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="shield-outline" size={16} color="#666" style={styles.proxyToggleIcon} />
+                                <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
+                                <Ionicons name={proxyExpanded ? 'chevron-up' : 'chevron-down'} size={16} color="#666" />
+                            </TouchableOpacity>
+
+                            {proxyExpanded && (
+                                <View style={styles.proxySection}>
+                                    {insecureWithProxy && (
+                                        <View style={styles.warningRow}>
+                                            <Ionicons name="warning-outline" size={15} color="#f59e0b" />
+                                            <Text style={styles.warningText}>
+                                                Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
+                                            </Text>
+                                        </View>
+                                    )}
+                                    <View style={styles.inputWrapper}>
+                                        <AntDesign name="user" size={20} color="#555" style={styles.inputIcon} />
+                                        <TextInput
+                                            ref={proxyUsernameRef}
+                                            style={styles.input}
+                                            placeholder="Proxy username"
+                                            placeholderTextColor="#555"
+                                            value={proxyUsername}
+                                            onChangeText={setProxyUsername}
+                                            autoCapitalize="none"
+                                            returnKeyType="next"
+                                            onSubmitEditing={() => proxyPasswordRef.current?.focus()}
+                                        />
+                                    </View>
+                                    <View style={styles.inputWrapper}>
+                                        <AntDesign name="lock" size={20} color="#555" style={styles.inputIcon} />
+                                        <TextInput
+                                            ref={proxyPasswordRef}
+                                            style={styles.input}
+                                            placeholder="Proxy password"
+                                            placeholderTextColor="#555"
+                                            secureTextEntry
+                                            value={proxyPassword}
+                                            onChangeText={setProxyPassword}
+                                            autoCapitalize="none"
+                                            returnKeyType="done"
+                                            onSubmitEditing={handleNext}
+                                        />
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* Quick Connect option — Jellyfin only */}
+                            {isJellyfin && (
+                                <TouchableOpacity
+                                    style={styles.quickConnectToggle}
+                                    onPress={handleStartQuickConnect}
+                                    disabled={isTesting}
+                                    activeOpacity={0.7}
+                                >
+                                    <Ionicons name="qr-code-outline" size={16} color="#666" style={styles.proxyToggleIcon} />
+                                    <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
+                                    <Ionicons name="chevron-forward" size={16} color="#666" />
+                                </TouchableOpacity>
+                            )}
+                        </>
                     )}
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={[styles.nextButton, isTesting && styles.nextButtonDisabled]}
-                        onPress={handleNext}
-                        disabled={isTesting}
-                    >
-                        {isTesting ? (
-                            <ActivityIndicator size="small" color="#000" />
-                        ) : (
-                            <Text style={styles.nextButtonText}>{t('common.done')}</Text>
-                        )}
-                    </TouchableOpacity>
+                    {!quickConnectMode && (
+                        <TouchableOpacity
+                            style={[styles.nextButton, isTesting && styles.nextButtonDisabled]}
+                            onPress={handleNext}
+                            disabled={isTesting}
+                        >
+                            {isTesting
+                                ? <ActivityIndicator size="small" color="#000" />
+                                : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
+                            }
+                        </TouchableOpacity>
+                    )}
 
                     <TouchableOpacity
                         style={styles.backButton}
-                        onPress={handleBack}
+                        onPress={quickConnectMode ? handleCancelQuickConnect : () => router.back()}
                     >
-                        <Text style={styles.backButtonText}>{t('common.back')}</Text>
+                        <Text style={styles.backButtonText}>
+                            {quickConnectMode ? 'Use password instead' : t('common.back')}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -251,20 +333,9 @@ export default function Credentials() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
-    mainContent: {
-        flexGrow: 1,
-        paddingHorizontal: 20,
-        marginTop: 40,
-    },
-    buttonContainer: {
-        padding: 20,
-        backgroundColor: '#000',
-        alignItems: 'center',
-    },
+    container: { flex: 1, backgroundColor: '#000' },
+    mainContent: { flexGrow: 1, paddingHorizontal: 20, marginTop: 40 },
+    buttonContainer: { padding: 20, backgroundColor: '#000', alignItems: 'center' },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -276,25 +347,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         height: 50,
     },
-    inputIcon: {
-        marginRight: 10,
-    },
-    input: {
-        flex: 1,
-        color: '#fff',
-        fontSize: 16,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 10,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#888',
-        marginBottom: 20,
-    },
+    inputIcon: { marginRight: 10 },
+    input: { flex: 1, color: '#fff', fontSize: 16 },
+    title: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 10 },
+    subtitle: { fontSize: 16, color: '#888', marginBottom: 20 },
     proxyToggle: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -302,18 +358,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         marginBottom: 4,
     },
-    proxyToggleIcon: {
-        marginRight: 7,
+    quickConnectToggle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginTop: 8,
     },
-    proxyToggleText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#666',
-    },
-    proxySection: {
-        marginTop: 4,
-        marginBottom: 8,
-    },
+    proxyToggleIcon: { marginRight: 7 },
+    proxyToggleText: { flex: 1, fontSize: 14, color: '#666' },
+    proxySection: { marginTop: 4, marginBottom: 8 },
     warningRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
@@ -325,12 +379,41 @@ const styles = StyleSheet.create({
         marginBottom: 14,
         gap: 8,
     },
-    warningText: {
-        flex: 1,
-        fontSize: 13,
-        color: '#f59e0b',
-        lineHeight: 18,
+    warningText: { flex: 1, fontSize: 13, color: '#f59e0b', lineHeight: 18 },
+    // Quick Connect panel
+    quickConnectPanel: {
+        alignItems: 'center',
+        paddingVertical: 24,
+        gap: 16,
     },
+    quickConnectLabel: {
+        fontSize: 15,
+        color: '#888',
+        textAlign: 'center',
+    },
+    quickConnectCode: {
+        fontSize: 48,
+        fontWeight: '700',
+        color: '#fff',
+        letterSpacing: 8,
+    },
+    quickConnectWaiting: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    quickConnectWaitingText: {
+        fontSize: 14,
+        color: '#888',
+    },
+    quickConnectHint: {
+        fontSize: 13,
+        color: '#555',
+        textAlign: 'center',
+        lineHeight: 18,
+        paddingHorizontal: 12,
+    },
+    // Buttons
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
@@ -339,14 +422,8 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 12,
     },
-    nextButtonDisabled: {
-        opacity: 0.6,
-    },
-    nextButtonText: {
-        color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
-    },
+    nextButtonDisabled: { opacity: 0.6 },
+    nextButtonText: { color: '#000', fontSize: 16, fontWeight: '600' },
     backButton: {
         backgroundColor: '#333',
         paddingVertical: 15,
@@ -355,9 +432,5 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 4,
     },
-    backButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
+    backButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

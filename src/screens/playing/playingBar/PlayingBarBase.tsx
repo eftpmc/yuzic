@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import ImageColors from 'react-native-image-colors';
 
 import PlaylistList from '@/components/PlaylistList';
+import OutputDeviceSheet from '@/screens/playing/components/OutputDeviceSheet';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingState, usePlayingActions, usePlayingProgress } from '@/contexts/PlayingContext';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
@@ -208,11 +209,13 @@ export default function PlayingBarBase({ variant }: Props) {
   const stylesForVariant = variantStyles[variant];
   const bottomSheetRef = useSheetRef();
   const playlistSheetRef = useSheetRef();
+  const castSheetRef = useSheetRef();
 
   const primaryAction = usePlayingBarAction(actionMode, {
     presentAddToPlaylist: () => {
       if (currentSong) playlistSheetRef.current?.present();
     },
+    presentCast: () => castSheetRef.current?.present(),
   });
 
   const [currentGradient, setCurrentGradient] = useState<string[]>(['#000', '#000']);
@@ -407,6 +410,8 @@ export default function PlayingBarBase({ variant }: Props) {
         selectedSong={currentSong}
         onClose={() => playlistSheetRef.current?.dismiss()}
       />
+
+      <OutputDeviceSheet ref={castSheetRef} />
     </>
   );
 }

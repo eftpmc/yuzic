@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { PlayingProvider } from '@/contexts/PlayingContext';
+import { CastProvider } from '@/contexts/CastContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -176,6 +177,7 @@ function AppShell() {
   return (
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
+        <CastProvider>
         <PlayingProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
@@ -217,6 +219,7 @@ function AppShell() {
               </ErrorBoundary>
             </GestureHandlerRootView>
         </PlayingProvider>
+        </CastProvider>
       </DownloadProvider>
     </ThemeProvider>
   );

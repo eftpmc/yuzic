@@ -66,39 +66,41 @@ Screenshots taken on iPhone 13
 ### Home
 
 <p align="center">
-  <img src="screenshots/home-grid.png" alt="Yuzic Grid Home" width="275" height="600">
-  <img src="screenshots/home-list.png" alt="Yuzic List Home" width="275" height="600">
+  <img src="screenshots/home.png" alt="Yuzic Home Page" width="275" height="600">
 </p>
 
-### Explore
+### Library
 
 <p align="center">
-  <img src="screenshots/explore.png" alt="Yuzic Explore Page" width="275" height="600">
+  <img src="screenshots/library.png" alt="Yuzic Library Page" width="275" height="600">
 </p>
 
 ### Playing
 
 <p align="center">
   <img src="screenshots/playing.png" alt="Yuzic Playing" width="275" height="600">
-  <img src="screenshots/queue.png" alt="Yuzic Queue" width="275" height="600">
+  <img src="screenshots/playing-queue.png" alt="Yuzic Queue" width="275" height="600">
 </p>
 
 ### Album
 
 <p align="center">
   <img src="screenshots/album.png" alt="Yuzic Album" width="275" height="600">
+  <img src="screenshots/album1.png" alt="Yuzic Album 1" width="275" height="600">
 </p>
 
 ### Artist
 
 <p align="center">
   <img src="screenshots/artist.png" alt="Yuzic Artist" width="275" height="600">
+  <img src="screenshots/artist1.png" alt="Yuzic Artist 1" width="275" height="600">
 </p>
 
 ### Playlist
 
 <p align="center">
   <img src="screenshots/playlist.png" alt="Yuzic Playlist" width="275" height="600">
+  <img src="screenshots/playlist1.png" alt="Yuzic Playlist 1" width="275" height="600">
 </p>
 
 ### Onboarding
@@ -106,14 +108,16 @@ Screenshots taken on iPhone 13
 <p align="center">
   <img src="screenshots/get-started.png" alt="Yuzic Get Started" width="275" height="600">
   <img src="screenshots/servers.png" alt="Yuzic Servers" width="275" height="600">
-  <img src="screenshots/connect.png" alt="Yuzic Connect" width="275" height="600">
+  <img src="screenshots/servertype.png" alt="Yuzic Server Type" width="275" height="600">
+  <img src="screenshots/serveraddress.png" alt="Yuzic Server Address" width="275" height="600">
   <img src="screenshots/credentials.png" alt="Yuzic Credentials" width="275" height="600">
+  <img src="screenshots/chooselibrary.png" alt="Yuzic Choose Library" width="275" height="600">
 </p>
 
 ### Search
 
 <p align="center">
-  <img src="screenshots/search-empty.png" alt="Yuzic Search Empty" width="275" height="600">
+  <img src="screenshots/search.png" alt="Yuzic Search Empty" width="275" height="600">
   <img src="screenshots/search-results.png" alt="Yuzic Search Results" width="275" height="600">
 </p>
 
@@ -121,20 +125,29 @@ Screenshots taken on iPhone 13
 
 <p align="center">
   <img src="screenshots/settings.png" alt="Yuzic Settings" width="275" height="600">
-  <img src="screenshots/server-settings.png" alt="Yuzic Server Settings" width="275" height="600">
-  <img src="screenshots/library-settings.png" alt="Yuzic Library Settings" width="275" height="600">
-  <img src="screenshots/library-settings.png" alt="Yuzic Download Details" width="275" height="600">
-  <img src="screenshots/player-settings.png" alt="Yuzic Player Settings" width="275" height="600">
-  <img src="screenshots/appearance-settings.png" alt="Yuzic Appearance Settings" width="275" height="600">
-  <img src="screenshots/listenbrainz-settings.png" alt="Yuzic ListenBrainz Settings" width="275" height="600">
+  <img src="screenshots/settings-server.png" alt="Yuzic Server Settings" width="275" height="600">
+  <img src="screenshots/settings-library.png" alt="Yuzic Library Settings" width="275" height="600">
+  <img src="screenshots/settings-downloaddetails.png" alt="Yuzic Download Details" width="275" height="600">
+  <img src="screenshots/settings-playback.png" alt="Yuzic Player Settings" width="275" height="600">
+  <img src="screenshots/settings-appearance.png" alt="Yuzic Appearance Settings" width="275" height="600">
+</p>
+
+### Integrations
+
+<p align="center">
+<img src="screenshots/settings-integrations.png" alt="Yuzic Integrations" width="275" height="600">
+<img src="screenshots/settings-deezer.png" alt="Yuzic Deezer" width="275" height="600">
+<img src="screenshots/settings-musicbrainz.png" alt="Yuzic Musicbrainz" width="275" height="600">
+<img src="screenshots/settings-lastfm.png" alt="Yuzic Lastfm" width="275" height="600">
+<img src="screenshots/settings-listenbrainz.png" alt="Yuzic Listenbrainz" width="275" height="600">
 </p>
 
 ### Downloaders
 
 <p align="center">
-  <img src="screenshots/downloaders-settings.png" alt="Yuzic Downloaders Settings" width="275" height="600">
-  <img src="screenshots/lidarr-settings.png" alt="Yuzic Lidarr" width="275" height="600">
-  <img src="screenshots/slskd-settings.png" alt="Yuzic slskd" width="275" height="600">
+  <img src="screenshots/settings-downloaders.png" alt="Yuzic Downloaders" width="275" height="600">
+  <img src="screenshots/settings-lidarr.png" alt="Yuzic Lidarr" width="275" height="600">
+  <img src="screenshots/settings-slskd.png" alt="Yuzic slskd" width="275" height="600">
 </p>
 
 ## Contribution

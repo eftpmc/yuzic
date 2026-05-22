@@ -217,39 +217,44 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchRequestIdRef = useRef(0);
 
+  // Pre-compute lowercased strings once when library data changes, not on every keystroke.
+  // With 9000 tracks this avoids 18,000 toLowerCase() calls per search query.
+  const searchIndex = useMemo(() => ({
+    tracks: tracks.map(t => ({ item: t, lc: `${t.title.toLowerCase()} ${(t.artist ?? '').toLowerCase()}` })),
+    albums: albums.map(a => ({ item: a, lc: a.title.toLowerCase() })),
+    artists: artists.map(a => ({ item: a, lc: a.name.toLowerCase() })),
+    playlists: playlists.map(p => ({ item: p, lc: p.title.toLowerCase() })),
+  }), [tracks, albums, artists, playlists]);
+
   const searchLibrary = useCallback(async (
     query: string
   ): Promise<SearchResult[]> => {
     const lowerQuery = query.toLowerCase();
 
-    const albumResults = albums
-      .filter(a => a.title.toLowerCase().includes(lowerQuery))
+    const albumResults = searchIndex.albums
+      .filter(({ lc }) => lc.includes(lowerQuery))
       .slice(0, 5)
-      .map((album: AlbumBase) =>
-        albumToResult(album, 'local', downloadedAlbumIds.has(album.id))
+      .map(({ item }) =>
+        albumToResult(item, 'local', downloadedAlbumIds.has(item.id))
       );
 
-    const artistResults = artists
-      .filter(a => a.name.toLowerCase().includes(lowerQuery))
+    const artistResults = searchIndex.artists
+      .filter(({ lc }) => lc.includes(lowerQuery))
       .slice(0, 3)
-      .map((artist: Artist) => artistToResult(artist));
+      .map(({ item }) => artistToResult(item));
 
-    const playlistResults = playlists
-      .filter(p => p.title.toLowerCase().includes(lowerQuery))
+    const playlistResults = searchIndex.playlists
+      .filter(({ lc }) => lc.includes(lowerQuery))
       .slice(0, 3)
-      .map((playlist: PlaylistBase) =>
-        playlistToResult(playlist, downloadedPlaylistIds.has(playlist.id))
+      .map(({ item }) =>
+        playlistToResult(item, downloadedPlaylistIds.has(item.id))
       );
 
-    const songResults = tracks
-      .filter(track => {
-        const title = track.title.toLowerCase();
-        const artist = (track.artist ?? '').toLowerCase();
-        return title.includes(lowerQuery) || artist.includes(lowerQuery);
-      })
+    const songResults = searchIndex.tracks
+      .filter(({ lc }) => lc.includes(lowerQuery))
       .slice(0, 5)
-      .map((track: SongBase) =>
-        songToResult(track, downloadedTrackIds.has(track.id))
+      .map(({ item }) =>
+        songToResult(item, downloadedTrackIds.has(item.id))
       );
 
     return [
@@ -259,10 +264,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       ...playlistResults,
     ];
   }, [
-    albums,
-    artists,
-    playlists,
-    tracks,
+    searchIndex,
     downloadedAlbumIds,
     downloadedPlaylistIds,
     downloadedTrackIds,

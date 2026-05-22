@@ -90,12 +90,15 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
       const normalized = genre.trim()
       if (normalized) genres.add(normalized)
     })
-    libraryAlbums.forEach(album => {
-      album.genres?.forEach(genre => {
+    // Supplement from album tags, but cap at 500 albums — scanning all 9000 for
+    // a handful of genre seeds isn't worth it when the server genre list covers most cases.
+    const scanLimit = Math.min(libraryAlbums.length, 500)
+    for (let i = 0; i < scanLimit; i++) {
+      libraryAlbums[i].genres?.forEach(genre => {
         const normalized = genre.trim()
         if (normalized) genres.add(normalized)
       })
-    })
+    }
     return [...genres]
   }, [libraryAlbums, libraryGenres])
 

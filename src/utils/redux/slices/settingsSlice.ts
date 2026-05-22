@@ -4,7 +4,7 @@ import { DEFAULT_LANGUAGE } from '@/constants/languages';
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 export type PreferredCodec = 'mp3' | 'opus';
-export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist';
+export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist' | 'cast';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type SearchScope = 'client' | 'server';
 export type AppLanguage = string;

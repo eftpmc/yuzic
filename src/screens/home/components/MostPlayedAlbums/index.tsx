@@ -22,10 +22,15 @@ export default function MostPlayedAlbums() {
   const { albums } = useAlbums();
 
   const itemsToRender = useMemo(() => {
-    return [...albums]
-      .filter(a => (albumPlayCounts[a.id] ?? 0) > 0)
-      .sort((a, b) => (albumPlayCounts[b.id] ?? 0) - (albumPlayCounts[a.id] ?? 0))
-      .slice(0, MAX_ALBUMS);
+    // Collect only albums that have been played, then sort that smaller set —
+    // O(n) scan + O(k log k) sort where k = played albums, not O(n log n) over all.
+    const withCounts: { album: typeof albums[0]; count: number }[] = [];
+    for (const album of albums) {
+      const count = albumPlayCounts[album.id] ?? 0;
+      if (count > 0) withCounts.push({ album, count });
+    }
+    withCounts.sort((a, b) => b.count - a.count);
+    return withCounts.slice(0, MAX_ALBUMS).map(x => x.album);
   }, [albumPlayCounts, albums]);
 
   const coversToPrefetch = useMemo(() => itemsToRender.map(a => a.cover), [itemsToRender]);

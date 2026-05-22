@@ -1,37 +1,24 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
-import { AirplayButton } from 'react-airplay';
-import { ListMusic } from 'lucide-react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Cast, ListMusic } from 'lucide-react-native';
+import { useCast } from '@/contexts/CastContext';
 
 type BottomControlsProps = {
   mode: 'player' | 'queue';
   setMode: (mode: 'player' | 'queue') => void;
+  onOpenOutputSheet: () => void;
 };
 
-const BottomControls: React.FC<BottomControlsProps> = ({
-  mode,
-  setMode,
-}) => {
+const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
+  const { activeDevice, isGoogleCastConnected } = useCast();
+  const isCasting = activeDevice != null || isGoogleCastConnected;
   const iconColor = (active: boolean) => (active ? '#fff' : '#ccc');
 
   return (
     <View style={styles.container}>
-      <View style={styles.leftButton}>
-        {Platform.OS === 'ios' ? (
-          <AirplayButton
-            activeTintColor="#fff"
-            tintColor="#ccc"
-            style={styles.airplay}
-          />
-        ) : (
-          <View style={styles.airplayPlaceholder} />
-        )}
-      </View>
+      <TouchableOpacity onPress={onOpenOutputSheet} style={styles.leftButton}>
+        <Cast size={24} color={isCasting ? '#fff' : '#ccc'} />
+      </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => setMode(mode === 'queue' ? 'player' : 'queue')}
@@ -59,14 +46,6 @@ const styles = StyleSheet.create({
   },
   activeButton: {
     backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  airplay: {
-    width: 24,
-    height: 24,
-  },
-  airplayPlaceholder: {
-    width: 24,
-    height: 24,
   },
 });
 

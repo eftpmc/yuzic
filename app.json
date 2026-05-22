@@ -2,7 +2,7 @@
   "expo": {
     "name": "Yuzic",
     "slug": "yuzic",
-    "version": "1.3.5",
+    "version": "1.3.6",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
@@ -20,7 +20,8 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocalNetworkUsageDescription": "Yuzic uses your local network to discover DLNA speakers and displays to cast music to."
       }
     },
     "android": {
@@ -62,6 +63,13 @@
           "ios": {
             "deploymentTarget": "16.0"
           }
+        }
+      ],
+      [
+        "react-native-google-cast",
+        {
+          "iosReceiverAppID": "BCF2CA91",
+          "androidReceiverAppID": "BCF2CA91"
         }
       ]
     ],

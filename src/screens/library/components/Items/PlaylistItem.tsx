@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { CoverSource, PlaylistBase } from '@/types';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
@@ -29,6 +29,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
 }) => {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
+  const [optionsMounted, setOptionsMounted] = useState(false);
 
   const playlistForOptions = useMemo(() => playlist ?? {
     id,
@@ -45,8 +46,13 @@ const PlaylistItem: React.FC<ItemProps> = ({
   }, [cover, navigation, id]);
 
   const handleLongPress = useCallback(() => {
-    sheetRef.current?.present();
-  }, [sheetRef]);
+    if (!optionsMounted) {
+      setOptionsMounted(true);
+      requestAnimationFrame(() => sheetRef.current?.present());
+    } else {
+      sheetRef.current?.present();
+    }
+  }, [optionsMounted, sheetRef]);
 
   return (
     <>
@@ -60,7 +66,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
         onPress={handlePress}
         onLongPress={handleLongPress}
       />
-      <PlaylistOptions ref={sheetRef} playlist={playlistForOptions} hideGoToPlaylist={false} />
+      {optionsMounted && <PlaylistOptions ref={sheetRef} playlist={playlistForOptions} hideGoToPlaylist={false} />}
     </>
   );
 };

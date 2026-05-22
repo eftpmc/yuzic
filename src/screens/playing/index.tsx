@@ -27,6 +27,7 @@ import Controls from './components/Controls';
 import BottomControls from './components/BottomControls';
 import LyricsBottomSheet from './components/LyricsBottomSheet';
 import LyricsPreviewCard from './components/LyricsPreviewCard';
+import OutputDeviceSheet from './components/OutputDeviceSheet';
 import AboutTheArtistCard from './components/AboutTheArtistCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -85,6 +86,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const songOptionsRef = useSheetRef();
     const playlistRef = useSheetRef();
     const lyricsSheetRef = useSheetRef();
+    const outputDeviceSheetRef = useSheetRef();
 
     const [mode, setMode] = useState<PlayingViewMode>("player");
     const { playerStyle, queueStyle } =
@@ -123,11 +125,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         };
     }, [api.lyrics, currentSong?.id]);
 
-    if (!currentSong) {
-        return <View style={{ flex: 1, backgroundColor: '#000' }} />;
-    }
-
-    const artistId = currentSong.artistId ?? album?.artist?.id;
+    const artistId = currentSong?.artistId ?? album?.artist?.id;
 
     const navigateToArtist = useCallback(() => {
         if (artistId) {
@@ -144,6 +142,10 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
             lyricsSheetRef.current?.present();
         }
     }, [lyricsAvailable, lyrics, lyricsSheetRef]);
+
+    if (!currentSong) {
+        return <View style={{ flex: 1, backgroundColor: '#000' }} />;
+    }
 
     return (
         <View style={styles.gradientContainer}>
@@ -219,6 +221,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     <BottomControls
                                         mode={mode}
                                         setMode={setMode}
+                                        onOpenOutputSheet={() => outputDeviceSheetRef.current?.present()}
                                     />
                                 </View>
                             </View>
@@ -265,6 +268,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 lyrics={lyrics}
                 onClose={() => lyricsSheetRef.current?.dismiss()}
             />
+
+            <OutputDeviceSheet ref={outputDeviceSheetRef} />
         </View>
     );
 };

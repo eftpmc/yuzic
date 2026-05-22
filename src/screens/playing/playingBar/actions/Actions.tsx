@@ -1,6 +1,6 @@
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { PlusCircle } from 'lucide-react-native';
+import { Cast, PlusCircle } from 'lucide-react-native';
 import { PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
 
 export type PlayingBarActionMeta = {
@@ -28,5 +28,9 @@ export const PLAYING_BAR_ACTIONS: PlayingBarActionMeta[] = [
   {
     id: 'addToPlaylist',
     icon: <PlusCircle size={20} />,
+  },
+  {
+    id: 'cast',
+    icon: <Cast size={20} />,
   },
 ];

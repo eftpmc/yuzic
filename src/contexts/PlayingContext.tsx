@@ -26,6 +26,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent } from './playingQueue';
 import { useDownloadActions } from './DownloadContext';
+import { useCast } from './CastContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
@@ -188,6 +189,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const activeMediaItem = useActiveMediaItem();
   const api = useApi();
   const { getLocalPath } = useDownloadActions();
+  const { activeDevice, castPause, castResume } = useCast();
   const networkType = useNetworkType();
   const wifiQuality = useSelector(selectWifiStreamQuality);
   const cellularQuality = useSelector(selectCellularStreamQuality);
@@ -225,6 +227,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   ) => Promise<void>>(async () => {});
   const submitNowPlayingRef = useRef<(song: Song) => void>(() => {});
   const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
+  const resolvePlayableSongRef = useRef<(song: Song) => Song>((s) => s);
 
   const { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled } = useScrobbling();
 
@@ -319,6 +322,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [bumpQueue, clearPlaybackState]);
   removeFailedCurrentTrackRef.current = removeFailedCurrentTrack;
 
+  const lastRecoveryAtRef = useRef(0);
+
   useEffect(() => {
     const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
       const song = currentSongRef.current;
@@ -333,6 +338,26 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
 
       const now = Date.now();
+
+      // Preview URLs (Deezer etc.) can't be refreshed — remove immediately.
+      if (song?.isPreview) {
+        removeFailedCurrentTrackRef.current();
+        return;
+      }
+
+      // First error: refresh every URL in the queue (catches stale Navidrome tokens
+      // after JS context restarts) then retry from the current index.
+      if (now - lastRecoveryAtRef.current > 3000) {
+        lastRecoveryAtRef.current = now;
+        const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
+        queueRef.current = freshQueue;
+        currentSongRef.current = freshQueue[currentIndexRef.current] ?? song;
+        TrackPlayer.setMediaItems(toMediaItems(freshQueue), currentIndexRef.current);
+        TrackPlayer.play();
+        return;
+      }
+
+      // Second error within 3s — URL refresh didn't help, genuine failure.
       if (now - lastPlaybackErrorAtRef.current > 1500) {
         lastPlaybackErrorAtRef.current = now;
         toast.error(t('common.playbackError'));
@@ -365,11 +390,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const nativeQueueSongs = nativeQueue
       .map(item => {
         const id = getMediaItemId(item);
-        return (
-          queueRef.current.find(song => song.id === id) ??
-          librarySongByIdRef.current.get(id) ??
-          mediaItemToFallbackSong(item)
-        );
+        // Prefer in-memory queue (fresh URLs) over native cache (potentially stale tokens)
+        const known = queueRef.current.find(song => song.id === id)
+          ?? librarySongByIdRef.current.get(id);
+        if (known) return known;
+        // Fallback: build from native item, then immediately refresh the URL
+        const fallback = mediaItemToFallbackSong(item);
+        return fallback ? resolvePlayableSongRef.current(fallback) : null;
       })
       .filter((song): song is Song => Boolean(song));
 
@@ -413,6 +440,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);
     return freshUrl ? { ...song, streamUrl: freshUrl } : song;
   }, [api, getLocalPath]);
+  // Keep ref in sync during render so effects/handlers always have the latest version
+  resolvePlayableSongRef.current = resolvePlayableSong;
 
   const loadQueue = useCallback(async (songs: Song[], startIndex: number, play = true, seekToPosition?: number) => {
     assertPlayableSongs(songs);
@@ -534,8 +563,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (isPlayingRef.current) TrackPlayer.play();
   }, []);
 
-  const pauseSong = useCallback(async () => { TrackPlayer.pause(); }, []);
-  const resumeSong = useCallback(async () => { TrackPlayer.play(); }, []);
+  const pauseSong = useCallback(async () => {
+    TrackPlayer.pause();
+    if (activeDevice) castPause();
+  }, [activeDevice, castPause]);
+
+  const resumeSong = useCallback(async () => {
+    TrackPlayer.play();
+    if (activeDevice) castResume();
+  }, [activeDevice, castResume]);
   const getQueue = useCallback(() => [...queueRef.current], []);
 
   const moveTrack = useCallback((from: number, to: number) => {
