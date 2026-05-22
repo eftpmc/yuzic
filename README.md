@@ -78,28 +78,28 @@ Screenshots taken on iPhone 13
 ### Playing
 
 <p align="center">
-  <img src="screenshots/playing.png" alt="Yuzic Playing" width="275" height="600">
+  <img src="screenshots/playing-screen.png" alt="Yuzic Playing" width="275" height="600">
   <img src="screenshots/playing-queue.png" alt="Yuzic Queue" width="275" height="600">
 </p>
 
 ### Album
 
 <p align="center">
-  <img src="screenshots/album.png" alt="Yuzic Album" width="275" height="600">
+  <img src="screenshots/album-screen.png" alt="Yuzic Album" width="275" height="600">
   <img src="screenshots/album1.png" alt="Yuzic Album 1" width="275" height="600">
 </p>
 
 ### Artist
 
 <p align="center">
-  <img src="screenshots/artist.png" alt="Yuzic Artist" width="275" height="600">
+  <img src="screenshots/artist-screen.png" alt="Yuzic Artist" width="275" height="600">
   <img src="screenshots/artist1.png" alt="Yuzic Artist 1" width="275" height="600">
 </p>
 
 ### Playlist
 
 <p align="center">
-  <img src="screenshots/playlist.png" alt="Yuzic Playlist" width="275" height="600">
+  <img src="screenshots/playlist-screen.png" alt="Yuzic Playlist" width="275" height="600">
   <img src="screenshots/playlist1.png" alt="Yuzic Playlist 1" width="275" height="600">
 </p>
 
@@ -118,13 +118,13 @@ Screenshots taken on iPhone 13
 
 <p align="center">
   <img src="screenshots/search.png" alt="Yuzic Search Empty" width="275" height="600">
-  <img src="screenshots/search-results.png" alt="Yuzic Search Results" width="275" height="600">
+  <img src="screenshots/search1.png" alt="Yuzic Search Results" width="275" height="600">
 </p>
 
 ### Settings
 
 <p align="center">
-  <img src="screenshots/settings.png" alt="Yuzic Settings" width="275" height="600">
+  <img src="screenshots/settings-screen.png" alt="Yuzic Settings" width="275" height="600">
   <img src="screenshots/settings-server.png" alt="Yuzic Server Settings" width="275" height="600">
   <img src="screenshots/settings-library.png" alt="Yuzic Library Settings" width="275" height="600">
   <img src="screenshots/settings-downloaddetails.png" alt="Yuzic Download Details" width="275" height="600">
