@@ -97,7 +97,7 @@ const initialState: SettingsState = {
   musicbrainzExternalEnabled: false,
 
   showSleepTimer: true,
-  showPlaybackSpeed: true,
+  showPlaybackSpeed: false,
 
   lastSyncedAt: null,
   syncOnAppStart: true,

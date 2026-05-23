@@ -121,7 +121,6 @@ export default function LyricsPreviewCard({
     return 'inactive';
   };
 
-  // Playing screen background is always dark — use light text
   return (
     <TouchableOpacity
       style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
@@ -144,6 +143,7 @@ export default function LyricsPreviewCard({
           </View>
         ))}
       </ScrollView>
+
     </TouchableOpacity>
   );
 }

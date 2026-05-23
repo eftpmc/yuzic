@@ -3,11 +3,10 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Shuffle, SkipBack, SkipForward, Repeat, Play, Pause } from 'lucide-react-native';
+import { Shuffle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -88,14 +87,10 @@ const Controls: React.FC = () => {
       </TouchableOpacity>
 
       <ToggleButton active={repeatMode !== 'off'} onPress={toggleRepeat}>
-        <View style={styles.repeatWrapper}>
-          <Repeat size={23} color="#fff" />
-          {repeatMode === 'one' && (
-            <View style={styles.repeatOneBadge}>
-              <Text style={styles.repeatOneBadgeText}>1</Text>
-            </View>
-          )}
-        </View>
+        {repeatMode === 'one'
+          ? <Repeat1 size={23} color="#fff" />
+          : <Repeat size={23} color="#fff" />
+        }
       </ToggleButton>
     </View>
   );
@@ -117,27 +112,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  repeatWrapper: {
-    position: 'relative',
-  },
-  repeatOneBadge: {
-    position: 'absolute',
-    top: -5,
-    right: -7,
-    backgroundColor: '#fff',
-    borderRadius: 6,
-    minWidth: 12,
-    height: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-  },
-  repeatOneBadgeText: {
-    fontSize: 8,
-    fontWeight: '700',
-    color: '#000',
-    lineHeight: 12,
   },
   toggleWrapper: {
     alignItems: 'center',

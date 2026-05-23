@@ -4,6 +4,9 @@ import { Moon } from 'lucide-react-native';
 import TrackPlayer from '@rntp/player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { mmkv } from '@/utils/mmkvStorage';
+
+const MMKV_KEY = 'sleep_timer_target_ms';
 
 const MAX_SECONDS = 120 * 60;
 const INCREMENTS = [5, 15, 30];
@@ -24,9 +27,32 @@ export default function SleepTimerCard({ contentWidth }: Props) {
 
   const isActive = remainingSeconds !== null;
 
+  // Restore persisted timer on mount
+  useEffect(() => {
+    const saved = mmkv.getNumber(MMKV_KEY);
+    if (saved && saved > Date.now()) {
+      const remaining = Math.round((saved - Date.now()) / 1000);
+      targetMsRef.current = saved;
+      setRemainingSeconds(remaining);
+      intervalRef.current = setInterval(() => {
+        const r = Math.max(0, Math.round((targetMsRef.current! - Date.now()) / 1000));
+        setRemainingSeconds(r);
+        if (r === 0) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          targetMsRef.current = null;
+          setRemainingSeconds(null);
+          mmkv.remove(MMKV_KEY);
+        }
+      }, 1000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const startCountdown = useCallback((totalSeconds: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     targetMsRef.current = Date.now() + totalSeconds * 1000;
+    mmkv.set(MMKV_KEY, targetMsRef.current);
     setRemainingSeconds(totalSeconds);
 
     intervalRef.current = setInterval(() => {
@@ -37,6 +63,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
         intervalRef.current = null;
         targetMsRef.current = null;
         setRemainingSeconds(null);
+        mmkv.remove(MMKV_KEY);
       }
     }, 1000);
   }, []);
@@ -57,6 +84,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     intervalRef.current = null;
     targetMsRef.current = null;
     setRemainingSeconds(null);
+    mmkv.remove(MMKV_KEY);
   }, []);
 
   useEffect(() => {
