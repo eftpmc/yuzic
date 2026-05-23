@@ -17,7 +17,7 @@ import {
     setActiveServer,
     removeServer,
 } from '@/utils/redux/slices/serversSlice';
-import { AntDesign } from '@expo/vector-icons';
+import { Ellipsis } from 'lucide-react-native';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
@@ -107,7 +107,7 @@ export default function Servers() {
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <AntDesign name="ellipsis" size={18} color="#888" />
+                    <Ellipsis size={18} color="#888" />
                 </TouchableOpacity>
             </View>
         );

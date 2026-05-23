@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
-import { Ionicons } from '@expo/vector-icons'
+import { Ellipsis } from 'lucide-react-native'
 import type { AlbumBase, Artist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
 import Header from '../Header'
@@ -219,7 +219,7 @@ export default function ArtistContent({ artist }: Props) {
           activeOpacity={0.65}
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={colors.secondary} />
+            <Ellipsis size={18} color={colors.secondary} />
           </View>
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>
             {t('artist.showMore', { count: item.remaining })}

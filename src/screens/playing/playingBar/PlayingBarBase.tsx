@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Music, Play, Pause } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -203,7 +202,7 @@ export default function PlayingBarBase({ variant }: Props) {
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
 
-  const { currentSong, isPlaying } = usePlayingState();
+  const { currentSong, isPlaying, isBuffering } = usePlayingState();
   const { pauseSong, resumeSong } = usePlayingActions();
 
   const stylesForVariant = variantStyles[variant];
@@ -287,8 +286,7 @@ export default function PlayingBarBase({ variant }: Props) {
         />
       ) : (
         <View style={[styles.coverArt, stylesForVariant.coverArt, styles.iconPlaceholder]}>
-          <Ionicons
-            name="musical-notes"
+          <Music
             size={stylesForVariant.placeholderIconSize}
             color={colors.secondary}
           />
@@ -327,11 +325,12 @@ export default function PlayingBarBase({ variant }: Props) {
           onPress={handlePlayPause}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <FontAwesome6
-            name={isPlaying ? 'pause' : 'play'}
-            size={20}
-            color={colors.secondary}
-          />
+          {isBuffering
+            ? <ActivityIndicator size="small" color={colors.secondary} />
+            : isPlaying
+              ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
+              : <Play size={20} color={colors.secondary} fill={colors.secondary} />
+          }
         </TouchableOpacity>
       )}
 

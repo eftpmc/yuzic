@@ -31,6 +31,7 @@ export async function getAlbum(
     duration: s.duration,
     cover,
     albumId: album.id,
+    albumTitle: album.name,
     streamUrl: client.buildStreamUrl(s.id),
     filePath: s.path ?? undefined,
     bitrate: s.bitRate ?? undefined,

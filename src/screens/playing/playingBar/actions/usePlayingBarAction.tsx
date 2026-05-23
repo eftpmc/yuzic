@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
-import { Cast, PlusCircle } from 'lucide-react-native';
+import { SkipForward, Heart, Dices, Cast, PlusCircle } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useStarSong, useUnstarSong, useStarredSongs } from '@/hooks/starred';
@@ -47,26 +46,14 @@ export function usePlayingBarAction(
     case 'skip':
       return {
         id,
-        icon: (
-          <Ionicons
-            name="play-skip-forward"
-            size={20}
-            color="#fff"
-          />
-        ),
+        icon: <SkipForward size={20} color="#fff" />,
         onPress: skipToNext,
       };
 
     case 'favorite':
       return {
         id,
-        icon: (
-          <Ionicons
-            name={isFavorite ? 'heart' : 'heart-outline'}
-            size={20}
-            color="#fff"
-          />
-        ),
+        icon: <Heart size={20} color="#fff" fill={isFavorite ? '#fff' : 'none'} />,
         onPress: async () => {
           if (!currentSong) return;
 
@@ -101,13 +88,7 @@ export function usePlayingBarAction(
     case 'randomAlbum':
       return {
         id,
-        icon: (
-          <Ionicons
-            name="dice-outline"
-            size={20}
-            color="#fff"
-          />
-        ),
+        icon: <Dices size={20} color="#fff" />,
         onPress: async () => {
           if (!albums.length) return;
           if (isOffline) {

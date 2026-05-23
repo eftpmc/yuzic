@@ -1,6 +1,5 @@
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { Cast, PlusCircle } from 'lucide-react-native';
+import { Minus, SkipForward, Heart, Dices, Cast, PlusCircle } from 'lucide-react-native';
 import { PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
 
 export type PlayingBarActionMeta = {
@@ -11,19 +10,19 @@ export type PlayingBarActionMeta = {
 export const PLAYING_BAR_ACTIONS: PlayingBarActionMeta[] = [
   {
     id: 'none',
-    icon: <Ionicons name="remove" size={20} />,
+    icon: <Minus size={20} />,
   },
   {
     id: 'skip',
-    icon: <Ionicons name="play-skip-forward" size={20} />,
+    icon: <SkipForward size={20} />,
   },
   {
     id: 'favorite',
-    icon: <Ionicons name="heart-outline" size={20} />,
+    icon: <Heart size={20} />,
   },
   {
     id: 'randomAlbum',
-    icon: <Ionicons name="dice-outline" size={20} />,
+    icon: <Dices size={20} />,
   },
   {
     id: 'addToPlaylist',

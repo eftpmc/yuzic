@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import { Ionicons } from '@expo/vector-icons'
+import { Ellipsis } from 'lucide-react-native'
 import type { ExternalAlbumBase, ExternalArtist } from '@/types'
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
 import Header from '../Header'
@@ -73,7 +73,7 @@ export default function ExternalArtistContent({ artist }: Props) {
           activeOpacity={0.65}
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={colors.secondary} />
+            <Ellipsis size={18} color={colors.secondary} />
           </View>
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>{item.remaining} more</Text>
         </TouchableOpacity>

@@ -35,6 +35,7 @@ export async function getAlbumsWithSongs(client: NavidromeClient): Promise<Album
         duration: s.duration,
         cover,
         albumId: raw.id,
+        albumTitle: raw.name,
         streamUrl: client.buildStreamUrl(s.id),
         filePath: s.path ?? undefined,
         bitrate: s.bitRate ?? undefined,

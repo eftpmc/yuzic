@@ -10,6 +10,8 @@ export interface SongBase {
     cover: CoverSource;
     duration: string;
     albumId: string;
+    /** Album title — populated from server response, used for lock screen Now Playing display. */
+    albumTitle?: string;
     year?: number;
     dateAdded?: string;
     /** Server-reported play count — populated during sync, extracted into serverSongPlays Redux state. */

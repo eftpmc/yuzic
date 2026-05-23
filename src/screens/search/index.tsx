@@ -9,7 +9,7 @@ import {
   Text,
   Platform,
 } from 'react-native';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Ellipsis, ChevronLeft, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -144,7 +144,7 @@ const Search = () => {
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.songOptionsButton} onPress={() => { void handleSongOptions(result); }}>
-              <Ionicons name="ellipsis-horizontal" size={24} color={colors.secondary} />
+              <Ellipsis size={24} color={colors.secondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -230,7 +230,7 @@ const Search = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+          <ChevronLeft size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
@@ -251,7 +251,7 @@ const Search = () => {
               style={styles.clearButton}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
-              <MaterialIcons name="close" size={20} color={colors.secondary} />
+              <X size={20} color={colors.secondary} />
             </TouchableOpacity>
           )}
         </View>

@@ -11,8 +11,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { ListEnd } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2 } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist, PlaylistBase } from '@/types';
@@ -200,7 +199,7 @@ const PlaylistOptions = forwardRef<
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
-            <Ionicons name="play" size={26} color={colors.secondary} />
+            <Play size={26} color={colors.secondary} fill={colors.secondary} />
           )}
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.play')}</Text>
         </TouchableOpacity>
@@ -209,7 +208,7 @@ const PlaylistOptions = forwardRef<
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Shuffle size={26} color={colors.secondary} />
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -225,13 +224,13 @@ const PlaylistOptions = forwardRef<
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Shuffle size={26} color={colors.secondary} />
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
 
         {!hideGoToPlaylist && (
           <TouchableOpacity style={styles.option} onPress={handleGoToPlaylist}>
-            <Ionicons name="list" size={26} color={colors.secondary} />
+            <List size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>{t('playlistOptions.actions.goToPlaylist')}</Text>
           </TouchableOpacity>
         )}
@@ -243,12 +242,10 @@ const PlaylistOptions = forwardRef<
         >
           {isDownloading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
+          ) : isDownloaded ? (
+            <CheckCircle size={26} color={colors.subtext} />
           ) : (
-            <Ionicons
-              name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
-              size={26}
-              color={isDownloaded || isDownloading ? colors.subtext : colors.secondary}
-            />
+            <ArrowDownCircle size={26} color={colors.secondary} />
           )}
           <Text
             style={[
@@ -270,7 +267,7 @@ const PlaylistOptions = forwardRef<
             {deletePlaylist.isPending ? (
               <ActivityIndicator size="small" color={colors.subtext} />
             ) : (
-              <Ionicons name="trash-outline" size={26} color="#ff3b30" />
+              <Trash2 size={26} color="#ff3b30" />
             )}
             <Text
               style={[

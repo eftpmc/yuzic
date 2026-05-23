@@ -14,7 +14,7 @@ export function buildTrackItem(song: Song): MediaItem {
     mediaId: song.id,
     title: song.title,
     artist: song.artist,
-    albumTitle: '',
+    albumTitle: song.albumTitle ?? '',
     duration: Number(song.duration) || undefined,
     url: url.startsWith('file://') ? { uri: url } : url,
     artworkUrl: buildCover(song.cover, 'grid') ?? undefined,

@@ -10,8 +10,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { CloudDownload } from 'lucide-react-native';
+import { CloudDownload, Ellipsis, Link, ChevronRight } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 
 import {
@@ -53,11 +52,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
         style={styles.moreButton}
         onPress={() => bottomSheetRef.current?.present()}
       >
-        <Ionicons
-          name="ellipsis-horizontal"
-          size={24}
-          color={colors.secondary}
-        />
+        <Ellipsis size={24} color={colors.secondary} />
       </TouchableOpacity>
 
       <BottomSheetModal
@@ -86,7 +81,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
           {status.kind === 'in_library' ? (
             <View style={styles.option}>
-              <Ionicons name="link" size={26} color="#34C759" />
+              <Link size={26} color="#34C759" />
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.inLibrary')}
               </Text>
@@ -107,7 +102,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.placeholder} style={styles.chevron} />
+              <ChevronRight size={16} color={colors.placeholder} style={styles.chevron} />
             </TouchableOpacity>
           ) : (
             <View style={styles.option}>

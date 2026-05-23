@@ -5,7 +5,7 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -37,8 +37,7 @@ const Header: React.FC<HeaderProps> = ({
                 onPress={handleBack}
                 style={styles.backButton}
             >
-                <Ionicons
-                    name="chevron-back"
+                <ChevronLeft
                     size={24}
                     color={colors.secondary}
                 />

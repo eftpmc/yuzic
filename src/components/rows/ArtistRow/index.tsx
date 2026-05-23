@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ellipsis } from 'lucide-react-native';
 import { Artist } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
@@ -67,8 +67,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
               onPress={handleOpenOptions}
               style={styles.optionButton}
             >
-              <Ionicons
-                name="ellipsis-horizontal"
+              <Ellipsis
                 size={24}
                 color={colors.secondary}
               />

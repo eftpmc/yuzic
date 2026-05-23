@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { CheckCircle, CirclePlus, RefreshCw } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -190,11 +190,10 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
         </Text>
       </View>
       <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
-        <Ionicons
-          name={added ? 'checkmark-circle-outline' : 'add-circle-outline'}
-          size={22}
-          color={(adding || added) ? colors.placeholder : colors.subtext}
-        />
+        {added
+          ? <CheckCircle size={22} color={colors.placeholder} />
+          : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
+        }
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -299,7 +298,7 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
         onPress={onRefresh}
         activeOpacity={0.7}
       >
-        <Ionicons name="refresh" size={16} color={colors.subtext} />
+        <RefreshCw size={16} color={colors.subtext} />
         <Text style={[styles.refreshText, { color: colors.subtext }]}>
           {t('playlist.recommended.refresh')}
         </Text>
@@ -415,8 +414,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         activeOpacity={0.7}
         disabled={externalQuery.isFetching}
       >
-        <Ionicons
-          name="refresh"
+        <RefreshCw
           size={16}
           color={colors.subtext}
           style={{ opacity: externalQuery.isFetching ? 0.3 : 1 }}

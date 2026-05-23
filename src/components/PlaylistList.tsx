@@ -16,8 +16,7 @@ import {
   BottomSheetModal,
   BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { X } from 'lucide-react-native';
+import { X, Search, Plus, Check } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -235,7 +234,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
         <View style={styles.content}>
           <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
-            <Ionicons name="search" size={20} color={colors.placeholder} />
+            <Search size={20} color={colors.placeholder} />
             <TextInput
               style={[styles.searchInput, { color: colors.secondary }]}
               placeholder={t('playlistList.searchPlaceholder')}
@@ -254,7 +253,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
               onChangeText={setNewPlaylistName}
             />
             <TouchableOpacity onPress={handleCreatePlaylist}>
-              <Ionicons name="add" size={26} color={colors.secondary} />
+              <Plus size={26} color={colors.secondary} />
             </TouchableOpacity>
           </View>
 
@@ -281,10 +280,10 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
                     {item.title}
                   </Text>
 
-                  <Ionicons
-                    name={isChecked ? 'checkmark-circle' : 'ellipse-outline'}
+                  <Check
                     size={24}
                     color={themeColor}
+                    style={{ opacity: isChecked ? 1 : 0 }}
                   />
                 </TouchableOpacity>
               );

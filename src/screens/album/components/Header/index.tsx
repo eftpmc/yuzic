@@ -12,7 +12,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { Album } from '@/types';
@@ -102,7 +102,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+          <ChevronLeft size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <View pointerEvents="none" style={styles.headerTitleWrapper}>
@@ -115,7 +115,7 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
           onPress={() => optionsSheetRef.current?.present()}
           style={styles.headerButton}
         >
-          <Ionicons name="ellipsis-horizontal" size={24} color={colors.secondary} />
+          <Ellipsis size={24} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -168,14 +168,14 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
             style={[styles.secondaryButton, { backgroundColor: colors.card }]}
             onPress={handleShuffle}
           >
-            <Ionicons name="shuffle" size={18} color={colors.secondary} />
+            <Shuffle size={18} color={colors.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.playButton, { backgroundColor: themeColor }]}
             onPress={handlePlay}
           >
-            <Ionicons name="play" size={20} color="#fff" />
+            <Play size={20} color="#fff" fill="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -187,10 +187,10 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
               <ActivityIndicator size="small" color={colors.secondary} />
             ) : isAlbumDownloaded ? (
               <Animated.View style={checkmarkStyle}>
-                <Ionicons name="checkmark" size={18} color={colors.secondary} />
+                <Check size={18} color={colors.secondary} />
               </Animated.View>
             ) : (
-              <Ionicons name="download-outline" size={18} color={colors.secondary} />
+              <Download size={18} color={colors.secondary} />
             )}
           </TouchableOpacity>
         </View>

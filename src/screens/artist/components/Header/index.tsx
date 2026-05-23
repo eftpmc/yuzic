@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
 import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
 import { MediaImage } from '@/components/MediaImage';
@@ -178,13 +178,13 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="chevron-back" size={24} color="#fff" style={{ marginLeft: -2 }} />
+            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => optionsSheetRef.current?.present()}
           >
-            <Ionicons name="ellipsis-horizontal" size={24} color="#fff" />
+            <Ellipsis size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -232,7 +232,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
-            <Ionicons name="shuffle" size={18} color={colors.secondary} />
+            <Shuffle size={18} color={colors.secondary} />
           )}
         </TouchableOpacity>
 
@@ -244,7 +244,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
           {songsLoading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Ionicons name="play" size={24} color="#fff" />
+            <Play size={24} color="#fff" fill="#fff" />
           )}
         </TouchableOpacity>
 
@@ -255,12 +255,10 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
         >
           {isDownloadingAll || isArtistDownloading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
+          ) : isArtistFullyDownloaded ? (
+            <Check size={18} color={colors.secondary} />
           ) : (
-            <Ionicons
-              name={isArtistFullyDownloaded ? 'checkmark' : 'download-outline'}
-              size={18}
-              color={colors.secondary}
-            />
+            <Download size={18} color={colors.secondary} />
           )}
         </TouchableOpacity>
       </View>

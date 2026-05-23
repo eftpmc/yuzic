@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Check } from 'lucide-react-native';
+import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
@@ -59,7 +58,7 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
             {checked && <Check size={13} color="#fff" strokeWidth={3} />}
           </View>
         ) : (
-          <Ionicons name="chevron-forward" size={18} color={colors.border} />
+          <ChevronRight size={18} color={colors.border} />
         )}
       </View>
     </TouchableOpacity>

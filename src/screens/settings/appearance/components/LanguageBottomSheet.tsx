@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Languages, Check } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
@@ -68,8 +68,7 @@ const LanguageBottomSheet = forwardRef<
               onPress={() => onSelect(lang.code)}
             >
               <View style={styles.pickerLeft}>
-                <Ionicons
-                  name="language-outline"
+                <Languages
                   size={18}
                   color={isSelected ? themeColor : colors.subtext}
                   style={{ marginRight: 10 }}
@@ -85,8 +84,7 @@ const LanguageBottomSheet = forwardRef<
               </View>
 
               {isSelected && (
-                <Ionicons
-                  name="checkmark"
+                <Check
                   size={20}
                   color={themeColor}
                 />

@@ -56,6 +56,12 @@ export const selectAudioQuality = (
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
 
+export const selectShowSleepTimer = (state: RootState): boolean =>
+  state.settings.showSleepTimer ?? true;
+
+export const selectShowPlaybackSpeed = (state: RootState): boolean =>
+  state.settings.showPlaybackSpeed ?? true;
+
 export const selectShowSourceHeaders = (state: RootState): boolean =>
   state.settings.showSourceHeaders ?? true;
 

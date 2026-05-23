@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Pressable,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Shuffle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,7 +18,7 @@ import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function PlayPauseButton({ isPlaying, onPress }: { isPlaying: boolean; onPress: () => void }) {
+function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boolean; isBuffering: boolean; onPress: () => void }) {
   const scale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -32,12 +32,12 @@ function PlayPauseButton({ isPlaying, onPress }: { isPlaying: boolean; onPress: 
       onPressOut={() => { scale.value = withTiming(1, { duration: 150 }); }}
       style={[styles.playButton, animStyle]}
     >
-      <FontAwesome6
-        name={isPlaying ? 'pause' : 'play'}
-        size={26}
-        color="#000"
-        style={isPlaying ? undefined : styles.playIconNudge}
-      />
+      {isBuffering
+        ? <ActivityIndicator size="small" color="#000" />
+        : isPlaying
+          ? <Pause size={26} color="#000" fill="#000" />
+          : <Play size={26} color="#000" fill="#000" />
+      }
     </AnimatedPressable>
   );
 }
@@ -62,7 +62,7 @@ function ToggleButton({
 }
 
 const Controls: React.FC = () => {
-  const { isPlaying, shuffleOn, repeatOn } = usePlayingState();
+  const { isPlaying, isBuffering, shuffleOn, repeatMode } = usePlayingState();
   const { pauseSong, resumeSong, skipToNext, skipToPrevious, toggleShuffle, toggleRepeat } = usePlayingActions();
 
   const handlePlayPause = useCallback(() => {
@@ -73,21 +73,24 @@ const Controls: React.FC = () => {
   return (
     <View style={styles.container}>
       <ToggleButton active={shuffleOn} onPress={toggleShuffle}>
-        <Ionicons name="shuffle" size={23} color="#fff" />
+        <Shuffle size={23} color="#fff" />
       </ToggleButton>
 
       <TouchableOpacity onPress={skipToPrevious} hitSlop={HIT_SLOP}>
-        <Ionicons name="play-skip-back" size={34} color="#fff" />
+        <SkipBack size={34} color="#fff" fill="#fff" />
       </TouchableOpacity>
 
-      <PlayPauseButton isPlaying={isPlaying} onPress={handlePlayPause} />
+      <PlayPauseButton isPlaying={isPlaying} isBuffering={isBuffering} onPress={handlePlayPause} />
 
       <TouchableOpacity onPress={skipToNext} hitSlop={HIT_SLOP}>
-        <Ionicons name="play-skip-forward" size={34} color="#fff" />
+        <SkipForward size={34} color="#fff" fill="#fff" />
       </TouchableOpacity>
 
-      <ToggleButton active={repeatOn} onPress={toggleRepeat}>
-        <Ionicons name="repeat" size={23} color="#fff" />
+      <ToggleButton active={repeatMode !== 'off'} onPress={toggleRepeat}>
+        {repeatMode === 'one'
+          ? <Repeat1 size={23} color="#fff" />
+          : <Repeat size={23} color="#fff" />
+        }
       </ToggleButton>
     </View>
   );
@@ -109,9 +112,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  playIconNudge: {
-    marginLeft: 3,
   },
   toggleWrapper: {
     alignItems: 'center',

@@ -75,6 +75,7 @@ export async function getAlbumsWithSongs(
       duration: String(Math.round(Number(s.RunTimeTicks ?? 0) / 10_000_000)),
       streamUrl: client.buildStreamUrl(s.Id),
       albumId,
+      albumTitle: album.title,
       bitrate: (audioStream?.BitRate ?? ms?.Bitrate) ?? undefined,
       sampleRate: audioStream?.SampleRate ?? undefined,
       bitsPerSample: audioStream?.BitDepth ?? undefined,

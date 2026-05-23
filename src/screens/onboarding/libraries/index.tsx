@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { Ionicons } from '@expo/vector-icons';
+import { Check } from 'lucide-react-native';
 import { selectServerById } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
@@ -107,7 +107,7 @@ export default function LibrariesOnboarding() {
           <View style={styles.optionList}>
             <TouchableOpacity onPress={selectAll} style={styles.optionRow}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
-                {isAll && <Ionicons name="checkmark" size={14} color="#000" />}
+                {isAll && <Check size={14} color="#000" />}
               </View>
               <Text style={styles.optionText}>All Libraries</Text>
             </TouchableOpacity>
@@ -121,7 +121,7 @@ export default function LibrariesOnboarding() {
                   style={styles.optionRow}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                    {selected && <Ionicons name="checkmark" size={14} color="#000" />}
+                    {selected && <Check size={14} color="#000" />}
                   </View>
                   <Text style={styles.optionText} numberOfLines={1}>
                     {lib.name}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Check } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -69,7 +69,7 @@ export default function ChecklistSection({
                     ? { backgroundColor: themeColor, borderColor: themeColor }
                     : { borderColor: colors.border },
                 ]}>
-                  {active && <Ionicons name="checkmark" size={14} color="#fff" />}
+                  {active && <Check size={14} color="#fff" />}
                 </View>
                 <Text style={[styles.optionLabel, { color: colors.secondary }]}>
                   {item.label}

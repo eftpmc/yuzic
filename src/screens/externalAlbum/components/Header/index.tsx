@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 
@@ -19,7 +18,7 @@ import {
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { CloudDownload } from 'lucide-react-native';
+import { CloudDownload, ChevronLeft, Link, Play } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
@@ -93,7 +92,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-            <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+            <ChevronLeft size={24} color={colors.secondary} />
           </TouchableOpacity>
 
           <View pointerEvents="none" style={styles.headerTitleWrapper}>
@@ -150,7 +149,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
           <View style={[styles.serverStatusRow, { backgroundColor: serverStatusBg }]}>
             {albumStatus.kind === 'in_library' ? (
               <>
-                <Ionicons name="link" size={14} color="#34C759" />
+                <Link size={14} color="#34C759" />
                 <Text style={[styles.serverStatusText, { color: '#34C759' }]}>
                   {t('externalAlbum.serverStatus.onServer')}
                 </Text>
@@ -184,7 +183,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
                 style={[styles.secondaryButton, { backgroundColor: colors.card }]}
                 onPress={handlePlay}
               >
-                <Ionicons name="play" size={18} color={colors.secondary} />
+                <Play size={18} color={colors.secondary} fill={colors.secondary} />
               </TouchableOpacity>
             )}
           </View>

@@ -10,6 +10,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { selectShowSleepTimer, selectShowPlaybackSpeed } from '@/utils/redux/selectors/settingsSelectors';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
 import Animated, {
@@ -29,6 +31,8 @@ import LyricsBottomSheet from './components/LyricsBottomSheet';
 import LyricsPreviewCard from './components/LyricsPreviewCard';
 import OutputDeviceSheet from './components/OutputDeviceSheet';
 import AboutTheArtistCard from './components/AboutTheArtistCard';
+import SleepTimerCard from './components/SleepTimerCard';
+import PlaybackSpeedCard from './components/PlaybackSpeedCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 
@@ -125,6 +129,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         };
     }, [api.lyrics, currentSong?.id]);
 
+    const showSleepTimer = useSelector(selectShowSleepTimer);
+    const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
     const artistId = currentSong?.artistId ?? album?.artist?.id;
 
     const navigateToArtist = useCallback(() => {
@@ -226,6 +232,23 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 </View>
                             </View>
 
+                            {lyricsAvailable && lyrics && (
+                                <LyricsPreviewCard
+                                    lyrics={lyrics}
+                                    position={progress.position}
+                                    contentWidth={contentWidth}
+                                    onPress={openLyricsSheet}
+                                />
+                            )}
+
+                            {showSleepTimer && (
+                                <SleepTimerCard contentWidth={contentWidth} />
+                            )}
+
+                            {showPlaybackSpeed && (
+                                <PlaybackSpeedCard contentWidth={contentWidth} />
+                            )}
+
                             <AboutTheArtistCard
                                 artistName={currentSong.artist}
                                 artistCover={
@@ -236,15 +259,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 contentWidth={contentWidth}
                                 onPress={artistId ? navigateToArtist : undefined}
                             />
-
-                            {lyricsAvailable && lyrics && (
-                                <LyricsPreviewCard
-                                    lyrics={lyrics}
-                                    position={progress.position}
-                                    contentWidth={contentWidth}
-                                    onPress={openLyricsSheet}
-                                />
-                            )}
                         </BottomSheetScrollView>
                     </Animated.View>
 

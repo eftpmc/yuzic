@@ -12,6 +12,7 @@ import TrackPlayer, {
   Event,
   MediaItem,
   PlayerCommand,
+  PlaybackState,
   RepeatMode,
   useActiveMediaItem,
   useIsPlaying,
@@ -39,13 +40,19 @@ export interface PlaybackProgress {
   buffered: number;
 }
 
+export type RepeatModeState = 'off' | 'all' | 'one';
+
 export interface PlayingStateType {
   currentSong: Song | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   currentIndex: number;
   queueVersion: number;
+  /** @deprecated use repeatMode instead */
   repeatOn: boolean;
+  repeatMode: RepeatModeState;
   shuffleOn: boolean;
+  playbackSpeed: number;
   setCurrentSong(song: Song | null): void;
 }
 
@@ -71,6 +78,7 @@ export interface PlayingActionsType {
   playSimilar(song: Song): Promise<void>;
   toggleShuffle(): Promise<void>;
   toggleRepeat(): void;
+  setPlaybackSpeed(speed: number): void;
 }
 
 // Combined type kept for backward compat
@@ -204,8 +212,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [repeatOn, setRepeatOn] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<RepeatModeState>('off');
   const [shuffleOn, setShuffleOn] = useState(false);
+  const [playbackSpeed, setPlaybackSpeedState] = useState(1.0);
   const [queueVersion, setQueueVersion] = useState(0);
 
   const queueRef = useRef<Song[]>([]);
@@ -213,7 +223,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const scrobbleStartTimeRef = useRef<number>(0);
   const currentIndexRef = useRef(0);
   const currentSongRef = useRef<Song | null>(null);
-  const repeatOnRef = useRef(false);
+  const repeatModeRef = useRef<RepeatModeState>('off');
   const shuffleOnRef = useRef(false);
   const isPlayingRef = useRef(false);
   const isShufflingRef = useRef(false);
@@ -233,7 +243,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
-  useEffect(() => { repeatOnRef.current = repeatOn; }, [repeatOn]);
+  useEffect(() => { repeatModeRef.current = repeatMode; }, [repeatMode]);
   useEffect(() => { shuffleOnRef.current = shuffleOn; }, [shuffleOn]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
@@ -271,6 +281,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         PlayerCommand.Previous,
         PlayerCommand.Seek,
         PlayerCommand.Stop,
+        PlayerCommand.SkipForward,
+        PlayerCommand.SkipBackward,
       ],
       handling: 'native',
     });
@@ -369,6 +381,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     return () => subscription.remove();
   }, [t]);
 
+  useEffect(() => {
+    const subscription = TrackPlayer.addEventListener(Event.PlaybackStateChanged, ({ state }) => {
+      setIsBuffering(state === PlaybackState.Buffering);
+    });
+    return () => subscription.remove();
+  }, []);
+
   // Build a song lookup map from the library for queue reconciliation
   const librarySongByIdRef = useRef<Map<string, Song>>(new Map());
 
@@ -448,7 +467,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     resetLastScrobbled();
     scrobbleStartTimeRef.current = Date.now();
     TrackPlayer.setMediaItems(toMediaItems(songs), startIndex);
-    if (repeatOnRef.current) TrackPlayer.setRepeatMode(RepeatMode.All);
+    TrackPlayer.setRepeatMode(
+      repeatModeRef.current === 'all' ? RepeatMode.All :
+      repeatModeRef.current === 'one' ? RepeatMode.One :
+      RepeatMode.Off
+    );
     if (seekToPosition !== undefined && seekToPosition > 0) TrackPlayer.seekTo(seekToPosition);
     if (play) TrackPlayer.play();
   }, [resetLastScrobbled]);
@@ -530,7 +553,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       startTime: scrobbleStartTimeRef.current,
     });
     const nextIdx = currentIndexRef.current + 1;
-    if (nextIdx >= queueRef.current.length && !repeatOnRef.current) return;
+    if (nextIdx >= queueRef.current.length && repeatModeRef.current !== 'all') return;
     TrackPlayer.skipToNext();
     if (isPlayingRef.current) TrackPlayer.play();
   }, []);
@@ -677,11 +700,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   // is stable and doesn't change when shuffle is toggled.
 
   const toggleRepeat = useCallback(() => {
-    setRepeatOn(prev => {
-      const next = !prev;
-      TrackPlayer.setRepeatMode(next ? RepeatMode.All : RepeatMode.Off);
+    setRepeatMode(prev => {
+      const next: RepeatModeState = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
+      TrackPlayer.setRepeatMode(
+        next === 'all' ? RepeatMode.All :
+        next === 'one' ? RepeatMode.One :
+        RepeatMode.Off
+      );
       return next;
     });
+  }, []);
+
+  const setPlaybackSpeed = useCallback((speed: number) => {
+    setPlaybackSpeedState(speed);
+    TrackPlayer.setPlaybackSpeed(speed);
   }, []);
 
   const resetQueue = useCallback(async () => {
@@ -700,7 +732,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     currentSongRef.current = null;
     setCurrentSong(null);
     setShuffleOn(false);
-    setRepeatOn(false);
+    setRepeatMode('off');
     TrackPlayer.setRepeatMode(RepeatMode.Off);
     bumpQueue();
   }, [bumpQueue, resetLastScrobbled]);
@@ -708,12 +740,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const stateValue = useMemo<PlayingStateType>(() => ({
     currentSong,
     isPlaying,
+    isBuffering,
     currentIndex,
     queueVersion,
-    repeatOn,
+    repeatOn: repeatMode !== 'off',
+    repeatMode,
     shuffleOn,
+    playbackSpeed,
     setCurrentSong,
-  }), [currentSong, isPlaying, currentIndex, queueVersion, repeatOn, shuffleOn]);
+  }), [currentSong, isPlaying, isBuffering, currentIndex, queueVersion, repeatMode, shuffleOn, playbackSpeed]);
 
   // All callbacks are stable (deps are empty or other stable values via refs),
   // so actionsValue almost never changes after mount — action-only consumers
@@ -732,6 +767,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     resetQueue,
     toggleShuffle,
     toggleRepeat,
+    setPlaybackSpeed,
     moveTrack,
     addToQueue,
     playNext,
@@ -750,6 +786,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     resetQueue,
     toggleShuffle,
     toggleRepeat,
+    setPlaybackSpeed,
     moveTrack,
     addToQueue,
     playNext,

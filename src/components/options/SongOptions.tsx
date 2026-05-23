@@ -9,7 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
+import { Heart, CirclePlus, Disc, Radio } from 'lucide-react-native';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -212,11 +212,7 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={toggleFavorite}
           >
-            <Ionicons
-              name={isStarred ? 'heart' : 'heart-outline'}
-              size={26}
-              color="#ff3b30"
-            />
+            <Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>
               {isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             </Text>
@@ -246,11 +242,7 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleAddToPlaylist}
           >
-            <Ionicons
-              name="add-circle-outline"
-              size={26}
-              color={colors.secondary}
-            />
+            <CirclePlus size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.addToPlaylist')}
             </Text>
@@ -261,11 +253,7 @@ const SongOptions = forwardRef<
               style={styles.option}
               onPress={handleGoToAlbum}
             >
-              <Ionicons
-                name="albums"
-                size={26}
-                color={colors.secondary}
-              />
+              <Disc size={26} color={colors.secondary} />
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('songOptions.actions.goToAlbum')}
               </Text>
@@ -276,11 +264,7 @@ const SongOptions = forwardRef<
             style={styles.option}
             onPress={handleInstantMix}
           >
-            <Ionicons
-              name="radio-outline"
-              size={26}
-              color={colors.secondary}
-            />
+            <Radio size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.instantMix')}
             </Text>
