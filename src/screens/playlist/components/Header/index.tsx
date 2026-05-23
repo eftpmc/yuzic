@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: 16,
     marginTop: 32,
-    marginBottom: 18,
+    marginBottom: 24,
     overflow: 'hidden',
   },
   coverImage: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: 20,
     alignItems: 'center',
   },
   title: {
