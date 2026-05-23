@@ -198,7 +198,11 @@
         }
       },
       "opusCodec": "Opus Codec",
-      "opusCodecSubtext": "Better quality than MP3 at the same bitrate. Sounds noticeably better at lower bitrates."
+      "opusCodecSubtext": "Better quality than MP3 at the same bitrate. Sounds noticeably better at lower bitrates.",
+      "showSleepTimer": "Sleep Timer",
+      "showSleepTimerSubtext": "Show a sleep timer control in the player.",
+      "showPlaybackSpeed": "Playback Speed",
+      "showPlaybackSpeedSubtext": "Show a speed control in the player."
     },
     "listenBrainz": {
       "title": "ListenBrainz",

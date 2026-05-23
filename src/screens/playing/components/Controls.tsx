@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react';
 import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Pressable,
   ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Shuffle, SkipBack, SkipForward, Repeat, Play, Pause } from 'lucide-react-native';
 import Animated, {
@@ -62,7 +63,7 @@ function ToggleButton({
 }
 
 const Controls: React.FC = () => {
-  const { isPlaying, isBuffering, shuffleOn, repeatOn } = usePlayingState();
+  const { isPlaying, isBuffering, shuffleOn, repeatMode } = usePlayingState();
   const { pauseSong, resumeSong, skipToNext, skipToPrevious, toggleShuffle, toggleRepeat } = usePlayingActions();
 
   const handlePlayPause = useCallback(() => {
@@ -86,8 +87,15 @@ const Controls: React.FC = () => {
         <SkipForward size={34} color="#fff" fill="#fff" />
       </TouchableOpacity>
 
-      <ToggleButton active={repeatOn} onPress={toggleRepeat}>
-        <Repeat size={23} color="#fff" />
+      <ToggleButton active={repeatMode !== 'off'} onPress={toggleRepeat}>
+        <View style={styles.repeatWrapper}>
+          <Repeat size={23} color="#fff" />
+          {repeatMode === 'one' && (
+            <View style={styles.repeatOneBadge}>
+              <Text style={styles.repeatOneBadgeText}>1</Text>
+            </View>
+          )}
+        </View>
       </ToggleButton>
     </View>
   );
@@ -109,6 +117,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  repeatWrapper: {
+    position: 'relative',
+  },
+  repeatOneBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -7,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    minWidth: 12,
+    height: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  repeatOneBadgeText: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: '#000',
+    lineHeight: 12,
   },
   toggleWrapper: {
     alignItems: 'center',

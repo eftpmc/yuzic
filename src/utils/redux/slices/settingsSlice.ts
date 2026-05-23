@@ -53,6 +53,10 @@ export interface SettingsState {
   deezerPlaylistRecommendationsEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
 
+  /* Player controls */
+  showSleepTimer: boolean;
+  showPlaybackSpeed: boolean;
+
   /* Sync */
   lastSyncedAt: number | null;
   syncOnAppStart: boolean;
@@ -91,6 +95,9 @@ const initialState: SettingsState = {
   deezerSamplesEnabled: false,
   deezerPlaylistRecommendationsEnabled: false,
   musicbrainzExternalEnabled: false,
+
+  showSleepTimer: true,
+  showPlaybackSpeed: true,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -196,6 +203,13 @@ const settingsSlice = createSlice({
       state.deezerPlaylistRecommendationsEnabled = action.payload;
     },
 
+    setShowSleepTimer(state, action: PayloadAction<boolean>) {
+      state.showSleepTimer = action.payload;
+    },
+    setShowPlaybackSpeed(state, action: PayloadAction<boolean>) {
+      state.showPlaybackSpeed = action.payload;
+    },
+
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
     },
@@ -235,6 +249,8 @@ export const {
   setDeezerAlbumRecommendationsEnabled,
   setDeezerSamplesEnabled,
   setDeezerPlaylistRecommendationsEnabled,
+  setShowSleepTimer,
+  setShowPlaybackSpeed,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,
