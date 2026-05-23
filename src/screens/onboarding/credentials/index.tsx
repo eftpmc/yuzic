@@ -7,7 +7,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { AntDesign, Ionicons } from '@expo/vector-icons';
+import { User, Lock, Shield, ChevronUp, ChevronDown, TriangleAlert, QrCode, ChevronRight } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -205,7 +205,7 @@ export default function Credentials() {
                         // ── Username / password form ──────────────────────────
                         <>
                             <View style={styles.inputWrapper}>
-                                <AntDesign name="user" size={20} color="#888" style={styles.inputIcon} />
+                                <User size={20} color="#888" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder={t('onboarding.credentials.usernamePlaceholder')}
@@ -219,7 +219,7 @@ export default function Credentials() {
                             </View>
 
                             <View style={styles.inputWrapper}>
-                                <AntDesign name="lock" size={20} color="#888" style={styles.inputIcon} />
+                                <Lock size={20} color="#888" style={styles.inputIcon} />
                                 <TextInput
                                     ref={passwordRef}
                                     style={styles.input}
@@ -240,23 +240,23 @@ export default function Credentials() {
                                 onPress={() => setProxyExpanded(v => !v)}
                                 activeOpacity={0.7}
                             >
-                                <Ionicons name="shield-outline" size={16} color="#666" style={styles.proxyToggleIcon} />
+                                <Shield size={16} color="#666" style={styles.proxyToggleIcon} />
                                 <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
-                                <Ionicons name={proxyExpanded ? 'chevron-up' : 'chevron-down'} size={16} color="#666" />
+                                {proxyExpanded ? <ChevronUp size={16} color="#666" /> : <ChevronDown size={16} color="#666" />}
                             </TouchableOpacity>
 
                             {proxyExpanded && (
                                 <View style={styles.proxySection}>
                                     {insecureWithProxy && (
                                         <View style={styles.warningRow}>
-                                            <Ionicons name="warning-outline" size={15} color="#f59e0b" />
+                                            <TriangleAlert size={15} color="#f59e0b" />
                                             <Text style={styles.warningText}>
                                                 Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
                                             </Text>
                                         </View>
                                     )}
                                     <View style={styles.inputWrapper}>
-                                        <AntDesign name="user" size={20} color="#555" style={styles.inputIcon} />
+                                        <User size={20} color="#555" style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyUsernameRef}
                                             style={styles.input}
@@ -270,7 +270,7 @@ export default function Credentials() {
                                         />
                                     </View>
                                     <View style={styles.inputWrapper}>
-                                        <AntDesign name="lock" size={20} color="#555" style={styles.inputIcon} />
+                                        <Lock size={20} color="#555" style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyPasswordRef}
                                             style={styles.input}
@@ -295,9 +295,9 @@ export default function Credentials() {
                                     disabled={isTesting}
                                     activeOpacity={0.7}
                                 >
-                                    <Ionicons name="qr-code-outline" size={16} color="#666" style={styles.proxyToggleIcon} />
+                                    <QrCode size={16} color="#666" style={styles.proxyToggleIcon} />
                                     <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
-                                    <Ionicons name="chevron-forward" size={16} color="#666" />
+                                    <ChevronRight size={16} color="#666" />
                                 </TouchableOpacity>
                             )}
                         </>

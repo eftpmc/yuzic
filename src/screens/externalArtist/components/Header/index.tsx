@@ -7,7 +7,7 @@ import {
   Platform,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { Ionicons } from '@expo/vector-icons'
+import { ChevronLeft } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useTranslation } from 'react-i18next'
@@ -79,7 +79,7 @@ export default function ExternalArtistHeader({ artist }: Props) {
 
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color="#fff" style={{ marginLeft: -2 }} />
+            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
           </TouchableOpacity>
           <View style={{ width: 36 }} />
         </View>

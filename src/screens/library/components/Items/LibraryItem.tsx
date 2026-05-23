@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
@@ -66,7 +66,7 @@ const LibraryItem: React.FC<Props> = ({
 
       {!isGridView && (
         <TouchableOpacity onPress={onLongPress} hitSlop={10}>
-          <Ionicons name="ellipsis-horizontal" size={18} color={colors.subtext} />
+          <Ellipsis size={18} color={colors.subtext} />
         </TouchableOpacity>
       )}
     </Pressable>

@@ -10,7 +10,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import { Heart, ArrowDownCircle, Ellipsis } from 'lucide-react-native';
 
 import { Song } from '@/types';
 import SongOptions from '@/components/options/SongOptions';
@@ -123,21 +123,13 @@ const SongRow: React.FC<Props> = ({
 
         <View style={styles.rowRight}>
           <Animated.View style={heartStyle}>
-            <Ionicons name="heart" size={15} color="#ff4d67" />
+            <Heart size={15} color="#ff4d67" fill="#ff4d67" />
           </Animated.View>
           {downloaded && (isAlbumCompact || showDownloadedDot) && (
-            <Ionicons
-              name="arrow-down-circle"
-              size={16}
-              color={colors.subtext}
-            />
+            <ArrowDownCircle size={16} color={colors.subtext} />
           )}
           <TouchableOpacity onPress={openOptions} hitSlop={10}>
-            <Ionicons
-              name="ellipsis-horizontal"
-              size={18}
-              color={colors.secondary}
-            />
+            <Ellipsis size={18} color={colors.secondary} />
           </TouchableOpacity>
         </View>
       </View>

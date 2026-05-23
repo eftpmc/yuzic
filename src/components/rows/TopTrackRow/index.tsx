@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { Play } from 'lucide-react-native'
 import { MediaImage } from '@/components/MediaImage'
 import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
@@ -38,7 +38,7 @@ export default function TopTrackRow({ song, index, artistName, onPress }: Props)
       </View>
       {song.previewUrl ? (
         <View style={[styles.previewButton, { backgroundColor: colors.card }]}>
-          <Ionicons name="play" size={13} color={colors.secondary} />
+          <Play size={13} color={colors.secondary} fill={colors.secondary} />
         </View>
       ) : null}
     </TouchableOpacity>

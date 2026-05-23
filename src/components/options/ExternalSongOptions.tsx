@@ -9,8 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { CloudDownload } from 'lucide-react-native';
+import { CloudDownload, Ellipsis, Play, ChevronRight } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 
 import {
@@ -67,11 +66,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         onPress={() => bottomSheetRef.current?.present()}
         hitSlop={10}
       >
-        <Ionicons
-          name="ellipsis-horizontal"
-          size={18}
-          color={colors.secondary}
-        />
+        <Ellipsis size={18} color={colors.secondary} />
       </TouchableOpacity>
 
       <BottomSheetModal
@@ -110,7 +105,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
                 onPlay();
               }}
             >
-              <Ionicons name="play" size={26} color={colors.secondary} />
+              <Play size={26} color={colors.secondary} fill={colors.secondary} />
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('songOptions.actions.play')}
               </Text>
@@ -126,7 +121,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('externalAlbum.menu.downloadToServer')}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.placeholder} style={styles.chevron} />
+              <ChevronRight size={16} color={colors.placeholder} style={styles.chevron} />
             </TouchableOpacity>
           )}
 

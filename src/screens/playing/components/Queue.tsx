@@ -7,10 +7,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { GripVertical } from 'lucide-react-native';
+import { GripVertical, ChevronLeft, Pause, Play, SkipForward } from 'lucide-react-native';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
@@ -139,7 +138,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           onPress={onBack}
           style={styles.backButton}
         >
-          <Ionicons name="chevron-back" size={28} color="#fff" />
+          <ChevronLeft size={28} color="#fff" />
         </TouchableOpacity>
 
         {currentSong && (
@@ -170,22 +169,17 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
             onPress={isPlaying ? pauseSong : resumeSong}
             style={styles.controlButton}
           >
-            <Ionicons
-              name={isPlaying ? 'pause' : 'play'}
-              size={20}
-              color="#fff"
-            />
+            {isPlaying
+              ? <Pause size={20} color="#fff" fill="#fff" />
+              : <Play size={20} color="#fff" fill="#fff" />
+            }
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={skipToNext}
             style={styles.controlButton}
           >
-            <Ionicons
-              name="play-skip-forward"
-              size={20}
-              color="#fff"
-            />
+            <SkipForward size={20} color="#fff" fill="#fff" />
           </TouchableOpacity>
         </View>
       </View>

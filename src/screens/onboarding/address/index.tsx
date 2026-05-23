@@ -9,7 +9,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from '@backpackapp-io/react-native-toast';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronDown, Lock, LockOpen, Check } from 'lucide-react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { ServerType } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -55,7 +55,7 @@ export default function Address() {
                                 activeOpacity={0.75}
                             >
                                 <Text style={styles.schemeText}>{scheme}://</Text>
-                                <Ionicons name="chevron-down" size={14} color="#888" style={{ marginLeft: 4 }} />
+                                <ChevronDown size={14} color="#888" style={{ marginLeft: 4 }} />
                             </TouchableOpacity>
 
                             <TextInput
@@ -113,12 +113,10 @@ export default function Address() {
                                 }}
                             >
                                 <View style={styles.schemeOptionLeft}>
-                                    <Ionicons
-                                        name={s === 'https' ? 'lock-closed-outline' : 'lock-open-outline'}
-                                        size={18}
-                                        color={isSelected ? '#fff' : '#888'}
-                                        style={{ marginRight: 10 }}
-                                    />
+                                    {s === 'https'
+                                      ? <Lock size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: 10 }} />
+                                      : <LockOpen size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: 10 }} />
+                                    }
                                     <View>
                                         <Text style={[styles.schemeOptionText, isSelected && styles.schemeOptionTextSelected]}>
                                             {s}
@@ -130,7 +128,7 @@ export default function Address() {
                                         </Text>
                                     </View>
                                 </View>
-                                {isSelected && <Ionicons name="checkmark" size={20} color="#fff" />}
+                                {isSelected && <Check size={20} color="#fff" />}
                             </TouchableOpacity>
                         );
                     })}

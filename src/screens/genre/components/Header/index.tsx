@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
-import { Ionicons } from '@expo/vector-icons'
+import { ChevronLeft, Shuffle, Play, Check, Download, CheckCircle, ArrowDownCircle } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'
@@ -161,7 +161,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="chevron-back" size={24} color="#fff" style={{ marginLeft: -2 }} />
+            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
           </TouchableOpacity>
         </View>
       </View>
@@ -184,7 +184,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
-            <Ionicons name="shuffle" size={18} color={colors.secondary} />
+            <Shuffle size={18} color={colors.secondary} />
           )}
         </TouchableOpacity>
 
@@ -196,7 +196,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           {songsLoading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Ionicons name="play" size={24} color="#fff" />
+            <Play size={24} color="#fff" fill="#fff" />
           )}
         </TouchableOpacity>
 
@@ -207,12 +207,10 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
         >
           {isDownloadingAll || isDownloading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
+          ) : isFullyDownloaded ? (
+            <Check size={18} color={colors.secondary} />
           ) : (
-            <Ionicons
-              name={isFullyDownloaded ? 'checkmark' : 'download-outline'}
-              size={18}
-              color={colors.secondary}
-            />
+            <Download size={18} color={colors.secondary} />
           )}
         </TouchableOpacity>
       </View>

@@ -7,7 +7,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ellipsis } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
@@ -166,8 +166,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
                       onPress={() => { void handleOptions(song); }}
                       hitSlop={10}
                     >
-                      <Ionicons
-                        name="ellipsis-horizontal"
+                      <Ellipsis
                         size={18}
                         color={colors.secondary}
                       />

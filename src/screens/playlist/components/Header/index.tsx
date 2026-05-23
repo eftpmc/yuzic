@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { Playlist } from '@/types';
@@ -83,7 +83,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+          <ChevronLeft size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <View pointerEvents="none" style={styles.headerTitleWrapper}>
@@ -96,7 +96,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           onPress={() => optionsSheetRef.current?.present()}
           style={styles.headerButton}
         >
-          <Ionicons name="ellipsis-horizontal" size={24} color={colors.secondary} />
+          <Ellipsis size={24} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -133,14 +133,14 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             style={[styles.secondaryButton, { backgroundColor: colors.card }]}
             onPress={handleShuffle}
           >
-            <Ionicons name="shuffle" size={18} color={colors.secondary} />
+            <Shuffle size={18} color={colors.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.playButton, { backgroundColor: themeColor }]}
             onPress={handlePlay}
           >
-            <Ionicons name="play" size={24} color="#fff" />
+            <Play size={24} color="#fff" fill="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -150,12 +150,10 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
           >
             {isPlaylistDownloading ? (
               <ActivityIndicator size="small" color={colors.secondary} />
+            ) : isPlaylistDownloaded ? (
+              <Check size={18} color={colors.secondary} />
             ) : (
-              <Ionicons
-                name={isPlaylistDownloaded ? 'checkmark' : 'download-outline'}
-                size={18}
-                color={colors.secondary}
-              />
+              <Download size={18} color={colors.secondary} />
             )}
           </TouchableOpacity>
         </View>

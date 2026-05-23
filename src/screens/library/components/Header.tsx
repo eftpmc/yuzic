@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Search } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
@@ -27,7 +27,7 @@ export default function HomeHeader({ title, username, onSearch, onAccountPress }
           onPress={onSearch}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="search" size={24} color={colors.secondary} />
+          <Search size={24} color={colors.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity

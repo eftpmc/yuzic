@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ellipsis } from 'lucide-react-native';
 
 import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
@@ -68,8 +68,7 @@ const AlbumRow: React.FC<Props> = ({
             onPress={handleOptionsPress}
             style={styles.optionButton}
           >
-            <Ionicons
-              name="ellipsis-horizontal"
+            <Ellipsis
               size={24}
               color={colors.secondary}
             />

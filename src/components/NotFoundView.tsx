@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { ChevronLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
@@ -17,7 +17,7 @@ export default function NotFoundView({ message = 'Not found' }: Props) {
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+          <ChevronLeft size={24} color={colors.secondary} />
         </TouchableOpacity>
         <View style={styles.headerSpacer} />
       </View>

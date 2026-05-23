@@ -10,8 +10,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { ListEnd } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, CheckCircle, ArrowDownCircle, User, Globe } from 'lucide-react-native';
 
 import { Artist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
@@ -140,7 +139,7 @@ const ArtistOptions = forwardRef<
       cover: artist.cover,
       subtext: artist.subtext,
       externalIds: artist.mbid ? { mbid: artist.mbid } : undefined,
-    });
+    }, { skipLocalMatch: true });
   }, [artist, navigateToArtist]);
 
 
@@ -222,7 +221,7 @@ const ArtistOptions = forwardRef<
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
-            <Ionicons name="play" size={26} color={colors.secondary} />
+            <Play size={26} color={colors.secondary} fill={colors.secondary} />
           )}
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.play')}</Text>
         </TouchableOpacity>
@@ -231,7 +230,7 @@ const ArtistOptions = forwardRef<
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Shuffle size={26} color={colors.secondary} />
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -247,7 +246,7 @@ const ArtistOptions = forwardRef<
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Shuffle size={26} color={colors.secondary} />
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -257,12 +256,10 @@ const ArtistOptions = forwardRef<
         >
           {isDownloading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
+          ) : isDownloaded ? (
+            <CheckCircle size={26} color={colors.subtext} />
           ) : (
-            <Ionicons
-              name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
-              size={26}
-              color={isDownloaded || isDownloading ? colors.subtext : colors.secondary}
-            />
+            <ArrowDownCircle size={26} color={colors.secondary} />
           )}
           <Text
             style={[
@@ -281,14 +278,14 @@ const ArtistOptions = forwardRef<
 
         {!hideGoToArtist && (
           <TouchableOpacity style={styles.option} onPress={handleGoToArtist}>
-            <Ionicons name="person" size={26} color={colors.secondary} />
+            <User size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToArtist')}</Text>
           </TouchableOpacity>
         )}
 
         {enabledSources.length > 0 && (
           <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
-            <Ionicons name="earth" size={26} color={colors.secondary} />
+            <Globe size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.viewExternal')}</Text>
           </TouchableOpacity>
         )}

@@ -11,9 +11,11 @@ import type { ExternalAlbumBase, ExternalArtistBase } from '@/types';
 
 const NO_SOURCE_TOAST = 'Enable an external source in Settings to browse this content.';
 
+type ResolutionOptions = { skipLocalMatch?: boolean };
+
 type ResolutionContextType = {
-  resolveAndNavigateToAlbum: (item: ExternalAlbumBase) => void;
-  resolveAndNavigateToArtist: (item: ExternalArtistBase) => void;
+  resolveAndNavigateToAlbum: (item: ExternalAlbumBase, options?: ResolutionOptions) => void;
+  resolveAndNavigateToArtist: (item: ExternalArtistBase, options?: ResolutionOptions) => void;
 };
 
 const ExternalResolutionContext = createContext<ResolutionContextType | null>(null);
@@ -76,16 +78,18 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     albumPickerRef.current?.present();
   }, [albums, enabledSources, router]);
 
-  const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase) => {
-    // Library match
-    const normName = normalize(item.name);
-    const localMatch = artists.find(a =>
-      (item.externalIds?.mbid && a.mbid && a.mbid === item.externalIds.mbid) ||
-      normalize(a.name) === normName
-    );
-    if (localMatch) {
-      router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
-      return;
+  const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase, options?: ResolutionOptions) => {
+    // Library match — skip when the caller explicitly wants an external view
+    if (!options?.skipLocalMatch) {
+      const normName = normalize(item.name);
+      const localMatch = artists.find(a =>
+        (item.externalIds?.mbid && a.mbid && a.mbid === item.externalIds.mbid) ||
+        normalize(a.name) === normName
+      );
+      if (localMatch) {
+        router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
+        return;
+      }
     }
 
     if (enabledSources.length === 0) {
@@ -130,7 +134,8 @@ export function ExternalResolutionProvider({ children }: { children: React.React
         items={artistPickerItems}
         onSelect={item => {
           artistPickerRef.current?.dismiss();
-          router.push({ pathname: '/(home)/externalArtistView', params: { source: item.source, artistId: item.id, name: item.name } });
+          const artistName = item.kind === 'artist' ? item.name : '';
+          router.push({ pathname: '/(home)/externalArtistView', params: { source: item.source, artistId: item.id, name: artistName } });
         }}
       />
     </ExternalResolutionContext.Provider>

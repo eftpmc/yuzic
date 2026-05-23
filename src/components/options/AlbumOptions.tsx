@@ -10,8 +10,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { ListEnd, ListStart } from 'lucide-react-native';
+import { ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Album, AlbumBase } from '@/types';
@@ -185,7 +184,7 @@ const AlbumOptions = forwardRef<
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
           ) : (
-            <Ionicons name="play" size={26} color={colors.secondary} />
+            <Play size={26} color={colors.secondary} fill={colors.secondary} />
           )}
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.play')}</Text>
         </TouchableOpacity>
@@ -194,7 +193,7 @@ const AlbumOptions = forwardRef<
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Shuffle size={26} color={colors.secondary} />
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.shuffle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -218,13 +217,13 @@ const AlbumOptions = forwardRef<
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
         >
-          <Ionicons name="shuffle" size={26} color={colors.secondary} />
+          <Shuffle size={26} color={colors.secondary} />
           <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.shuffleToQueue')}</Text>
         </TouchableOpacity>
 
         {!hideGoToAlbum && (
           <TouchableOpacity style={styles.option} onPress={handleGoToAlbum}>
-            <Ionicons name="albums" size={26} color={colors.secondary} />
+            <Disc size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.goToAlbum')}</Text>
           </TouchableOpacity>
         )}
@@ -236,12 +235,10 @@ const AlbumOptions = forwardRef<
         >
           {isDownloading ? (
             <ActivityIndicator size="small" color={colors.subtext} />
+          ) : isDownloaded ? (
+            <CheckCircle size={26} color={colors.subtext} />
           ) : (
-            <Ionicons
-              name={isDownloaded ? 'checkmark-circle' : 'arrow-down-circle'}
-              size={26}
-              color={isDownloaded || isDownloading ? colors.subtext : colors.secondary}
-            />
+            <ArrowDownCircle size={26} color={colors.secondary} />
           )}
           <Text
             style={[

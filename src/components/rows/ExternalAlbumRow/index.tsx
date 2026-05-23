@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Link, ArrowDownCircle } from 'lucide-react-native';
 
 import { ExternalAlbumBase } from '@/types';
 import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
@@ -51,11 +51,11 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
               </Text>
 
               {status.kind === 'in_library' && (
-                <Ionicons name="link" size={14} color="#34C759" />
+                <Link size={14} color="#34C759" />
               )}
               {status.kind === 'downloading' && (
                 <View style={styles.badge}>
-                  <Ionicons name="arrow-down-circle" size={12} color="#007AFF" />
+                  <ArrowDownCircle size={12} color="#007AFF" />
                   <Text style={[styles.badgeText, styles.badgeTextBlue]}>{status.progress}%</Text>
                 </View>
               )}

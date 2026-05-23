@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ellipsis } from 'lucide-react-native';
 
 import { PlaylistBase } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
@@ -63,8 +63,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
             onPress={handleOptionsPress}
             style={styles.optionButton}
           >
-            <Ionicons
-              name="ellipsis-horizontal"
+            <Ellipsis
               size={24}
               color={colors.secondary}
             />
