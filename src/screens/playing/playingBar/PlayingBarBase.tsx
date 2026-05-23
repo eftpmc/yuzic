@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Music, Play, Pause } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
@@ -202,7 +202,7 @@ export default function PlayingBarBase({ variant }: Props) {
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
 
-  const { currentSong, isPlaying } = usePlayingState();
+  const { currentSong, isPlaying, isBuffering } = usePlayingState();
   const { pauseSong, resumeSong } = usePlayingActions();
 
   const stylesForVariant = variantStyles[variant];
@@ -325,9 +325,11 @@ export default function PlayingBarBase({ variant }: Props) {
           onPress={handlePlayPause}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          {isPlaying
-            ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
-            : <Play size={20} color={colors.secondary} fill={colors.secondary} />
+          {isBuffering
+            ? <ActivityIndicator size="small" color={colors.secondary} />
+            : isPlaying
+              ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
+              : <Play size={20} color={colors.secondary} fill={colors.secondary} />
           }
         </TouchableOpacity>
       )}

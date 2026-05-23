@@ -12,6 +12,7 @@ import TrackPlayer, {
   Event,
   MediaItem,
   PlayerCommand,
+  PlaybackState,
   RepeatMode,
   useActiveMediaItem,
   useIsPlaying,
@@ -42,6 +43,7 @@ export interface PlaybackProgress {
 export interface PlayingStateType {
   currentSong: Song | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   currentIndex: number;
   queueVersion: number;
   repeatOn: boolean;
@@ -204,6 +206,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [repeatOn, setRepeatOn] = useState(false);
   const [shuffleOn, setShuffleOn] = useState(false);
   const [queueVersion, setQueueVersion] = useState(0);
@@ -368,6 +371,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     return () => subscription.remove();
   }, [t]);
+
+  useEffect(() => {
+    const subscription = TrackPlayer.addEventListener(Event.PlaybackStateChanged, ({ state }) => {
+      setIsBuffering(state === PlaybackState.Buffering);
+    });
+    return () => subscription.remove();
+  }, []);
 
   // Build a song lookup map from the library for queue reconciliation
   const librarySongByIdRef = useRef<Map<string, Song>>(new Map());
@@ -708,12 +718,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const stateValue = useMemo<PlayingStateType>(() => ({
     currentSong,
     isPlaying,
+    isBuffering,
     currentIndex,
     queueVersion,
     repeatOn,
     shuffleOn,
     setCurrentSong,
-  }), [currentSong, isPlaying, currentIndex, queueVersion, repeatOn, shuffleOn]);
+  }), [currentSong, isPlaying, isBuffering, currentIndex, queueVersion, repeatOn, shuffleOn]);
 
   // All callbacks are stable (deps are empty or other stable values via refs),
   // so actionsValue almost never changes after mount — action-only consumers

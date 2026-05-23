@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { Shuffle, SkipBack, SkipForward, Repeat, Play, Pause } from 'lucide-react-native';
 import Animated, {
@@ -17,7 +18,7 @@ import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function PlayPauseButton({ isPlaying, onPress }: { isPlaying: boolean; onPress: () => void }) {
+function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boolean; isBuffering: boolean; onPress: () => void }) {
   const scale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -31,9 +32,11 @@ function PlayPauseButton({ isPlaying, onPress }: { isPlaying: boolean; onPress: 
       onPressOut={() => { scale.value = withTiming(1, { duration: 150 }); }}
       style={[styles.playButton, animStyle]}
     >
-      {isPlaying
-        ? <Pause size={26} color="#000" fill="#000" />
-        : <Play size={26} color="#000" fill="#000" />
+      {isBuffering
+        ? <ActivityIndicator size="small" color="#000" />
+        : isPlaying
+          ? <Pause size={26} color="#000" fill="#000" />
+          : <Play size={26} color="#000" fill="#000" />
       }
     </AnimatedPressable>
   );
@@ -59,7 +62,7 @@ function ToggleButton({
 }
 
 const Controls: React.FC = () => {
-  const { isPlaying, shuffleOn, repeatOn } = usePlayingState();
+  const { isPlaying, isBuffering, shuffleOn, repeatOn } = usePlayingState();
   const { pauseSong, resumeSong, skipToNext, skipToPrevious, toggleShuffle, toggleRepeat } = usePlayingActions();
 
   const handlePlayPause = useCallback(() => {
@@ -77,7 +80,7 @@ const Controls: React.FC = () => {
         <SkipBack size={34} color="#fff" fill="#fff" />
       </TouchableOpacity>
 
-      <PlayPauseButton isPlaying={isPlaying} onPress={handlePlayPause} />
+      <PlayPauseButton isPlaying={isPlaying} isBuffering={isBuffering} onPress={handlePlayPause} />
 
       <TouchableOpacity onPress={skipToNext} hitSlop={HIT_SLOP}>
         <SkipForward size={34} color="#fff" fill="#fff" />
