@@ -31,6 +31,7 @@ const EMPTY_ADAPTER: ApiAdapter = {
     list: async () => [],
     get: empty,
     create: empty,
+    rename: empty,
     addSong: empty,
     removeSong: empty,
     delete: empty,

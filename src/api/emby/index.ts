@@ -28,6 +28,7 @@ import { getPlaylists } from "./playlists/getPlaylists";
 import { getPlaylistItems, getPlaylistEntryIdForSong } from "./playlists/getPlaylistItems";
 import { createPlaylist } from "./playlists/createPlaylist";
 import { deletePlaylist } from "./playlists/deletePlaylist";
+import { updatePlaylistName } from "./playlists/updatePlaylistName";
 import { addPlaylistItems } from "./playlists/addPlaylistItems";
 import { removePlaylistItems } from "./playlists/removePlaylistItems";
 import { getStarredItems } from "./starred/getStarredItems";
@@ -156,6 +157,13 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
       if (!entryId) throw new Error("Song not found in playlist");
       await removePlaylistItems(client, playlistId, [entryId]);
       return { success: true };
+    },
+
+    rename: async (id: string, newName: string) => {
+      if (id === FAVORITES_ID) {
+        throw new Error("Cannot rename Favorites playlist");
+      }
+      await updatePlaylistName(client, id, newName);
     },
 
     delete: async (id: string) => {

@@ -9,7 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2 } from 'lucide-react-native';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -152,6 +152,12 @@ const SongOptions = forwardRef<
       router.push({ pathname: '/(home)/albumView', params: { id: selectedSong.albumId } });
     };
 
+    const handleGoToArtist = () => {
+      close();
+      onNavigate?.();
+      router.push({ pathname: '/(home)/artistView', params: { id: selectedSong.artistId } });
+    };
+
     const handleInstantMix = async () => {
       if (instantMixInFlightRef.current) return;
       instantMixInFlightRef.current = true;
@@ -256,6 +262,18 @@ const SongOptions = forwardRef<
               <Disc size={26} color={colors.secondary} />
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('songOptions.actions.goToAlbum')}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {selectedSong.artistId && (
+            <TouchableOpacity
+              style={styles.option}
+              onPress={handleGoToArtist}
+            >
+              <Mic2 size={26} color={colors.secondary} />
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
+                {t('songOptions.actions.goToArtist')}
               </Text>
             </TouchableOpacity>
           )}

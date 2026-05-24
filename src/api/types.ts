@@ -78,6 +78,7 @@ export interface PlaylistsApi {
   list(): Promise<PlaylistBase[]>;
   get(id: string): Promise<Playlist>;
   create(name: string): Promise<string>;
+  rename(id: string, newName: string): Promise<void>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
   removeSong(playlistId: string, songId: string): Promise<RemoveSongFromPlaylistResult>;
   delete(id: string): Promise<void>;
