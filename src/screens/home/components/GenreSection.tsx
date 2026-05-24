@@ -141,9 +141,12 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
   const allGenres = useMemo(() => {
     const genres = new Set<string>()
     libraryGenres.forEach(g => { if (g.trim()) genres.add(g.trim()) })
-    libraryAlbums.forEach(album => {
-      album.genres?.forEach(g => { if (g.trim()) genres.add(g.trim()) })
-    })
+    // Cap album scan at 500 — the server genre list covers most cases and
+    // iterating all 9000+ albums on every library update is not worth it.
+    const scanLimit = Math.min(libraryAlbums.length, 500)
+    for (let i = 0; i < scanLimit; i++) {
+      libraryAlbums[i].genres?.forEach(g => { if (g.trim()) genres.add(g.trim()) })
+    }
     return [...genres].sort()
   }, [libraryGenres, libraryAlbums])
 
@@ -180,7 +183,10 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
   }, [allGenres, selectedGenre])
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreGenreRow, dayKey, selectedGenre, seedArtistNames.join('|'), refreshKey],
+    // Include libraryArtists.length so the cache busts when the user's library
+    // gains or loses artists — otherwise stale results would include artists
+    // that are now in the library (or exclude ones that have been removed).
+    queryKey: [QueryKeys.ExploreGenreRow, dayKey, selectedGenre, seedArtistNames.join('|'), libraryArtists.length, refreshKey],
     queryFn: () => fetchAlbumsForGenre(selectedGenre, seedArtistNames, libraryArtistNames),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_DISCOVERY,
@@ -248,6 +254,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
             horizontal
             data={albums}
             keyExtractor={item => item.id}
+            overrideItemLayout={layout => { (layout as { size?: number }).size = gridItemWidth }}
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}

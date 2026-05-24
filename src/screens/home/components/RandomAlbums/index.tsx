@@ -21,7 +21,10 @@ export default function RandomAlbums({ refreshKey = 0 }: Props) {
   const { albums } = useAlbums();
   const gridItemWidth = getSectionItemWidth(width);
   const dayKey = getDayKey();
-  const dailySeed = getDailySeed(dayKey) + refreshKey * 2147483647;
+  // Use the same composite-key hashing strategy as useDailyLayout so each
+  // refreshKey produces a well-distributed seed rather than adjacent arithmetic
+  // values (which collapse near-identically at refreshKey=3 after 32-bit wrap).
+  const dailySeed = getDailySeed(`${dayKey}:${refreshKey}`);
 
   const randomAlbums = useMemo(() => {
     if (albums.length === 0) return [];

@@ -103,7 +103,11 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
 
   const handleOptions = async (song: SongBase) => {
     const resolved = await resolvePlayableSong(song, { allowNetwork: false });
-    const target = resolved ?? ({ ...song, streamUrl: '' } as Song);
+    // Always spread to create a new object reference. Without this, if
+    // resolvePlayableSong returns the same cached object and selectedSong is
+    // already that reference, setSelectedSong is a no-op and the useEffect
+    // never fires — the sheet silently fails to present on a second tap.
+    const target: Song = { ...(resolved ?? ({ ...song, streamUrl: '' } as Song)) };
     pendingPresentRef.current = true;
     setSelectedSong(target);
   };

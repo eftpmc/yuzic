@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
+import { useIsFetching } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
@@ -51,11 +52,41 @@ export default function Home() {
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // Track active query count so the spinner clears when fetches complete rather
+  // than after a fixed 500ms timeout.
+  const isFetching = useIsFetching()
+  const refreshStateRef = useRef({ fetchStarted: false, timer: null as ReturnType<typeof setTimeout> | null })
+
+  const clearRefreshing = useCallback(() => {
+    const s = refreshStateRef.current
+    if (s.timer) { clearTimeout(s.timer); s.timer = null }
+    s.fetchStarted = false
+    setIsRefreshing(false)
+  }, [])
+
+  useEffect(() => {
+    if (!isRefreshing) return
+    const s = refreshStateRef.current
+    if (isFetching > 0) {
+      // At least one fetch has started — cancel the safety timer and wait for 0.
+      s.fetchStarted = true
+      if (s.timer) { clearTimeout(s.timer); s.timer = null }
+    } else if (s.fetchStarted) {
+      // All fetches done — spinner can go away.
+      clearRefreshing()
+    }
+  }, [isRefreshing, isFetching, clearRefreshing])
+
   const onRefresh = useCallback(() => {
+    const s = refreshStateRef.current
+    s.fetchStarted = false
+    if (s.timer) clearTimeout(s.timer)
+    // Safety: if all data is already within staleTime, isFetching never rises.
+    // Cap the spinner at 2s so it doesn't spin forever.
+    s.timer = setTimeout(clearRefreshing, 2000)
     setIsRefreshing(true)
     setRefreshKey(k => k + 1)
-    setTimeout(() => setIsRefreshing(false), 500)
-  }, [])
+  }, [clearRefreshing])
 
   const activeSources = [
     { id: 'deezer', label: 'Deezer', color: '#A238CA', letter: 'D', sections: deezer, enabled: deezerEnabled },
