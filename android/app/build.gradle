@@ -97,7 +97,7 @@ android {
 
     namespace 'com.arinora.rawarr'
     defaultConfig {
-        applicationId 'com.arinora.rawarr'
+        applicationId 'com.gamesbyjerry.yuzic'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode resolvedVersionCode

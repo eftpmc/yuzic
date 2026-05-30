@@ -1,4 +1,4 @@
 json_key_file(ENV["PLAY_STORE_KEY"])
-package_name("com.arinora.rawarr") # e.g. com.krausefx.app
-app_identifier("com.arinora.rawarr")
+package_name("com.gamesbyjerry.yuzic") # Android / Play Store app id
+app_identifier("com.arinora.rawarr") # iOS / App Store bundle id (unchanged)
 apple_id(ENV["APPLE_ID"])

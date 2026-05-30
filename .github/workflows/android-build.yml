@@ -1,6 +1,9 @@
 name: Android Build
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       android_version_code:
@@ -8,15 +11,17 @@ on:
         required: false
         type: string
       version_label:
-        description: "Version label"
+        description: "Version label (defaults to package.json version)"
         required: false
         type: string
 
-concurrency: android-build
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-android:
-    name: Build Android
+    name: Build Android & Upload to Internal
     runs-on: ubuntu-latest
 
     steps:
@@ -53,27 +58,33 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Resolve version label
+        id: version
+        run: |
+          INPUT_LABEL="${{ github.event.inputs.version_label }}"
+          if [ -n "$INPUT_LABEL" ]; then
+            LABEL="$INPUT_LABEL"
+          else
+            LABEL="$(node -p "require('./package.json').version")"
+          fi
+          echo "Using version label: $LABEL"
+          echo "label=$LABEL" >> "$GITHUB_OUTPUT"
+
       - name: Decode Android keystore
         run: |
           mkdir -p android/app
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
 
       - name: Run Fastlane Android build
         env:
           ANDROID_VERSION_CODE: ${{ github.event.inputs.android_version_code || github.run_number }}
-          VERSION_LABEL: ${{ github.event.inputs.version_label }}
+          VERSION_LABEL: ${{ steps.version.outputs.label }}
           ANDROID_KEYSTORE_PATH: release.jks
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.ANDROID_SERVICE_ACCOUNT }}
         run: bundle exec fastlane android ci_android
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: yuzic-android-apk
-          path: android/app/build/outputs/**/*.apk
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4

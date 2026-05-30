@@ -69,7 +69,8 @@ platform :android do
     )
 
     supply(
-      track: "alpha",
+      track: "internal",
+      package_name: "com.gamesbyjerry.yuzic",
       aab: "android/app/build/outputs/bundle/release/app-release.aab",
       json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"],
       skip_upload_apk: true,
