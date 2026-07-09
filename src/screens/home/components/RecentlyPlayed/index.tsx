@@ -35,7 +35,7 @@ type TileProps = {
   itemWidth: number;
 };
 
-const RecentTile = memo(({ item, itemWidth }: TileProps) => {
+const RecentTile = memo(function RecentTile({ item, itemWidth }: TileProps) {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
   const [optionsMounted, setOptionsMounted] = useState(false);
