@@ -67,9 +67,9 @@ const ArtistOptions = forwardRef<
 
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
-  const close = () => {
+  const close = useCallback(() => {
     (ref as any)?.current?.dismiss();
-  };
+  }, [ref]);
 
   const buildCollection = useCallback(
     (songs: Song[]) => ({
@@ -140,7 +140,7 @@ const ArtistOptions = forwardRef<
       subtext: artist.subtext,
       externalIds: artist.mbid ? { mbid: artist.mbid } : undefined,
     }, { skipLocalMatch: true });
-  }, [artist, navigateToArtist]);
+  }, [artist, navigateToArtist, close]);
 
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(

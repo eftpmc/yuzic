@@ -9,10 +9,6 @@ const MIN_SPEED = 0.5;
 const MAX_SPEED = 2.0;
 const STEP = 0.25;
 
-function formatSpeed(v: number) {
-  return v === 1 ? '1×' : `${v}×`;
-}
-
 type Props = { contentWidth: number };
 
 export default function PlaybackSpeedCard({ contentWidth }: Props) {

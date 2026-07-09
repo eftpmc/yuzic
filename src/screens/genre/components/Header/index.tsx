@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
-import { ChevronLeft, Shuffle, Play, Check, Download, CheckCircle, ArrowDownCircle } from 'lucide-react-native'
+import { ChevronLeft, Shuffle, Play, Check, Download } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'

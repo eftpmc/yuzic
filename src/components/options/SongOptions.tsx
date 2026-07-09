@@ -9,7 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio, Mic2 } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart } from 'lucide-react-native';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -18,7 +18,6 @@ import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
-import { ListEnd, ListStart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 import { useTranslation } from 'react-i18next';

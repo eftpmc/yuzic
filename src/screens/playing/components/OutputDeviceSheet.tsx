@@ -19,6 +19,7 @@ import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscover
 import { useCast } from '@/contexts/CastContext';
 
 const AirplayButton = Platform.OS === 'ios'
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   ? require('react-airplay').AirplayButton
   : null;
 

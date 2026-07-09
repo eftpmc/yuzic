@@ -47,7 +47,7 @@ const ProgressBarStrip = memo(({
   useEffect(() => {
     const ratio = effectiveDuration > 0 ? Math.max(0, Math.min(1, position / effectiveDuration)) : 0;
     displayRatio.value = withTiming(ratio, { duration: 1000, easing: Easing.linear });
-  }, [position, effectiveDuration]);
+  }, [position, effectiveDuration, displayRatio]);
 
   const fillStyle = useAnimatedStyle(() => ({
     width: `${displayRatio.value * 100}%`,

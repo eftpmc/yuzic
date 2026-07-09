@@ -25,7 +25,7 @@ const LanguageBottomSheet = forwardRef<
   LanguageBottomSheetProps
 >(({ selected, onSelect }, ref) => {
   const themeColor = useSelector(selectThemeColor);
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const { t } = useTranslation();
 
   const snapPoints = useMemo(() => ['35%'], []);

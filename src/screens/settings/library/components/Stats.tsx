@@ -9,7 +9,6 @@ import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useSync } from '@/hooks/useSync';
 import SettingsCard from '../../components/SettingsCard';
-import SettingsDivider from '../../components/SettingsDivider';
 import SettingsInfoRow from '../../components/SettingsInfoRow';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
 

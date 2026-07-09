@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
@@ -120,5 +120,3 @@ const ServerSettings: React.FC = () => {
 };
 
 export default ServerSettings;
-
-const styles = StyleSheet.create({});

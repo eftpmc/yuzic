@@ -43,7 +43,7 @@ export default function Credentials() {
     // Quick Connect state (Jellyfin only)
     const [quickConnectMode, setQuickConnectMode] = useState(false);
     const [quickCode, setQuickCode] = useState('');
-    const [quickSecret, setQuickSecret] = useState('');
+    const [, setQuickSecret] = useState('');
     const [isPolling, setIsPolling] = useState(false);
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

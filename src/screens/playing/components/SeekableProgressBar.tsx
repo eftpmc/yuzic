@@ -37,7 +37,7 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
       pendingRatio.current = -1;
     }
     displayRatio.value = withTiming(ratio, { duration: 1000, easing: Easing.linear });
-  }, [value, duration]);
+  }, [value, duration, displayRatio]);
 
   const handleTouch = (evt: GestureResponderEvent) => {
     const { pageX } = evt.nativeEvent;

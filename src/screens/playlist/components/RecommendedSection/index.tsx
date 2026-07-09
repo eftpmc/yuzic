@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { CheckCircle, CirclePlus, RefreshCw } from 'lucide-react-native';
+import { CheckCircle, CirclePlus, RefreshCw, CloudDownload } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,7 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
-import { selectThemeColor, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeColor, selectShowSourceHeaders, selectDeezerDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -31,8 +31,6 @@ import {
   selectLidarrAuthenticated,
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
-import { selectDeezerDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
-import { CloudDownload } from 'lucide-react-native';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
