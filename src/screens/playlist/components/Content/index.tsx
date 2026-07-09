@@ -17,8 +17,6 @@ type Props = {
   songsLoading?: boolean;
 };
 
-const ESTIMATED_ROW_HEIGHT = 72;
-
 type SongItem = { type: 'song'; song: Song };
 type SkeletonItem = { type: 'skeleton'; id: string };
 type ListItem = SongItem | SkeletonItem;
@@ -26,7 +24,7 @@ type ListItem = SongItem | SkeletonItem;
 const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
   const { t } = useTranslation();
   const { songs: starredSongs } = useStarredSongs();
-  const songs = playlist.songs ?? [];
+  const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
   const starredSongIds = useMemo(
     () => new Set(starredSongs.map(song => song.id)),
     [starredSongs]

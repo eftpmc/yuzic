@@ -101,7 +101,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
         )}
       </View>
     );
-  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation]);
+  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation, t]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -153,7 +153,7 @@ const AlbumContent: React.FC<Props> = ({ album, songsLoading }) => {
         isFavorite={starredSongIds.has(item.song.id)}
       />
     );
-  }, [colors, starredSongIds, album]);
+  }, [colors, starredSongIds, album, t]);
 
   return (
     <FlashList

@@ -234,7 +234,7 @@ export default function ArtistContent({ artist }: Props) {
         onPress={(album) => navigation.navigate('albumView', { id: album.id })}
       />
     )
-  }, [colors, artist, navigation, setVisibleAlbumsCount, setVisibleSinglesCount])
+  }, [colors, artist, navigation, setVisibleAlbumsCount, setVisibleSinglesCount, t])
 
   return (
     <FlashList

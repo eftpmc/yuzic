@@ -11,7 +11,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2 } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist, PlaylistBase } from '@/types';
@@ -20,7 +20,7 @@ import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/hooks/useTheme';
-import { useDeletePlaylist } from '@/hooks/playlists';
+import { useDeletePlaylist, useRenamePlaylist } from '@/hooks/playlists';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -61,6 +61,7 @@ const PlaylistOptions = forwardRef<
     useDownload();
 
   const deletePlaylist = useDeletePlaylist();
+  const renamePlaylist = useRenamePlaylist();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -113,6 +114,27 @@ const PlaylistOptions = forwardRef<
   const handleDownload = async () => {
     if (!playlist || isDownloaded || isDownloading) return;
     await downloadPlaylistById(playlist.id, songs);
+  };
+
+  const handleRenamePress = () => {
+    if (!playlist || playlist.id === FAVORITES_ID) return;
+    Alert.prompt(
+      t('playlistOptions.rename.title'),
+      undefined,
+      async (newName) => {
+        const trimmed = newName?.trim();
+        if (!trimmed || trimmed === playlist.title) return;
+        try {
+          await renamePlaylist.mutateAsync({ id: playlist.id, newName: trimmed });
+          toast.success(t('playlistOptions.toasts.renamed'));
+        } catch {
+          toast.error(t('playlistOptions.toasts.renameFailed'));
+        }
+      },
+      'plain-text',
+      playlist.title,
+      t('playlistOptions.rename.placeholder')
+    );
   };
 
   const handleDeletePress = () => {
@@ -257,6 +279,18 @@ const PlaylistOptions = forwardRef<
             {isDownloading ? t('playlistOptions.actions.downloading') : isDownloaded ? t('playlistOptions.actions.downloaded') : t('playlistOptions.actions.download')}
           </Text>
         </TouchableOpacity>
+
+        {playlist.id !== FAVORITES_ID && (
+          <TouchableOpacity
+            style={styles.option}
+            onPress={handleRenamePress}
+          >
+            <Pencil size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>
+              {t('playlistOptions.actions.rename')}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {playlist.id !== FAVORITES_ID && (
           <TouchableOpacity

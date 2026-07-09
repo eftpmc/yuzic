@@ -12,7 +12,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
-import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
+import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { Album } from '@/types';

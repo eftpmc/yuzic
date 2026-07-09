@@ -570,6 +570,7 @@
       "addToEnd": "Add to End",
       "addToPlaylist": "Add to Playlist",
       "goToAlbum": "Go to Album",
+      "goToArtist": "Go to Artist",
       "instantMix": "Instant Mix"
     },
     "sections": {
@@ -684,6 +685,7 @@
       "download": "Download",
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
+      "rename": "Rename",
       "delete": "Delete playlist"
     },
     "sections": {
@@ -694,11 +696,17 @@
       "created": "Created",
       "songs": "Songs"
     },
+    "rename": {
+      "title": "Rename Playlist",
+      "placeholder": "Playlist name"
+    },
     "delete": {
       "title": "Delete playlist",
       "body": "\"{{title}}\" will be permanently deleted. This cannot be undone."
     },
     "toasts": {
+      "renamed": "Playlist renamed",
+      "renameFailed": "Could not rename playlist",
       "deleted": "Playlist deleted",
       "deleteFailed": "Could not delete playlist"
     }

@@ -92,7 +92,10 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
   }, [artistNames, selectedArtist])
 
   const query = useQuery<ExternalAlbumBase[]>({
-    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist, refreshKey],
+    // Include libraryArtists.length so the exclusion set (libraryArtistNames)
+    // stays fresh: new library artists should stop appearing in suggestions
+    // rather than waiting out the full 12h staleTime.
+    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist, libraryArtists.length, refreshKey],
     queryFn: () => fetchAlbumsForSeed(selectedArtist, libraryArtistNames),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_DISCOVERY,
@@ -160,6 +163,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
             horizontal
             data={albums}
             keyExtractor={item => item.id}
+            overrideItemLayout={layout => { (layout as { size?: number }).size = gridItemWidth }}
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
             contentContainerStyle={{ paddingHorizontal: H_PADDING }}

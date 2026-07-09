@@ -21,8 +21,6 @@ import MediaTile from './MediaTile'
 import LoadingTiles from './LoadingTiles'
 import type { ExternalAlbumBase } from '@/types'
 
-const MIN_ALBUMS = 8
-
 type Props = { refreshKey?: number }
 
 export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
@@ -64,9 +62,6 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
     />
   ), [navigateToAlbum, gridItemWidth])
 
-  if (query.isError) return null
-  if (!query.isLoading && data.length < MIN_ALBUMS) return null
-
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
@@ -79,11 +74,24 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
           horizontalPadding={H_PADDING}
           variant="album"
         />
+      ) : query.isError ? (
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyText, { color: colors.subtext }]}>
+            Unable to load — try again later
+          </Text>
+        </View>
+      ) : data.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyText, { color: colors.subtext }]}>
+            No charts available
+          </Text>
+        </View>
       ) : (
         <FlashList
           horizontal
           data={data}
           keyExtractor={item => item.id}
+          overrideItemLayout={layout => { (layout as { size?: number }).size = gridItemWidth }}
           showsHorizontalScrollIndicator={false}
           decelerationRate="fast"
           contentContainerStyle={{ paddingHorizontal: H_PADDING }}
@@ -105,5 +113,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
     marginLeft: H_PADDING,
+  },
+  emptyState: {
+    paddingHorizontal: H_PADDING,
+    paddingVertical: 24,
+  },
+  emptyText: {
+    fontSize: 14,
   },
 })

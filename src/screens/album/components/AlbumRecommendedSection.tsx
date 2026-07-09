@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useQuery } from '@tanstack/react-query'

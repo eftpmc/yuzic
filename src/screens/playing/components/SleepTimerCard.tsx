@@ -46,7 +46,6 @@ export default function SleepTimerCard({ contentWidth }: Props) {
         }
       }, 1000);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startCountdown = useCallback((totalSeconds: number) => {

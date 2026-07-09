@@ -33,6 +33,7 @@ import { getPlaylists } from "./playlists/getPlaylists";
 import { getPlaylist } from "./playlists/getPlaylist";
 import { createPlaylist } from "./playlists/createPlaylist";
 import { deletePlaylist } from "./playlists/deletePlaylist";
+import { renamePlaylist } from "./playlists/renamePlaylist";
 import { addSongToPlaylist } from "./playlists/addSongToPlaylist";
 import { removeSongFromPlaylist } from "./playlists/removeSongFromPlaylist";
 
@@ -174,6 +175,13 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
       const index = playlist.songs.findIndex((s: Song) => s.id === songId);
       if (index === -1) throw new Error("Song not found in playlist");
       return removeSongFromPlaylist(client, playlistId, index.toString());
+    },
+
+    rename: async (id: string, newName: string) => {
+      if (id === FAVORITES_ID) {
+        throw new Error("Cannot rename Favorites playlist");
+      }
+      await renamePlaylist(client, id, newName);
     },
 
     delete: async (id: string) => {

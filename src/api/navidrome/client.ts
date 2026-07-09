@@ -1,8 +1,9 @@
+import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
+import { qualityToStreamParams } from '@/utils/audio/streamQuality';
+
 // md5 does not ship TypeScript declarations in this project.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const md5 = require("md5") as (s: string) => string;
-import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
-import { qualityToStreamParams } from '@/utils/audio/streamQuality';
 
 export interface NavidromeClientConfig {
   serverUrl: string;

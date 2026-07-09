@@ -65,6 +65,12 @@ const librarySlice = createSlice({
       if (!playlist) return;
       playlist.changed = new Date();
     },
+    renameLibraryPlaylist(state, action: PayloadAction<{ id: string; newName: string }>) {
+      const playlist = state.playlists.find(p => p.id === action.payload.id);
+      if (!playlist) return;
+      playlist.title = action.payload.newName;
+      playlist.changed = new Date();
+    },
     removeLibraryPlaylist(state, action: PayloadAction<string>) {
       state.playlists = state.playlists.filter(p => p.id !== action.payload);
     },
@@ -90,6 +96,7 @@ export const {
   removeLibraryStarredSong,
   addLibraryPlaylistSong,
   removeLibraryPlaylistSong,
+  renameLibraryPlaylist,
   removeLibraryPlaylist,
   clearLibrary,
 } = librarySlice.actions;

@@ -9,7 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart } from 'lucide-react-native';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -18,7 +18,6 @@ import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
-import { ListEnd, ListStart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
 import { useTranslation } from 'react-i18next';
@@ -152,6 +151,12 @@ const SongOptions = forwardRef<
       router.push({ pathname: '/(home)/albumView', params: { id: selectedSong.albumId } });
     };
 
+    const handleGoToArtist = () => {
+      close();
+      onNavigate?.();
+      router.push({ pathname: '/(home)/artistView', params: { id: selectedSong.artistId } });
+    };
+
     const handleInstantMix = async () => {
       if (instantMixInFlightRef.current) return;
       instantMixInFlightRef.current = true;
@@ -256,6 +261,18 @@ const SongOptions = forwardRef<
               <Disc size={26} color={colors.secondary} />
               <Text style={[styles.optionText, { color: colors.secondary }]}>
                 {t('songOptions.actions.goToAlbum')}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {selectedSong.artistId && (
+            <TouchableOpacity
+              style={styles.option}
+              onPress={handleGoToArtist}
+            >
+              <Mic2 size={26} color={colors.secondary} />
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
+                {t('songOptions.actions.goToArtist')}
               </Text>
             </TouchableOpacity>
           )}

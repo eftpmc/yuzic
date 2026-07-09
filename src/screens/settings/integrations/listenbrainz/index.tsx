@@ -7,7 +7,6 @@ import SettingsScreen from '../../components/SettingsScreen';
 import SettingsAuthCard from '../../components/SettingsAuthCard';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
 import SettingsDisconnectButton from '../../components/SettingsDisconnectButton';
-import { useTheme } from '@/hooks/useTheme';
 import {
   selectListenBrainzUsername,
   selectListenBrainzToken,
@@ -30,7 +29,6 @@ import * as listenbrainz from '@/api/listenbrainz';
 const ListenBrainzView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { colors } = useTheme();
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
 
