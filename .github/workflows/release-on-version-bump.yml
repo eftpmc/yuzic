@@ -1,0 +1,56 @@
+name: Release on Version Bump
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - package.json
+
+concurrency: release-on-version-bump
+
+jobs:
+  detect-version-bump:
+    name: Detect version bump
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Compare package.json version to previous commit
+        id: check
+        run: |
+          NEW_VERSION=$(jq -r .version package.json)
+          if git cat-file -e HEAD^:package.json 2>/dev/null; then
+            OLD_VERSION=$(git show HEAD^:package.json | jq -r .version)
+          else
+            OLD_VERSION=""
+          fi
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$NEW_VERSION" != "$OLD_VERSION" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-android:
+    name: Ship Android build
+    needs: detect-version-bump
+    if: needs.detect-version-bump.outputs.changed == 'true'
+    uses: ./.github/workflows/android-build.yml
+    secrets: inherit
+    with:
+      version_label: ${{ needs.detect-version-bump.outputs.version }}
+
+  build-ios:
+    name: Ship iOS build
+    needs: detect-version-bump
+    if: needs.detect-version-bump.outputs.changed == 'true'
+    uses: ./.github/workflows/ios-build.yml
+    secrets: inherit
+    with:
+      version_label: ${{ needs.detect-version-bump.outputs.version }}

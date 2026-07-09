@@ -11,6 +11,16 @@ on:
         description: "Version label"
         required: false
         type: string
+  workflow_call:
+    inputs:
+      ios_build_number:
+        description: "iOS build number"
+        required: false
+        type: string
+      version_label:
+        description: "Version label"
+        required: false
+        type: string
 
 concurrency: ios-build
 
@@ -73,8 +83,8 @@ jobs:
 
       - name: Run Fastlane iOS build
         env:
-          IOS_BUILD_NUMBER: ${{ github.event.inputs.ios_build_number }}
-          VERSION_LABEL: ${{ github.event.inputs.version_label }}
+          IOS_BUILD_NUMBER: ${{ inputs.ios_build_number }}
+          VERSION_LABEL: ${{ inputs.version_label }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_API_KEY_BASE64: ${{ secrets.APPSTORE_API_KEY_BASE64 }}
