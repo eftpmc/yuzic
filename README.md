@@ -145,5 +145,9 @@ Screenshots taken on iPhone 13
   <img src="screenshots/settings-slskd.png" alt="Yuzic slskd" width="275" height="600">
 </p>
 
+### Where are downloads stored?
+
+Offline downloads (songs/albums/playlists you download for offline playback) are stored in the app's private storage, not somewhere your device's file manager or Files app can browse to. To view or remove them, go to **Settings → Library → Downloads**.
+
 ## Contribution
 Contributions are welcome! Please open an issue or submit a pull request.

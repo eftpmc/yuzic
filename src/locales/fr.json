@@ -164,7 +164,8 @@
           "tracks": "Pistes",
           "playlists": "Listes de lecture"
         },
-        "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne."
+        "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne.",
+        "locationNote": "Les téléchargements sont stockés dans l'espace privé de l'application et ne sont pas accessibles depuis le gestionnaire de fichiers de votre appareil. Utilisez cet écran pour les consulter et les supprimer."
       },
       "audioQuality": {
         "info": "Définissez votre qualité audio préférée pour les téléchargements hors ligne.",

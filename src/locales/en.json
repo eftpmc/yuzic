@@ -164,7 +164,8 @@
           "tracks": "Tracks",
           "playlists": "Playlists"
         },
-        "offlineNote": "These songs are stored locally for offline playback."
+        "offlineNote": "These songs are stored locally for offline playback.",
+        "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them."
       },
       "audioQuality": {
         "info": "Set your preferred audio quality for offline downloads.",

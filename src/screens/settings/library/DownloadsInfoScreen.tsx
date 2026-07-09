@@ -131,6 +131,10 @@ const DownloadsInfoScreen: React.FC = () => {
           <SettingsInfoRow label={t('settings.library.downloads.table.tracks')} value={String(downloadedTrackCount)} stacked />
         </SettingsCard>
 
+        <Text style={[styles.locationNote, { color: colors.subtext }]}>
+          {t('settings.library.downloads.locationNote')}
+        </Text>
+
         {rows.length === 0 ? (
           <Text style={[styles.emptyText, { color: colors.subtext }]}>
             {t('settings.library.downloads.table.empty')}
@@ -204,6 +208,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     textAlign: 'center',
     fontSize: 13,
+  },
+  locationNote: {
+    paddingTop: 10,
+    paddingHorizontal: 4,
+    fontSize: 12,
+    lineHeight: 16,
   },
   providerHeader: {
     flexDirection: 'row',
