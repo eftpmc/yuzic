@@ -84,12 +84,15 @@ export interface PlaylistsApi {
   delete(id: string): Promise<void>;
 }
 
+export type StarredItemType = 'song' | 'album';
+
 export interface StarredApi {
   list(): Promise<{
     songs: Song[];
+    albums: AlbumBase[];
   }>;
-  add(id: string): Promise<void>;
-  remove(id: string): Promise<void>;
+  add(id: string, type?: StarredItemType): Promise<void>;
+  remove(id: string, type?: StarredItemType): Promise<void>;
 }
 
 export interface LyricsApi {

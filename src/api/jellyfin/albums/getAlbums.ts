@@ -3,7 +3,7 @@ import type { JellyfinClient } from "../client";
 
 export type GetAlbumsResult = AlbumBase[];
 
-function normalizeAlbum(a: any): AlbumBase | null {
+export function normalizeAlbum(a: any): AlbumBase | null {
   try {
     const albumId = a.Id;
     if (!albumId) return null;

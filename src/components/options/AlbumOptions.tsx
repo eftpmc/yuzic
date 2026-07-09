@@ -10,7 +10,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
+import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Album, AlbumBase } from '@/types';
@@ -24,6 +24,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
+import { useStarredAlbums, useStarAlbum, useUnstarAlbum } from '@/hooks/starred';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | null;
@@ -51,17 +52,39 @@ const AlbumOptions = forwardRef<
   const { downloadAlbumById, getCollectionDownloadState } =
     useDownload();
 
+  const { albums: starredAlbums } = useStarredAlbums();
+  const starAlbum = useStarAlbum();
+  const unstarAlbum = useUnstarAlbum();
+
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const playCount = useSelector(selectAlbumPlayCount(album?.id ?? ''));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { albumWithSongs, songs, songsLoading } = useLazyAlbumDetail(album, isSheetOpen);
 
+  const isStarred = starredAlbums.some(a => a.id === album?.id);
 
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
   const genreChipBg = isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
 
   const close = () => {
     (ref as any)?.current?.dismiss();
+  };
+
+  const toggleFavorite = async () => {
+    if (!album) return;
+    try {
+      if (isStarred) {
+        await unstarAlbum.mutateAsync(album.id);
+        toast.success(t('albumOptions.toasts.removedFromFavorites', { title: album.title }));
+      } else {
+        await starAlbum.mutateAsync(album.id);
+        toast.success(t('albumOptions.toasts.addedToFavorites', { title: album.title }));
+      }
+    } catch {
+      toast.error(t('albumOptions.toasts.updateFavoritesFailed'));
+    } finally {
+      close();
+    }
   };
 
   const songIds = useMemo(() => songs.map(s => s.id), [songs]);
@@ -175,6 +198,16 @@ const AlbumOptions = forwardRef<
         </View>
 
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        <TouchableOpacity
+          style={styles.option}
+          onPress={toggleFavorite}
+        >
+          <Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />
+          <Text style={[styles.optionText, { color: colors.secondary }]}>
+            {isStarred ? t('albumOptions.actions.unfavorite') : t('albumOptions.actions.favorite')}
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.option, playbackDisabled && styles.optionDisabled]}

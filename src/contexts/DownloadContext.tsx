@@ -306,7 +306,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   });
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(() => new Set());
   const jobsRef = useRef<PersistedDownloadJob[]>(state.jobs);
-  const processingQueueRef = useRef(false);
+  const queueProcessingPromiseRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     const stalePaths = legacyDownloadPathsToDelete;
@@ -499,10 +499,16 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const CONCURRENT_TRACK_DOWNLOADS = 3;
 
   const processDownloadQueue = useCallback(async () => {
-    if (processingQueueRef.current) return;
-    processingQueueRef.current = true;
+    // Reentrant calls (e.g. tapping download on another collection while one
+    // is already in flight) must await the *same* in-flight run rather than
+    // no-op — otherwise the caller's promise resolves before the job it just
+    // enqueued has actually been processed.
+    if (queueProcessingPromiseRef.current) {
+      await queueProcessingPromiseRef.current;
+      return;
+    }
 
-    try {
+    const run = (async () => {
       await ensureDownloadDir();
       await cleanupTempDownloads();
 
@@ -526,8 +532,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (failed) break;
         removeJob(job.id);
       }
+    })();
+
+    queueProcessingPromiseRef.current = run;
+    try {
+      await run;
     } finally {
-      processingQueueRef.current = false;
+      queueProcessingPromiseRef.current = null;
     }
   }, [performDownloadTrack, removeJob]);
 
@@ -719,7 +730,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [isTrackDownloaded, isTrackDownloading, state.jobs]);
 
   useEffect(() => {
-    if (!processingQueueRef.current) {
+    if (!queueProcessingPromiseRef.current) {
       cleanupTempDownloads().catch(() => {});
     }
 

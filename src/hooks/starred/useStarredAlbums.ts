@@ -7,17 +7,15 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { hasArrayData, useOfflineFirstQuery } from '@/hooks/useOfflineFirstQuery';
 
-type UseStarredSongsResult = {
-  songs: Song[];
+type UseStarredAlbumsResult = {
+  albums: AlbumBase[];
   isLoading: boolean;
   error: Error | null;
 };
 
-// Shares a single query (and cache entry) with useStarredAlbums — the
-// underlying API call already returns both songs and albums together, so
-// both hooks must use the identical queryKey/queryFn to avoid two hooks
-// racing to populate the same cache slot with differently-shaped data.
-export function useStarredSongs(): UseStarredSongsResult {
+// Shares a single query (and cache entry) with useStarredSongs — see the
+// comment there for why the queryKey/queryFn must stay identical.
+export function useStarredAlbums(): UseStarredAlbumsResult {
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
   const { starred: libraryStarred, starredAlbums: libraryStarredAlbums } = useLibrary();
@@ -32,7 +30,7 @@ export function useStarredSongs(): UseStarredSongsResult {
   });
 
   return {
-    songs: query.data.songs,
+    albums: query.data.albums,
     isLoading: query.isLoading,
     error: query.error,
   };

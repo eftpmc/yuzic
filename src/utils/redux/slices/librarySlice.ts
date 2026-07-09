@@ -8,6 +8,7 @@ interface LibraryState {
   tracks: SongBase[];
   genres: Record<string, string[]>;
   starred: Song[];
+  starredAlbums: AlbumBase[];
 }
 
 const initialState: LibraryState = {
@@ -17,6 +18,7 @@ const initialState: LibraryState = {
   tracks: [],
   genres: {},
   starred: [],
+  starredAlbums: [],
 };
 
 const librarySlice = createSlice({
@@ -49,6 +51,9 @@ const librarySlice = createSlice({
     removeLibraryStarredSong(state, action: PayloadAction<string>) {
       state.starred = state.starred.filter(song => song.id !== action.payload);
     },
+    setLibraryStarredAlbums(state, action: PayloadAction<AlbumBase[]>) {
+      state.starredAlbums = action.payload;
+    },
     addLibraryPlaylistSong(
       state,
       action: PayloadAction<{ playlistId: string; song: Song }>
@@ -80,6 +85,7 @@ const librarySlice = createSlice({
       state.playlists = [];
       state.tracks = [];
       state.starred = [];
+      state.starredAlbums = [];
       // genres are keyed by serverId so no need to clear them
     },
   },
@@ -94,6 +100,7 @@ export const {
   setLibraryStarred,
   addLibraryStarredSong,
   removeLibraryStarredSong,
+  setLibraryStarredAlbums,
   addLibraryPlaylistSong,
   removeLibraryPlaylistSong,
   renameLibraryPlaylist,

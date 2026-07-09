@@ -1,8 +1,10 @@
-import { Song } from "@/types";
+import { AlbumBase, Song } from "@/types";
 import type { NavidromeClient } from "../client";
+import { normalizeAlbumEntry } from "../albums/getAlbumList";
 
 export interface GetStarredItemsResult {
   songs: Song[];
+  albums: AlbumBase[];
 }
 
 export async function getStarredItems(
@@ -12,6 +14,7 @@ export async function getStarredItems(
   const starred = raw?.["subsonic-response"]?.starred || {};
 
   return {
+    albums: (starred.album || []).map(normalizeAlbumEntry),
     songs: (starred.song || []).map((s: any) => ({
       id: s.id,
       title: s.title,

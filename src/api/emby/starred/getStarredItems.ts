@@ -1,9 +1,11 @@
-import { Song } from "@/types";
+import { AlbumBase, Song } from "@/types";
 import type { EmbyClient } from "../client";
 import { normalizeGenres } from "../utils/normalizeGenres";
+import { normalizeAlbum } from "../albums/getAlbums";
 
 export interface GetStarredItemsResult {
   songs: Song[];
+  albums: AlbumBase[];
 }
 
 async function fetchGetStarredSongs(client: EmbyClient) {
@@ -16,10 +18,20 @@ async function fetchGetStarredSongs(client: EmbyClient) {
   return client.request<any>(path);
 }
 
-function normalizeStarred(raw: any, client: EmbyClient): GetStarredItemsResult {
+async function fetchGetStarredAlbums(client: EmbyClient) {
+  const path =
+    `/Users/${client.userId}/Items` +
+    `?Recursive=true` +
+    `&Filters=IsFavorite` +
+    `&IncludeItemTypes=MusicAlbum` +
+    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds,UserData`;
+  return client.request<any>(path);
+}
+
+function normalizeStarredSongs(raw: any, client: EmbyClient): Song[] {
   const items = raw?.Items ?? [];
 
-  const songs: Song[] = items.map((i: any) => {
+  return items.map((i: any) => {
     const ms = i.MediaSources?.[0];
     const audioStream = ms?.MediaStreams?.find((m: any) => m.Type === "Audio");
     return {
@@ -44,18 +56,25 @@ function normalizeStarred(raw: any, client: EmbyClient): GetStarredItemsResult {
       genres: normalizeGenres(i.Genres),
     };
   });
-
-  return { songs };
 }
 
 export async function getStarredItems(
   client: EmbyClient
 ): Promise<GetStarredItemsResult> {
   try {
-    const raw = await fetchGetStarredSongs(client);
-    return normalizeStarred(raw, client);
+    const [songsRaw, albumsRaw] = await Promise.all([
+      fetchGetStarredSongs(client),
+      fetchGetStarredAlbums(client),
+    ]);
+
+    const albumItems: any[] = albumsRaw?.Items ?? [];
+
+    return {
+      songs: normalizeStarredSongs(songsRaw, client),
+      albums: albumItems.map(normalizeAlbum).filter((a): a is AlbumBase => a !== null),
+    };
   } catch (error) {
     console.error("Failed to fetch Emby starred items:", error);
-    return { songs: [] };
+    return { songs: [], albums: [] };
   }
 }

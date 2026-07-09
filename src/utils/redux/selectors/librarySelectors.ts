@@ -14,6 +14,7 @@ export const selectLibraryGenres = createSelector(
   }
 );
 export const selectLibraryStarred = (state: RootState) => state.library.starred;
+export const selectLibraryStarredAlbums = (state: RootState) => state.library.starredAlbums;
 
 // Memoized O(1) lookup maps — rebuilt only when the underlying array changes
 export const selectAlbumsById = createSelector(

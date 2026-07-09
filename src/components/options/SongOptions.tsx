@@ -1,15 +1,17 @@
 import React, { forwardRef, useMemo, useRef } from 'react';
 import {
+  Alert,
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -24,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { formatSongDuration } from '@/utils/formatDuration';
+import { useDownload } from '@/contexts/DownloadContext';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -66,6 +69,10 @@ const SongOptions = forwardRef<
       s => s.id === selectedSong.id
     );
 
+    const { downloadTrack, deleteDownloadedTrack, isTrackDownloaded, isTrackDownloading } = useDownload();
+    const isDownloaded = isTrackDownloaded(selectedSong.id);
+    const isDownloading = isTrackDownloading(selectedSong.id);
+
     const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
     const close = () => {
@@ -95,6 +102,40 @@ const SongOptions = forwardRef<
         toast.error(t('songOptions.toasts.updateFavoritesFailed'));
       } finally {
         close();
+      }
+    };
+
+    const confirmRemoveDownload = () => {
+      Alert.alert(
+        t('settings.library.downloads.removeTitle'),
+        t('settings.library.downloads.removeBody', { title: selectedSong.title }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('common.delete'),
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteDownloadedTrack(selectedSong.id);
+              } catch {
+                toast.error(t('settings.library.downloads.removeFailedBody'));
+              }
+            },
+          },
+        ]
+      );
+    };
+
+    const handleDownload = async () => {
+      if (isDownloading) return;
+      if (isDownloaded) {
+        confirmRemoveDownload();
+        return;
+      }
+      try {
+        await downloadTrack(selectedSong);
+      } catch {
+        toast.error(t('songOptions.toasts.downloadFailed', { title: selectedSong.title }));
       }
     };
 
@@ -250,6 +291,29 @@ const SongOptions = forwardRef<
             <CirclePlus size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>
               {t('songOptions.actions.addToPlaylist')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.option}
+            onPress={handleDownload}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <ActivityIndicator size="small" color={colors.subtext} />
+            ) : isDownloaded ? (
+              <CheckCircle size={26} color={colors.subtext} />
+            ) : (
+              <ArrowDownCircle size={26} color={colors.secondary} />
+            )}
+            <Text
+              style={[
+                styles.optionText,
+                { color: colors.secondary },
+                (isDownloaded || isDownloading) && { opacity: 0.6 },
+              ]}
+            >
+              {isDownloading ? t('songOptions.actions.downloading') : isDownloaded ? t('songOptions.actions.downloaded') : t('songOptions.actions.download')}
             </Text>
           </TouchableOpacity>
 

@@ -146,7 +146,8 @@
         },
         "type": {
           "album": "Album",
-          "playlist": "Liste de lecture"
+          "playlist": "Liste de lecture",
+          "track": "Morceau"
         },
         "sizeLabel": "Taille du téléchargement",
         "availableLabel": "Espace disponible",
@@ -164,7 +165,8 @@
           "tracks": "Pistes",
           "playlists": "Listes de lecture"
         },
-        "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne."
+        "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne.",
+        "locationNote": "Les téléchargements sont stockés dans l'espace privé de l'application et ne sont pas accessibles depuis le gestionnaire de fichiers de votre appareil. Utilisez cet écran pour les consulter et les supprimer."
       },
       "audioQuality": {
         "info": "Définissez votre qualité audio préférée pour les téléchargements hors ligne.",
@@ -540,7 +542,10 @@
       "addToEnd": "Ajouter à la fin",
       "addToPlaylist": "Ajouter à une liste de lecture",
       "goToAlbum": "Aller à l'album",
-      "instantMix": "Mix instantané"
+      "instantMix": "Mix instantané",
+      "download": "Télécharger",
+      "downloading": "Téléchargement…",
+      "downloaded": "Téléchargé"
     },
     "sections": {
       "media": "Média",
@@ -577,6 +582,7 @@
       "addedToFavorites": "{{title}} ajouté aux favoris.",
       "addedToFavoritesOffline": "{{title}} ajouté aux favoris hors ligne.",
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
+      "downloadFailed": "Échec du téléchargement de {{title}}.",
       "nothingPlaying": "Aucune lecture en cours.",
       "alreadyPlaying": "{{title}} est déjà en cours de lecture.",
       "addedToQueue": "{{title}} ajouté à la file d'attente.",
@@ -630,12 +636,17 @@
       "viewExternal": "Voir externe",
       "download": "Télécharger",
       "downloading": "Téléchargement…",
-      "downloaded": "Téléchargé"
+      "downloaded": "Téléchargé",
+      "favorite": "Ajouter aux favoris",
+      "unfavorite": "Retirer des favoris"
     },
     "toasts": {
       "addedNext": "Lecture de {{title}} ensuite",
       "addedToEnd": "{{title}} ajouté à la file",
-      "shuffledToQueue": "{{title}} ajouté en ordre aléatoire"
+      "shuffledToQueue": "{{title}} ajouté en ordre aléatoire",
+      "addedToFavorites": "{{title}} ajouté aux favoris.",
+      "removedFromFavorites": "{{title}} retiré des favoris.",
+      "updateFavoritesFailed": "Échec de la mise à jour des favoris."
     },
     "sections": {
       "albumInfo": "Informations sur l'album"

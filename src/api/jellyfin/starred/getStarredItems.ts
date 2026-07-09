@@ -1,9 +1,11 @@
-import { Song } from "@/types";
+import { AlbumBase, Song } from "@/types";
 import type { JellyfinClient } from "../client";
 import { normalizeGenres } from "../utils/normalizeGenres";
+import { normalizeAlbum } from "../albums/getAlbums";
 
 export interface GetStarredItemsResult {
   songs: Song[];
+  albums: AlbumBase[];
 }
 
 async function fetchGetStarredSongs(client: JellyfinClient) {
@@ -16,10 +18,20 @@ async function fetchGetStarredSongs(client: JellyfinClient) {
   return client.request<any>(path);
 }
 
-function normalizeStarred(raw: any, client: JellyfinClient): GetStarredItemsResult {
+async function fetchGetStarredAlbums(client: JellyfinClient) {
+  const path =
+    `/Users/${client.userId}/Items` +
+    `?Recursive=true` +
+    `&Filters=IsFavorite` +
+    `&IncludeItemTypes=MusicAlbum` +
+    `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds,UserData`;
+  return client.request<any>(path);
+}
+
+function normalizeStarredSongs(raw: any, client: JellyfinClient): Song[] {
   const items = raw?.Items ?? [];
 
-  const songs: Song[] = items.map((i: any) => {
+  return items.map((i: any) => {
     const ms = i.MediaSources?.[0];
     const audioStream = ms?.MediaStreams?.find((m: any) => m.Type === "Audio");
     return {
@@ -44,18 +56,25 @@ function normalizeStarred(raw: any, client: JellyfinClient): GetStarredItemsResu
       genres: normalizeGenres(i.Genres),
     };
   });
-
-  return { songs };
 }
 
 export async function getStarredItems(
   client: JellyfinClient
 ): Promise<GetStarredItemsResult> {
   try {
-    const raw = await fetchGetStarredSongs(client);
-    return normalizeStarred(raw, client);
+    const [songsRaw, albumsRaw] = await Promise.all([
+      fetchGetStarredSongs(client),
+      fetchGetStarredAlbums(client),
+    ]);
+
+    const albumItems: any[] = albumsRaw?.Items ?? [];
+
+    return {
+      songs: normalizeStarredSongs(songsRaw, client),
+      albums: albumItems.map(normalizeAlbum).filter((a): a is AlbumBase => a !== null),
+    };
   } catch (error) {
     console.error("Failed to fetch Jellyfin starred items:", error);
-    return { songs: [] };
+    return { songs: [], albums: [] };
   }
 }

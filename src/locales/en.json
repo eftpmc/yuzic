@@ -146,7 +146,8 @@
         },
         "type": {
           "album": "Album",
-          "playlist": "Playlist"
+          "playlist": "Playlist",
+          "track": "Track"
         },
         "sizeLabel": "Download Size",
         "availableLabel": "Available Space",
@@ -164,7 +165,8 @@
           "tracks": "Tracks",
           "playlists": "Playlists"
         },
-        "offlineNote": "These songs are stored locally for offline playback."
+        "offlineNote": "These songs are stored locally for offline playback.",
+        "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them."
       },
       "audioQuality": {
         "info": "Set your preferred audio quality for offline downloads.",
@@ -571,7 +573,10 @@
       "addToPlaylist": "Add to Playlist",
       "goToAlbum": "Go to Album",
       "goToArtist": "Go to Artist",
-      "instantMix": "Instant Mix"
+      "instantMix": "Instant Mix",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded"
     },
     "sections": {
       "media": "Media",
@@ -608,6 +613,7 @@
       "addedToFavorites": "{{title}} added to favorites.",
       "addedToFavoritesOffline": "{{title}} added to favorites offline.",
       "updateFavoritesFailed": "Failed to update favorites.",
+      "downloadFailed": "Failed to download {{title}}.",
       "nothingPlaying": "Nothing is currently playing.",
       "alreadyPlaying": "{{title}} is already playing.",
       "addedToQueue": "{{title}} added to queue.",
@@ -655,12 +661,17 @@
       "goToAlbum": "Go to Album",
       "download": "Download",
       "downloading": "Downloading…",
-      "downloaded": "Downloaded"
+      "downloaded": "Downloaded",
+      "favorite": "Favorite",
+      "unfavorite": "Unfavorite"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",
       "addedToEnd": "Added {{title}} to queue",
-      "shuffledToQueue": "Shuffled {{title}} into queue"
+      "shuffledToQueue": "Shuffled {{title}} into queue",
+      "addedToFavorites": "{{title}} added to favorites.",
+      "removedFromFavorites": "{{title}} removed from favorites.",
+      "updateFavoritesFailed": "Failed to update favorites."
     },
     "sections": {
       "albumInfo": "Album Info"

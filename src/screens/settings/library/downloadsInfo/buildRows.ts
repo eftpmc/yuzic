@@ -160,6 +160,42 @@ export function buildDownloadRows({
     };
   });
 
+  // Tracks downloaded individually (not as part of any downloaded album/playlist)
+  // still need to show up somewhere manageable — otherwise they're invisible
+  // and can only be removed by clearing every download for the provider.
+  const collectionTrackIds = new Set(downloadedCollections.flatMap(col => col.trackIds));
+  const standaloneTracks = downloadedTracks.filter(track => !collectionTrackIds.has(track.trackId));
+
+  const trackRows: DownloadRow[] = standaloneTracks.map(track => {
+    const trackId = track.trackId;
+    const libraryTrack = tracks.find(t => String(t.id) === trackId);
+    const title = libraryTrack?.title || t('settings.library.downloads.unknownTrack');
+    const cover = libraryTrack?.cover ?? { kind: 'none' as const };
+    const provider: DownloadProviderType = (
+      getDownloadedTrackServerType(track) ??
+      inferServerTypeFromCoverKind(cover.kind) ??
+      null
+    ) ?? 'unknown';
+    const serverId = getDownloadedTrackServerId(track);
+    const updatedAt = toTimestamp(track.downloadedAt);
+
+    return {
+      id: `${provider}-${serverId ?? 'unknown'}-track-${trackId}`,
+      collectionId: trackId,
+      type: 'track',
+      provider,
+      serverId,
+      cover,
+      title,
+      subtitle: t('settings.library.downloads.type.track'),
+      trackIds: [trackId],
+      downloaded: toDateLabel(updatedAt),
+      size: toBytesLabel(track.fileSize),
+      trackCount: 1,
+      updatedAt,
+    };
+  });
+
   const providerRank: Record<DownloadProviderType, number> = {
     navidrome: 0,
     jellyfin: 1,
@@ -167,7 +203,7 @@ export function buildDownloadRows({
     unknown: 3,
   };
 
-  return normalized.sort((a, b) => {
+  return [...normalized, ...trackRows].sort((a, b) => {
     const byProvider = providerRank[a.provider] - providerRank[b.provider];
     if (byProvider !== 0) return byProvider;
     return b.updatedAt - a.updatedAt;
