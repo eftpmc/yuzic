@@ -198,7 +198,15 @@
         }
       },
       "opusCodec": "Opus编解码器",
-      "opusCodecSubtext": "相同比特率下音质优于MP3，在低比特率下效果尤为明显。"
+      "opusCodecSubtext": "相同比特率下音质优于MP3，在低比特率下效果尤为明显。",
+      "showSleepTimer": "睡眠定时器",
+      "showSleepTimerSubtext": "在播放器中显示睡眠定时器控制。",
+      "showPlaybackSpeed": "播放速度",
+      "showPlaybackSpeedSubtext": "在播放器中显示速度控制。",
+      "crossfade": "交叉淡化",
+      "crossfadeSubtext": "用 {{seconds}} 秒在歌曲之间淡入淡出。",
+      "crossfadeDuration": "交叉淡化时长",
+      "crossfadeSeconds": "{{seconds}} 秒"
     },
     "listenBrainz": {
       "title": "ListenBrainz",

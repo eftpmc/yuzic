@@ -71,7 +71,8 @@
           "iosReceiverAppID": "BCF2CA91",
           "androidReceiverAppID": "BCF2CA91"
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

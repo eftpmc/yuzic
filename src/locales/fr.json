@@ -198,7 +198,15 @@
         }
       },
       "opusCodec": "Codec Opus",
-      "opusCodecSubtext": "Meilleure qualité que le MP3 au même débit. Nettement meilleur aux débits bas."
+      "opusCodecSubtext": "Meilleure qualité que le MP3 au même débit. Nettement meilleur aux débits bas.",
+      "showSleepTimer": "Minuteur de sommeil",
+      "showSleepTimerSubtext": "Afficher le minuteur de sommeil dans le lecteur.",
+      "showPlaybackSpeed": "Vitesse de lecture",
+      "showPlaybackSpeedSubtext": "Afficher le contrôle de vitesse dans le lecteur.",
+      "crossfade": "Fondu enchaîné",
+      "crossfadeSubtext": "Créer un fondu entre les morceaux pendant {{seconds}} s.",
+      "crossfadeDuration": "Durée du fondu",
+      "crossfadeSeconds": "{{seconds}} s"
     },
     "listenBrainz": {
       "title": "ListenBrainz",

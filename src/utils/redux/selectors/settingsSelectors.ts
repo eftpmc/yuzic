@@ -62,6 +62,15 @@ export const selectShowSleepTimer = (state: RootState): boolean =>
 export const selectShowPlaybackSpeed = (state: RootState): boolean =>
   state.settings.showPlaybackSpeed ?? true;
 
+export const selectCrossfadeEnabled = (state: RootState): boolean =>
+  state.settings.crossfadeEnabled ?? false;
+
+export const selectCrossfadeDurationSeconds = (state: RootState): number => {
+  const duration = state.settings.crossfadeDurationSeconds ?? 3;
+  const normalized = Number.isFinite(duration) ? Math.round(duration) : 3;
+  return Math.min(12, Math.max(1, normalized));
+};
+
 export const selectShowSourceHeaders = (state: RootState): boolean =>
   state.settings.showSourceHeaders ?? true;
 
