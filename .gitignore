@@ -41,6 +41,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Claude Code local settings
+.claude/settings.local.json
+
 app-example
 
 # Expo
