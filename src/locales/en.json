@@ -572,7 +572,10 @@
       "addToPlaylist": "Add to Playlist",
       "goToAlbum": "Go to Album",
       "goToArtist": "Go to Artist",
-      "instantMix": "Instant Mix"
+      "instantMix": "Instant Mix",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded"
     },
     "sections": {
       "media": "Media",
@@ -609,6 +612,7 @@
       "addedToFavorites": "{{title}} added to favorites.",
       "addedToFavoritesOffline": "{{title}} added to favorites offline.",
       "updateFavoritesFailed": "Failed to update favorites.",
+      "downloadFailed": "Failed to download {{title}}.",
       "nothingPlaying": "Nothing is currently playing.",
       "alreadyPlaying": "{{title}} is already playing.",
       "addedToQueue": "{{title}} added to queue.",

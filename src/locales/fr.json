@@ -541,7 +541,10 @@
       "addToEnd": "Ajouter à la fin",
       "addToPlaylist": "Ajouter à une liste de lecture",
       "goToAlbum": "Aller à l'album",
-      "instantMix": "Mix instantané"
+      "instantMix": "Mix instantané",
+      "download": "Télécharger",
+      "downloading": "Téléchargement…",
+      "downloaded": "Téléchargé"
     },
     "sections": {
       "media": "Média",
@@ -578,6 +581,7 @@
       "addedToFavorites": "{{title}} ajouté aux favoris.",
       "addedToFavoritesOffline": "{{title}} ajouté aux favoris hors ligne.",
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
+      "downloadFailed": "Échec du téléchargement de {{title}}.",
       "nothingPlaying": "Aucune lecture en cours.",
       "alreadyPlaying": "{{title}} est déjà en cours de lecture.",
       "addedToQueue": "{{title}} ajouté à la file d'attente.",

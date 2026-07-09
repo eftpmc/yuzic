@@ -541,7 +541,10 @@
       "addToEnd": "末尾に追加",
       "addToPlaylist": "プレイリストに追加",
       "goToAlbum": "アルバムへ移動",
-      "instantMix": "インスタントミックス"
+      "instantMix": "インスタントミックス",
+      "download": "ダウンロード",
+      "downloading": "ダウンロード中…",
+      "downloaded": "ダウンロード済み"
     },
     "sections": {
       "media": "メディア",
@@ -578,6 +581,7 @@
       "addedToFavorites": "{{title}} をお気に入りに追加しました。",
       "addedToFavoritesOffline": "{{title}} をオフラインでお気に入りに追加しました。",
       "updateFavoritesFailed": "お気に入りの更新に失敗しました。",
+      "downloadFailed": "{{title}} のダウンロードに失敗しました。",
       "nothingPlaying": "再生中の曲はありません。",
       "alreadyPlaying": "{{title}} はすでに再生中です。",
       "addedToQueue": "{{title}} をキューに追加しました。",

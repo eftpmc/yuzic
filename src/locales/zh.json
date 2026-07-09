@@ -541,7 +541,10 @@
       "addToEnd": "添加至队尾",
       "addToPlaylist": "添加至播放列表",
       "goToAlbum": "前往专辑",
-      "instantMix": "即时混音"
+      "instantMix": "即时混音",
+      "download": "下载",
+      "downloading": "下载中…",
+      "downloaded": "已下载"
     },
     "sections": {
       "media": "媒体信息",
@@ -578,6 +581,7 @@
       "addedToFavorites": "{{title}} 已加入收藏。",
       "addedToFavoritesOffline": "已离线将 {{title}} 加入收藏。",
       "updateFavoritesFailed": "更新收藏失败。",
+      "downloadFailed": "下载 {{title}} 失败。",
       "nothingPlaying": "当前无播放内容。",
       "alreadyPlaying": "{{title}} 正在播放中。",
       "addedToQueue": "{{title}} 已添加至队列。",
