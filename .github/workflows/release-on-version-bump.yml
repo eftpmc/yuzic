@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.check.outputs.changed }}
-      version: ${{ steps.check.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,7 +29,6 @@ jobs:
           else
             OLD_VERSION=""
           fi
-          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           if [ "$NEW_VERSION" != "$OLD_VERSION" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
@@ -43,8 +41,6 @@ jobs:
     if: needs.detect-version-bump.outputs.changed == 'true'
     uses: ./.github/workflows/android-build.yml
     secrets: inherit
-    with:
-      version_label: ${{ needs.detect-version-bump.outputs.version }}
 
   build-ios:
     name: Ship iOS build
@@ -52,5 +48,3 @@ jobs:
     if: needs.detect-version-bump.outputs.changed == 'true'
     uses: ./.github/workflows/ios-build.yml
     secrets: inherit
-    with:
-      version_label: ${{ needs.detect-version-bump.outputs.version }}
