@@ -18,8 +18,8 @@ function normalizePlaylistSongEntry(s: any, client: JellyfinClient): Song {
     s.MediaSources?.[0]?.RunTimeTicks ??
     0;
 
-  const cover: CoverSource = s.AlbumId
-        ? { kind: "jellyfin", itemId: s.AlbumId }
+  const cover: CoverSource = s.Id
+        ? { kind: "jellyfin", itemId: s.Id }
         : { kind: "none" };
 
   const ms = s.MediaSources?.[0];
