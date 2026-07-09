@@ -135,7 +135,9 @@ function getMediaItemId(item: MediaItem): string {
 
 function getMediaItemUrl(item: MediaItem): string {
   if (typeof item.url === 'string') return item.url;
-  if (typeof item.url === 'object' && item.url && 'uri' in item.url) return item.url.uri;
+  if (typeof item.url === 'object' && item.url && 'uri' in item.url) {
+    return typeof item.url.uri === 'string' ? item.url.uri : '';
+  }
   return '';
 }
 
