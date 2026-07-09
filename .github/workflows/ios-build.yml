@@ -2,15 +2,7 @@ name: iOS Build
 
 on:
   workflow_dispatch:
-    inputs:
-      ios_build_number:
-        description: "iOS build number"
-        required: false
-        type: string
-      version_label:
-        description: "Version label"
-        required: false
-        type: string
+  workflow_call:
 
 concurrency: ios-build
 
@@ -71,10 +63,13 @@ jobs:
         env:
           MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
 
+      - name: Read version from package.json
+        id: version
+        run: echo "label=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
       - name: Run Fastlane iOS build
         env:
-          IOS_BUILD_NUMBER: ${{ github.event.inputs.ios_build_number }}
-          VERSION_LABEL: ${{ github.event.inputs.version_label }}
+          VERSION_LABEL: ${{ steps.version.outputs.label }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_API_KEY_BASE64: ${{ secrets.APPSTORE_API_KEY_BASE64 }}
