@@ -3,8 +3,24 @@ Dotenv.load
 
 default_platform(:android)
 
+# Last versionCode/build number actually published to Play/App Store Connect
+# before CI started auto-deriving these from GITHUB_RUN_NUMBER. Play and
+# App Store Connect both reject uploads whose version code/build number
+# isn't strictly greater than everything published before, so CI adds these
+# as a fixed offset on top of the ever-increasing run number. Never lower
+# these constants — only raise them if you learn the true published value is
+# higher than what's recorded here.
+ANDROID_LAST_PUBLISHED_VERSION_CODE = 109
+IOS_LAST_PUBLISHED_BUILD_NUMBER = 1
+
 def resolved_android_version_code
-  raw = ENV["ANDROID_VERSION_CODE"] || ENV["GITHUB_RUN_NUMBER"] || Time.now.to_i.to_s
+  if ENV["ANDROID_VERSION_CODE"]
+    raw = ENV["ANDROID_VERSION_CODE"]
+  elsif ENV["GITHUB_RUN_NUMBER"]
+    raw = (ENV["GITHUB_RUN_NUMBER"].to_i + ANDROID_LAST_PUBLISHED_VERSION_CODE).to_s
+  else
+    raw = Time.now.to_i.to_s
+  end
   code = raw.to_i
 
   if code <= 0 || raw.to_s !~ /\A\d+\z/
@@ -28,7 +44,13 @@ def resolved_version_label
 end
 
 def resolved_ios_build_number
-  raw = ENV["IOS_BUILD_NUMBER"] || ENV["GITHUB_RUN_NUMBER"] || Time.now.to_i.to_s
+  if ENV["IOS_BUILD_NUMBER"]
+    raw = ENV["IOS_BUILD_NUMBER"]
+  elsif ENV["GITHUB_RUN_NUMBER"]
+    raw = (ENV["GITHUB_RUN_NUMBER"].to_i + IOS_LAST_PUBLISHED_BUILD_NUMBER).to_s
+  else
+    raw = Time.now.to_i.to_s
+  end
   value = raw.to_i
 
   if value <= 0 || raw.to_s !~ /\A\d+\z/
