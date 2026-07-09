@@ -146,7 +146,8 @@
         },
         "type": {
           "album": "アルバム",
-          "playlist": "プレイリスト"
+          "playlist": "プレイリスト",
+          "track": "トラック"
         },
         "sizeLabel": "ダウンロード容量",
         "availableLabel": "空き容量",

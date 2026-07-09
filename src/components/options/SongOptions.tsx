@@ -1,5 +1,6 @@
 import React, { forwardRef, useMemo, useRef } from 'react';
 import {
+  Alert,
   View,
   Text,
   StyleSheet,
@@ -68,7 +69,7 @@ const SongOptions = forwardRef<
       s => s.id === selectedSong.id
     );
 
-    const { downloadTrack, isTrackDownloaded, isTrackDownloading } = useDownload();
+    const { downloadTrack, deleteDownloadedTrack, isTrackDownloaded, isTrackDownloading } = useDownload();
     const isDownloaded = isTrackDownloaded(selectedSong.id);
     const isDownloading = isTrackDownloading(selectedSong.id);
 
@@ -104,8 +105,33 @@ const SongOptions = forwardRef<
       }
     };
 
+    const confirmRemoveDownload = () => {
+      Alert.alert(
+        t('settings.library.downloads.removeTitle'),
+        t('settings.library.downloads.removeBody', { title: selectedSong.title }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('common.delete'),
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteDownloadedTrack(selectedSong.id);
+              } catch {
+                toast.error(t('settings.library.downloads.removeFailedBody'));
+              }
+            },
+          },
+        ]
+      );
+    };
+
     const handleDownload = async () => {
-      if (isDownloaded || isDownloading) return;
+      if (isDownloading) return;
+      if (isDownloaded) {
+        confirmRemoveDownload();
+        return;
+      }
       try {
         await downloadTrack(selectedSong);
       } catch {
@@ -271,7 +297,7 @@ const SongOptions = forwardRef<
           <TouchableOpacity
             style={styles.option}
             onPress={handleDownload}
-            disabled={isDownloaded || isDownloading}
+            disabled={isDownloading}
           >
             {isDownloading ? (
               <ActivityIndicator size="small" color={colors.subtext} />

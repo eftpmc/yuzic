@@ -146,7 +146,8 @@
         },
         "type": {
           "album": "Album",
-          "playlist": "Liste de lecture"
+          "playlist": "Liste de lecture",
+          "track": "Morceau"
         },
         "sizeLabel": "Taille du téléchargement",
         "availableLabel": "Espace disponible",

@@ -146,7 +146,8 @@
         },
         "type": {
           "album": "专辑",
-          "playlist": "播放列表"
+          "playlist": "播放列表",
+          "track": "曲目"
         },
         "sizeLabel": "下载大小",
         "availableLabel": "可用空间",

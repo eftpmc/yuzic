@@ -4,7 +4,7 @@ import { CoverSource } from '@/types';
 export type DownloadRow = {
   id: string;
   collectionId: string;
-  type: 'album' | 'playlist';
+  type: 'album' | 'playlist' | 'track';
   provider: DownloadProviderType;
   serverId: string | null;
   cover: CoverSource;

@@ -8,6 +8,8 @@ const t = ((key: string) => {
   const labels: Record<string, string> = {
     'settings.library.downloads.type.album': 'Album',
     'settings.library.downloads.type.playlist': 'Playlist',
+    'settings.library.downloads.type.track': 'Track',
+    'settings.library.downloads.unknownTrack': 'Unknown Track',
   };
   return labels[key] ?? key;
 }) as any;
@@ -111,6 +113,71 @@ describe('buildDownloadRows', () => {
       trackIds: ['p1'],
       trackCount: 1,
     });
+  });
+
+  it('surfaces tracks downloaded individually as their own rows', () => {
+    const rows = buildDownloadRows({
+      albums: [],
+      playlists: [],
+      fullPlaylists: [],
+      tracks: [{ id: 'solo-1', title: 'Solo Track', cover }] as SongBase[],
+      downloadedTracks: [
+        {
+          trackId: 'solo-1',
+          fileSize: 512,
+          serverId: 'server-1',
+          serverType: 'navidrome',
+          coverKind: 'navidrome',
+        },
+        {
+          trackId: 'solo-untitled',
+          fileSize: 256,
+          serverId: 'server-1',
+          serverType: 'navidrome',
+          coverKind: 'navidrome',
+        },
+      ] as DownloadedTrack[],
+      downloadedCollections: [],
+      t,
+    });
+
+    expect(rows).toHaveLength(2);
+    expect(rows.map(row => ({
+      collectionId: row.collectionId,
+      type: row.type,
+      title: row.title,
+      trackIds: row.trackIds,
+      trackCount: row.trackCount,
+    }))).toEqual(expect.arrayContaining([
+      { collectionId: 'solo-1', type: 'track', title: 'Solo Track', trackIds: ['solo-1'], trackCount: 1 },
+      { collectionId: 'solo-untitled', type: 'track', title: 'Unknown Track', trackIds: ['solo-untitled'], trackCount: 1 },
+    ]));
+  });
+
+  it('does not duplicate a track that is both standalone-downloaded and part of a collection', () => {
+    const rows = buildDownloadRows({
+      albums: [{ id: 'album-1', title: 'Album One', cover }] as AlbumBase[],
+      playlists: [],
+      fullPlaylists: [],
+      tracks: [{ id: 'a1', albumId: 'album-1' }] as SongBase[],
+      downloadedTracks: [
+        {
+          trackId: 'a1',
+          fileSize: 1024,
+          albumId: 'album-1',
+          serverId: 'server-1',
+          serverType: 'navidrome',
+          coverKind: 'navidrome',
+        },
+      ] as DownloadedTrack[],
+      downloadedCollections: [
+        { id: 'album-1', type: 'album', trackIds: ['a1'], downloadedAt: 1700000000000 },
+      ],
+      t,
+    });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].type).toBe('album');
   });
 
   it('ignores library items that do not have a downloaded collection entry', () => {
