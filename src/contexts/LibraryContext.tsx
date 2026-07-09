@@ -8,6 +8,7 @@ import {
   selectLibraryTracks,
   selectLibraryGenres,
   selectLibraryStarred,
+  selectLibraryStarredAlbums,
 } from '@/utils/redux/selectors/librarySelectors';
 
 interface LibraryContextType {
@@ -17,6 +18,7 @@ interface LibraryContextType {
   tracks: SongBase[];
   genres: string[];
   starred: Song[];
+  starredAlbums: AlbumBase[];
 }
 
 const LibraryContext = createContext<LibraryContextType>({
@@ -26,6 +28,7 @@ const LibraryContext = createContext<LibraryContextType>({
   tracks: [],
   genres: [],
   starred: [],
+  starredAlbums: [],
 });
 
 export const useLibrary = () => useContext(LibraryContext);
@@ -37,10 +40,11 @@ export const LibraryProvider: React.FC<{ children: ReactNode }> = ({ children })
   const tracks = useSelector(selectLibraryTracks);
   const genres = useSelector(selectLibraryGenres);
   const starred = useSelector(selectLibraryStarred);
+  const starredAlbums = useSelector(selectLibraryStarredAlbums);
 
   const value = useMemo(
-    () => ({ albums, artists, playlists, tracks, genres, starred }),
-    [albums, artists, playlists, tracks, genres, starred],
+    () => ({ albums, artists, playlists, tracks, genres, starred, starredAlbums }),
+    [albums, artists, playlists, tracks, genres, starred, starredAlbums],
   );
   return (
     <LibraryContext.Provider value={value}>

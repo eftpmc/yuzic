@@ -655,12 +655,17 @@
       "goToAlbum": "Go to Album",
       "download": "Download",
       "downloading": "Downloading…",
-      "downloaded": "Downloaded"
+      "downloaded": "Downloaded",
+      "favorite": "Favorite",
+      "unfavorite": "Unfavorite"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",
       "addedToEnd": "Added {{title}} to queue",
-      "shuffledToQueue": "Shuffled {{title}} into queue"
+      "shuffledToQueue": "Shuffled {{title}} into queue",
+      "addedToFavorites": "{{title}} added to favorites.",
+      "removedFromFavorites": "{{title}} removed from favorites.",
+      "updateFavoritesFailed": "Failed to update favorites."
     },
     "sections": {
       "albumInfo": "Album Info"

@@ -630,7 +630,9 @@
       "viewExternal": "查看外部信息",
       "download": "下载",
       "downloading": "下载中…",
-      "downloaded": "已下载"
+      "downloaded": "已下载",
+      "favorite": "加入收藏",
+      "unfavorite": "移出收藏"
     },
     "sections": {
       "albumInfo": "专辑信息"
@@ -646,7 +648,10 @@
     "toasts": {
       "addedNext": "{{title}} 将作为下一曲播放。",
       "addedToEnd": "{{title}} 已添加至队尾。",
-      "shuffledToQueue": "{{title}} 已随机添加至队列。"
+      "shuffledToQueue": "{{title}} 已随机添加至队列。",
+      "addedToFavorites": "{{title}} 已加入收藏。",
+      "removedFromFavorites": "{{title}} 已移出收藏。",
+      "updateFavoritesFailed": "更新收藏失败。"
     }
   },
   "playlistOptions": {

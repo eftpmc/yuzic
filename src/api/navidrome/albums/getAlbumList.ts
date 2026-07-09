@@ -3,7 +3,7 @@ import type { NavidromeClient } from "../client";
 
 export type GetAlbumListResult = AlbumBase[];
 
-function normalizeAlbumEntry(a: any): AlbumBase {
+export function normalizeAlbumEntry(a: any): AlbumBase {
   const cover: CoverSource =
   a.coverArt
     ? { kind: 'navidrome', coverArtId: a.coverArt }

@@ -630,12 +630,17 @@
       "viewExternal": "外部で表示",
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
-      "downloaded": "ダウンロード済み"
+      "downloaded": "ダウンロード済み",
+      "favorite": "お気に入り",
+      "unfavorite": "お気に入り解除"
     },
     "toasts": {
       "addedNext": "{{title}}を次に再生",
       "addedToEnd": "{{title}}をキューに追加",
-      "shuffledToQueue": "{{title}}をシャッフルで追加"
+      "shuffledToQueue": "{{title}}をシャッフルで追加",
+      "addedToFavorites": "{{title}} をお気に入りに追加しました。",
+      "removedFromFavorites": "{{title}} をお気に入りから削除しました。",
+      "updateFavoritesFailed": "お気に入りの更新に失敗しました。"
     },
     "sections": {
       "albumInfo": "アルバム情報"

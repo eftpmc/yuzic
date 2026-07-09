@@ -194,8 +194,8 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
 
   const starred: StarredApi = {
     list: async () => getStarredItems(client),
-    add: async (id) => { await star(client, id); },
-    remove: async (id) => { await unstar(client, id); },
+    add: async (id, type) => { await star(client, id, type); },
+    remove: async (id, type) => { await unstar(client, id, type); },
   };
 
   const songs: SongsApi = {

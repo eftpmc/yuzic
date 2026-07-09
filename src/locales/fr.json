@@ -630,12 +630,17 @@
       "viewExternal": "Voir externe",
       "download": "Télécharger",
       "downloading": "Téléchargement…",
-      "downloaded": "Téléchargé"
+      "downloaded": "Téléchargé",
+      "favorite": "Ajouter aux favoris",
+      "unfavorite": "Retirer des favoris"
     },
     "toasts": {
       "addedNext": "Lecture de {{title}} ensuite",
       "addedToEnd": "{{title}} ajouté à la file",
-      "shuffledToQueue": "{{title}} ajouté en ordre aléatoire"
+      "shuffledToQueue": "{{title}} ajouté en ordre aléatoire",
+      "addedToFavorites": "{{title}} ajouté aux favoris.",
+      "removedFromFavorites": "{{title}} retiré des favoris.",
+      "updateFavoritesFailed": "Échec de la mise à jour des favoris."
     },
     "sections": {
       "albumInfo": "Informations sur l'album"

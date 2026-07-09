@@ -12,6 +12,7 @@ import {
   setLibraryTracks,
   setLibraryGenres,
   setLibraryStarred,
+  setLibraryStarredAlbums,
 } from '@/utils/redux/slices/librarySlice'
 import { setServerAlbumStats, setServerSongStats, clearLocalPlayCounts } from '@/utils/redux/slices/statsSlice'
 import { AlbumBase, Artist, PlaylistBase, SongBase, Song } from '@/types'
@@ -139,8 +140,8 @@ export function useSync() {
         ? genresResult.value as string[]
         : queryClient.getQueryData<string[]>([QueryKeys.Genres, serverId])
       const starred = starredResult.status === 'fulfilled'
-        ? starredResult.value as { songs: Song[] }
-        : queryClient.getQueryData<{ songs: Song[] }>([QueryKeys.Starred, serverId])
+        ? starredResult.value as { songs: Song[]; albums: AlbumBase[] }
+        : queryClient.getQueryData<{ songs: Song[]; albums: AlbumBase[] }>([QueryKeys.Starred, serverId])
       const hasAnyLibraryData = !!(
         albums?.length ||
         artists?.length ||
@@ -177,6 +178,7 @@ export function useSync() {
       if (playlists) dispatch(setLibraryPlaylists(playlists))
       if (genres) dispatch(setLibraryGenres({ serverId, genres }))
       if (starred?.songs) dispatch(setLibraryStarred(starred.songs))
+      if (starred?.albums) dispatch(setLibraryStarredAlbums(starred.albums))
 
       if (hasAnyLibraryData) {
         const syncedAt = Date.now()
