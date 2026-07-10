@@ -182,7 +182,7 @@ const variantStyles = {
 };
 
 const GRADIENT_CACHE_MAX = 150;
-const gradientCache = new Map<string, string[]>();
+const gradientCache = new Map<string, [string, string]>();
 
 function darkenHexColor(hex: string, amount = 0.3) {
   let col = hex.replace('#', '');
@@ -217,8 +217,8 @@ export default function PlayingBarBase({ variant }: Props) {
     presentCast: () => castSheetRef.current?.present(),
   });
 
-  const [currentGradient, setCurrentGradient] = useState<string[]>(['#000', '#000']);
-  const [nextGradient, setNextGradient] = useState<string[]>(['#000', '#000']);
+  const [currentGradient, setCurrentGradient] = useState<[string, string]>(['#000', '#000']);
+  const [nextGradient, setNextGradient] = useState<[string, string]>(['#000', '#000']);
 
   const extractColors = useCallback(async (uri: string) => {
     const cached = gradientCache.get(uri);
@@ -234,7 +234,7 @@ export default function PlayingBarBase({ variant }: Props) {
       } else {
         dominant = (colors as any).primary || dominant;
       }
-      const gradient = [darkenHexColor(dominant), '#000'];
+      const gradient: [string, string] = [darkenHexColor(dominant), '#000'];
       if (gradientCache.size >= GRADIENT_CACHE_MAX) {
         gradientCache.delete(gradientCache.keys().next().value!);
       }

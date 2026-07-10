@@ -168,14 +168,14 @@
         "offlineNote": "这些曲目已存储在本地，可离线播放。",
         "locationNote": "下载内容存储在应用的私有存储空间中，无法通过设备的文件管理器访问。请使用此页面查看和删除下载内容。"
       },
-      "audioQuality": {
-        "info": "设置离线下载的首选音频质量。",
-        "label": "音频质量：{{value}}",
+      "downloadQuality": {
+        "title": "下载音质",
+        "caption": "若服务器支持，原始音质将下载无损源文件。文件越大，占用的存储空间越多。",
         "options": {
-          "low": "低（64 kbps）",
-          "medium": "中（128 kbps）",
-          "high": "高（192 kbps）",
-          "original": "原始音质（无压缩）"
+          "low": "低 · 128kbps",
+          "medium": "中 · 192kbps",
+          "high": "高 · 320kbps",
+          "original": "原始（无损）"
         }
       }
     },

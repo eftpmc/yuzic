@@ -1,4 +1,5 @@
 import type { NavidromeClient } from "../client";
+import { SubsonicResponse } from "../types";
 
 export interface CreatePlaylistResult {
   id: string | null;
@@ -8,7 +9,7 @@ export async function createPlaylist(
   client: NavidromeClient,
   name: string
 ): Promise<CreatePlaylistResult> {
-  const raw = await client.request<any>(
+  const raw = await client.request<SubsonicResponse>(
     "createPlaylist.view",
     { name },
     { method: "POST" }

@@ -48,11 +48,6 @@ export const selectHasSeenGetStarted = (
 ): boolean =>
   state.settings.hasSeenGetStarted;
 
-export const selectAudioQuality = (
-  state: RootState
-): AudioQuality =>
-  state.settings.audioQuality;
-
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
 
@@ -73,6 +68,9 @@ export const selectWifiStreamQuality = (state: RootState): AudioQuality =>
 
 export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
   state.settings.cellularStreamQuality ?? 'high';
+
+export const selectDownloadQuality = (state: RootState): AudioQuality =>
+  state.settings.downloadQuality ?? 'high';
 
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;

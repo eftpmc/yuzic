@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
-import { getMusicLibraries } from '@/api/jellyfin/auth/getMusicLibraries';
+import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import { useSync } from '@/hooks/useSync';
 import SettingsSelectCard from '../../components/SettingsSelectCard';
 
@@ -29,7 +29,7 @@ const LibrarySelect: React.FC = () => {
         let result: Library[] = [];
         if (activeServer.type === 'navidrome') {
           result = await getMusicFolders(activeServer);
-        } else if (activeServer.type === 'jellyfin') {
+        } else if (activeServer.type === 'jellyfin' || activeServer.type === 'emby') {
           result = await getMusicLibraries(activeServer);
         }
         if (!cancelled) setLibraries(result);
