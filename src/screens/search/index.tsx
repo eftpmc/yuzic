@@ -36,6 +36,13 @@ import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelecto
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 
+// Fixed regardless of theme (Spotify-style white search field) — the box
+// doesn't follow dark/light mode, so its contents can't use the theme's
+// text colors either, which assume light text on a dark background.
+const SEARCH_BAR_BACKGROUND = '#fff';
+const SEARCH_BAR_FOREGROUND = '#111';
+const SEARCH_BAR_MUTED_FOREGROUND = '#8E8E93';
+
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
   const songOptionsRef = useSheetRef();
@@ -223,15 +230,15 @@ const Search = () => {
   return (
     <SafeAreaView testID="search-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerRow}>
-        <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
-          <SearchIcon size={20} color={colors.subtext} style={styles.searchIcon} />
+        <View style={[styles.searchContainer, { backgroundColor: SEARCH_BAR_BACKGROUND }]}>
+          <SearchIcon size={20} color={SEARCH_BAR_MUTED_FOREGROUND} style={styles.searchIcon} />
           <TextInput
             accessibilityLabel="Search input"
             testID="search-input"
             ref={searchInputRef}
-            style={[styles.searchInput, { color: colors.secondary }]}
+            style={[styles.searchInput, { color: SEARCH_BAR_FOREGROUND }]}
             placeholder={t('search.placeholder')}
-            placeholderTextColor={colors.placeholder}
+            placeholderTextColor={SEARCH_BAR_MUTED_FOREGROUND}
             value={query}
             onChangeText={onSearchChange}
             returnKeyType="search"
@@ -242,7 +249,7 @@ const Search = () => {
               style={styles.clearButton}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
-              <X size={20} color={colors.secondary} />
+              <X size={20} color={SEARCH_BAR_FOREGROUND} />
             </TouchableOpacity>
           )}
         </View>
@@ -325,8 +332,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    paddingHorizontal: 14,
+    borderRadius: 8,
+    paddingHorizontal: 12,
   },
   searchIcon: {
     marginRight: 8,
@@ -334,7 +341,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    paddingVertical: 14,
+    paddingVertical: 8,
   },
   clearButton: {
     padding: 4,
