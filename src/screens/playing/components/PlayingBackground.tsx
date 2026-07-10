@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { StyleSheet } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,8 +11,8 @@ import Animated, {
 import { BottomSheetBackgroundProps } from "@gorhom/bottom-sheet";
 
 type Props = BottomSheetBackgroundProps & {
-  current: string[];
-  next: string[];
+  current: [string, string];
+  next: [string, string];
   onFadeComplete: () => void;
 };
 
