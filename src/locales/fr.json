@@ -390,6 +390,19 @@
       "all": "Tout mélanger",
       "favorites": "Mélanger les favoris",
       "downloaded": "Mélanger les téléchargements"
+    },
+    "categories": {
+      "playlists": "Listes de lecture",
+      "albums": "Albums",
+      "artists": "Artistes",
+      "songs": "Titres",
+      "genres": "Genres",
+      "downloaded": "Téléchargés"
+    },
+    "genres": {
+      "empty": "Aucun genre pour le moment",
+      "albumCount": "{{count}} album",
+      "albumCount_plural": "{{count}} albums"
     }
   },
   "home": {
