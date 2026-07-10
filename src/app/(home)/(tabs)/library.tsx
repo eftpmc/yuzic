@@ -298,7 +298,7 @@ export default function LibraryScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <HomeHeader
-        title="yuzic"
+        title={t('library.title')}
         username={username}
         onAccountPress={toggleAccountSheet}
       />
