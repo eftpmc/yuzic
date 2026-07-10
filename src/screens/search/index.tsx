@@ -7,9 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Text,
-  Platform,
 } from 'react-native';
-import { Ellipsis, ChevronLeft, X } from 'lucide-react-native';
+import { Ellipsis, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -222,17 +221,8 @@ const Search = () => {
   };
 
   return (
-    <SafeAreaView testID="search-screen" style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="search-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerRow}>
-        <TouchableOpacity
-          accessibilityLabel="Back"
-          accessibilityRole="button"
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <ChevronLeft size={24} color={colors.secondary} />
-        </TouchableOpacity>
-
         <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
           <TextInput
             accessibilityLabel="Search input"
@@ -323,16 +313,12 @@ export default Search;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom: Platform.OS === 'ios' ? 80 : 16,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
-  },
-  backButton: {
-    marginRight: 16,
   },
   searchContainer: {
     flex: 1,
@@ -352,7 +338,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scrollContent: {
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 180,
   },
   resultBlock: {},
   resultBlockFirst: {

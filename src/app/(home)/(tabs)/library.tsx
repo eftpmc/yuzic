@@ -10,7 +10,6 @@ import {
 import { FlashList } from '@shopify/flash-list'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
@@ -132,7 +131,6 @@ function sortItems(items: LibraryItem[], order: SortOrder, stats: SortStats): Li
 }
 
 export default function LibraryScreen() {
-  const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const themeColor = useSelector(selectThemeColor)
@@ -302,7 +300,6 @@ export default function LibraryScreen() {
       <HomeHeader
         title="yuzic"
         username={username}
-        onSearch={() => (navigation as any).navigate('search')}
         onAccountPress={toggleAccountSheet}
       />
 

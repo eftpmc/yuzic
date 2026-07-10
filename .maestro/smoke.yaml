@@ -18,10 +18,12 @@ appId: com.arinora.rawarr
 - assertVisible:
     id: "home-screen"
 
-- tapOn: "Search"
+- tapOn:
+    id: "search-tab"
 - assertVisible:
     id: "search-input"
 
-- tapOn: "Back"
+- tapOn:
+    id: "home-tab"
 - assertVisible:
     id: "home-screen"
