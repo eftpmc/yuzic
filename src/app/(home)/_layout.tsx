@@ -1,5 +1,5 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -90,24 +90,9 @@ export default function HomeLayout() {
         }
     }, [activeServerId, dispatch, sync])
 
-    // Tracks which tab is "active" for the tab bar's highlight — driven by the
-    // last real tab route visited, not the literal current pathname. Detail
-    // screens (albumView, artistView, settings, etc.) are pushed as Stack
-    // siblings of the tabs rather than nested inside each tab's own stack, so
-    // pathname alone can't tell us which tab a pushed screen belongs to —
-    // without this, opening any of them would fall through to a "not
-    // library, not search" default and incorrectly highlight Home.
-    const [activeTab, setActiveTab] = useState<'home' | 'search' | 'library'>('home')
-
-    useEffect(() => {
-        if (pathname === '/') setActiveTab('home')
-        else if (pathname === '/search') setActiveTab('search')
-        else if (pathname === '/library') setActiveTab('library')
-    }, [pathname])
-
-    const isSearch = activeTab === 'search'
-    const isLibrary = activeTab === 'library'
-    const isHome = activeTab === 'home'
+    const isSearch = pathname === '/search'
+    const isLibrary = pathname === '/library'
+    const isHome = !isLibrary && !isSearch
     const activeColor = themeColor
     const inactiveColor = colors.subtext
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
