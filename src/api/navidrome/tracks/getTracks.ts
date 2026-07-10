@@ -1,7 +1,8 @@
 import { SongBase } from "@/types";
 import type { NavidromeClient } from "../client";
+import { SubsonicResponse, SubsonicSong } from "../types";
 
-function mapToSongBase(song: any): SongBase {
+function mapToSongBase(song: SubsonicSong & { id: string }): SongBase {
   return {
     id: song.id,
     title: song.title ?? 'Unknown',
@@ -30,7 +31,7 @@ export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
   let offset = 0;
 
   while (true) {
-    const data = await client.request<any>("search3.view", {
+    const data = await client.request<SubsonicResponse>("search3.view", {
       query: "",
       songCount: PAGE,
       songOffset: offset,
@@ -40,12 +41,12 @@ export async function getTracks(client: NavidromeClient): Promise<SongBase[]> {
       artistOffset: 0,
     });
 
-    const songs = asArray<any>(data["subsonic-response"]?.searchResult3?.song);
+    const songs = asArray(data["subsonic-response"]?.searchResult3?.song);
     if (!songs.length) break;
 
     for (const song of songs) {
       if (!song?.id || all.has(song.id)) continue;
-      all.set(song.id, mapToSongBase(song));
+      all.set(song.id, mapToSongBase(song as SubsonicSong & { id: string }));
     }
     if (songs.length < PAGE) break;
     offset += PAGE;

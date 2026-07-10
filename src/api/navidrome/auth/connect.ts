@@ -1,4 +1,5 @@
 import { buildTokenParams } from "../client";
+import { SubsonicResponse } from "../types";
 import i18n from '@/i18n';
 
 const API_VERSION = "1.16.0";
@@ -39,7 +40,7 @@ export async function connect(
       return { success: false, message: i18n.t('onboarding.connect.serverErrorStatus', { status: res.status }) };
     }
 
-    const data = await res.json();
+    const data: SubsonicResponse = await res.json();
     const response = data["subsonic-response"];
 
     if (response?.status === "ok") {
@@ -51,7 +52,7 @@ export async function connect(
           : [];
 
       const libraries = folderList
-        .map((folder: any, index: number) => {
+        .map((folder, index) => {
           const id = String(folder?.id ?? "").trim();
           const name = String(
             folder?.name ??
@@ -64,7 +65,7 @@ export async function connect(
             name: name || `Library ${index + 1}`,
           };
         })
-        .filter(Boolean) as { id: string; name: string }[];
+        .filter((folder): folder is { id: string; name: string } => folder !== null);
 
       return { success: true, libraries };
     }

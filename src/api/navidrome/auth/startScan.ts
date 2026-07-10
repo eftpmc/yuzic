@@ -1,15 +1,16 @@
 import type { NavidromeClient } from "../client";
+import { SubsonicResponse } from "../types";
 
 export async function startScan(
   client: NavidromeClient
 ): Promise<{ success: boolean; message?: string }> {
   try {
-    const startData = await client.request<any>("startScan.view", {}, { method: "POST" });
+    const startData = await client.request<SubsonicResponse>("startScan.view", {}, { method: "POST" });
     const ok = startData["subsonic-response"]?.status === "ok";
     if (!ok) return { success: false };
 
     const poll = async () => {
-      const json = await client.request<any>("getScanStatus.view");
+      const json = await client.request<SubsonicResponse>("getScanStatus.view");
       return json["subsonic-response"]?.scanStatus?.scanning === "true";
     };
 
