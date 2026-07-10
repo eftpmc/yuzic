@@ -426,6 +426,7 @@
     }
   },
   "search": {
+    "title": "搜索",
     "placeholder": "搜索音乐、歌手或播放列表...",
     "noResults": "未找到结果",
     "chips": {

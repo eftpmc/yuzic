@@ -426,6 +426,7 @@
     }
   },
   "search": {
+    "title": "検索",
     "placeholder": "音楽、アーティスト、プレイリストを検索...",
     "noResults": "結果が見つかりません",
     "chips": {
