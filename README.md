@@ -150,4 +150,4 @@ Screenshots taken on iPhone 13
 Offline downloads (songs/albums/playlists you download for offline playback) are stored in the app's private storage, not somewhere your device's file manager or Files app can browse to. To view or remove them, go to **Settings → Library → Downloads**.
 
 ## Contribution
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup and how PRs get merged, or open an issue to discuss a change first.
