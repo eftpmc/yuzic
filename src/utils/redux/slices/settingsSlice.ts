@@ -31,7 +31,6 @@ export interface SettingsState {
   hasSeenGetStarted: boolean;
 
   /* Audio */
-  audioQuality: AudioQuality;
   wifiStreamQuality: AudioQuality;
   cellularStreamQuality: AudioQuality;
   preferredCodec: PreferredCodec;
@@ -76,7 +75,6 @@ const initialState: SettingsState = {
   searchScope: 'server',
   hasSeenGetStarted: false,
 
-  audioQuality: 'medium',
   wifiStreamQuality: 'original',
   cellularStreamQuality: 'high',
   preferredCodec: 'mp3',
@@ -151,9 +149,6 @@ const settingsSlice = createSlice({
     },
 
     /* Audio */
-    setAudioQuality(state, action: PayloadAction<AudioQuality>) {
-      state.audioQuality = action.payload;
-    },
     setWifiStreamQuality(state, action: PayloadAction<AudioQuality>) {
       state.wifiStreamQuality = action.payload;
     },
@@ -233,7 +228,6 @@ export const {
   setLibrarySortOrder,
   setSearchScope,
   setHasSeenGetStarted,
-  setAudioQuality,
   setWifiStreamQuality,
   setCellularStreamQuality,
   setPreferredCodec,

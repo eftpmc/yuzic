@@ -48,11 +48,6 @@ export const selectHasSeenGetStarted = (
 ): boolean =>
   state.settings.hasSeenGetStarted;
 
-export const selectAudioQuality = (
-  state: RootState
-): AudioQuality =>
-  state.settings.audioQuality;
-
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
 

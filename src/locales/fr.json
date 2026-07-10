@@ -167,16 +167,6 @@
         },
         "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne.",
         "locationNote": "Les téléchargements sont stockés dans l'espace privé de l'application et ne sont pas accessibles depuis le gestionnaire de fichiers de votre appareil. Utilisez cet écran pour les consulter et les supprimer."
-      },
-      "audioQuality": {
-        "info": "Définissez votre qualité audio préférée pour les téléchargements hors ligne.",
-        "label": "Qualité audio : {{value}}",
-        "options": {
-          "low": "Faible (64 kbps)",
-          "medium": "Moyenne (128 kbps)",
-          "high": "Élevée (192 kbps)",
-          "original": "Originale (sans compression)"
-        }
       }
     },
     "player": {
