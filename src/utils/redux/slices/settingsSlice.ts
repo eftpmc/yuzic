@@ -33,6 +33,7 @@ export interface SettingsState {
   /* Audio */
   wifiStreamQuality: AudioQuality;
   cellularStreamQuality: AudioQuality;
+  downloadQuality: AudioQuality;
   preferredCodec: PreferredCodec;
 
   language: AppLanguage;
@@ -77,6 +78,7 @@ const initialState: SettingsState = {
 
   wifiStreamQuality: 'original',
   cellularStreamQuality: 'high',
+  downloadQuality: 'high',
   preferredCodec: 'mp3',
 
   language: DEFAULT_LANGUAGE,
@@ -155,6 +157,9 @@ const settingsSlice = createSlice({
     setCellularStreamQuality(state, action: PayloadAction<AudioQuality>) {
       state.cellularStreamQuality = action.payload;
     },
+    setDownloadQuality(state, action: PayloadAction<AudioQuality>) {
+      state.downloadQuality = action.payload;
+    },
     setPreferredCodec(state, action: PayloadAction<PreferredCodec>) {
       state.preferredCodec = action.payload;
     },
@@ -230,6 +235,7 @@ export const {
   setHasSeenGetStarted,
   setWifiStreamQuality,
   setCellularStreamQuality,
+  setDownloadQuality,
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,

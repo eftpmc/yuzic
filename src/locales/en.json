@@ -167,6 +167,16 @@
         },
         "offlineNote": "These songs are stored locally for offline playback.",
         "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them."
+      },
+      "downloadQuality": {
+        "title": "Download Quality",
+        "caption": "Original downloads the lossless source when your server supports it. Larger files use more storage.",
+        "options": {
+          "low": "Low · 128kbps",
+          "medium": "Medium · 192kbps",
+          "high": "High · 320kbps",
+          "original": "Original (lossless)"
+        }
       }
     },
     "player": {

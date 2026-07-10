@@ -69,6 +69,9 @@ export const selectWifiStreamQuality = (state: RootState): AudioQuality =>
 export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
   state.settings.cellularStreamQuality ?? 'high';
 
+export const selectDownloadQuality = (state: RootState): AudioQuality =>
+  state.settings.downloadQuality ?? 'high';
+
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;
 
