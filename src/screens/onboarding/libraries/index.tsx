@@ -14,8 +14,7 @@ import { Check } from 'lucide-react-native';
 import { selectServerById } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
-import { getMusicLibraries } from '@/api/jellyfin/auth/getMusicLibraries';
-import { getMusicLibraries as getEmbyMusicLibraries } from '@/api/emby/auth/getMusicLibraries';
+import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 
 type Library = { id: string; name: string };
@@ -47,10 +46,8 @@ export default function LibrariesOnboarding() {
         let result: Library[] = [];
         if (server.type === 'navidrome') {
           result = await getMusicFolders(server);
-        } else if (server.type === 'jellyfin') {
+        } else if (server.type === 'jellyfin' || server.type === 'emby') {
           result = await getMusicLibraries(server);
-        } else if (server.type === 'emby') {
-          result = await getEmbyMusicLibraries(server);
         }
         if (!cancelled) setLibraries(result);
       } catch {
