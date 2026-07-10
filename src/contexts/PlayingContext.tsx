@@ -336,7 +336,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [bumpQueue, clearPlaybackState]);
   removeFailedCurrentTrackRef.current = removeFailedCurrentTrack;
 
-  const lastRecoveryAtRef = useRef(0);
+  // Id of the track we've already attempted one URL-refresh retry for. Keyed by
+  // song id rather than a time window — a wall-clock gate breaks when a failure
+  // (e.g. an unreachable server) takes longer than the window to surface, which
+  // makes every retry look like a "first" attempt and loops forever.
+  const lastRecoveryAttemptedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
@@ -359,10 +363,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         return;
       }
 
-      // First error: refresh every URL in the queue (catches stale Navidrome tokens
-      // after JS context restarts) then retry from the current index.
-      if (now - lastRecoveryAtRef.current > 3000) {
-        lastRecoveryAtRef.current = now;
+      // First failure for this specific track: refresh every URL in the queue
+      // (catches stale Navidrome tokens after JS context restarts) then retry.
+      if (song?.id && lastRecoveryAttemptedIdRef.current !== song.id) {
+        lastRecoveryAttemptedIdRef.current = song.id;
         const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
         queueRef.current = freshQueue;
         currentSongRef.current = freshQueue[currentIndexRef.current] ?? song;
@@ -371,7 +375,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         return;
       }
 
-      // Second error within 3s — URL refresh didn't help, genuine failure.
+      // This track failed again after a retry — URL refresh didn't help, genuine failure.
       if (now - lastPlaybackErrorAtRef.current > 1500) {
         lastPlaybackErrorAtRef.current = now;
         toast.error(t('common.playbackError'));
@@ -397,6 +401,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => {
     const mediaId = activeMediaItem?.mediaId;
     if (!mediaId) return;
+
+    // A media item is only reported active once it's actually playing, so this
+    // track is no longer in the "just retried once" state from the error handler.
+    lastRecoveryAttemptedIdRef.current = null;
 
     const prev = currentSongRef.current;
     if (prev && prev.id !== mediaId) {
