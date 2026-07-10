@@ -7,6 +7,7 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false, freezeOnBlur: true }}
     >
       <Tabs.Screen name="index" />
+      <Tabs.Screen name="search" />
       <Tabs.Screen name="library" />
     </Tabs>
   );

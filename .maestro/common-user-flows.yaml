@@ -31,7 +31,8 @@ appId: com.arinora.rawarr
 - assertVisible:
     id: "home-screen"
 
-- tapOn: "Search"
+- tapOn:
+    id: "search-tab"
 - assertVisible:
     id: "search-screen"
 - tapOn:
@@ -41,6 +42,7 @@ appId: com.arinora.rawarr
     visible:
       id: "search-no-results"
     timeout: 30000
-- tapOn: "Back"
+- tapOn:
+    id: "home-tab"
 - assertVisible:
     id: "home-screen"

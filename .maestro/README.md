@@ -41,6 +41,6 @@ npm run test:e2e:flows
 - Authenticated shell can move between Home and Library.
 - Library can filter to tracks and start playback.
 - The player bar appears after playback starts.
-- Search opens from Home, accepts input, renders a no-results state, and can return.
+- Search has its own tab, accepts input, and renders a no-results state.
 
 The suite intentionally avoids assumptions about specific song titles or server fixtures. Good next flows are opening album/artist/playlist detail screens, search result actions against a seeded test server, options sheets, and queue/player detail interactions.

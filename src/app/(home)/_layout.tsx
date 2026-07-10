@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { Home, Library } from 'lucide-react-native';
+import { Home, Library, Search } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSync } from '@/hooks/useSync';
@@ -90,8 +90,9 @@ export default function HomeLayout() {
         }
     }, [activeServerId, dispatch, sync])
 
-    const isLibrary = pathname.startsWith('/library')
-    const isHome = !isLibrary
+    const isSearch = pathname === '/search'
+    const isLibrary = pathname === '/library'
+    const isHome = !isLibrary && !isSearch
     const activeColor = themeColor
     const inactiveColor = colors.subtext
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
@@ -104,7 +105,6 @@ export default function HomeLayout() {
         <View style={{ flex: 1 }}>
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
-                <Stack.Screen name="search" options={{ headerShown: false, animation: "fade", animationDuration: 150 }} />
                 <Stack.Screen name="albumView" options={{ headerShown: false }} />
                 <Stack.Screen name="externalAlbumView" options={{ headerShown: false }} />
                 <Stack.Screen name="externalArtistView" options={{ headerShown: false }} />
@@ -137,6 +137,20 @@ export default function HomeLayout() {
                         activeIndicatorBg={activeIndicatorBg}
                     >
                         {color => <Home size={24} color={color} />}
+                    </TabIcon>
+                    <TabIcon
+                        onPress={() => {
+                            if (pathname === '/search') return
+                            router.navigate('/(home)/(tabs)/search' as never)
+                        }}
+                        active={isSearch}
+                        accessibilityLabel="Search tab"
+                        testID="search-tab"
+                        activeColor={activeColor}
+                        inactiveColor={inactiveColor}
+                        activeIndicatorBg={activeIndicatorBg}
+                    >
+                        {color => <Search size={24} color={color} />}
                     </TabIcon>
                     <TabIcon
                         onPress={() => {

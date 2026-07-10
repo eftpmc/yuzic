@@ -390,19 +390,6 @@
       "all": "随机播放全部",
       "favorites": "随机播放收藏",
       "downloaded": "随机播放已下载"
-    },
-    "categories": {
-      "playlists": "播放列表",
-      "albums": "专辑",
-      "artists": "艺人",
-      "songs": "曲目",
-      "genres": "流派",
-      "downloaded": "已下载"
-    },
-    "genres": {
-      "empty": "暂无流派",
-      "albumCount": "{{count}} 张专辑",
-      "albumCount_plural": "{{count}} 张专辑"
     }
   },
   "home": {

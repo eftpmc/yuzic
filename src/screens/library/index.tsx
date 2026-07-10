@@ -81,7 +81,6 @@ export default function HomeScreen() {
       <HomeHeader
         title="yuzic"
         username={username}
-        onSearch={() => router.push('/search')}
         onAccountPress={toggleAccountSheet}
       />
       <Explore />
