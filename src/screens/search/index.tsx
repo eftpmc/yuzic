@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import { Ellipsis, X } from 'lucide-react-native';
+import { Ellipsis, Search as SearchIcon, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -224,6 +224,7 @@ const Search = () => {
     <SafeAreaView testID="search-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerRow}>
         <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
+          <SearchIcon size={20} color={colors.subtext} style={styles.searchIcon} />
           <TextInput
             accessibilityLabel="Search input"
             testID="search-input"
@@ -324,13 +325,16 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+  },
+  searchIcon: {
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    paddingVertical: 8,
+    paddingVertical: 14,
   },
   clearButton: {
     padding: 4,
