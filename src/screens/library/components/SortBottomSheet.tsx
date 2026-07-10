@@ -19,23 +19,29 @@ type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
 interface SortBottomSheetProps {
   sortOrder: SortOrder;
   onSelect: (value: SortOrder) => void;
+  /** Restricts which options render, in the given order. Defaults to all five. */
+  options?: SortOrder[];
 }
 
 const SortBottomSheet = forwardRef<
   BottomSheetModal,
   SortBottomSheetProps
->(({ sortOrder, onSelect }, ref) => {
+>(({ sortOrder, onSelect, options }, ref) => {
   const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
   const { colors } = useTheme();
 
-  const sortOptions = [
+  const allSortOptions = [
     { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
     { value: 'recentlyAdded' as const, label: t('home.sort.recentlyAdded'), Icon: CalendarPlus },
     { value: 'title' as const, label: t('home.sort.alphabetical'), Icon: ArrowDownAZ },
     { value: 'year' as const, label: t('home.sort.releaseYear'), Icon: Calendar },
     { value: 'userplays' as const, label: t('home.sort.mostPlayed'), Icon: Flame },
   ];
+
+  const sortOptions = options
+    ? allSortOptions.filter(o => options.includes(o.value))
+    : allSortOptions;
 
   const snapPoints = useMemo(() => ['48%'], []);
 

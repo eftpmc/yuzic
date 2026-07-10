@@ -90,7 +90,7 @@ export default function HomeLayout() {
         }
     }, [activeServerId, dispatch, sync])
 
-    const isLibrary = pathname === '/library'
+    const isLibrary = pathname.startsWith('/library')
     const isHome = !isLibrary
     const activeColor = themeColor
     const inactiveColor = colors.subtext

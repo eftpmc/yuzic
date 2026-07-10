@@ -390,6 +390,19 @@
       "all": "すべてシャッフル",
       "favorites": "お気に入りをシャッフル",
       "downloaded": "ダウンロード済みをシャッフル"
+    },
+    "categories": {
+      "playlists": "プレイリスト",
+      "albums": "アルバム",
+      "artists": "アーティスト",
+      "songs": "曲",
+      "genres": "ジャンル",
+      "downloaded": "ダウンロード済み"
+    },
+    "genres": {
+      "empty": "ジャンルはまだありません",
+      "albumCount": "{{count}} アルバム",
+      "albumCount_plural": "{{count}} アルバム"
     }
   },
   "home": {
