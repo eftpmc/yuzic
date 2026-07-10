@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
-export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
+export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
+export type LibraryCategory = 'albums' | 'artists' | 'playlists' | 'songs' | 'downloaded';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 export type PreferredCodec = 'mp3' | 'opus';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist' | 'cast';
@@ -15,14 +16,14 @@ export interface SettingsState {
   themeColor: string;
   gridColumns: number;
   gridSpacing: number;
-  isGridView: boolean;
 
   playingBarAction: PlayingBarAction;
   showQualityBadge: boolean;
   showSourceHeaders: boolean;
 
   /* Library */
-  librarySortOrder: LibrarySortOrder;
+  libraryGridViewByCategory: Record<LibraryCategory, boolean>;
+  librarySortOrderByCategory: Record<LibraryCategory, LibrarySortOrder>;
 
   /* Search */
   searchScope: SearchScope;
@@ -67,12 +68,12 @@ const initialState: SettingsState = {
   themeColor: '#ff7f7f',
   gridColumns: 3,
   gridSpacing: 8,
-  isGridView: true,
   playingBarAction: 'skip',
   showQualityBadge: false,
   showSourceHeaders: true,
 
-  librarySortOrder: 'title',
+  libraryGridViewByCategory: { albums: true, artists: true, playlists: true, songs: false, downloaded: true },
+  librarySortOrderByCategory: { albums: 'recentlyAdded', artists: 'title', playlists: 'recent', songs: 'title', downloaded: 'title' },
   searchScope: 'server',
   hasSeenGetStarted: false,
 
@@ -120,8 +121,11 @@ const settingsSlice = createSlice({
     setGridSpacing(state, action: PayloadAction<number>) {
       state.gridSpacing = action.payload;
     },
-    setIsGridView(state, action: PayloadAction<boolean>) {
-      state.isGridView = action.payload;
+    setLibraryGridView(
+      state,
+      action: PayloadAction<{ category: LibraryCategory; value: boolean }>
+    ) {
+      state.libraryGridViewByCategory[action.payload.category] = action.payload.value;
     },
     setPlayingBarAction(
       state,
@@ -137,8 +141,11 @@ const settingsSlice = createSlice({
     },
 
     /* Library */
-    setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
-      state.librarySortOrder = action.payload;
+    setLibrarySortOrder(
+      state,
+      action: PayloadAction<{ category: LibraryCategory; value: LibrarySortOrder }>
+    ) {
+      state.librarySortOrderByCategory[action.payload.category] = action.payload.value;
     },
 
     setSearchScope(state, action: PayloadAction<SearchScope>) {
@@ -226,7 +233,7 @@ export const {
   setThemeColor,
   setGridColumns,
   setGridSpacing,
-  setIsGridView,
+  setLibraryGridView,
   setPlayingBarAction,
   setShowQualityBadge,
   setShowSourceHeaders,
