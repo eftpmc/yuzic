@@ -79,7 +79,7 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <HomeHeader
-        title="yuzic"
+        title="Yuzic"
         username={username}
         onAccountPress={toggleAccountSheet}
       />
