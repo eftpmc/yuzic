@@ -461,6 +461,7 @@
     }
   },
   "search": {
+    "title": "Search",
     "placeholder": "Search for music, artists, or playlists...",
     "noResults": "No results found"
   },
