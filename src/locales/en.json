@@ -428,20 +428,7 @@
     }
   },
   "library": {
-    "title": "Library",
-    "categories": {
-      "playlists": "Playlists",
-      "albums": "Albums",
-      "artists": "Artists",
-      "songs": "Songs",
-      "genres": "Genres",
-      "downloaded": "Downloaded"
-    },
-    "genres": {
-      "empty": "No genres yet",
-      "albumCount": "{{count}} album",
-      "albumCount_plural": "{{count}} albums"
-    }
+    "title": "Library"
   },
   "home": {
     "title": "Home",

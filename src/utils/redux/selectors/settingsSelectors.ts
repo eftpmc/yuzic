@@ -3,7 +3,6 @@ import {
   AudioQuality,
   PreferredCodec,
   LibrarySortOrder,
-  LibraryCategory,
   ThemeMode,
   SearchScope,
   AppLanguage
@@ -23,18 +22,16 @@ export const selectGridColumns = (state: RootState): number =>
 export const selectGridSpacing = (state: RootState): number =>
   state.settings.gridSpacing;
 
-export const selectLibraryGridView =
-  (category: LibraryCategory) =>
-  (state: RootState): boolean =>
-    state.settings.libraryGridViewByCategory[category];
+export const selectIsGridView = (state: RootState): boolean =>
+  state.settings.isGridView;
 
 export const selectPlayingBarAction = (state: RootState) =>
   state.settings.playingBarAction;
 
-export const selectLibrarySortOrder =
-  (category: LibraryCategory) =>
-  (state: RootState): LibrarySortOrder =>
-    state.settings.librarySortOrderByCategory[category];
+export const selectLibrarySortOrder = (
+  state: RootState
+): LibrarySortOrder =>
+  state.settings.librarySortOrder;
 
 export const selectSearchScope = (
   state: RootState

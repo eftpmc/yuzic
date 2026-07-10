@@ -12,25 +12,23 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import {
   selectThemeColor,
+  selectIsGridView,
   selectGridColumns,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
+  setIsGridView,
   setGridColumns,
 } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 
-interface GridSettingsBottomSheetProps {
-  isGridView: boolean;
-  onSetGridView: (value: boolean) => void;
-}
-
-const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomSheetProps>(
-  ({ isGridView, onSetGridView }, ref) => {
+const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
+  (_, ref) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const themeColor = useSelector(selectThemeColor);
+    const isGridView = useSelector(selectIsGridView);
     const gridColumns = useSelector(selectGridColumns);
     const { colors } = useTheme();
 
@@ -79,7 +77,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomS
                       : 'transparent',
                   },
                 ]}
-                onPress={() => onSetGridView(option.value)}
+                onPress={() => dispatch(setIsGridView(option.value))}
               >
                 <View style={styles.pickerLeft}>
                   <option.Icon

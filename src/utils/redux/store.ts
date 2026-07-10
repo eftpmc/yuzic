@@ -25,30 +25,7 @@ const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
     scope === 'client+external' ? 'client' :
     scope === 'server+external' ? 'server' :
     scope ?? 'server';
-  // v2 -> v3: isGridView/librarySortOrder became per-category maps. Carry the
-  // old global grid preference forward (songs still defaults to list either way).
-  const carriedGridView = state?.isGridView ?? true;
-  const libraryGridViewByCategory = state?.libraryGridViewByCategory ?? {
-    albums: carriedGridView,
-    artists: carriedGridView,
-    playlists: carriedGridView,
-    songs: false,
-    downloaded: carriedGridView,
-  };
-  const librarySortOrderByCategory = state?.librarySortOrderByCategory ?? {
-    albums: 'recentlyAdded',
-    artists: 'title',
-    playlists: 'recent',
-    songs: 'title',
-    downloaded: 'title',
-  };
-  return Promise.resolve({
-    ...state,
-    syncOnAppStart: true,
-    searchScope: migratedScope,
-    libraryGridViewByCategory,
-    librarySortOrderByCategory,
-  });
+  return Promise.resolve({ ...state, syncOnAppStart: true, searchScope: migratedScope });
 };
 
 const serversPersistConfig = { key: 'servers', storage };
@@ -56,7 +33,7 @@ const downloadersPersistConfig = { key: 'downloaders', storage };
 const settingsPersistConfig = {
   key: 'settings',
   storage,
-  version: 3,
+  version: 2,
   migrate: settingsMigrate,
 };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
