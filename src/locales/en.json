@@ -204,7 +204,11 @@
       "showSleepTimer": "Sleep Timer",
       "showSleepTimerSubtext": "Show a sleep timer control in the player.",
       "showPlaybackSpeed": "Playback Speed",
-      "showPlaybackSpeedSubtext": "Show a speed control in the player."
+      "showPlaybackSpeedSubtext": "Show a speed control in the player.",
+      "crossfade": "Crossfade",
+      "crossfadeSubtext": "Fade between songs over {{seconds}} seconds.",
+      "crossfadeDuration": "Crossfade Duration",
+      "crossfadeSeconds": "{{seconds}} seconds"
     },
     "listenBrainz": {
       "title": "ListenBrainz",

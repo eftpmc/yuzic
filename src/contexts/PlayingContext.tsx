@@ -18,6 +18,12 @@ import TrackPlayer, {
   useIsPlaying,
   useProgress,
 } from '@rntp/player';
+import {
+  createAudioPlayer,
+  setAudioModeAsync,
+  type AudioPlayer,
+  type AudioSource,
+} from 'expo-audio';
 
 import { Album, Playlist, Song } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
@@ -31,7 +37,13 @@ import { useCast } from './CastContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
-import { selectWifiStreamQuality, selectCellularStreamQuality, selectPreferredCodec } from '@/utils/redux/selectors/settingsSelectors';
+import {
+  selectCellularStreamQuality,
+  selectCrossfadeDurationSeconds,
+  selectCrossfadeEnabled,
+  selectPreferredCodec,
+  selectWifiStreamQuality,
+} from '@/utils/redux/selectors/settingsSelectors';
 import { useNetworkType } from '@/hooks/useNetworkType';
 
 export interface PlaybackProgress {
@@ -89,6 +101,13 @@ const PlayingActionsContext = createContext<PlayingActionsType | undefined>(unde
 const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, duration: 0, buffered: 0 });
 
 let playerWasSetup = false;
+
+const PLAYER_VOLUME_FULL = 1;
+const PLAYER_VOLUME_MUTED = 0;
+const CROSSFADE_POLL_INTERVAL_MS = 250;
+const CROSSFADE_VOLUME_STEP_MS = 100;
+const CROSSFADE_SEEK_TOLERANCE_MS = 75;
+const CROSSFADE_MIN_OVERLAP_SECONDS = 1;
 
 export const usePlayingState = () => {
   const ctx = useContext(PlayingStateContext);
@@ -164,6 +183,21 @@ function hasSameQueueIds(current: Song[], next: Song[]): boolean {
 
 const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
+function mediaUrlToAudioSource(url: MediaItem['url']): AudioSource | null {
+  if (typeof url === 'number' || typeof url === 'string') return url;
+  if (typeof url === 'object' && url?.uri) {
+    return {
+      uri: url.uri,
+      headers: url.headers,
+    };
+  }
+  return null;
+}
+
+function songToCrossfadeAudioSource(song: Song): AudioSource | null {
+  return mediaUrlToAudioSource(buildTrackItem(song).url);
+}
+
 function getSourceKind(song: Song | null): string {
   if (!song?.streamUrl) return 'none';
   if (song.filePath || song.streamUrl.startsWith('file:')) return 'file';
@@ -199,7 +233,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const activeMediaItem = useActiveMediaItem();
   const api = useApi();
   const { getLocalPath } = useDownloadActions();
-  const { activeDevice, castPause, castResume } = useCast();
+  const { activeDevice, isGoogleCastConnected, castPause, castResume } = useCast();
   const networkType = useNetworkType();
   const wifiQuality = useSelector(selectWifiStreamQuality);
   const cellularQuality = useSelector(selectCellularStreamQuality);
@@ -211,6 +245,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const preferredCodec = useSelector(selectPreferredCodec);
   const preferredCodecRef = useRef(preferredCodec);
   preferredCodecRef.current = preferredCodec;
+  const crossfadeEnabled = useSelector(selectCrossfadeEnabled);
+  const crossfadeDurationSeconds = useSelector(selectCrossfadeDurationSeconds);
+  const crossfadeEnabledRef = useRef(crossfadeEnabled);
+  crossfadeEnabledRef.current = crossfadeEnabled;
+  const crossfadeDurationSecondsRef = useRef(crossfadeDurationSeconds);
+  crossfadeDurationSecondsRef.current = crossfadeDurationSeconds;
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -228,8 +268,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const repeatModeRef = useRef<RepeatModeState>('off');
   const shuffleOnRef = useRef(false);
   const isPlayingRef = useRef(false);
+  const localPlaybackMutedForCastRef = useRef(false);
   const isShufflingRef = useRef(false);
   const lastPlaybackErrorAtRef = useRef(0);
+  const crossfadeInProgressRef = useRef(false);
+  const crossfadeRunIdRef = useRef(0);
+  const crossfadeTailPlayerRef = useRef<AudioPlayer | null>(null);
+  const fadeTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Stable refs to latest callbacks — avoids stale closures in effects without listing
   // volatile deps, while keeping the callbacks themselves stable for context consumers.
@@ -248,8 +293,19 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => { repeatModeRef.current = repeatMode; }, [repeatMode]);
   useEffect(() => { shuffleOnRef.current = shuffleOn; }, [shuffleOn]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  useEffect(() => {
+    localPlaybackMutedForCastRef.current = Boolean(activeDevice || isGoogleCastConnected);
+  }, [activeDevice, isGoogleCastConnected]);
 
   useCarPlayBrowseTree();
+
+  useEffect(() => {
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      interruptionMode: 'mixWithOthers',
+      shouldPlayInBackground: true,
+    }).catch(err => console.warn('Crossfade audio mode setup failed', err));
+  }, []);
 
   useEffect(() => {
     if (!playerWasSetup) {
@@ -292,7 +348,170 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
 
+  const clearFadeTimeouts = useCallback(() => {
+    fadeTimeoutsRef.current.forEach(clearTimeout);
+    fadeTimeoutsRef.current = [];
+  }, []);
+
+  const releaseCrossfadeTailPlayer = useCallback(() => {
+    const player = crossfadeTailPlayerRef.current;
+    if (!player) return;
+    crossfadeTailPlayerRef.current = null;
+    try {
+      player.pause();
+      player.remove();
+    } catch (err) {
+      console.warn('Crossfade tail player cleanup failed', err);
+    }
+  }, []);
+
+  const restoreTrackPlayerVolume = useCallback(() => {
+    if (!localPlaybackMutedForCastRef.current) {
+      TrackPlayer.setVolume(PLAYER_VOLUME_FULL);
+    }
+  }, []);
+
+  const cancelCrossfade = useCallback(() => {
+    crossfadeRunIdRef.current += 1;
+    clearFadeTimeouts();
+    releaseCrossfadeTailPlayer();
+    crossfadeInProgressRef.current = false;
+    restoreTrackPlayerVolume();
+  }, [clearFadeTimeouts, releaseCrossfadeTailPlayer, restoreTrackPlayerVolume]);
+
+  const scheduleCrossfadeVolumes = useCallback((
+    durationMs: number,
+    onProgress: (progress: number) => void,
+    onComplete?: () => void
+  ) => {
+    const steps = Math.max(1, Math.ceil(durationMs / CROSSFADE_VOLUME_STEP_MS));
+    const stepMs = Math.max(1, durationMs / steps);
+
+    Array.from({ length: steps }, (_, index) => {
+      const timeout = setTimeout(() => {
+        const progress = (index + 1) / steps;
+        onProgress(progress);
+        if (index === steps - 1) onComplete?.();
+      }, stepMs * (index + 1));
+      fadeTimeoutsRef.current.push(timeout);
+    });
+  }, []);
+
+  const hasNextCrossfadeTarget = useCallback(() => {
+    if (queueRef.current.length < 2) return false;
+    const nextIndex = currentIndexRef.current + 1;
+    return nextIndex < queueRef.current.length || repeatModeRef.current === 'all';
+  }, []);
+
+  const startCrossfadeToNext = useCallback(async () => {
+    if (crossfadeInProgressRef.current || !hasNextCrossfadeTarget()) return;
+
+    const currentSongForTail = currentSongRef.current;
+    const currentSource = currentSongForTail ? songToCrossfadeAudioSource(currentSongForTail) : null;
+    const nextIndex = currentIndexRef.current + 1;
+    const targetIndex = nextIndex >= queueRef.current.length && repeatModeRef.current === 'all'
+      ? 0
+      : nextIndex;
+    const targetSong = queueRef.current[targetIndex];
+    if (!currentSongForTail || !currentSource || !targetSong) return;
+
+    crossfadeInProgressRef.current = true;
+    const runId = crossfadeRunIdRef.current + 1;
+    crossfadeRunIdRef.current = runId;
+    clearFadeTimeouts();
+    releaseCrossfadeTailPlayer();
+
+    try {
+      const initialProgress = TrackPlayer.getProgress();
+      if (!Number.isFinite(initialProgress.position) || !Number.isFinite(initialProgress.duration)) {
+        crossfadeInProgressRef.current = false;
+        return;
+      }
+
+      const tailPlayer = createAudioPlayer(currentSource, {
+        updateInterval: CROSSFADE_VOLUME_STEP_MS,
+        keepAudioSessionActive: true,
+        preferredForwardBufferDuration: crossfadeDurationSecondsRef.current,
+      });
+      crossfadeTailPlayerRef.current = tailPlayer;
+      tailPlayer.volume = PLAYER_VOLUME_FULL;
+
+      const handoffProgress = TrackPlayer.getProgress();
+      if (!Number.isFinite(handoffProgress.position) || !Number.isFinite(handoffProgress.duration)) {
+        releaseCrossfadeTailPlayer();
+        crossfadeInProgressRef.current = false;
+        return;
+      }
+
+      const remainingSeconds = Math.max(0, handoffProgress.duration - handoffProgress.position);
+      const overlapSeconds = Math.min(crossfadeDurationSecondsRef.current, remainingSeconds);
+      if (overlapSeconds < CROSSFADE_MIN_OVERLAP_SECONDS) {
+        releaseCrossfadeTailPlayer();
+        crossfadeInProgressRef.current = false;
+        return;
+      }
+
+      await tailPlayer.seekTo(
+        handoffProgress.position,
+        CROSSFADE_SEEK_TOLERANCE_MS,
+        CROSSFADE_SEEK_TOLERANCE_MS
+      );
+
+      if (crossfadeRunIdRef.current !== runId) {
+        releaseCrossfadeTailPlayer();
+        return;
+      }
+
+      void scrobbleIfNeededRef.current(currentSongForTail, {
+        listenedSeconds: Math.floor(Math.min(handoffProgress.duration, handoffProgress.position + overlapSeconds)),
+        startTime: scrobbleStartTimeRef.current,
+      }).catch(err => console.warn('Crossfade scrobble failed', err));
+      scrobbleStartTimeRef.current = Date.now();
+
+      if (crossfadeRunIdRef.current !== runId) {
+        releaseCrossfadeTailPlayer();
+        return;
+      }
+
+      tailPlayer.play();
+      TrackPlayer.setVolume(PLAYER_VOLUME_MUTED);
+      TrackPlayer.skipToIndex(targetIndex);
+      if (isPlayingRef.current) TrackPlayer.play();
+
+      scheduleCrossfadeVolumes(
+        overlapSeconds * 1000,
+        progress => {
+          if (crossfadeRunIdRef.current !== runId) return;
+          TrackPlayer.setVolume(progress);
+          if (crossfadeTailPlayerRef.current === tailPlayer) {
+            tailPlayer.volume = PLAYER_VOLUME_FULL - progress;
+          }
+        },
+        () => {
+          if (crossfadeRunIdRef.current !== runId) return;
+          releaseCrossfadeTailPlayer();
+          restoreTrackPlayerVolume();
+          crossfadeInProgressRef.current = false;
+        }
+      );
+    } catch (err) {
+      console.warn('Crossfade failed', err);
+      if (crossfadeRunIdRef.current === runId) {
+        releaseCrossfadeTailPlayer();
+        restoreTrackPlayerVolume();
+        crossfadeInProgressRef.current = false;
+      }
+    }
+  }, [
+    clearFadeTimeouts,
+    hasNextCrossfadeTarget,
+    releaseCrossfadeTailPlayer,
+    restoreTrackPlayerVolume,
+    scheduleCrossfadeVolumes,
+  ]);
+
   const clearPlaybackState = useCallback(() => {
+    cancelCrossfade();
     queueRef.current = [];
     originalQueueRef.current = null;
     currentIndexRef.current = 0;
@@ -303,7 +522,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     bumpQueue();
     TrackPlayer.stop();
     TrackPlayer.clear();
-  }, [bumpQueue]);
+  }, [bumpQueue, cancelCrossfade]);
 
   const removeFailedCurrentTrack = useCallback(() => {
     const failedIndex = currentIndexRef.current;
@@ -394,6 +613,56 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    if (!crossfadeEnabled) {
+      cancelCrossfade();
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (
+        activeDevice ||
+        isGoogleCastConnected ||
+        crossfadeInProgressRef.current ||
+        !crossfadeEnabledRef.current ||
+        !isPlayingRef.current ||
+        repeatModeRef.current === 'one' ||
+        !hasNextCrossfadeTarget()
+      ) {
+        return;
+      }
+
+      const { position, duration } = TrackPlayer.getProgress();
+      const fadeDuration = crossfadeDurationSecondsRef.current;
+      if (
+        !Number.isFinite(position) ||
+        !Number.isFinite(duration) ||
+        position <= 0 ||
+        duration <= fadeDuration + 1
+      ) {
+        return;
+      }
+
+      const remaining = duration - position;
+      if (remaining > 0 && remaining <= fadeDuration) {
+        void startCrossfadeToNext();
+      }
+    }, CROSSFADE_POLL_INTERVAL_MS);
+
+    return () => {
+      clearInterval(interval);
+      cancelCrossfade();
+    };
+  }, [
+    activeDevice,
+    cancelCrossfade,
+    crossfadeEnabled,
+    crossfadeDurationSeconds,
+    hasNextCrossfadeTarget,
+    isGoogleCastConnected,
+    startCrossfadeToNext,
+  ]);
+
   // Build a song lookup map from the library for queue reconciliation
   const librarySongByIdRef = useRef<Map<string, Song>>(new Map());
 
@@ -473,6 +742,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   resolvePlayableSongRef.current = resolvePlayableSong;
 
   const loadQueue = useCallback(async (songs: Song[], startIndex: number, play = true, seekToPosition?: number) => {
+    cancelCrossfade();
     assertPlayableSongs(songs);
     resetLastScrobbled();
     scrobbleStartTimeRef.current = Date.now();
@@ -484,7 +754,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
     if (seekToPosition !== undefined && seekToPosition > 0) TrackPlayer.seekTo(seekToPosition);
     if (play) TrackPlayer.play();
-  }, [resetLastScrobbled]);
+  }, [cancelCrossfade, resetLastScrobbled]);
 
   const playSong = useCallback(async (song: Song) => {
     const playableSong = resolvePlayableSong(song);
@@ -558,6 +828,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [bumpQueue, resolvePlayableSong]);
 
   const skipToNext = useCallback(async () => {
+    cancelCrossfade();
     await scrobbleIfNeededRef.current(currentSongRef.current, {
       listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
       startTime: scrobbleStartTimeRef.current,
@@ -566,9 +837,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (nextIdx >= queueRef.current.length && repeatModeRef.current !== 'all') return;
     TrackPlayer.skipToNext();
     if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+  }, [cancelCrossfade]);
 
   const skipToPrevious = useCallback(async () => {
+    cancelCrossfade();
     await scrobbleIfNeededRef.current(currentSongRef.current, {
       listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
       startTime: scrobbleStartTimeRef.current,
@@ -576,9 +848,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (currentIndexRef.current <= 0) return;
     TrackPlayer.skipToIndex(currentIndexRef.current - 1);
     if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+  }, [cancelCrossfade]);
 
   const skipTo = useCallback(async (index: number) => {
+    cancelCrossfade();
     const song = queueRef.current[index];
     if (!song) return;
     if (index !== currentIndexRef.current) {
@@ -594,12 +867,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentSong(song);
     TrackPlayer.skipToIndex(index);
     if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+  }, [cancelCrossfade]);
 
   const pauseSong = useCallback(async () => {
+    cancelCrossfade();
     TrackPlayer.pause();
     if (activeDevice) castPause();
-  }, [activeDevice, castPause]);
+  }, [activeDevice, cancelCrossfade, castPause]);
 
   const resumeSong = useCallback(async () => {
     TrackPlayer.play();
@@ -727,6 +1001,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const resetQueue = useCallback(async () => {
+    cancelCrossfade();
     await scrobbleIfNeededRef.current(currentSongRef.current, {
       listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
       startTime: scrobbleStartTimeRef.current,
@@ -745,7 +1020,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setRepeatMode('off');
     TrackPlayer.setRepeatMode(RepeatMode.Off);
     bumpQueue();
-  }, [bumpQueue, resetLastScrobbled]);
+  }, [bumpQueue, cancelCrossfade, resetLastScrobbled]);
 
   const stateValue = useMemo<PlayingStateType>(() => ({
     currentSong,

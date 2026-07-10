@@ -57,6 +57,8 @@ export interface SettingsState {
   /* Player controls */
   showSleepTimer: boolean;
   showPlaybackSpeed: boolean;
+  crossfadeEnabled: boolean;
+  crossfadeDurationSeconds: number;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -99,6 +101,8 @@ const initialState: SettingsState = {
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
+  crossfadeEnabled: false,
+  crossfadeDurationSeconds: 3,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -216,6 +220,13 @@ const settingsSlice = createSlice({
     setShowPlaybackSpeed(state, action: PayloadAction<boolean>) {
       state.showPlaybackSpeed = action.payload;
     },
+    setCrossfadeEnabled(state, action: PayloadAction<boolean>) {
+      state.crossfadeEnabled = action.payload;
+    },
+    setCrossfadeDurationSeconds(state, action: PayloadAction<number>) {
+      const duration = Number.isFinite(action.payload) ? Math.round(action.payload) : 3;
+      state.crossfadeDurationSeconds = Math.min(12, Math.max(1, duration));
+    },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
@@ -258,6 +269,8 @@ export const {
   setDeezerPlaylistRecommendationsEnabled,
   setShowSleepTimer,
   setShowPlaybackSpeed,
+  setCrossfadeEnabled,
+  setCrossfadeDurationSeconds,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

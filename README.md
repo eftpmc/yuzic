@@ -40,6 +40,7 @@ Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic 
 - Search & Browsing
 - Privacy-First by Design
 - Fast, Reliable Playback
+- Crossfading
 - External Downloaders
 - Deezer
 - Lastfm
@@ -47,7 +48,6 @@ Yuzic provides a Navidrome demo but requires a self-hosted Jellyfin or Subsonic 
 - Casting
 
 ## Future
-- Crossfading
 - Apple TV app
 - Apple watch
 - F-droid

@@ -200,7 +200,15 @@
         }
       },
       "opusCodec": "Opusコーデック",
-      "opusCodecSubtext": "同じビットレートでMP3より高音質。低ビットレートで特に効果的。"
+      "opusCodecSubtext": "同じビットレートでMP3より高音質。低ビットレートで特に効果的。",
+      "showSleepTimer": "スリープタイマー",
+      "showSleepTimerSubtext": "プレイヤーにスリープタイマーを表示します。",
+      "showPlaybackSpeed": "再生速度",
+      "showPlaybackSpeedSubtext": "プレイヤーに速度コントロールを表示します。",
+      "crossfade": "クロスフェード",
+      "crossfadeSubtext": "{{seconds}}秒かけて曲間をフェードします。",
+      "crossfadeDuration": "クロスフェード時間",
+      "crossfadeSeconds": "{{seconds}}秒"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
