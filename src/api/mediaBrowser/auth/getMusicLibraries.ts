@@ -1,4 +1,5 @@
 import { Server } from '@/types';
+import { MediaBrowserItemsResponse } from '../types';
 
 export async function getMusicLibraries(server: Server): Promise<{ id: string; name: string }[]> {
   const { serverUrl, auth } = server;
@@ -11,8 +12,8 @@ export async function getMusicLibraries(server: Server): Promise<{ id: string; n
       headers: { 'X-Emby-Token': token },
     });
     if (!res.ok) return [];
-    const data = await res.json();
-    const items: any[] = data?.Items ?? [];
+    const data: MediaBrowserItemsResponse = await res.json();
+    const items = data?.Items ?? [];
     return items
       .filter((i) => i.CollectionType === 'music')
       .map((i) => ({ id: String(i.Id), name: String(i.Name) }));

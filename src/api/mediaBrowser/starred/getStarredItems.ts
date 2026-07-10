@@ -3,6 +3,7 @@ import type { MediaBrowserClient } from "../client";
 import { buildSongCover } from "../brand";
 import { normalizeGenres } from "../utils/normalizeGenres";
 import { normalizeAlbum } from "../albums/getAlbums";
+import { MediaBrowserItemsResponse } from "../types";
 
 export interface GetStarredItemsResult {
   songs: Song[];
@@ -16,7 +17,7 @@ async function fetchGetStarredSongs(client: MediaBrowserClient) {
     `&Filters=IsFavorite` +
     `&IncludeItemTypes=Audio` +
     `&Fields=Id,Name,Artists,AlbumId,RunTimeTicks,ImageTags,MediaSources,Genres,PremiereDate,DateCreated`;
-  return client.request<any>(path);
+  return client.request<MediaBrowserItemsResponse>(path);
 }
 
 async function fetchGetStarredAlbums(client: MediaBrowserClient) {
@@ -26,24 +27,25 @@ async function fetchGetStarredAlbums(client: MediaBrowserClient) {
     `&Filters=IsFavorite` +
     `&IncludeItemTypes=MusicAlbum` +
     `&Fields=PrimaryImageTag,Genres,AlbumArtist,ArtistItems,Artists,DateCreated,ProviderIds,UserData`;
-  return client.request<any>(path);
+  return client.request<MediaBrowserItemsResponse>(path);
 }
 
-function normalizeStarredSongs(raw: any, client: MediaBrowserClient): Song[] {
+function normalizeStarredSongs(raw: MediaBrowserItemsResponse, client: MediaBrowserClient): Song[] {
   const items = raw?.Items ?? [];
 
-  return items.map((i: any) => {
+  return items.map((i) => {
     const ms = i.MediaSources?.[0];
-    const audioStream = ms?.MediaStreams?.find((m: any) => m.Type === "Audio");
+    const audioStream = ms?.MediaStreams?.find((m) => m.Type === "Audio");
+    const id = i.Id ?? "";
     return {
-      id: i.Id,
-      title: i.Name,
+      id,
+      title: i.Name ?? "Unknown",
       artist: i.ArtistItems?.[0]?.Name ?? "Unknown Artist",
       artistId: i.ArtistItems?.[0]?.Id ?? "",
       albumId: i.AlbumId ?? "",
       cover: buildSongCover(client.brand, i.Id, i.AlbumId, i.AlbumPrimaryImageTag ?? undefined),
       duration: String(Math.floor((i.RunTimeTicks ?? 0) / 10_000_000)),
-      streamUrl: client.buildStreamUrl(i.Id),
+      streamUrl: client.buildStreamUrl(id),
       bitrate: (audioStream?.BitRate ?? ms?.Bitrate) ?? undefined,
       sampleRate: audioStream?.SampleRate ?? undefined,
       bitsPerSample: audioStream?.BitDepth ?? undefined,
@@ -66,7 +68,7 @@ export async function getStarredItems(
       fetchGetStarredAlbums(client),
     ]);
 
-    const albumItems: any[] = albumsRaw?.Items ?? [];
+    const albumItems = albumsRaw?.Items ?? [];
 
     return {
       songs: normalizeStarredSongs(songsRaw, client),

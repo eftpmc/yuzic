@@ -1,6 +1,7 @@
 import { Artist } from "@/types";
 import type { MediaBrowserClient } from "../client";
 import { buildCoverWithTag } from "../brand";
+import { MediaBrowserItemsResponse } from "../types";
 
 export type GetArtistsResult = Artist[];
 
@@ -13,16 +14,16 @@ export async function getArtists(client: MediaBrowserClient): Promise<GetArtists
     `&Fields=PrimaryImageTag,Overview,Genres,DateCreated,ProviderIds` +
     (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
-  const raw = await client.request<any>(path);
+  const raw = await client.request<MediaBrowserItemsResponse>(path);
   const items = raw?.Items ?? [];
 
-  return items.map((a: any) => {
+  return items.map((a) => {
     const cover = buildCoverWithTag(client.brand, a.Id, a.ImageTags?.Primary ?? undefined);
 
     const mbid = a.ProviderIds?.MusicBrainz ?? null;
 
     return {
-      id: a.Id,
+      id: a.Id ?? "",
       name: a.Name ?? "Unknown Artist",
       cover,
       subtext: "Artist",

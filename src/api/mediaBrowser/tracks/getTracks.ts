@@ -1,13 +1,14 @@
 import { SongBase } from "@/types";
 import type { MediaBrowserClient } from "../client";
 import { buildSongCover } from "../brand";
+import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
 
-function normalizeTrack(item: any, client: MediaBrowserClient): SongBase {
+function normalizeTrack(item: MediaBrowserItem, client: MediaBrowserClient): SongBase {
   const artistItem = item.ArtistItems?.[0];
   const cover = buildSongCover(client.brand, item.Id, item.AlbumId, item.AlbumPrimaryImageTag ?? undefined);
 
   return {
-    id: item.Id,
+    id: item.Id ?? "",
     title: item.Name ?? "Unknown",
     artist: artistItem?.Name ?? "Unknown Artist",
     artistId: artistItem?.Id ?? "",
@@ -32,9 +33,9 @@ export async function getTracks(client: MediaBrowserClient): Promise<SongBase[]>
     `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated,UserData` +
     (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
-  const raw = await client.request<any>(path);
+  const raw = await client.request<MediaBrowserItemsResponse>(path);
   const items = raw?.Items ?? [];
   return items
-    .filter((item: any) => item?.Id)
-    .map((item: any) => normalizeTrack(item, client));
+    .filter((item) => item?.Id)
+    .map((item) => normalizeTrack(item, client));
 }

@@ -2,6 +2,7 @@ import { Album } from "@/types";
 import type { MediaBrowserClient } from "../client";
 import { buildCover } from "../brand";
 import { getAlbumSongs } from "./getAlbumSongs";
+import { MediaBrowserItemsResponse } from "../types";
 
 export type GetAlbumResult = Album | null;
 
@@ -11,10 +12,10 @@ async function fetchGetAlbum(client: MediaBrowserClient, albumId: string) {
     `?Ids=${encodeURIComponent(albumId)}` +
     `&IncludeItemTypes=MusicAlbum` +
     `&Fields=Genres,ArtistItems,PrimaryImageTag,DateCreated,ProviderIds`;
-  return client.request<any>(path);
+  return client.request<MediaBrowserItemsResponse>(path);
 }
 
-function normalizeAlbum(raw: any, client: MediaBrowserClient): Album | null {
+function normalizeAlbum(raw: MediaBrowserItemsResponse, client: MediaBrowserClient): Album | null {
   const a = raw?.Items?.[0];
   if (!a) return null;
 
@@ -24,7 +25,7 @@ function normalizeAlbum(raw: any, client: MediaBrowserClient): Album | null {
   const cover = buildCover(client.brand, a.Id);
 
   const artist = {
-    id: artistItem.Id,
+    id: artistItem.Id ?? "unknown",
     name: artistItem.Name ?? "Unknown Artist",
     cover: buildCover(client.brand, artistItem.Id),
     subtext: "Artist",
@@ -34,12 +35,12 @@ function normalizeAlbum(raw: any, client: MediaBrowserClient): Album | null {
   const albumMbid = a.ProviderIds?.MusicBrainzAlbum ?? a.ProviderIds?.MusicBrainz ?? null;
 
   return {
-    id: a.Id,
+    id: a.Id ?? "",
     cover,
-    title: a.Name,
+    title: a.Name ?? "Unknown Album",
     subtext: "",
     artist,
-    year: a.ProductionYear,
+    year: a.ProductionYear ?? 0,
     songs: [],
     genres: (a.Genres ?? [])
       .flatMap((g: string) => g.split(";"))

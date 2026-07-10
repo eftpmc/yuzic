@@ -1,10 +1,11 @@
 import { AlbumBase } from "@/types";
 import type { MediaBrowserClient } from "../client";
 import { buildCoverWithTag } from "../brand";
+import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
 
 export type GetAlbumsResult = AlbumBase[];
 
-export function normalizeAlbum(a: any, client: MediaBrowserClient): AlbumBase | null {
+export function normalizeAlbum(a: MediaBrowserItem, client: MediaBrowserClient): AlbumBase | null {
   try {
     const albumId = a.Id;
     if (!albumId) return null;
@@ -32,7 +33,7 @@ export function normalizeAlbum(a: any, client: MediaBrowserClient): AlbumBase | 
       title: a.Name ?? "Unknown Album",
       subtext: `Album • ${artist.name}`,
       artist,
-      year: a.ProductionYear,
+      year: a.ProductionYear ?? 0,
       genres: (a.Genres ?? [])
         .flatMap((g: string) => g.split(";"))
         .map((g: string) => g.trim())
@@ -64,8 +65,8 @@ export async function getAlbums(
     (artistId ? `&AlbumArtistIds=${encodeURIComponent(artistId)}` : "") +
     (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
-  const raw = await client.request(path) as any;
-  const items: any[] = raw?.Items ?? [];
+  const raw = await client.request<MediaBrowserItemsResponse>(path);
+  const items = raw?.Items ?? [];
 
-  return items.map((a: any) => normalizeAlbum(a, client)).filter((a): a is AlbumBase => a !== null);
+  return items.map((a) => normalizeAlbum(a, client)).filter((a): a is AlbumBase => a !== null);
 }

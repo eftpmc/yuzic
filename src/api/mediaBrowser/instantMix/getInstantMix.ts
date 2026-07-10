@@ -2,10 +2,11 @@ import { Song } from "@/types";
 import type { MediaBrowserClient } from "../client";
 import { buildCoverWithTag } from "../brand";
 import { normalizeGenres } from "../utils/normalizeGenres";
+import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
 
 export type GetInstantMixResult = Song[];
 
-function parseInstantMixResponse(text: string): { Items?: any[] } {
+function parseInstantMixResponse(text: string): MediaBrowserItemsResponse {
   const trimmed = text.trim();
   if (trimmed.startsWith("data:")) {
     const commaIdx = trimmed.indexOf(",");
@@ -29,13 +30,13 @@ async function fetchInstantMix(
   return parseInstantMixResponse(text);
 }
 
-function normalizeItem(s: any, client: MediaBrowserClient): Song | null {
+function normalizeItem(s: MediaBrowserItem, client: MediaBrowserClient): Song | null {
   if (!s?.Id || s.Type !== "Audio") return null;
 
   const ticks = s.RunTimeTicks ?? s.MediaSources?.[0]?.RunTimeTicks ?? 0;
   const artistItem = s.ArtistItems?.[0];
   const ms = s.MediaSources?.[0];
-  const audioStream = ms?.MediaStreams?.find((m: any) => m.Type === "Audio");
+  const audioStream = ms?.MediaStreams?.find((m) => m.Type === "Audio");
 
   const cover = buildCoverWithTag(client.brand, s.AlbumId, s.AlbumPrimaryImageTag ?? undefined);
 
@@ -68,6 +69,6 @@ export async function getInstantMix(
   const raw = await fetchInstantMix(client, itemId, limit);
   const items = raw?.Items ?? [];
   return items
-    .map((s: any) => normalizeItem(s, client))
+    .map((s) => normalizeItem(s, client))
     .filter((s): s is Song => s !== null);
 }

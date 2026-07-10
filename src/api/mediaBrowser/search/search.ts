@@ -3,6 +3,7 @@ import { Artist } from '@/types/Artist';
 import { Song } from '@/types/Song';
 import type { MediaBrowserClient } from '../client';
 import { buildCover, buildSongCover } from '../brand';
+import { MediaBrowserItemsResponse } from '../types';
 
 export async function search(
   client: MediaBrowserClient,
@@ -13,15 +14,15 @@ export async function search(
   }
 
   const [albumsRes, artistsRes, songsRes] = await Promise.allSettled([
-    client.request<any>(
+    client.request<MediaBrowserItemsResponse>(
       `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicAlbum&Recursive=true&Limit=20&Fields=DateCreated,ProviderIds,ArtistItems`,
       { tokenOnly: true }
     ),
-    client.request<any>(
+    client.request<MediaBrowserItemsResponse>(
       `/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=MusicArtist&Recursive=true&Limit=20&Fields=ProviderIds`,
       { tokenOnly: true }
     ),
-    client.request<any>(
+    client.request<MediaBrowserItemsResponse>(
       `/Users/${encodeURIComponent(client.userId)}/Items?SearchTerm=${encodeURIComponent(query)}&IncludeItemTypes=Audio&Recursive=true&Limit=20&Fields=RunTimeTicks,ArtistItems,AlbumId`,
       { tokenOnly: true }
     ),
@@ -31,12 +32,12 @@ export async function search(
   const artistItems = artistsRes.status === 'fulfilled' ? (artistsRes.value.Items ?? []) : [];
   const songItems = songsRes.status === 'fulfilled' ? (songsRes.value.Items ?? []) : [];
 
-  const albums: AlbumBase[] = albumItems.map((item: any) => ({
-    id: item.Id,
-    title: item.Name,
+  const albums: AlbumBase[] = albumItems.map((item) => ({
+    id: item.Id ?? '',
+    title: item.Name ?? '',
     subtext: item.Artists?.[0] ?? '',
     artist: {
-      id: item.AlbumArtistId ?? item.Id,
+      id: item.AlbumArtistId ?? item.Id ?? '',
       name: item.AlbumArtist ?? '',
       subtext: '',
       cover: buildCover(client.brand, item.Id),
@@ -49,8 +50,8 @@ export async function search(
     mbid: item.ProviderIds?.MusicBrainzAlbum ?? item.ProviderIds?.MusicBrainz ?? null,
   }));
 
-  const artists: Artist[] = artistItems.map((item: any) => ({
-    id: item.Id,
+  const artists: Artist[] = artistItems.map((item) => ({
+    id: item.Id ?? '',
     name: item.Name ?? 'Unknown Artist',
     subtext: 'Artist',
     cover: buildCover(client.brand, item.Id),
@@ -59,8 +60,8 @@ export async function search(
   }));
 
   const songs: Song[] = songItems
-    .filter((item: any) => item?.Id)
-    .map((item: any) => {
+    .filter((item): item is typeof item & { Id: string } => !!item?.Id)
+    .map((item) => {
       const artistItem = item.ArtistItems?.[0];
       return {
         id: item.Id,
