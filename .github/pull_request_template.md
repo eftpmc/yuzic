@@ -13,3 +13,5 @@
 
 ## Related issues
 <!-- Fixes #123 -->
+
+<!-- Touching .github/workflows/ or fastlane/? Read AGENTS.md first — it explains the version-number derivation and why manual overrides aren't safe. -->

@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Documentation
-    url: https://github.com/eftpmc/yuzic/blob/main/README.md
+    url: https://github.com/eftpmc/yuzic/blob/master/README.md
     about: Read the documentation first.
+  - name: Contributing
+    url: https://github.com/eftpmc/yuzic/blob/master/CONTRIBUTING.md
+    about: Want to submit a PR? Start here.
+  - name: Discord
+    url: https://discord.gg/NzsGEhg5Fs
+    about: Ask questions or chat with the community.
