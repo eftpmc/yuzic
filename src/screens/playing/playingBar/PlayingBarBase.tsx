@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, BackHandler, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Music, Play, Pause } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
@@ -209,6 +209,7 @@ export default function PlayingBarBase({ variant }: Props) {
   const bottomSheetRef = useSheetRef();
   const playlistSheetRef = useSheetRef();
   const castSheetRef = useSheetRef();
+  const [isPlayerSheetOpen, setIsPlayerSheetOpen] = useState(false);
 
   const primaryAction = usePlayingBarAction(actionMode, {
     presentAddToPlaylist: () => {
@@ -216,6 +217,18 @@ export default function PlayingBarBase({ variant }: Props) {
     },
     presentCast: () => castSheetRef.current?.present(),
   });
+
+  // Android's hardware back button isn't intercepted by the bottom sheet on its
+  // own (it renders in a Portal, not a native Modal) — without this it falls
+  // through to whatever screen is underneath instead of minimizing the player.
+  useEffect(() => {
+    if (!isPlayerSheetOpen) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      bottomSheetRef.current?.close();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [isPlayerSheetOpen, bottomSheetRef]);
 
   const [currentGradient, setCurrentGradient] = useState<[string, string]>(['#000', '#000']);
   const [nextGradient, setNextGradient] = useState<[string, string]>(['#000', '#000']);
@@ -391,6 +404,7 @@ export default function PlayingBarBase({ variant }: Props) {
         snapPoints={['100%']}
         enableDynamicSizing={false}
         enablePanDownToClose
+        onChange={(index) => setIsPlayerSheetOpen(index >= 0)}
         backgroundStyle={{ backgroundColor: 'transparent' }}
         backgroundComponent={props => (
           <PlayingBackground
