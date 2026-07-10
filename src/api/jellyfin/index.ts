@@ -9,40 +9,42 @@ import {
   SongsApi,
   TracksApi,
   AuthApi,
-  LyricsApi
+  LyricsApi,
+  SearchApi
 } from "../types";
 
 import { Playlist, Server } from "@/types";
 
+import { JELLYFIN_BRAND } from "../mediaBrowser/brand";
 import { createJellyfinClient } from "./client";
-import { connect } from "./auth/connect";
-import { ping } from "./auth/ping";
-import { testServerUrl } from "./auth/testServerUrl";
-import { startScan } from "./auth/startScan";
-import { getAlbum } from "./albums/getAlbum";
-import { getAlbums } from "./albums/getAlbums";
-import { getAlbumsWithSongs } from "./albums/getAlbumsWithSongs";
-import { getArtists } from "./artists/getArtists";
-import { getPlaylists } from "./playlists/getPlaylists";
-import { getPlaylistItems, getPlaylistEntryIdForSong } from "./playlists/getPlaylistItems";
-import { createPlaylist } from "./playlists/createPlaylist";
-import { deletePlaylist } from "./playlists/deletePlaylist";
-import { updatePlaylistName } from "./playlists/updatePlaylistName";
-import { addPlaylistItems } from "./playlists/addPlaylistItems";
-import { removePlaylistItems } from "./playlists/removePlaylistItems";
-import { getStarredItems } from "./starred/getStarredItems";
-import { star } from "./starred/star";
-import { unstar } from "./starred/unstar";
-import { getArtist } from "./artists/getArtist";
-import { getGenres } from "./genres/getGenres";
+import { connect } from "../mediaBrowser/auth/connect";
+import { ping } from "../mediaBrowser/auth/ping";
+import { testServerUrl } from "../mediaBrowser/auth/testServerUrl";
+import { startScan } from "../mediaBrowser/auth/startScan";
+import { getAlbum } from "../mediaBrowser/albums/getAlbum";
+import { getAlbums } from "../mediaBrowser/albums/getAlbums";
+import { getAlbumsWithSongs } from "../mediaBrowser/albums/getAlbumsWithSongs";
+import { getArtists } from "../mediaBrowser/artists/getArtists";
+import { getPlaylists } from "../mediaBrowser/playlists/getPlaylists";
+import { getPlaylistItems, getPlaylistEntryIdForSong } from "../mediaBrowser/playlists/getPlaylistItems";
+import { createPlaylist } from "../mediaBrowser/playlists/createPlaylist";
+import { deletePlaylist } from "../mediaBrowser/playlists/deletePlaylist";
+import { updatePlaylistName } from "../mediaBrowser/playlists/updatePlaylistName";
+import { addPlaylistItems } from "../mediaBrowser/playlists/addPlaylistItems";
+import { removePlaylistItems } from "../mediaBrowser/playlists/removePlaylistItems";
+import { getStarredItems } from "../mediaBrowser/starred/getStarredItems";
+import { star } from "../mediaBrowser/starred/star";
+import { unstar } from "../mediaBrowser/starred/unstar";
+import { getArtist } from "../mediaBrowser/artists/getArtist";
+import { getGenres } from "../mediaBrowser/genres/getGenres";
 import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
 import { FAVORITES_ID } from "@/constants/favorites";
-import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
-import { getSong } from "./songs/getSong";
-import { markPlayed } from "./songs/markPlayed";
-import { getTracks } from "./tracks/getTracks";
-import { getInstantMix } from "./instantMix/getInstantMix";
-import { search as searchJellyfin } from "./search/search";
+import { getLyricsBySongId } from "../mediaBrowser/lyrics/getLyricsBySongId";
+import { getSong } from "../mediaBrowser/songs/getSong";
+import { markPlayed } from "../mediaBrowser/songs/markPlayed";
+import { getTracks } from "../mediaBrowser/tracks/getTracks";
+import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
+import { search as searchJellyfin } from "../mediaBrowser/search/search";
 
 export const createJellyfinAdapter = (server: Server): ApiAdapter => {
   const { serverUrl, auth: providerAuth, basicAuth } = server;
@@ -71,13 +73,13 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
 
   const auth: AuthApi = {
     connect: async (serverUrl, username, password) => {
-      return connect(serverUrl, username, password);
+      return connect(JELLYFIN_BRAND, serverUrl, username, password);
     },
     ping: async () => {
       if (!token) return false;
       return ping(client);
     },
-    testUrl: async (url) => testServerUrl(url),
+    testUrl: async (url) => testServerUrl(JELLYFIN_BRAND, url),
     startScan: async () => startScan(client),
     disconnect: () => {},
   };
@@ -198,7 +200,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
     getBySongId: async (songId) => getLyricsBySongId(client, songId),
   };
 
-  const search = {
+  const search: SearchApi = {
     search: async (query: string) => searchJellyfin(client, query),
   };
 

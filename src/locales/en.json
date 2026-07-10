@@ -168,14 +168,14 @@
         "offlineNote": "These songs are stored locally for offline playback.",
         "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them."
       },
-      "audioQuality": {
-        "info": "Set your preferred audio quality for offline downloads.",
-        "label": "Audio Quality: {{value}}",
+      "downloadQuality": {
+        "title": "Download Quality",
+        "caption": "Original downloads the lossless source when your server supports it. Larger files use more storage.",
         "options": {
-          "low": "Low (64kbps)",
-          "medium": "Medium (128kbps)",
-          "high": "High (192kbps)",
-          "original": "Original (no compression)"
+          "low": "Low · 128kbps",
+          "medium": "Medium · 192kbps",
+          "high": "High · 320kbps",
+          "original": "Original (lossless)"
         }
       }
     },
@@ -428,7 +428,20 @@
     }
   },
   "library": {
-    "title": "Library"
+    "title": "Library",
+    "categories": {
+      "playlists": "Playlists",
+      "albums": "Albums",
+      "artists": "Artists",
+      "songs": "Songs",
+      "genres": "Genres",
+      "downloaded": "Downloaded"
+    },
+    "genres": {
+      "empty": "No genres yet",
+      "albumCount": "{{count}} album",
+      "albumCount_plural": "{{count}} albums"
+    }
   },
   "home": {
     "title": "Home",

@@ -34,6 +34,8 @@ import {
   writeDownloadedTracks,
 } from '@/utils/downloads/localDownloadStore';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
+import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
 
 export type DownloadedTrack = DownloadedTrackEntry & {
   localPath: string;
@@ -90,7 +92,6 @@ const DownloadStateContext = createContext<DownloadStateType | undefined>(undefi
 
 const DOWNLOAD_DIR = `${FileSystem.documentDirectory ?? ''}downloads/audio/`;
 const TEMP_DOWNLOAD_DIR = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? ''}downloads/rawarr-source/`;
-const DOWNLOAD_QUALITY = 'high';
 const DOWNLOAD_SCHEMA_VERSION = 2;
 const BACKGROUND_FILE_OPTIONS = {
   sessionType: FileSystem.FileSystemSessionType.BACKGROUND,
@@ -247,7 +248,7 @@ function persistTracks(tracks: LocalDownloadedTrackEntry[]) {
   writeDownloadedTracks(tracks);
 }
 
-async function transcodeViaHostedRawarr(sourcePath: string): Promise<string> {
+async function transcodeViaHostedRawarr(sourcePath: string, quality: AudioQuality): Promise<string> {
   const response = await FileSystem.uploadAsync(
     buildRawarrAudioTranscodeUrl(),
     sourcePath,
@@ -256,7 +257,7 @@ async function transcodeViaHostedRawarr(sourcePath: string): Promise<string> {
       fieldName: 'file',
       mimeType: 'application/octet-stream',
       parameters: {
-        quality: DOWNLOAD_QUALITY,
+        quality,
       },
       ...BACKGROUND_FILE_OPTIONS,
     }
@@ -294,6 +295,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const { t } = useTranslation();
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
+  const downloadQuality = useSelector(selectDownloadQuality);
   const localPathMapRef = useRef<Map<string, string>>(new Map());
   const [state, setState] = useState<DownloadState>(() => {
     const initial = loadInitialState();
@@ -407,8 +409,11 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const resolveTrack = useCallback(async (track: Song): Promise<Song | null> => {
     const fullSong = await api.tracks.get(track.id).catch(() => null);
-    return fullSong ?? (track.streamUrl ? track : null);
-  }, [api]);
+    const base = fullSong ?? (track.streamUrl ? track : null);
+    if (!base) return null;
+    const freshUrl = api.songs.buildStreamUrl(base.id, downloadQuality);
+    return freshUrl ? { ...base, streamUrl: freshUrl } : base;
+  }, [api, downloadQuality]);
 
   const performDownloadTrack = useCallback(async (track: Song, collectionId?: string) => {
     if (isTrackDownloaded(track.id) || isTrackDownloading(track.id)) return;
@@ -433,7 +438,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         throw new Error(`Source download failed (${sourceResult.status})`);
       }
 
-      const transcodedDownloadUrl = await transcodeViaHostedRawarr(sourcePath);
+      const transcodedDownloadUrl = await transcodeViaHostedRawarr(sourcePath, downloadQuality);
       const result = await FileSystem.downloadAsync(
         transcodedDownloadUrl,
         localPath,
@@ -490,7 +495,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       await FileSystem.deleteAsync(sourcePath, { idempotent: true }).catch(() => {});
       setTrackDownloading(track.id, false);
     }
-  }, [activeServer?.id, activeServer?.type, isTrackDownloaded, isTrackDownloading, resolveTrack, setTrackDownloading, updateCollections, updateTracks]);
+  }, [activeServer?.id, activeServer?.type, downloadQuality, isTrackDownloaded, isTrackDownloading, resolveTrack, setTrackDownloading, updateCollections, updateTracks]);
 
   const removeJob = useCallback((jobId: string) => {
     updateJobs(jobs => jobs.filter(job => job.id !== jobId));

@@ -3,6 +3,7 @@ import {
   AudioQuality,
   PreferredCodec,
   LibrarySortOrder,
+  LibraryCategory,
   ThemeMode,
   SearchScope,
   AppLanguage
@@ -22,16 +23,18 @@ export const selectGridColumns = (state: RootState): number =>
 export const selectGridSpacing = (state: RootState): number =>
   state.settings.gridSpacing;
 
-export const selectIsGridView = (state: RootState): boolean =>
-  state.settings.isGridView;
+export const selectLibraryGridView =
+  (category: LibraryCategory) =>
+  (state: RootState): boolean =>
+    state.settings.libraryGridViewByCategory[category];
 
 export const selectPlayingBarAction = (state: RootState) =>
   state.settings.playingBarAction;
 
-export const selectLibrarySortOrder = (
-  state: RootState
-): LibrarySortOrder =>
-  state.settings.librarySortOrder;
+export const selectLibrarySortOrder =
+  (category: LibraryCategory) =>
+  (state: RootState): LibrarySortOrder =>
+    state.settings.librarySortOrderByCategory[category];
 
 export const selectSearchScope = (
   state: RootState
@@ -47,11 +50,6 @@ export const selectHasSeenGetStarted = (
   state: RootState
 ): boolean =>
   state.settings.hasSeenGetStarted;
-
-export const selectAudioQuality = (
-  state: RootState
-): AudioQuality =>
-  state.settings.audioQuality;
 
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
@@ -73,6 +71,9 @@ export const selectWifiStreamQuality = (state: RootState): AudioQuality =>
 
 export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
   state.settings.cellularStreamQuality ?? 'high';
+
+export const selectDownloadQuality = (state: RootState): AudioQuality =>
+  state.settings.downloadQuality ?? 'high';
 
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;

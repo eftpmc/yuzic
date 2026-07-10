@@ -43,7 +43,6 @@ interface SearchContextType {
   searchExternal: (query: string) => Promise<SearchResult[]>;
   clearSearch: () => void;
   isLoading: boolean;
-  handleSearch: (query: string) => Promise<void>;
   handleSearchWithFilters: (query: string, filters: SearchFilters) => Promise<void>;
 }
 
@@ -346,48 +345,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     setIsLoading(false);
   }, []);
 
-  const handleSearch = useCallback(async (query: string) => {
-    const requestId = ++searchRequestIdRef.current;
-
-    if (!query.trim()) {
-      setSearchResults([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const lowerQuery = query.toLowerCase();
-      const results: SearchResult[] = [];
-
-      if (searchScope.includes('client')) {
-        results.push(...await searchLibrary(query));
-      }
-      if (requestId !== searchRequestIdRef.current) return;
-
-      if (searchScope.includes('server')) {
-        try {
-          results.push(...await searchServer(query));
-        } catch {}
-      }
-      if (requestId !== searchRequestIdRef.current) return;
-
-      if (searchScope.includes('external')) {
-        try {
-          results.push(...await searchExternal(query));
-        } catch {}
-      }
-      if (requestId !== searchRequestIdRef.current) return;
-
-      setSearchResults(dedupeAndSort(results, lowerQuery));
-    } finally {
-      if (requestId === searchRequestIdRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [searchExternal, searchLibrary, searchScope, searchServer]);
-
   const handleSearchWithFilters = useCallback(async (query: string, filters: SearchFilters) => {
     const requestId = ++searchRequestIdRef.current;
     if (!query.trim()) {
@@ -428,7 +385,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     searchExternal,
     clearSearch,
     isLoading,
-    handleSearch,
     handleSearchWithFilters,
   }), [
     searchResults,
@@ -436,7 +392,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     searchExternal,
     clearSearch,
     isLoading,
-    handleSearch,
     handleSearchWithFilters,
   ]);
 

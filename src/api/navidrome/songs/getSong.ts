@@ -1,14 +1,15 @@
 import { Song } from "@/types";
 import type { NavidromeClient } from "../client";
+import { SubsonicResponse } from "../types";
 
 export async function getSong(
   client: NavidromeClient,
   songId: string
 ): Promise<Song | null> {
   try {
-    const raw = await client.request<any>("getSong.view", { id: songId });
+    const raw = await client.request<SubsonicResponse>("getSong.view", { id: songId });
     const s = raw?.["subsonic-response"]?.song;
-    if (!s) return null;
+    if (!s?.id) return null;
 
     const streamUrl = client.buildStreamUrl(s.id);
 
@@ -34,7 +35,7 @@ export async function getSong(
       dateAdded: s.created ?? undefined,
       bpm: s.bpm ?? undefined,
       genres: Array.isArray(s.genres) && s.genres.length > 0
-        ? s.genres.map((g: any) => g?.name ?? g).filter(Boolean)
+        ? s.genres.map((g) => (typeof g === "string" ? g : g?.name)).filter((g): g is string => !!g)
         : undefined,
     };
   } catch (error) {

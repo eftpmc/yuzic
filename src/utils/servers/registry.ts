@@ -8,14 +8,14 @@ import { connect as connectNavidrome } from '@/api/navidrome/auth/connect';
 import { createNavidromeAdapter } from '@/api/navidrome';
 
 import { createJellyfinClient } from '@/api/jellyfin/client';
-import { ping as pingJellyfin } from '@/api/jellyfin/auth/ping';
-import { connect as connectJellyfin } from '@/api/jellyfin/auth/connect';
 import { createJellyfinAdapter } from '@/api/jellyfin';
 
 import { createEmbyClient } from '@/api/emby/client';
-import { ping as pingEmby } from '@/api/emby/auth/ping';
-import { connect as connectEmby } from '@/api/emby/auth/connect';
 import { createEmbyAdapter } from '@/api/emby';
+
+import { ping as pingMediaBrowser } from '@/api/mediaBrowser/auth/ping';
+import { connect as connectMediaBrowser } from '@/api/mediaBrowser/auth/connect';
+import { JELLYFIN_BRAND, EMBY_BRAND } from '@/api/mediaBrowser/brand';
 
 import { ServerType, Server, CoverSource, BasicAuth } from '@/types';
 import type { Library, ApiAdapter } from '@/api/types';
@@ -154,10 +154,10 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       const userId = auth.userId as string;
       if (!token || !userId) return false;
       const client = createJellyfinClient({ serverUrl: url, token, userId, basicAuth });
-      return pingJellyfin(client);
+      return pingMediaBrowser(client);
     },
     connect: async (url, username, password, basicAuth) => {
-      const result = await connectJellyfin(url, username, password, basicAuth);
+      const result = await connectMediaBrowser(JELLYFIN_BRAND, url, username, password, basicAuth);
       if (!result.success) {
         return {
           success: false,
@@ -196,10 +196,10 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       const userId = auth.userId as string;
       if (!token || !userId) return false;
       const client = createEmbyClient({ serverUrl: url, token, userId, basicAuth });
-      return pingEmby(client);
+      return pingMediaBrowser(client);
     },
     connect: async (url, username, password, basicAuth) => {
-      const result = await connectEmby(url, username, password, basicAuth);
+      const result = await connectMediaBrowser(EMBY_BRAND, url, username, password, basicAuth);
       if (!result.success) {
         return {
           success: false,

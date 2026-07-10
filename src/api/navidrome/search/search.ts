@@ -2,6 +2,7 @@ import { AlbumBase } from '@/types/Album';
 import { Artist } from '@/types/Artist';
 import { Song } from '@/types/Song';
 import type { NavidromeClient } from '../client';
+import { SubsonicResponse } from '../types';
 
 export type NavidromeSearchResult = {
   albums: AlbumBase[];
@@ -17,7 +18,7 @@ export async function search(
     return { albums: [], artists: [], songs: [] };
   }
 
-  const data = await client.request<any>("search3.view", {
+  const data = await client.request<SubsonicResponse>("search3.view", {
     query,
     artistCount: 20,
     albumCount: 20,
@@ -29,13 +30,13 @@ export async function search(
     return { albums: [], artists: [], songs: [] };
   }
 
-  const albums: AlbumBase[] = (r.album ?? []).map((a: any) => ({
-    id: a.id,
-    title: a.name,
-    subtext: a.artist,
+  const albums: AlbumBase[] = (r.album ?? []).map((a) => ({
+    id: a.id ?? '',
+    title: a.name ?? 'Unknown Album',
+    subtext: a.artist ?? '',
     artist: {
-      id: a.artistId,
-      name: a.artist,
+      id: a.artistId ?? '',
+      name: a.artist ?? 'Unknown Artist',
       subtext: 'Artist',
       cover: a.artistId
         ? { kind: 'navidrome' as const, coverArtId: a.artistId }
@@ -49,9 +50,9 @@ export async function search(
     created: a.created ? new Date(a.created) : new Date(0),
   }));
 
-  const artists: Artist[] = (r.artist ?? []).map((a: any) => ({
-    id: a.id,
-    name: a.name,
+  const artists: Artist[] = (r.artist ?? []).map((a) => ({
+    id: a.id ?? '',
+    name: a.name ?? 'Unknown Artist',
     subtext: "Artist",
     cover: a.coverArt
       ? { kind: "navidrome" as const, coverArtId: a.coverArt }
@@ -59,21 +60,23 @@ export async function search(
     albumIds: [],
   }));
 
-  const songs: Song[] = (r.song ?? []).map((s: any) => ({
-    id: s.id,
-    title: s.title ?? 'Unknown',
-    artist: s.artist ?? 'Unknown Artist',
-    artistId: s.artistId ?? '',
-    albumId: s.albumId ?? '',
-    cover: s.coverArt
-      ? { kind: 'navidrome' as const, coverArtId: s.coverArt }
-      : { kind: 'none' as const },
-    duration: String(s.duration ?? 0),
-    streamUrl: client.buildStreamUrl(s.id),
-    dateReleased: s.year != null ? String(s.year) : undefined,
-    trackNumber: s.track ?? undefined,
-    disc: s.discNumber ?? undefined,
-  }));
+  const songs: Song[] = (r.song ?? [])
+    .filter((s): s is typeof s & { id: string } => !!s?.id)
+    .map((s) => ({
+      id: s.id,
+      title: s.title ?? 'Unknown',
+      artist: s.artist ?? 'Unknown Artist',
+      artistId: s.artistId ?? '',
+      albumId: s.albumId ?? '',
+      cover: s.coverArt
+        ? { kind: 'navidrome' as const, coverArtId: s.coverArt }
+        : { kind: 'none' as const },
+      duration: String(s.duration ?? 0),
+      streamUrl: client.buildStreamUrl(s.id),
+      dateReleased: s.year != null ? String(s.year) : undefined,
+      trackNumber: s.track ?? undefined,
+      disc: s.discNumber ?? undefined,
+    }));
 
   return { albums, artists, songs };
 }
