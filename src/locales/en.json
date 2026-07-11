@@ -377,12 +377,7 @@
       "add": "Add Server",
       "active": "ACTIVE",
       "deleteTitle": "Delete Server",
-      "deleteBody": "Remove {{server}}?",
-      "switchClearTitle": "Switch server and clear downloads?",
-      "switchClearBody": "Switching servers clears local downloads to prevent overlap.",
-      "switchClearConfirm": "Switch & Clear",
-      "switchClearFailedTitle": "Couldn't switch server",
-      "switchClearFailedBody": "Failed to clear downloads before switching servers."
+      "deleteBody": "Remove {{server}}?"
     },
     "connect": {
       "title": "Choose a Server Type",

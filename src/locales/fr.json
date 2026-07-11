@@ -338,12 +338,7 @@
       "add": "Ajouter un serveur",
       "active": "ACTIF",
       "deleteTitle": "Supprimer le serveur",
-      "deleteBody": "Supprimer {{server}} ?",
-      "switchClearTitle": "Changer de serveur et effacer les téléchargements ?",
-      "switchClearBody": "Le changement de serveur effacera les téléchargements locaux pour éviter les chevauchements.",
-      "switchClearConfirm": "Changer et effacer",
-      "switchClearFailedTitle": "Impossible de changer de serveur",
-      "switchClearFailedBody": "Échec de l'effacement des téléchargements avant le changement de serveur."
+      "deleteBody": "Supprimer {{server}} ?"
     },
     "connect": {
       "title": "Choisissez un type de serveur",

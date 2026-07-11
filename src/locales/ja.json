@@ -338,12 +338,7 @@
       "add": "サーバーを追加",
       "active": "使用中",
       "deleteTitle": "サーバーを削除",
-      "deleteBody": "{{server}} を削除しますか？",
-      "switchClearTitle": "サーバーを切り替えてダウンロードを削除しますか？",
-      "switchClearBody": "重複を防ぐため、切り替え時にローカルのダウンロードを削除します。",
-      "switchClearConfirm": "切り替えて削除",
-      "switchClearFailedTitle": "サーバーを切り替えできませんでした",
-      "switchClearFailedBody": "サーバー切り替え前のダウンロード削除に失敗しました。"
+      "deleteBody": "{{server}} を削除しますか？"
     },
     "connect": {
       "title": "サーバーの種類を選択",

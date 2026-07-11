@@ -338,12 +338,7 @@
       "add": "添加服务器",
       "active": "当前使用",
       "deleteTitle": "删除服务器",
-      "deleteBody": "是否删除 {{server}}？",
-      "switchClearTitle": "切换服务器并清空下载内容？",
-      "switchClearBody": "切换服务器会清空本地下载内容，以避免数据冲突。",
-      "switchClearConfirm": "切换并清空",
-      "switchClearFailedTitle": "无法切换服务器",
-      "switchClearFailedBody": "切换服务器前，清空下载内容失败。"
+      "deleteBody": "是否删除 {{server}}？"
     },
     "connect": {
       "title": "选择服务器类型",
