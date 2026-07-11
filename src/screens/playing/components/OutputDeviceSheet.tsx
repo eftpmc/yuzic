@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback } from 'react';
+import React, { forwardRef, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -35,21 +35,33 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
   const handleOpen = useCallback(() => { scan(); }, [scan]);
 
+  // Tracks which specific device was tapped — isConnecting/isGoogleCastConnecting
+  // are single global flags, so without this every row in a multi-device list
+  // would show a loading spinner while only one is actually connecting.
+  const [connectingDlnaUdn, setConnectingDlnaUdn] = useState<string | null>(null);
+  const [connectingCastId, setConnectingCastId] = useState<string | null>(null);
+
   const handleConnectDlna = useCallback(async (device: DiscoveredDevice) => {
+    setConnectingDlnaUdn(device.udn);
     try {
       await connectToDevice(device);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     } catch {
       toast.error('Could not connect to device');
+    } finally {
+      setConnectingDlnaUdn(null);
     }
   }, [connectToDevice, ref]);
 
   const handleConnectCast = useCallback(async (deviceId: string) => {
+    setConnectingCastId(deviceId);
     try {
       await connectToGoogleCast(deviceId);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     } catch {
       toast.error('Could not connect to device');
+    } finally {
+      setConnectingCastId(null);
     }
   }, [connectToGoogleCast, ref]);
 
@@ -162,7 +174,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
               <Cast size={18} color={colors.subtext} />
               <Text style={[styles.itemLabel, { color: colors.secondary }]}>{device.friendlyName}</Text>
             </View>
-            {isGoogleCastConnecting && <SpinningLoaderCircle size={18} color={colors.subtext} />}
+            {connectingCastId === device.deviceId && <SpinningLoaderCircle size={18} color={colors.subtext} />}
           </TouchableOpacity>
         ))}
 
@@ -203,7 +215,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
                 <Cast size={18} color={colors.subtext} />
                 <Text style={[styles.itemLabel, { color: colors.secondary }]}>{device.name}</Text>
               </View>
-              {isConnecting && <SpinningLoaderCircle size={18} color={colors.subtext} />}
+              {connectingDlnaUdn === device.udn && <SpinningLoaderCircle size={18} color={colors.subtext} />}
             </TouchableOpacity>
           );
         })}
