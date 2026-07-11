@@ -26,6 +26,7 @@ import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent } from './playingQueue';
+import { resolvePlaybackErrorAction } from './playbackErrorRecovery';
 import { useDownloadActions } from './DownloadContext';
 import { useCast } from './CastContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
@@ -365,8 +366,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       // First failure for this specific track: refresh every URL in the queue
       // (catches stale Navidrome tokens after JS context restarts) then retry.
-      if (song?.id && lastRecoveryAttemptedIdRef.current !== song.id) {
-        lastRecoveryAttemptedIdRef.current = song.id;
+      const decision = resolvePlaybackErrorAction(lastRecoveryAttemptedIdRef.current, song?.id);
+      if (decision.action === 'retry') {
+        lastRecoveryAttemptedIdRef.current = decision.nextLastRecoveryAttemptedId;
         const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
         queueRef.current = freshQueue;
         currentSongRef.current = freshQueue[currentIndexRef.current] ?? song;

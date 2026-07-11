@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -7,6 +7,7 @@ import { useApi } from '@/api';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { usePollWhile } from '@/hooks/usePollWhile';
 import i18n from '@/i18n';
 import { OfflineMutation } from '@/utils/offline/offlineMutations';
 import { selectOfflineMutationQueue } from '@/utils/redux/selectors/offlineMutationsSelectors';
@@ -49,18 +50,14 @@ export default function OfflineMutationReplayer() {
   const queue = useSelector(selectOfflineMutationQueue);
   const isOffline = useIsOffline();
   const isReplayingRef = useRef(false);
-  const [retryTick, setRetryTick] = useState(0);
 
   // nextRetryAt only matters once it's in the past, and nothing else in this
   // component's dependencies changes with the passage of time — without this,
   // a failed mutation's backoff would never actually elapse on its own; it'd
   // only get re-checked if some unrelated change (new mutation, connectivity
   // flip) happened to touch the queue/server/offline deps afterward.
-  useEffect(() => {
-    if (!queue.some(item => item.nextRetryAt)) return;
-    const interval = setInterval(() => setRetryTick(t => t + 1), RETRY_POLL_MS);
-    return () => clearInterval(interval);
-  }, [queue]);
+  const hasScheduledRetry = queue.some(item => item.nextRetryAt);
+  const retryTick = usePollWhile(hasScheduledRetry, RETRY_POLL_MS);
 
   useEffect(() => {
     if (isOffline || !activeServer?.id || !activeServer.isAuthenticated) return;
