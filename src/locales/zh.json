@@ -95,20 +95,20 @@
         "neverSynced": "从未同步",
         "justNow": "刚刚",
         "minsAgo": "{{count}} 分钟前",
-        "minsAgo_plural": "{{count}} 分钟前",
+        "minsAgo_other": "{{count}} 分钟前",
         "hoursAgo": "{{count}} 小时前",
-        "hoursAgo_plural": "{{count}} 小时前",
+        "hoursAgo_other": "{{count}} 小时前",
         "daysAgo": "{{count}} 天前",
-        "daysAgo_plural": "{{count}} 天前",
+        "daysAgo_other": "{{count}} 天前",
         "lastSynced": "上次同步",
         "syncOnAppStart": "启动时同步"
       },
       "offlineChanges": {
         "title": "待同步的离线更改",
         "subtitle": "{{count}} 项更改将在联网后同步",
-        "subtitle_plural": "{{count}} 项更改将在联网后同步",
+        "subtitle_other": "{{count}} 项更改将在联网后同步",
         "failedSubtitle": "{{count}} 项更改需要处理后才能同步",
-        "failedSubtitle_plural": "{{count}} 项更改需要处理后才能同步",
+        "failedSubtitle_other": "{{count}} 项更改需要处理后才能同步",
         "retry": "重试",
         "discard": "放弃",
         "discardTitle": "放弃离线更改？",
@@ -232,9 +232,9 @@
       "unknown": "未知",
       "unknownAlbum": "未知专辑",
       "tracks": "曲目",
-      "tracks_plural": "曲目",
+      "tracks_other": "曲目",
       "files": "文件",
-      "files_plural": "文件",
+      "files_other": "文件",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"
@@ -511,7 +511,7 @@
   "playlist": {
     "favoritesTitle": "收藏",
     "subtext": "播放列表 • {{count}} 首曲目",
-    "subtext_plural": "播放列表 • {{count}} 首曲目",
+    "subtext_other": "播放列表 • {{count}} 首曲目",
     "empty": "此播放列表暂无歌曲。",
     "recommended": {
       "title": "推荐",
@@ -616,7 +616,7 @@
     },
     "header": {
       "songs": "{{count}} 首曲目",
-      "songs_plural": "{{count}} 首曲目",
+      "songs_other": "{{count}} 首曲目",
       "externalMetadata": "外部元数据"
     },
     "info": {

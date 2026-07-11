@@ -95,20 +95,20 @@
         "neverSynced": "未同期",
         "justNow": "たった今",
         "minsAgo": "{{count}} 分前",
-        "minsAgo_plural": "{{count}} 分前",
+        "minsAgo_other": "{{count}} 分前",
         "hoursAgo": "{{count}} 時間前",
-        "hoursAgo_plural": "{{count}} 時間前",
+        "hoursAgo_other": "{{count}} 時間前",
         "daysAgo": "{{count}} 日前",
-        "daysAgo_plural": "{{count}} 日前",
+        "daysAgo_other": "{{count}} 日前",
         "lastSynced": "最終同期",
         "syncOnAppStart": "起動時に同期"
       },
       "offlineChanges": {
         "title": "保留中のオフライン変更",
         "subtitle": "{{count}}件の変更をオンライン時に同期します",
-        "subtitle_plural": "{{count}}件の変更をオンライン時に同期します",
+        "subtitle_other": "{{count}}件の変更をオンライン時に同期します",
         "failedSubtitle": "{{count}}件の変更は同期前に確認が必要です",
-        "failedSubtitle_plural": "{{count}}件の変更は同期前に確認が必要です",
+        "failedSubtitle_other": "{{count}}件の変更は同期前に確認が必要です",
         "retry": "再試行",
         "discard": "破棄",
         "discardTitle": "オフライン変更を破棄しますか？",
@@ -232,9 +232,9 @@
       "unknown": "不明",
       "unknownAlbum": "不明なアルバム",
       "tracks": "トラック",
-      "tracks_plural": "トラック",
+      "tracks_other": "トラック",
       "files": "ファイル",
-      "files_plural": "ファイル",
+      "files_other": "ファイル",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"
@@ -511,7 +511,7 @@
   "playlist": {
     "favoritesTitle": "お気に入り",
     "subtext": "プレイリスト・{{count}}曲",
-    "subtext_plural": "プレイリスト・{{count}}曲",
+    "subtext_other": "プレイリスト・{{count}}曲",
     "empty": "このプレイリストにはまだ曲がありません。",
     "recommended": {
       "title": "おすすめ",
@@ -616,7 +616,7 @@
     },
     "header": {
       "songs": "{{count}} 曲",
-      "songs_plural": "{{count}} 曲",
+      "songs_other": "{{count}} 曲",
       "externalMetadata": "外部メタデータ"
     },
     "info": {
