@@ -1,4 +1,4 @@
-import { moveSongAfterCurrent } from './playingQueue'
+import { moveSongAfterCurrent, reconcileUnshuffledQueue } from './playingQueue'
 
 const song = (id: string) => ({ id })
 
@@ -50,5 +50,37 @@ describe('moveSongAfterCurrent', () => {
     )
 
     expect(result).toBeNull()
+  })
+})
+
+describe('reconcileUnshuffledQueue', () => {
+  it('restores the original order unchanged when nothing was added or removed', () => {
+    const result = reconcileUnshuffledQueue(
+      [song('a'), song('b'), song('c')],
+      [song('c'), song('a'), song('b')],
+    )
+
+    expect(result.map(item => item.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('appends a song added to the live queue while shuffled instead of dropping it', () => {
+    // Regression: addToQueue/playNext/etc. only mutate the live shuffled
+    // queue, never the pre-shuffle snapshot — restoring the snapshot as-is
+    // used to silently drop anything added during shuffle playback.
+    const result = reconcileUnshuffledQueue(
+      [song('a'), song('b'), song('c')],
+      [song('b'), song('a'), song('x'), song('c')],
+    )
+
+    expect(result.map(item => item.id)).toEqual(['a', 'b', 'c', 'x'])
+  })
+
+  it('does not resurrect a song removed from the live queue while shuffled', () => {
+    const result = reconcileUnshuffledQueue(
+      [song('a'), song('b'), song('c')],
+      [song('c'), song('a')],
+    )
+
+    expect(result.map(item => item.id)).toEqual(['a', 'c'])
   })
 })
