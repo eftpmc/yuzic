@@ -19,8 +19,6 @@ import type { Song } from '@/types';
 import {
   doesTrackMatchProviderScope,
   DownloadProviderScope,
-  getDownloadedTrackServerId,
-  normalizeServerId,
 } from '@/utils/downloads/provider';
 import {
   DownloadedCollectionEntry,
@@ -683,20 +681,22 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       FileSystem.deleteAsync(track.localPath, { idempotent: true }).catch(() => {})
     ));
     const deletedIds = new Set(tracksToDelete.map(track => track.trackId));
-    const serverId = normalizeServerId(scope?.serverId);
 
     updateTracks(tracks => tracks.filter(track => !deletedIds.has(track.trackId)));
-    updateCollections(collections => collections.filter(collection => {
-      if (!serverId) return false;
-      const collectionTracks = collection.trackIds
-        .map(trackId => state.tracks.find(track => track.trackId === trackId))
-        .filter(Boolean) as LocalDownloadedTrackEntry[];
-      return collectionTracks.some(track => getDownloadedTrackServerId(track) !== serverId);
-    }));
-    updateJobs(jobs => {
-      if (!serverId) return [];
-      return jobs.filter(job => job.tracks.some(track => track.sourceServerId !== serverId));
-    });
+    // Trim the deleted trackIds out of every collection instead of deciding
+    // whether to drop the whole collection from a resolved serverId alone —
+    // that guard dropped every collection (any provider) whenever the scope
+    // couldn't resolve a serverId, e.g. a corrupt "unknown provider" row.
+    updateCollections(collections => collections
+      .map(collection => ({
+        ...collection,
+        trackIds: collection.trackIds.filter(trackId => !deletedIds.has(trackId)),
+      }))
+      .filter(collection => collection.trackIds.length > 0));
+    updateJobs(jobs => jobs.filter(job => job.tracks.some(track => !doesTrackMatchProviderScope(
+      { serverId: track.sourceServerId, serverType: track.sourceServerType },
+      scope
+    ))));
   }, [state.tracks, updateCollections, updateJobs, updateTracks]);
 
   const clearAllDownloads = useCallback(async () => {
