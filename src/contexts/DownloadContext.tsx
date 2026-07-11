@@ -517,8 +517,15 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       await ensureDownloadDir();
       await cleanupTempDownloads();
 
-      while (jobsRef.current.length > 0) {
-        const [job] = jobsRef.current;
+      // A job that keeps failing (dead link, deleted track, transcode
+      // outage) must not wedge every other queued download behind it —
+      // skip it for the rest of this run instead of stopping the whole
+      // queue. It stays in the queue and gets another attempt next time
+      // processDownloadQueue runs (app foreground, manual resume, etc).
+      const failedJobIds = new Set<string>();
+
+      while (true) {
+        const job = jobsRef.current.find(candidate => !failedJobIds.has(candidate.id));
         if (!job) break;
 
         let failed = false;
@@ -534,7 +541,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
           }
         }
 
-        if (failed) break;
+        if (failed) {
+          failedJobIds.add(job.id);
+          continue;
+        }
         removeJob(job.id);
       }
     })();
