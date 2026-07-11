@@ -24,6 +24,11 @@ import {
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
 
+// Quick Connect codes expire server-side; without a client-side ceiling too,
+// polling would continue forever showing "waiting for approval" with no
+// indication the code had gone stale.
+const QUICK_CONNECT_TIMEOUT_MS = 10 * 60 * 1000;
+
 export default function Credentials() {
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -46,6 +51,7 @@ export default function Credentials() {
     const [, setQuickSecret] = useState('');
     const [isPolling, setIsPolling] = useState(false);
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollStartedAtRef = useRef(0);
 
     const passwordRef = useRef<TextInput>(null);
     const proxyUsernameRef = useRef<TextInput>(null);
@@ -135,8 +141,18 @@ export default function Credentials() {
             setQuickCode(code);
             setQuickSecret(secret);
             setIsPolling(true);
+            pollStartedAtRef.current = Date.now();
 
             pollIntervalRef.current = setInterval(async () => {
+                if (Date.now() - pollStartedAtRef.current > QUICK_CONNECT_TIMEOUT_MS) {
+                    stopPolling();
+                    toast.error('Quick Connect code expired. Please try again.');
+                    setQuickConnectMode(false);
+                    setQuickCode('');
+                    setQuickSecret('');
+                    return;
+                }
+
                 const authenticated = await pollQuickConnect(serverUrl, secret, buildBasicAuth());
                 if (!authenticated) return;
 
