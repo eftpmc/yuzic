@@ -20,6 +20,7 @@ import { usePlaylists } from '@/hooks/playlists'
 import { useTracks } from '@/hooks/tracks'
 import { useTheme } from '@/hooks/useTheme'
 import { useDownload } from '@/contexts/DownloadContext'
+import { useAccountSheet } from '@/contexts/AccountSheetContext'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 import {
   selectThemeColor,
@@ -38,7 +39,6 @@ import {
 import type { AlbumBase, Artist, PlaylistBase, SongBase } from '@/types'
 
 import HomeHeader from '@/screens/library/components/Header'
-import AccountBottomSheet from '@/screens/library/components/AccountBottomSheet'
 import AlbumItem from '@/screens/library/components/Items/AlbumItem'
 import ArtistItem from '@/screens/library/components/Items/ArtistItem'
 import PlaylistItem from '@/screens/library/components/Items/PlaylistItem'
@@ -139,16 +139,15 @@ export default function LibraryScreen() {
   const gridSpacing = useSelector(selectGridSpacing)
   const activeServer = useSelector(selectActiveServer)
   const username = activeServer?.username
+  const { openAccountSheet } = useAccountSheet()
 
   const [filter, setFilter] = useState<Filter>(null)
   const [listFilter, setListFilter] = useState<Filter>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
-  const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false)
 
   const listOpacity = useSharedValue(1)
   const animatedListStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }))
 
-  const accountSheetRef = useSheetRef()
   const sortSheetRef = useSheetRef()
   const gridSheetRef = useSheetRef()
 
@@ -214,15 +213,6 @@ export default function LibraryScreen() {
       listOpacity.value = withTiming(1, { duration: 220, easing: Easing.out(Easing.ease) })
     })
   }, [listOpacity])
-
-  const toggleAccountSheet = useCallback(() => {
-    if (isAccountSheetOpen) {
-      accountSheetRef.current?.dismiss()
-    } else {
-      setIsAccountSheetOpen(true)
-      accountSheetRef.current?.present()
-    }
-  }, [accountSheetRef, isAccountSheetOpen])
 
   const FILTERS = useMemo(() => [
     { value: 'playlists'  as const, label: t('home.filters.playlists') },
@@ -300,7 +290,7 @@ export default function LibraryScreen() {
       <HomeHeader
         title={t('library.title')}
         username={username}
-        onAccountPress={toggleAccountSheet}
+        onAccountPress={openAccountSheet}
       />
 
       <View style={[styles.filterRow, { backgroundColor: colors.background }]}>
@@ -370,11 +360,6 @@ export default function LibraryScreen() {
         showsVerticalScrollIndicator={false}
       />
       </Animated.View>
-
-      <AccountBottomSheet
-        ref={accountSheetRef}
-        onDismiss={() => setIsAccountSheetOpen(false)}
-      />
 
       <SortBottomSheet
         ref={sortSheetRef}
