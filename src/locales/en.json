@@ -95,20 +95,20 @@
         "neverSynced": "Never synced",
         "justNow": "Just now",
         "minsAgo": "{{count}} min ago",
-        "minsAgo_plural": "{{count}} mins ago",
+        "minsAgo_other": "{{count}} mins ago",
         "hoursAgo": "{{count}} hr ago",
-        "hoursAgo_plural": "{{count}} hrs ago",
+        "hoursAgo_other": "{{count}} hrs ago",
         "daysAgo": "{{count}} day ago",
-        "daysAgo_plural": "{{count}} days ago",
+        "daysAgo_other": "{{count}} days ago",
         "lastSynced": "Last synced",
         "syncOnAppStart": "Sync on app start"
       },
       "offlineChanges": {
         "title": "Pending offline changes",
         "subtitle": "{{count}} change will sync when you're online",
-        "subtitle_plural": "{{count}} changes will sync when you're online",
+        "subtitle_other": "{{count}} changes will sync when you're online",
         "failedSubtitle": "{{count}} change needs attention before it can sync",
-        "failedSubtitle_plural": "{{count}} changes need attention before they can sync",
+        "failedSubtitle_other": "{{count}} changes need attention before they can sync",
         "retry": "Retry",
         "discard": "Discard",
         "discardTitle": "Discard offline changes?",
@@ -269,9 +269,9 @@
       "unknown": "Unknown",
       "unknownAlbum": "Unknown Album",
       "tracks": "track",
-      "tracks_plural": "tracks",
+      "tracks_other": "tracks",
       "files": "file",
-      "files_plural": "files",
+      "files_other": "files",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"
@@ -417,14 +417,20 @@
       "subtitle": "Enter your username and password to continue.",
       "usernamePlaceholder": "Username",
       "passwordPlaceholder": "Password",
-      "libraryTitle": "Choose Library",
-      "librarySubtitle": "Select which Navidrome library to use for this server.",
-      "confirmLibrary": "Use Library",
-      "selectLibraryRequired": "Please select a library to continue.",
       "missingCredentials": "Please enter both username and password.",
       "authFailed": "Authentication failed.",
       "apiNotResponding": "Server connected, but API is not responding.",
       "connectError": "An error occurred while connecting."
+    },
+    "libraries": {
+      "title": "Choose Libraries",
+      "subtitle": "Select which libraries to include. You can pick multiple, or leave all selected to include everything.",
+      "allLibraries": "All Libraries",
+      "loadError": "Could not load libraries. Check your connection and try again.",
+      "retry": "Retry",
+      "useAll": "Use All Libraries",
+      "continueWith": "Continue with {{count}} Library",
+      "continueWith_other": "Continue with {{count}} Libraries"
     }
   },
   "library": {
@@ -541,7 +547,7 @@
   "playlist": {
     "favoritesTitle": "Favorites",
     "subtext": "Playlist • {{count}} song",
-    "subtext_plural": "Playlist • {{count}} songs",
+    "subtext_other": "Playlist • {{count}} songs",
     "empty": "This playlist has no songs yet.",
     "recommended": {
       "title": "Recommended",
@@ -648,7 +654,7 @@
     },
     "header": {
       "songs": "{{count}} song",
-      "songs_plural": "{{count}} songs",
+      "songs_other": "{{count}} songs",
       "externalMetadata": "External metadata"
     }
   },

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   TextInput,
@@ -37,13 +37,12 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 import HomeHeader from '@/screens/library/components/Header';
-import AccountBottomSheet from '@/screens/library/components/AccountBottomSheet';
+import { useAccountSheet } from '@/contexts/AccountSheetContext';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
   const songOptionsRef = useSheetRef();
   const playlistListRef = useSheetRef();
-  const accountSheetRef = useSheetRef();
   const navigation = useNavigation<any>();
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
@@ -53,16 +52,7 @@ const Search = () => {
   const deezerSearchEnabled = useDeezerSearchEnabled();
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const username = useSelector(selectActiveServer)?.username;
-
-  const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false);
-  const toggleAccountSheet = useCallback(() => {
-    if (isAccountSheetOpen) {
-      accountSheetRef.current?.dismiss();
-    } else {
-      setIsAccountSheetOpen(true);
-      accountSheetRef.current?.present();
-    }
-  }, [accountSheetRef, isAccountSheetOpen]);
+  const { openAccountSheet } = useAccountSheet();
 
   const [query, setQuery] = useState('');
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -240,7 +230,7 @@ const Search = () => {
       <HomeHeader
         title={t('search.title')}
         username={username}
-        onAccountPress={toggleAccountSheet}
+        onAccountPress={openAccountSheet}
       />
       <View style={styles.headerRow}>
         <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
@@ -323,10 +313,6 @@ const Search = () => {
         ref={playlistListRef}
         selectedSong={selectedSong}
         onClose={() => playlistListRef.current?.dismiss()}
-      />
-      <AccountBottomSheet
-        ref={accountSheetRef}
-        onDismiss={() => setIsAccountSheetOpen(false)}
       />
     </SafeAreaView>
   );

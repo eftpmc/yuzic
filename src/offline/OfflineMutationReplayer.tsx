@@ -7,6 +7,7 @@ import { useApi } from '@/api';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { usePollWhile } from '@/hooks/usePollWhile';
 import i18n from '@/i18n';
 import { OfflineMutation } from '@/utils/offline/offlineMutations';
 import { selectOfflineMutationQueue } from '@/utils/redux/selectors/offlineMutationsSelectors';
@@ -19,6 +20,7 @@ import {
 const SYNCED_TOAST_ID = 'offline-mutations-synced';
 const FAILED_TOAST_ID = 'offline-mutations-failed';
 const RETRY_BACKOFF_MS = 60_000;
+const RETRY_POLL_MS = 30_000;
 
 async function replayMutation(api: ReturnType<typeof useApi>, mutation: OfflineMutation) {
   switch (mutation.type) {
@@ -48,6 +50,14 @@ export default function OfflineMutationReplayer() {
   const queue = useSelector(selectOfflineMutationQueue);
   const isOffline = useIsOffline();
   const isReplayingRef = useRef(false);
+
+  // nextRetryAt only matters once it's in the past, and nothing else in this
+  // component's dependencies changes with the passage of time — without this,
+  // a failed mutation's backoff would never actually elapse on its own; it'd
+  // only get re-checked if some unrelated change (new mutation, connectivity
+  // flip) happened to touch the queue/server/offline deps afterward.
+  const hasScheduledRetry = queue.some(item => item.nextRetryAt);
+  const retryTick = usePollWhile(hasScheduledRetry, RETRY_POLL_MS);
 
   useEffect(() => {
     if (isOffline || !activeServer?.id || !activeServer.isAuthenticated) return;
@@ -108,7 +118,7 @@ export default function OfflineMutationReplayer() {
     })().catch(() => {
       isReplayingRef.current = false;
     });
-  }, [activeServer, api, dispatch, isOffline, queryClient, queue]);
+  }, [activeServer, api, dispatch, isOffline, queryClient, queue, retryTick]);
 
   return null;
 }

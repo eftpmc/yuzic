@@ -14,6 +14,7 @@ import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { clearLibrary } from '@/utils/redux/slices/librarySlice';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
+import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -102,6 +103,7 @@ export default function HomeLayout() {
 
     return (
         <ExternalResolutionProvider>
+        <AccountSheetProvider>
         <View style={{ flex: 1 }}>
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
@@ -174,6 +176,7 @@ export default function HomeLayout() {
             </View>
 
         </View>
+        </AccountSheetProvider>
         </ExternalResolutionProvider>
     );
 }

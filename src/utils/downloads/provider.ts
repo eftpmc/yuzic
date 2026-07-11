@@ -58,6 +58,14 @@ export function doesTrackMatchProviderScope(
 
   const scopeServerId = normalizeServerId(scope.serverId);
   const scopeServerType = normalizeServerType(scope.serverType);
+
+  // A scope object was explicitly passed but neither field resolved to
+  // anything identifiable (e.g. a downloaded track with missing/corrupt
+  // server metadata produced an "unknown provider" row with no serverId).
+  // Falling through to "match everything" here would turn a provider-
+  // scoped clear into a clear-all — match nothing instead.
+  if (!scopeServerId && !scopeServerType) return false;
+
   const trackServerId = getDownloadedTrackServerId(track);
   const trackServerType = getDownloadedTrackServerType(track);
 

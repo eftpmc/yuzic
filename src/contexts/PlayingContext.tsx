@@ -25,7 +25,8 @@ import { useApi } from '@/api';
 import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
-import { moveSongAfterCurrent } from './playingQueue';
+import { moveSongAfterCurrent, reconcileUnshuffledQueue } from './playingQueue';
+import { resolvePlaybackErrorAction } from './playbackErrorRecovery';
 import { useDownloadActions } from './DownloadContext';
 import { useCast } from './CastContext';
 import { useScrobbling } from '@/hooks/useScrobbling';
@@ -365,8 +366,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       // First failure for this specific track: refresh every URL in the queue
       // (catches stale Navidrome tokens after JS context restarts) then retry.
-      if (song?.id && lastRecoveryAttemptedIdRef.current !== song.id) {
-        lastRecoveryAttemptedIdRef.current = song.id;
+      const decision = resolvePlaybackErrorAction(lastRecoveryAttemptedIdRef.current, song?.id);
+      if (decision.action === 'retry') {
+        lastRecoveryAttemptedIdRef.current = decision.nextLastRecoveryAttemptedId;
         const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
         queueRef.current = freshQueue;
         currentSongRef.current = freshQueue[currentIndexRef.current] ?? song;
@@ -690,7 +692,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         bumpQueue();
         await loadQueue(shuffled, 0, wasPlaying, savedPosition);
       } else if (originalQueueRef.current) {
-        const original = originalQueueRef.current;
+        // addToQueue/playNext/addCollectionToQueue/etc. only ever mutate the
+        // live (shuffled) queueRef, never the pre-shuffle snapshot — restoring
+        // that snapshot verbatim would silently drop anything added while
+        // shuffled, and resurrect anything removed (e.g. a failed track).
+        const original = reconcileUnshuffledQueue(originalQueueRef.current, queueRef.current);
         const currentId = currentSongRef.current?.id;
         const idx = currentId ? original.findIndex(s => s.id === currentId) : 0;
         const adjustedIdx = idx === -1 ? 0 : idx;

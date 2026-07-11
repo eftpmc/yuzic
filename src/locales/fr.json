@@ -95,20 +95,20 @@
         "neverSynced": "Jamais synchronisé",
         "justNow": "À l'instant",
         "minsAgo": "Il y a {{count}} min",
-        "minsAgo_plural": "Il y a {{count}} min",
+        "minsAgo_other": "Il y a {{count}} min",
         "hoursAgo": "Il y a {{count}} h",
-        "hoursAgo_plural": "Il y a {{count}} h",
+        "hoursAgo_other": "Il y a {{count}} h",
         "daysAgo": "Il y a {{count}} jour",
-        "daysAgo_plural": "Il y a {{count}} jours",
+        "daysAgo_other": "Il y a {{count}} jours",
         "lastSynced": "Dernière synchro",
         "syncOnAppStart": "Synchroniser au démarrage"
       },
       "offlineChanges": {
         "title": "Modifications hors ligne en attente",
         "subtitle": "{{count}} modification sera synchronisée en ligne",
-        "subtitle_plural": "{{count}} modifications seront synchronisées en ligne",
+        "subtitle_other": "{{count}} modifications seront synchronisées en ligne",
         "failedSubtitle": "{{count}} modification nécessite votre attention avant synchronisation",
-        "failedSubtitle_plural": "{{count}} modifications nécessitent votre attention avant synchronisation",
+        "failedSubtitle_other": "{{count}} modifications nécessitent votre attention avant synchronisation",
         "retry": "Réessayer",
         "discard": "Ignorer",
         "discardTitle": "Ignorer les modifications hors ligne ?",
@@ -232,9 +232,9 @@
       "unknown": "Inconnu",
       "unknownAlbum": "Album inconnu",
       "tracks": "piste",
-      "tracks_plural": "pistes",
+      "tracks_other": "pistes",
       "files": "fichier",
-      "files_plural": "fichiers",
+      "files_other": "fichiers",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"
@@ -374,14 +374,20 @@
       "subtitle": "Saisissez votre nom d'utilisateur et votre mot de passe pour continuer.",
       "usernamePlaceholder": "Nom d'utilisateur",
       "passwordPlaceholder": "Mot de passe",
-      "libraryTitle": "Choisir la bibliothèque",
-      "librarySubtitle": "Sélectionnez la bibliothèque Navidrome à utiliser pour ce serveur.",
-      "confirmLibrary": "Utiliser la bibliothèque",
-      "selectLibraryRequired": "Veuillez sélectionner une bibliothèque pour continuer.",
       "missingCredentials": "Veuillez saisir le nom d'utilisateur et le mot de passe.",
       "authFailed": "Échec de l'authentification.",
       "apiNotResponding": "Serveur connecté, mais l'API ne répond pas.",
       "connectError": "Une erreur s'est produite lors de la connexion."
+    },
+    "libraries": {
+      "title": "Choisir les bibliothèques",
+      "subtitle": "Sélectionnez les bibliothèques à inclure. Vous pouvez en choisir plusieurs, ou les laisser toutes sélectionnées pour tout inclure.",
+      "allLibraries": "Toutes les bibliothèques",
+      "loadError": "Impossible de charger les bibliothèques. Vérifiez votre connexion et réessayez.",
+      "retry": "Réessayer",
+      "useAll": "Utiliser toutes les bibliothèques",
+      "continueWith": "Continuer avec {{count}} bibliothèque",
+      "continueWith_other": "Continuer avec {{count}} bibliothèques"
     }
   },
   "library": {
@@ -511,7 +517,7 @@
   "playlist": {
     "favoritesTitle": "Favoris",
     "subtext": "Liste de lecture • {{count}} morceau",
-    "subtext_plural": "Liste de lecture • {{count}} morceaux",
+    "subtext_other": "Liste de lecture • {{count}} morceaux",
     "empty": "Cette liste de lecture n'a pas encore de morceaux.",
     "recommended": {
       "title": "Recommandé",
@@ -616,7 +622,7 @@
     },
     "header": {
       "songs": "{{count}} morceau",
-      "songs_plural": "{{count}} morceaux",
+      "songs_other": "{{count}} morceaux",
       "externalMetadata": "Métadonnées externes"
     },
     "info": {

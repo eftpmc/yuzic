@@ -49,4 +49,17 @@ describe('download provider helpers', () => {
     expect(doesTrackMatchProviderScope({}, { serverType: 'navidrome' })).toBe(false);
     expect(doesTrackMatchProviderScope({})).toBe(true);
   });
+
+  it('does not match everything when an explicit scope resolves to nothing identifiable', () => {
+    // Regression: a "clear this provider's downloads" scope built from a
+    // corrupt/legacy download (e.g. an "unknown provider" row with no
+    // serverId) used to fall through to the same branch as "no scope
+    // passed at all" and match every track — turning a scoped clear into
+    // a clear-all. An explicitly-passed scope that resolves to nothing
+    // must match nothing, not everything.
+    const track = { serverId: 'server-a', serverType: 'navidrome' };
+    expect(doesTrackMatchProviderScope(track, { serverId: null, serverType: null })).toBe(false);
+    expect(doesTrackMatchProviderScope(track, {})).toBe(false);
+    expect(doesTrackMatchProviderScope(track, { serverId: '   ' })).toBe(false);
+  });
 });

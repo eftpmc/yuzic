@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { Playlist } from '@/types';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { removeLibraryPlaylistSong } from '@/utils/redux/slices/librarySlice';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
@@ -38,7 +39,18 @@ export function useRemoveSongFromPlaylist() {
 
       await api.playlists.removeSong(playlistId, songId);
     },
-    onSuccess: (_, { playlistId }) => {
+    onSuccess: (_, { playlistId, songId }) => {
+      // Patch the cache directly instead of relying solely on invalidation —
+      // invalidateQueries alone does nothing observable while offline (the
+      // query stays disabled until reconnect), so a removal while offline
+      // left the song visibly still in the playlist with no feedback at all.
+      queryClient.setQueryData<Playlist | null>(
+        [QueryKeys.Playlist, activeServer?.id, playlistId],
+        (old) => {
+          if (!old) return old;
+          return { ...old, songs: old.songs.filter(s => s.id !== songId) };
+        }
+      );
       queryClient.invalidateQueries({
         queryKey: [QueryKeys.Playlist, activeServer?.id, playlistId],
       });
