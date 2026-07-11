@@ -17,6 +17,7 @@ import {
     setActiveServer,
     removeServer,
 } from '@/utils/redux/slices/serversSlice';
+import { clearOfflineMutationsForServer } from '@/utils/redux/slices/offlineMutationsSlice';
 import { Ellipsis } from 'lucide-react-native';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
@@ -57,7 +58,14 @@ export default function Servers() {
                 {
                     text: t('common.delete'),
                     style: 'destructive',
-                    onPress: () => dispatch(removeServer(id)),
+                    onPress: () => {
+                        // Otherwise these become permanently invisible and
+                        // permanently un-retryable: PendingOfflineChanges only
+                        // ever shows entries for the current activeServerId,
+                        // which this server can never be again.
+                        dispatch(clearOfflineMutationsForServer(id));
+                        dispatch(removeServer(id));
+                    },
                 },
             ]
         );
