@@ -417,14 +417,20 @@
       "subtitle": "Enter your username and password to continue.",
       "usernamePlaceholder": "Username",
       "passwordPlaceholder": "Password",
-      "libraryTitle": "Choose Library",
-      "librarySubtitle": "Select which Navidrome library to use for this server.",
-      "confirmLibrary": "Use Library",
-      "selectLibraryRequired": "Please select a library to continue.",
       "missingCredentials": "Please enter both username and password.",
       "authFailed": "Authentication failed.",
       "apiNotResponding": "Server connected, but API is not responding.",
       "connectError": "An error occurred while connecting."
+    },
+    "libraries": {
+      "title": "Choose Libraries",
+      "subtitle": "Select which libraries to include. You can pick multiple, or leave all selected to include everything.",
+      "allLibraries": "All Libraries",
+      "loadError": "Could not load libraries. Check your connection and try again.",
+      "retry": "Retry",
+      "useAll": "Use All Libraries",
+      "continueWith": "Continue with {{count}} Library",
+      "continueWith_other": "Continue with {{count}} Libraries"
     }
   },
   "library": {

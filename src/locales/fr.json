@@ -374,14 +374,20 @@
       "subtitle": "Saisissez votre nom d'utilisateur et votre mot de passe pour continuer.",
       "usernamePlaceholder": "Nom d'utilisateur",
       "passwordPlaceholder": "Mot de passe",
-      "libraryTitle": "Choisir la bibliothèque",
-      "librarySubtitle": "Sélectionnez la bibliothèque Navidrome à utiliser pour ce serveur.",
-      "confirmLibrary": "Utiliser la bibliothèque",
-      "selectLibraryRequired": "Veuillez sélectionner une bibliothèque pour continuer.",
       "missingCredentials": "Veuillez saisir le nom d'utilisateur et le mot de passe.",
       "authFailed": "Échec de l'authentification.",
       "apiNotResponding": "Serveur connecté, mais l'API ne répond pas.",
       "connectError": "Une erreur s'est produite lors de la connexion."
+    },
+    "libraries": {
+      "title": "Choisir les bibliothèques",
+      "subtitle": "Sélectionnez les bibliothèques à inclure. Vous pouvez en choisir plusieurs, ou les laisser toutes sélectionnées pour tout inclure.",
+      "allLibraries": "Toutes les bibliothèques",
+      "loadError": "Impossible de charger les bibliothèques. Vérifiez votre connexion et réessayez.",
+      "retry": "Réessayer",
+      "useAll": "Utiliser toutes les bibliothèques",
+      "continueWith": "Continuer avec {{count}} bibliothèque",
+      "continueWith_other": "Continuer avec {{count}} bibliothèques"
     }
   },
   "library": {

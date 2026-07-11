@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { Check } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { selectServerById } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
@@ -20,6 +21,7 @@ import type { RootState } from '@/utils/redux/store';
 type Library = { id: string; name: string };
 
 export default function LibrariesOnboarding() {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
   const { serverId } = useLocalSearchParams<{ serverId: string }>();
@@ -86,18 +88,18 @@ export default function LibrariesOnboarding() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Choose Libraries</Text>
+        <Text style={styles.title}>{t('onboarding.libraries.title')}</Text>
         <Text style={styles.subtitle}>
-          Select which libraries to include. You can pick multiple, or leave all selected to include everything.
+          {t('onboarding.libraries.subtitle')}
         </Text>
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#fff" style={styles.loader} />
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Could not load libraries. Check your connection and try again.</Text>
+            <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={() => setRetryCount(c => c + 1)}>
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>{t('onboarding.libraries.retry')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -106,7 +108,7 @@ export default function LibrariesOnboarding() {
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
                 {isAll && <Check size={14} color="#000" />}
               </View>
-              <Text style={styles.optionText}>All Libraries</Text>
+              <Text style={styles.optionText}>{t('onboarding.libraries.allLibraries')}</Text>
             </TouchableOpacity>
 
             {libraries.map(lib => {
@@ -134,13 +136,13 @@ export default function LibrariesOnboarding() {
         <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
           <Text style={styles.continueButtonText}>
             {isAll
-              ? 'Use All Libraries'
-              : `Continue with ${selectedIds.length} ${selectedIds.length === 1 ? 'Library' : 'Libraries'}`}
+              ? t('onboarding.libraries.useAll')
+              : t('onboarding.libraries.continueWith', { count: selectedIds.length })}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>{t('common.back')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
