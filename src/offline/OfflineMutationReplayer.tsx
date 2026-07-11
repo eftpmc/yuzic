@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -19,6 +19,7 @@ import {
 const SYNCED_TOAST_ID = 'offline-mutations-synced';
 const FAILED_TOAST_ID = 'offline-mutations-failed';
 const RETRY_BACKOFF_MS = 60_000;
+const RETRY_POLL_MS = 30_000;
 
 async function replayMutation(api: ReturnType<typeof useApi>, mutation: OfflineMutation) {
   switch (mutation.type) {
@@ -48,6 +49,18 @@ export default function OfflineMutationReplayer() {
   const queue = useSelector(selectOfflineMutationQueue);
   const isOffline = useIsOffline();
   const isReplayingRef = useRef(false);
+  const [retryTick, setRetryTick] = useState(0);
+
+  // nextRetryAt only matters once it's in the past, and nothing else in this
+  // component's dependencies changes with the passage of time — without this,
+  // a failed mutation's backoff would never actually elapse on its own; it'd
+  // only get re-checked if some unrelated change (new mutation, connectivity
+  // flip) happened to touch the queue/server/offline deps afterward.
+  useEffect(() => {
+    if (!queue.some(item => item.nextRetryAt)) return;
+    const interval = setInterval(() => setRetryTick(t => t + 1), RETRY_POLL_MS);
+    return () => clearInterval(interval);
+  }, [queue]);
 
   useEffect(() => {
     if (isOffline || !activeServer?.id || !activeServer.isAuthenticated) return;
@@ -108,7 +121,7 @@ export default function OfflineMutationReplayer() {
     })().catch(() => {
       isReplayingRef.current = false;
     });
-  }, [activeServer, api, dispatch, isOffline, queryClient, queue]);
+  }, [activeServer, api, dispatch, isOffline, queryClient, queue, retryTick]);
 
   return null;
 }
