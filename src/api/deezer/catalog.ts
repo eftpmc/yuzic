@@ -58,6 +58,11 @@ const GENRE_CACHE_MS = 30 * DAY_MS;
 const CHART_CACHE_MS = 6 * HOUR_MS;
 const EMPTY_CACHE_MS = HOUR_MS;
 
+// No expiry sweep runs on its own — an expired entry only gets replaced once
+// that exact key is requested again — so without a cap this grows without
+// bound over a long session of browsing/searching external catalog data.
+const CACHE_MAX_ENTRIES = 500;
+
 const memoryCache = new Map<string, { expiresAt: number; value: unknown }>();
 const pendingRequests = new Map<string, Promise<unknown>>();
 
@@ -79,6 +84,9 @@ async function cached<T>(
 
   const request = loader()
     .then(value => {
+      if (!memoryCache.has(key) && memoryCache.size >= CACHE_MAX_ENTRIES) {
+        memoryCache.delete(memoryCache.keys().next().value!);
+      }
       memoryCache.set(key, {
         expiresAt: Date.now() + cacheTtl(value, ttlMs),
         value,
