@@ -37,17 +37,19 @@ export function ExternalResolutionProvider({ children }: { children: React.React
   const [albumPickerItems, setAlbumPickerItems] = useState<PickerItem[]>([]);
   const [artistPickerItems, setArtistPickerItems] = useState<PickerItem[]>([]);
 
-  const resolveAndNavigateToAlbum = useCallback(async (item: ExternalAlbumBase) => {
-    // Library match
-    const normTitle = normalize(item.title);
-    const normArtist = normalize(item.artist);
-    const localMatch = albums.find(a =>
-      (item.id && a.mbid && a.mbid === item.id) ||
-      (normalize(a.title) === normTitle && normalize(a.artist.name) === normArtist)
-    );
-    if (localMatch) {
-      router.push({ pathname: '/(home)/albumView', params: { id: localMatch.id } });
-      return;
+  const resolveAndNavigateToAlbum = useCallback(async (item: ExternalAlbumBase, options?: ResolutionOptions) => {
+    // Library match — skip when the caller explicitly wants an external view
+    if (!options?.skipLocalMatch) {
+      const normTitle = normalize(item.title);
+      const normArtist = normalize(item.artist);
+      const localMatch = albums.find(a =>
+        (item.id && a.mbid && a.mbid === item.id) ||
+        (normalize(a.title) === normTitle && normalize(a.artist.name) === normArtist)
+      );
+      if (localMatch) {
+        router.push({ pathname: '/(home)/albumView', params: { id: localMatch.id } });
+        return;
+      }
     }
 
     if (enabledSources.length === 0) {
