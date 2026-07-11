@@ -41,7 +41,7 @@ export const ThemeColor: React.FC = () => {
               style={[
                 styles.preset,
                 { backgroundColor: color },
-                themeColor === color && styles.presetSelected,
+                themeColor === color && [styles.presetSelected, { borderColor: colors.secondary }],
               ]}
             />
           ))}
@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   },
   presetSelected: {
     borderWidth: 2,
-    borderColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { SkipForward, Heart, Dices, Cast, PlusCircle } from 'lucide-react-native';
-import { useCast } from '@/contexts/CastContext';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useStarSong, useUnstarSong, useStarredSongs } from '@/hooks/starred';
 import { PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
@@ -34,9 +33,6 @@ export function usePlayingBarAction(
   const { songs: starredSongs } = useStarredSongs();
   const star = useStarSong();
   const unstar = useUnstarSong();
-
-  const { activeDevice, isGoogleCastConnected } = useCast();
-  const isCasting = activeDevice != null || isGoogleCastConnected;
 
   const isFavorite =
     !!currentSong &&
@@ -122,7 +118,7 @@ export function usePlayingBarAction(
     case 'cast':
       return {
         id,
-        icon: <Cast size={20} color={isCasting ? '#fff' : '#fff'} />,
+        icon: <Cast size={20} color="#fff" />,
         onPress: options?.presentCast ?? (() => {}),
       };
 
