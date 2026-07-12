@@ -598,6 +598,7 @@
     "menu": {
       "title": "外部专辑",
       "downloadToServer": "下载至服务器",
+      "downloadSong": "下载歌曲",
       "inLibrary": "已在库中",
       "downloading": "正在下载至服务器… {{progress}}%"
     },
@@ -609,6 +610,7 @@
       "noDownloader": "未连接可用的下载工具。",
       "addedToLidarr": "专辑已添加至 Lidarr！",
       "addedToSlskd": "专辑已添加至 slskd 队列！",
+      "addedTrackToSlskd": "歌曲已添加至 slskd 队列！",
       "failed": "下载失败。",
       "startFailed": "启动下载失败。",
       "chooseService": "选择服务",

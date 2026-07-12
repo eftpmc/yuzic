@@ -9,18 +9,17 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { CloudDownload, Ellipsis, Play, ChevronRight } from 'lucide-react-native';
-import { useSelector } from 'react-redux';
+import { CloudDownload, Download, Ellipsis, Play, ChevronRight } from 'lucide-react-native';
 
 import {
-  selectLidarrAuthenticated,
-  selectSlskdAuthenticated,
-} from '@/utils/redux/selectors/downloadersSelectors';
+  useAnyDownloaderConnected,
+  useAnyTrackDownloaderConnected,
+} from '@/features/downloaders/registry';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { MediaImage } from '@/components/MediaImage';
-import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
+import DownloadSheet from '@/components/options/DownloadSheet';
 import { ExternalSong } from '@/types';
 import type { ExternalAlbumBase } from '@/types';
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -44,11 +43,11 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
 
   const bottomSheetRef = useSheetRef();
   const downloadSheetRef = useSheetRef();
+  const trackDownloadSheetRef = useSheetRef();
   const snapPoints = useMemo(() => ['40%', '70%'], []);
 
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
-  const canDownload = isLidarrConnected || isSlskdConnected;
+  const canDownload = useAnyDownloaderConnected();
+  const canDownloadTrack = useAnyTrackDownloaderConnected();
 
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
@@ -59,6 +58,11 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
     cover: song.cover,
     subtext: albumArtist,
   }), [song.albumId, song.cover, albumTitle, albumArtist]);
+
+  const track = useMemo(() => ({
+    title: song.title,
+    artist: song.artist || albumArtist,
+  }), [song.title, song.artist, albumArtist]);
 
   return (
     <>
@@ -112,6 +116,19 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
             </TouchableOpacity>
           )}
 
+          {canDownloadTrack && (
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() => trackDownloadSheetRef.current?.present()}
+            >
+              <Download size={26} color={colors.secondary} />
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
+                {t('externalAlbum.menu.downloadSong')}
+              </Text>
+              <ChevronRight size={16} color={colors.placeholder} style={styles.chevron} />
+            </TouchableOpacity>
+          )}
+
           {canDownload && (
             <TouchableOpacity
               style={styles.option}
@@ -137,7 +154,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         </BottomSheetScrollView>
       </BottomSheetModal>
 
-      <DownloadAlbumSheet album={albumBase} sheetRef={downloadSheetRef} />
+      <DownloadSheet album={albumBase} sheetRef={downloadSheetRef} />
+      <DownloadSheet album={albumBase} track={track} sheetRef={trackDownloadSheetRef} />
     </>
   );
 };

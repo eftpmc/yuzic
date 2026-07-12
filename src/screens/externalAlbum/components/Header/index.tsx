@@ -13,10 +13,7 @@ import { useSelector } from 'react-redux';
 import { ExternalAlbum, Playlist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import {
-  selectLidarrAuthenticated,
-  selectSlskdAuthenticated,
-} from '@/utils/redux/selectors/downloadersSelectors';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { CloudDownload, ChevronLeft, Link, Play } from 'lucide-react-native';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -24,7 +21,7 @@ import { externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
-import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
+import DownloadSheet from '@/components/options/DownloadSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
 
 type Props = {
@@ -41,8 +38,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
   const { isDarkMode, colors } = useTheme();
   const { navigateToArtist } = useMatchedNavigation();
   const themeColor = useSelector(selectThemeColor);
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const canDownload = useAnyDownloaderConnected();
 
   const { playSongInCollection } = usePlaying();
   const albumStatus = useExternalAlbumStatus(album);
@@ -65,8 +61,6 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
     created: new Date(),
     songs: previewSongs,
   }), [album, previewSongs]);
-
-  const canDownload = isLidarrConnected || isSlskdConnected;
 
   const handlePlay = useCallback(() => {
     if (!previewSongs.length) return;
@@ -190,7 +184,7 @@ const ExternalAlbumHeader: React.FC<Props> = ({ album }) => {
         </View>
       </View>
 
-      <DownloadAlbumSheet album={album} sheetRef={downloadSheetRef} />
+      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
     </>
   );
 };

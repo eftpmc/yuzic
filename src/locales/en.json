@@ -629,6 +629,7 @@
     "menu": {
       "title": "External Album",
       "downloadToServer": "Download to Server",
+      "downloadSong": "Download Song",
       "inLibrary": "In Library",
       "downloading": "Downloading to server… {{progress}}%",
       "noServiceConnected": "Connect a downloader in Settings to download"
@@ -641,6 +642,7 @@
       "noDownloader": "No active downloader connected.",
       "addedToLidarr": "Album added to Lidarr!",
       "addedToSlskd": "Album added to slskd queue!",
+      "addedTrackToSlskd": "Song added to slskd queue!",
       "failed": "Download failed.",
       "startFailed": "Failed to start download.",
       "chooseService": "Choose a service",

@@ -11,18 +11,14 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { CloudDownload, Ellipsis, Link, ChevronRight } from 'lucide-react-native';
-import { useSelector } from 'react-redux';
 
-import {
-  selectLidarrAuthenticated,
-  selectSlskdAuthenticated,
-} from '@/utils/redux/selectors/downloadersSelectors';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 import { MediaImage } from '@/components/MediaImage';
-import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
+import DownloadSheet from '@/components/options/DownloadSheet';
 import type { ExternalAlbumBase } from '@/types';
 import { useSheetRef } from '@/utils/useSheetRef';
 
@@ -40,10 +36,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
   const status = useExternalAlbumStatus(album);
 
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
-
-  const canDownload = isLidarrConnected || isSlskdConnected;
+  const canDownload = useAnyDownloaderConnected();
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
   return (
@@ -115,7 +108,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
         </BottomSheetView>
       </BottomSheetModal>
 
-      <DownloadAlbumSheet album={album} sheetRef={downloadSheetRef} />
+      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
     </>
   );
 };
