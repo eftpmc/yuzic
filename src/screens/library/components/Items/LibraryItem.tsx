@@ -15,6 +15,7 @@ type Props = {
   circularImage?: boolean;
   onPress: () => void;
   onLongPress: () => void;
+  testID?: string;
 };
 
 const LibraryItem: React.FC<Props> = ({
@@ -27,6 +28,7 @@ const LibraryItem: React.FC<Props> = ({
   circularImage = false,
   onPress,
   onLongPress,
+  testID,
 }) => {
   const { colors } = useTheme();
 
@@ -35,6 +37,7 @@ const LibraryItem: React.FC<Props> = ({
 
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={300}

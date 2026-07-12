@@ -109,6 +109,7 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
   return (
     <>
       <LibraryItem
+        testID="library-track-item"
         cover={song.cover}
         title={song.title}
         subtext={subtext}
