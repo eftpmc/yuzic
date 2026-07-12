@@ -13,7 +13,6 @@ import { AppState } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useSelector } from 'react-redux';
-import { buildRawarrAudioTranscodeUrl } from '@/api/rawarr/audio';
 import { useApi } from '@/api';
 import type { Song } from '@/types';
 import {
@@ -33,7 +32,6 @@ import {
 } from '@/utils/downloads/localDownloadStore';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
-import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
 
 export type DownloadedTrack = DownloadedTrackEntry & {
   localPath: string;
@@ -80,6 +78,9 @@ export type DownloadStateType = {
   downloadStateVersion: number;
   totalDownloadedBytes: number;
   downloadedTrackCount: number;
+  // trackId → fraction in [0, 1], or -1 when the server streams without a
+  // Content-Length (transcoded streams) and the total is unknown.
+  downloadProgress: Record<string, number>;
 };
 
 // Backward-compatible combined type.
@@ -89,8 +90,12 @@ const DownloadActionsContext = createContext<DownloadActionsType | undefined>(un
 const DownloadStateContext = createContext<DownloadStateType | undefined>(undefined);
 
 const DOWNLOAD_DIR = `${FileSystem.documentDirectory ?? ''}downloads/audio/`;
-const TEMP_DOWNLOAD_DIR = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? ''}downloads/rawarr-source/`;
+// Scratch dir used by the retired download→upload→transcode pipeline; only
+// referenced so upgrades can delete anything it left behind.
+const LEGACY_TEMP_DOWNLOAD_DIR = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? ''}downloads/rawarr-source/`;
 const DOWNLOAD_SCHEMA_VERSION = 2;
+const STAGING_SUFFIX = '.part';
+const MAX_JOB_ATTEMPTS = 5;
 const BACKGROUND_FILE_OPTIONS = {
   sessionType: FileSystem.FileSystemSessionType.BACKGROUND,
 };
@@ -121,12 +126,47 @@ function sanitizeFileName(value: string): string {
   return value.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'track';
 }
 
-function buildTrackPath(track: Song): string {
-  return `${DOWNLOAD_DIR}${sanitizeFileName(track.id)}.mp3`;
+function buildStagingPath(track: Song): string {
+  return `${DOWNLOAD_DIR}${sanitizeFileName(track.id)}${STAGING_SUFFIX}`;
 }
 
-function buildSourceTempPath(track: Song): string {
-  return `${TEMP_DOWNLOAD_DIR}${sanitizeFileName(track.id)}-${Date.now()}.source`;
+// Streams transcoded by the music server are always mp3 (see
+// qualityToStreamParams), but 'original' quality returns the raw file —
+// pick the extension from what the server actually sent.
+function extensionFromContentType(contentType: string | undefined): string {
+  const mime = (contentType ?? '').split(';')[0].trim().toLowerCase();
+  switch (mime) {
+    case 'audio/mpeg':
+    case 'audio/mp3':
+      return 'mp3';
+    case 'audio/flac':
+    case 'audio/x-flac':
+      return 'flac';
+    case 'audio/ogg':
+    case 'application/ogg':
+      return 'ogg';
+    case 'audio/opus':
+      return 'opus';
+    case 'audio/mp4':
+    case 'audio/x-m4a':
+      return 'm4a';
+    case 'audio/aac':
+      return 'aac';
+    case 'audio/wav':
+    case 'audio/x-wav':
+      return 'wav';
+    default:
+      return 'mp3';
+  }
+}
+
+function headerValue(headers: Record<string, string> | undefined, name: string): string | undefined {
+  if (!headers) return undefined;
+  const target = name.toLowerCase();
+  for (const key of Object.keys(headers)) {
+    if (key.toLowerCase() === target) return headers[key];
+  }
+  return undefined;
 }
 
 async function ensureDownloadDir() {
@@ -135,18 +175,26 @@ async function ensureDownloadDir() {
   if (!downloadInfo.exists) {
     await FileSystem.makeDirectoryAsync(DOWNLOAD_DIR, { intermediates: true });
   }
-  const tempInfo = await FileSystem.getInfoAsync(TEMP_DOWNLOAD_DIR);
-  if (!tempInfo.exists) {
-    await FileSystem.makeDirectoryAsync(TEMP_DOWNLOAD_DIR, { intermediates: true });
+}
+
+async function cleanupLegacyTempDownloads() {
+  const info = await FileSystem.getInfoAsync(LEGACY_TEMP_DOWNLOAD_DIR);
+  if (info.exists) {
+    await FileSystem.deleteAsync(LEGACY_TEMP_DOWNLOAD_DIR, { idempotent: true }).catch(() => {});
   }
 }
 
-async function cleanupTempDownloads() {
-  const info = await FileSystem.getInfoAsync(TEMP_DOWNLOAD_DIR);
-  if (info.exists) {
-    await FileSystem.deleteAsync(TEMP_DOWNLOAD_DIR, { idempotent: true }).catch(() => {});
-  }
-  await FileSystem.makeDirectoryAsync(TEMP_DOWNLOAD_DIR, { intermediates: true }).catch(() => {});
+// Downloads land in a .part staging file and only move to their final path on
+// success, so a stray .part is always safe to delete.
+async function cleanupStagingFiles() {
+  const info = await FileSystem.getInfoAsync(DOWNLOAD_DIR);
+  if (!info.exists) return;
+  const names = await FileSystem.readDirectoryAsync(DOWNLOAD_DIR).catch(() => [] as string[]);
+  await Promise.all(
+    names
+      .filter(name => name.endsWith(STAGING_SUFFIX))
+      .map(name => FileSystem.deleteAsync(`${DOWNLOAD_DIR}${name}`, { idempotent: true }).catch(() => {}))
+  );
 }
 
 function normalizeLocalUri(uri: string): string {
@@ -246,30 +294,6 @@ function persistTracks(tracks: LocalDownloadedTrackEntry[]) {
   writeDownloadedTracks(tracks);
 }
 
-async function transcodeViaHostedRawarr(sourcePath: string, quality: AudioQuality): Promise<string> {
-  const response = await FileSystem.uploadAsync(
-    buildRawarrAudioTranscodeUrl(),
-    sourcePath,
-    {
-      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-      fieldName: 'file',
-      mimeType: 'application/octet-stream',
-      parameters: {
-        quality,
-      },
-      ...BACKGROUND_FILE_OPTIONS,
-    }
-  );
-
-  if (response.status < 200 || response.status >= 300) {
-    throw new Error(`Rawarr upload failed (${response.status})`);
-  }
-
-  const data = JSON.parse(response.body) as { downloadUrl?: string };
-  if (!data.downloadUrl) throw new Error('Rawarr did not return a download URL');
-  return data.downloadUrl;
-}
-
 export const useDownloadActions = (): DownloadActionsType => {
   const ctx = useContext(DownloadActionsContext);
   if (!ctx) throw new Error('useDownloadActions must be used within DownloadProvider');
@@ -305,18 +329,49 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     return initial;
   });
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(() => new Set());
+  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
   const jobsRef = useRef<PersistedDownloadJob[]>(state.jobs);
   const queueProcessingPromiseRef = useRef<Promise<void> | null>(null);
+  const queueRerunRequestedRef = useRef(false);
+  const activeDownloadsRef = useRef<Map<string, FileSystem.DownloadResumable>>(new Map());
+  const progressRef = useRef<Record<string, number>>({});
+  const progressFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const stalePaths = legacyDownloadPathsToDelete;
     legacyDownloadPathsToDelete = [];
+
+    void cleanupLegacyTempDownloads();
 
     if (!stalePaths.length) return;
 
     void Promise.all(stalePaths.map(path =>
       FileSystem.deleteAsync(path, { idempotent: true }).catch(() => {})
     ));
+  }, []);
+
+  useEffect(() => () => {
+    if (progressFlushTimerRef.current) clearTimeout(progressFlushTimerRef.current);
+  }, []);
+
+  // Batches progress callbacks (which fire on every write) into at most ~3
+  // state updates per second so a 3-track chunk doesn't re-render the tree
+  // on every network buffer.
+  const reportDownloadProgress = useCallback((trackId: string, written: number, expected: number) => {
+    const fraction = expected > 0 ? Math.min(written / expected, 1) : -1;
+    progressRef.current = { ...progressRef.current, [trackId]: fraction };
+    if (progressFlushTimerRef.current) return;
+    progressFlushTimerRef.current = setTimeout(() => {
+      progressFlushTimerRef.current = null;
+      setDownloadProgress(progressRef.current);
+    }, 350);
+  }, []);
+
+  const clearDownloadProgress = useCallback((trackId: string) => {
+    if (!(trackId in progressRef.current)) return;
+    const { [trackId]: _removed, ...rest } = progressRef.current;
+    progressRef.current = rest;
+    setDownloadProgress(rest);
   }, []);
 
   // Verify file existence on mount and purge entries whose files are missing.
@@ -413,6 +468,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     return freshUrl ? { ...base, streamUrl: freshUrl } : base;
   }, [api, downloadQuality]);
 
+  // The music server transcodes server-side (format/maxBitRate on the stream
+  // URL — see qualityToStreamParams), so a single direct download replaces the
+  // old download→upload-to-rawarr→transcode→re-download round trip.
   const performDownloadTrack = useCallback(async (track: Song, collectionId?: string) => {
     if (isTrackDownloaded(track.id) || isTrackDownloading(track.id)) return;
 
@@ -423,28 +481,33 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     await ensureDownloadDir();
     setTrackDownloading(track.id, true);
-    const localPath = buildTrackPath(track);
-    const sourcePath = buildSourceTempPath(track);
+    const stagingPath = buildStagingPath(track);
 
     try {
-      const sourceResult = await FileSystem.downloadAsync(
+      const resumable = FileSystem.createDownloadResumable(
         resolvedTrack.streamUrl,
-        sourcePath,
-        BACKGROUND_FILE_OPTIONS
+        stagingPath,
+        BACKGROUND_FILE_OPTIONS,
+        progress => reportDownloadProgress(
+          track.id,
+          progress.totalBytesWritten,
+          progress.totalBytesExpectedToWrite,
+        ),
       );
-      if (sourceResult.status < 200 || sourceResult.status >= 300) {
-        throw new Error(`Source download failed (${sourceResult.status})`);
+      activeDownloadsRef.current.set(track.id, resumable);
+
+      const result = await resumable.downloadAsync();
+      // downloadAsync resolves undefined when cancelAsync() was called —
+      // not an error, just nothing to record.
+      if (!result) return;
+      if (result.status < 200 || result.status >= 300) {
+        throw new Error(`Download failed (${result.status})`);
       }
 
-      const transcodedDownloadUrl = await transcodeViaHostedRawarr(sourcePath, downloadQuality);
-      const result = await FileSystem.downloadAsync(
-        transcodedDownloadUrl,
-        localPath,
-        BACKGROUND_FILE_OPTIONS
-      );
-      if (result.status < 200 || result.status >= 300) {
-        throw new Error(`Transcoded download failed (${result.status})`);
-      }
+      const extension = extensionFromContentType(headerValue(result.headers, 'Content-Type'));
+      const localPath = `${DOWNLOAD_DIR}${sanitizeFileName(track.id)}.${extension}`;
+      await FileSystem.deleteAsync(localPath, { idempotent: true }).catch(() => {});
+      await FileSystem.moveAsync({ from: stagingPath, to: localPath });
 
       const info = await FileSystem.getInfoAsync(localPath);
       const fileSize = info.exists ? info.size : 0;
@@ -486,14 +549,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
           ));
         });
       }
-    } catch (error) {
-      await FileSystem.deleteAsync(localPath, { idempotent: true }).catch(() => {});
-      throw error;
     } finally {
-      await FileSystem.deleteAsync(sourcePath, { idempotent: true }).catch(() => {});
+      activeDownloadsRef.current.delete(track.id);
+      clearDownloadProgress(track.id);
+      await FileSystem.deleteAsync(stagingPath, { idempotent: true }).catch(() => {});
       setTrackDownloading(track.id, false);
     }
-  }, [activeServer?.id, activeServer?.type, downloadQuality, isTrackDownloaded, isTrackDownloading, resolveTrack, setTrackDownloading, updateCollections, updateTracks]);
+  }, [activeServer?.id, activeServer?.type, clearDownloadProgress, isTrackDownloaded, isTrackDownloading, reportDownloadProgress, resolveTrack, setTrackDownloading, updateCollections, updateTracks]);
 
   const removeJob = useCallback((jobId: string) => {
     updateJobs(jobs => jobs.filter(job => job.id !== jobId));
@@ -505,55 +567,75 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Reentrant calls (e.g. tapping download on another collection while one
     // is already in flight) must await the *same* in-flight run rather than
     // no-op — otherwise the caller's promise resolves before the job it just
-    // enqueued has actually been processed.
+    // enqueued has actually been processed. The rerun flag closes the window
+    // where a job is enqueued after the running loop already broke out but
+    // before the run promise settled — without it that job sat unprocessed
+    // until the next app foreground.
     if (queueProcessingPromiseRef.current) {
+      queueRerunRequestedRef.current = true;
       await queueProcessingPromiseRef.current;
       return;
     }
 
-    const run = (async () => {
-      await ensureDownloadDir();
-      await cleanupTempDownloads();
+    do {
+      queueRerunRequestedRef.current = false;
 
-      // A job that keeps failing (dead link, deleted track, transcode
-      // outage) must not wedge every other queued download behind it —
-      // skip it for the rest of this run instead of stopping the whole
-      // queue. It stays in the queue and gets another attempt next time
-      // processDownloadQueue runs (app foreground, manual resume, etc).
-      const failedJobIds = new Set<string>();
+      const run = (async () => {
+        await ensureDownloadDir();
+        await cleanupStagingFiles();
 
-      while (true) {
-        const job = jobsRef.current.find(candidate => !failedJobIds.has(candidate.id));
-        if (!job) break;
+        // A job that keeps failing (dead link, deleted track, server outage)
+        // must not wedge every other queued download behind it — skip it for
+        // the rest of this run instead of stopping the whole queue. It stays
+        // persisted (with an attempt count) and is retried on the next run
+        // (app foreground, manual resume) until MAX_JOB_ATTEMPTS.
+        const failedJobIds = new Set<string>();
 
-        let failed = false;
-        for (let i = 0; i < job.tracks.length; i += CONCURRENT_TRACK_DOWNLOADS) {
-          const chunk = job.tracks.slice(i, i + CONCURRENT_TRACK_DOWNLOADS);
-          const results = await Promise.allSettled(
-            chunk.map(track => performDownloadTrack(track, job.collectionId))
-          );
-          if (results.some(r => r.status === 'rejected')) {
-            console.warn('Download job paused until next resume');
-            failed = true;
-            break;
+        while (true) {
+          const job = jobsRef.current.find(candidate => !failedJobIds.has(candidate.id));
+          if (!job) break;
+
+          let failed = false;
+          for (let i = 0; i < job.tracks.length; i += CONCURRENT_TRACK_DOWNLOADS) {
+            const chunk = job.tracks.slice(i, i + CONCURRENT_TRACK_DOWNLOADS);
+            const results = await Promise.allSettled(
+              chunk.map(track => performDownloadTrack(track, job.collectionId))
+            );
+            if (results.some(r => r.status === 'rejected')) {
+              failed = true;
+              break;
+            }
           }
-        }
 
-        if (failed) {
-          failedJobIds.add(job.id);
-          continue;
+          if (failed) {
+            failedJobIds.add(job.id);
+            const attempts = (job.attempts ?? 0) + 1;
+            if (attempts >= MAX_JOB_ATTEMPTS) {
+              console.warn(`Download job ${job.id} dropped after ${attempts} failed attempts`);
+              removeJob(job.id);
+              toast.error(t('externalAlbum.download.failed'));
+            } else {
+              console.warn(`Download job ${job.id} paused until next resume (attempt ${attempts}/${MAX_JOB_ATTEMPTS})`);
+              updateJobs(jobs => jobs.map(existing => (
+                existing.id === job.id
+                  ? { ...existing, attempts, updatedAt: Date.now() }
+                  : existing
+              )));
+            }
+            continue;
+          }
+          removeJob(job.id);
         }
-        removeJob(job.id);
+      })();
+
+      queueProcessingPromiseRef.current = run;
+      try {
+        await run;
+      } finally {
+        queueProcessingPromiseRef.current = null;
       }
-    })();
-
-    queueProcessingPromiseRef.current = run;
-    try {
-      await run;
-    } finally {
-      queueProcessingPromiseRef.current = null;
-    }
-  }, [performDownloadTrack, removeJob]);
+    } while (queueRerunRequestedRef.current && jobsRef.current.length > 0);
+  }, [performDownloadTrack, removeJob, t, updateJobs]);
 
   const enqueueDownloadJob = useCallback(async (job: Omit<PersistedDownloadJob, 'createdAt' | 'updatedAt'>) => {
     const now = Date.now();
@@ -607,6 +689,19 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     });
   }, [enqueueDownloadJob, updateCollections]);
 
+  // The old success toast fired unconditionally — allSettled swallowed every
+  // per-track rejection, so users saw "download complete" over an empty
+  // downloads list. Verify what actually landed before claiming success.
+  const toastCollectionResult = useCallback((tracks: Song[], label: string) => {
+    const downloadedCount = tracks.filter(track => localPathMapRef.current.has(track.id)).length;
+    if (downloadedCount === tracks.length) {
+      toast.success(t('settings.downloaders.downloadComplete'));
+    } else {
+      console.warn(`${label} download incomplete: ${downloadedCount}/${tracks.length} tracks`);
+      toast.error(t('externalAlbum.download.failed'));
+    }
+  }, [t]);
+
   const downloadAlbumById = useCallback(async (albumId: string, songs?: Song[]) => {
     const tracks = songs?.length
       ? songs
@@ -615,12 +710,12 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     try {
       await downloadCollection(albumId, 'album', tracks);
-      toast.success(t('settings.downloaders.downloadComplete'));
+      toastCollectionResult(tracks, 'Album');
     } catch (error) {
       console.warn('Album download failed', error);
       toast.error(t('externalAlbum.download.failed'));
     }
-  }, [api, downloadCollection, t]);
+  }, [api, downloadCollection, t, toastCollectionResult]);
 
   const downloadPlaylistById = useCallback(async (playlistId: string, songs?: Song[]) => {
     const tracks = songs?.length
@@ -630,17 +725,32 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     try {
       await downloadCollection(playlistId, 'playlist', tracks);
-      toast.success(t('settings.downloaders.downloadComplete'));
+      toastCollectionResult(tracks, 'Playlist');
     } catch (error) {
       console.warn('Playlist download failed', error);
       toast.error(t('externalAlbum.download.failed'));
     }
-  }, [api, downloadCollection, t]);
+  }, [api, downloadCollection, t, toastCollectionResult]);
 
   const downloadPlaylist = useCallback(
     (playlistId: string, tracks: Song[]) => downloadPlaylistById(playlistId, tracks),
     [downloadPlaylistById]
   );
+
+  // Aborts in-flight transfers for tracks that no longer belong to any queued
+  // job. Cancelled resumables resolve undefined in performDownloadTrack, so
+  // nothing gets recorded and the staging file is cleaned up there.
+  const cancelOrphanedActiveDownloads = useCallback(async (candidateTrackIds: Iterable<string>) => {
+    const stillQueued = new Set(jobsRef.current.flatMap(job => job.tracks.map(track => track.id)));
+    const cancels: Promise<void>[] = [];
+    for (const trackId of candidateTrackIds) {
+      const resumable = activeDownloadsRef.current.get(trackId);
+      if (resumable && !stillQueued.has(trackId)) {
+        cancels.push(resumable.cancelAsync().catch(() => {}));
+      }
+    }
+    await Promise.all(cancels);
+  }, []);
 
   const deleteDownloadedTrack = useCallback(async (trackId: string) => {
     const entry = state.tracks.find(track => track.trackId === trackId);
@@ -673,7 +783,8 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     updateTracks(tracks => tracks.filter(track => !tracksToDelete.some(deleted => deleted.trackId === track.trackId)));
     updateCollections(collections => collections.filter(collection => collection.id !== id));
     updateJobs(jobs => jobs.filter(job => job.collectionId !== id && job.id !== id));
-  }, [state.tracks, updateCollections, updateJobs, updateTracks]);
+    await cancelOrphanedActiveDownloads(trackIds);
+  }, [cancelOrphanedActiveDownloads, state.tracks, updateCollections, updateJobs, updateTracks]);
 
   const clearDownloadsForProvider = useCallback(async (scope?: DownloadProviderScope) => {
     const tracksToDelete = state.tracks.filter(track => doesTrackMatchProviderScope(track, scope));
@@ -709,20 +820,31 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [state.tracks, updateCollections, updateJobs, updateTracks]);
 
   const cancelDownload = useCallback(async (downloadId: string) => {
-    updateJobs(jobs => jobs.filter(job =>
-      job.id !== downloadId &&
-      job.collectionId !== downloadId &&
-      !job.tracks.some(track => track.id === downloadId)
-    ));
-  }, [updateJobs]);
+    const matches = (job: PersistedDownloadJob) =>
+      job.id === downloadId ||
+      job.collectionId === downloadId ||
+      job.tracks.some(track => track.id === downloadId);
+    const cancelledTrackIds = jobsRef.current
+      .filter(matches)
+      .flatMap(job => job.tracks.map(track => track.id));
+
+    updateJobs(jobs => jobs.filter(job => !matches(job)));
+    await cancelOrphanedActiveDownloads(cancelledTrackIds);
+  }, [cancelOrphanedActiveDownloads, updateJobs]);
 
   const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
+    const cancelledTrackIds = jobsRef.current
+      .filter(job => job.collectionId === collectionId || job.id === collectionId)
+      .flatMap(job => job.tracks.map(track => track.id));
+
     updateJobs(jobs => jobs.filter(job => job.collectionId !== collectionId && job.id !== collectionId));
-  }, [updateJobs]);
+    await cancelOrphanedActiveDownloads(cancelledTrackIds);
+  }, [cancelOrphanedActiveDownloads, updateJobs]);
 
   const cancelDownloadAll = useCallback(async () => {
     updateJobs(() => []);
-  }, [updateJobs]);
+    await cancelOrphanedActiveDownloads(activeDownloadsRef.current.keys());
+  }, [cancelOrphanedActiveDownloads, updateJobs]);
 
   const resumeDownload = useCallback(async (downloadId: string) => {
     const hasJob = jobsRef.current.some(job =>
@@ -746,7 +868,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   useEffect(() => {
     if (!queueProcessingPromiseRef.current) {
-      cleanupTempDownloads().catch(() => {});
+      cleanupStagingFiles().catch(() => {});
     }
 
     if (jobsRef.current.length > 0) {
@@ -818,15 +940,17 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     getStorageInfo: async () => ({
       totalBytes: state.tracks.reduce((sum, track) => sum + track.fileSize, 0),
       downloadedTracks: state.tracks.length,
-      availableBytes: undefined,
+      availableBytes: await FileSystem.getFreeDiskStorageAsync().catch(() => undefined),
     }),
     getSongLocalUri: async (songId: string) => getLocalPath(songId),
     downloadedTracks,
     downloadStateVersion: downloadedTracks.length,
     totalDownloadedBytes: state.tracks.reduce((sum, track) => sum + track.fileSize, 0),
     downloadedTrackCount: state.tracks.length,
+    downloadProgress,
   }), [
     downloadedTracks,
+    downloadProgress,
     getCollectionDownloadState,
     getLocalPath,
     isTrackDownloaded,
