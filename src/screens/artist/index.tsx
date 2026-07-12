@@ -28,10 +28,12 @@ const ArtistScreen: React.FC = () => {
   const { colors } = useTheme();
   const { artists } = useArtists();
 
-  // Identity is resolved once, at mount, and frozen — a library-match
-  // resolving true mid-session (e.g. library sync still in flight when this
-  // screen mounted) must not flip an already-rendered external-only view
-  // into local mode underneath the user.
+  // Identity is re-resolved only when the route's own identity params change
+  // (a genuine navigation to a different artist, including React Navigation
+  // reusing this screen instance instead of pushing a new one) — but not when
+  // `artists` changes on its own, e.g. a library sync completing in the
+  // background must not flip an already-rendered external-only view into
+  // local mode underneath the user.
   const resolvedLocalId = useMemo(() => {
     if (id) return id;
     if (forceExternal === 'true') return null;
@@ -42,7 +44,7 @@ const ArtistScreen: React.FC = () => {
     );
     return match?.id ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id, forceExternal, name, artistId, mbid]);
 
   const localResult = useArtist(resolvedLocalId ?? '');
   const externalResult = useExternalArtist(

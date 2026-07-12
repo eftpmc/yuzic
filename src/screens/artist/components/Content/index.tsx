@@ -343,6 +343,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         album={item.album}
         artistName={localArtist?.name ?? externalArtist?.name ?? ''}
         onPress={(album) => navigateToAlbum(album)}
+        showExternalBadge={!!localArtist}
       />
     )
   }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, t])
