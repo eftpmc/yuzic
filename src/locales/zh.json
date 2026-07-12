@@ -77,7 +77,11 @@
         "chinese": "中文"
       },
       "showQualityBadge": "显示音质标签",
-      "showQualityBadgeSubtext": "在正在播放界面显示音频格式和比特率。"
+      "showQualityBadgeSubtext": "在正在播放界面显示音频格式和比特率。",
+      "display": "显示",
+      "playing": "播放",
+      "showSourceHeaders": "显示来源标识",
+      "showSourceHeadersSubtext": "在外部服务的分区标题旁显示来源徽章。"
     },
     "library": {
       "title": "媒体库",
@@ -200,7 +204,11 @@
         }
       },
       "opusCodec": "Opus编解码器",
-      "opusCodecSubtext": "相同比特率下音质优于MP3，在低比特率下效果尤为明显。"
+      "opusCodecSubtext": "相同比特率下音质优于MP3，在低比特率下效果尤为明显。",
+      "showSleepTimer": "睡眠定时器",
+      "showSleepTimerSubtext": "在播放器中显示睡眠定时器控件。",
+      "showPlaybackSpeed": "播放速度",
+      "showPlaybackSpeedSubtext": "在播放器中显示速度控件。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -215,7 +223,11 @@
       "connectionSuccessful": "成功连接至 ListenBrainz。",
       "connectionFailed": "连接失败。",
       "connectFailed": "无法连接至 ListenBrainz。",
-      "disconnected": "已断开与 ListenBrainz 的连接。"
+      "disconnected": "已断开与 ListenBrainz 的连接。",
+      "credentialsTitle": "凭据",
+      "credentialsHelper": "来自 listenbrainz.org/profile 的用户名和用户令牌。",
+      "scrobble": "记录播放",
+      "nowPlaying": "正在播放"
     },
     "downloaders": {
       "title": "下载管理",
@@ -242,13 +254,18 @@
       "lidarr": {
         "title": "Lidarr",
         "connectionFailed": "连接 Lidarr 失败",
-        "disconnected": "已断开与 Lidarr 的连接。"
+        "disconnected": "已断开与 Lidarr 的连接。",
+        "credentialsTitle": "连接",
+        "credentialsHelper": "你的 Lidarr 服务器地址和 API 密钥。位于 Lidarr 的 Settings → General。"
       },
       "slskd": {
         "title": "slskd",
         "connectionFailed": "连接 slskd 失败",
-        "disconnected": "已断开与 slskd 的连接。"
-      }
+        "disconnected": "已断开与 slskd 的连接。",
+        "credentialsTitle": "连接",
+        "credentialsHelper": "你的 slskd 服务器地址和 API 密钥。位于 slskd 的 Options → API Keys。"
+      },
+      "queueTitle": "下载队列"
     },
     "integrations": {
       "enabled": "已启用",
@@ -308,6 +325,31 @@
           "body": "连接服务器时，发现功能会自动同步。在「发现」页面下拉刷新仅会重新随机展示已加载的内容，不会重新获取新数据。若同步失败，会显示提示消息，你可点击「重试」重新操作。"
         }
       }
+    },
+    "lastfm": {
+      "title": "Last.fm",
+      "apiKey": "API 密钥",
+      "apiSecret": "API Secret",
+      "apiKeyPlaceholder": "你的 Last.fm API 密钥",
+      "apiSecretPlaceholder": "你的 Last.fm API Secret",
+      "connectedAs": "已连接为",
+      "notConnected": "未连接",
+      "connectWithLastfm": "连接 Last.fm",
+      "iAuthorized": "已授权 — 获取会话",
+      "helperText": "输入你的 Last.fm API 密钥和 Secret，然后点击连接进行授权。你播放的曲目将自动记录。可在 last.fm/api/account/create 获取 API 凭据。",
+      "disconnect": "断开连接",
+      "missingCredentials": "请先输入 API 密钥和 Secret。",
+      "credentialsTitle": "凭据",
+      "credentialsHelper": "在 last.fm/api/account/create 创建应用以获取这些密钥。",
+      "pendingInstruction": "已打开浏览器窗口 — 授权 yuzic 后点击下方按钮。",
+      "scrobble": "记录播放",
+      "nowPlaying": "正在播放",
+      "connectFailed": "无法从 Last.fm 获取令牌。",
+      "sessionFailed": "无法获取会话。请确认你已授权该应用。",
+      "connectionSuccessful": "已连接为 {{username}}。",
+      "disconnected": "已断开与 Last.fm 的连接。",
+      "similarArtists": "相似艺术家",
+      "similarArtistsDescription": "使用 Last.fm 数据在艺术家页面显示相似艺术家。"
     }
   },
   "common": {
@@ -330,7 +372,8 @@
       "similarUnavailable": "离线模式下无法使用相似曲目功能。",
       "noConnection": "无网络连接",
       "syncedChanges": "离线更改已同步",
-      "syncQueuedChangesFailed": "部分离线更改无法同步"
+      "syncQueuedChangesFailed": "部分离线更改无法同步",
+      "notAvailable": "离线时不可用"
     },
     "oneSecond": "稍等片刻。",
     "playingSimilar": "正在播放相似音乐",
@@ -341,7 +384,10 @@
       "unexpected": "发生意外错误",
       "details": "错误：{{name}} {{message}}",
       "restart": "重启"
-    }
+    },
+    "more": "更多",
+    "less": "收起",
+    "playbackError": "无法播放曲目"
   },
   "onboarding": {
     "home": {
@@ -371,7 +417,11 @@
         "navidrome": "轻量级自托管音乐服务器。",
         "jellyfin": "全功能媒体服务器，支持音乐、电影和电视节目。",
         "emby": "个人媒体服务器，支持音乐、电影和电视节目。"
-      }
+      },
+      "serverUrlRequired": "请输入服务器地址。",
+      "serverConnectionFailed": "无法连接到服务器。",
+      "missingCredentials": "缺少凭据或服务器地址。",
+      "serverErrorStatus": "服务器返回 {{status}}"
     },
     "address": {
       "title": "服务器地址",
@@ -471,7 +521,8 @@
       "popularOnDeezer": "Deezer 热门",
       "similarArtists": "相似歌手",
       "bio": "简介"
-    }
+    },
+    "showMore": "还有 {{count}} 个"
   },
   "explore": {
     "sections": {
@@ -488,7 +539,11 @@
       "charts": "当下流行",
       "genre": "更多{{genre}}",
       "albumsForYou": "为你推荐的专辑",
-      "artistsForYou": "为你推荐的艺术家"
+      "artistsForYou": "为你推荐的艺术家",
+      "searchArtists": "搜索艺术家…",
+      "searchGenres": "搜索流派…",
+      "genrePrefix": "更多",
+      "topArtists": "热门艺术家"
     },
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",
@@ -567,7 +622,8 @@
       "instantMix": "即时混音",
       "download": "下载",
       "downloading": "下载中…",
-      "downloaded": "已下载"
+      "downloaded": "已下载",
+      "goToArtist": "前往艺术家"
     },
     "sections": {
       "media": "媒体信息",
@@ -620,7 +676,8 @@
       "downloadToServer": "下载至服务器",
       "downloadSong": "下载歌曲",
       "inLibrary": "已在库中",
-      "downloading": "正在下载至服务器… {{progress}}%"
+      "downloading": "正在下载至服务器… {{progress}}%",
+      "noServiceConnected": "请在设置中连接下载器以进行下载"
     },
     "serverStatus": {
       "onServer": "已在库中",
@@ -695,7 +752,8 @@
       "download": "下载",
       "downloading": "下载中…",
       "downloaded": "已下载",
-      "delete": "删除播放列表"
+      "delete": "删除播放列表",
+      "rename": "重命名"
     },
     "sections": {
       "info": "播放列表信息"
@@ -711,7 +769,13 @@
     },
     "toasts": {
       "deleted": "播放列表已删除",
-      "deleteFailed": "无法删除播放列表"
+      "deleteFailed": "无法删除播放列表",
+      "renamed": "播放列表已重命名",
+      "renameFailed": "无法重命名播放列表"
+    },
+    "rename": {
+      "title": "重命名播放列表",
+      "placeholder": "播放列表名称"
     }
   },
   "artistOptions": {
@@ -739,5 +803,16 @@
   },
   "external": {
     "notFound": "在已连接的来源中找不到此内容。"
+  },
+  "album": {
+    "disc": "碟片 {{number}}",
+    "moreBy": "{{name}} 的更多作品",
+    "mightAlsoLike": "猜你喜欢",
+    "duration": {
+      "hrMin": "{{hrs}} 小时 {{mins}} 分钟",
+      "min": "{{mins}} 分钟"
+    },
+    "play": "次播放",
+    "plays": "次播放"
   }
 }

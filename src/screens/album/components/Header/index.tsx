@@ -140,7 +140,7 @@ function LocalMetaRow({ album }: { album: Album }) {
             </Text>
           )}
           {item.type === 'artist' && album.artist ? (
-            <TouchableOpacity onPress={() => navigation.navigate('artistView', { id: album.artist.id })}>
+            <TouchableOpacity onPress={() => navigation.push('artistView', { id: album.artist.id })}>
               <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                 {item.label}
               </Text>

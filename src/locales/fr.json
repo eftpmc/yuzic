@@ -77,7 +77,11 @@
         "chinese": "Chinois"
       },
       "showQualityBadge": "Afficher le badge qualité",
-      "showQualityBadgeSubtext": "Affiche le format audio et le débit binaire dans le lecteur."
+      "showQualityBadgeSubtext": "Affiche le format audio et le débit binaire dans le lecteur.",
+      "display": "Affichage",
+      "playing": "Lecture",
+      "showSourceHeaders": "Afficher les badges de source",
+      "showSourceHeadersSubtext": "Affiche le badge de la source à côté des titres de section des services externes."
     },
     "library": {
       "title": "Bibliothèque",
@@ -200,7 +204,11 @@
         }
       },
       "opusCodec": "Codec Opus",
-      "opusCodecSubtext": "Meilleure qualité que le MP3 au même débit. Nettement meilleur aux débits bas."
+      "opusCodecSubtext": "Meilleure qualité que le MP3 au même débit. Nettement meilleur aux débits bas.",
+      "showSleepTimer": "Minuterie de veille",
+      "showSleepTimerSubtext": "Affiche une commande de minuterie de veille dans le lecteur.",
+      "showPlaybackSpeed": "Vitesse de lecture",
+      "showPlaybackSpeedSubtext": "Affiche une commande de vitesse dans le lecteur."
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -215,7 +223,11 @@
       "connectionSuccessful": "Connexion à ListenBrainz réussie.",
       "connectionFailed": "Échec de la connexion.",
       "connectFailed": "Échec de la connexion à ListenBrainz.",
-      "disconnected": "Déconnecté de ListenBrainz."
+      "disconnected": "Déconnecté de ListenBrainz.",
+      "credentialsTitle": "Identifiants",
+      "credentialsHelper": "Votre nom d'utilisateur et votre jeton depuis listenbrainz.org/profile.",
+      "scrobble": "Scrobbler",
+      "nowPlaying": "En cours de lecture"
     },
     "downloaders": {
       "title": "Téléchargements",
@@ -242,13 +254,18 @@
       "lidarr": {
         "title": "Lidarr",
         "connectionFailed": "Échec de la connexion à Lidarr",
-        "disconnected": "Déconnecté de Lidarr."
+        "disconnected": "Déconnecté de Lidarr.",
+        "credentialsTitle": "Connexion",
+        "credentialsHelper": "L'URL de votre serveur Lidarr et votre clé API. Dans Lidarr : Settings → General."
       },
       "slskd": {
         "title": "slskd",
         "connectionFailed": "Échec de la connexion à slskd",
-        "disconnected": "Déconnecté de slskd."
-      }
+        "disconnected": "Déconnecté de slskd.",
+        "credentialsTitle": "Connexion",
+        "credentialsHelper": "L'URL de votre serveur slskd et votre clé API. Dans slskd : Options → API Keys."
+      },
+      "queueTitle": "File de téléchargement"
     },
     "integrations": {
       "enabled": "Activé",
@@ -308,6 +325,31 @@
           "body": "La découverte se synchronise lorsque vous vous connectez à un serveur. Actualiser dans Découverte ne fait que mélanger le contenu déjà chargé sans récupérer de nouvelles données. En cas d'échec, un message s'affiche et vous pouvez appuyer sur « Réessayer »."
         }
       }
+    },
+    "lastfm": {
+      "title": "Last.fm",
+      "apiKey": "Clé API",
+      "apiSecret": "Secret API",
+      "apiKeyPlaceholder": "Votre clé API Last.fm",
+      "apiSecretPlaceholder": "Votre secret API Last.fm",
+      "connectedAs": "Connecté en tant que",
+      "notConnected": "Non connecté",
+      "connectWithLastfm": "Se connecter avec Last.fm",
+      "iAuthorized": "J'ai autorisé — obtenir la session",
+      "helperText": "Saisissez votre clé et votre secret API Last.fm, puis appuyez sur Connecter pour autoriser. Vos morceaux seront scrobblés automatiquement. Obtenez vos identifiants API sur last.fm/api/account/create.",
+      "disconnect": "Déconnecter",
+      "missingCredentials": "Saisissez d'abord la clé et le secret API.",
+      "credentialsTitle": "Identifiants",
+      "credentialsHelper": "Créez une application sur last.fm/api/account/create pour obtenir ces clés.",
+      "pendingInstruction": "Une fenêtre de navigateur s'est ouverte — autorisez yuzic, puis appuyez ci-dessous.",
+      "scrobble": "Scrobbler",
+      "nowPlaying": "En cours de lecture",
+      "connectFailed": "Échec de la récupération du jeton Last.fm.",
+      "sessionFailed": "Échec de la récupération de la session. Vérifiez que vous avez autorisé l'application.",
+      "connectionSuccessful": "Connecté en tant que {{username}}.",
+      "disconnected": "Déconnecté de Last.fm.",
+      "similarArtists": "Artistes similaires",
+      "similarArtistsDescription": "Affiche des artistes similaires sur les pages artiste grâce aux données Last.fm."
     }
   },
   "common": {
@@ -330,7 +372,8 @@
       "similarUnavailable": "Les titres similaires ne sont pas disponibles en mode hors ligne.",
       "noConnection": "Pas de connexion internet",
       "syncedChanges": "Modifications hors ligne synchronisées",
-      "syncQueuedChangesFailed": "Certaines modifications hors ligne n'ont pas pu être synchronisées"
+      "syncQueuedChangesFailed": "Certaines modifications hors ligne n'ont pas pu être synchronisées",
+      "notAvailable": "Indisponible hors ligne"
     },
     "oneSecond": "Un instant.",
     "playingSimilar": "Lecture de musique similaire",
@@ -341,7 +384,10 @@
       "unexpected": "Une erreur inattendue s'est produite",
       "details": "Erreur : {{name}} {{message}}",
       "restart": "Redémarrer"
-    }
+    },
+    "more": "Plus",
+    "less": "Moins",
+    "playbackError": "Impossible de lire le morceau"
   },
   "onboarding": {
     "home": {
@@ -371,7 +417,11 @@
         "navidrome": "Un serveur musical léger et auto-hébergé.",
         "jellyfin": "Un serveur multimédia complet pour la musique, les films et les séries.",
         "emby": "Un serveur multimédia personnel pour la musique, les films et les séries."
-      }
+      },
+      "serverUrlRequired": "L'URL du serveur est requise.",
+      "serverConnectionFailed": "Échec de la connexion au serveur.",
+      "missingCredentials": "Identifiants ou URL du serveur manquants.",
+      "serverErrorStatus": "Le serveur a renvoyé {{status}}"
     },
     "address": {
       "title": "Adresse du serveur",
@@ -471,7 +521,8 @@
       "popularOnDeezer": "Populaire sur Deezer",
       "similarArtists": "Artistes similaires",
       "bio": "À propos"
-    }
+    },
+    "showMore": "{{count}} de plus"
   },
   "explore": {
     "sections": {
@@ -488,7 +539,11 @@
       "charts": "Tendances du moment",
       "genre": "Plus de {{genre}}",
       "albumsForYou": "Albums pour vous",
-      "artistsForYou": "Artistes pour vous"
+      "artistsForYou": "Artistes pour vous",
+      "searchArtists": "Rechercher des artistes…",
+      "searchGenres": "Rechercher des genres…",
+      "genrePrefix": "Plus",
+      "topArtists": "Meilleurs artistes"
     },
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",
@@ -567,7 +622,8 @@
       "instantMix": "Mix instantané",
       "download": "Télécharger",
       "downloading": "Téléchargement…",
-      "downloaded": "Téléchargé"
+      "downloaded": "Téléchargé",
+      "goToArtist": "Voir l'artiste"
     },
     "sections": {
       "media": "Média",
@@ -620,7 +676,8 @@
       "downloadToServer": "Télécharger sur le serveur",
       "downloadSong": "Télécharger le titre",
       "inLibrary": "Dans la bibliothèque",
-      "downloading": "Téléchargement vers le serveur… {{progress}}%"
+      "downloading": "Téléchargement vers le serveur… {{progress}}%",
+      "noServiceConnected": "Connectez un téléchargeur dans les réglages pour télécharger"
     },
     "serverStatus": {
       "onServer": "Dans la bibliothèque",
@@ -695,7 +752,8 @@
       "download": "Télécharger",
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
-      "delete": "Supprimer la liste de lecture"
+      "delete": "Supprimer la liste de lecture",
+      "rename": "Renommer"
     },
     "sections": {
       "info": "Informations sur la liste de lecture"
@@ -711,7 +769,13 @@
     },
     "toasts": {
       "deleted": "Liste de lecture supprimée",
-      "deleteFailed": "Impossible de supprimer la liste de lecture"
+      "deleteFailed": "Impossible de supprimer la liste de lecture",
+      "renamed": "Liste de lecture renommée",
+      "renameFailed": "Impossible de renommer la liste de lecture"
+    },
+    "rename": {
+      "title": "Renommer la liste de lecture",
+      "placeholder": "Nom de la liste de lecture"
     }
   },
   "artistOptions": {
@@ -739,5 +803,16 @@
   },
   "external": {
     "notFound": "Introuvable dans les sources connectées."
+  },
+  "album": {
+    "disc": "Disque {{number}}",
+    "moreBy": "Plus de {{name}}",
+    "mightAlsoLike": "Vous pourriez aussi aimer",
+    "duration": {
+      "hrMin": "{{hrs}} h {{mins}} min",
+      "min": "{{mins}} min"
+    },
+    "play": "lecture",
+    "plays": "lectures"
   }
 }

@@ -77,7 +77,11 @@
         "chinese": "中国語"
       },
       "showQualityBadge": "音質バッジを表示",
-      "showQualityBadgeSubtext": "再生画面に音声フォーマットとビットレートを表示します。"
+      "showQualityBadgeSubtext": "再生画面に音声フォーマットとビットレートを表示します。",
+      "display": "表示",
+      "playing": "再生",
+      "showSourceHeaders": "ソースヘッダーを表示",
+      "showSourceHeadersSubtext": "外部サービスのセクションタイトルの横にソースバッジを表示します。"
     },
     "library": {
       "title": "ライブラリ",
@@ -200,7 +204,11 @@
         }
       },
       "opusCodec": "Opusコーデック",
-      "opusCodecSubtext": "同じビットレートでMP3より高音質。低ビットレートで特に効果的。"
+      "opusCodecSubtext": "同じビットレートでMP3より高音質。低ビットレートで特に効果的。",
+      "showSleepTimer": "スリープタイマー",
+      "showSleepTimerSubtext": "プレイヤーにスリープタイマーを表示します。",
+      "showPlaybackSpeed": "再生速度",
+      "showPlaybackSpeedSubtext": "プレイヤーに速度調整を表示します。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -215,7 +223,11 @@
       "connectionSuccessful": "ListenBrainz の接続に成功しました。",
       "connectionFailed": "接続に失敗しました。",
       "connectFailed": "ListenBrainz に接続できませんでした。",
-      "disconnected": "ListenBrainz から切断しました。"
+      "disconnected": "ListenBrainz から切断しました。",
+      "credentialsTitle": "認証情報",
+      "credentialsHelper": "listenbrainz.org/profile のユーザー名とユーザートークン。",
+      "scrobble": "スクロブル",
+      "nowPlaying": "再生中"
     },
     "downloaders": {
       "title": "ダウンローダー",
@@ -242,13 +254,18 @@
       "lidarr": {
         "title": "Lidarr",
         "connectionFailed": "Lidarr の接続に失敗しました",
-        "disconnected": "Lidarr から切断しました。"
+        "disconnected": "Lidarr から切断しました。",
+        "credentialsTitle": "接続",
+        "credentialsHelper": "LidarrサーバーのURLとAPIキー。Lidarrの Settings → General にあります。"
       },
       "slskd": {
         "title": "slskd",
         "connectionFailed": "slskd の接続に失敗しました",
-        "disconnected": "slskd から切断しました。"
-      }
+        "disconnected": "slskd から切断しました。",
+        "credentialsTitle": "接続",
+        "credentialsHelper": "slskdサーバーのURLとAPIキー。slskdの Options → API Keys にあります。"
+      },
+      "queueTitle": "ダウンロードキュー"
     },
     "integrations": {
       "enabled": "有効",
@@ -308,6 +325,31 @@
           "body": "サーバーに接続するとディスカバリーは同期されます。ディスカバリーでの更新は読み込済みデータのシャッフルのみで再取得は行いません。失敗した場合はメッセージが表示され、「再試行」をタップできます。"
         }
       }
+    },
+    "lastfm": {
+      "title": "Last.fm",
+      "apiKey": "APIキー",
+      "apiSecret": "APIシークレット",
+      "apiKeyPlaceholder": "Last.fmのAPIキー",
+      "apiSecretPlaceholder": "Last.fmのAPIシークレット",
+      "connectedAs": "接続中のアカウント",
+      "notConnected": "未接続",
+      "connectWithLastfm": "Last.fmと連携",
+      "iAuthorized": "承認しました — セッションを取得",
+      "helperText": "Last.fmのAPIキーとシークレットを入力し、連携をタップして承認してください。再生した曲は自動的にスクロブルされます。APIキーは last.fm/api/account/create で取得できます。",
+      "disconnect": "連携を解除",
+      "missingCredentials": "先にAPIキーとシークレットを入力してください。",
+      "credentialsTitle": "認証情報",
+      "credentialsHelper": "last.fm/api/account/create でアプリを作成してこれらのキーを取得してください。",
+      "pendingInstruction": "ブラウザが開きました — yuzicを承認してから下をタップしてください。",
+      "scrobble": "スクロブル",
+      "nowPlaying": "再生中",
+      "connectFailed": "Last.fmからトークンを取得できませんでした。",
+      "sessionFailed": "セッションを取得できませんでした。アプリを承認したか確認してください。",
+      "connectionSuccessful": "{{username}} として接続しました。",
+      "disconnected": "Last.fmとの連携を解除しました。",
+      "similarArtists": "類似アーティスト",
+      "similarArtistsDescription": "Last.fmのデータを使ってアーティストページに類似アーティストを表示します。"
     }
   },
   "common": {
@@ -330,7 +372,8 @@
       "similarUnavailable": "オフラインモードでは類似曲を利用できません。",
       "noConnection": "インターネット接続なし",
       "syncedChanges": "オフラインの変更を同期しました",
-      "syncQueuedChangesFailed": "一部のオフライン変更を同期できませんでした"
+      "syncQueuedChangesFailed": "一部のオフライン変更を同期できませんでした",
+      "notAvailable": "オフラインでは利用できません"
     },
     "oneSecond": "少々お待ちください。",
     "playingSimilar": "類似の音楽を再生中",
@@ -341,7 +384,10 @@
       "unexpected": "予期しないエラーが発生しました",
       "details": "エラー: {{name}} {{message}}",
       "restart": "再起動"
-    }
+    },
+    "more": "もっと見る",
+    "less": "閉じる",
+    "playbackError": "曲を再生できません"
   },
   "onboarding": {
     "home": {
@@ -371,7 +417,11 @@
         "navidrome": "軽量なセルフホスト型音楽サーバー。",
         "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。",
         "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。"
-      }
+      },
+      "serverUrlRequired": "サーバーURLを入力してください。",
+      "serverConnectionFailed": "サーバーに接続できませんでした。",
+      "missingCredentials": "認証情報またはサーバーURLがありません。",
+      "serverErrorStatus": "サーバーが {{status}} を返しました"
     },
     "address": {
       "title": "サーバーアドレス",
@@ -471,7 +521,8 @@
       "popularOnDeezer": "Deezerで人気",
       "similarArtists": "似ているアーティスト",
       "bio": "概要"
-    }
+    },
+    "showMore": "あと{{count}}件"
   },
   "explore": {
     "sections": {
@@ -488,7 +539,11 @@
       "charts": "今トレンド",
       "genre": "もっと{{genre}}",
       "albumsForYou": "あなたへのアルバム",
-      "artistsForYou": "あなたへのアーティスト"
+      "artistsForYou": "あなたへのアーティスト",
+      "searchArtists": "アーティストを検索…",
+      "searchGenres": "ジャンルを検索…",
+      "genrePrefix": "その他",
+      "topArtists": "人気アーティスト"
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",
@@ -567,7 +622,8 @@
       "instantMix": "インスタントミックス",
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
-      "downloaded": "ダウンロード済み"
+      "downloaded": "ダウンロード済み",
+      "goToArtist": "アーティストへ移動"
     },
     "sections": {
       "media": "メディア",
@@ -620,7 +676,8 @@
       "downloadToServer": "サーバーにダウンロード",
       "downloadSong": "曲をダウンロード",
       "inLibrary": "ライブラリ内",
-      "downloading": "サーバーにダウンロード中… {{progress}}%"
+      "downloading": "サーバーにダウンロード中… {{progress}}%",
+      "noServiceConnected": "ダウンロードするには設定でダウンローダーを接続してください"
     },
     "serverStatus": {
       "onServer": "ライブラリ内",
@@ -695,7 +752,8 @@
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
-      "delete": "プレイリストを削除"
+      "delete": "プレイリストを削除",
+      "rename": "名前を変更"
     },
     "sections": {
       "info": "プレイリスト情報"
@@ -711,7 +769,13 @@
     },
     "toasts": {
       "deleted": "プレイリストを削除しました",
-      "deleteFailed": "プレイリストを削除できませんでした"
+      "deleteFailed": "プレイリストを削除できませんでした",
+      "renamed": "プレイリスト名を変更しました",
+      "renameFailed": "プレイリスト名を変更できませんでした"
+    },
+    "rename": {
+      "title": "プレイリスト名を変更",
+      "placeholder": "プレイリスト名"
     }
   },
   "artistOptions": {
@@ -739,5 +803,16 @@
   },
   "external": {
     "notFound": "接続されたソースで見つかりませんでした。"
+  },
+  "album": {
+    "disc": "ディスク {{number}}",
+    "moreBy": "{{name}}のその他の作品",
+    "mightAlsoLike": "こちらもおすすめ",
+    "duration": {
+      "hrMin": "{{hrs}}時間{{mins}}分",
+      "min": "{{mins}}分"
+    },
+    "play": "回再生",
+    "plays": "回再生"
   }
 }
