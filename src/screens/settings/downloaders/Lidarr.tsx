@@ -34,11 +34,11 @@ import {
   selectLidarrConfig,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import {
-  setLidarrServerUrl,
-  setLidarrApiKey,
-  setLidarrAuthenticated,
-  connectLidarr,
-  disconnectLidarr,
+  setDownloaderServerUrl,
+  setDownloaderApiKey,
+  setDownloaderAuthenticated,
+  connectDownloader,
+  disconnectDownloader,
 } from '@/utils/redux/slices/downloadersSlice';
 
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -78,7 +78,7 @@ const LidarrView: React.FC = () => {
 
   useEffect(() => {
     if (!serverUrl || !apiKey) {
-      dispatch(setLidarrAuthenticated({ serverId, value: false }));
+      dispatch(setDownloaderAuthenticated({ serverId, downloader: 'lidarr', value: false }));
       return;
     }
     if (isAuthenticated) return;
@@ -89,11 +89,11 @@ const LidarrView: React.FC = () => {
       try {
         if (config.serverUrl && config.apiKey) {
           await lidarr.testConnection(config);
-          if (!cancelled) dispatch(connectLidarr({ serverId }));
+          if (!cancelled) dispatch(connectDownloader({ serverId, downloader: 'lidarr' }));
         }
       } catch {
         if (!cancelled) {
-          dispatch(setLidarrAuthenticated({ serverId, value: false }));
+          dispatch(setDownloaderAuthenticated({ serverId, downloader: 'lidarr', value: false }));
           toast.error(t('settings.downloaders.lidarr.connectionFailed'));
         }
       } finally {
@@ -109,9 +109,9 @@ const LidarrView: React.FC = () => {
     setIsLoading(true);
     try {
       await lidarr.testConnection(config);
-      dispatch(connectLidarr({ serverId }));
+      dispatch(connectDownloader({ serverId, downloader: 'lidarr' }));
     } catch {
-      dispatch(setLidarrAuthenticated({ serverId, value: false }));
+      dispatch(setDownloaderAuthenticated({ serverId, downloader: 'lidarr', value: false }));
       toast.error(t('settings.downloaders.lidarr.connectionFailed'));
     } finally {
       setIsLoading(false);
@@ -154,7 +154,7 @@ const LidarrView: React.FC = () => {
   }, [config.serverUrl, config.apiKey, isAuthenticated, pollQueue]);
 
   const handleDisconnect = () => {
-    dispatch(disconnectLidarr({ serverId }));
+    dispatch(disconnectDownloader({ serverId, downloader: 'lidarr' }));
     setQueue([]);
     previousQueueRef.current = [];
     toast(t('settings.downloaders.lidarr.disconnected'));
@@ -199,8 +199,8 @@ const LidarrView: React.FC = () => {
     <SettingsScreen title={t('settings.downloaders.lidarr.title')}>
       <SettingsAuthCard
         fields={[
-          { label: t('settings.downloaders.serverUrl'), value: serverUrl, onChangeText: v => dispatch(setLidarrServerUrl({ serverId, value: v })), placeholder: t('settings.downloaders.serverUrlPlaceholder.lidarr') },
-          { label: t('settings.downloaders.apiKey'), value: apiKey, onChangeText: v => dispatch(setLidarrApiKey({ serverId, value: v })), placeholder: t('settings.downloaders.apiKeyPlaceholder'), secureTextEntry: true },
+          { label: t('settings.downloaders.serverUrl'), value: serverUrl, onChangeText: v => dispatch(setDownloaderServerUrl({ serverId, downloader: 'lidarr', value: v })), placeholder: t('settings.downloaders.serverUrlPlaceholder.lidarr') },
+          { label: t('settings.downloaders.apiKey'), value: apiKey, onChangeText: v => dispatch(setDownloaderApiKey({ serverId, downloader: 'lidarr', value: v })), placeholder: t('settings.downloaders.apiKeyPlaceholder'), secureTextEntry: true },
         ]}
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}

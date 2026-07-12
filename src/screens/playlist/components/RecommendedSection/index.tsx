@@ -26,11 +26,8 @@ import * as deezer from '@/api/deezer';
 import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
 import { RAWARR_URL } from '@/constants/rawarr';
 import { QueryKeys } from '@/enums/queryKeys';
-import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
-import {
-  selectLidarrAuthenticated,
-  selectSlskdAuthenticated,
-} from '@/utils/redux/selectors/downloadersSelectors';
+import DownloadSheet from '@/components/options/DownloadSheet';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
@@ -323,9 +320,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
-  const hasDownloader = isLidarrConnected || isSlskdConnected;
+  const hasDownloader = useAnyDownloaderConnected();
   const downloadSheetRef = useSheetRef();
   const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
 
@@ -424,7 +419,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
       </TouchableOpacity>
 
       {albumForDownload && (
-        <DownloadAlbumSheet
+        <DownloadSheet
           album={albumForDownload}
           sheetRef={downloadSheetRef}
         />

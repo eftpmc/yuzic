@@ -33,11 +33,11 @@ import {
   selectSlskdConfig,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import {
-  setSlskdServerUrl,
-  setSlskdApiKey,
-  setSlskdAuthenticated,
-  connectSlskd,
-  disconnectSlskd,
+  setDownloaderServerUrl,
+  setDownloaderApiKey,
+  setDownloaderAuthenticated,
+  connectDownloader,
+  disconnectDownloader,
 } from '@/utils/redux/slices/downloadersSlice';
 
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -75,7 +75,7 @@ const SlskdView: React.FC = () => {
 
   useEffect(() => {
     if (!serverUrl || !apiKey) {
-      dispatch(setSlskdAuthenticated({ serverId, value: false }));
+      dispatch(setDownloaderAuthenticated({ serverId, downloader: 'slskd', value: false }));
       return;
     }
     if (isAuthenticated) return;
@@ -86,11 +86,11 @@ const SlskdView: React.FC = () => {
       try {
         if (config.serverUrl && config.apiKey) {
           await slskd.testConnection(config);
-          if (!cancelled) dispatch(connectSlskd({ serverId }));
+          if (!cancelled) dispatch(connectDownloader({ serverId, downloader: 'slskd' }));
         }
       } catch {
         if (!cancelled) {
-          dispatch(setSlskdAuthenticated({ serverId, value: false }));
+          dispatch(setDownloaderAuthenticated({ serverId, downloader: 'slskd', value: false }));
           toast.error(t('settings.downloaders.slskd.connectionFailed'));
         }
       } finally {
@@ -106,9 +106,9 @@ const SlskdView: React.FC = () => {
     setIsLoading(true);
     try {
       await slskd.testConnection(config);
-      dispatch(connectSlskd({ serverId }));
+      dispatch(connectDownloader({ serverId, downloader: 'slskd' }));
     } catch {
-      dispatch(setSlskdAuthenticated({ serverId, value: false }));
+      dispatch(setDownloaderAuthenticated({ serverId, downloader: 'slskd', value: false }));
       toast.error(t('settings.downloaders.slskd.connectionFailed'));
     } finally {
       setIsLoading(false);
@@ -149,7 +149,7 @@ const SlskdView: React.FC = () => {
   }, [config.serverUrl, config.apiKey, isAuthenticated, pollQueue]);
 
   const handleDisconnect = () => {
-    dispatch(disconnectSlskd({ serverId }));
+    dispatch(disconnectDownloader({ serverId, downloader: 'slskd' }));
     setQueue([]);
     previousQueueRef.current = [];
     toast(t('settings.downloaders.slskd.disconnected'));
@@ -191,8 +191,8 @@ const SlskdView: React.FC = () => {
     <SettingsScreen title={t('settings.downloaders.slskd.title')}>
       <SettingsAuthCard
         fields={[
-          { label: t('settings.downloaders.serverUrl'), value: serverUrl, onChangeText: v => dispatch(setSlskdServerUrl({ serverId, value: v })), placeholder: t('settings.downloaders.serverUrlPlaceholder.slskd') },
-          { label: t('settings.downloaders.apiKey'), value: apiKey, onChangeText: v => dispatch(setSlskdApiKey({ serverId, value: v })), placeholder: t('settings.downloaders.apiKeyPlaceholder'), secureTextEntry: true },
+          { label: t('settings.downloaders.serverUrl'), value: serverUrl, onChangeText: v => dispatch(setDownloaderServerUrl({ serverId, downloader: 'slskd', value: v })), placeholder: t('settings.downloaders.serverUrlPlaceholder.slskd') },
+          { label: t('settings.downloaders.apiKey'), value: apiKey, onChangeText: v => dispatch(setDownloaderApiKey({ serverId, downloader: 'slskd', value: v })), placeholder: t('settings.downloaders.apiKeyPlaceholder'), secureTextEntry: true },
         ]}
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}

@@ -598,6 +598,7 @@
     "menu": {
       "title": "外部アルバム",
       "downloadToServer": "サーバーにダウンロード",
+      "downloadSong": "曲をダウンロード",
       "inLibrary": "ライブラリ内",
       "downloading": "サーバーにダウンロード中… {{progress}}%"
     },
@@ -609,6 +610,7 @@
       "noDownloader": "有効なダウンローダーが接続されていません。",
       "addedToLidarr": "Lidarr に追加しました！",
       "addedToSlskd": "slskd キューに追加しました！",
+      "addedTrackToSlskd": "曲を slskd キューに追加しました！",
       "failed": "ダウンロードに失敗しました。",
       "startFailed": "ダウンロードを開始できませんでした。",
       "chooseService": "サービスを選択",

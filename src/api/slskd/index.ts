@@ -5,6 +5,6 @@ export {
   detectFinishedQueueItems,
 } from './queue';
 export type { SlskdQueueRecord } from './queue';
-export { downloadAlbum } from './downloads';
-export type { DownloadAlbumResult } from './downloads';
+export { downloadAlbum, downloadTrack } from './downloads';
+export type { DownloadAlbumResult, DownloadTrackResult } from './downloads';
 export type { SlskdConfig } from './client';

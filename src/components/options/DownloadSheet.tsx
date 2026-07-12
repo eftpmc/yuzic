@@ -9,7 +9,6 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
@@ -17,72 +16,57 @@ import { MediaImage } from '@/components/MediaImage';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import * as lidarr from '@/api/lidarr';
-import * as slskd from '@/api/slskd';
 import {
-  selectLidarrConfig,
-  selectLidarrAuthenticated,
-  selectSlskdConfig,
-  selectSlskdAuthenticated,
-} from '@/utils/redux/selectors/downloadersSelectors';
+  useDownloaderStates,
+  type DownloaderId,
+  type DownloaderState,
+} from '@/features/downloaders/registry';
 import type { ExternalAlbumBase } from '@/types';
-
 
 interface Props {
   album: ExternalAlbumBase;
+  /** When set, the sheet downloads this single track instead of the whole album. */
+  track?: { title: string; artist: string };
   sheetRef: React.RefObject<BottomSheetModal>;
 }
 
-const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
+const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
 
-  const lidarrConfig = useSelector(selectLidarrConfig);
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const slskdConfig = useSelector(selectSlskdConfig);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const downloaders = useDownloaderStates();
+  const available = downloaders.filter(
+    (d) => d.isConnected && (!track || !!d.def.downloadTrack)
+  );
 
-  const [lidarrLoading, setLidarrLoading] = useState(false);
-  const [slskdLoading, setSlskdLoading] = useState(false);
+  const [loadingId, setLoadingId] = useState<DownloaderId | null>(null);
+  const anyLoading = loadingId !== null;
 
-  const anyLoading = lidarrLoading || slskdLoading;
   const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
 
-  const handleLidarr = async () => {
+  const handleDownload = async ({ def, config }: DownloaderState) => {
     if (anyLoading) return;
-    setLidarrLoading(true);
+    setLoadingId(def.id);
     try {
-      const result = await lidarr.downloadAlbum(lidarrConfig, album.title, album.artist);
+      const result = track
+        ? await def.downloadTrack!(config, { title: track.title, artist: track.artist })
+        : await def.downloadAlbum(config, { title: album.title, artist: album.artist });
+      const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
       toast[result.success ? 'success' : 'error'](
         result.success
-          ? t('externalAlbum.download.addedToLidarr')
+          ? t(successKey)
           : (result.message ?? t('externalAlbum.download.failed'))
       );
       if (result.success) sheetRef.current?.dismiss();
     } catch {
       toast.error(t('externalAlbum.download.startFailed'));
     } finally {
-      setLidarrLoading(false);
+      setLoadingId(null);
     }
   };
 
-  const handleSlskd = async () => {
-    if (anyLoading) return;
-    setSlskdLoading(true);
-    try {
-      const result = await slskd.downloadAlbum(slskdConfig, album.title, album.artist);
-      toast[result.success ? 'success' : 'error'](
-        result.success
-          ? t('externalAlbum.download.addedToSlskd')
-          : (result.message ?? t('externalAlbum.download.failed'))
-      );
-      if (result.success) sheetRef.current?.dismiss();
-    } catch {
-      toast.error(t('externalAlbum.download.startFailed'));
-    } finally {
-      setSlskdLoading(false);
-    }
-  };
+  const headerTitle = track ? track.title : album.title;
+  const headerSubtext = track ? track.artist : album.artist;
 
   return (
     <BottomSheetModal
@@ -99,10 +83,10 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
           <MediaImage cover={album.cover} size="grid" style={styles.cover} />
           <View style={styles.headerText}>
             <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
-              {album.title}
+              {headerTitle}
             </Text>
             <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
-              {album.artist}
+              {headerSubtext}
             </Text>
           </View>
         </View>
@@ -113,47 +97,32 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
           {t('externalAlbum.download.chooseService')}
         </Text>
 
-        {isLidarrConnected && (
+        {available.map((downloader) => (
           <TouchableOpacity
+            key={downloader.def.id}
             style={[styles.option, anyLoading && styles.optionDisabled]}
-            onPress={handleLidarr}
+            onPress={() => handleDownload(downloader)}
             disabled={anyLoading}
           >
             <View style={styles.serviceText}>
-              <Text style={[styles.optionText, { color: colors.secondary }]}>Lidarr</Text>
+              <Text style={[styles.optionText, { color: colors.secondary }]}>
+                {downloader.def.label}
+              </Text>
               <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
-                {t('externalAlbum.download.lidarrDesc')}
+                {t(downloader.def.descriptionKey)}
               </Text>
             </View>
-            {lidarrLoading
+            {loadingId === downloader.def.id
               ? <SpinningLoaderCircle size={18} color={colors.subtext} />
               : null}
           </TouchableOpacity>
-        )}
-
-        {isSlskdConnected && (
-          <TouchableOpacity
-            style={[styles.option, anyLoading && styles.optionDisabled]}
-            onPress={handleSlskd}
-            disabled={anyLoading}
-          >
-            <View style={styles.serviceText}>
-              <Text style={[styles.optionText, { color: colors.secondary }]}>Soulseek</Text>
-              <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
-                {t('externalAlbum.download.slskdDesc')}
-              </Text>
-            </View>
-            {slskdLoading
-              ? <SpinningLoaderCircle size={18} color={colors.subtext} />
-              : null}
-          </TouchableOpacity>
-        )}
+        ))}
       </BottomSheetScrollView>
     </BottomSheetModal>
   );
 };
 
-export default DownloadAlbumSheet;
+export default DownloadSheet;
 
 const styles = StyleSheet.create({
   sheetBackground: {

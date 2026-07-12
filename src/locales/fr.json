@@ -598,6 +598,7 @@
     "menu": {
       "title": "Album externe",
       "downloadToServer": "Télécharger sur le serveur",
+      "downloadSong": "Télécharger le titre",
       "inLibrary": "Dans la bibliothèque",
       "downloading": "Téléchargement vers le serveur… {{progress}}%"
     },
@@ -609,6 +610,7 @@
       "noDownloader": "Aucun gestionnaire de téléchargement actif connecté.",
       "addedToLidarr": "Album ajouté à Lidarr !",
       "addedToSlskd": "Album ajouté à la file d'attente slskd !",
+      "addedTrackToSlskd": "Titre ajouté à la file d'attente slskd !",
       "failed": "Échec du téléchargement.",
       "startFailed": "Échec du démarrage du téléchargement.",
       "chooseService": "Choisir un service",
