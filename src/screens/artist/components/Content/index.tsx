@@ -11,6 +11,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
+import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
+import { matchAlbumToLibrary } from '@/hooks/libraryMatch'
 import { useTracks } from '@/hooks/tracks'
 import MediaTile from '@/screens/home/components/MediaTile'
 import MostPlayedSection from './MostPlayedSection'
@@ -187,6 +189,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
   const localAlbums = useArtistAlbums(localArtist?.id ?? '')
   const { tracks: libraryTracks } = useTracks()
+  const { data: externalDiscography } = useArtistExternalDiscography(localArtist?.name ?? null, !!localArtist)
 
   const songCountByAlbumId = useMemo(() => {
     const counts = new Map<string, number>()
@@ -206,21 +209,37 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       const albums = localAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
       const singles = localAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
 
-      if (albums.length > 0) {
+      // Owned releases first, then whatever the enabled external sources
+      // have for this artist that isn't already matched to something owned
+      // — the row itself (ExternalAlbumRow) double-checks "already in
+      // library" independently as a safety net if this dedup misses an edge case.
+      const missingAlbums = (externalDiscography?.albums ?? [])
+        .filter(ext => !matchAlbumToLibrary(ext, localAlbums))
+      const missingSingles = (externalDiscography?.singles ?? [])
+        .filter(ext => !matchAlbumToLibrary(ext, localAlbums))
+
+      const albumItems: ArtistContentItem[] = [
+        ...albums.map(album => ({ kind: 'localAlbum' as const, id: `album-${album.id}`, album })),
+        ...missingAlbums.map(album => ({ kind: 'externalAlbum' as const, id: `album-ext-${album.id}`, album })),
+      ]
+      const singleItems: ArtistContentItem[] = [
+        ...singles.map(album => ({ kind: 'localAlbum' as const, id: `single-${album.id}`, album })),
+        ...missingSingles.map(album => ({ kind: 'externalAlbum' as const, id: `single-ext-${album.id}`, album })),
+      ]
+
+      if (albumItems.length > 0) {
         rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
-        const visibleAlbums = albums.slice(0, visibleAlbumsCount)
-        rows.push(...visibleAlbums.map(album => ({ kind: 'localAlbum' as const, id: `album-${album.id}`, album })))
-        if (visibleAlbumsCount < albums.length) {
-          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: albums.length - visibleAlbumsCount })
+        rows.push(...albumItems.slice(0, visibleAlbumsCount))
+        if (visibleAlbumsCount < albumItems.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: albumItems.length - visibleAlbumsCount })
         }
       }
 
-      if (singles.length > 0) {
+      if (singleItems.length > 0) {
         rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
-        const visibleSingles = singles.slice(0, visibleSinglesCount)
-        rows.push(...visibleSingles.map(album => ({ kind: 'localAlbum' as const, id: `single-${album.id}`, album })))
-        if (visibleSinglesCount < singles.length) {
-          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: singles.length - visibleSinglesCount })
+        rows.push(...singleItems.slice(0, visibleSinglesCount))
+        if (visibleSinglesCount < singleItems.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: singleItems.length - visibleSinglesCount })
         }
       }
 
@@ -254,7 +273,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     }
 
     return rows
-  }, [localArtist, externalArtist, localAlbums, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
+  }, [localArtist, externalArtist, localAlbums, externalDiscography, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
 
   const renderItem = useCallback(({ item }: { item: ArtistContentItem }) => {
     if (item.kind === 'mostPlayed') {
@@ -322,7 +341,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     return (
       <ExternalAlbumRow
         album={item.album}
-        artistName={externalArtist?.name ?? ''}
+        artistName={localArtist?.name ?? externalArtist?.name ?? ''}
         onPress={(album) => navigateToAlbum(album)}
       />
     )
