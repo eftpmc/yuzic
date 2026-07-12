@@ -21,7 +21,8 @@ import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { usePlaying } from '@/contexts/PlayingContext';
-import { MediaImage } from '@/components/MediaImage';
+import IconActionButton from '@/components/IconActionButton';
+import MediaListRow from '@/components/MediaListRow';
 import SongOptions from '@/components/options/SongOptions';
 import PlaylistList from '@/components/PlaylistList';
 import { Song } from '@/types';
@@ -131,30 +132,20 @@ const Search = () => {
   const renderResult = (result: SearchResult) => {
     if (result.type === 'song') {
       return (
-        <View style={styles.songWrapper}>
-          <View style={styles.songRow}>
-            <TouchableOpacity
-              accessibilityLabel={`Search result song ${result.title}`}
-              accessibilityRole="button"
-              testID="search-song-result"
-              style={styles.songInfo}
-              onPress={() => { void handleSongPress(result); }}
-            >
-              <MediaImage cover={result.cover} size="thumb" style={styles.songCover} />
-              <View style={styles.songText}>
-                <Text numberOfLines={1} style={[styles.songTitle, { color: colors.secondary }]}>
-                  {result.title}
-                </Text>
-                <Text numberOfLines={1} style={[styles.songSubtitle, { color: colors.subtext }]}>
-                  {result.subtext}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.songOptionsButton} onPress={() => { void handleSongOptions(result); }}>
-              <Ellipsis size={24} color={colors.secondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <MediaListRow
+          title={result.title}
+          subtitle={result.subtext}
+          cover={result.cover}
+          onPress={() => { void handleSongPress(result); }}
+          trailing={
+            <IconActionButton
+              icon={<Ellipsis size={24} color={colors.secondary} />}
+              onPress={() => { void handleSongOptions(result); }}
+              accessibilityLabel={`Search result song ${result.title} options`}
+              size="compact"
+            />
+          }
+        />
       );
     }
 
@@ -386,38 +377,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
-  },
-  songWrapper: {
-    paddingHorizontal: 16,
-  },
-  songRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  songInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  songCover: {
-    width: 64,
-    height: 64,
-    borderRadius: 6,
-  },
-  songText: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  songTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  songSubtitle: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  songOptionsButton: {
-    padding: 8,
   },
 });

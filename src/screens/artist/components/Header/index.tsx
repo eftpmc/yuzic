@@ -19,7 +19,6 @@ import ArtistOptions from '@/components/options/ArtistOptions';
 import { Artist, ExternalArtist, Song } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useTracks } from '@/hooks/tracks';
 import { buildCover } from '@/utils/builders/buildCover';
@@ -29,6 +28,7 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import { useApi } from '@/api';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { fetchAlbumDetailsSettled } from '@/hooks/albums';
+import { DetailActionRow, DetailCircleAction, DetailPlayAction } from '@/components/DetailHeader';
 
 type Props = {
   localArtist: Artist | null;
@@ -213,7 +213,6 @@ function LocalActionRow({ artist }: { artist: Artist }) {
   const { isDarkMode, colors } = useTheme();
   const queryClient = useQueryClient();
   const api = useApi();
-  const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
 
   const { playSongInCollection } = usePlaying();
@@ -296,35 +295,34 @@ function LocalActionRow({ artist }: { artist: Artist }) {
   }, [isDownloadingAll, isArtistDownloading, isArtistFullyDownloaded, artistAlbums, downloadAlbumById]);
 
   return (
-    <View style={styles.buttonRow}>
-      <TouchableOpacity
+    <DetailActionRow style={styles.buttonRow}>
+      <DetailCircleAction
         onPress={() => void playArtist(true)}
         disabled={songsLoading}
-        style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+        style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
       >
         {songsLoading ? (
           <ActivityIndicator size="small" color={colors.secondary} />
         ) : (
           <Shuffle size={18} color={colors.secondary} />
         )}
-      </TouchableOpacity>
+      </DetailCircleAction>
 
-      <TouchableOpacity
+      <DetailPlayAction
         onPress={() => void playArtist(false)}
         disabled={songsLoading}
-        style={[styles.playButton, { backgroundColor: themeColor }]}
       >
         {songsLoading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
           <Play size={24} color="#fff" fill="#fff" />
         )}
-      </TouchableOpacity>
+      </DetailPlayAction>
 
-      <TouchableOpacity
+      <DetailCircleAction
         onPress={() => void handleDownloadAll()}
         disabled={isDownloadingAll || isArtistDownloading}
-        style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+        style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
       >
         {isDownloadingAll || isArtistDownloading ? (
           <ActivityIndicator size="small" color={colors.secondary} />
@@ -333,8 +331,8 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         ) : (
           <Download size={18} color={colors.secondary} />
         )}
-      </TouchableOpacity>
-    </View>
+      </DetailCircleAction>
+    </DetailActionRow>
   );
 }
 
@@ -409,28 +407,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
     marginBottom: 24,
   },
   secondaryButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   secondaryButtonDark: {
     backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
