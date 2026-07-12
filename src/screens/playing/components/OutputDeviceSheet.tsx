@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Airplay, Cast, Check, Plus, RotateCcw, Smartphone } from 'lucide-react-native';
+import IconActionButton from '@/components/IconActionButton';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -79,12 +80,13 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {/* Title */}
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.secondary }]}>Connect</Text>
-          <TouchableOpacity onPress={scan} disabled={isScanning} style={styles.titleAction} activeOpacity={0.6}>
-            {isScanning
-              ? <SpinningLoaderCircle size={16} color={colors.subtext} />
-              : <RotateCcw size={16} color={colors.subtext} />
-            }
-          </TouchableOpacity>
+          <IconActionButton
+            icon={<RotateCcw size={16} color={colors.subtext} />}
+            onPress={scan}
+            loading={isScanning}
+            accessibilityLabel="Scan for devices"
+            size="compact"
+          />
         </View>
 
         {/* This device — always shown, highlighted when nothing is casting */}
@@ -207,9 +209,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  titleAction: {
-    padding: 4,
   },
   divider: {
     height: StyleSheet.hairlineWidth,

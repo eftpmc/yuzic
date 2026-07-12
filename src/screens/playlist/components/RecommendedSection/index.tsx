@@ -13,7 +13,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { useTheme } from '@/hooks/useTheme';
-import { MediaImage } from '@/components/MediaImage';
+import IconActionButton from '@/components/IconActionButton';
+import MediaListRow from '@/components/MediaListRow';
+import SectionHeader from '@/components/SectionHeader';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
 import { selectThemeColor, selectShowSourceHeaders, selectDeezerDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
@@ -33,7 +35,6 @@ import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/type
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
-const COVER_SIZE = 44;
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -117,23 +118,6 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
   }
 }
 
-// ── Shared section header ──────────────────────────────────────────────────────
-
-type SectionHeaderProps = {
-  title: string;
-  badge?: React.ReactNode;
-};
-
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title, badge }) => {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.sectionTitleRow}>
-      {badge}
-      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>{title}</Text>
-    </View>
-  );
-};
-
 // ── Local song row ─────────────────────────────────────────────────────────────
 
 type LocalRowProps = {
@@ -175,23 +159,21 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
   }, [adding, added, addToPlaylist, playlistId, song.id, t]);
 
   return (
-    <TouchableOpacity style={styles.row} onPress={() => void handlePress()} activeOpacity={0.7}>
-      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
-      <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, { color: colors.secondary }]} numberOfLines={1}>
-          {song.title}
-        </Text>
-        <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
-          {song.artist}{song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}
-        </Text>
-      </View>
-      <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
-        {added
-          ? <CheckCircle size={22} color={colors.placeholder} />
-          : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
-        }
-      </TouchableOpacity>
-    </TouchableOpacity>
+    <MediaListRow
+      title={song.title}
+      subtitle={`${song.artist}${song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}`}
+      cover={song.cover}
+      onPress={() => void handlePress()}
+      variant="compact"
+      trailing={
+        <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
+          {added
+            ? <CheckCircle size={22} color={colors.placeholder} />
+            : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
+          }
+        </TouchableOpacity>
+      }
+    />
   );
 };
 
@@ -209,33 +191,27 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
   const hasPreview = !!song.previewUrl;
 
   return (
-    <TouchableOpacity
-      style={styles.row}
+    <MediaListRow
+      title={song.title}
+      subtitle={`${song.artist}${song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}`}
+      cover={song.cover}
       onPress={() => song.previewUrl && void toggle(song, song.previewUrl)}
       disabled={!hasPreview}
-      activeOpacity={hasPreview ? 0.7 : 1}
-    >
-      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
-      <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, { color: colors.secondary }]} numberOfLines={1}>
-          {song.title}
-        </Text>
-        <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
-          {song.artist}{song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}
-        </Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => hasDownloader && onDownload(song)}
-        disabled={!hasDownloader}
-        hitSlop={10}
-        style={styles.actionBtn}
-      >
-        <CloudDownload
-          size={22}
-          color={hasDownloader ? colors.subtext : colors.muted}
-        />
-      </TouchableOpacity>
-    </TouchableOpacity>
+      variant="compact"
+      trailing={
+        <TouchableOpacity
+          onPress={() => hasDownloader && onDownload(song)}
+          disabled={!hasDownloader}
+          hitSlop={10}
+          style={styles.actionBtn}
+        >
+          <CloudDownload
+            size={22}
+            color={hasDownloader ? colors.subtext : colors.muted}
+          />
+        </TouchableOpacity>
+      }
+    />
   );
 };
 
@@ -283,22 +259,21 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
 
   return (
     <View style={styles.section}>
-      <SectionHeader title={t('playlist.recommended.local')} />
+      <SectionHeader
+        title={t('playlist.recommended.local')}
+        action={
+          <IconActionButton
+            icon={<RefreshCw size={17} color={colors.subtext} />}
+            onPress={onRefresh}
+            accessibilityLabel={t('playlist.recommended.refresh')}
+            size="compact"
+          />
+        }
+      />
 
       {localSongs.map(song => (
         <LocalRow key={song.id} song={song} playlistId={playlist.id} />
       ))}
-
-      <TouchableOpacity
-        style={[styles.refreshBtn, { borderColor: colors.border }]}
-        onPress={onRefresh}
-        activeOpacity={0.7}
-      >
-        <RefreshCw size={16} color={colors.subtext} />
-        <Text style={[styles.refreshText, { color: colors.subtext }]}>
-          {t('playlist.recommended.refresh')}
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -383,6 +358,15 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
             </View>
           ) : undefined
         }
+        action={
+          <IconActionButton
+            icon={<RefreshCw size={17} color={colors.subtext} />}
+            onPress={onRefreshExternal}
+            loading={externalQuery.isFetching}
+            accessibilityLabel={t('playlist.recommended.refresh')}
+            size="compact"
+          />
+        }
       />
 
       {externalQuery.isLoading ? (
@@ -401,22 +385,6 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
           />
         ))
       )}
-
-      <TouchableOpacity
-        style={[styles.refreshBtn, { borderColor: colors.border }]}
-        onPress={onRefreshExternal}
-        activeOpacity={0.7}
-        disabled={externalQuery.isFetching}
-      >
-        <RefreshCw
-          size={16}
-          color={colors.subtext}
-          style={{ opacity: externalQuery.isFetching ? 0.3 : 1 }}
-        />
-        <Text style={[styles.refreshText, { color: colors.subtext, opacity: externalQuery.isFetching ? 0.3 : 1 }]}>
-          {t('playlist.recommended.refresh')}
-        </Text>
-      </TouchableOpacity>
 
       {albumForDownload && (
         <DownloadSheet
@@ -485,13 +453,6 @@ const styles = StyleSheet.create({
   section: {
     paddingTop: 24,
   },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    gap: 8,
-  },
   sourceBadge: {
     width: 22,
     height: 22,
@@ -507,35 +468,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  cover: {
-    width: COVER_SIZE,
-    height: COVER_SIZE,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  rowText: {
-    flex: 1,
-    minWidth: 0,
-    marginRight: 6,
-  },
-  rowTitle: {
-    fontSize: 15,
-    fontWeight: '400',
-  },
-  rowSub: {
-    fontSize: 13,
-    marginTop: 1,
-  },
   actionBtn: { padding: 4 },
   loader: { marginVertical: 24 },
   emptyText: {
@@ -543,20 +475,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
     paddingVertical: 20,
-  },
-  refreshBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-  refreshText: {
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
