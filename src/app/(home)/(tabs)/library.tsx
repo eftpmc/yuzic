@@ -380,9 +380,9 @@ const styles = StyleSheet.create({
   pillRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 8,
   },
   sortRow: {
     flexDirection: 'row',
