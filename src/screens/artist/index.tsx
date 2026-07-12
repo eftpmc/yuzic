@@ -2,12 +2,15 @@ import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CloudOff } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { useArtist, useArtists } from '@/hooks/artists';
 import { useExternalArtist } from '@/hooks/artists/useExternalArtist';
 import { matchArtistToLibrary } from '@/hooks/libraryMatch';
 import { useTheme } from '@/hooks/useTheme';
 import NotFoundView from '@/components/NotFoundView';
+import StatusBanner from '@/components/StatusBanner';
 
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
@@ -25,6 +28,7 @@ const ArtistScreen: React.FC = () => {
   const route = useRoute<any>();
   const { id, source, artistId, mbid, name, forceExternal } = (route.params ?? {}) as RouteParams;
 
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { artists } = useArtists();
 
@@ -64,6 +68,15 @@ const ArtistScreen: React.FC = () => {
     }
     return (
       <SafeAreaView testID="artist-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+        {localResult.degraded && (
+          <StatusBanner
+            icon={<CloudOff size={14} color={colors.subtext} />}
+            text={t('common.serverUnreachableBanner')}
+            closable
+            style={styles.degradedBanner}
+            testID="server-unreachable-banner"
+          />
+        )}
         <ArtistContent localArtist={localResult.artist} externalArtist={null} />
       </SafeAreaView>
     );
@@ -95,5 +108,9 @@ export default ArtistScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  degradedBanner: {
+    marginHorizontal: 16,
+    marginTop: 8,
   },
 });

@@ -387,7 +387,8 @@
     },
     "more": "Plus",
     "less": "Moins",
-    "playbackError": "Impossible de lire le morceau"
+    "playbackError": "Impossible de lire le morceau",
+    "serverUnreachableBanner": "Serveur injoignable — affichage des données locales"
   },
   "onboarding": {
     "home": {

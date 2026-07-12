@@ -387,7 +387,8 @@
     },
     "more": "更多",
     "less": "收起",
-    "playbackError": "无法播放曲目"
+    "playbackError": "无法播放曲目",
+    "serverUnreachableBanner": "无法连接服务器 — 正在显示本地数据"
   },
   "onboarding": {
     "home": {

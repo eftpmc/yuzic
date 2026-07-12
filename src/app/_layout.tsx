@@ -29,6 +29,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { queryStorage } from '@/utils/mmkvStorage';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
+import { isLikelyNetworkError, setServerUnreachable } from '@/features/connectivity/serverReachability';
 import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
 
@@ -93,7 +94,15 @@ function isQueryForActiveServer(queryKey: readonly unknown[]): boolean {
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (_error, query) => {
+    onError: (error, query) => {
+      // A fetch-level failure (host unreachable, aborted by our timeout) marks
+      // the server unreachable; ServerReachabilityWatcher then pings to confirm
+      // and clears the flag on the first success, so a one-off blip
+      // self-corrects within seconds.
+      if (isLikelyNetworkError(error)) {
+        setServerUnreachable(true);
+      }
+
       // Only show a toast when a query has no cached data — silent background
       // refreshes shouldn't interrupt the user if stale data is still visible.
       const rootKey = query.queryKey[0];

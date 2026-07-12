@@ -387,7 +387,8 @@
     },
     "more": "もっと見る",
     "less": "閉じる",
-    "playbackError": "曲を再生できません"
+    "playbackError": "曲を再生できません",
+    "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中"
   },
   "onboarding": {
     "home": {

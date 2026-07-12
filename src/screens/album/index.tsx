@@ -2,12 +2,15 @@ import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CloudOff } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { useAlbum, useExternalAlbum } from '@/hooks/albums';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch';
 import { useTheme } from '@/hooks/useTheme';
 import NotFoundView from '@/components/NotFoundView';
+import StatusBanner from '@/components/StatusBanner';
 
 import AlbumContent from './components/Content';
 import LoadingAlbumContent from './components/Content/Loading';
@@ -25,6 +28,7 @@ const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
   const { id, source, albumId, artist, title, forceExternal } = (route.params ?? {}) as RouteParams;
 
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { albums } = useLibrary();
 
@@ -64,6 +68,15 @@ const AlbumScreen: React.FC = () => {
     }
     return (
       <SafeAreaView testID="album-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+        {localResult.degraded && (
+          <StatusBanner
+            icon={<CloudOff size={14} color={colors.subtext} />}
+            text={t('common.serverUnreachableBanner')}
+            closable
+            style={styles.degradedBanner}
+            testID="server-unreachable-banner"
+          />
+        )}
         <AlbumContent localAlbum={localResult.album} externalAlbum={null} songsLoading={localResult.songsLoading} />
       </SafeAreaView>
     );
@@ -95,5 +108,9 @@ export default AlbumScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  degradedBanner: {
+    marginHorizontal: 16,
+    marginTop: 8,
   },
 });

@@ -16,6 +16,8 @@ function mapToSongBase(song: SubsonicSong & { id: string }): SongBase {
       : { kind: 'none' as const },
     duration: String(song.duration ?? 0),
     albumId: song.albumId ?? '',
+    disc: song.discNumber ?? undefined,
+    trackNumber: song.track ?? undefined,
     year: song.year ?? undefined,
     dateAdded: song.created,
     serverPlayCount: song.playCount ?? undefined,
