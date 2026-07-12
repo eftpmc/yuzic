@@ -52,7 +52,6 @@ export function FilterPill<T extends string>({
 
 const styles = StyleSheet.create({
   button: {
-    marginHorizontal: 2,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
