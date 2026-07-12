@@ -624,8 +624,7 @@
     },
     "serverStatus": {
       "onServer": "ライブラリ内",
-      "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%",
-      "notInLibrary": "外部"
+      "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%"
     },
     "download": {
       "noDownloader": "有効なダウンローダーが接続されていません。",

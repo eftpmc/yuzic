@@ -7,8 +7,9 @@ type Props = {
   biography?: string
 }
 
-// External-only, no local fallback attempted — self-hosted servers don't
-// carry artist biography text, so there's nothing genuine to show locally.
+// The biography always comes from an external source (Deezer in local mode,
+// the resolved external artist otherwise) — self-hosted servers don't carry
+// artist biography text.
 export default function BioSection({ biography }: Props) {
   const { colors } = useTheme()
   const { t } = useTranslation()

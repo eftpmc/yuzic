@@ -638,8 +638,7 @@
     },
     "serverStatus": {
       "onServer": "In Library",
-      "downloadingToServer": "Downloading to server · {{progress}}%",
-      "notInLibrary": "External"
+      "downloadingToServer": "Downloading to server · {{progress}}%"
     },
     "download": {
       "noDownloader": "No active downloader connected.",
