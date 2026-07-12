@@ -1,0 +1,265 @@
+import React from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { ChevronLeft } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { MediaImage } from '@/components/MediaImage';
+import { useTheme } from '@/hooks/useTheme';
+import { controlSize, spacing, typography } from '@/constants/design';
+import type { CoverSource } from '@/types';
+
+type DetailHeaderProps = {
+  title: string;
+  cover: CoverSource;
+  rightAction?: React.ReactNode;
+  meta?: React.ReactNode;
+  status?: React.ReactNode;
+  actions?: React.ReactNode;
+};
+
+export function DetailHeader({
+  title,
+  cover,
+  rightAction,
+  meta,
+  status,
+  actions,
+}: DetailHeaderProps) {
+  const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          testID="detail-back-button"
+          onPress={() => navigation.goBack()}
+          style={styles.headerButton}
+        >
+          <ChevronLeft size={24} color={colors.secondary} />
+        </TouchableOpacity>
+
+        <View pointerEvents="none" style={styles.headerTitleWrapper}>
+          <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
+            {title}
+          </Text>
+        </View>
+
+        {rightAction ?? <View style={styles.headerButton} />}
+      </View>
+
+      <View style={styles.coverWrapper}>
+        <MediaImage cover={cover} size="detail" style={styles.coverImage} />
+      </View>
+
+      <View style={styles.titleInfo}>
+        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
+          {title}
+        </Text>
+        {meta}
+      </View>
+
+      {status}
+
+      {actions}
+    </View>
+  );
+}
+
+type DetailMetaRowProps = {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function DetailMetaRow({ children, style }: DetailMetaRowProps) {
+  return <View style={[styles.metaRow, style]}>{children}</View>;
+}
+
+export function DetailMetaDot() {
+  const { colors } = useTheme();
+  return (
+    <Text style={[styles.metaDot, { color: colors.subtext }]} numberOfLines={1}>
+      •
+    </Text>
+  );
+}
+
+type DetailMetaTextProps = {
+  children: React.ReactNode;
+};
+
+export function DetailMetaText({ children }: DetailMetaTextProps) {
+  const { colors } = useTheme();
+  return (
+    <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
+      {children}
+    </Text>
+  );
+}
+
+type DetailActionRowProps = {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function DetailActionRow({ children, style }: DetailActionRowProps) {
+  return (
+    <View style={[styles.actionsRow, style]}>
+      <View style={styles.actions}>{children}</View>
+    </View>
+  );
+}
+
+type DetailCircleActionProps = {
+  children: React.ReactNode;
+  onPress?: () => void;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function DetailCircleAction({ children, onPress, disabled, style }: DetailCircleActionProps) {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity
+      style={[styles.secondaryButton, { backgroundColor: colors.card }, style]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.7}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+type DetailPlayActionProps = {
+  children: React.ReactNode;
+  onPress?: () => void;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function DetailPlayAction({ children, onPress, disabled, style }: DetailPlayActionProps) {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity
+      style={[styles.playButton, { backgroundColor: colors.themeColor }, style]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.7}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+type DetailHeaderIconButtonProps = {
+  children: React.ReactNode;
+  onPress?: () => void;
+};
+
+export function DetailHeaderIconButton({ children, onPress }: DetailHeaderIconButtonProps) {
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.headerButton} activeOpacity={0.7}>
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 0,
+    alignItems: 'center',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.page,
+    paddingVertical: 12,
+    width: '100%',
+  },
+  headerTitleWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    maxWidth: '60%',
+  },
+  headerButton: {
+    padding: 6,
+    width: controlSize.iconCompact,
+  },
+  coverWrapper: {
+    width: 280,
+    height: 280,
+    borderRadius: 16,
+    marginTop: 32,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+  },
+  titleInfo: {
+    width: '100%',
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  title: {
+    ...typography.detailTitle,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtext: {
+    fontSize: 14,
+  },
+  metaDot: {
+    fontSize: 14,
+    marginHorizontal: 6,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    flexWrap: 'nowrap',
+    maxWidth: '94%',
+    marginTop: 4,
+  },
+  actionsRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.controlGap,
+  },
+  secondaryButton: {
+    width: controlSize.detailSecondary,
+    height: controlSize.detailSecondary,
+    borderRadius: controlSize.detailSecondary / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playButton: {
+    borderRadius: 22,
+    width: controlSize.detailPrimaryWidth,
+    height: controlSize.detailPrimaryHeight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

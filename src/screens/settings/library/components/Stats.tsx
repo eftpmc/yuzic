@@ -8,6 +8,7 @@ import { selectSyncOnAppStart } from '@/utils/redux/selectors/settingsSelectors'
 import { setSyncOnAppStart } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useSync } from '@/hooks/useSync';
+import IconActionButton from '@/components/IconActionButton';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsInfoRow from '../../components/SettingsInfoRow';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
@@ -62,13 +63,20 @@ const Stats: React.FC = () => {
           value={formatLastSynced(lastSyncedAt, t, now)}
           stacked
           right={
-            <Animated.View style={spinStyle}>
-              <RefreshCw
-                size={18}
-                color={isSyncing ? colors.themeColor : colors.secondary}
-                onPress={() => !isSyncing && sync(true)}
-              />
-            </Animated.View>
+            <IconActionButton
+              icon={
+                <Animated.View style={spinStyle}>
+                  <RefreshCw
+                    size={18}
+                    color={isSyncing ? colors.themeColor : colors.secondary}
+                  />
+                </Animated.View>
+              }
+              onPress={() => sync(true)}
+              disabled={isSyncing}
+              accessibilityLabel={t('settings.library.stats.lastSynced')}
+              size="compact"
+            />
           }
         />
       </SettingsCard>
