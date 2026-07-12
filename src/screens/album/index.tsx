@@ -27,10 +27,12 @@ const AlbumScreen: React.FC = () => {
   const { colors } = useTheme();
   const { albums } = useLibrary();
 
-  // Identity is resolved once, at mount, and frozen — same rationale as the
-  // unified Artist screen: a library-match resolving true mid-session must
-  // not flip an already-rendered external-only view into local mode
-  // underneath the user.
+  // Identity is re-resolved only when the route's own identity params change
+  // (a genuine navigation to a different album, including React Navigation
+  // reusing this screen instance instead of pushing a new one) — but not
+  // when `albums` changes on its own, e.g. a library sync completing in the
+  // background must not flip an already-rendered external-only view into
+  // local mode underneath the user.
   const resolvedLocalId = useMemo(() => {
     if (id) return id;
     if (!artist || !title) return null;
@@ -40,7 +42,7 @@ const AlbumScreen: React.FC = () => {
     );
     return match?.id ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id, artist, title, albumId]);
 
   const localResult = useAlbum(resolvedLocalId ?? '');
   const externalResult = useExternalAlbum(

@@ -624,7 +624,8 @@
     },
     "serverStatus": {
       "onServer": "已在库中",
-      "downloadingToServer": "正在下载至服务器 · {{progress}}%"
+      "downloadingToServer": "正在下载至服务器 · {{progress}}%",
+      "notInLibrary": "外部"
     },
     "download": {
       "noDownloader": "未连接可用的下载工具。",

@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Link, ArrowDownCircle } from 'lucide-react-native';
+import { Link, ArrowDownCircle, CloudOff } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { ExternalAlbumBase } from '@/types';
 import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
@@ -17,9 +18,15 @@ type Props = {
   album: ExternalAlbumBase;
   artistName: string;
   onPress?: (album: ExternalAlbumBase) => void;
+  /** Show a "not in your library" badge for the common case (status.kind === 'none').
+   * Only meaningful where local and external rows can appear side by side in
+   * the same list — e.g. the merged Discography — since elsewhere (Search's
+   * source-grouped results) every row is already known to be external. */
+  showExternalBadge?: boolean;
 };
 
-const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
+const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress, showExternalBadge }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const status = useExternalAlbumStatus(album);
 
@@ -57,6 +64,14 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress }) => {
                 <View style={styles.badge}>
                   <ArrowDownCircle size={12} color="#007AFF" />
                   <Text style={[styles.badgeText, styles.badgeTextBlue]}>{status.progress}%</Text>
+                </View>
+              )}
+              {status.kind === 'none' && showExternalBadge && (
+                <View style={styles.badge}>
+                  <CloudOff size={12} color={colors.subtext} />
+                  <Text style={[styles.badgeText, { color: colors.subtext }]}>
+                    {t('externalAlbum.serverStatus.notInLibrary')}
+                  </Text>
                 </View>
               )}
             </View>
