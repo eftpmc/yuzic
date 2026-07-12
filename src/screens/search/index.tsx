@@ -87,6 +87,7 @@ const Search = () => {
       if (result.song) { await playSong(result.song); return; }
       const song = await resolvePlayableSong(result.id);
       if (song) await playSong(song);
+      else toast.error(t('common.playbackError'));
     } catch {
       toast.error(t('common.playbackError'));
     }
@@ -99,6 +100,8 @@ const Search = () => {
       if (song) {
         setSelectedSong(song);
         requestAnimationFrame(() => { songOptionsRef.current?.present(); });
+      } else {
+        toast.error(t('common.songDetailsError'));
       }
     } catch {
       toast.error(t('common.songDetailsError'));

@@ -57,6 +57,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
   return (
     <>
       <LibraryItem
+        testID="library-playlist-item"
         cover={cover}
         title={title}
         subtext={subtext}

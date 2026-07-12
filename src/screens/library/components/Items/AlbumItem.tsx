@@ -35,6 +35,7 @@ const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpac
   return (
     <>
       <LibraryItem
+        testID="library-album-item"
         cover={album.cover}
         title={album.title}
         subtext={album.subtext}

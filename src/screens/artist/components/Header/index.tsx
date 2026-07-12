@@ -175,6 +175,7 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
 
         <View style={styles.header}>
           <TouchableOpacity
+            testID="detail-back-button"
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >

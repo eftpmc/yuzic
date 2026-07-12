@@ -31,7 +31,7 @@ const AlbumScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="album-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <AlbumContent album={album} songsLoading={songsLoading} />
     </SafeAreaView>
   );

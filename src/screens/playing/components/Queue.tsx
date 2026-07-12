@@ -131,7 +131,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   );
 
   return (
-    <View style={[styles.container, { width }]}>
+    <View testID="playing-queue" style={[styles.container, { width }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity

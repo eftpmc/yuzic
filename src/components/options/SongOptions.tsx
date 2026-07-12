@@ -227,6 +227,7 @@ const SongOptions = forwardRef<
         stackBehavior='push'
       >
         <BottomSheetScrollView
+          testID="song-options-sheet"
           style={sheetBg}
           contentContainerStyle={styles.sheetContent}
         >

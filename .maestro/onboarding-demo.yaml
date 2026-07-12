@@ -1,0 +1,41 @@
+# Walks first-run onboarding and connects to the public Navidrome demo
+# server (demo.navidrome.org), landing on the authenticated tab shell.
+# Requires fresh app state (no server configured yet). On a release build,
+# uninstalling/reinstalling is enough; on an Expo dev build, clear only the
+# app's MMKV storage instead of full app state so the dev client keeps its
+# saved Metro URL (see README).
+appId: com.arinora.rawarr
+---
+- launchApp
+
+# Expo dev builds show a one-time dev-menu overlay on first bundle load.
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+
+- extendedWaitUntil:
+    visible: "Get Started"
+    timeout: 60000
+- tapOn: "Get Started"
+
+- extendedWaitUntil:
+    visible: "Add Server"
+    timeout: 15000
+- tapOn: "Add Server"
+
+- extendedWaitUntil:
+    visible: "Navidrome"
+    timeout: 15000
+- tapOn: "Navidrome"
+
+- extendedWaitUntil:
+    visible: "Use Navidrome demo"
+    timeout: 15000
+- tapOn: "Use Navidrome demo"
+
+- extendedWaitUntil:
+    visible:
+      id: "library-tab"
+    timeout: 60000

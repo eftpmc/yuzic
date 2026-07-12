@@ -82,7 +82,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+        <TouchableOpacity testID="detail-back-button" onPress={() => navigation.goBack()} style={styles.headerButton}>
           <ChevronLeft size={24} color={colors.secondary} />
         </TouchableOpacity>
 

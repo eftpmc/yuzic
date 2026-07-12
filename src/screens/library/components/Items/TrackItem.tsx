@@ -51,7 +51,10 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
     pressInFlightRef.current = true;
     try {
       const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
-      if (!fullSong) return;
+      if (!fullSong) {
+        toast.error(t("common.playbackError"));
+        return;
+      }
       if (fullSong.filePath) {
         await playSong(fullSong);
         return;
@@ -76,6 +79,8 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
       if (fullSong) {
         setSelectedSong(fullSong);
         optionsRef.current?.present();
+      } else {
+        toast.error(t("common.songDetailsError"));
       }
     } catch (error) {
       console.warn("Failed to fetch full track data", error);

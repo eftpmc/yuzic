@@ -30,7 +30,7 @@ const PlaylistScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="playlist-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <PlaylistContent playlist={playlist} songsLoading={songsLoading} />
     </SafeAreaView>
   );

@@ -30,7 +30,7 @@ const ArtistScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="artist-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <ArtistContent artist={artist} />
     </SafeAreaView>
   );

@@ -157,6 +157,7 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
     try {
       const full = await resolvePlayableSong(song);
       if (full) await playSimilar(full);
+      else toast.error(t('common.playbackError'));
     } catch {
       toast.error(t('common.playbackError'));
     }

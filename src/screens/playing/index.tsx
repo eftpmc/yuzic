@@ -154,7 +154,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     }
 
     return (
-        <View style={styles.gradientContainer}>
+        <View testID="playing-screen" style={styles.gradientContainer}>
             <View style={styles.container}>
                 <View style={styles.playerArea}>
 
@@ -188,6 +188,9 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                             <View style={[styles.playerSection, { minHeight: playerMinHeight }]}>
                                 <View style={[styles.header, { paddingTop: insets.top }]}>
                                     <TouchableOpacity
+                                        testID="playing-close"
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Close player"
                                         onPress={onClose}
                                         style={styles.headerButton}
                                     >

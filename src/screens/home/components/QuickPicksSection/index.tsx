@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
@@ -96,6 +97,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
     try {
       const playable = await resolvePlayableSong(song);
       if (playable) await playSong(playable);
+      else toast.error(t('common.playbackError'));
     } finally {
       inFlightRef.current = null;
     }

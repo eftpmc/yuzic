@@ -21,6 +21,9 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
       </TouchableOpacity>
 
       <TouchableOpacity
+        testID="playing-queue-toggle"
+        accessibilityRole="button"
+        accessibilityLabel="Toggle queue"
         onPress={() => setMode(mode === 'queue' ? 'player' : 'queue')}
         style={[styles.rightButton, mode === 'queue' && styles.activeButton]}
       >
