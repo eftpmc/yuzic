@@ -226,8 +226,8 @@
       "nowPlaying": "Now Playing"
     },
     "musicbrainz": {
-      "external": "External Artist & Album Pages",
-      "externalDescription": "Browse artist and album pages from MusicBrainz. No account required."
+      "external": "External Artist & Album Data",
+      "externalDescription": "Fill in artist and album pages with MusicBrainz data when they're not in your library. No account required."
     },
     "lastfm": {
       "title": "Last.fm",
@@ -297,8 +297,8 @@
       "discoveryDescription": "Deezer charts and recommendations on the explore screen.",
       "search": "Search",
       "searchDescription": "Include Deezer results in search.",
-      "external": "External Artist & Album Pages",
-      "externalDescription": "Browse artist and album pages from Deezer.",
+      "external": "External Artist & Album Data",
+      "externalDescription": "Fill in artist and album pages with Deezer data when they're not in your library.",
       "topTracks": "Top Tracks",
       "topTracksDescription": "Show Deezer top tracks on artist pages.",
       "similarArtists": "Similar Artists",
