@@ -12,7 +12,8 @@
     "test:e2e": "maestro test .maestro/smoke.yaml && maestro test .maestro/common-user-flows.yaml",
     "test:e2e:smoke": "maestro test .maestro/smoke.yaml",
     "test:e2e:flows": "maestro test .maestro/common-user-flows.yaml",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "postinstall": "patch-package"
   },
   "overrides": {
     "lucide-react-native": {
@@ -98,6 +99,7 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "jest": "^29.2.1",
     "jest-expo": "~55.0.16",
+    "patch-package": "^8.0.1",
     "react-native-svg-transformer": "^1.5.1",
     "typescript": "^5.9.2"
   },
