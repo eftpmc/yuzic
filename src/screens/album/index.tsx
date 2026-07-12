@@ -18,11 +18,12 @@ type RouteParams = {
   albumId?: string;
   artist?: string;
   title?: string;
+  forceExternal?: string;
 };
 
 const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
-  const { id, source, albumId, artist, title } = (route.params ?? {}) as RouteParams;
+  const { id, source, albumId, artist, title, forceExternal } = (route.params ?? {}) as RouteParams;
 
   const { colors } = useTheme();
   const { albums } = useLibrary();
@@ -35,6 +36,7 @@ const AlbumScreen: React.FC = () => {
   // local mode underneath the user.
   const resolvedLocalId = useMemo(() => {
     if (id) return id;
+    if (forceExternal === 'true') return null;
     if (!artist || !title) return null;
     const match = matchAlbumToLibrary(
       { id: albumId ?? title, title, artist, cover: { kind: 'none' }, subtext: '' },
@@ -42,11 +44,11 @@ const AlbumScreen: React.FC = () => {
     );
     return match?.id ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, artist, title, albumId]);
+  }, [id, forceExternal, artist, title, albumId]);
 
   const localResult = useAlbum(resolvedLocalId ?? '');
   const externalResult = useExternalAlbum(
-    resolvedLocalId ? { albumId: '' } : { albumId: albumId ?? '', source, artist, title }
+    resolvedLocalId ? {} : { albumId, source, artist, title }
   );
 
   if (resolvedLocalId) {
@@ -67,7 +69,7 @@ const AlbumScreen: React.FC = () => {
     );
   }
 
-  if (!albumId) {
+  if (!albumId && !(artist && title)) {
     return <NotFoundView message="Album not found" />;
   }
   if (externalResult.isLoading) {

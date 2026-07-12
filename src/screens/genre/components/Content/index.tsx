@@ -29,7 +29,7 @@ export default function GenreContent({ genre, albums }: Props) {
       renderItem={({ item }) => (
         <AlbumRow
           album={item}
-          onPress={(album) => navigation.navigate('albumView', { id: album.id })}
+          onPress={(album) => navigation.push('albumView', { id: album.id })}
         />
       )}
       showsVerticalScrollIndicator={false}

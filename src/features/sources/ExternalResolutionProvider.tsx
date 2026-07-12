@@ -11,11 +11,9 @@ import type { ExternalAlbumBase, ExternalArtistBase } from '@/types';
 
 const NO_SOURCE_TOAST = 'Enable an external source in Settings to browse this content.';
 
-type ResolutionOptions = { skipLocalMatch?: boolean };
-
 type ResolutionContextType = {
-  resolveAndNavigateToAlbum: (item: ExternalAlbumBase, options?: ResolutionOptions) => void;
-  resolveAndNavigateToArtist: (item: ExternalArtistBase, options?: ResolutionOptions) => void;
+  resolveAndNavigateToAlbum: (item: ExternalAlbumBase) => void;
+  resolveAndNavigateToArtist: (item: ExternalArtistBase) => void;
 };
 
 const ExternalResolutionContext = createContext<ResolutionContextType | null>(null);
@@ -37,14 +35,14 @@ export function ExternalResolutionProvider({ children }: { children: React.React
   const [albumPickerItems, setAlbumPickerItems] = useState<PickerItem[]>([]);
   const [artistPickerItems, setArtistPickerItems] = useState<PickerItem[]>([]);
 
-  const resolveAndNavigateToAlbum = useCallback(async (item: ExternalAlbumBase, options?: ResolutionOptions) => {
-    // Library match — skip when the caller explicitly wants an external view
-    if (!options?.skipLocalMatch) {
-      const localMatch = matchAlbumToLibrary(item, albums);
-      if (localMatch) {
-        router.push({ pathname: '/(home)/albumView', params: { id: localMatch.id } });
-        return;
-      }
+  // Callers that want to bypass the library match (fuzzy false positives)
+  // don't come through here — they push albumView/artistView directly with
+  // forceExternal, which the unified screens honor.
+  const resolveAndNavigateToAlbum = useCallback(async (item: ExternalAlbumBase) => {
+    const localMatch = matchAlbumToLibrary(item, albums);
+    if (localMatch) {
+      router.push({ pathname: '/(home)/albumView', params: { id: localMatch.id } });
+      return;
     }
 
     if (enabledSources.length === 0) {
@@ -75,14 +73,11 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     albumPickerRef.current?.present();
   }, [albums, enabledSources, router]);
 
-  const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase, options?: ResolutionOptions) => {
-    // Library match — skip when the caller explicitly wants an external view
-    if (!options?.skipLocalMatch) {
-      const localMatch = matchArtistToLibrary(item, artists);
-      if (localMatch) {
-        router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
-        return;
-      }
+  const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase) => {
+    const localMatch = matchArtistToLibrary(item, artists);
+    if (localMatch) {
+      router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
+      return;
     }
 
     if (enabledSources.length === 0) {

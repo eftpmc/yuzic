@@ -127,7 +127,7 @@ function LocalMetaRow({ album }: { album: Album }) {
   }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
 
   const handleGenrePress = useCallback((genre: string) => {
-    navigation.navigate('genreView', { genre });
+    navigation.push('genreView', { genre });
   }, [navigation]);
 
   return (
@@ -140,7 +140,7 @@ function LocalMetaRow({ album }: { album: Album }) {
             </Text>
           )}
           {item.type === 'artist' && album.artist ? (
-            <TouchableOpacity onPress={() => navigation.navigate('artistView', { id: album.artist.id })}>
+            <TouchableOpacity onPress={() => navigation.push('artistView', { id: album.artist.id })}>
               <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
                 {item.label}
               </Text>

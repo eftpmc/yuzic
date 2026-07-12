@@ -86,7 +86,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
                   subtitle={a.subtext || String(a.year || '')}
                   size={tileWidth}
                   radius={6}
-                  onPress={() => navigation.navigate('albumView', { id: a.id })}
+                  onPress={() => navigation.push('albumView', { id: a.id })}
                 />
               ))}
             </ScrollView>

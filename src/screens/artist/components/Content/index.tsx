@@ -141,7 +141,7 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
         itemSize={itemSize}
         keyPrefix="local"
         badge={{ color: LOCAL_COLOR, letter: 'L' }}
-        onPressItem={item => navigation.navigate('artistView', { id: item.id })}
+        onPressItem={item => navigation.push('artistView', { id: item.id })}
       />
       {deezerEnabled && deezerSimilar.length > 0 && (
         <SimilarArtistsSubSection
@@ -343,7 +343,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       return (
         <AlbumRow
           album={item.album}
-          onPress={(album) => navigation.navigate('albumView', { id: album.id })}
+          onPress={(album) => navigation.push('albumView', { id: album.id })}
           subtextOverride={releaseYearLabel(item.album) ?? undefined}
         />
       )

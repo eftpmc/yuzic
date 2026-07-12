@@ -669,7 +669,8 @@
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
       "favorite": "Favorite",
-      "unfavorite": "Unfavorite"
+      "unfavorite": "Unfavorite",
+      "viewExternal": "View External"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",

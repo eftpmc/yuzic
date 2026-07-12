@@ -127,7 +127,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return
-                            router.navigate('/(home)/(tabs)' as never)
+                            router.navigate('/(home)/(tabs)')
                         }}
                         active={isHome}
                         accessibilityLabel="Home tab"
@@ -141,7 +141,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/search') return
-                            router.navigate('/(home)/(tabs)/search' as never)
+                            router.navigate('/(home)/(tabs)/search')
                         }}
                         active={isSearch}
                         accessibilityLabel="Search tab"
@@ -155,7 +155,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/library') return
-                            router.navigate('/(home)/(tabs)/library' as never)
+                            router.navigate('/(home)/(tabs)/library')
                         }}
                         active={isLibrary}
                         accessibilityLabel="Library tab"

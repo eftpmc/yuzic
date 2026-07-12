@@ -10,7 +10,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
+import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Album, AlbumBase } from '@/types';
@@ -19,7 +19,8 @@ import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import { useEnabledExternalSources } from '@/features/sources/registry';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -38,7 +39,8 @@ const AlbumOptions = forwardRef<
 >(({ album, hideGoToAlbum }, ref) => {
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
-  const navigation = useNavigation<any>();
+  const router = useRouter();
+  const enabledSources = useEnabledExternalSources();
 
   const {
     playSongInCollection,
@@ -135,7 +137,25 @@ const AlbumOptions = forwardRef<
   const handleGoToAlbum = () => {
     if (!album) return;
     close();
-    navigation.navigate('(home)', { screen: 'albumView', params: { id: album.id } });
+    router.push({ pathname: '/(home)/albumView', params: { id: album.id } });
+  };
+
+  // Recovery path for fuzzy-match false positives, mirroring ArtistOptions:
+  // library matching falls back to normalized title + artist comparison, so a
+  // different album sharing a common title can produce a false-positive local
+  // match. forceExternal makes the unified album screen skip its local-match
+  // step and resolve the album externally by artist + title.
+  const handleViewExternal = () => {
+    if (!album?.artist?.name) return;
+    close();
+    router.push({
+      pathname: '/(home)/albumView',
+      params: {
+        forceExternal: 'true',
+        artist: album.artist.name,
+        title: album.title,
+      },
+    });
   };
 
 
@@ -258,6 +278,13 @@ const AlbumOptions = forwardRef<
           <TouchableOpacity style={styles.option} onPress={handleGoToAlbum}>
             <Disc size={26} color={colors.secondary} />
             <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.goToAlbum')}</Text>
+          </TouchableOpacity>
+        )}
+
+        {enabledSources.length > 0 && !!album.artist?.name && (
+          <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
+            <Globe size={26} color={colors.secondary} />
+            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.viewExternal')}</Text>
           </TouchableOpacity>
         )}
 
