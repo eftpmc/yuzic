@@ -16,7 +16,7 @@ import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
-import { Artist, Song } from '@/types';
+import { Artist, ExternalArtist, Song } from '@/types';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -31,49 +31,216 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 
 type Props = {
-  artist: Artist;
+  localArtist: Artist | null;
+  externalArtist: ExternalArtist | null;
 };
 
-const ArtistHeader: React.FC<Props> = ({ artist }) => {
-  const { t } = useTranslation();
+function isAlbumCountText(value?: string | null): boolean {
+  return /^\s*\d+\s+albums?\s*$/i.test(value ?? '');
+}
+
+const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist }) => {
   const navigation = useNavigation<any>();
+  const { isDarkMode, colors } = useTheme();
+
+  const coverUri = localArtist
+    ? buildCover(localArtist.cover, 'background')
+    : buildCover(externalArtist!.cover, 'background');
+
+  const displayName = localArtist?.name ?? externalArtist?.name ?? '';
+  const displayCover = localArtist?.cover ?? externalArtist?.cover ?? { kind: 'none' as const };
+
+  return (
+    <>
+      <View style={styles.fullBleedWrapper}>
+        {coverUri ? (
+          <TurboImage
+            source={{ uri: coverUri }}
+            style={[StyleSheet.absoluteFill, { left: -50, right: -50 }]}
+            resizeMode="cover"
+            blur={Platform.OS === 'ios' ? 20 : 10}
+            fadeDuration={300}
+            cachePolicy="dataCache"
+          />
+        ) : (
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: isDarkMode ? '#1a1a1a' : '#e5e5e5' },
+            ]}
+          />
+        )}
+
+        <LinearGradient
+          colors={
+            isDarkMode
+              ? ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,1)']
+              : [
+                'rgba(255,255,255,0)',
+                'rgba(255,255,255,0.7)',
+                'rgba(255,255,255,1)',
+              ]
+          }
+          style={StyleSheet.absoluteFill}
+        />
+
+        <View style={styles.centeredCoverContainer}>
+          <MediaImage
+            cover={displayCover}
+            size="detail"
+            style={styles.centeredCover}
+          />
+        </View>
+
+        <View style={styles.header}>
+          <TouchableOpacity
+            testID="detail-back-button"
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+          </TouchableOpacity>
+          {localArtist ? (
+            <LocalOptionsButton artist={localArtist} />
+          ) : (
+            <View style={{ width: 36 }} />
+          )}
+        </View>
+      </View>
+
+      <View style={{ paddingHorizontal: 16 }}>
+        <View style={styles.content}>
+          <Text
+            style={[styles.artistName, { color: colors.secondary }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.65}
+          >
+            {displayName}
+          </Text>
+          {localArtist ? (
+            <LocalMetaRow artist={localArtist} />
+          ) : (
+            <ExternalMetaRow artist={externalArtist!} />
+          )}
+        </View>
+      </View>
+
+      {localArtist ? <LocalActionRow artist={localArtist} /> : null}
+    </>
+  );
+};
+
+function LocalOptionsButton({ artist }: { artist: Artist }) {
+  const optionsSheetRef = useSheetRef();
+  return (
+    <>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => optionsSheetRef.current?.present()}
+      >
+        <Ellipsis size={24} color="#fff" />
+      </TouchableOpacity>
+      <ArtistOptions ref={optionsSheetRef} artist={artist} hideGoToArtist />
+    </>
+  );
+}
+
+function LocalMetaRow({ artist }: { artist: Artist }) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const artistAlbums = useArtistAlbums(artist.id);
+  const { tracks: allTracks } = useTracks();
+  const artistTrackIds = useMemo(
+    () => allTracks.filter(track => track.artistId === artist.id).map(track => track.id),
+    [allTracks, artist.id]
+  );
+
+  const metadataItems = useMemo(() => {
+    const albumCount = artistAlbums.length;
+    const songCount = artistTrackIds.length;
+    const items = [`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`];
+    if (songCount > 0) {
+      items.push(`${songCount} ${songCount === 1 ? t('common.song') : t('common.songs')}`);
+    }
+    return items;
+  }, [artistAlbums.length, artistTrackIds.length, t]);
+
+  return (
+    <View style={styles.metaRow}>
+      {metadataItems.map((item, index) => (
+        <React.Fragment key={`${item}-${index}`}>
+          {index > 0 && <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>}
+          <Text style={[styles.metaText, { color: colors.subtext }]} numberOfLines={1}>
+            {item}
+          </Text>
+        </React.Fragment>
+      ))}
+    </View>
+  );
+}
+
+function ExternalMetaRow({ artist }: { artist: ExternalArtist }) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+
+  const metadataItems = useMemo(() => {
+    const items: string[] = [];
+    const albumCount = artist.albums?.length ?? 0;
+    if (albumCount > 0) {
+      items.push(`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`);
+    }
+    if (artist.subtext && !isAlbumCountText(artist.subtext)) items.push(artist.subtext);
+    return items;
+  }, [artist.albums?.length, artist.subtext, t]);
+
+  return (
+    <View style={styles.metaRow}>
+      {metadataItems.map((item, index) => (
+        <React.Fragment key={`${item}-${index}`}>
+          {index > 0 && <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>}
+          <Text style={[styles.metaText, { color: colors.subtext }]} numberOfLines={1}>
+            {item}
+          </Text>
+        </React.Fragment>
+      ))}
+    </View>
+  );
+}
+
+function LocalActionRow({ artist }: { artist: Artist }) {
+  const { t } = useTranslation();
+  const { isDarkMode, colors } = useTheme();
   const queryClient = useQueryClient();
   const api = useApi();
-  const { isDarkMode, colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const activeServer = useSelector(selectActiveServer);
 
   const { playSongInCollection } = usePlaying();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
-  const optionsSheetRef = useSheetRef();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [songsLoading, setSongsLoading] = useState(false);
 
   const artistAlbums = useArtistAlbums(artist.id);
   const { tracks: allTracks } = useTracks();
   const artistTrackIds = useMemo(
-    () => allTracks
-      .filter(track => track.artistId === artist.id)
-      .map(track => track.id),
+    () => allTracks.filter(track => track.artistId === artist.id).map(track => track.id),
     [allTracks, artist.id]
   );
 
   const fetchArtistSongs = useCallback(async (): Promise<Song[]> => {
     if (!activeServer?.id || !artistAlbums.length) return [];
-
     const fullAlbums = await fetchAlbumDetailsSettled({
       queryClient,
       serverId: activeServer.id,
       albums: artistAlbums,
       getAlbum: api.albums.get,
     });
-
     return fullAlbums.flatMap(a => a.songs ?? []);
   }, [queryClient, activeServer, artistAlbums, api.albums.get]);
 
   const playArtist = useCallback(async (shuffle = false) => {
     if (songsLoading) return;
-
     const songs = await (async () => {
       setSongsLoading(true);
       try {
@@ -111,16 +278,6 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
     );
   }, [songsLoading, fetchArtistSongs, playSongInCollection, artist, t]);
 
-  const metadataItems = useMemo(() => {
-    const albumCount = artistAlbums.length;
-    const songCount = artistTrackIds.length;
-    const items = [`${albumCount} ${albumCount === 1 ? t('common.album') : t('common.albums')}`];
-    if (songCount > 0) {
-      items.push(`${songCount} ${songCount === 1 ? t('common.song') : t('common.songs')}`);
-    }
-    return items;
-  }, [artistAlbums.length, artistTrackIds.length, t]);
-
   const {
     isDownloaded: isArtistFullyDownloaded,
     isDownloading: isArtistDownloading,
@@ -139,133 +296,47 @@ const ArtistHeader: React.FC<Props> = ({ artist }) => {
   }, [isDownloadingAll, isArtistDownloading, isArtistFullyDownloaded, artistAlbums, downloadAlbumById]);
 
   return (
-    <>
-      <View style={styles.fullBleedWrapper}>
-        {buildCover(artist.cover, 'background') && (
-          <TurboImage
-            source={{ uri: buildCover(artist.cover, 'background')! }}
-            style={[StyleSheet.absoluteFill, { left: -50, right: -50 }]}
-            resizeMode="cover"
-            blur={Platform.OS === 'ios' ? 20 : 10}
-            fadeDuration={300}
-            cachePolicy="dataCache"
-          />
+    <View style={styles.buttonRow}>
+      <TouchableOpacity
+        onPress={() => void playArtist(true)}
+        disabled={songsLoading}
+        style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+      >
+        {songsLoading ? (
+          <ActivityIndicator size="small" color={colors.secondary} />
+        ) : (
+          <Shuffle size={18} color={colors.secondary} />
         )}
+      </TouchableOpacity>
 
-        <LinearGradient
-          colors={
-            isDarkMode
-              ? ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,1)']
-              : [
-                'rgba(255,255,255,0)',
-                'rgba(255,255,255,0.7)',
-                'rgba(255,255,255,1)',
-              ]
-          }
-          style={StyleSheet.absoluteFill}
-        />
+      <TouchableOpacity
+        onPress={() => void playArtist(false)}
+        disabled={songsLoading}
+        style={[styles.playButton, { backgroundColor: themeColor }]}
+      >
+        {songsLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Play size={24} color="#fff" fill="#fff" />
+        )}
+      </TouchableOpacity>
 
-        <View style={styles.centeredCoverContainer}>
-          <MediaImage
-            cover={artist.cover}
-            size="detail"
-            style={styles.centeredCover}
-          />
-        </View>
-
-        <View style={styles.header}>
-          <TouchableOpacity
-            testID="detail-back-button"
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => optionsSheetRef.current?.present()}
-          >
-            <Ellipsis size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ArtistOptions
-        ref={optionsSheetRef}
-        artist={artist}
-        hideGoToArtist
-      />
-
-      <View style={{ paddingHorizontal: 16 }}>
-        <View style={styles.content}>
-          <Text
-            style={[styles.artistName, { color: colors.secondary }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.65}
-          >
-            {artist.name}
-          </Text>
-          <View style={styles.metaRow}>
-            {metadataItems.map((item, index) => (
-              <React.Fragment key={`${item}-${index}`}>
-                {index > 0 && (
-                  <Text style={[styles.metaDot, { color: colors.subtext }]}>•</Text>
-                )}
-                <Text
-                  style={[styles.metaText, { color: colors.subtext }]}
-                  numberOfLines={1}
-                >
-                  {item}
-                </Text>
-              </React.Fragment>
-            ))}
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          onPress={() => void playArtist(true)}
-          disabled={songsLoading}
-          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
-        >
-          {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.secondary} />
-          ) : (
-            <Shuffle size={18} color={colors.secondary} />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => void playArtist(false)}
-          disabled={songsLoading}
-          style={[styles.playButton, { backgroundColor: themeColor }]}
-        >
-          {songsLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Play size={24} color="#fff" fill="#fff" />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => void handleDownloadAll()}
-          disabled={isDownloadingAll || isArtistDownloading}
-          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
-        >
-          {isDownloadingAll || isArtistDownloading ? (
-            <ActivityIndicator size="small" color={colors.secondary} />
-          ) : isArtistFullyDownloaded ? (
-            <Check size={18} color={colors.secondary} />
-          ) : (
-            <Download size={18} color={colors.secondary} />
-          )}
-        </TouchableOpacity>
-      </View>
-    </>
+      <TouchableOpacity
+        onPress={() => void handleDownloadAll()}
+        disabled={isDownloadingAll || isArtistDownloading}
+        style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+      >
+        {isDownloadingAll || isArtistDownloading ? (
+          <ActivityIndicator size="small" color={colors.secondary} />
+        ) : isArtistFullyDownloaded ? (
+          <Check size={18} color={colors.secondary} />
+        ) : (
+          <Download size={18} color={colors.secondary} />
+        )}
+      </TouchableOpacity>
+    </View>
   );
-};
+}
 
 export default ArtistHeader;
 

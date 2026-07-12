@@ -3,8 +3,9 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ellipsis } from 'lucide-react-native'
-import type { AlbumBase, Artist, ExternalArtistBase } from '@/types'
+import type { AlbumBase, Artist, ExternalAlbumBase, ExternalArtist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
+import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
 import Header from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
@@ -12,23 +13,31 @@ import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
 import { useTracks } from '@/hooks/tracks'
 import MediaTile from '@/screens/home/components/MediaTile'
-import TopTracksSection from './TopTracksSection'
+import MostPlayedSection from './MostPlayedSection'
+import PopularOnDeezerSection from './PopularOnDeezerSection'
+import BioSection from './BioSection'
+import { findArtistsWithSharedGenres, type LocalArtistSummary } from './localSimilarArtists'
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
-import { useDeezerSimilarArtistsEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useDeezerSimilarArtistsEnabled, useDeezerTopTracksEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import { useSelector } from 'react-redux'
 import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
+import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
 
 type Props = {
-  artist: Artist
+  localArtist: Artist | null
+  externalArtist: ExternalArtist | null
 }
 
 type ArtistContentItem =
-  | { kind: 'topTracks'; id: string }
+  | { kind: 'mostPlayed'; id: string }
+  | { kind: 'popularOnDeezer'; id: string }
   | { kind: 'section'; id: string; title: string }
-  | { kind: 'album'; id: string; album: AlbumBase }
+  | { kind: 'localAlbum'; id: string; album: AlbumBase }
+  | { kind: 'externalAlbum'; id: string; album: ExternalAlbumBase }
   | { kind: 'showMore'; id: string; target: 'albums' | 'singles'; remaining: number }
   | { kind: 'similar'; id: string }
+  | { kind: 'bio'; id: string }
 
 const INITIAL_RELEASE_ROWS = 3
 
@@ -40,28 +49,31 @@ function isSingleOrEp(album: AlbumBase, songCount: number): boolean {
 }
 
 const LASTFM_COLOR = '#D51007'
+const LOCAL_COLOR = '#34C759'
 
-function SimilarArtistsSubSection({ data, itemSize, keyPrefix, badge }: {
-  data: ExternalArtistBase[]
+function SimilarArtistsSubSection<T extends ExternalArtistBase | LocalArtistSummary>({
+  data, itemSize, keyPrefix, badge, onPressItem,
+}: {
+  data: T[]
   itemSize: number
   keyPrefix: string
   badge: { color: string; letter: string }
+  onPressItem: (item: T) => void
 }) {
   const { t } = useTranslation()
   const { colors } = useTheme()
-  const { navigateToArtist } = useMatchedNavigation()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
 
-  const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
+  const renderArtist = useCallback(({ item }: { item: T }) => (
     <MediaTile
       cover={item.cover}
       title={item.name}
       subtitle={item.subtext}
       size={itemSize}
       radius={itemSize / 2}
-      onPress={() => navigateToArtist(item)}
+      onPress={() => onPressItem(item)}
     />
-  ), [itemSize, navigateToArtist])
+  ), [itemSize, onPressItem])
 
   if (data.length === 0) return null
 
@@ -90,12 +102,15 @@ function SimilarArtistsSubSection({ data, itemSize, keyPrefix, badge }: {
   )
 }
 
-function SimilarArtistsSection({ artist }: { artist: Artist }) {
+function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
+  const navigation = useNavigation<any>()
   const { width: screenWidth } = useWindowDimensions()
   const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
 
+  const { navigateToArtist } = useMatchedNavigation()
   const deezerEnabled = useDeezerSimilarArtistsEnabled()
   const lastfmEnabled = useSelector(selectLastFmSimilarArtistsEnabled)
+  const libraryAlbums = useSelector(selectLibraryAlbums)
 
   const { similarArtists: deezerSimilar } = useArtistTopTracks({
     name: artist.name,
@@ -111,14 +126,27 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
     enabled: lastfmEnabled,
   })
 
+  const localSimilar = useMemo(
+    () => findArtistsWithSharedGenres(artist.id, libraryAlbums),
+    [artist.id, libraryAlbums]
+  )
+
   return (
     <>
+      <SimilarArtistsSubSection
+        data={localSimilar}
+        itemSize={itemSize}
+        keyPrefix="local"
+        badge={{ color: LOCAL_COLOR, letter: 'L' }}
+        onPressItem={item => navigation.navigate('artistView', { id: item.id })}
+      />
       {deezerEnabled && deezerSimilar.length > 0 && (
         <SimilarArtistsSubSection
           data={deezerSimilar}
           itemSize={itemSize}
           keyPrefix="deezer"
           badge={{ color: '#A238CA', letter: 'D' }}
+          onPressItem={item => navigateToArtist(item)}
         />
       )}
       {lastfmEnabled && lastfmSimilar.length > 0 && (
@@ -127,19 +155,37 @@ function SimilarArtistsSection({ artist }: { artist: Artist }) {
           itemSize={itemSize}
           keyPrefix="lastfm"
           badge={{ color: LASTFM_COLOR, letter: 'L' }}
+          onPressItem={item => navigateToArtist(item)}
         />
       )}
     </>
   )
 }
 
-export default function ArtistContent({ artist }: Props) {
+function ExternalSimilarArtistsSection({ similarArtists }: { similarArtists: ExternalArtistBase[] }) {
+  const { width: screenWidth } = useWindowDimensions()
+  const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
+  const { navigateToArtist } = useMatchedNavigation()
+
+  return (
+    <SimilarArtistsSubSection
+      data={similarArtists}
+      itemSize={itemSize}
+      keyPrefix="deezer"
+      badge={{ color: '#A238CA', letter: 'D' }}
+      onPressItem={item => navigateToArtist(item)}
+    />
+  )
+}
+
+export default function ArtistContent({ localArtist, externalArtist }: Props) {
   const navigation = useNavigation<any>()
+  const { navigateToAlbum } = useMatchedNavigation()
   const { colors } = useTheme()
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
-  const artistAlbums = useArtistAlbums(artist.id)
+  const localAlbums = useArtistAlbums(localArtist?.id ?? '')
   const { tracks: libraryTracks } = useTracks()
 
   const songCountByAlbumId = useMemo(() => {
@@ -151,47 +197,81 @@ export default function ArtistContent({ artist }: Props) {
   }, [libraryTracks])
 
   const items = useMemo<ArtistContentItem[]>(() => {
-    const albums = artistAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
-    const singles = artistAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
     const rows: ArtistContentItem[] = []
 
-    rows.push({ kind: 'topTracks', id: 'top-tracks' })
+    if (localArtist) {
+      rows.push({ kind: 'mostPlayed', id: 'most-played' })
+      rows.push({ kind: 'popularOnDeezer', id: 'popular-on-deezer' })
 
-    if (albums.length > 0) {
-      rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
-      const visibleAlbums = albums.slice(0, visibleAlbumsCount)
-      rows.push(...visibleAlbums.map(album => ({ kind: 'album' as const, id: `album-${album.id}`, album })))
-      if (visibleAlbumsCount < albums.length) {
-        rows.push({
-          kind: 'showMore',
-          id: 'show-more-albums',
-          target: 'albums',
-          remaining: albums.length - visibleAlbumsCount,
-        })
+      const albums = localAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
+      const singles = localAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
+
+      if (albums.length > 0) {
+        rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
+        const visibleAlbums = albums.slice(0, visibleAlbumsCount)
+        rows.push(...visibleAlbums.map(album => ({ kind: 'localAlbum' as const, id: `album-${album.id}`, album })))
+        if (visibleAlbumsCount < albums.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: albums.length - visibleAlbumsCount })
+        }
       }
+
+      if (singles.length > 0) {
+        rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
+        const visibleSingles = singles.slice(0, visibleSinglesCount)
+        rows.push(...visibleSingles.map(album => ({ kind: 'localAlbum' as const, id: `single-${album.id}`, album })))
+        if (visibleSinglesCount < singles.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: singles.length - visibleSinglesCount })
+        }
+      }
+
+      rows.push({ kind: 'similar', id: 'similar-artists' })
+      rows.push({ kind: 'bio', id: 'bio' })
+    } else if (externalArtist) {
+      rows.push({ kind: 'popularOnDeezer', id: 'popular-on-deezer' })
+
+      if (externalArtist.albums.length > 0) {
+        rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
+        const visibleAlbums = externalArtist.albums.slice(0, visibleAlbumsCount)
+        rows.push(...visibleAlbums.map(album => ({ kind: 'externalAlbum' as const, id: `album-${album.id}`, album })))
+        if (visibleAlbumsCount < externalArtist.albums.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: externalArtist.albums.length - visibleAlbumsCount })
+        }
+      }
+
+      if (externalArtist.singles.length > 0) {
+        rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
+        const visibleSingles = externalArtist.singles.slice(0, visibleSinglesCount)
+        rows.push(...visibleSingles.map(album => ({ kind: 'externalAlbum' as const, id: `single-${album.id}`, album })))
+        if (visibleSinglesCount < externalArtist.singles.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: externalArtist.singles.length - visibleSinglesCount })
+        }
+      }
+
+      if (externalArtist.similarArtists.length > 0) {
+        rows.push({ kind: 'similar', id: 'similar-artists' })
+      }
+      rows.push({ kind: 'bio', id: 'bio' })
     }
 
-    if (singles.length > 0) {
-      rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
-      const visibleSingles = singles.slice(0, visibleSinglesCount)
-      rows.push(...visibleSingles.map(album => ({ kind: 'album' as const, id: `single-${album.id}`, album })))
-      if (visibleSinglesCount < singles.length) {
-        rows.push({
-          kind: 'showMore',
-          id: 'show-more-singles',
-          target: 'singles',
-          remaining: singles.length - visibleSinglesCount,
-        })
-      }
-    }
-
-    rows.push({ kind: 'similar', id: 'similar-artists' })
     return rows
-  }, [artistAlbums, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
+  }, [localArtist, externalArtist, localAlbums, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
 
   const renderItem = useCallback(({ item }: { item: ArtistContentItem }) => {
-    if (item.kind === 'topTracks') {
-      return <TopTracksSection artist={artist} />
+    if (item.kind === 'mostPlayed') {
+      return localArtist ? <MostPlayedSection artist={localArtist} /> : null
+    }
+
+    if (item.kind === 'popularOnDeezer') {
+      return (
+        <PopularOnDeezerSectionResolver
+          localArtist={localArtist}
+          externalArtist={externalArtist}
+        />
+      )
+    }
+
+    if (item.kind === 'bio') {
+      return <BioSection biography={localArtist ? undefined : externalArtist?.biography} />
     }
 
     if (item.kind === 'section') {
@@ -205,7 +285,9 @@ export default function ArtistContent({ artist }: Props) {
     }
 
     if (item.kind === 'similar') {
-      return <SimilarArtistsSection artist={artist} />
+      return localArtist
+        ? <LocalSimilarArtistsSection artist={localArtist} />
+        : <ExternalSimilarArtistsSection similarArtists={externalArtist?.similarArtists ?? []} />
     }
 
     if (item.kind === 'showMore') {
@@ -228,19 +310,29 @@ export default function ArtistContent({ artist }: Props) {
       )
     }
 
+    if (item.kind === 'localAlbum') {
+      return (
+        <AlbumRow
+          album={item.album}
+          onPress={(album) => navigation.navigate('albumView', { id: album.id })}
+        />
+      )
+    }
+
     return (
-      <AlbumRow
+      <ExternalAlbumRow
         album={item.album}
-        onPress={(album) => navigation.navigate('albumView', { id: album.id })}
+        artistName={externalArtist?.name ?? ''}
+        onPress={(album) => navigateToAlbum(album)}
       />
     )
-  }, [colors, artist, navigation, setVisibleAlbumsCount, setVisibleSinglesCount, t])
+  }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, t])
 
   return (
     <FlashList
       data={items}
       keyExtractor={(item) => item.id}
-      ListHeaderComponent={<Header artist={artist} />}
+      ListHeaderComponent={<Header localArtist={localArtist} externalArtist={externalArtist} />}
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
@@ -249,6 +341,36 @@ export default function ArtistContent({ artist }: Props) {
       }}
     />
   )
+}
+
+// PopularOnDeezerSection needs different data plumbing per mode (local mode
+// fetches via useArtistTopTracks; external mode already has the data fetched)
+// — isolated here so that hook call stays unconditional within its own
+// component regardless of which branch renderItem takes.
+function PopularOnDeezerSectionResolver({ localArtist, externalArtist }: {
+  localArtist: Artist | null
+  externalArtist: ExternalArtist | null
+}) {
+  const deezerTopTracksEnabled = useDeezerTopTracksEnabled()
+  const { topTracks: localTopTracks } = useArtistTopTracks({
+    name: localArtist?.name ?? '',
+    mbid: localArtist?.mbid,
+    enabled: !!localArtist && deezerTopTracksEnabled,
+  })
+
+  if (localArtist) {
+    return <PopularOnDeezerSection topTracks={localTopTracks} artistId={localArtist.id} artistName={localArtist.name} />
+  }
+  if (externalArtist) {
+    return (
+      <PopularOnDeezerSection
+        topTracks={externalArtist.topTracks ?? []}
+        artistId={externalArtist.id}
+        artistName={externalArtist.name}
+      />
+    )
+  }
+  return null
 }
 
 const styles = StyleSheet.create({

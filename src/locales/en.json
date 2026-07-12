@@ -470,8 +470,10 @@
     "sections": {
       "albums": "Albums",
       "singles": "Singles & EPs",
-      "topTracks": "Top tracks",
-      "similarArtists": "Similar artists"
+      "mostPlayed": "Most Played",
+      "popularOnDeezer": "Popular on Deezer",
+      "similarArtists": "Similar artists",
+      "bio": "About"
     },
     "showMore": "{{count}} more"
   },

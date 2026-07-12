@@ -449,8 +449,10 @@
     "sections": {
       "albums": "アルバム",
       "singles": "シングル・EP",
-      "topTracks": "人気曲",
-      "similarArtists": "似ているアーティスト"
+      "mostPlayed": "よく聴いた曲",
+      "popularOnDeezer": "Deezerで人気",
+      "similarArtists": "似ているアーティスト",
+      "bio": "概要"
     }
   },
   "explore": {
