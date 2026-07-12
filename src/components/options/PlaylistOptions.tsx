@@ -19,6 +19,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { useDeletePlaylist, useRenamePlaylist } from '@/hooks/playlists';
 import { FAVORITES_ID } from '@/constants/favorites';
@@ -49,6 +50,7 @@ const PlaylistOptions = forwardRef<
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
   const navigation = useNavigation<any>();
+  const router = useRouter();
 
   const {
     playSongInCollection,
@@ -108,7 +110,7 @@ const PlaylistOptions = forwardRef<
   const handleGoToPlaylist = () => {
     if (!playlist) return;
     close();
-    navigation.navigate('(home)', { screen: 'playlistView', params: { id: playlist.id } });
+    router.push({ pathname: '/(home)/playlistView', params: { id: playlist.id } });
   };
 
   const handleDownload = async () => {

@@ -19,7 +19,6 @@ import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useEnabledExternalSources } from '@/features/sources/registry';
 import { useTheme } from '@/hooks/useTheme';
@@ -40,7 +39,6 @@ const AlbumOptions = forwardRef<
 >(({ album, hideGoToAlbum }, ref) => {
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
-  const navigation = useNavigation<any>();
   const router = useRouter();
   const enabledSources = useEnabledExternalSources();
 
@@ -139,7 +137,7 @@ const AlbumOptions = forwardRef<
   const handleGoToAlbum = () => {
     if (!album) return;
     close();
-    navigation.navigate('(home)', { screen: 'albumView', params: { id: album.id } });
+    router.push({ pathname: '/(home)/albumView', params: { id: album.id } });
   };
 
   // Recovery path for fuzzy-match false positives, mirroring ArtistOptions:

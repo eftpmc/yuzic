@@ -127,7 +127,7 @@ function LocalMetaRow({ album }: { album: Album }) {
   }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
 
   const handleGenrePress = useCallback((genre: string) => {
-    navigation.navigate('genreView', { genre });
+    navigation.push('genreView', { genre });
   }, [navigation]);
 
   return (

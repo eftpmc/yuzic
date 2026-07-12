@@ -15,7 +15,6 @@ import { ListEnd, Play, Shuffle, CheckCircle, ArrowDownCircle, User, Globe } fro
 import { Artist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingActions } from '@/contexts/PlayingContext';
-import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useEnabledExternalSources } from '@/features/sources/registry';
@@ -40,7 +39,6 @@ const ArtistOptions = forwardRef<
 >(({ artist, hideGoToArtist }, ref) => {
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
-  const navigation = useNavigation<any>();
   const router = useRouter();
 
   const {
@@ -124,10 +122,7 @@ const ArtistOptions = forwardRef<
   const handleGoToArtist = () => {
     if (!artist) return;
     close();
-    navigation.navigate('(home)', {
-      screen: 'artistView',
-      params: { id: artist.id },
-    });
+    router.push({ pathname: '/(home)/artistView', params: { id: artist.id } });
   };
 
   // Recovery path for fuzzy-match false positives: local library matching
