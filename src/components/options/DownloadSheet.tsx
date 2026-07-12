@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -12,7 +7,6 @@ import {
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { MediaImage } from '@/components/MediaImage';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +16,14 @@ import {
   type DownloaderState,
 } from '@/features/downloaders/registry';
 import type { ExternalAlbumBase } from '@/types';
+import {
+  OptionSheetDivider,
+  OptionSheetHeader,
+  OptionSheetRow,
+  OptionSheetSectionLabel,
+  optionSheetStyles,
+  useOptionSheetBackground,
+} from './OptionSheetPrimitives';
 
 interface Props {
   album: ExternalAlbumBase;
@@ -32,7 +34,7 @@ interface Props {
 
 const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
 
   const downloaders = useDownloaderStates();
   const available = downloaders.filter(
@@ -42,7 +44,7 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
   const [loadingId, setLoadingId] = useState<DownloaderId | null>(null);
   const anyLoading = loadingId !== null;
 
-  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
+  const sheetBg = useOptionSheetBackground();
 
   const handleDownload = async ({ def, config }: DownloaderState) => {
     if (anyLoading) return;
@@ -76,46 +78,29 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
       backdropComponent={renderBackdrop}
       stackBehavior="push"
       handleIndicatorStyle={{ backgroundColor: colors.border }}
-      backgroundStyle={[styles.sheetBackground, sheetBg]}
+      backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
     >
       <BottomSheetScrollView style={sheetBg} contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <MediaImage cover={album.cover} size="grid" style={styles.cover} />
-          <View style={styles.headerText}>
-            <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
-              {headerTitle}
-            </Text>
-            <Text style={[styles.artist, { color: colors.subtext }]} numberOfLines={1}>
-              {headerSubtext}
-            </Text>
-          </View>
-        </View>
+        <OptionSheetHeader cover={album.cover} title={headerTitle} subtitle={headerSubtext} />
 
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <OptionSheetDivider />
 
-        <Text style={[styles.sectionLabel, { color: colors.subtext }]}>
-          {t('externalAlbum.download.chooseService')}
-        </Text>
+        <OptionSheetSectionLabel label={t('externalAlbum.download.chooseService')} />
 
         {available.map((downloader) => (
-          <TouchableOpacity
+          <OptionSheetRow
             key={downloader.def.id}
-            style={[styles.option, anyLoading && styles.optionDisabled]}
+            label={downloader.def.label}
+            description={t(downloader.def.descriptionKey)}
             onPress={() => handleDownload(downloader)}
             disabled={anyLoading}
-          >
-            <View style={styles.serviceText}>
-              <Text style={[styles.optionText, { color: colors.secondary }]}>
-                {downloader.def.label}
-              </Text>
-              <Text style={[styles.serviceDesc, { color: colors.subtext }]}>
-                {t(downloader.def.descriptionKey)}
-              </Text>
-            </View>
-            {loadingId === downloader.def.id
-              ? <SpinningLoaderCircle size={18} color={colors.subtext} />
-              : null}
-          </TouchableOpacity>
+            dimRow={anyLoading}
+            trailing={
+              loadingId === downloader.def.id
+                ? <SpinningLoaderCircle size={18} color={colors.subtext} />
+                : null
+            }
+          />
         ))}
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -125,53 +110,8 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
 export default DownloadSheet;
 
 const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
   content: {
     padding: 16,
     paddingBottom: 48,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cover: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '500' },
-  artist: { fontSize: 14, marginTop: 2 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  optionDisabled: {
-    opacity: 0.55,
-  },
-  serviceText: {
-    flex: 1,
-  },
-  optionText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  serviceDesc: {
-    fontSize: 13,
-    marginTop: 1,
   },
 });

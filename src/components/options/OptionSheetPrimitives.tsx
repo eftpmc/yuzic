@@ -38,8 +38,10 @@ export function OptionSheetHeader({ cover, title, subtitle, titleLines = 1 }: He
 }
 
 type RowProps = {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
+  /** Optional second line under the label */
+  description?: string;
   onPress?: () => void;
   /** Disables presses without changing appearance; pair with dimRow/dimLabel */
   disabled?: boolean;
@@ -56,6 +58,7 @@ type RowProps = {
 export function OptionSheetRow({
   icon,
   label,
+  description,
   onPress,
   disabled,
   dimRow,
@@ -65,23 +68,29 @@ export function OptionSheetRow({
   trailing,
 }: RowProps) {
   const { colors } = useTheme();
+  const leading = loading ? <ActivityIndicator size="small" color={colors.subtext} /> : icon;
 
   return (
     <TouchableOpacity
       style={[styles.option, dimRow && styles.optionDimmed]}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || !onPress}
     >
-      {loading ? <ActivityIndicator size="small" color={colors.subtext} /> : icon}
-      <Text
-        style={[
-          styles.optionText,
-          { color: labelColor ?? colors.secondary },
-          dimLabel && styles.optionTextDimmed,
-        ]}
-      >
-        {label}
-      </Text>
+      {leading}
+      <View style={[styles.optionBody, !leading && styles.optionBodyNoIcon]}>
+        <Text
+          style={[
+            styles.optionText,
+            { color: labelColor ?? colors.secondary },
+            dimLabel && styles.optionTextDimmed,
+          ]}
+        >
+          {label}
+        </Text>
+        {description !== undefined && (
+          <Text style={[styles.optionDescription, { color: colors.subtext }]}>{description}</Text>
+        )}
+      </View>
       {trailing}
     </TouchableOpacity>
   );
@@ -201,9 +210,20 @@ const styles = StyleSheet.create({
   optionDimmed: {
     opacity: 0.55,
   },
-  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500', flex: 1 },
+  optionBody: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  optionBodyNoIcon: {
+    marginLeft: 0,
+  },
+  optionText: { fontSize: 16, fontWeight: '500' },
   optionTextDimmed: {
     opacity: 0.6,
+  },
+  optionDescription: {
+    fontSize: 13,
+    marginTop: 1,
   },
   sectionLabel: {
     fontSize: 13,
