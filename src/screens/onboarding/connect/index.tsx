@@ -63,7 +63,7 @@ export default function Connect() {
                 isAuthenticated: true,
             }));
             dispatch(setActiveServer(id));
-            router.replace('/(home)/(tabs)' as never);
+            router.replace('/(home)/(tabs)');
         } catch {
             toast.error(t('onboarding.connect.connectError'));
         } finally {

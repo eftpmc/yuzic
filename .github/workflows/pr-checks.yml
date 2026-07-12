@@ -31,6 +31,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Typed routes (.expo/types/router.d.ts) are gitignored; generate them
+      # so the typecheck actually validates router.push/Link hrefs in CI.
+      - name: Generate typed routes
+        run: npx expo customize tsconfig.json
+
       - name: Typecheck
         run: npx tsc --noEmit
 
