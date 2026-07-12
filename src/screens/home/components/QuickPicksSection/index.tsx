@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -14,7 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { usePlayableSongResolver } from '@/hooks/songs';
-import { MediaImage } from '@/components/MediaImage';
+import IconActionButton from '@/components/IconActionButton';
+import MediaListRow from '@/components/MediaListRow';
 import SongOptions from '@/components/options/SongOptions';
 import PlaylistList from '@/components/PlaylistList';
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -32,7 +32,6 @@ const TOTAL_PAGES = 3;
 const TOTAL_PICKS = PAGE_SIZE * TOTAL_PAGES;
 const CANDIDATE_POOL = TOTAL_PICKS * 2; // draw from a wider pool on refresh
 const H_PADDING = 12;
-const IMG_SIZE = 44;
 const DECAY_MS = 7 * 24 * 60 * 60 * 1000;
 const PEEK = 28; // pixels of the next page visible at the right edge
 
@@ -153,31 +152,24 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
             {pages.map((page, pageIdx) => (
               <View key={pageIdx} style={[styles.page, { width: screenWidth - PEEK }]}>
                 {page.map(song => (
-                  <TouchableOpacity
+                  <MediaListRow
                     key={song.id}
-                    style={styles.row}
+                    title={song.title}
+                    subtitle={song.artist}
+                    cover={song.cover}
                     onPress={() => { void handlePress(song); }}
-                    activeOpacity={0.7}
-                  >
-                    <MediaImage cover={song.cover} size="thumb" style={styles.art} />
-                    <View style={styles.info}>
-                      <Text style={[styles.trackTitle, { color: colors.secondary }]} numberOfLines={1}>
-                        {song.title}
-                      </Text>
-                      <Text style={[styles.trackArtist, { color: colors.subtext }]} numberOfLines={1}>
-                        {song.artist}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => { void handleOptions(song); }}
-                      hitSlop={10}
-                    >
-                      <Ellipsis
-                        size={18}
-                        color={colors.secondary}
+                    variant="compact"
+                    style={styles.rowWrapper}
+                    rowStyle={styles.row}
+                    trailing={
+                      <IconActionButton
+                        icon={<Ellipsis size={18} color={colors.secondary} />}
+                        onPress={() => { void handleOptions(song); }}
+                        accessibilityLabel={`${song.title} options`}
+                        size="compact"
                       />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
+                    }
+                  />
                 ))}
               </View>
             ))}
@@ -216,27 +208,11 @@ const styles = StyleSheet.create({
   page: {
     gap: 2,
   },
+  rowWrapper: {
+    paddingHorizontal: 0,
+  },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingHorizontal: H_PADDING,
     paddingVertical: 6,
-    gap: 12,
-  },
-  art: {
-    width: IMG_SIZE,
-    height: IMG_SIZE,
-    borderRadius: 4,
-  },
-  info: {
-    flex: 1,
-    gap: 2,
-  },
-  trackTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  trackArtist: {
-    fontSize: 13,
   },
 });

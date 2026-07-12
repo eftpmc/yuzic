@@ -20,6 +20,7 @@ type Props = {
   disabled?: boolean;
   trailing?: React.ReactNode;
   roundedCover?: boolean;
+  showCover?: boolean;
   variant?: 'default' | 'compact';
   contentStyle?: StyleProp<ViewStyle>;
   rowStyle?: StyleProp<ViewStyle>;
@@ -34,6 +35,7 @@ export default function MediaListRow({
   disabled,
   trailing,
   roundedCover,
+  showCover = true,
   variant = 'default',
   contentStyle,
   rowStyle,
@@ -51,17 +53,19 @@ export default function MediaListRow({
           disabled={disabled || !onPress}
           activeOpacity={disabled ? 1 : 0.7}
         >
-          <MediaImage
-            cover={cover}
-            size={isCompact ? 'thumb' : 'grid'}
-            style={[
-              styles.cover,
-              isCompact && styles.compactCover,
-              roundedCover && (isCompact ? styles.compactCoverRounded : styles.coverRounded),
-            ]}
-          />
+          {showCover && (
+            <MediaImage
+              cover={cover}
+              size={isCompact ? 'thumb' : 'grid'}
+              style={[
+                styles.cover,
+                isCompact && styles.compactCover,
+                roundedCover && (isCompact ? styles.compactCoverRounded : styles.coverRounded),
+              ]}
+            />
+          )}
 
-          <View style={styles.textContainer}>
+          <View style={[styles.textContainer, !showCover && styles.textContainerNoCover]}>
             <Text
               numberOfLines={1}
               style={[isCompact ? styles.compactTitle : styles.title, { color: colors.secondary }]}
@@ -122,6 +126,9 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     marginLeft: spacing.rowGap,
+  },
+  textContainerNoCover: {
+    marginLeft: 0,
   },
   title: typography.rowTitle,
   compactTitle: typography.compactRowTitle,

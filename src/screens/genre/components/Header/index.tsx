@@ -24,8 +24,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTracks } from '@/hooks/tracks'
 import { usePlaying } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
+import { DetailActionRow, DetailCircleAction, DetailPlayAction } from '@/components/DetailHeader'
 
 type Props = {
   genre: string
@@ -37,7 +37,6 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
   const queryClient = useQueryClient()
   const api = useApi()
   const { isDarkMode, colors } = useTheme()
-  const themeColor = useSelector(selectThemeColor)
   const activeServer = useSelector(selectActiveServer)
   const { playSongInCollection } = usePlaying()
   const { downloadAlbumById, getCollectionDownloadState } = useDownload()
@@ -175,35 +174,34 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
         </Text>
       </View>
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
+      <DetailActionRow style={styles.buttonRow}>
+        <DetailCircleAction
           onPress={() => { void play(true) }}
           disabled={songsLoading}
-          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+          style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
         >
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
           ) : (
             <Shuffle size={18} color={colors.secondary} />
           )}
-        </TouchableOpacity>
+        </DetailCircleAction>
 
-        <TouchableOpacity
+        <DetailPlayAction
           onPress={() => { void play(false) }}
           disabled={songsLoading}
-          style={[styles.playButton, { backgroundColor: themeColor }]}
         >
           {songsLoading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Play size={24} color="#fff" fill="#fff" />
           )}
-        </TouchableOpacity>
+        </DetailPlayAction>
 
-        <TouchableOpacity
+        <DetailCircleAction
           onPress={() => { void handleDownloadAll() }}
           disabled={isDownloadingAll || isDownloading}
-          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+          style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
         >
           {isDownloadingAll || isDownloading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
@@ -212,8 +210,8 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           ) : (
             <Download size={18} color={colors.secondary} />
           )}
-        </TouchableOpacity>
-      </View>
+        </DetailCircleAction>
+      </DetailActionRow>
     </>
   )
 }
@@ -259,28 +257,12 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
     marginBottom: 24,
   },
   secondaryButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   secondaryButtonDark: {
     backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 })

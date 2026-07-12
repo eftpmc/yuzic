@@ -12,6 +12,12 @@ type UsePlaylistResult = {
   isLoading: boolean;
   songsLoading: boolean;
   error: Error | null;
+  /** True when showing library-synced data because the server couldn't be asked.
+   * Unlike the album fallback, playlist membership isn't synced to Redux, so a
+   * degraded playlist that was never opened online shows no songs — the flag
+   * lets the screen say why. Previously-opened playlists restore their songs
+   * from the persisted query cache and aren't degraded. */
+  degraded: boolean;
 };
 
 export function usePlaylist(id: string): UsePlaylistResult {
@@ -35,5 +41,6 @@ export function usePlaylist(id: string): UsePlaylistResult {
     isLoading: query.isLoading,
     songsLoading: query.query.isFetching && (query.data?.songs?.length ?? 0) === 0,
     error: query.error,
+    degraded: query.degraded,
   };
 }

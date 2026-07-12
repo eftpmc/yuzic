@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
@@ -16,7 +15,7 @@ import { Song } from '@/types';
 import SongOptions from '@/components/options/SongOptions';
 import PlaylistList from '@/components/PlaylistList';
 import { usePlayingActions } from '@/contexts/PlayingContext';
-import { MediaImage } from '@/components/MediaImage';
+import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useDownloadState } from '@/contexts/DownloadContext';
@@ -87,52 +86,30 @@ const SongRow: React.FC<Props> = ({
 
   return (
     <>
-      <View style={[styles.row, isAlbumCompact && styles.rowAlbumCompact]}>
-        <TouchableOpacity
-          style={styles.songInfo}
-          onPress={handlePress}
-          disabled={!onPress && !collection}
-        >
-          {!isAlbumCompact && (
-            <View style={styles.defaultLeading}>
-              <MediaImage
-                cover={song.cover}
-                size="thumb"
-                style={styles.cover}
-              />
-            </View>
-          )}
-
-          <View style={styles.textContainer}>
-            <Text
-              style={[styles.title, { color: colors.secondary }]}
-              numberOfLines={1}
-            >
-              {song.title}
-            </Text>
-
-            <Text
-              style={[styles.subtitle, { color: colors.subtext }]}
-              numberOfLines={1}
-            >
-              {song.artist || t('songOptions.unknownArtist')}
-              {!isAlbumCompact && ` • ${formatSongDuration(song.duration)}`}
-            </Text>
+      <MediaListRow
+        title={song.title}
+        subtitle={`${song.artist || t('songOptions.unknownArtist')}${!isAlbumCompact ? ` • ${formatSongDuration(song.duration)}` : ''}`}
+        cover={song.cover}
+        onPress={handlePress}
+        disabled={!onPress && !collection}
+        showCover={!isAlbumCompact}
+        variant="compact"
+        contentStyle={styles.mediaContent}
+        rowStyle={isAlbumCompact ? styles.mediaRowAlbumCompact : undefined}
+        trailing={
+          <View style={styles.rowRight}>
+            <Animated.View style={heartStyle}>
+              <Heart size={15} color="#ff4d67" fill="#ff4d67" />
+            </Animated.View>
+            {downloaded && (isAlbumCompact || showDownloadedDot) && (
+              <ArrowDownCircle size={16} color={colors.subtext} />
+            )}
+            <TouchableOpacity onPress={openOptions} hitSlop={10}>
+              <Ellipsis size={18} color={colors.secondary} />
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-
-        <View style={styles.rowRight}>
-          <Animated.View style={heartStyle}>
-            <Heart size={15} color="#ff4d67" fill="#ff4d67" />
-          </Animated.View>
-          {downloaded && (isAlbumCompact || showDownloadedDot) && (
-            <ArrowDownCircle size={16} color={colors.subtext} />
-          )}
-          <TouchableOpacity onPress={openOptions} hitSlop={10}>
-            <Ellipsis size={18} color={colors.secondary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+        }
+      />
 
       <SongOptions
         ref={optionsRef}
@@ -150,51 +127,16 @@ const SongRow: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+  mediaContent: {
+    marginRight: 12,
   },
-  rowAlbumCompact: {
+  mediaRowAlbumCompact: {
     paddingVertical: 13,
-  },
-  songInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 12,
-  },
-  cover: {
-    width: 44,
-    height: 44,
-    borderRadius: 6,
-    marginRight: 0,
-  },
-  defaultLeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  trackNumber: {
-    fontSize: 13,
-    minWidth: 16,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  subtitle: {
-    fontSize: 13,
-    marginTop: 2,
   },
 });
 

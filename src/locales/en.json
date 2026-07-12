@@ -362,7 +362,8 @@
       "unexpected": "Unexpected error occurred",
       "details": "Error: {{name}} {{message}}",
       "restart": "Restart"
-    }
+    },
+    "serverUnreachableBanner": "Can't reach your server — showing local library data"
   },
   "onboarding": {
     "home": {
