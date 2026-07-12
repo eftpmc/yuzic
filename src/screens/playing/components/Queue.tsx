@@ -135,6 +135,9 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity
+          testID="queue-back-button"
+          accessibilityRole="button"
+          accessibilityLabel="Back to player"
           onPress={onBack}
           style={styles.backButton}
         >

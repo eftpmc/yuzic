@@ -114,12 +114,23 @@ appId: com.arinora.rawarr
     visible:
       id: "playing-screen"
     timeout: 15000
-# The player sheet's inner controls (queue toggle, close chevron) don't
-# surface in the iOS accessibility tree (@gorhom/bottom-sheet quirk), so
-# close with the sheet's pan-down gesture instead of a testID tap.
-- swipe:
-    start: "50%,15%"
-    end: "50%,85%"
+# Queue view: toggle in from the player, back out via the queue's own back
+# button (the player's controls are pointerEvents: none while the queue shows).
+- tapOn:
+    id: "playing-queue-toggle"
+- extendedWaitUntil:
+    visible:
+      id: "playing-queue"
+    timeout: 10000
+- tapOn:
+    id: "queue-back-button"
+- extendedWaitUntil:
+    visible:
+      id: "playing-queue-toggle"
+    timeout: 10000
+
+- tapOn:
+    id: "playing-close"
 - extendedWaitUntil:
     visible:
       id: "library-screen"

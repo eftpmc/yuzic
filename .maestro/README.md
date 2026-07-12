@@ -65,15 +65,16 @@ placeholders there — that's the server, not the app.
   when the server has no playlists).
 - Long-pressing a track opens the song options sheet.
 - Tapping a track starts playback, the player bar appears, the full player
-  opens from it, and pan-down closes it.
+  opens from it, the queue view toggles in and out, and the close button
+  dismisses the player.
 - Search has its own tab, accepts input, and renders a no-results state.
 
 The suite intentionally avoids assumptions about specific song titles or
 server fixtures.
 
-Known gap: controls inside the full-player bottom sheet (queue toggle, close
-chevron) don't surface in the iOS accessibility tree even with testIDs and
-accessibility labels set (@gorhom/bottom-sheet quirk), so the queue view isn't
-exercised and the player is closed by gesture. The testIDs
-(`playing-queue-toggle`, `playing-close`, `playing-queue`) are already in the
-code if this becomes tappable later.
+Gotcha for future sheet-based flows: @gorhom/bottom-sheet defaults
+`accessible=true` on its container, which collapses everything inside into
+one opaque iOS accessibility element — child testIDs become invisible to
+Maestro (and unreachable for VoiceOver). The player sheet passes
+`accessible={false}` to fix this; do the same on any new sheet whose inner
+controls need testIDs.

@@ -401,6 +401,11 @@ export default function PlayingBarBase({ variant }: Props) {
 
       <BottomSheetModal
         ref={bottomSheetRef}
+        // The library defaults accessible=true on the sheet container, which
+        // collapses everything inside into a single opaque a11y element on
+        // iOS — VoiceOver can't reach the player controls and E2E tests
+        // can't see their testIDs.
+        accessible={false}
         snapPoints={['100%']}
         enableDynamicSizing={false}
         enablePanDownToClose
