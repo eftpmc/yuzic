@@ -25,7 +25,6 @@ const TARGET_ALBUMS = 8
 
 type Props = {
   artistName: string
-  artistId: string
   excludeAlbumId: string
 }
 
@@ -40,7 +39,7 @@ async function fetchRelatedAlbums(
   return collectCoveredAlbumsForArtists(fresh, { targetAlbums: TARGET_ALBUMS })
 }
 
-export default function AlbumRecommendedSection({ artistName, artistId, excludeAlbumId }: Props) {
+export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: Props) {
   const { t } = useTranslation()
   const { colors } = useTheme()
   const { width: screenWidth } = useWindowDimensions()

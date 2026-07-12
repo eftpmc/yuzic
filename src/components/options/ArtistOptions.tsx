@@ -16,9 +16,9 @@ import { Artist, Song } from '@/types';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useEnabledExternalSources } from '@/features/sources/registry';
-import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
@@ -41,6 +41,7 @@ const ArtistOptions = forwardRef<
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
   const navigation = useNavigation<any>();
+  const router = useRouter();
 
   const {
     playSongInCollection,
@@ -50,7 +51,6 @@ const ArtistOptions = forwardRef<
   } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const enabledSources = useEnabledExternalSources();
-  const { navigateToArtist } = useMatchedNavigation();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -130,17 +130,25 @@ const ArtistOptions = forwardRef<
     });
   };
 
+  // Recovery path for fuzzy-match false positives: local library matching
+  // falls back to normalized-name comparison when no mbid is available on
+  // either side, so two different artists sharing a common name (tribute
+  // bands, common band names) can produce a false-positive local match.
+  // This forces the unified artist screen to render in external-only mode
+  // directly, skipping the local-match step, instead of navigating to a
+  // separate screen.
   const handleViewExternal = useCallback(() => {
     if (!artist) return;
     close();
-    navigateToArtist({
-      id: artist.mbid ?? artist.name,
-      name: artist.name,
-      cover: artist.cover,
-      subtext: artist.subtext,
-      externalIds: artist.mbid ? { mbid: artist.mbid } : undefined,
-    }, { skipLocalMatch: true });
-  }, [artist, navigateToArtist, close]);
+    router.push({
+      pathname: '/(home)/artistView',
+      params: {
+        forceExternal: 'true',
+        mbid: artist.mbid ?? undefined,
+        name: artist.name,
+      },
+    });
+  }, [artist, router, close]);
 
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(

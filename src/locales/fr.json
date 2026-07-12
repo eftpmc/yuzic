@@ -254,13 +254,31 @@
       "enabled": "Activé",
       "disabled": "Désactivé"
     },
+    "musicbrainz": {
+      "external": "Données externes d'artiste et d'album",
+      "externalDescription": "Complète les pages d'artiste et d'album avec les données MusicBrainz lorsqu'elles ne sont pas dans votre bibliothèque. Aucun compte requis."
+    },
     "deezer": {
       "discovery": "Découverte",
       "discoveryDescription": "Classements et recommandations Deezer sur l'écran explorer.",
       "search": "Recherche",
       "searchDescription": "Inclure les résultats Deezer dans la recherche.",
-      "externalScreens": "Écrans externes",
-      "externalScreensDescription": "Afficher les pages d'album et d'artiste externes depuis Deezer."
+      "external": "Données externes d'artiste et d'album",
+      "externalDescription": "Complète les pages d'artiste et d'album avec les données Deezer lorsqu'elles ne sont pas dans votre bibliothèque.",
+      "topTracks": "Titres populaires",
+      "topTracksDescription": "Afficher les titres populaires Deezer sur les pages d'artiste.",
+      "similarArtists": "Artistes similaires",
+      "similarArtistsDescription": "Afficher les artistes similaires Deezer sur les pages d'artiste.",
+      "albumRecommendations": "Recommandations",
+      "albumRecommendationsDescription": "Afficher les albums recommandés par Deezer sur les pages d'album.",
+      "samples": "Extraits",
+      "samplesDescription": "Récupérer des extraits de 30 s pour les pages d'album externes.",
+      "enableSamplesToPreview": "Activez les extraits dans les paramètres pour les écouter",
+      "playlistRecommendations": "Recommandations",
+      "playlistRecommendationsDescription": "Afficher les playlists recommandées par Deezer.",
+      "artistSection": "Artiste",
+      "albumSection": "Album",
+      "playlistSection": "Playlist"
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -449,8 +467,10 @@
     "sections": {
       "albums": "Albums",
       "singles": "Singles et EP",
-      "topTracks": "Titres populaires",
-      "similarArtists": "Artistes similaires"
+      "mostPlayed": "Les plus écoutés",
+      "popularOnDeezer": "Populaire sur Deezer",
+      "similarArtists": "Artistes similaires",
+      "bio": "À propos"
     }
   },
   "explore": {

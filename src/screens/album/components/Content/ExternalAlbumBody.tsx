@@ -3,7 +3,7 @@ import { Platform, Text, View, StyleSheet } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
 import { ExternalAlbum, ExternalSong } from '@/types';
-import ExternalAlbumHeader from '../Header';
+import AlbumHeader from '../Header';
 import ExternalSongRow from '@/components/rows/ExternalSongRow';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
@@ -15,7 +15,7 @@ type Props = {
   album: ExternalAlbum;
 };
 
-const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
+const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
   const { colors } = useTheme();
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const previews = useExternalAlbumPreviews(album);
@@ -68,7 +68,7 @@ const ExternalAlbumContent: React.FC<Props> = ({ album }) => {
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
       extraData={handleSongPress}
-      ListHeaderComponent={<ExternalAlbumHeader album={album} />}
+      ListHeaderComponent={<AlbumHeader localAlbum={null} externalAlbum={album} />}
       ListFooterComponent={footer}
       contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
       showsVerticalScrollIndicator={false}
@@ -87,4 +87,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ExternalAlbumContent;
+export default ExternalAlbumBody;

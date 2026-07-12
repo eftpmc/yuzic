@@ -1,38 +1,87 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAlbum } from '@/hooks/albums';
+import { useAlbum, useExternalAlbum } from '@/hooks/albums';
+import { useLibrary } from '@/contexts/LibraryContext';
+import { matchAlbumToLibrary } from '@/hooks/libraryMatch';
 import { useTheme } from '@/hooks/useTheme';
 import NotFoundView from '@/components/NotFoundView';
 
 import AlbumContent from './components/Content';
 import LoadingAlbumContent from './components/Content/Loading';
 
+type RouteParams = {
+  id?: string;
+  source?: string;
+  albumId?: string;
+  artist?: string;
+  title?: string;
+};
+
 const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
-  const { id } = route.params;
+  const { id, source, albumId, artist, title } = (route.params ?? {}) as RouteParams;
 
   const { colors } = useTheme();
+  const { albums } = useLibrary();
 
-  const { album, isLoading, songsLoading, error } = useAlbum(id);
+  // Identity is resolved once, at mount, and frozen — same rationale as the
+  // unified Artist screen: a library-match resolving true mid-session must
+  // not flip an already-rendered external-only view into local mode
+  // underneath the user.
+  const resolvedLocalId = useMemo(() => {
+    if (id) return id;
+    if (!artist || !title) return null;
+    const match = matchAlbumToLibrary(
+      { id: albumId ?? title, title, artist, cover: { kind: 'none' }, subtext: '' },
+      albums
+    );
+    return match?.id ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (isLoading) {
+  const localResult = useAlbum(resolvedLocalId ?? '');
+  const externalResult = useExternalAlbum(
+    resolvedLocalId ? { albumId: '' } : { albumId: albumId ?? '', source, artist, title }
+  );
+
+  if (resolvedLocalId) {
+    if (localResult.isLoading) {
+      return (
+        <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+          <LoadingAlbumContent />
+        </SafeAreaView>
+      );
+    }
+    if (!localResult.album) {
+      return <NotFoundView message="Album not found" />;
+    }
+    return (
+      <SafeAreaView testID="album-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+        <AlbumContent localAlbum={localResult.album} externalAlbum={null} songsLoading={localResult.songsLoading} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!albumId) {
+    return <NotFoundView message="Album not found" />;
+  }
+  if (externalResult.isLoading) {
     return (
       <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
         <LoadingAlbumContent />
       </SafeAreaView>
     );
   }
-
-  if (!album || error) {
-    return <NotFoundView message="Album not found" />;
+  if (externalResult.error || !externalResult.album) {
+    return <NotFoundView message="Couldn't load album. Check your connection." />;
   }
 
   return (
     <SafeAreaView testID="album-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
-      <AlbumContent album={album} songsLoading={songsLoading} />
+      <AlbumContent localAlbum={null} externalAlbum={externalResult.album} />
     </SafeAreaView>
   );
 };

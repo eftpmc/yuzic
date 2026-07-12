@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   text: {
-    fontSize: 14,
+    fontSize: 16,
   },
   activeText: {
     fontWeight: '500',
