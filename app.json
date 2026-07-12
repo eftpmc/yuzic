@@ -64,13 +64,6 @@
             "deploymentTarget": "16.0"
           }
         }
-      ],
-      [
-        "react-native-google-cast",
-        {
-          "iosReceiverAppID": "BCF2CA91",
-          "androidReceiverAppID": "BCF2CA91"
-        }
       ]
     ],
     "experiments": {

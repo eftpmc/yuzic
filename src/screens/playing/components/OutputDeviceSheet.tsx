@@ -29,17 +29,11 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const { devices, isScanning, isProbing, scan, probeManual } = useDlnaDiscovery();
   const {
     activeDevice, isConnecting, connectToDevice, disconnectDevice,
-    googleCastDevices, isGoogleCastConnected, isGoogleCastConnecting,
-    connectToGoogleCast, disconnectGoogleCast,
   } = useCast();
 
   const handleOpen = useCallback(() => { scan(); }, [scan]);
 
-  // Tracks which specific device was tapped — isConnecting/isGoogleCastConnecting
-  // are single global flags, so without this every row in a multi-device list
-  // would show a loading spinner while only one is actually connecting.
   const [connectingDlnaUdn, setConnectingDlnaUdn] = useState<string | null>(null);
-  const [connectingCastId, setConnectingCastId] = useState<string | null>(null);
 
   const handleConnectDlna = useCallback(async (device: DiscoveredDevice) => {
     setConnectingDlnaUdn(device.udn);
@@ -52,18 +46,6 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
       setConnectingDlnaUdn(null);
     }
   }, [connectToDevice, ref]);
-
-  const handleConnectCast = useCallback(async (deviceId: string) => {
-    setConnectingCastId(deviceId);
-    try {
-      await connectToGoogleCast(deviceId);
-      (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
-    } catch {
-      toast.error('Could not connect to device');
-    } finally {
-      setConnectingCastId(null);
-    }
-  }, [connectToGoogleCast, ref]);
 
   const handleManualEntry = useCallback(() => {
     Alert.prompt(
@@ -79,8 +61,6 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
       'decimal-pad',
     );
   }, [probeManual]);
-
-  const isBusy = isConnecting || isGoogleCastConnecting;
 
   return (
     <BottomSheetModal
@@ -109,19 +89,18 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* This device — always shown, highlighted when nothing is casting */}
         <TouchableOpacity
-          style={[styles.item, { backgroundColor: !activeDevice && !isGoogleCastConnected ? themeColor + '22' : 'transparent' }]}
+          style={[styles.item, { backgroundColor: !activeDevice ? themeColor + '22' : 'transparent' }]}
           onPress={async () => {
             if (activeDevice) await disconnectDevice();
-            if (isGoogleCastConnected) await disconnectGoogleCast();
             (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
           }}
           activeOpacity={0.7}
         >
           <View style={styles.itemLeft}>
-            <Smartphone size={18} color={!activeDevice && !isGoogleCastConnected ? themeColor : colors.subtext} />
+            <Smartphone size={18} color={!activeDevice ? themeColor : colors.subtext} />
             <Text style={[styles.itemLabel, { color: colors.secondary }]}>This device</Text>
           </View>
-          {!activeDevice && !isGoogleCastConnected && <Check size={18} color={themeColor} />}
+          {!activeDevice && <Check size={18} color={themeColor} />}
         </TouchableOpacity>
 
         {/* AirPlay — iOS only */}
@@ -138,45 +117,6 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
             />
           </View>
         )}
-
-        {/* ── Google Cast ── */}
-        {(googleCastDevices.length > 0 || isGoogleCastConnected) && (
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        )}
-
-        {/* Active Google Cast device */}
-        {isGoogleCastConnected && (
-          <TouchableOpacity
-            style={[styles.item, { backgroundColor: themeColor + '22' }]}
-            onPress={disconnectGoogleCast}
-            activeOpacity={0.7}
-          >
-            <View style={styles.itemLeft}>
-              <Cast size={18} color={themeColor} />
-              <Text style={[styles.itemLabel, { color: colors.secondary, fontWeight: '600' }]}>
-                Casting
-              </Text>
-            </View>
-            <Check size={18} color={themeColor} />
-          </TouchableOpacity>
-        )}
-
-        {/* Discovered Google Cast devices */}
-        {!isGoogleCastConnected && googleCastDevices.map(device => (
-          <TouchableOpacity
-            key={device.deviceId}
-            style={[styles.item, { backgroundColor: 'transparent' }]}
-            onPress={() => handleConnectCast(device.deviceId)}
-            disabled={isBusy}
-            activeOpacity={0.7}
-          >
-            <View style={styles.itemLeft}>
-              <Cast size={18} color={colors.subtext} />
-              <Text style={[styles.itemLabel, { color: colors.secondary }]}>{device.friendlyName}</Text>
-            </View>
-            {connectingCastId === device.deviceId && <SpinningLoaderCircle size={18} color={colors.subtext} />}
-          </TouchableOpacity>
-        ))}
 
         {/* ── DLNA ── */}
         {(devices.length > 0 || activeDevice) && (
@@ -208,7 +148,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
               key={device.udn}
               style={[styles.item, { backgroundColor: 'transparent' }]}
               onPress={() => handleConnectDlna(device)}
-              disabled={isBusy}
+              disabled={isConnecting}
               activeOpacity={0.7}
             >
               <View style={styles.itemLeft}>
@@ -221,7 +161,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         })}
 
         {/* Empty state */}
-        {!isScanning && devices.length === 0 && !activeDevice && googleCastDevices.length === 0 && !isGoogleCastConnected && (
+        {!isScanning && devices.length === 0 && !activeDevice && (
           <Text style={[styles.empty, { color: colors.subtext }]}>
             No devices found on your network.
           </Text>

@@ -18,8 +18,8 @@ npm install
 ```
 
 Yuzic can't run in plain Expo Go — playback (`@rntp/player`), storage
-(MMKV), Google Cast, and DLNA discovery are all native modules that Expo Go
-doesn't ship. You need a dev-client build instead:
+(MMKV), and DLNA discovery are all native modules that Expo Go doesn't ship.
+You need a dev-client build instead:
 
 ```sh
 npx expo run:android   # requires Android Studio / an Android SDK
