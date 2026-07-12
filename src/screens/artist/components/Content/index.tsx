@@ -13,6 +13,7 @@ import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
 import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch'
+import { compareByReleaseYearDesc, releaseYearLabel } from './discography'
 import { useTracks } from '@/hooks/tracks'
 import MediaTile from '@/screens/home/components/MediaTile'
 import MostPlayedSection from './MostPlayedSection'
@@ -209,10 +210,11 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       const albums = localAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
       const singles = localAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
 
-      // Owned releases first, then whatever the enabled external sources
-      // have for this artist that isn't already matched to something owned
-      // — the row itself (ExternalAlbumRow) double-checks "already in
-      // library" independently as a safety net if this dedup misses an edge case.
+      // Owned releases merged chronologically with whatever the enabled
+      // external sources have for this artist that isn't already matched to
+      // something owned — the row itself (ExternalAlbumRow) double-checks
+      // "already in library" independently as a safety net if this dedup
+      // misses an edge case.
       const missingAlbums = (externalDiscography?.albums ?? [])
         .filter(ext => !matchAlbumToLibrary(ext, localAlbums))
       const missingSingles = (externalDiscography?.singles ?? [])
@@ -221,11 +223,11 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       const albumItems: ArtistContentItem[] = [
         ...albums.map(album => ({ kind: 'localAlbum' as const, id: `album-${album.id}`, album })),
         ...missingAlbums.map(album => ({ kind: 'externalAlbum' as const, id: `album-ext-${album.id}`, album })),
-      ]
+      ].sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
       const singleItems: ArtistContentItem[] = [
         ...singles.map(album => ({ kind: 'localAlbum' as const, id: `single-${album.id}`, album })),
         ...missingSingles.map(album => ({ kind: 'externalAlbum' as const, id: `single-ext-${album.id}`, album })),
-      ]
+      ].sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
 
       if (albumItems.length > 0) {
         rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
@@ -248,21 +250,24 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     } else if (externalArtist) {
       rows.push({ kind: 'popularOnDeezer', id: 'popular-on-deezer' })
 
-      if (externalArtist.albums.length > 0) {
+      const sortedAlbums = [...externalArtist.albums].sort(compareByReleaseYearDesc)
+      const sortedSingles = [...externalArtist.singles].sort(compareByReleaseYearDesc)
+
+      if (sortedAlbums.length > 0) {
         rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
-        const visibleAlbums = externalArtist.albums.slice(0, visibleAlbumsCount)
+        const visibleAlbums = sortedAlbums.slice(0, visibleAlbumsCount)
         rows.push(...visibleAlbums.map(album => ({ kind: 'externalAlbum' as const, id: `album-${album.id}`, album })))
-        if (visibleAlbumsCount < externalArtist.albums.length) {
-          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: externalArtist.albums.length - visibleAlbumsCount })
+        if (visibleAlbumsCount < sortedAlbums.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: sortedAlbums.length - visibleAlbumsCount })
         }
       }
 
-      if (externalArtist.singles.length > 0) {
+      if (sortedSingles.length > 0) {
         rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
-        const visibleSingles = externalArtist.singles.slice(0, visibleSinglesCount)
+        const visibleSingles = sortedSingles.slice(0, visibleSinglesCount)
         rows.push(...visibleSingles.map(album => ({ kind: 'externalAlbum' as const, id: `single-${album.id}`, album })))
-        if (visibleSinglesCount < externalArtist.singles.length) {
-          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: externalArtist.singles.length - visibleSinglesCount })
+        if (visibleSinglesCount < sortedSingles.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: sortedSingles.length - visibleSinglesCount })
         }
       }
 
@@ -290,7 +295,12 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     }
 
     if (item.kind === 'bio') {
-      return <BioSection biography={localArtist ? undefined : externalArtist?.biography} />
+      return (
+        <BioSectionResolver
+          localArtist={localArtist}
+          externalArtist={externalArtist}
+        />
+      )
     }
 
     if (item.kind === 'section') {
@@ -334,6 +344,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         <AlbumRow
           album={item.album}
           onPress={(album) => navigation.navigate('albumView', { id: album.id })}
+          subtextOverride={releaseYearLabel(item.album) ?? undefined}
         />
       )
     }
@@ -344,6 +355,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         artistName={localArtist?.name ?? externalArtist?.name ?? ''}
         onPress={(album) => navigateToAlbum(album)}
         showExternalBadge={!!localArtist}
+        subtextOverride={releaseYearLabel(item.album) ?? undefined}
       />
     )
   }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, t])
@@ -391,6 +403,25 @@ function PopularOnDeezerSectionResolver({ localArtist, externalArtist }: {
     )
   }
   return null
+}
+
+// Same per-mode plumbing as PopularOnDeezerSectionResolver: local mode pulls
+// the Deezer biography via useArtistTopTracks (the same query the resolver
+// above runs, so react-query dedupes it), external mode already has it on
+// the artist. Gated by the Deezer Top Tracks setting in local mode, matching
+// the pre-unification behavior where the bio lived inside TopTracksSection.
+function BioSectionResolver({ localArtist, externalArtist }: {
+  localArtist: Artist | null
+  externalArtist: ExternalArtist | null
+}) {
+  const deezerTopTracksEnabled = useDeezerTopTracksEnabled()
+  const { biography: localBiography } = useArtistTopTracks({
+    name: localArtist?.name ?? '',
+    mbid: localArtist?.mbid,
+    enabled: !!localArtist && deezerTopTracksEnabled,
+  })
+
+  return <BioSection biography={localArtist ? localBiography : externalArtist?.biography} />
 }
 
 const styles = StyleSheet.create({

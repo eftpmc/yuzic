@@ -106,6 +106,7 @@ function releaseGroupToAlbumBase(rg: mb.MbReleaseGroup, fallbackArtist: string):
     artist: artistName,
     cover: releaseGroupToCover(rg),
     subtext: rg['first-release-date']?.slice(0, 4) ?? '',
+    releaseDate: rg['first-release-date'] ?? undefined,
     releaseType: rg['primary-type']?.toLowerCase() === 'single' ? 'single' : 'album',
     externalSource: 'musicbrainz',
     externalIds: { mbid: rg.id },

@@ -5,8 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Link, ArrowDownCircle, CloudOff } from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
+import { Link, ArrowDownCircle, Cloud } from 'lucide-react-native';
 
 import { ExternalAlbumBase } from '@/types';
 import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
@@ -18,15 +17,17 @@ type Props = {
   album: ExternalAlbumBase;
   artistName: string;
   onPress?: (album: ExternalAlbumBase) => void;
-  /** Show a "not in your library" badge for the common case (status.kind === 'none').
+  /** Show a "not in your library" glyph for the common case (status.kind === 'none').
    * Only meaningful where local and external rows can appear side by side in
    * the same list — e.g. the merged Discography — since elsewhere (Search's
    * source-grouped results) every row is already known to be external. */
   showExternalBadge?: boolean;
+  /** Replaces the album's own subtext line, e.g. the release year in the
+   * artist screen's chronological discography. */
+  subtextOverride?: string;
 };
 
-const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress, showExternalBadge }) => {
-  const { t } = useTranslation();
+const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress, showExternalBadge, subtextOverride }) => {
   const { colors } = useTheme();
   const status = useExternalAlbumStatus(album);
 
@@ -54,7 +55,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress, showExt
                 numberOfLines={1}
                 style={[styles.albumSubtext, { color: colors.subtext }, styles.subtextFlex]}
               >
-                {album.subtext}
+                {subtextOverride ?? album.subtext}
               </Text>
 
               {status.kind === 'in_library' && (
@@ -67,12 +68,7 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress, showExt
                 </View>
               )}
               {status.kind === 'none' && showExternalBadge && (
-                <View style={styles.badge}>
-                  <CloudOff size={12} color={colors.subtext} />
-                  <Text style={[styles.badgeText, { color: colors.subtext }]}>
-                    {t('externalAlbum.serverStatus.notInLibrary')}
-                  </Text>
-                </View>
+                <Cloud size={14} color={colors.subtext} />
               )}
             </View>
           </View>

@@ -16,11 +16,15 @@ import { useSheetRef } from '@/utils/useSheetRef';
 type Props = {
   album: AlbumBase;
   onPress?: (album: AlbumBase) => void;
+  /** Replaces the album's own subtext line, e.g. the release year in the
+   * artist screen's chronological discography. */
+  subtextOverride?: string;
 };
 
 const AlbumRow: React.FC<Props> = ({
   album,
   onPress,
+  subtextOverride,
 }) => {
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
@@ -58,7 +62,7 @@ const AlbumRow: React.FC<Props> = ({
               numberOfLines={1}
               style={[styles.albumSubtext, { color: colors.subtext }]}
             >
-              {album.subtext}
+              {subtextOverride ?? album.subtext}
             </Text>
           </View>
         </TouchableOpacity>
