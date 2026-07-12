@@ -10,8 +10,8 @@ type BottomControlsProps = {
 };
 
 const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
-  const { activeDevice, isGoogleCastConnected } = useCast();
-  const isCasting = activeDevice != null || isGoogleCastConnected;
+  const { activeDevice } = useCast();
+  const isCasting = activeDevice != null;
   const iconColor = (active: boolean) => (active ? '#fff' : '#ccc');
 
   return (

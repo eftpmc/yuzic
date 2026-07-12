@@ -30,7 +30,6 @@
         "backgroundColor": "#1c1c1e"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.arinora.rawarr"
@@ -63,13 +62,6 @@
           "ios": {
             "deploymentTarget": "16.0"
           }
-        }
-      ],
-      [
-        "react-native-google-cast",
-        {
-          "iosReceiverAppID": "BCF2CA91",
-          "androidReceiverAppID": "BCF2CA91"
         }
       ]
     ],
