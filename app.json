@@ -30,7 +30,6 @@
         "backgroundColor": "#1c1c1e"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.arinora.rawarr"
