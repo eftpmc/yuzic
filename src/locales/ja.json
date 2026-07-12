@@ -254,13 +254,31 @@
       "enabled": "有効",
       "disabled": "無効"
     },
+    "musicbrainz": {
+      "external": "外部アーティスト・アルバムデータ",
+      "externalDescription": "ライブラリにないアーティストやアルバムのページを MusicBrainz のデータで補完します。アカウント不要。"
+    },
     "deezer": {
       "discovery": "ディスカバリー",
       "discoveryDescription": "Deezer のチャートとおすすめを探索画面に表示。",
       "search": "検索",
       "searchDescription": "検索に Deezer の結果を含める。",
-      "externalScreens": "外部スクリーン",
-      "externalScreensDescription": "Deezer の外部アルバム・アーティストページを表示。"
+      "external": "外部アーティスト・アルバムデータ",
+      "externalDescription": "ライブラリにないアーティストやアルバムのページを Deezer のデータで補完します。",
+      "topTracks": "人気曲",
+      "topTracksDescription": "アーティストページに Deezer の人気曲を表示。",
+      "similarArtists": "類似アーティスト",
+      "similarArtistsDescription": "アーティストページに Deezer の類似アーティストを表示。",
+      "albumRecommendations": "おすすめ",
+      "albumRecommendationsDescription": "アルバムページに Deezer のおすすめアルバムを表示。",
+      "samples": "サンプル",
+      "samplesDescription": "外部アルバムページ用に30秒のプレビューサンプルを取得。",
+      "enableSamplesToPreview": "プレビューを聴くには設定でサンプルを有効にしてください",
+      "playlistRecommendations": "おすすめ",
+      "playlistRecommendationsDescription": "Deezer のおすすめプレイリストを表示。",
+      "artistSection": "アーティスト",
+      "albumSection": "アルバム",
+      "playlistSection": "プレイリスト"
     },
     "scrobbling": {
       "title": "スクロブル",

@@ -254,13 +254,31 @@
       "enabled": "已启用",
       "disabled": "已禁用"
     },
+    "musicbrainz": {
+      "external": "外部艺术家和专辑数据",
+      "externalDescription": "当艺术家或专辑不在您的音乐库中时，用 MusicBrainz 数据补全其页面。无需账号。"
+    },
     "deezer": {
       "discovery": "发现",
       "discoveryDescription": "Deezer 排行榜和推荐显示在探索页面。",
       "search": "搜索",
       "searchDescription": "在搜索中包含 Deezer 结果。",
-      "externalScreens": "外部页面",
-      "externalScreensDescription": "从 Deezer 显示外部专辑和艺术家页面。"
+      "external": "外部艺术家和专辑数据",
+      "externalDescription": "当艺术家或专辑不在您的音乐库中时，用 Deezer 数据补全其页面。",
+      "topTracks": "热门歌曲",
+      "topTracksDescription": "在艺术家页面显示 Deezer 热门歌曲。",
+      "similarArtists": "相似艺术家",
+      "similarArtistsDescription": "在艺术家页面显示 Deezer 相似艺术家。",
+      "albumRecommendations": "推荐",
+      "albumRecommendationsDescription": "在专辑页面显示 Deezer 推荐专辑。",
+      "samples": "试听片段",
+      "samplesDescription": "为外部专辑页面获取 30 秒试听片段。",
+      "enableSamplesToPreview": "请在设置中启用试听片段以收听预览",
+      "playlistRecommendations": "推荐",
+      "playlistRecommendationsDescription": "显示 Deezer 推荐的播放列表。",
+      "artistSection": "艺术家",
+      "albumSection": "专辑",
+      "playlistSection": "播放列表"
     },
     "scrobbling": {
       "title": "Scrobbling",
