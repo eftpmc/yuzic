@@ -1,0 +1,389 @@
+diff --git a/node_modules/@rntp/player/android/build.gradle b/node_modules/@rntp/player/android/build.gradle
+index 32ae595..2208120 100644
+--- a/node_modules/@rntp/player/android/build.gradle
++++ b/node_modules/@rntp/player/android/build.gradle
+@@ -106,8 +106,6 @@ dependencies {
+   implementation "androidx.media3:media3-exoplayer-hls:1.9.2"
+   implementation "androidx.media3:media3-common:1.9.2"
+   implementation "androidx.media3:media3-session:1.9.2"
+-  implementation "androidx.media3:media3-cast:1.9.2"
+-  implementation "androidx.mediarouter:mediarouter:1.7.0"
+ 
+   // Testing
+   testImplementation "junit:junit:4.13.2"
+diff --git a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/CastButtonManager.kt b/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/CastButtonManager.kt
+deleted file mode 100644
+index 726ca01..0000000
+--- a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/CastButtonManager.kt
++++ /dev/null
+@@ -1,77 +0,0 @@
+-/*
+- * Copyright (c) Double Symmetry GmbH
+- * Commercial use requires a license. See https://rntp.dev/pricing
+- */
+-
+-package com.doublesymmetry.trackplayer
+-
+-import android.content.Context
+-import android.graphics.drawable.Drawable
+-import android.util.TypedValue
+-import android.view.ContextThemeWrapper
+-import androidx.core.graphics.drawable.DrawableCompat
+-import androidx.mediarouter.app.MediaRouteButton
+-import androidx.mediarouter.media.MediaRouteSelector
+-import com.doublesymmetry.trackplayer.models.PlayerConfig
+-import com.facebook.react.bridge.ReactApplicationContext
+-import com.facebook.react.uimanager.SimpleViewManager
+-import com.facebook.react.uimanager.ThemedReactContext
+-import com.facebook.react.uimanager.annotations.ReactProp
+-import com.google.android.gms.cast.CastMediaControlIntent
+-import com.google.android.gms.cast.framework.CastButtonFactory
+-
+-class CastButtonManager(private val reactContext: ReactApplicationContext)
+-    : SimpleViewManager<MediaRouteButton>() {
+-
+-  override fun getName() = "TrackPlayerCastButton"
+-
+-  override fun createViewInstance(context: ThemedReactContext): MediaRouteButton {
+-    val appId = PlayerConfig().load(reactContext).castReceiverAppId
+-      ?: CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID
+-    val button = MediaRouteButton(context)
+-    val selector = MediaRouteSelector.Builder()
+-      .addControlCategory(CastMediaControlIntent.categoryForCast(appId))
+-      .build()
+-    button.setRouteSelector(selector)
+-    try {
+-      CastButtonFactory.setUpMediaRouteButton(reactContext, button)
+-    } catch (_: Exception) { }
+-    return button
+-  }
+-
+-  @ReactProp(name = "tintColor", customType = "Color")
+-  fun setTintColor(button: MediaRouteButton, color: Int?) {
+-    if (color == null) return
+-    tintedRemoteIndicator(button.context, color)?.let {
+-      button.setRemoteIndicatorDrawable(it)
+-    }
+-  }
+-
+-  companion object {
+-    /**
+-     * Builds the default Cast icon tinted with [color]. MediaRouteButton has no
+-     * public tint setter, so we resolve its drawable from the MediaRouteButton
+-     * style, tint a mutable copy, and swap it back in. Returns null if the
+-     * drawable can't be resolved.
+-     */
+-    internal fun tintedRemoteIndicator(context: Context, color: Int): Drawable? {
+-      val themed = ContextThemeWrapper(context, androidx.mediarouter.R.style.Theme_MediaRouter)
+-      val styleRes = TypedValue().let { value ->
+-        themed.theme.resolveAttribute(
+-          androidx.mediarouter.R.attr.mediaRouteButtonStyle, value, true
+-        )
+-        value.resourceId
+-      }
+-      if (styleRes == 0) return null
+-      val attrs = themed.obtainStyledAttributes(
+-        styleRes,
+-        androidx.mediarouter.R.styleable.MediaRouteButton
+-      )
+-      val drawable = attrs.getDrawable(
+-        androidx.mediarouter.R.styleable.MediaRouteButton_externalRouteEnabledDrawable
+-      )
+-      attrs.recycle()
+-      return drawable?.mutate()?.also { DrawableCompat.setTint(it, color) }
+-    }
+-  }
+-}
+diff --git a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPackage.kt b/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPackage.kt
+index 4491297..ed26dbe 100644
+--- a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPackage.kt
++++ b/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPackage.kt
+@@ -22,7 +22,7 @@ class TrackPlayerPackage : BaseReactPackage() {
+   }
+ 
+   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+-    return listOf(CastButtonManager(reactContext))
++    return emptyList()
+   }
+ 
+   override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
+diff --git a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPlaybackService.kt b/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPlaybackService.kt
+index 9c0906b..fdbed5c 100644
+--- a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPlaybackService.kt
++++ b/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/TrackPlayerPlaybackService.kt
+@@ -13,8 +13,6 @@ import android.net.Uri
+ import android.os.Bundle
+ import android.os.Build
+ import androidx.annotation.OptIn
+-import androidx.media3.cast.CastPlayer
+-import androidx.media3.cast.RemoteCastPlayer
+ import androidx.media3.common.AudioAttributes
+ import androidx.media3.common.C
+ import androidx.media3.common.ForwardingPlayer
+@@ -49,7 +47,6 @@ import com.google.common.util.concurrent.ListenableFuture
+ import com.doublesymmetry.trackplayer.extensions.emitEvent
+ import com.doublesymmetry.trackplayer.models.BrowseTree
+ import com.doublesymmetry.trackplayer.models.MetadataApplier
+-import com.doublesymmetry.trackplayer.models.TrackPlayerCastMediaItemConverter
+ import com.doublesymmetry.trackplayer.models.MetadataReceivedEvent
+ import com.doublesymmetry.trackplayer.models.StreamMetadataExtractor
+ import com.doublesymmetry.trackplayer.models.PlayerCommand
+@@ -76,7 +73,6 @@ class TrackPlayerPlaybackService: MediaLibraryService(), MediaLibraryService.Med
+   private var playerConfig: PlayerConfig? = null
+   private var simpleCache: SimpleCache? = null
+   private var exoPlayer: ExoPlayer? = null
+-  private var castPlayer: CastPlayer? = null
+   private var activePlayer: Player? = null
+   private var progressSyncTimer: java.util.Timer? = null
+   private var progressSyncExecutor: java.util.concurrent.ExecutorService? = null
+@@ -151,31 +147,7 @@ class TrackPlayerPlaybackService: MediaLibraryService(), MediaLibraryService.Med
+       )
+     }
+ 
+-    // If Cast is enabled, wrap ExoPlayer inside CastPlayer — Media3 automatically
+-    // routes playback to the Chromecast when a session is active, and back to
+-    // ExoPlayer when it ends. No manual player swapping needed.
+-    val activePlayer: Player = config.castReceiverAppId?.let { appId ->
+-      android.util.Log.d("TrackPlayer", "Cast enabled (appId=$appId), building CastPlayer")
+-      try {
+-        val remoteCastPlayer = RemoteCastPlayer.Builder(this)
+-          .setMediaItemConverter(TrackPlayerCastMediaItemConverter())
+-          .build()
+-        CastPlayer.Builder(this)
+-          .setLocalPlayer(built)
+-          .setRemotePlayer(remoteCastPlayer)
+-          .build()
+-          .also {
+-            castPlayer = it
+-            android.util.Log.d(
+-              "TrackPlayer",
+-              "CastPlayer created, isCastSessionAvailable=${it.isCastSessionAvailable()}",
+-            )
+-          }
+-      } catch (e: Exception) {
+-        android.util.Log.e("TrackPlayer", "Cast setup failed — ensure OPTIONS_PROVIDER_CLASS_NAME is set in AndroidManifest.xml", e)
+-        null
+-      }
+-    } ?: built.also { android.util.Log.d("TrackPlayer", "Cast disabled, using ExoPlayer only") }
++    val activePlayer: Player = built.also { android.util.Log.d("TrackPlayer", "Cast disabled, using ExoPlayer only") }
+ 
+     this.activePlayer = activePlayer
+ 
+@@ -361,10 +333,8 @@ class TrackPlayerPlaybackService: MediaLibraryService(), MediaLibraryService.Med
+       mediaSession = null
+     }
+     activePlayer = null
+-    // Release exoPlayer explicitly when Cast is active (CastPlayer may not own it).
+     exoPlayer?.release()
+     exoPlayer = null
+-    castPlayer = null
+     simpleCache?.release()
+     simpleCache = null
+     sharedCache = null
+diff --git a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/models/TrackPlayerCastMediaItemConverter.kt b/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/models/TrackPlayerCastMediaItemConverter.kt
+deleted file mode 100644
+index 2518f2c..0000000
+--- a/node_modules/@rntp/player/android/src/main/java/com/doublesymmetry/trackplayer/models/TrackPlayerCastMediaItemConverter.kt
++++ /dev/null
+@@ -1,201 +0,0 @@
+-/*
+- * Copyright (c) Double Symmetry GmbH
+- * Commercial use requires a license. See https://rntp.dev/pricing
+- */
+-
+-package com.doublesymmetry.trackplayer.models
+-
+-import android.net.Uri
+-import android.os.Bundle
+-import androidx.media3.cast.DefaultMediaItemConverter
+-import androidx.media3.cast.MediaItemConverter
+-import androidx.media3.common.MediaItem
+-import androidx.media3.common.util.UnstableApi
+-import com.google.android.gms.cast.MediaInfo
+-import com.google.android.gms.cast.MediaQueueItem
+-import org.json.JSONArray
+-import org.json.JSONException
+-import org.json.JSONObject
+-
+-/**
+- * Cast [MediaItemConverter] that preserves RNTP fields dropped by [DefaultMediaItemConverter]
+- * (app [MediaItemExtras.METADATA_KEY] payload, artist/album/artwork hints, duration/isLive).
+- */
+-@UnstableApi
+-internal class TrackPlayerCastMediaItemConverter : MediaItemConverter {
+-
+-  private val delegate = DefaultMediaItemConverter()
+-
+-  override fun toMediaQueueItem(mediaItem: MediaItem): MediaQueueItem {
+-    val queueItem = delegate.toMediaQueueItem(mediaItem)
+-    val mediaInfo = queueItem.media ?: return queueItem
+-    val customData = copyCustomData(mediaInfo.customData)
+-    if (!encodeRntpPayload(mediaItem, customData)) {
+-      return queueItem
+-    }
+-    val contentId = checkNotNull(mediaInfo.contentId) { "Cast MediaInfo must have a contentId" }
+-    val builder = MediaInfo.Builder(contentId)
+-      .setStreamType(mediaInfo.streamType)
+-      .setMetadata(mediaInfo.metadata)
+-      .setCustomData(customData)
+-    mediaInfo.contentType?.let { builder.setContentType(it) }
+-    mediaInfo.contentUrl?.let { builder.setContentUrl(it) }
+-    val updatedInfo = builder.build()
+-    return MediaQueueItem.Builder(updatedInfo).build()
+-  }
+-
+-  override fun toMediaItem(mediaQueueItem: MediaQueueItem): MediaItem {
+-    val item = delegate.toMediaItem(mediaQueueItem)
+-    val rntp = mediaQueueItem.media?.customData?.optJSONObject(KEY_RNTP) ?: return item
+-    return decodeRntpPayload(item, rntp)
+-  }
+-
+-  private fun encodeRntpPayload(mediaItem: MediaItem, customData: JSONObject): Boolean {
+-    val meta = mediaItem.mediaMetadata
+-    val payload = JSONObject()
+-    try {
+-      meta.artist?.toString()?.let { payload.put(KEY_ARTIST, it) }
+-      meta.albumTitle?.toString()?.let { payload.put(KEY_ALBUM_TITLE, it) }
+-      meta.artworkUri?.toString()?.let { payload.put(KEY_ARTWORK_URL, it) }
+-      meta.extras?.let { extras ->
+-        if (extras.containsKey(KEY_DURATION)) {
+-          payload.put(KEY_DURATION, extras.getDouble(KEY_DURATION))
+-        }
+-        if (extras.containsKey(KEY_IS_LIVE)) {
+-          payload.put(KEY_IS_LIVE, extras.getBoolean(KEY_IS_LIVE))
+-        }
+-        extras.getBundle(MediaItemExtras.METADATA_KEY)?.let { appExtras ->
+-          payload.put(KEY_EXTRAS, bundleToJson(appExtras))
+-        }
+-      }
+-      if (payload.length() == 0) {
+-        return false
+-      }
+-      customData.put(KEY_RNTP, payload)
+-      return true
+-    } catch (e: JSONException) {
+-      throw RuntimeException(e)
+-    }
+-  }
+-
+-  private fun decodeRntpPayload(item: MediaItem, rntp: JSONObject): MediaItem {
+-    val existing = item.mediaMetadata
+-    val metaBuilder = existing.buildUpon()
+-    if (existing.artist.isNullOrEmpty() && rntp.has(KEY_ARTIST)) {
+-      metaBuilder.setArtist(rntp.getString(KEY_ARTIST))
+-    }
+-    if (existing.albumTitle.isNullOrEmpty() && rntp.has(KEY_ALBUM_TITLE)) {
+-      metaBuilder.setAlbumTitle(rntp.getString(KEY_ALBUM_TITLE))
+-    }
+-    if (existing.artworkUri == null && rntp.has(KEY_ARTWORK_URL)) {
+-      metaBuilder.setArtworkUri(Uri.parse(rntp.getString(KEY_ARTWORK_URL)))
+-    }
+-
+-    val metadataExtras = (item.mediaMetadata.extras?.let { Bundle(it) }) ?: Bundle()
+-    if (rntp.has(KEY_DURATION) && !metadataExtras.containsKey(KEY_DURATION)) {
+-      metadataExtras.putDouble(KEY_DURATION, rntp.getDouble(KEY_DURATION))
+-    }
+-    if (rntp.has(KEY_IS_LIVE) && !metadataExtras.containsKey(KEY_IS_LIVE)) {
+-      metadataExtras.putBoolean(KEY_IS_LIVE, rntp.getBoolean(KEY_IS_LIVE))
+-    }
+-    if (rntp.has(KEY_EXTRAS) && !metadataExtras.containsKey(MediaItemExtras.METADATA_KEY)) {
+-      MediaItemExtras.attachToMetadataExtras(
+-        metadataExtras,
+-        jsonToBundle(rntp.getJSONObject(KEY_EXTRAS)),
+-      )
+-    }
+-
+-    metaBuilder.setExtras(metadataExtras)
+-    return item.buildUpon().setMediaMetadata(metaBuilder.build()).build()
+-  }
+-
+-  private fun copyCustomData(customData: JSONObject?): JSONObject =
+-    if (customData == null) JSONObject() else JSONObject(customData.toString())
+-
+-  private companion object {
+-    const val KEY_RNTP = "rntp"
+-    const val KEY_ARTIST = "artist"
+-    const val KEY_ALBUM_TITLE = "albumTitle"
+-    const val KEY_ARTWORK_URL = "artworkUrl"
+-    const val KEY_DURATION = "duration"
+-    const val KEY_IS_LIVE = "isLive"
+-    const val KEY_EXTRAS = "extras"
+-
+-    fun bundleToJson(bundle: Bundle): JSONObject {
+-      val json = JSONObject()
+-      for (key in bundle.keySet()) {
+-        @Suppress("DEPRECATION")
+-        when (val value = bundle.get(key)) {
+-          null -> Unit
+-          is Boolean -> json.put(key, value)
+-          is Int -> json.put(key, value)
+-          is Long -> json.put(key, value)
+-          is Double -> json.put(key, value)
+-          is Float -> json.put(key, value.toDouble())
+-          is String -> json.put(key, value)
+-          is Bundle -> json.put(key, bundleToJson(value))
+-          is ArrayList<*> -> json.put(key, JSONArray(value.map { listValueToJson(it) }))
+-          else -> json.put(key, value.toString())
+-        }
+-      }
+-      return json
+-    }
+-
+-    private fun listValueToJson(value: Any?): Any = when (value) {
+-      null -> JSONObject.NULL
+-      is Boolean -> value
+-      is Int -> value
+-      is Long -> value
+-      is Double -> value
+-      is Float -> value.toDouble()
+-      is String -> value
+-      is Bundle -> bundleToJson(value)
+-      is ArrayList<*> -> JSONArray(value.map { listValueToJson(it) })
+-      else -> value.toString()
+-    }
+-
+-    fun jsonToBundle(json: JSONObject): Bundle {
+-      val bundle = Bundle()
+-      val keys = json.keys()
+-      while (keys.hasNext()) {
+-        val key = keys.next()
+-        when (val value = json.get(key)) {
+-          JSONObject.NULL -> Unit
+-          is Boolean -> bundle.putBoolean(key, value)
+-          is Int -> bundle.putInt(key, value)
+-          is Long -> bundle.putLong(key, value)
+-          is Double -> bundle.putDouble(key, value)
+-          is String -> bundle.putString(key, value)
+-          is JSONObject -> bundle.putBundle(key, jsonToBundle(value))
+-          is JSONArray -> {
+-            val list = ArrayList<Any?>()
+-            for (i in 0 until value.length()) {
+-              list.add(jsonArrayValueToKotlin(value.get(i)))
+-            }
+-            @Suppress("DEPRECATION")
+-            bundle.putSerializable(key, list)
+-          }
+-        }
+-      }
+-      return bundle
+-    }
+-
+-    private fun jsonArrayValueToKotlin(value: Any?): Any? = when (value) {
+-      JSONObject.NULL, null -> null
+-      is Boolean -> value
+-      is Int -> value
+-      is Long -> value
+-      is Double -> value
+-      is String -> value
+-      is JSONObject -> jsonToBundle(value)
+-      is JSONArray -> {
+-        val list = ArrayList<Any?>()
+-        for (i in 0 until value.length()) {
+-          list.add(jsonArrayValueToKotlin(value.get(i)))
+-        }
+-        list
+-      }
+-      else -> value.toString()
+-    }
+-  }
+-}
