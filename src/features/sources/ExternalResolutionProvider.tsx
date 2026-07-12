@@ -6,7 +6,7 @@ import ExternalSourcePickerSheet, { type PickerItem } from '@/components/Externa
 import { useEnabledExternalSources, type SourceResolvedAlbum, type SourceResolvedArtist } from './registry';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { useArtists } from '@/hooks/artists';
-import { normalize } from '@/utils/normalize';
+import { matchAlbumToLibrary, matchArtistToLibrary } from '@/hooks/libraryMatch';
 import type { ExternalAlbumBase, ExternalArtistBase } from '@/types';
 
 const NO_SOURCE_TOAST = 'Enable an external source in Settings to browse this content.';
@@ -40,12 +40,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
   const resolveAndNavigateToAlbum = useCallback(async (item: ExternalAlbumBase, options?: ResolutionOptions) => {
     // Library match — skip when the caller explicitly wants an external view
     if (!options?.skipLocalMatch) {
-      const normTitle = normalize(item.title);
-      const normArtist = normalize(item.artist);
-      const localMatch = albums.find(a =>
-        (item.id && a.mbid && a.mbid === item.id) ||
-        (normalize(a.title) === normTitle && normalize(a.artist.name) === normArtist)
-      );
+      const localMatch = matchAlbumToLibrary(item, albums);
       if (localMatch) {
         router.push({ pathname: '/(home)/albumView', params: { id: localMatch.id } });
         return;
@@ -83,11 +78,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
   const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase, options?: ResolutionOptions) => {
     // Library match — skip when the caller explicitly wants an external view
     if (!options?.skipLocalMatch) {
-      const normName = normalize(item.name);
-      const localMatch = artists.find(a =>
-        (item.externalIds?.mbid && a.mbid && a.mbid === item.externalIds.mbid) ||
-        normalize(a.name) === normName
-      );
+      const localMatch = matchArtistToLibrary(item, artists);
       if (localMatch) {
         router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
         return;
