@@ -1,12 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import TrackPlayer, { Event } from '@rntp/player';
-import GoogleCast, {
-  useDevices,
-  useCastSession,
-  useRemoteMediaClient,
-  MediaStreamType,
-} from 'react-native-google-cast';
-import type Device from 'react-native-google-cast/lib/typescript/types/Device';
 
 // ─── DLNA ────────────────────────────────────────────────────────────────────
 
@@ -52,13 +45,6 @@ interface CastContextType {
   connectToDevice(device: DlnaDevice): Promise<void>;
   disconnectDevice(): Promise<void>;
 
-  // Google Cast
-  googleCastDevices: Device[];
-  isGoogleCastConnected: boolean;
-  isGoogleCastConnecting: boolean;
-  connectToGoogleCast(deviceId: string): Promise<void>;
-  disconnectGoogleCast(): Promise<void>;
-
   // Shared controls (routed to whichever protocol is active)
   castPause(): Promise<void>;
   castResume(): Promise<void>;
@@ -70,11 +56,6 @@ const CastContext = createContext<CastContextType>({
   isConnecting: false,
   connectToDevice: async () => {},
   disconnectDevice: async () => {},
-  googleCastDevices: [],
-  isGoogleCastConnected: false,
-  isGoogleCastConnecting: false,
-  connectToGoogleCast: async () => {},
-  disconnectGoogleCast: async () => {},
   castPause: async () => {},
   castResume: async () => {},
   castSeek: async () => {},
@@ -89,48 +70,12 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
   const activeDeviceRef = useRef<DlnaDevice | null>(null);
   useEffect(() => { activeDeviceRef.current = activeDevice; }, [activeDevice]);
 
-  // Google Cast hooks (SDK-managed)
-  const castSession = useCastSession();
-  const remoteMediaClient = useRemoteMediaClient();
-  const googleCastDevices = useDevices();
-  const [isGoogleCastConnecting, setIsGoogleCastConnecting] = useState(false);
-  const isGoogleCastConnected = castSession != null;
-
-  // Stable refs for use inside effects
-  const castSessionRef = useRef(castSession);
-  const remoteMediaClientRef = useRef(remoteMediaClient);
-  useEffect(() => { castSessionRef.current = castSession; }, [castSession]);
-  useEffect(() => { remoteMediaClientRef.current = remoteMediaClient; }, [remoteMediaClient]);
-
-  // When track changes, push new URL to whichever renderer is active
+  // When track changes, push new URL to the active renderer.
   useEffect(() => {
     const sub = TrackPlayer.addEventListener(Event.MediaItemTransition, async (event) => {
       if (!event.item?.url) return;
       const url = event.item.url as string;
 
-      // Google Cast
-      if (remoteMediaClientRef.current && castSessionRef.current) {
-        try {
-          await remoteMediaClientRef.current.loadMedia({
-            autoplay: true,
-            mediaInfo: {
-              contentUrl: url,
-              contentType: 'audio/mpeg',
-              streamType: MediaStreamType.BUFFERED,
-              metadata: {
-                type: 'musicTrack',
-                title: event.item.title ?? '',
-                artist: event.item.artist ?? '',
-              },
-            },
-          });
-        } catch (err) {
-          console.warn('[Cast] Google Cast track update failed', err);
-        }
-        return;
-      }
-
-      // DLNA
       const device = activeDeviceRef.current;
       if (!device) return;
       try {
@@ -194,62 +139,15 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
     setActiveDevice(null);
   }, []);
 
-  // ── Google Cast connect/disconnect ──────────────────────────────────────
-
-  const connectToGoogleCast = useCallback(async (deviceId: string) => {
-    setIsGoogleCastConnecting(true);
-    try {
-      const started = await GoogleCast.getSessionManager().startSession(deviceId);
-      if (!started) throw new Error('Failed to start Cast session');
-
-      const currentTrack = TrackPlayer.getActiveMediaItem();
-      if (currentTrack?.url && remoteMediaClientRef.current) {
-        await remoteMediaClientRef.current.loadMedia({
-          autoplay: true,
-          mediaInfo: {
-            contentUrl: currentTrack.url as string,
-            contentType: 'audio/mpeg',
-            streamType: MediaStreamType.BUFFERED,
-            metadata: {
-              type: 'musicTrack',
-              title: currentTrack.title ?? '',
-              artist: currentTrack.artist ?? '',
-            },
-          },
-        });
-      }
-      await TrackPlayer.setVolume(0);
-    } finally {
-      setIsGoogleCastConnecting(false);
-    }
-  }, []);
-
-  const disconnectGoogleCast = useCallback(async () => {
-    try {
-      await GoogleCast.getSessionManager().endCurrentSession(true);
-    } catch (err) {
-      console.warn('[Cast] Google Cast disconnect failed', err);
-    }
-    await TrackPlayer.setVolume(1);
-  }, []);
-
   // ── Shared controls ──────────────────────────────────────────────────────
 
   const castPause = useCallback(async () => {
-    if (remoteMediaClientRef.current && castSessionRef.current) {
-      await remoteMediaClientRef.current.pause();
-      return;
-    }
     const device = activeDeviceRef.current;
     if (!device) return;
     await soapAction(device.avTransportUrl, 'AVTransport', 'Pause', `<InstanceID>0</InstanceID>`);
   }, []);
 
   const castResume = useCallback(async () => {
-    if (remoteMediaClientRef.current && castSessionRef.current) {
-      await remoteMediaClientRef.current.play();
-      return;
-    }
     const device = activeDeviceRef.current;
     if (!device) return;
     await soapAction(device.avTransportUrl, 'AVTransport', 'Play', `
@@ -259,10 +157,6 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const castSeek = useCallback(async (position: number) => {
-    if (remoteMediaClientRef.current && castSessionRef.current) {
-      await remoteMediaClientRef.current.seek({ position });
-      return;
-    }
     const device = activeDeviceRef.current;
     if (!device) return;
     const h = Math.floor(position / 3600);
@@ -279,8 +173,6 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
   return (
     <CastContext.Provider value={{
       activeDevice, isConnecting, connectToDevice, disconnectDevice,
-      googleCastDevices, isGoogleCastConnected, isGoogleCastConnecting,
-      connectToGoogleCast, disconnectGoogleCast,
       castPause, castResume, castSeek,
     }}>
       {children}

@@ -71,7 +71,6 @@
     "react-native-draggable-flatlist": "^4.0.3",
     "react-native-exception-handler": "^2.10.10",
     "react-native-gesture-handler": "~2.30.0",
-    "react-native-google-cast": "^4.9.1",
     "react-native-image-colors": "^1.5.2",
     "react-native-mmkv": "4.3.1",
     "react-native-nitro-modules": "0.35.3",
