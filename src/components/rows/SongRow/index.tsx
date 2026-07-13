@@ -94,7 +94,6 @@ const SongRow: React.FC<Props> = ({
         disabled={!onPress && !collection}
         showCover={!isAlbumCompact}
         variant="compact"
-        contentStyle={styles.mediaContent}
         rowStyle={isAlbumCompact ? styles.mediaRowAlbumCompact : undefined}
         trailing={
           <View style={styles.rowRight}>
@@ -127,9 +126,6 @@ const SongRow: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  mediaContent: {
-    marginRight: 12,
-  },
   mediaRowAlbumCompact: {
     paddingVertical: 13,
   },
