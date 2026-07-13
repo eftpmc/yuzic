@@ -1,12 +1,5 @@
 import React, { forwardRef, useMemo, useRef } from 'react';
-import {
-  Alert,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { Alert } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -17,7 +10,6 @@ import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { useSelector } from 'react-redux';
 import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
-import { MediaImage } from '@/components/MediaImage';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
@@ -27,6 +19,16 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { formatSongDuration } from '@/utils/formatDuration';
 import { useDownload } from '@/contexts/DownloadContext';
+import {
+  OptionSheetChipsRow,
+  OptionSheetDivider,
+  OptionSheetHeader,
+  OptionSheetInfoRow,
+  OptionSheetRow,
+  OptionSheetSectionLabel,
+  optionSheetStyles,
+  useOptionSheetBackground,
+} from './OptionSheetPrimitives';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -50,7 +52,7 @@ const SongOptions = forwardRef<
   SongOptionsProps
 >(({ selectedSong, onAddToPlaylist, onNavigate }, ref) => {
     const { t } = useTranslation();
-    const { isDarkMode, colors } = useTheme();
+    const { colors } = useTheme();
     const isOffline = useIsOffline();
 
     const snapPoints = useMemo(() => ['55%', '90%'], []);
@@ -73,7 +75,7 @@ const SongOptions = forwardRef<
     const isDownloaded = isTrackDownloaded(selectedSong.id);
     const isDownloading = isTrackDownloading(selectedSong.id);
 
-    const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
+    const sheetBg = useOptionSheetBackground();
 
     const close = () => {
       (ref as any)?.current?.dismiss();
@@ -211,10 +213,6 @@ const SongOptions = forwardRef<
       }
     };
 
-    const genreChipBg = isDarkMode
-      ? 'rgba(255,255,255,0.12)'
-      : 'rgba(0,0,0,0.08)';
-
     return (
       <BottomSheetModal
         ref={ref}
@@ -223,237 +221,163 @@ const SongOptions = forwardRef<
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
-        backgroundStyle={[styles.sheetBackground, sheetBg]}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
         stackBehavior='push'
       >
         <BottomSheetScrollView
           testID="song-options-sheet"
           style={sheetBg}
-          contentContainerStyle={styles.sheetContent}
+          contentContainerStyle={optionSheetStyles.sheetContent}
         >
-          <View style={styles.header}>
-            <MediaImage
-              cover={selectedSong.cover}
-              size="grid"
-              style={styles.cover}
-            />
-            <View style={styles.headerText}>
-              <Text
-                style={[styles.title, { color: colors.secondary }]}
-                numberOfLines={1}
-              >
-                {selectedSong.title}
-              </Text>
-              <Text
-                style={[styles.artist, { color: colors.subtext }]}
-                numberOfLines={1}
-              >
-                {selectedSong.artist || t('songOptions.unknownArtist')}
-              </Text>
-            </View>
-          </View>
+          <OptionSheetHeader
+            cover={selectedSong.cover}
+            title={selectedSong.title}
+            subtitle={selectedSong.artist || t('songOptions.unknownArtist')}
+          />
 
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <OptionSheetDivider />
 
-          <TouchableOpacity
-            style={styles.option}
+          <OptionSheetRow
+            icon={<Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />}
+            label={isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             onPress={toggleFavorite}
-          >
-            <Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>
-              {isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.option}
+          <OptionSheetRow
+            icon={<ListStart size={26} color={colors.secondary} />}
+            label={t('songOptions.actions.addToQueue')}
             onPress={handleAddToQueue}
-          >
-            <ListStart size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>
-              {t('songOptions.actions.addToQueue')}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.option}
+          <OptionSheetRow
+            icon={<ListEnd size={26} color={colors.secondary} />}
+            label={t('songOptions.actions.addToEnd')}
             onPress={handleAddToEndQueue}
-          >
-            <ListEnd size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>
-              {t('songOptions.actions.addToEnd')}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.option}
+          <OptionSheetRow
+            icon={<CirclePlus size={26} color={colors.secondary} />}
+            label={t('songOptions.actions.addToPlaylist')}
             onPress={handleAddToPlaylist}
-          >
-            <CirclePlus size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>
-              {t('songOptions.actions.addToPlaylist')}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.option}
+          <OptionSheetRow
+            icon={
+              isDownloaded ? (
+                <CheckCircle size={26} color={colors.subtext} />
+              ) : (
+                <ArrowDownCircle size={26} color={colors.secondary} />
+              )
+            }
+            label={isDownloading ? t('songOptions.actions.downloading') : isDownloaded ? t('songOptions.actions.downloaded') : t('songOptions.actions.download')}
             onPress={handleDownload}
             disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <ActivityIndicator size="small" color={colors.subtext} />
-            ) : isDownloaded ? (
-              <CheckCircle size={26} color={colors.subtext} />
-            ) : (
-              <ArrowDownCircle size={26} color={colors.secondary} />
-            )}
-            <Text
-              style={[
-                styles.optionText,
-                { color: colors.secondary },
-                (isDownloaded || isDownloading) && { opacity: 0.6 },
-              ]}
-            >
-              {isDownloading ? t('songOptions.actions.downloading') : isDownloaded ? t('songOptions.actions.downloaded') : t('songOptions.actions.download')}
-            </Text>
-          </TouchableOpacity>
+            loading={isDownloading}
+            dimLabel={isDownloaded || isDownloading}
+          />
 
           {selectedSong.albumId && (
-            <TouchableOpacity
-              style={styles.option}
+            <OptionSheetRow
+              icon={<Disc size={26} color={colors.secondary} />}
+              label={t('songOptions.actions.goToAlbum')}
               onPress={handleGoToAlbum}
-            >
-              <Disc size={26} color={colors.secondary} />
-              <Text style={[styles.optionText, { color: colors.secondary }]}>
-                {t('songOptions.actions.goToAlbum')}
-              </Text>
-            </TouchableOpacity>
+            />
           )}
 
           {selectedSong.artistId && (
-            <TouchableOpacity
-              style={styles.option}
+            <OptionSheetRow
+              icon={<Mic2 size={26} color={colors.secondary} />}
+              label={t('songOptions.actions.goToArtist')}
               onPress={handleGoToArtist}
-            >
-              <Mic2 size={26} color={colors.secondary} />
-              <Text style={[styles.optionText, { color: colors.secondary }]}>
-                {t('songOptions.actions.goToArtist')}
-              </Text>
-            </TouchableOpacity>
+            />
           )}
 
-          <TouchableOpacity
-            style={styles.option}
+          <OptionSheetRow
+            icon={<Radio size={26} color={colors.secondary} />}
+            label={t('songOptions.actions.instantMix')}
             onPress={handleInstantMix}
-          >
-            <Radio size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>
-              {t('songOptions.actions.instantMix')}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <OptionSheetDivider />
 
-          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('songOptions.sections.media')}</Text>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.duration')}</Text>
-            <Text style={[styles.infoValue, { color: colors.secondary }]}>
-              {formatSongDuration(selectedSong.duration)}
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.plays')}</Text>
-            <Text style={[styles.infoValue, { color: colors.secondary }]}>{playCount}</Text>
-          </View>
+          <OptionSheetSectionLabel label={t('songOptions.sections.media')} />
+          <OptionSheetInfoRow
+            label={t('songOptions.media.duration')}
+            value={formatSongDuration(selectedSong.duration)}
+          />
+          <OptionSheetInfoRow label={t('songOptions.media.plays')} value={playCount} />
           {selectedSong.bitrate != null && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.bitrate')}</Text>
-              <Text style={[styles.infoValue, { color: colors.secondary }]}>{t('songOptions.media.kbps', { value: selectedSong.bitrate })}</Text>
-            </View>
+            <OptionSheetInfoRow
+              label={t('songOptions.media.bitrate')}
+              value={t('songOptions.media.kbps', { value: selectedSong.bitrate })}
+            />
           )}
           {selectedSong.sampleRate != null && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.sampleRate')}</Text>
-              <Text style={[styles.infoValue, { color: colors.secondary }]}>{t('songOptions.media.hz', { value: selectedSong.sampleRate })}</Text>
-            </View>
+            <OptionSheetInfoRow
+              label={t('songOptions.media.sampleRate')}
+              value={t('songOptions.media.hz', { value: selectedSong.sampleRate })}
+            />
           )}
           {selectedSong.bitsPerSample != null && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.bitsPerSample')}</Text>
-              <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.bitsPerSample}</Text>
-            </View>
+            <OptionSheetInfoRow
+              label={t('songOptions.media.bitsPerSample')}
+              value={selectedSong.bitsPerSample}
+            />
           )}
           {selectedSong.mimeType && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.media.format')}</Text>
-              <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={1}>{selectedSong.mimeType}</Text>
-            </View>
+            <OptionSheetInfoRow
+              label={t('songOptions.media.format')}
+              value={selectedSong.mimeType}
+              valueLines={1}
+            />
           )}
 
           {(selectedSong.disc != null || selectedSong.trackNumber != null) && (
             <>
-              <Text style={[styles.sectionLabel, { color: colors.subtext }, styles.sectionLabelSpaced]}>{t('songOptions.sections.track')}</Text>
+              <OptionSheetSectionLabel label={t('songOptions.sections.track')} spaced />
               {selectedSong.disc != null && (
-                <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.track.disc')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.disc}</Text>
-                </View>
+                <OptionSheetInfoRow label={t('songOptions.track.disc')} value={selectedSong.disc} />
               )}
               {selectedSong.trackNumber != null && (
-                <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.track.track')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.trackNumber}</Text>
-                </View>
+                <OptionSheetInfoRow label={t('songOptions.track.track')} value={selectedSong.trackNumber} />
               )}
             </>
           )}
 
           {(selectedSong.dateReleased || selectedSong.dateAdded) && (
             <>
-              <Text style={[styles.sectionLabel, { color: colors.subtext }, styles.sectionLabelSpaced]}>{t('songOptions.sections.dates')}</Text>
+              <OptionSheetSectionLabel label={t('songOptions.sections.dates')} spaced />
               {selectedSong.dateReleased && (
-                <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.dates.released')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{formatDate(selectedSong.dateReleased)}</Text>
-                </View>
+                <OptionSheetInfoRow
+                  label={t('songOptions.dates.released')}
+                  value={formatDate(selectedSong.dateReleased)}
+                />
               )}
               {selectedSong.dateAdded && (
-                <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.dates.added')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={1}>{formatDate(selectedSong.dateAdded)}</Text>
-                </View>
+                <OptionSheetInfoRow
+                  label={t('songOptions.dates.added')}
+                  value={formatDate(selectedSong.dateAdded)}
+                  valueLines={1}
+                />
               )}
             </>
           )}
 
           {(selectedSong.bpm != null || selectedSong.genres?.length || selectedSong.filePath) && (
             <>
-              <Text style={[styles.sectionLabel, { color: colors.subtext }, styles.sectionLabelSpaced]}>{t('songOptions.sections.other')}</Text>
+              <OptionSheetSectionLabel label={t('songOptions.sections.other')} spaced />
               {selectedSong.bpm != null && (
-                <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.bpm')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.secondary }]}>{selectedSong.bpm}</Text>
-                </View>
+                <OptionSheetInfoRow label={t('songOptions.other.bpm')} value={selectedSong.bpm} />
               )}
               {selectedSong.genres?.length ? (
-                <View style={styles.genreRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.genres')}</Text>
-                  <View style={styles.genreList}>
-                    {selectedSong.genres.map((g, i) => (
-                      <View key={`${g}-${i}`} style={[styles.genreChip, { backgroundColor: genreChipBg }]}>
-                        <Text style={[styles.genreChipText, { color: colors.secondary }]}>{g}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
+                <OptionSheetChipsRow label={t('songOptions.other.genres')} values={selectedSong.genres} />
               ) : null}
               {selectedSong.filePath ? (
-                <View style={styles.infoRow}>
-                  <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('songOptions.other.filePath')}</Text>
-                  <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={2}>
-                    {selectedSong.filePath}
-                  </Text>
-                </View>
+                <OptionSheetInfoRow
+                  label={t('songOptions.other.filePath')}
+                  value={selectedSong.filePath}
+                  valueLines={2}
+                />
               ) : null}
             </>
           )}
@@ -466,87 +390,3 @@ const SongOptions = forwardRef<
 SongOptions.displayName = 'SongOptions';
 
 export default SongOptions;
-
-const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  sheetContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cover: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  headerText: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  artist: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  optionText: {
-    marginLeft: 16,
-    fontSize: 16,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  sectionLabelSpaced: {
-    marginTop: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  infoLabel: { fontSize: 14 },
-  infoValue: { fontSize: 14, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
-  genreRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 8,
-  },
-  genreList: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginLeft: 12,
-    justifyContent: 'flex-end',
-    alignContent: 'flex-end',
-  },
-  genreChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  genreChipText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-});

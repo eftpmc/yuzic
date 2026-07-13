@@ -1,11 +1,5 @@
 import React, { forwardRef, useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -14,7 +8,6 @@ import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownC
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Album, AlbumBase } from '@/types';
-import { MediaImage } from '@/components/MediaImage';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -26,6 +19,16 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
 import { useStarredAlbums, useStarAlbum, useUnstarAlbum } from '@/hooks/starred';
+import {
+  OptionSheetChipsRow,
+  OptionSheetDivider,
+  OptionSheetHeader,
+  OptionSheetInfoRow,
+  OptionSheetRow,
+  OptionSheetSectionLabel,
+  optionSheetStyles,
+  useOptionSheetBackground,
+} from './OptionSheetPrimitives';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | null;
@@ -38,7 +41,7 @@ const AlbumOptions = forwardRef<
   AlbumOptionsProps
 >(({ album, hideGoToAlbum }, ref) => {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
   const enabledSources = useEnabledExternalSources();
 
@@ -65,8 +68,7 @@ const AlbumOptions = forwardRef<
 
   const isStarred = starredAlbums.some(a => a.id === album?.id);
 
-  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
-  const genreChipBg = isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
+  const sheetBg = useOptionSheetBackground();
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -173,9 +175,9 @@ const AlbumOptions = forwardRef<
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
-        backgroundStyle={[styles.sheetBackground, sheetBg]}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
-        <View style={[styles.loading, sheetBg]}>
+        <View style={[optionSheetStyles.loading, sheetBg]}>
           <ActivityIndicator size="large" color={colors.subtext} />
         </View>
       </BottomSheetModal>
@@ -191,164 +193,119 @@ const AlbumOptions = forwardRef<
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
-      backgroundStyle={[styles.sheetBackground, sheetBg]}
+      backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       stackBehavior="push"
       onChange={(index) => setIsSheetOpen(index >= 0)}
     >
       <BottomSheetScrollView
         style={sheetBg}
-        contentContainerStyle={styles.sheetContent}
+        contentContainerStyle={optionSheetStyles.sheetContent}
       >
-        <View style={styles.header}>
-          <MediaImage cover={album.cover} size="grid" style={styles.cover} />
-          <View style={styles.headerText}>
-            <Text
-              style={[styles.title, { color: colors.secondary }]}
-              numberOfLines={2}
-            >
-              {album.title}
-            </Text>
-            <Text
-              style={[styles.artist, { color: colors.subtext }]}
-              numberOfLines={1}
-            >
-              {album.artist?.name ?? ''}
-            </Text>
-          </View>
-        </View>
+        <OptionSheetHeader
+          cover={album.cover}
+          title={album.title}
+          subtitle={album.artist?.name ?? ''}
+          titleLines={2}
+        />
 
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <OptionSheetDivider />
 
-        <TouchableOpacity
-          style={styles.option}
+        <OptionSheetRow
+          icon={<Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />}
+          label={isStarred ? t('albumOptions.actions.unfavorite') : t('albumOptions.actions.favorite')}
           onPress={toggleFavorite}
-        >
-          <Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>
-            {isStarred ? t('albumOptions.actions.unfavorite') : t('albumOptions.actions.favorite')}
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+        <OptionSheetRow
+          icon={<Play size={26} color={colors.secondary} fill={colors.secondary} />}
+          label={t('albumOptions.actions.play')}
           onPress={() => handlePlay(false)}
           disabled={playbackDisabled}
-        >
-          {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.subtext} />
-          ) : (
-            <Play size={26} color={colors.secondary} fill={colors.secondary} />
-          )}
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.play')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+          loading={songsLoading}
+        />
+        <OptionSheetRow
+          icon={<Shuffle size={26} color={colors.secondary} />}
+          label={t('albumOptions.actions.shuffle')}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
-        >
-          <Shuffle size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.shuffle')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+        />
+        <OptionSheetRow
+          icon={<ListStart size={26} color={colors.secondary} />}
+          label={t('albumOptions.actions.addToNext')}
           onPress={handleAddToNext}
           disabled={playbackDisabled}
-        >
-          <ListStart size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.addToNext')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+        />
+        <OptionSheetRow
+          icon={<ListEnd size={26} color={colors.secondary} />}
+          label={t('albumOptions.actions.addToEnd')}
           onPress={handleAddToEnd}
           disabled={playbackDisabled}
-        >
-          <ListEnd size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.addToEnd')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+        />
+        <OptionSheetRow
+          icon={<Shuffle size={26} color={colors.secondary} />}
+          label={t('albumOptions.actions.shuffleToQueue')}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
-        >
-          <Shuffle size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.shuffleToQueue')}</Text>
-        </TouchableOpacity>
+          dimRow={playbackDisabled}
+        />
 
         {!hideGoToAlbum && (
-          <TouchableOpacity style={styles.option} onPress={handleGoToAlbum}>
-            <Disc size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.goToAlbum')}</Text>
-          </TouchableOpacity>
+          <OptionSheetRow
+            icon={<Disc size={26} color={colors.secondary} />}
+            label={t('albumOptions.actions.goToAlbum')}
+            onPress={handleGoToAlbum}
+          />
         )}
 
         {enabledSources.length > 0 && !!album.artist?.name && (
-          <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
-            <Globe size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('albumOptions.actions.viewExternal')}</Text>
-          </TouchableOpacity>
+          <OptionSheetRow
+            icon={<Globe size={26} color={colors.secondary} />}
+            label={t('albumOptions.actions.viewExternal')}
+            onPress={handleViewExternal}
+          />
         )}
 
-        <TouchableOpacity
-          style={styles.option}
+        <OptionSheetRow
+          icon={
+            isDownloaded ? (
+              <CheckCircle size={26} color={colors.subtext} />
+            ) : (
+              <ArrowDownCircle size={26} color={colors.secondary} />
+            )
+          }
+          label={isDownloading ? t('albumOptions.actions.downloading') : isDownloaded ? t('albumOptions.actions.downloaded') : t('albumOptions.actions.download')}
           onPress={handleDownload}
           disabled={isDownloaded || isDownloading}
-        >
-          {isDownloading ? (
-            <ActivityIndicator size="small" color={colors.subtext} />
-          ) : isDownloaded ? (
-            <CheckCircle size={26} color={colors.subtext} />
-          ) : (
-            <ArrowDownCircle size={26} color={colors.secondary} />
-          )}
-          <Text
-            style={[
-              styles.optionText,
-              { color: colors.secondary },
-              (isDownloaded || isDownloading) && { opacity: 0.6 },
-            ]}
-          >
-            {isDownloading ? t('albumOptions.actions.downloading') : isDownloaded ? t('albumOptions.actions.downloaded') : t('albumOptions.actions.download')}
-          </Text>
-        </TouchableOpacity>
+          loading={isDownloading}
+          dimLabel={isDownloaded || isDownloading}
+        />
 
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <OptionSheetDivider />
 
-        <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('albumOptions.sections.albumInfo')}</Text>
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('albumOptions.info.artist')}</Text>
-          <Text style={[styles.infoValue, { color: colors.secondary }]} numberOfLines={1}>
-            {album.artist?.name ?? t('albumOptions.info.unknown')}
-          </Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('albumOptions.info.year')}</Text>
-          <Text style={[styles.infoValue, { color: colors.secondary }]}>{album.year ?? t('albumOptions.info.unknown')}</Text>
-        </View>
+        <OptionSheetSectionLabel label={t('albumOptions.sections.albumInfo')} />
+        <OptionSheetInfoRow
+          label={t('albumOptions.info.artist')}
+          value={album.artist?.name ?? t('albumOptions.info.unknown')}
+          valueLines={1}
+        />
+        <OptionSheetInfoRow
+          label={t('albumOptions.info.year')}
+          value={album.year ?? t('albumOptions.info.unknown')}
+        />
         {album.genres?.length ? (
-          <View style={styles.genreRow}>
-            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('albumOptions.info.genres')}</Text>
-            <View style={styles.genreList}>
-              {album.genres.map((g, i) => (
-                <View key={`${g}-${i}`} style={[styles.genreChip, { backgroundColor: genreChipBg }]}>
-                  <Text style={[styles.genreChipText, { color: colors.secondary }]}>{g}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
+          <OptionSheetChipsRow label={t('albumOptions.info.genres')} values={album.genres} />
         ) : (
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('albumOptions.info.genres')}</Text>
-            <Text style={[styles.infoValue, { color: colors.secondary }]}>{t('albumOptions.info.unknown')}</Text>
-          </View>
+          <OptionSheetInfoRow
+            label={t('albumOptions.info.genres')}
+            value={t('albumOptions.info.unknown')}
+          />
         )}
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('albumOptions.info.songs')}</Text>
-          <Text style={[styles.infoValue, { color: colors.secondary }]}>{songs.length}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('albumOptions.info.plays')}</Text>
-          <Text style={[styles.infoValue, { color: colors.secondary }]}>{playCount}</Text>
-        </View>
+        <OptionSheetInfoRow label={t('albumOptions.info.songs')} value={songs.length} />
+        <OptionSheetInfoRow label={t('albumOptions.info.plays')} value={playCount} />
       </BottomSheetScrollView>
     </BottomSheetModal>
     </>
@@ -358,82 +315,3 @@ const AlbumOptions = forwardRef<
 AlbumOptions.displayName = 'AlbumOptions';
 
 export default AlbumOptions;
-
-const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  sheetContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cover: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '500' },
-  artist: { fontSize: 14, marginTop: 2 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  optionDisabled: {
-    opacity: 0.55,
-  },
-  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500' },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  infoLabel: { fontSize: 14 },
-  infoValue: { fontSize: 14, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
-  genreRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 8,
-  },
-  genreList: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginLeft: 12,
-    justifyContent: 'flex-end',
-    alignContent: 'flex-end',
-  },
-  genreChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  genreChipText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-});

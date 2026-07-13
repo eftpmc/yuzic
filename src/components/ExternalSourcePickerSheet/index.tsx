@@ -6,6 +6,12 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import { getSourceMeta } from '@/features/sources/registry'
 import { MediaImage } from '@/components/MediaImage'
 import type { SourceResolvedAlbum, SourceResolvedArtist } from '@/features/sources/registry'
+import {
+  OptionSheetDivider,
+  OptionSheetSectionLabel,
+  optionSheetStyles,
+  useOptionSheetBackground,
+} from '@/components/options/OptionSheetPrimitives'
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -21,8 +27,8 @@ const COVER_SIZE = 48
 
 const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, isLoading, onSelect }, ref) => {
-    const { isDarkMode, colors } = useTheme()
-    const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background }
+    const { colors } = useTheme()
+    const sheetBg = useOptionSheetBackground()
 
     const grouped = items.reduce<Record<string, PickerItem[]>>((acc, item) => {
       if (!acc[item.source]) acc[item.source] = []
@@ -37,10 +43,10 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
-        backgroundStyle={[styles.sheetBackground, sheetBg]}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
         stackBehavior="push"
       >
-        <BottomSheetScrollView style={sheetBg} contentContainerStyle={styles.sheetContent}>
+        <BottomSheetScrollView style={sheetBg} contentContainerStyle={optionSheetStyles.sheetContent}>
           {isLoading && (
             <View style={styles.loading}>
               <ActivityIndicator size="large" color={colors.subtext} />
@@ -58,10 +64,8 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
             const sourceLabel = meta?.label ?? sourceId
             return (
               <View key={sourceId}>
-                {groupIndex > 0 && (
-                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                )}
-                <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{sourceLabel}</Text>
+                {groupIndex > 0 && <OptionSheetDivider />}
+                <OptionSheetSectionLabel label={sourceLabel} />
                 {sourceItems.map((item, i) => {
                   const label = item.kind === 'album' ? item.title : item.name
                   const sublabel = item.kind === 'album' ? (item as SourceResolvedAlbum).artist : undefined
@@ -105,14 +109,6 @@ ExternalSourcePickerSheet.displayName = 'ExternalSourcePickerSheet'
 export default ExternalSourcePickerSheet
 
 const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  sheetContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
   loading: {
     paddingVertical: 32,
     alignItems: 'center',
@@ -121,15 +117,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     paddingVertical: 24,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 8,
   },
   option: {
     flexDirection: 'row',
