@@ -3,7 +3,6 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native'
 import { Play } from 'lucide-react-native'
 import MediaListRow from '@/components/MediaListRow'
 import { useTheme } from '@/hooks/useTheme'
-import { spacing } from '@/constants/design'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
 
@@ -25,7 +24,6 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
       cover={song.cover}
       onPress={onPress}
       variant="compact"
-      contentStyle={styles.content}
       leading={
         <Text style={[styles.trackIndex, { color: colors.subtext }]}>
           {index + 1}
@@ -50,9 +48,6 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
 export default memo(TopTrackRow)
 
 const styles = StyleSheet.create({
-  content: {
-    marginRight: spacing.rowGap,
-  },
   trackIndex: {
     width: 16,
     fontSize: 13,

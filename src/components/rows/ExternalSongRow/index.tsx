@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import MediaListRow from '@/components/MediaListRow';
-import { spacing } from '@/constants/design';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
 import { useDeezerSamplesEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
@@ -50,7 +49,6 @@ const ExternalSongRow: React.FC<Props> = ({
       onPress={handlePress}
       showCover={false}
       variant="compact"
-      contentStyle={styles.content}
       rowStyle={styles.row}
       trailing={
         <View style={styles.rowRight}>
@@ -74,9 +72,6 @@ export default memo(ExternalSongRow);
 const styles = StyleSheet.create({
   row: {
     paddingVertical: 13,
-  },
-  content: {
-    marginRight: spacing.rowGap,
   },
   rowRight: {
     flexDirection: 'row',

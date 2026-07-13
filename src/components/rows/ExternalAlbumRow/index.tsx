@@ -14,7 +14,6 @@ import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
 
 type Props = {
   album: ExternalAlbumBase;
-  artistName: string;
   onPress?: (album: ExternalAlbumBase) => void;
   /** Show a "not in your library" glyph for the common case (status.kind === 'none').
    * Only meaningful where local and external rows can appear side by side in
@@ -26,7 +25,7 @@ type Props = {
   subtextOverride?: string;
 };
 
-const ExternalAlbumRow: React.FC<Props> = ({ album, artistName, onPress, showExternalBadge, subtextOverride }) => {
+const ExternalAlbumRow: React.FC<Props> = ({ album, onPress, showExternalBadge, subtextOverride }) => {
   const { colors } = useTheme();
   const status = useExternalAlbumStatus(album);
 

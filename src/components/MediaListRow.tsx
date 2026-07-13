@@ -26,7 +26,6 @@ type Props = {
   roundedCover?: boolean;
   showCover?: boolean;
   variant?: 'default' | 'compact';
-  contentStyle?: StyleProp<ViewStyle>;
   rowStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
 };
@@ -43,7 +42,6 @@ export default function MediaListRow({
   roundedCover,
   showCover = true,
   variant = 'default',
-  contentStyle,
   rowStyle,
   style,
 }: Props) {
@@ -54,7 +52,7 @@ export default function MediaListRow({
     <View style={[styles.wrapper, style]}>
       <View style={[styles.row, isCompact && styles.compactRow, rowStyle]}>
         <TouchableOpacity
-          style={[styles.content, contentStyle]}
+          style={styles.content}
           onPress={onPress}
           disabled={disabled || !onPress}
           activeOpacity={disabled ? 1 : 0.7}
@@ -111,6 +109,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.rowGap,
     marginBottom: 16,
   },
   compactRow: {
