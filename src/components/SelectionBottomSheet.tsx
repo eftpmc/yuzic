@@ -11,6 +11,7 @@ import {
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet'
 import { Dices } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 
@@ -23,6 +24,7 @@ type Props = {
 
 const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, onSelect, onRandomize, placeholder }, ref) => {
+    const { t } = useTranslation()
     const { colors } = useTheme()
     const [query, setQuery] = useState('')
 
@@ -70,7 +72,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
             style={[styles.input, { color: colors.secondary }]}
             value={query}
             onChangeText={setQuery}
-            placeholder={placeholder ?? 'Search…'}
+            placeholder={placeholder ?? t('common.searchPlaceholder')}
             placeholderTextColor={colors.placeholder}
             autoCapitalize="words"
             autoCorrect={false}

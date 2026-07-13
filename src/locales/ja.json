@@ -170,7 +170,10 @@
           "playlists": "プレイリスト"
         },
         "offlineNote": "これらの曲はオフライン再生のため端末に保存されています。",
-        "locationNote": "ダウンロードはアプリの非公開ストレージに保存されており、端末のファイルマネージャーからは参照できません。表示・削除にはこの画面をご利用ください。"
+        "locationNote": "ダウンロードはアプリの非公開ストレージに保存されており、端末のファイルマネージャーからは参照できません。表示・削除にはこの画面をご利用ください。",
+        "autoDownloadLabel": "新しい曲を自動ダウンロード",
+        "autoDownloadSubtext": "ライブラリに追加された曲を自動的にダウンロードしてオフラインで再生できるようにします",
+        "autoDownloadStarted": "新しい曲{{count}}件を自動ダウンロード中"
       },
       "downloadQuality": {
         "title": "ダウンロード音質",
@@ -388,7 +391,8 @@
     "more": "もっと見る",
     "less": "閉じる",
     "playbackError": "曲を再生できません",
-    "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中"
+    "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中",
+    "searchPlaceholder": "検索…"
   },
   "onboarding": {
     "home": {
@@ -815,5 +819,8 @@
     },
     "play": "回再生",
     "plays": "回再生"
+  },
+  "externalSourcePicker": {
+    "empty": "この項目を解決できるソースがありません。"
   }
 }

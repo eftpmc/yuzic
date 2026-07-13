@@ -72,6 +72,9 @@ export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
 export const selectDownloadQuality = (state: RootState): AudioQuality =>
   state.settings.downloadQuality ?? 'high';
 
+export const selectAutoDownloadNewSongs = (state: RootState): boolean =>
+  state.settings.autoDownloadNewSongs ?? false;
+
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;
 

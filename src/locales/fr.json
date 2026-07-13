@@ -170,7 +170,11 @@
           "playlists": "Listes de lecture"
         },
         "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne.",
-        "locationNote": "Les téléchargements sont stockés dans l'espace privé de l'application et ne sont pas accessibles depuis le gestionnaire de fichiers de votre appareil. Utilisez cet écran pour les consulter et les supprimer."
+        "locationNote": "Les téléchargements sont stockés dans l'espace privé de l'application et ne sont pas accessibles depuis le gestionnaire de fichiers de votre appareil. Utilisez cet écran pour les consulter et les supprimer.",
+        "autoDownloadLabel": "Télécharger automatiquement les nouveaux titres",
+        "autoDownloadSubtext": "Télécharge automatiquement les titres ajoutés à votre bibliothèque pour une écoute hors ligne",
+        "autoDownloadStarted_one": "Téléchargement automatique de {{count}} nouveau titre",
+        "autoDownloadStarted_other": "Téléchargement automatique de {{count}} nouveaux titres"
       },
       "downloadQuality": {
         "title": "Qualité de téléchargement",
@@ -388,7 +392,8 @@
     "more": "Plus",
     "less": "Moins",
     "playbackError": "Impossible de lire le morceau",
-    "serverUnreachableBanner": "Serveur injoignable — affichage des données locales"
+    "serverUnreachableBanner": "Serveur injoignable — affichage des données locales",
+    "searchPlaceholder": "Rechercher…"
   },
   "onboarding": {
     "home": {
@@ -815,5 +820,8 @@
     },
     "play": "lecture",
     "plays": "lectures"
+  },
+  "externalSourcePicker": {
+    "empty": "Aucune source n'a pu résoudre cet élément."
   }
 }
