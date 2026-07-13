@@ -170,7 +170,10 @@
           "playlists": "播放列表"
         },
         "offlineNote": "这些曲目已存储在本地，可离线播放。",
-        "locationNote": "下载内容存储在应用的私有存储空间中，无法通过设备的文件管理器访问。请使用此页面查看和删除下载内容。"
+        "locationNote": "下载内容存储在应用的私有存储空间中，无法通过设备的文件管理器访问。请使用此页面查看和删除下载内容。",
+        "autoDownloadLabel": "自动下载新歌曲",
+        "autoDownloadSubtext": "自动下载资料库中新增的歌曲以供离线播放",
+        "autoDownloadStarted": "正在自动下载 {{count}} 首新歌曲"
       },
       "downloadQuality": {
         "title": "下载音质",
@@ -388,7 +391,8 @@
     "more": "更多",
     "less": "收起",
     "playbackError": "无法播放曲目",
-    "serverUnreachableBanner": "无法连接服务器 — 正在显示本地数据"
+    "serverUnreachableBanner": "无法连接服务器 — 正在显示本地数据",
+    "searchPlaceholder": "搜索…"
   },
   "onboarding": {
     "home": {
@@ -815,5 +819,8 @@
     },
     "play": "次播放",
     "plays": "次播放"
+  },
+  "externalSourcePicker": {
+    "empty": "没有来源能够解析此项目。"
   }
 }
