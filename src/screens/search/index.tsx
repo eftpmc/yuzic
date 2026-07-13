@@ -161,7 +161,6 @@ const Search = () => {
             externalSource: result.externalSource,
             externalIds: result.externalIds,
           }}
-          artistName={result.subtext}
           onPress={album => {
             prefetchCovers([album.cover], 'detail');
             navigateToAlbum(album);

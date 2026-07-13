@@ -18,11 +18,14 @@ type Props = {
   cover: CoverSource;
   onPress?: () => void;
   disabled?: boolean;
+  /** Rendered inside the touchable before the cover, e.g. a track index */
+  leading?: React.ReactNode;
   trailing?: React.ReactNode;
+  /** Rendered on the subtitle line after the text, e.g. status badges */
+  subtitleTrailing?: React.ReactNode;
   roundedCover?: boolean;
   showCover?: boolean;
   variant?: 'default' | 'compact';
-  contentStyle?: StyleProp<ViewStyle>;
   rowStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
 };
@@ -33,11 +36,12 @@ export default function MediaListRow({
   cover,
   onPress,
   disabled,
+  leading,
   trailing,
+  subtitleTrailing,
   roundedCover,
   showCover = true,
   variant = 'default',
-  contentStyle,
   rowStyle,
   style,
 }: Props) {
@@ -48,11 +52,12 @@ export default function MediaListRow({
     <View style={[styles.wrapper, style]}>
       <View style={[styles.row, isCompact && styles.compactRow, rowStyle]}>
         <TouchableOpacity
-          style={[styles.content, contentStyle]}
+          style={styles.content}
           onPress={onPress}
           disabled={disabled || !onPress}
           activeOpacity={disabled ? 1 : 0.7}
         >
+          {leading}
           {showCover && (
             <MediaImage
               cover={cover}
@@ -74,12 +79,19 @@ export default function MediaListRow({
             </Text>
 
             {subtitle !== undefined && (
-              <Text
-                numberOfLines={1}
-                style={[isCompact ? styles.compactSubtitle : styles.subtitle, { color: colors.subtext }]}
-              >
-                {subtitle}
-              </Text>
+              <View style={[styles.subtitleRow, isCompact ? styles.compactSubtitleSpacing : styles.subtitleSpacing]}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    isCompact ? styles.compactSubtitleText : styles.subtitleText,
+                    styles.subtitleFlex,
+                    { color: colors.subtext },
+                  ]}
+                >
+                  {subtitle}
+                </Text>
+                {subtitleTrailing}
+              </View>
             )}
           </View>
         </TouchableOpacity>
@@ -97,6 +109,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.rowGap,
     marginBottom: 16,
   },
   compactRow: {
@@ -132,12 +145,20 @@ const styles = StyleSheet.create({
   },
   title: typography.rowTitle,
   compactTitle: typography.compactRowTitle,
-  subtitle: {
-    ...typography.rowSubtitle,
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  subtitleSpacing: {
     marginTop: 2,
   },
-  compactSubtitle: {
-    ...typography.compactRowSubtitle,
+  compactSubtitleSpacing: {
     marginTop: 1,
+  },
+  subtitleText: typography.rowSubtitle,
+  compactSubtitleText: typography.compactRowSubtitle,
+  subtitleFlex: {
+    flex: 1,
   },
 });

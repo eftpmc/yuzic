@@ -352,7 +352,6 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     return (
       <ExternalAlbumRow
         album={item.album}
-        artistName={localArtist?.name ?? externalArtist?.name ?? ''}
         onPress={(album) => navigateToAlbum(album)}
         showExternalBadge={!!localArtist}
         subtextOverride={releaseYearLabel(item.album) ?? undefined}
