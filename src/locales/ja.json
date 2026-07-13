@@ -391,7 +391,8 @@
     "more": "もっと見る",
     "less": "閉じる",
     "playbackError": "曲を再生できません",
-    "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中"
+    "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中",
+    "searchPlaceholder": "検索…"
   },
   "onboarding": {
     "home": {
@@ -818,5 +819,8 @@
     },
     "play": "回再生",
     "plays": "回再生"
+  },
+  "externalSourcePicker": {
+    "empty": "この項目を解決できるソースがありません。"
   }
 }

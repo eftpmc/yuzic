@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import { getSourceMeta } from '@/features/sources/registry'
@@ -27,6 +28,7 @@ const COVER_SIZE = 48
 
 const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, isLoading, onSelect }, ref) => {
+    const { t } = useTranslation()
     const { colors } = useTheme()
     const sheetBg = useOptionSheetBackground()
 
@@ -55,7 +57,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
 
           {!isLoading && items.length === 0 && (
             <Text style={[styles.empty, { color: colors.subtext }]}>
-              No sources could resolve this item.
+              {t('externalSourcePicker.empty')}
             </Text>
           )}
 

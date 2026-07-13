@@ -392,7 +392,8 @@
     "more": "Plus",
     "less": "Moins",
     "playbackError": "Impossible de lire le morceau",
-    "serverUnreachableBanner": "Serveur injoignable — affichage des données locales"
+    "serverUnreachableBanner": "Serveur injoignable — affichage des données locales",
+    "searchPlaceholder": "Rechercher…"
   },
   "onboarding": {
     "home": {
@@ -819,5 +820,8 @@
     },
     "play": "lecture",
     "plays": "lectures"
+  },
+  "externalSourcePicker": {
+    "empty": "Aucune source n'a pu résoudre cet élément."
   }
 }
