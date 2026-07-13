@@ -1,4 +1,5 @@
 import React from 'react';
+import { statusColor } from '@/constants/design';
 import { View, StyleSheet } from 'react-native';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,7 +20,7 @@ const ConnectivityIndicator: React.FC<Props> = ({ isLoading, isConnected }) => {
     <View
       style={[
         styles.dot,
-        { backgroundColor: isConnected ? '#34C759' : colors.border },
+        { backgroundColor: isConnected ? statusColor.success : colors.border },
       ]}
     />
   );

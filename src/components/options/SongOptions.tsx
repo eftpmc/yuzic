@@ -29,6 +29,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import { statusColor } from '@/constants/design';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -238,7 +239,7 @@ const SongOptions = forwardRef<
           <OptionSheetDivider />
 
           <OptionSheetRow
-            icon={<Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />}
+            icon={<Heart size={26} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
             label={isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             onPress={toggleFavorite}
           />

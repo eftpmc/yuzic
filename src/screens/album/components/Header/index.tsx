@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
+import { statusColor } from '@/constants/design';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -181,18 +182,18 @@ function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
   if (albumStatus.kind === 'in_library') {
     return (
       <StatusBanner
-        icon={<Link size={14} color="#34C759" />}
+        icon={<Link size={14} color={statusColor.success} />}
         text={t('externalAlbum.serverStatus.onServer')}
-        color="#34C759"
+        color={statusColor.success}
         style={styles.serverStatusRow}
       />
     );
   }
   return (
     <StatusBanner
-      icon={<SpinningLoaderCircle size={14} color="#007AFF" />}
+      icon={<SpinningLoaderCircle size={14} color={statusColor.downloading} />}
       text={t('externalAlbum.serverStatus.downloadingToServer', { progress: albumStatus.progress })}
-      color="#007AFF"
+      color={statusColor.downloading}
       style={styles.serverStatusRow}
     />
   );

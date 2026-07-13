@@ -1,4 +1,5 @@
 import React from 'react';
+import { statusColor } from '@/constants/design';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
@@ -14,8 +15,8 @@ type Props = {
 };
 
 const STATUS_COLORS = {
-  connected: '#34C759',
-  enabled: '#34C759',
+  connected: statusColor.success,
+  enabled: statusColor.success,
   disconnected: '#8E8E93',
   disabled: '#8E8E93',
 };

@@ -2,6 +2,14 @@ export const spacing = {
   page: 16,
   rowGap: 12,
   controlGap: 10,
+  inlineGap: 8,
+} as const;
+
+export const statusColor = {
+  favorite: '#ff3b30',
+  destructive: '#ff3b30',
+  success: '#34C759',
+  downloading: '#007AFF',
 } as const;
 
 export const radius = {

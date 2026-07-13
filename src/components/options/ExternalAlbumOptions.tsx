@@ -22,6 +22,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import { statusColor } from '@/constants/design';
 
 interface ExternalAlbumOptionsProps {
   album: ExternalAlbumBase;
@@ -65,12 +66,12 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
           {status.kind === 'in_library' ? (
             <OptionSheetRow
-              icon={<Link size={26} color="#34C759" />}
+              icon={<Link size={26} color={statusColor.success} />}
               label={t('externalAlbum.menu.inLibrary')}
             />
           ) : status.kind === 'downloading' ? (
             <OptionSheetRow
-              icon={<SpinningLoaderCircle size={26} color="#007AFF" />}
+              icon={<SpinningLoaderCircle size={26} color={statusColor.downloading} />}
               label={t('externalAlbum.menu.downloading', { progress: status.progress })}
             />
           ) : canDownload ? (

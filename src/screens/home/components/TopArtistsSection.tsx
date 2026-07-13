@@ -18,7 +18,7 @@ import {
   STALE_DEEZER_CHARTS,
 } from '@/features/home/constants'
 import MediaTile from './MediaTile'
-import LoadingTiles from './LoadingTiles'
+import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalArtistBase } from '@/types'
 
 type Props = { refreshKey?: number }
@@ -68,7 +68,7 @@ export default function TopArtistsSection({ refreshKey = 0 }: Props) {
         {t('explore.sections.topArtists')}
       </Text>
       {query.isLoading ? (
-        <LoadingTiles
+        <SkeletonTiles
           itemSize={gridItemWidth}
           gap={SECTION_GRID_GAP}
           horizontalPadding={H_PADDING}

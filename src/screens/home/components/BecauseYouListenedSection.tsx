@@ -22,7 +22,7 @@ import { getDayKey } from '@/features/home/hooks/useDailyLayout'
 import { collectCoveredAlbumsForArtists } from '@/features/home/utils/albumDiscovery'
 import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
-import LoadingTiles from './LoadingTiles'
+import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types'
 
 const TARGET_ALBUMS = 10
@@ -140,7 +140,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
         </View>
 
         {query.isLoading ? (
-          <LoadingTiles
+          <SkeletonTiles
             itemSize={gridItemWidth}
             gap={SECTION_GRID_GAP}
             horizontalPadding={H_PADDING}

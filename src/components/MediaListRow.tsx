@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   subtitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.inlineGap,
   },
   subtitleSpacing: {
     marginTop: 2,
