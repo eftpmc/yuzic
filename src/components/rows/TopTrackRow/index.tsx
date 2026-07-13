@@ -1,8 +1,9 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, { memo } from 'react'
+import { StyleSheet, Text, TouchableOpacity } from 'react-native'
 import { Play } from 'lucide-react-native'
 import MediaListRow from '@/components/MediaListRow'
 import { useTheme } from '@/hooks/useTheme'
+import { spacing } from '@/constants/design'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
 
@@ -13,7 +14,7 @@ type Props = {
   onPress?: () => void
 }
 
-export default function TopTrackRow({ song, index, artistName, onPress }: Props) {
+function TopTrackRow({ song, index, artistName, onPress }: Props) {
   const { colors } = useTheme()
   const duration = formatSongDuration(song.duration)
 
@@ -32,18 +33,25 @@ export default function TopTrackRow({ song, index, artistName, onPress }: Props)
       }
       trailing={
         song.previewUrl ? (
-          <View style={[styles.previewButton, { backgroundColor: colors.card }]}>
+          <TouchableOpacity
+            style={[styles.previewButton, { backgroundColor: colors.card }]}
+            onPress={onPress}
+            disabled={!onPress}
+            hitSlop={8}
+          >
             <Play size={13} color={colors.secondary} fill={colors.secondary} />
-          </View>
+          </TouchableOpacity>
         ) : undefined
       }
     />
   )
 }
 
+export default memo(TopTrackRow)
+
 const styles = StyleSheet.create({
   content: {
-    marginRight: 12,
+    marginRight: spacing.rowGap,
   },
   trackIndex: {
     width: 16,

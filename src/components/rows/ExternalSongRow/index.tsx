@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import MediaListRow from '@/components/MediaListRow';
+import { spacing } from '@/constants/design';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
 import { useDeezerSamplesEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
   },
   content: {
-    marginRight: 12,
+    marginRight: spacing.rowGap,
   },
   rowRight: {
     flexDirection: 'row',
