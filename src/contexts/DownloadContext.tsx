@@ -49,6 +49,8 @@ export type DownloadedTrack = DownloadedTrackEntry & {
 export type DownloadActionsType = {
   configure: (config: Record<string, unknown>) => void;
   downloadTrack: (track: Song, playlistId?: string) => Promise<void>;
+  /** Enqueue a batch of standalone tracks as a single download job. */
+  downloadTracks: (tracks: Song[]) => Promise<void>;
   downloadPlaylist: (playlistId: string, tracks: Song[]) => Promise<void>;
   resumeDownload: (downloadId: string) => Promise<void>;
   cancelDownload: (downloadId: string) => Promise<void>;
@@ -665,6 +667,18 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     });
   }, [enqueueDownloadJob]);
 
+  const downloadTracks = useCallback(async (tracks: Song[]) => {
+    const pending = tracks.filter(track =>
+      !localPathMapRef.current.has(track.id)
+    );
+    if (!pending.length) return;
+    await enqueueDownloadJob({
+      id: `tracks:${Date.now()}`,
+      type: 'track',
+      tracks: pending,
+    });
+  }, [enqueueDownloadJob]);
+
   const downloadCollection = useCallback(async (
     collectionId: string,
     type: DownloadedCollectionEntry['type'],
@@ -903,6 +917,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     configure: () => {},
     setPlaybackSourcePreference: () => {},
     downloadTrack,
+    downloadTracks,
     downloadPlaylist,
     resumeDownload,
     cancelDownload,
@@ -926,6 +941,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     downloadPlaylist,
     downloadPlaylistById,
     downloadTrack,
+    downloadTracks,
     getLocalPath,
     removeDownloadByCollectionId,
     resumeDownload,

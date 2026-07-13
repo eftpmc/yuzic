@@ -166,7 +166,11 @@
           "playlists": "Playlists"
         },
         "offlineNote": "These songs are stored locally for offline playback.",
-        "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them."
+        "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them.",
+        "autoDownloadLabel": "Auto-download new songs",
+        "autoDownloadSubtext": "Automatically download songs added to your library for offline use",
+        "autoDownloadStarted_one": "Auto-downloading {{count}} new song",
+        "autoDownloadStarted_other": "Auto-downloading {{count}} new songs"
       },
       "downloadQuality": {
         "title": "Download Quality",

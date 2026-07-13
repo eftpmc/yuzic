@@ -35,6 +35,8 @@ export interface SettingsState {
   cellularStreamQuality: AudioQuality;
   downloadQuality: AudioQuality;
   preferredCodec: PreferredCodec;
+  /** Auto-download songs newly added to the library after a sync. */
+  autoDownloadNewSongs: boolean;
 
   language: AppLanguage;
 
@@ -80,6 +82,7 @@ const initialState: SettingsState = {
   cellularStreamQuality: 'high',
   downloadQuality: 'high',
   preferredCodec: 'mp3',
+  autoDownloadNewSongs: false,
 
   language: DEFAULT_LANGUAGE,
 
@@ -163,6 +166,9 @@ const settingsSlice = createSlice({
     setPreferredCodec(state, action: PayloadAction<PreferredCodec>) {
       state.preferredCodec = action.payload;
     },
+    setAutoDownloadNewSongs(state, action: PayloadAction<boolean>) {
+      state.autoDownloadNewSongs = action.payload;
+    },
 
     setLanguage(state, action: PayloadAction<AppLanguage>) {
       state.language = action.payload;
@@ -236,6 +242,7 @@ export const {
   setWifiStreamQuality,
   setCellularStreamQuality,
   setDownloadQuality,
+  setAutoDownloadNewSongs,
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
