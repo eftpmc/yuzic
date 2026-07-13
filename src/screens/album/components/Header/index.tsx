@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -19,6 +18,8 @@ import AlbumOptions from '@/components/options/AlbumOptions';
 import DownloadSheet from '@/components/options/DownloadSheet';
 import StatusBanner from '@/components/StatusBanner';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import DownloadProgressRing from '@/components/DownloadProgressRing';
+import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
@@ -201,12 +202,13 @@ function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
 function LocalActionRow({ album }: { album: Album }) {
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
-  const { downloadAlbumById, getCollectionDownloadState } = useDownload();
+  const { downloadAlbumById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const songIds = useMemo(() => songs.map(s => s.id), [songs]);
   const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
     getCollectionDownloadState(songIds);
+  const downloadFraction = useCollectionDownloadProgress(songIds);
 
   const checkmarkScale = useSharedValue(isAlbumDownloaded ? 1 : 0);
 
@@ -226,9 +228,13 @@ function LocalActionRow({ album }: { album: Album }) {
   }));
 
   const toggleDownload = useCallback(async () => {
-    if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
+    if (isAlbumDownloading) {
+      await cancelCollectionDownloads(album.id);
+      return;
+    }
+    if (!songs.length || isAlbumDownloaded) return;
     await downloadAlbumById(album.id, songs);
-  }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, album.id]);
+  }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, cancelCollectionDownloads, album.id]);
 
   const handlePlay = useCallback(() => {
     if (songs.length > 0) playSongInCollection(songs[0], album, false);
@@ -248,12 +254,9 @@ function LocalActionRow({ album }: { album: Album }) {
         <Play size={20} color="#fff" fill="#fff" />
       </DetailPlayAction>
 
-      <DetailCircleAction
-        onPress={() => void toggleDownload()}
-        disabled={isAlbumDownloading}
-      >
+      <DetailCircleAction onPress={() => void toggleDownload()}>
         {isAlbumDownloading ? (
-          <ActivityIndicator size="small" color={colors.secondary} />
+          <DownloadProgressRing progress={downloadFraction} size={18} />
         ) : isAlbumDownloaded ? (
           <Animated.View style={checkmarkStyle}>
             <Check size={18} color={colors.secondary} />
