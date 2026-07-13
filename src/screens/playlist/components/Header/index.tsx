@@ -1,7 +1,4 @@
 import React, { useCallback, useMemo } from 'react';
-import {
-  ActivityIndicator,
-} from 'react-native';
 import { Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
 
 import { Playlist } from '@/types';
@@ -16,6 +13,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatDuration } from '@/utils/formatDuration';
+import DownloadProgressRing from '@/components/DownloadProgressRing';
+import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import {
   DetailActionRow,
   DetailCircleAction,
@@ -39,12 +38,13 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const { playSongInCollection } = usePlaying();
-  const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
+  const { downloadPlaylistById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
   const songIds = useMemo(() => songs.map(s => s.id), [songs]);
   const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
     getCollectionDownloadState(songIds);
+  const downloadFraction = useCollectionDownloadProgress(songIds);
 
   const totalDuration = useMemo(
     () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
@@ -60,9 +60,13 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   );
 
   const toggleDownload = useCallback(async () => {
-    if (!songs.length || isPlaylistDownloading || isPlaylistDownloaded) return;
+    if (isPlaylistDownloading) {
+      await cancelCollectionDownloads(playlist.id);
+      return;
+    }
+    if (!songs.length || isPlaylistDownloaded) return;
     await downloadPlaylistById(playlist.id, songs);
-  }, [songs, isPlaylistDownloading, isPlaylistDownloaded, downloadPlaylistById, playlist.id]);
+  }, [songs, isPlaylistDownloading, isPlaylistDownloaded, downloadPlaylistById, cancelCollectionDownloads, playlist.id]);
 
   const handleShuffle = useCallback(() => {
     if (!songs.length) return;
@@ -110,12 +114,9 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
               <Play size={24} color="#fff" fill="#fff" />
             </DetailPlayAction>
 
-            <DetailCircleAction
-              onPress={() => void toggleDownload()}
-              disabled={isPlaylistDownloading}
-            >
+            <DetailCircleAction onPress={() => void toggleDownload()}>
               {isPlaylistDownloading ? (
-                <ActivityIndicator size="small" color={colors.secondary} />
+                <DownloadProgressRing progress={downloadFraction} size={18} />
               ) : isPlaylistDownloaded ? (
                 <Check size={18} color={colors.secondary} />
               ) : (
