@@ -15,6 +15,7 @@ import { clearLibrary } from '@/utils/redux/slices/librarySlice';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
 import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachabilityWatcher';
+import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
@@ -106,6 +107,7 @@ export default function HomeLayout() {
         <ExternalResolutionProvider>
         <AccountSheetProvider>
         <ServerReachabilityWatcher />
+        <AutoDownloadWatcher />
         <View style={{ flex: 1 }}>
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
