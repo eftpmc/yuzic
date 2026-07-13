@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
+import { statusColor } from '@/constants/design'
 import { Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -52,7 +53,7 @@ function isSingleOrEp(album: AlbumBase, songCount: number): boolean {
 }
 
 const LASTFM_COLOR = '#D51007'
-const LOCAL_COLOR = '#34C759'
+const LOCAL_COLOR = statusColor.success
 
 function SimilarArtistsSubSection<T extends ExternalArtistBase | LocalArtistSummary>({
   data, itemSize, keyPrefix, badge, onPressItem,

@@ -29,6 +29,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import { statusColor } from '@/constants/design';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | null;
@@ -211,7 +212,7 @@ const AlbumOptions = forwardRef<
         <OptionSheetDivider />
 
         <OptionSheetRow
-          icon={<Heart size={26} color="#ff3b30" fill={isStarred ? '#ff3b30' : 'none'} />}
+          icon={<Heart size={26} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
           label={isStarred ? t('albumOptions.actions.unfavorite') : t('albumOptions.actions.favorite')}
           onPress={toggleFavorite}
         />

@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
+import { spacing, statusColor } from '@/constants/design';
 import {
   View,
   StyleSheet,
@@ -98,7 +99,7 @@ const SongRow: React.FC<Props> = ({
         trailing={
           <View style={styles.rowRight}>
             <Animated.View style={heartStyle}>
-              <Heart size={15} color="#ff4d67" fill="#ff4d67" />
+              <Heart size={15} color={statusColor.favorite} fill={statusColor.favorite} />
             </Animated.View>
             {downloaded && (isAlbumCompact || showDownloadedDot) && (
               <ArrowDownCircle size={16} color={colors.subtext} />
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.inlineGap,
   },
 });
 

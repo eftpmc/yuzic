@@ -27,6 +27,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import { statusColor } from '@/constants/design';
 
 export type PlaylistOptionsProps = {
   playlist: PlaylistBase | Playlist | null;
@@ -273,9 +274,9 @@ const PlaylistOptions = forwardRef<
 
         {playlist.id !== FAVORITES_ID && (
           <OptionSheetRow
-            icon={<Trash2 size={26} color="#ff3b30" />}
+            icon={<Trash2 size={26} color={statusColor.destructive} />}
             label={t('playlistOptions.actions.delete')}
-            labelColor="#ff3b30"
+            labelColor={statusColor.destructive}
             onPress={handleDeletePress}
             disabled={deletePlaylist.isPending}
             loading={deletePlaylist.isPending}

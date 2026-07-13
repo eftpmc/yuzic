@@ -17,7 +17,7 @@ import AlbumRow from '@/components/rows/AlbumRow';
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
 import PlaylistRow from '@/components/rows/PlaylistRow';
-import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
+import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -252,7 +252,7 @@ const Search = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {isLoading
-          ? [...Array(8)].map((_, i) => <LoadingAlbumRow key={i} />)
+          ? [...Array(8)].map((_, i) => <SkeletonListRow key={i} />)
           : (
             <>
               {localResults.map(result => (

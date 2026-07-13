@@ -1,4 +1,5 @@
 import React from 'react';
+import { spacing } from '@/constants/design';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.inlineGap,
     marginLeft: 12,
     justifyContent: 'flex-end',
     alignContent: 'flex-end',

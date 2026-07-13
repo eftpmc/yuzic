@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { statusColor } from '@/constants/design';
 import {
   View,
   Text,
@@ -172,7 +173,7 @@ const SlskdView: React.FC = () => {
             </Text>
           </View>
           {isCompleted
-            ? <CheckCircle size={16} color="#34C759" />
+            ? <CheckCircle size={16} color={statusColor.success} />
             : <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
           }
         </View>

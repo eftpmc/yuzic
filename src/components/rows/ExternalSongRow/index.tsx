@@ -1,4 +1,5 @@
 import React, { memo, useCallback } from 'react';
+import { spacing } from '@/constants/design';
 import {
   View,
   StyleSheet,
@@ -76,6 +77,6 @@ const styles = StyleSheet.create({
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.inlineGap,
   },
 });
