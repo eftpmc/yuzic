@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo, useState } from 'react';
+import React, { forwardRef, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
 import {
   BottomSheetModal,
@@ -74,6 +74,7 @@ const PlaylistOptions = forwardRef<
   const { playlistWithSongs, songs, songsLoading } = useLazyPlaylistDetail(playlist, isSheetOpen);
 
   const sheetBg = useOptionSheetBackground();
+  const pendingEditRef = useRef(false);
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -199,6 +200,12 @@ const PlaylistOptions = forwardRef<
       backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       stackBehavior="push"
       onChange={(index) => setIsSheetOpen(index >= 0)}
+      onDismiss={() => {
+        if (pendingEditRef.current) {
+          pendingEditRef.current = false;
+          onEdit?.();
+        }
+      }}
     >
       <BottomSheetScrollView
         style={sheetBg}
@@ -248,8 +255,8 @@ const PlaylistOptions = forwardRef<
             icon={<ListMusic size={26} color={colors.secondary} />}
             label={t('playlistOptions.actions.edit')}
             onPress={() => {
+              pendingEditRef.current = true;
               close();
-              requestAnimationFrame(onEdit);
             }}
           />
         )}
