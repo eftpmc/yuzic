@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { useStarredSongs } from '@/hooks/starred';
 
 import Header from '../Header';
 import RecommendedSection from '../RecommendedSection';
+import DetailTopBar from '@/components/DetailTopBar';
 
 type Props = {
   playlist: Playlist;
@@ -29,6 +30,11 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
     () => new Set(starredSongs.map(song => song.id)),
     [starredSongs]
   );
+  const [showTopBar, setShowTopBar] = useState(false);
+  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
+    const next = event.nativeEvent.contentOffset.y > 80;
+    setShowTopBar(previous => previous === next ? previous : next);
+  }, []);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -54,16 +60,21 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
   }, [starredSongIds, playlist]);
 
   return (
-    <FlashList<ListItem>
-      data={items}
-      keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
-      renderItem={renderItem}
-      ListHeaderComponent={<Header playlist={playlist} />}
-      ListFooterComponent={<RecommendedSection playlist={playlist} />}
-      ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
-      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
-      showsVerticalScrollIndicator={false}
-    />
+    <>
+      <FlashList<ListItem>
+        data={items}
+        keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={<Header playlist={playlist} />}
+        ListFooterComponent={<RecommendedSection playlist={playlist} />}
+        ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      />
+      <DetailTopBar title={playlist.title} visible={showTopBar} />
+    </>
   );
 };
 

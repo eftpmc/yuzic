@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Platform, Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
@@ -16,6 +16,7 @@ import { useStarredSongs } from '@/hooks/starred';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import AlbumRecommendedSection from '../AlbumRecommendedSection';
+import DetailTopBar from '@/components/DetailTopBar';
 
 type Props = {
   album: Album;
@@ -46,6 +47,11 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
     () => new Set(starredSongs.map(song => song.id)),
     [starredSongs]
   );
+  const [showTopBar, setShowTopBar] = useState(false);
+  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
+    const next = event.nativeEvent.contentOffset.y > 80;
+    setShowTopBar(previous => previous === next ? previous : next);
+  }, []);
 
   const moreAlbums = useMemo(() => {
     return artistAlbums.filter(a => a.id !== album.id);
@@ -155,25 +161,30 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   }, [colors, starredSongIds, album, t]);
 
   return (
-    <FlashList
-      data={items}
-      keyExtractor={(item) =>
-        item.type === 'disc-header' ? `disc-${item.disc}` :
-        item.type === 'skeleton' ? item.id :
-        item.song.id
-      }
-      renderItem={renderItem}
-      extraData={starredSongIds}
-      getItemType={(item) => item.type}
-      overrideItemLayout={(layout, item) => {
-        (layout as { size?: number }).size =
-          item.type === 'disc-header' ? DISC_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT;
-      }}
-      ListHeaderComponent={<AlbumHeader localAlbum={album} externalAlbum={null} />}
-      ListFooterComponent={footer}
-      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
-      showsVerticalScrollIndicator={false}
-    />
+    <>
+      <FlashList
+        data={items}
+        keyExtractor={(item) =>
+          item.type === 'disc-header' ? `disc-${item.disc}` :
+          item.type === 'skeleton' ? item.id :
+          item.song.id
+        }
+        renderItem={renderItem}
+        extraData={starredSongIds}
+        getItemType={(item) => item.type}
+        overrideItemLayout={(layout, item) => {
+          (layout as { size?: number }).size =
+            item.type === 'disc-header' ? DISC_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT;
+        }}
+        ListHeaderComponent={<AlbumHeader localAlbum={album} externalAlbum={null} />}
+        ListFooterComponent={footer}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      />
+      <DetailTopBar title={album.title} visible={showTopBar} />
+    </>
   );
 };
 

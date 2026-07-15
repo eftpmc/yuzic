@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Platform, Text, View, StyleSheet } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
@@ -8,6 +8,7 @@ import ExternalSongRow from '@/components/rows/ExternalSongRow';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useTheme } from '@/hooks/useTheme';
+import DetailTopBar from '@/components/DetailTopBar';
 
 const H_PADDING = 16;
 
@@ -20,6 +21,11 @@ const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const previews = useExternalAlbumPreviews(album);
   const { toggleInAlbum } = usePreviewPlayer();
+  const [showTopBar, setShowTopBar] = useState(false);
+  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
+    const next = event.nativeEvent.contentOffset.y > 80;
+    setShowTopBar(previous => previous === next ? previous : next);
+  }, []);
 
   const albumPreviewSongs = useMemo(() =>
     songs
@@ -63,16 +69,21 @@ const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
   }, [previews, handleSongPress, album.title, album.artist]);
 
   return (
-    <FlashList
-      data={songs}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      extraData={handleSongPress}
-      ListHeaderComponent={<AlbumHeader localAlbum={null} externalAlbum={album} />}
-      ListFooterComponent={footer}
-      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
-      showsVerticalScrollIndicator={false}
-    />
+    <>
+      <FlashList
+        data={songs}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        extraData={handleSongPress}
+        ListHeaderComponent={<AlbumHeader localAlbum={null} externalAlbum={album} />}
+        ListFooterComponent={footer}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      />
+      <DetailTopBar title={album.title} visible={showTopBar} />
+    </>
   );
 };
 

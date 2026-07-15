@@ -66,7 +66,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist }) => {
           <View
             style={[
               StyleSheet.absoluteFill,
-              { backgroundColor: isDarkMode ? '#1a1a1a' : '#e5e5e5' },
+              { backgroundColor: colors.muted },
             ]}
           />
         )}
@@ -95,6 +95,8 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist }) => {
         <View style={styles.header}>
           <TouchableOpacity
             testID="detail-back-button"
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
@@ -136,6 +138,8 @@ function LocalOptionsButton({ artist }: { artist: Artist }) {
   return (
     <>
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Artist options"
         style={styles.backButton}
         onPress={() => optionsSheetRef.current?.present()}
       >
