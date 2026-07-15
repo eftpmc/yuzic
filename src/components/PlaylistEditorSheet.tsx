@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import ReorderableList, { reorderItems, useIsActive, useReorderableDrag } from 'react-native-reorderable-list';
 import { GripVertical, Trash2, X } from 'lucide-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -23,6 +23,36 @@ import { statusColor } from '@/constants/design';
 
 export type PlaylistEditorSheetProps = {
   playlist: Playlist;
+};
+
+type EditorRowProps = {
+  song: Song;
+  reorderSupported: boolean;
+  onRemove: (songId: string) => void;
+};
+
+const EditorRow: React.FC<EditorRowProps> = ({ song, reorderSupported, onRemove }) => {
+  const { colors } = useTheme();
+  const drag = useReorderableDrag();
+  const isActive = useIsActive();
+
+  return (
+    <View style={[styles.row, { backgroundColor: colors.card }, isActive && styles.activeRow]}>
+      {reorderSupported && (
+        <TouchableOpacity onLongPress={drag} delayLongPress={120} style={styles.grip}>
+          <GripVertical size={20} color={colors.placeholder} />
+        </TouchableOpacity>
+      )}
+      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
+      <View style={styles.songInfo}>
+        <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{song.title}</Text>
+        <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>{song.artist}</Text>
+      </View>
+      <TouchableOpacity onPress={() => onRemove(song.id)} hitSlop={10} style={styles.removeButton}>
+        <Trash2 size={19} color={statusColor.destructive} />
+      </TouchableOpacity>
+    </View>
+  );
 };
 
 const PlaylistEditorSheet = forwardRef<BottomSheetModal, PlaylistEditorSheetProps>(
@@ -95,25 +125,9 @@ const PlaylistEditorSheet = forwardRef<BottomSheetModal, PlaylistEditorSheetProp
       }
     }, [activeServer?.id, api.playlists, close, isOffline, playlist, queryClient, removeSong, reorderSupported, saving, songs, t]);
 
-    const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<Song>) => (
-      <ScaleDecorator>
-        <View style={[styles.row, { backgroundColor: colors.card }, isActive && styles.activeRow]}>
-          {reorderSupported && (
-            <TouchableOpacity onLongPress={drag} delayLongPress={120} style={styles.grip}>
-              <GripVertical size={20} color={colors.placeholder} />
-            </TouchableOpacity>
-          )}
-          <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
-          <View style={styles.songInfo}>
-            <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{item.title}</Text>
-            <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>{item.artist}</Text>
-          </View>
-          <TouchableOpacity onPress={() => handleRemove(item.id)} hitSlop={10} style={styles.removeButton}>
-            <Trash2 size={19} color={statusColor.destructive} />
-          </TouchableOpacity>
-        </View>
-      </ScaleDecorator>
-    ), [colors, handleRemove, reorderSupported]);
+    const renderItem = useCallback(({ item }: { item: Song }) => (
+      <EditorRow song={item} reorderSupported={reorderSupported} onRemove={handleRemove} />
+    ), [reorderSupported, handleRemove]);
 
     return (
       <BottomSheetModal
@@ -136,11 +150,11 @@ const PlaylistEditorSheet = forwardRef<BottomSheetModal, PlaylistEditorSheetProp
         {!reorderSupported && (
           <Text style={[styles.notice, { color: colors.subtext }]}>{t('playlistEditor.reorderUnavailable')}</Text>
         )}
-        <DraggableFlatList
+        <ReorderableList
           data={songs}
           keyExtractor={(item, index) => `${item.id}:${index}`}
           renderItem={renderItem}
-          onDragEnd={({ data }) => setSongs(data)}
+          onReorder={({ from, to }) => setSongs(current => reorderItems(current, from, to))}
           contentContainerStyle={[styles.list, { paddingBottom: 40 }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={<Text style={[styles.empty, { color: colors.subtext }]}>{t('playlist.empty')}</Text>}
