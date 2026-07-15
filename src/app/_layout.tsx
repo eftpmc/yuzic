@@ -192,6 +192,7 @@ function AppShell() {
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
               <BottomSheetModalProvider>
+                <SongActionSheetProvider>
                 <Stack>
                   <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
                   <Stack.Screen name="(home)" options={{ headerShown: false }} />
@@ -225,6 +226,7 @@ function AppShell() {
                     },
                   }}
                 />
+                </SongActionSheetProvider>
               </BottomSheetModalProvider>
               </ErrorBoundary>
             </GestureHandlerRootView>
@@ -278,10 +280,8 @@ export default function RootLayout() {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <LibraryProvider>
-            <SongActionSheetProvider>
-              <OfflineMutationReplayer />
-              <AppShell />
-            </SongActionSheetProvider>
+            <OfflineMutationReplayer />
+            <AppShell />
           </LibraryProvider>
         </PersistGate>
       </Provider>
