@@ -20,12 +20,12 @@ type Props = {
 // per-mount state: the banner returns on the next visit, which is right for
 // transient conditions like connectivity.
 export default function StatusBanner({ icon, text, color, closable, style, testID }: Props) {
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
 
-  const background = isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)';
+  const background = colors.statusSurface;
   const textColor = color ?? colors.subtext;
 
   return (
@@ -36,6 +36,8 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
       </Text>
       {closable && (
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss notification"
           onPress={() => setDismissed(true)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           testID={testID ? `${testID}-close` : undefined}

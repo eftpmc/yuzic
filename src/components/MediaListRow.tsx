@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, radius, spacing, typography } from '@/constants/design';
+import { controlSize, radius, rowDensity, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
 
 type Props = {
@@ -52,6 +52,9 @@ export default function MediaListRow({
     <View style={[styles.wrapper, style]}>
       <View style={[styles.row, isCompact && styles.compactRow, rowStyle]}>
         <TouchableOpacity
+          accessibilityRole={onPress ? 'button' : undefined}
+          accessibilityLabel={onPress ? title : undefined}
+          accessibilityState={{ disabled: disabled || !onPress }}
           style={styles.content}
           onPress={onPress}
           disabled={disabled || !onPress}
@@ -112,10 +115,7 @@ const styles = StyleSheet.create({
     gap: spacing.rowGap,
     marginBottom: 16,
   },
-  compactRow: {
-    marginBottom: 0,
-    paddingVertical: 10,
-  },
+  compactRow: rowDensity.compact,
   content: {
     flexDirection: 'row',
     alignItems: 'center',

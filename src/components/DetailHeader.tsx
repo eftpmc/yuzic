@@ -39,6 +39,8 @@ export function DetailHeader({
       <View style={styles.headerRow}>
         <TouchableOpacity
           testID="detail-back-button"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
         >
@@ -161,11 +163,19 @@ export function DetailPlayAction({ children, onPress, disabled, style }: DetailP
 type DetailHeaderIconButtonProps = {
   children: React.ReactNode;
   onPress?: () => void;
+  accessibilityLabel?: string;
 };
 
-export function DetailHeaderIconButton({ children, onPress }: DetailHeaderIconButtonProps) {
+export function DetailHeaderIconButton({ children, onPress, accessibilityLabel = 'More options' }: DetailHeaderIconButtonProps) {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.headerButton} activeOpacity={0.7}>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      style={styles.headerButton}
+      activeOpacity={0.7}
+      hitSlop={8}
+    >
       {children}
     </TouchableOpacity>
   );
