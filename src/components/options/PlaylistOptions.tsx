@@ -28,7 +28,6 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import { statusColor } from '@/constants/design';
-import { BOTTOM_SHEET_PRESENT_DELAY_MS } from '@/constants/sheets';
 
 export type PlaylistOptionsProps = {
   playlist: PlaylistBase | Playlist | null;
@@ -250,7 +249,7 @@ const PlaylistOptions = forwardRef<
             label={t('playlistOptions.actions.edit')}
             onPress={() => {
               close();
-              setTimeout(onEdit, BOTTOM_SHEET_PRESENT_DELAY_MS);
+              requestAnimationFrame(onEdit);
             }}
           />
         )}
