@@ -81,10 +81,6 @@ export interface PlaylistsApi {
   rename(id: string, newName: string): Promise<void>;
   addSong(playlistId: string, songId: string): Promise<AddSongToPlaylistResult>;
   removeSong(playlistId: string, songId: string): Promise<RemoveSongFromPlaylistResult>;
-  /** Optional backend-supported reorder. */
-  reorder?(playlistId: string, songIds: string[]): Promise<void>;
-  /** Optional batched removal for backends with a stable per-entry ID (avoids one round-trip per song). */
-  removeSongs?(playlistId: string, songIds: string[]): Promise<void>;
   delete(id: string): Promise<void>;
 }
 

@@ -12,7 +12,6 @@ import { useStarredSongs } from '@/hooks/starred';
 
 import Header, { PlaylistHeaderBar } from '../Header';
 import RecommendedSection from '../RecommendedSection';
-import PlaylistEditorSheet from '@/components/PlaylistEditorSheet';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 type Props = {
@@ -27,7 +26,6 @@ type ListItem = SongItem | SkeletonItem;
 const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
   const { t } = useTranslation();
   const { songs: starredSongs } = useStarredSongs();
-  const editorRef = useRef<BottomSheetModal>(null);
   const optionsRef = useRef<BottomSheetModal>(null);
   const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
   const starredSongIds = useMemo(
@@ -64,14 +62,13 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
         data={items}
         keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
         renderItem={renderItem}
-        ListHeaderComponent={<Header playlist={playlist} showNavigation={false} onOptions={() => optionsRef.current?.present()} onEdit={() => editorRef.current?.present()} />}
+        ListHeaderComponent={<Header playlist={playlist} showNavigation={false} onOptions={() => optionsRef.current?.present()} />}
         ListFooterComponent={<RecommendedSection playlist={playlist} />}
         ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
       />
-      <PlaylistOptions ref={optionsRef} playlist={playlist} hideGoToPlaylist onEdit={() => editorRef.current?.present()} />
-      <PlaylistEditorSheet ref={editorRef} playlist={playlist} />
+      <PlaylistOptions ref={optionsRef} playlist={playlist} hideGoToPlaylist />
     </View>
   );
 };

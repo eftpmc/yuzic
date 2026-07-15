@@ -1,10 +1,10 @@
-import React, { forwardRef, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useMemo, useState } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil, ListMusic } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist, PlaylistBase } from '@/types';
@@ -33,8 +33,6 @@ export type PlaylistOptionsProps = {
   playlist: PlaylistBase | Playlist | null;
   /** Hide "Go to Playlist" when already on the playlist screen */
   hideGoToPlaylist?: boolean;
-  /** Open the playlist-centric editor. */
-  onEdit?: () => void;
 };
 
 function formatDate(value: string | Date): string {
@@ -50,7 +48,7 @@ function formatDate(value: string | Date): string {
 const PlaylistOptions = forwardRef<
   BottomSheetModal,
   PlaylistOptionsProps
->(({ playlist, hideGoToPlaylist, onEdit }, ref) => {
+>(({ playlist, hideGoToPlaylist }, ref) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
@@ -74,7 +72,6 @@ const PlaylistOptions = forwardRef<
   const { playlistWithSongs, songs, songsLoading } = useLazyPlaylistDetail(playlist, isSheetOpen);
 
   const sheetBg = useOptionSheetBackground();
-  const pendingEditRef = useRef(false);
 
   const close = () => {
     (ref as any)?.current?.dismiss();
@@ -200,12 +197,6 @@ const PlaylistOptions = forwardRef<
       backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       stackBehavior="push"
       onChange={(index) => setIsSheetOpen(index >= 0)}
-      onDismiss={() => {
-        if (pendingEditRef.current) {
-          pendingEditRef.current = false;
-          onEdit?.();
-        }
-      }}
     >
       <BottomSheetScrollView
         style={sheetBg}
@@ -249,17 +240,6 @@ const PlaylistOptions = forwardRef<
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
-
-        {onEdit && (
-          <OptionSheetRow
-            icon={<ListMusic size={26} color={colors.secondary} />}
-            label={t('playlistOptions.actions.edit')}
-            onPress={() => {
-              pendingEditRef.current = true;
-              close();
-            }}
-          />
-        )}
 
         {!hideGoToPlaylist && (
           <OptionSheetRow

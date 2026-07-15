@@ -30,11 +30,10 @@ import {
 type Props = {
   playlist: Playlist;
   showNavigation?: boolean;
-  onEdit?: () => void;
   onOptions?: () => void;
 };
 
-const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onEdit, onOptions }) => {
+const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOptions }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
@@ -131,7 +130,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onEd
         }
         showNavigation={showNavigation}
       />
-      {!onOptions && <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist onEdit={onEdit} />}
+      {!onOptions && <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist />}
     </>
   );
 };

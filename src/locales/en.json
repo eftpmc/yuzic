@@ -710,7 +710,6 @@
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
       "rename": "Rename",
-      "edit": "Edit playlist",
       "delete": "Delete playlist"
     },
     "sections": {
@@ -734,14 +733,6 @@
       "renameFailed": "Could not rename playlist",
       "deleted": "Playlist deleted",
       "deleteFailed": "Could not delete playlist"
-    }
-  },
-  "playlistEditor": {
-    "title": "Edit Playlist",
-    "reorderUnavailable": "Reordering is not supported by this server.",
-    "toasts": {
-      "saved": "Playlist updated",
-      "saveFailed": "Could not update playlist"
     }
   },
   "artistOptions": {

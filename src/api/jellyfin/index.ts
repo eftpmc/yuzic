@@ -26,13 +26,12 @@ import { getAlbums } from "../mediaBrowser/albums/getAlbums";
 import { getAlbumsWithSongs } from "../mediaBrowser/albums/getAlbumsWithSongs";
 import { getArtists } from "../mediaBrowser/artists/getArtists";
 import { getPlaylists } from "../mediaBrowser/playlists/getPlaylists";
-import { getPlaylistItems, getPlaylistEntryIdForSong, getPlaylistEntryOrder } from "../mediaBrowser/playlists/getPlaylistItems";
+import { getPlaylistItems, getPlaylistEntryIdForSong } from "../mediaBrowser/playlists/getPlaylistItems";
 import { createPlaylist } from "../mediaBrowser/playlists/createPlaylist";
 import { deletePlaylist } from "../mediaBrowser/playlists/deletePlaylist";
 import { updatePlaylistName } from "../mediaBrowser/playlists/updatePlaylistName";
 import { addPlaylistItems } from "../mediaBrowser/playlists/addPlaylistItems";
 import { removePlaylistItems } from "../mediaBrowser/playlists/removePlaylistItems";
-import { movePlaylistItem } from "../mediaBrowser/playlists/movePlaylistItem";
 import { getStarredItems } from "../mediaBrowser/starred/getStarredItems";
 import { star } from "../mediaBrowser/starred/star";
 import { unstar } from "../mediaBrowser/starred/unstar";
@@ -161,32 +160,6 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
       return { success: true };
     },
 
-    removeSongs: async (playlistId: string, songIds: string[]) => {
-      if (songIds.length === 0) return;
-      if (playlistId === FAVORITES_ID) {
-        await Promise.all(songIds.map(songId => unstar(client, songId)));
-        return;
-      }
-      const current = await getPlaylistEntryOrder(client, playlistId);
-      const entryIds = songIds
-        .map(songId => current.find(item => item.songId === songId)?.entryId)
-        .filter((id): id is string => !!id);
-      if (entryIds.length === 0) return;
-      await removePlaylistItems(client, playlistId, entryIds);
-    },
-
-    reorder: async (playlistId: string, songIds: string[]) => {
-      if (playlistId === FAVORITES_ID) throw new Error("Favorites cannot be reordered");
-      const current = await getPlaylistEntryOrder(client, playlistId);
-      const working = [...current];
-      for (let targetIndex = 0; targetIndex < songIds.length; targetIndex += 1) {
-        const currentIndex = working.findIndex(item => item.songId === songIds[targetIndex]);
-        if (currentIndex < 0 || currentIndex === targetIndex) continue;
-        const [entry] = working.splice(currentIndex, 1);
-        working.splice(targetIndex, 0, entry);
-        await movePlaylistItem(client, playlistId, entry.entryId, targetIndex);
-      }
-    },
 
     rename: async (id: string, newName: string) => {
       if (id === FAVORITES_ID) {
