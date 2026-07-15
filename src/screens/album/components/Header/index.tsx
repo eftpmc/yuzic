@@ -36,6 +36,7 @@ import {
   DetailActionRow,
   DetailCircleAction,
   DetailHeader,
+  DetailHeaderBar,
   DetailHeaderIconButton,
   DetailMetaDot,
   DetailMetaRow,
@@ -46,13 +47,14 @@ import {
 type Props = {
   localAlbum: Album | null;
   externalAlbum: ExternalAlbum | null;
+  showNavigation?: boolean;
 };
 
 function isCountLikeAlbumText(value?: string | null): boolean {
   return /^\s*\d+\s+albums?\s*$/i.test(value ?? '');
 }
 
-const AlbumHeader: React.FC<Props> = ({ localAlbum, externalAlbum }) => {
+const AlbumHeader: React.FC<Props> = ({ localAlbum, externalAlbum, showNavigation = true }) => {
   const displayTitle = localAlbum?.title ?? externalAlbum?.title ?? '';
   const displayCover = localAlbum?.cover ?? externalAlbum?.cover ?? { kind: 'none' as const };
 
@@ -64,6 +66,17 @@ const AlbumHeader: React.FC<Props> = ({ localAlbum, externalAlbum }) => {
       meta={localAlbum ? <LocalMetaRow album={localAlbum} /> : <ExternalMetaRow album={externalAlbum!} />}
       status={!localAlbum ? <ExternalServerStatusRow album={externalAlbum!} /> : undefined}
       actions={localAlbum ? <LocalActionRow album={localAlbum} /> : <ExternalActionRow album={externalAlbum!} />}
+      showNavigation={showNavigation}
+    />
+  );
+};
+
+export const AlbumHeaderBar: React.FC<Props> = ({ localAlbum, externalAlbum }) => {
+  const displayTitle = localAlbum?.title ?? externalAlbum?.title ?? '';
+  return (
+    <DetailHeaderBar
+      title={displayTitle}
+      rightAction={localAlbum ? <LocalOptionsButton album={localAlbum} /> : undefined}
     />
   );
 };

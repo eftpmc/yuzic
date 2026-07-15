@@ -23,10 +23,8 @@ import { collectCoveredAlbumsForArtists } from '@/features/home/utils/albumDisco
 import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
-import type { ExternalAlbumBase } from '@/types'
-
-const TARGET_ALBUMS = 10
-const RELATED_ARTIST_LIMIT = 40
+import type { ExternalAlbumBase } from '@/types';
+import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -35,10 +33,10 @@ async function fetchAlbumsForSeed(
   const seedArtist = await deezer.resolveDeezerArtistByName(artistName)
   if (!seedArtist) return []
 
-  const related = await deezer.getDeezerRelatedArtists(seedArtist.id, RELATED_ARTIST_LIMIT)
+  const related = await deezer.getDeezerRelatedArtists(seedArtist.id, HOME_RELATED_ARTIST_LIMIT)
   const fresh = related.filter(artist => !libraryArtistNames.has(artist.name.toLowerCase()))
 
-  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: TARGET_ALBUMS })
+  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: HOME_TARGET_ALBUMS })
 }
 
 type Props = {

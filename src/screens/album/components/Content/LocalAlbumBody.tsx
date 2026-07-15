@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Platform, Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Album, Song } from '@/types';
 
-import AlbumHeader from '../Header';
+import AlbumHeader, { AlbumHeaderBar } from '../Header';
 import SongRow from '@/components/rows/SongRow';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
 import MediaTile from '@/screens/home/components/MediaTile';
@@ -16,7 +16,13 @@ import { useStarredSongs } from '@/hooks/starred';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import AlbumRecommendedSection from '../AlbumRecommendedSection';
-import DetailTopBar from '@/components/DetailTopBar';
+import {
+  ALBUM_ESTIMATED_ROW_HEIGHT,
+  ALBUM_DISC_HEADER_HEIGHT,
+  ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+  ALBUM_RECOMMENDATION_TILE_GAP,
+  ALBUM_RECOMMENDATION_VISIBLE_TILES,
+} from '@/constants/album';
 
 type Props = {
   album: Album;
@@ -28,12 +34,6 @@ type SongItem = { type: 'song'; song: Song };
 type SkeletonItem = { type: 'skeleton'; id: string };
 type ListItem = DiscHeader | SongItem | SkeletonItem;
 
-const ESTIMATED_ROW_HEIGHT = 72;
-const DISC_HEADER_HEIGHT = 36;
-const H_PADDING = 16;
-const TILE_GAP = 12;
-const VISIBLE_TILES = 2.5;
-
 const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -42,16 +42,11 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   const { songs: starredSongs } = useStarredSongs();
   const albumPlayCount = useSelector(selectAlbumPlayCount(album.id));
   const { width: screenWidth } = useWindowDimensions();
-  const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES;
+  const tileWidth = (screenWidth - ALBUM_RECOMMENDATION_HORIZONTAL_PADDING * 2 - ALBUM_RECOMMENDATION_TILE_GAP * 2) / ALBUM_RECOMMENDATION_VISIBLE_TILES;
   const starredSongIds = useMemo(
     () => new Set(starredSongs.map(song => song.id)),
     [starredSongs]
   );
-  const [showTopBar, setShowTopBar] = useState(false);
-  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
-    const next = event.nativeEvent.contentOffset.y > 80;
-    setShowTopBar(previous => previous === next ? previous : next);
-  }, []);
 
   const moreAlbums = useMemo(() => {
     return artistAlbums.filter(a => a.id !== album.id);
@@ -161,7 +156,8 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   }, [colors, starredSongIds, album, t]);
 
   return (
-    <>
+    <View style={styles.listContainer}>
+      <AlbumHeaderBar localAlbum={album} externalAlbum={null} />
       <FlashList
         data={items}
         keyExtractor={(item) =>
@@ -174,30 +170,30 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
         getItemType={(item) => item.type}
         overrideItemLayout={(layout, item) => {
           (layout as { size?: number }).size =
-            item.type === 'disc-header' ? DISC_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT;
+            item.type === 'disc-header' ? ALBUM_DISC_HEADER_HEIGHT : ALBUM_ESTIMATED_ROW_HEIGHT;
         }}
-        ListHeaderComponent={<AlbumHeader localAlbum={album} externalAlbum={null} />}
+        ListHeaderComponent={<AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />}
         ListFooterComponent={footer}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
       />
-      <DetailTopBar title={album.title} visible={showTopBar} />
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  listContainer: {
+    flex: 1,
+  },
   discHeader: {
-    height: DISC_HEADER_HEIGHT,
+    height: ALBUM_DISC_HEADER_HEIGHT,
     paddingHorizontal: 16,
     paddingTop: 14,
     fontSize: 13,
     fontWeight: '600',
   },
   statsFooter: {
-    paddingHorizontal: H_PADDING,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
     paddingTop: 16,
     paddingBottom: 8,
   },
@@ -211,12 +207,12 @@ const styles = StyleSheet.create({
   moreSectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    paddingHorizontal: H_PADDING,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
     marginBottom: 12,
   },
   moreTileRow: {
-    paddingHorizontal: H_PADDING,
-    gap: TILE_GAP,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+    gap: ALBUM_RECOMMENDATION_TILE_GAP,
   },
 });
 

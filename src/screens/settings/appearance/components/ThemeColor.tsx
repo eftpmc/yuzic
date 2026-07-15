@@ -8,17 +8,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from '../../components/SettingsCard';
-
-const DEFAULT_COLOR = '#ff7f7f';
-
-const PRESET_COLORS = [
-  DEFAULT_COLOR,
-  '#ff9f43',
-  '#ffd32a',
-  '#0be881',
-  '#54a0ff',
-  '#5f27cd',
-];
+import { THEME_PRESET_COLORS } from '@/constants/settings';
 
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
@@ -34,7 +24,7 @@ export const ThemeColor: React.FC = () => {
       </Text>
       <SettingsCard style={styles.card}>
         <View style={styles.presets}>
-          {PRESET_COLORS.map(color => (
+          {THEME_PRESET_COLORS.map(color => (
             <TouchableOpacity
               key={color}
               onPress={() => dispatch(setThemeColor(color))}

@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Platform } from 'react-native';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { Platform, View } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 
@@ -9,9 +10,10 @@ import LoadingSongRow from '@/components/rows/SongRow/Loading';
 import SectionEmptyState from '@/screens/home/components/SectionEmptyState';
 import { useStarredSongs } from '@/hooks/starred';
 
-import Header from '../Header';
+import Header, { PlaylistHeaderBar } from '../Header';
 import RecommendedSection from '../RecommendedSection';
-import DetailTopBar from '@/components/DetailTopBar';
+import PlaylistEditorSheet from '@/components/PlaylistEditorSheet';
+import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 type Props = {
   playlist: Playlist;
@@ -25,17 +27,13 @@ type ListItem = SongItem | SkeletonItem;
 const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
   const { t } = useTranslation();
   const { songs: starredSongs } = useStarredSongs();
+  const editorRef = useRef<BottomSheetModal>(null);
+  const optionsRef = useRef<BottomSheetModal>(null);
   const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
   const starredSongIds = useMemo(
     () => new Set(starredSongs.map(song => song.id)),
     [starredSongs]
   );
-  const [showTopBar, setShowTopBar] = useState(false);
-  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
-    const next = event.nativeEvent.contentOffset.y > 80;
-    setShowTopBar(previous => previous === next ? previous : next);
-  }, []);
-
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
       return Array.from({ length: 8 }, (_, i) => ({ type: 'skeleton' as const, id: `sk-${i}` }));
@@ -60,21 +58,21 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
   }, [starredSongIds, playlist]);
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
+      <PlaylistHeaderBar playlist={playlist} onOptions={() => optionsRef.current?.present()} />
       <FlashList<ListItem>
         data={items}
         keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
         renderItem={renderItem}
-        ListHeaderComponent={<Header playlist={playlist} />}
+        ListHeaderComponent={<Header playlist={playlist} showNavigation={false} onOptions={() => optionsRef.current?.present()} onEdit={() => editorRef.current?.present()} />}
         ListFooterComponent={<RecommendedSection playlist={playlist} />}
         ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
       />
-      <DetailTopBar title={playlist.title} visible={showTopBar} />
-    </>
+      <PlaylistOptions ref={optionsRef} playlist={playlist} hideGoToPlaylist onEdit={() => editorRef.current?.present()} />
+      <PlaylistEditorSheet ref={editorRef} playlist={playlist} />
+    </View>
   );
 };
 

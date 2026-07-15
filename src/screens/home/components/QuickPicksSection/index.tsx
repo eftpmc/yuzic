@@ -26,14 +26,14 @@ import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { seededShuffle } from '@/features/home/hooks/useDailyLayout';
 import SectionEmptyState from '../SectionEmptyState';
 import type { Song, SongBase } from '@/types';
-
-const PAGE_SIZE = 4;
-const TOTAL_PAGES = 3;
-const TOTAL_PICKS = PAGE_SIZE * TOTAL_PAGES;
-const CANDIDATE_POOL = TOTAL_PICKS * 2; // draw from a wider pool on refresh
-const H_PADDING = 12;
-const DECAY_MS = 7 * 24 * 60 * 60 * 1000;
-const PEEK = 28; // pixels of the next page visible at the right edge
+import {
+  QUICK_PICKS_PAGE_SIZE,
+  QUICK_PICKS_TOTAL,
+  QUICK_PICKS_CANDIDATE_POOL,
+  QUICK_PICKS_DECAY_MS,
+  QUICK_PICKS_PEEK,
+  HOME_SECTION_HORIZONTAL_PADDING,
+} from '@/constants/home';
 
 function useQuickPicks(refreshKey: number): SongBase[] {
   const songsById = useSelector(selectSongsById);
@@ -53,15 +53,15 @@ function useQuickPicks(refreshKey: number): SongBase[] {
       if (!song) continue;
       const count = playCounts[id] ?? 0;
       const ts = lastPlayedAt[id] ?? 0;
-      const recency = ts > 0 ? Math.exp(-(now - ts) / DECAY_MS) : 0;
+      const recency = ts > 0 ? Math.exp(-(now - ts) / QUICK_PICKS_DECAY_MS) : 0;
       const freq = count > 0 ? Math.min(1, Math.log(count + 1) / Math.log(50)) : 0;
       scored.push({ song, score: recency * 0.8 + freq * 0.2 });
     }
 
     scored.sort((a, b) => b.score - a.score);
-    const pool = scored.slice(0, CANDIDATE_POOL).map(s => s.song);
-    if (refreshKey === 0) return pool.slice(0, TOTAL_PICKS);
-    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, TOTAL_PICKS);
+    const pool = scored.slice(0, QUICK_PICKS_CANDIDATE_POOL).map(s => s.song);
+    if (refreshKey === 0) return pool.slice(0, QUICK_PICKS_TOTAL);
+    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, QUICK_PICKS_TOTAL);
   }, [songsById, playCounts, lastPlayedAt, refreshKey]);
 }
 
@@ -126,8 +126,8 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
 
   const pages = useMemo(() => {
     const result: SongBase[][] = [];
-    for (let i = 0; i < picks.length; i += PAGE_SIZE) {
-      result.push(picks.slice(i, i + PAGE_SIZE));
+    for (let i = 0; i < picks.length; i += QUICK_PICKS_PAGE_SIZE) {
+      result.push(picks.slice(i, i + QUICK_PICKS_PAGE_SIZE));
     }
     return result;
   }, [picks]);
@@ -146,11 +146,11 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
             horizontal
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
-            snapToInterval={screenWidth - PEEK}
+            snapToInterval={screenWidth - QUICK_PICKS_PEEK}
             snapToAlignment="start"
           >
             {pages.map((page, pageIdx) => (
-              <View key={pageIdx} style={[styles.page, { width: screenWidth - PEEK }]}>
+              <View key={pageIdx} style={[styles.page, { width: screenWidth - QUICK_PICKS_PEEK }]}>
                 {page.map(song => (
                   <MediaListRow
                     key={song.id}
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
-    paddingHorizontal: H_PADDING,
+    paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
   },
   page: {
     gap: 2,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   row: {
-    paddingHorizontal: H_PADDING,
+    paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
     paddingVertical: 6,
   },
 });

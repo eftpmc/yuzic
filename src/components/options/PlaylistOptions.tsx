@@ -4,7 +4,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil, ListMusic } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist, PlaylistBase } from '@/types';
@@ -28,11 +28,14 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import { statusColor } from '@/constants/design';
+import { BOTTOM_SHEET_PRESENT_DELAY_MS } from '@/constants/sheets';
 
 export type PlaylistOptionsProps = {
   playlist: PlaylistBase | Playlist | null;
   /** Hide "Go to Playlist" when already on the playlist screen */
   hideGoToPlaylist?: boolean;
+  /** Open the playlist-centric editor. */
+  onEdit?: () => void;
 };
 
 function formatDate(value: string | Date): string {
@@ -48,7 +51,7 @@ function formatDate(value: string | Date): string {
 const PlaylistOptions = forwardRef<
   BottomSheetModal,
   PlaylistOptionsProps
->(({ playlist, hideGoToPlaylist }, ref) => {
+>(({ playlist, hideGoToPlaylist, onEdit }, ref) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
@@ -240,6 +243,17 @@ const PlaylistOptions = forwardRef<
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
+
+        {onEdit && (
+          <OptionSheetRow
+            icon={<ListMusic size={26} color={colors.secondary} />}
+            label={t('playlistOptions.actions.edit')}
+            onPress={() => {
+              close();
+              setTimeout(onEdit, BOTTOM_SHEET_PRESENT_DELAY_MS);
+            }}
+          />
+        )}
 
         {!hideGoToPlaylist && (
           <OptionSheetRow

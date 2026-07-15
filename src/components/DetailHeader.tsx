@@ -21,7 +21,38 @@ type DetailHeaderProps = {
   meta?: React.ReactNode;
   status?: React.ReactNode;
   actions?: React.ReactNode;
+  showNavigation?: boolean;
 };
+
+type DetailHeaderBarProps = {
+  title: string;
+  rightAction?: React.ReactNode;
+};
+
+export function DetailHeaderBar({ title, rightAction }: DetailHeaderBarProps) {
+  const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+
+  return (
+    <View style={styles.headerRow}>
+      <TouchableOpacity
+        testID="detail-back-button"
+        onPress={() => navigation.goBack()}
+        style={styles.headerButton}
+      >
+        <ChevronLeft size={24} color={colors.secondary} />
+      </TouchableOpacity>
+
+      <View pointerEvents="none" style={styles.headerTitleWrapper}>
+        <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
+          {title}
+        </Text>
+      </View>
+
+      {rightAction ?? <View style={styles.headerButton} />}
+    </View>
+  );
+}
 
 export function DetailHeader({
   title,
@@ -30,31 +61,13 @@ export function DetailHeader({
   meta,
   status,
   actions,
+  showNavigation = true,
 }: DetailHeaderProps) {
-  const navigation = useNavigation<any>();
   const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity
-          testID="detail-back-button"
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          onPress={() => navigation.goBack()}
-          style={styles.headerButton}
-        >
-          <ChevronLeft size={24} color={colors.secondary} />
-        </TouchableOpacity>
-
-        <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
-            {title}
-          </Text>
-        </View>
-
-        {rightAction ?? <View style={styles.headerButton} />}
-      </View>
+      {showNavigation && <DetailHeaderBar title={title} rightAction={rightAction} />}
 
       <View style={styles.coverWrapper}>
         <MediaImage cover={cover} size="detail" style={styles.coverImage} />

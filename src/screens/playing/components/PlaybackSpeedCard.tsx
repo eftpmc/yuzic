@@ -4,10 +4,12 @@ import { Gauge } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { usePlayingActions, usePlayingState } from '@/contexts/PlayingContext';
-
-const MIN_SPEED = 0.5;
-const MAX_SPEED = 2.0;
-const STEP = 0.25;
+import {
+  PLAYBACK_DEFAULT_SPEED,
+  PLAYBACK_MAX_SPEED,
+  PLAYBACK_MIN_SPEED,
+  PLAYBACK_SPEED_STEP,
+} from '@/constants/playback';
 
 type Props = { contentWidth: number };
 
@@ -18,21 +20,21 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
   const isAltered = playbackSpeed !== 1.0;
 
   const decrease = useCallback(() => {
-    const next = Math.round((playbackSpeed - STEP) * 100) / 100;
-    if (next >= MIN_SPEED) setPlaybackSpeed(next);
+    const next = Math.round((playbackSpeed - PLAYBACK_SPEED_STEP) * 100) / 100;
+    if (next >= PLAYBACK_MIN_SPEED) setPlaybackSpeed(next);
   }, [playbackSpeed, setPlaybackSpeed]);
 
   const increase = useCallback(() => {
-    const next = Math.round((playbackSpeed + STEP) * 100) / 100;
-    if (next <= MAX_SPEED) setPlaybackSpeed(next);
+    const next = Math.round((playbackSpeed + PLAYBACK_SPEED_STEP) * 100) / 100;
+    if (next <= PLAYBACK_MAX_SPEED) setPlaybackSpeed(next);
   }, [playbackSpeed, setPlaybackSpeed]);
 
   const reset = useCallback(() => {
-    setPlaybackSpeed(1.0);
+    setPlaybackSpeed(PLAYBACK_DEFAULT_SPEED);
   }, [setPlaybackSpeed]);
 
-  const canDecrease = playbackSpeed > MIN_SPEED;
-  const canIncrease = playbackSpeed < MAX_SPEED;
+  const canDecrease = playbackSpeed > PLAYBACK_MIN_SPEED;
+  const canIncrease = playbackSpeed < PLAYBACK_MAX_SPEED;
 
   return (
     <View

@@ -56,6 +56,18 @@ export async function getPlaylistItems(
   return items.map((s) => normalizePlaylistSongEntry(s, client));
 }
 
+export async function getPlaylistEntryOrder(
+  client: MediaBrowserClient,
+  playlistId: string
+): Promise<{ songId: string; entryId: string }[]> {
+  const raw = await fetchGetPlaylistItems(client, playlistId);
+  return (raw?.Items ?? [])
+    .filter((item): item is MediaBrowserItem & { Id: string; PlaylistItemId: string } =>
+      !!item.Id && !!item.PlaylistItemId
+    )
+    .map(item => ({ songId: item.Id, entryId: item.PlaylistItemId }));
+}
+
 /** Resolve song ID to the server's PlaylistItemId (required for remove). */
 export async function getPlaylistEntryIdForSong(
   client: MediaBrowserClient,

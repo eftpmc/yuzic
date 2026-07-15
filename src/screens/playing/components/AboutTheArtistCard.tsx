@@ -10,10 +10,11 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
-
-const CARD_HEIGHT = 280;
-const TEXT_AREA_MIN_HEIGHT = 70;
-const PADDING = 16;
+import {
+  PLAYING_ARTIST_CARD_HEIGHT,
+  PLAYING_ARTIST_TEXT_MIN_HEIGHT,
+  PLAYING_ARTIST_CARD_PADDING,
+} from '@/constants/features';
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
@@ -30,14 +31,14 @@ export default function AboutTheArtistCard({
   onPress,
 }: Props) {
   const { t } = useTranslation();
-  const imageHeight = CARD_HEIGHT - TEXT_AREA_MIN_HEIGHT;
+  const imageHeight = PLAYING_ARTIST_CARD_HEIGHT - PLAYING_ARTIST_TEXT_MIN_HEIGHT;
   const imageUri = artistCover
     ? buildCover(artistCover, 'detail')
     : null;
 
   const card = (
     <View
-      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
+      style={[styles.card, { width: contentWidth, height: PLAYING_ARTIST_CARD_HEIGHT }]}
     >
       <View style={[styles.imageContainer, { height: imageHeight }]}>
         <Image
@@ -101,9 +102,9 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'absolute',
-    top: PADDING,
-    left: PADDING,
-    right: PADDING,
+    top: PLAYING_ARTIST_CARD_PADDING,
+    left: PLAYING_ARTIST_CARD_PADDING,
+    right: PLAYING_ARTIST_CARD_PADDING,
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
@@ -116,8 +117,8 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     justifyContent: 'center',
-    minHeight: TEXT_AREA_MIN_HEIGHT,
-    paddingHorizontal: PADDING,
+    minHeight: PLAYING_ARTIST_TEXT_MIN_HEIGHT,
+    paddingHorizontal: PLAYING_ARTIST_CARD_PADDING,
     paddingTop: 12,
     paddingBottom: 24,
   },

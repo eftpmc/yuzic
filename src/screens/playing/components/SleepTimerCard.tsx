@@ -5,11 +5,11 @@ import TrackPlayer from '@rntp/player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { mmkv } from '@/utils/mmkvStorage';
-
-const MMKV_KEY = 'sleep_timer_target_ms';
-
-const MAX_SECONDS = 120 * 60;
-const INCREMENTS = [5, 15, 30];
+import {
+  SLEEP_TIMER_STORAGE_KEY,
+  SLEEP_TIMER_MAX_SECONDS,
+  SLEEP_TIMER_INCREMENTS,
+} from '@/constants/features';
 
 function formatCountdown(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -29,7 +29,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
 
   // Restore persisted timer on mount
   useEffect(() => {
-    const saved = mmkv.getNumber(MMKV_KEY);
+    const saved = mmkv.getNumber(SLEEP_TIMER_STORAGE_KEY);
     if (saved && saved > Date.now()) {
       const remaining = Math.round((saved - Date.now()) / 1000);
       targetMsRef.current = saved;
@@ -42,7 +42,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           intervalRef.current = null;
           targetMsRef.current = null;
           setRemainingSeconds(null);
-          mmkv.remove(MMKV_KEY);
+          mmkv.remove(SLEEP_TIMER_STORAGE_KEY);
         }
       }, 1000);
     }
@@ -51,7 +51,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
   const startCountdown = useCallback((totalSeconds: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     targetMsRef.current = Date.now() + totalSeconds * 1000;
-    mmkv.set(MMKV_KEY, targetMsRef.current);
+    mmkv.set(SLEEP_TIMER_STORAGE_KEY, targetMsRef.current);
     setRemainingSeconds(totalSeconds);
 
     intervalRef.current = setInterval(() => {
@@ -62,7 +62,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
         intervalRef.current = null;
         targetMsRef.current = null;
         setRemainingSeconds(null);
-        mmkv.remove(MMKV_KEY);
+        mmkv.remove(SLEEP_TIMER_STORAGE_KEY);
       }
     }, 1000);
   }, []);
@@ -71,7 +71,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     const current = targetMsRef.current
       ? Math.max(0, Math.round((targetMsRef.current - Date.now()) / 1000))
       : 0;
-    const newSeconds = Math.min(current + minutes * 60, MAX_SECONDS);
+    const newSeconds = Math.min(current + minutes * 60, SLEEP_TIMER_MAX_SECONDS);
     const fadeOut = Math.min(30, Math.round(newSeconds * 0.15));
     TrackPlayer.sleepAfterTime(newSeconds, { fadeOutSeconds: fadeOut });
     startCountdown(newSeconds);
@@ -83,7 +83,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     intervalRef.current = null;
     targetMsRef.current = null;
     setRemainingSeconds(null);
-    mmkv.remove(MMKV_KEY);
+    mmkv.remove(SLEEP_TIMER_STORAGE_KEY);
   }, []);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           </Text>
         </TouchableOpacity>
 
-        {INCREMENTS.map(min => (
+        {SLEEP_TIMER_INCREMENTS.map(min => (
           <TouchableOpacity
             key={min}
             onPress={() => handleIncrement(min)}

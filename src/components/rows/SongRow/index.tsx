@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import { spacing, statusColor } from '@/constants/design';
 import {
   View,
@@ -13,14 +13,12 @@ import Animated, {
 import { Heart, ArrowDownCircle, Ellipsis } from 'lucide-react-native';
 
 import { Song } from '@/types';
-import SongOptions from '@/components/options/SongOptions';
-import PlaylistList from '@/components/PlaylistList';
 import { usePlayingActions } from '@/contexts/PlayingContext';
+import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
 import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useDownloadState } from '@/contexts/DownloadContext';
-import { useSheetRef } from '@/utils/useSheetRef';
 import { formatSongDuration } from '@/utils/formatDuration';
 
 type Props = {
@@ -43,14 +41,10 @@ const SongRow: React.FC<Props> = ({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
+  const { openSongOptions } = useSongActionSheets();
   const { isTrackDownloaded } = useDownloadState();
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
-
-  const optionsRef = useSheetRef();
-  const playlistRef = useSheetRef();
-
-  const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
   const heartOpacity = useSharedValue(isFavorite ? 1 : 0);
   useEffect(() => {
@@ -69,21 +63,8 @@ const SongRow: React.FC<Props> = ({
   }, [onPress, collection, song, playSongInCollection]);
 
   const openOptions = useCallback(() => {
-    optionsRef.current?.present();
-  }, [optionsRef]);
-
-  const openPlaylistList = useCallback(() => {
-    optionsRef.current?.dismiss();
-    setPlaylistSong(song);
-    requestAnimationFrame(() => {
-      playlistRef.current?.present();
-    });
-  }, [optionsRef, playlistRef, song]);
-
-  const closePlaylistList = useCallback(() => {
-    playlistRef.current?.dismiss();
-    setPlaylistSong(null);
-  }, [playlistRef]);
+    openSongOptions(song);
+  }, [openSongOptions, song]);
 
   return (
     <>
@@ -109,18 +90,6 @@ const SongRow: React.FC<Props> = ({
             </TouchableOpacity>
           </View>
         }
-      />
-
-      <SongOptions
-        ref={optionsRef}
-        selectedSong={song}
-        onAddToPlaylist={openPlaylistList}
-      />
-
-      <PlaylistList
-        ref={playlistRef}
-        selectedSong={playlistSong}
-        onClose={closePlaylistList}
       />
     </>
   );

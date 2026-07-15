@@ -110,29 +110,34 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       const selectedSongId = selectedSong.id;
       setMembershipLoading(true);
 
-      Promise.allSettled(
-        playlists.map(playlist =>
-          queryClient.fetchQuery({
-            queryKey: [QueryKeys.Playlist, activeServer.id, playlist.id],
-            queryFn: () => api.playlists.get(playlist.id),
-            staleTime: staleTime.playlists,
-          })
-        )
-      )
-        .then(results => {
-          if (cancelled) return;
-          const hydratedIds = new Set<string>();
-          results.forEach((result, index) => {
-            if (
-              result.status === 'fulfilled' &&
-              result.value.songs.some(song => song.id === selectedSongId)
-            ) {
-              hydratedIds.add(playlists[index].id);
-            }
-          });
-          setSelectedIds(hydratedIds);
-          setBaseSelectedIds(hydratedIds);
-        })
+      const hydrateMembership = async () => {
+        const results: Playlist[] = [];
+        for (let start = 0; start < playlists.length; start += 3) {
+          const batch = await Promise.all(
+            playlists.slice(start, start + 3).map(playlist =>
+              queryClient.fetchQuery<Playlist>({
+                queryKey: [QueryKeys.Playlist, activeServer.id, playlist.id],
+                queryFn: () => api.playlists.get(playlist.id),
+                staleTime: staleTime.playlists,
+              })
+            )
+          );
+          results.push(...batch);
+        }
+
+        if (cancelled) return;
+        const hydratedIds = new Set<string>();
+        results.forEach((result, index) => {
+          if (result.songs.some(song => song.id === selectedSongId)) {
+            hydratedIds.add(playlists[index].id);
+          }
+        });
+        setSelectedIds(hydratedIds);
+        setBaseSelectedIds(hydratedIds);
+      };
+
+      void hydrateMembership()
+        .catch(() => {})
         .finally(() => {
           if (!cancelled) setMembershipLoading(false);
         });

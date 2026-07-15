@@ -28,18 +28,19 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import { useApi } from '@/api';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { fetchAlbumDetailsSettled } from '@/hooks/albums';
-import { DetailActionRow, DetailCircleAction, DetailPlayAction } from '@/components/DetailHeader';
+import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
 
 type Props = {
   localArtist: Artist | null;
   externalArtist: ExternalArtist | null;
+  showNavigation?: boolean;
 };
 
 function isAlbumCountText(value?: string | null): boolean {
   return /^\s*\d+\s+albums?\s*$/i.test(value ?? '');
 }
 
-const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist }) => {
+const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNavigation = true }) => {
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
 
@@ -92,22 +93,24 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist }) => {
           />
         </View>
 
-        <View style={styles.header}>
-          <TouchableOpacity
-            testID="detail-back-button"
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
-          </TouchableOpacity>
-          {localArtist ? (
-            <LocalOptionsButton artist={localArtist} />
-          ) : (
-            <View style={{ width: 36 }} />
-          )}
-        </View>
+        {showNavigation && (
+          <View style={styles.header}>
+            <TouchableOpacity
+              testID="detail-back-button"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+            </TouchableOpacity>
+            {localArtist ? (
+              <LocalOptionsButton artist={localArtist} />
+            ) : (
+              <View style={{ width: 36 }} />
+            )}
+          </View>
+        )}
       </View>
 
       <View style={{ paddingHorizontal: 16 }}>
@@ -130,6 +133,16 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist }) => {
 
       {localArtist ? <LocalActionRow artist={localArtist} /> : null}
     </>
+  );
+};
+
+export const ArtistHeaderBar: React.FC<Props> = ({ localArtist, externalArtist }) => {
+  const displayName = localArtist?.name ?? externalArtist?.name ?? '';
+  return (
+    <DetailHeaderBar
+      title={displayName}
+      rightAction={localArtist ? <LocalOptionsButton artist={localArtist} /> : undefined}
+    />
   );
 };
 

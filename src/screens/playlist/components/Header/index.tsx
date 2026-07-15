@@ -19,6 +19,7 @@ import {
   DetailActionRow,
   DetailCircleAction,
   DetailHeader,
+  DetailHeaderBar,
   DetailHeaderIconButton,
   DetailMetaDot,
   DetailMetaRow,
@@ -28,9 +29,12 @@ import {
 
 type Props = {
   playlist: Playlist;
+  showNavigation?: boolean;
+  onEdit?: () => void;
+  onOptions?: () => void;
 };
 
-const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
+const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onEdit, onOptions }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
@@ -90,7 +94,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
         title={playlist.title}
         cover={playlist.cover}
         rightAction={
-          <DetailHeaderIconButton onPress={() => optionsSheetRef.current?.present()}>
+          <DetailHeaderIconButton onPress={onOptions ?? (() => optionsSheetRef.current?.present())}>
             <Ellipsis size={24} color={colors.secondary} />
           </DetailHeaderIconButton>
         }
@@ -125,9 +129,24 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
             </DetailCircleAction>
           </DetailActionRow>
         }
+        showNavigation={showNavigation}
       />
-      <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist />
+      {!onOptions && <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist onEdit={onEdit} />}
     </>
+  );
+};
+
+export const PlaylistHeaderBar: React.FC<Props> = ({ playlist, onOptions }) => {
+  const { colors } = useTheme();
+  return (
+    <DetailHeaderBar
+      title={playlist.title}
+      rightAction={
+        <DetailHeaderIconButton onPress={onOptions}>
+          <Ellipsis size={24} color={colors.secondary} />
+        </DetailHeaderIconButton>
+      }
+    />
   );
 };
 

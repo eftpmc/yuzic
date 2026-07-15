@@ -1,10 +1,10 @@
 import React from 'react';
-import { statusColor } from '@/constants/design';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { SETTINGS_STATUS_COLORS } from '@/constants/features';
 
-type Props = {
+ type Props = {
   label: string;
   onPress: () => void;
   leftIcon?: React.ReactNode;
@@ -12,13 +12,6 @@ type Props = {
   status?: 'connected' | 'disconnected' | 'enabled' | 'disabled';
   selected?: boolean;
   checked?: boolean;
-};
-
-const STATUS_COLORS = {
-  connected: statusColor.success,
-  enabled: statusColor.success,
-  disconnected: '#8E8E93',
-  disabled: '#8E8E93',
 };
 
 const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, status, selected, checked }) => {
@@ -38,7 +31,7 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
       </View>
       <View style={styles.right}>
         {status && (
-          <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[status] }]} />
+          <View style={[styles.statusDot, { backgroundColor: SETTINGS_STATUS_COLORS[status] }]} />
         )}
         {rightText && (
           <Text style={[styles.rightText, { color: colors.subtext }]} numberOfLines={1}>

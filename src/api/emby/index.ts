@@ -26,12 +26,13 @@ import { getAlbums } from "../mediaBrowser/albums/getAlbums";
 import { getAlbumsWithSongs } from "../mediaBrowser/albums/getAlbumsWithSongs";
 import { getArtists } from "../mediaBrowser/artists/getArtists";
 import { getPlaylists } from "../mediaBrowser/playlists/getPlaylists";
-import { getPlaylistItems, getPlaylistEntryIdForSong } from "../mediaBrowser/playlists/getPlaylistItems";
+import { getPlaylistItems, getPlaylistEntryIdForSong, getPlaylistEntryOrder } from "../mediaBrowser/playlists/getPlaylistItems";
 import { createPlaylist } from "../mediaBrowser/playlists/createPlaylist";
 import { deletePlaylist } from "../mediaBrowser/playlists/deletePlaylist";
 import { updatePlaylistName } from "../mediaBrowser/playlists/updatePlaylistName";
 import { addPlaylistItems } from "../mediaBrowser/playlists/addPlaylistItems";
 import { removePlaylistItems } from "../mediaBrowser/playlists/removePlaylistItems";
+import { movePlaylistItem } from "../mediaBrowser/playlists/movePlaylistItem";
 import { getStarredItems } from "../mediaBrowser/starred/getStarredItems";
 import { star } from "../mediaBrowser/starred/star";
 import { unstar } from "../mediaBrowser/starred/unstar";
@@ -158,6 +159,19 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
       if (!entryId) throw new Error("Song not found in playlist");
       await removePlaylistItems(client, playlistId, [entryId]);
       return { success: true };
+    },
+
+    reorder: async (playlistId: string, songIds: string[]) => {
+      if (playlistId === FAVORITES_ID) throw new Error("Favorites cannot be reordered");
+      const current = await getPlaylistEntryOrder(client, playlistId);
+      const working = [...current];
+      for (let targetIndex = 0; targetIndex < songIds.length; targetIndex += 1) {
+        const currentIndex = working.findIndex(item => item.songId === songIds[targetIndex]);
+        if (currentIndex < 0 || currentIndex === targetIndex) continue;
+        const [entry] = working.splice(currentIndex, 1);
+        working.splice(targetIndex, 0, entry);
+        await movePlaylistItem(client, playlistId, entry.entryId, targetIndex);
+      }
     },
 
     rename: async (id: string, newName: string) => {

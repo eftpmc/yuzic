@@ -16,12 +16,13 @@ import { QueryKeys } from '@/enums/queryKeys'
 import { STALE_DEEZER_DISCOVERY } from '@/features/home/constants'
 import MediaTile from '@/screens/home/components/MediaTile'
 import type { ExternalAlbumBase } from '@/types'
-
-const H_PADDING = 16
-const TILE_GAP = 12
-const VISIBLE_TILES = 2.5
-const RELATED_LIMIT = 30
-const TARGET_ALBUMS = 8
+import {
+  ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+  ALBUM_RECOMMENDATION_TILE_GAP,
+  ALBUM_RECOMMENDATION_VISIBLE_TILES,
+  ALBUM_RECOMMENDATION_RELATED_LIMIT,
+  ALBUM_RECOMMENDATION_TARGET_ALBUMS,
+} from '@/constants/album';
 
 type Props = {
   artistName: string
@@ -34,9 +35,9 @@ async function fetchRelatedAlbums(
 ): Promise<ExternalAlbumBase[]> {
   const seed = await deezer.resolveDeezerArtistByName(artistName)
   if (!seed) return []
-  const related = await deezer.getDeezerRelatedArtists(seed.id, RELATED_LIMIT)
+  const related = await deezer.getDeezerRelatedArtists(seed.id, ALBUM_RECOMMENDATION_RELATED_LIMIT)
   const fresh = related.filter(a => !libraryArtistNames.has(a.name.toLowerCase()))
-  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: TARGET_ALBUMS })
+  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: ALBUM_RECOMMENDATION_TARGET_ALBUMS })
 }
 
 export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: Props) {
@@ -48,7 +49,7 @@ export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: 
   const { artists } = useArtists()
   const { navigateToAlbum } = useMatchedNavigation()
 
-  const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES
+  const tileWidth = (screenWidth - ALBUM_RECOMMENDATION_HORIZONTAL_PADDING * 2 - ALBUM_RECOMMENDATION_TILE_GAP * 2) / ALBUM_RECOMMENDATION_VISIBLE_TILES
 
   const libraryArtistNames = useMemo(
     () => new Set(artists.map(a => a.name.toLowerCase())),
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: H_PADDING,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
     marginBottom: 12,
   },
   badge: {
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   scroll: {
-    paddingHorizontal: H_PADDING,
-    gap: TILE_GAP,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+    gap: ALBUM_RECOMMENDATION_TILE_GAP,
   },
 })

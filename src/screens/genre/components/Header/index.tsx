@@ -25,14 +25,15 @@ import { useTracks } from '@/hooks/tracks'
 import { usePlaying } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
-import { DetailActionRow, DetailCircleAction, DetailPlayAction } from '@/components/DetailHeader'
+import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader'
 
 type Props = {
   genre: string
   albums: AlbumBase[]
+  showNavigation?: boolean
 }
 
-const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
+const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) => {
   const navigation = useNavigation<any>()
   const queryClient = useQueryClient()
   const api = useApi()
@@ -155,14 +156,16 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           style={StyleSheet.absoluteFill}
         />
 
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
-          </TouchableOpacity>
-        </View>
+        {showNavigation && (
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <View style={styles.content}>
@@ -215,6 +218,10 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
     </>
   )
 }
+
+export const GenreHeaderBar: React.FC<Props> = ({ genre }) => (
+  <DetailHeaderBar title={genre} />
+)
 
 export default GenreHeader
 

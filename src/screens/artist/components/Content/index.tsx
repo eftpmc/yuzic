@@ -7,7 +7,7 @@ import { Ellipsis } from 'lucide-react-native'
 import type { AlbumBase, Artist, ExternalAlbumBase, ExternalArtist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
-import Header from '../Header'
+import Header, { ArtistHeaderBar } from '../Header'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
@@ -27,7 +27,6 @@ import { useSelector } from 'react-redux'
 import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
-import DetailTopBar from '@/components/DetailTopBar'
 
 type Props = {
   localArtist: Artist | null
@@ -190,11 +189,6 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
-  const [showTopBar, setShowTopBar] = useState(false)
-  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
-    const next = event.nativeEvent.contentOffset.y > 80
-    setShowTopBar(previous => previous === next ? previous : next)
-  }, [])
   const localAlbums = useArtistAlbums(localArtist?.id ?? '')
   const { tracks: libraryTracks } = useTracks()
   const { data: externalDiscography } = useArtistExternalDiscography(localArtist?.name ?? null, !!localArtist)
@@ -367,25 +361,20 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, t])
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
+      <ArtistHeaderBar localArtist={localArtist} externalArtist={externalArtist} />
       <FlashList
         data={items}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={<Header localArtist={localArtist} externalArtist={externalArtist} />}
+        ListHeaderComponent={<Header localArtist={localArtist} externalArtist={externalArtist} showNavigation={false} />}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingBottom: Platform.OS === 'android' ? 180 : 140,
           backgroundColor: colors.background,
         }}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
       />
-      <DetailTopBar
-        title={localArtist?.name ?? externalArtist?.name ?? ''}
-        visible={showTopBar}
-      />
-    </>
+    </View>
   )
 }
 

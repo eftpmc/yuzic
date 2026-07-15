@@ -27,11 +27,12 @@ import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types'
-
-const TARGET_ALBUMS = 10
-const SEED_ARTISTS = 4
-const RELATED_PER_SEED = 12
-const GENRE_ARTIST_LIMIT = 40
+import {
+  HOME_TARGET_ALBUMS,
+  HOME_SEED_ARTISTS,
+  HOME_RELATED_PER_SEED,
+  HOME_GENRE_ARTIST_LIMIT,
+} from '@/constants/home';
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -76,13 +77,13 @@ async function fetchAlbumsForGenre(
   const albums: ExternalAlbumBase[] = []
   if (seedArtistNames.length > 0) {
     const seedArtists = (await Promise.allSettled(
-      seedArtistNames.slice(0, SEED_ARTISTS).map(name => deezer.resolveDeezerArtistByName(name))
+      seedArtistNames.slice(0, HOME_SEED_ARTISTS).map(name => deezer.resolveDeezerArtistByName(name))
     ))
       .map(result => result.status === 'fulfilled' ? result.value : null)
       .filter((artist): artist is NonNullable<typeof artist> => Boolean(artist))
 
     const relatedGroups = await Promise.allSettled(
-      seedArtists.map(seed => deezer.getDeezerRelatedArtists(seed.id, RELATED_PER_SEED))
+      seedArtists.map(seed => deezer.getDeezerRelatedArtists(seed.id, HOME_RELATED_PER_SEED))
     )
 
     const seenArtists = new Set<string>()
@@ -95,23 +96,23 @@ async function fetchAlbumsForGenre(
         return true
       })
 
-    albums.push(...await collectCoveredAlbumsForArtists(relatedArtists, { targetAlbums: TARGET_ALBUMS }))
+    albums.push(...await collectCoveredAlbumsForArtists(relatedArtists, { targetAlbums: HOME_TARGET_ALBUMS }))
   }
 
-  if (albums.length >= TARGET_ALBUMS) return albums
+  if (albums.length >= HOME_TARGET_ALBUMS) return albums
 
   const genreList = await deezer.getDeezerGenreList()
   const genreId = findDeezerGenreId(genre, genreList)
   if (!genreId) return albums
 
-  const artists = await deezer.getDeezerArtistsByGenreId(genreId, GENRE_ARTIST_LIMIT)
+  const artists = await deezer.getDeezerArtistsByGenreId(genreId, HOME_GENRE_ARTIST_LIMIT)
   const fresh = artists.filter(a => !libraryArtistNames.has(a.name.toLowerCase()))
 
   albums.push(...await collectCoveredAlbumsForArtists(fresh, {
-    targetAlbums: TARGET_ALBUMS - albums.length,
+    targetAlbums: HOME_TARGET_ALBUMS - albums.length,
     excludeAlbumIds: albums.map(album => album.id),
   }))
-  return albums.slice(0, TARGET_ALBUMS)
+  return albums.slice(0, HOME_TARGET_ALBUMS)
 }
 
 type Props = {
@@ -166,7 +167,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
         seen.add(normalized)
         return true
       })
-      .slice(0, SEED_ARTISTS)
+      .slice(0, HOME_SEED_ARTISTS)
   }, [selectedGenre, libraryAlbums])
 
   const handleSelect = useCallback((value: string) => {

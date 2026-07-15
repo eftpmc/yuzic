@@ -11,6 +11,7 @@ import 'react-native-reanimated';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { CastProvider } from '@/contexts/CastContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
+import { SongActionSheetProvider } from '@/contexts/SongActionSheetContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider, useSelector } from 'react-redux';
@@ -277,8 +278,10 @@ export default function RootLayout() {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <LibraryProvider>
-            <OfflineMutationReplayer />
-            <AppShell />
+            <SongActionSheetProvider>
+              <OfflineMutationReplayer />
+              <AppShell />
+            </SongActionSheetProvider>
           </LibraryProvider>
         </PersistGate>
       </Provider>
