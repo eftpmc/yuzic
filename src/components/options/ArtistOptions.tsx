@@ -158,9 +158,7 @@ const ArtistOptions = forwardRef<
     if (!artist || isDownloaded || isDownloading || !artistAlbums.length) return;
     setIsDownloadingAll(true);
     try {
-      for (const album of artistAlbums) {
-        await downloadAlbumById(album.id);
-      }
+      await Promise.all(artistAlbums.map(album => downloadAlbumById(album.id)));
     } catch {
       toast.error(t('artistOptions.downloadAllFailed'));
     } finally {

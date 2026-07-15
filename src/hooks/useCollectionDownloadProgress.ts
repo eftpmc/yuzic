@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useDownloadState } from '@/contexts/DownloadContext';
+import { useDownloadProgress, useDownloadState } from '@/contexts/DownloadContext';
 
 /**
  * Aggregate download progress for a set of tracks in [0, 1]: completed tracks
@@ -8,7 +8,8 @@ import { useDownloadState } from '@/contexts/DownloadContext';
  * they finish.
  */
 export function useCollectionDownloadProgress(trackIds: string[]): number {
-  const { isTrackDownloaded, downloadProgress, downloadedTrackCount } = useDownloadState();
+  const { isTrackDownloaded, downloadedTrackCount } = useDownloadState();
+  const downloadProgress = useDownloadProgress();
 
   return useMemo(() => {
     // isTrackDownloaded reads a ref and never changes identity, so

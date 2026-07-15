@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useState,
   forwardRef,
   useMemo,
@@ -22,7 +23,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { Playlist, Song } from '@/types';
+import { Playlist, PlaylistBase, Song } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
@@ -147,7 +148,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       };
     }, [activeServer?.id, api, isSheetOpen, playlists, queryClient, selectedSong]);
 
-    const togglePlaylist = (id: string) => {
+    const togglePlaylist = useCallback((id: string) => {
       if (membershipLoading) return;
       setSelectedIds(prev => {
         const next = new Set(prev);
@@ -158,7 +159,35 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         }
         return next;
       });
-    };
+    }, [membershipLoading]);
+
+    const renderPlaylistItem = useCallback(({ item }: { item: PlaylistBase }) => {
+      const isChecked = selectedIds.has(item.id);
+
+      return (
+        <TouchableOpacity
+          style={styles.option}
+          disabled={membershipLoading}
+          onPress={() => togglePlaylist(item.id)}
+        >
+          <MediaImage
+            cover={item.cover ?? { kind: 'none' }}
+            size="thumb"
+            style={styles.playlistCover}
+          />
+
+          <Text style={[styles.optionText, { color: colors.secondary }]}>
+            {item.title}
+          </Text>
+
+          <Check
+            size={24}
+            color={themeColor}
+            style={{ opacity: isChecked ? 1 : 0 }}
+          />
+        </TouchableOpacity>
+      );
+    }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor]);
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
@@ -266,33 +295,8 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             data={filteredPlaylists}
             keyExtractor={item => item.id}
             contentContainerStyle={{ paddingBottom: 120 }}
-            renderItem={({ item }) => {
-              const isChecked = selectedIds.has(item.id);
-
-              return (
-                <TouchableOpacity
-                  style={styles.option}
-                  disabled={membershipLoading}
-                  onPress={() => togglePlaylist(item.id)}
-                >
-                  <MediaImage
-                    cover={item.cover ?? { kind: 'none' }}
-                    size="thumb"
-                    style={styles.playlistCover}
-                  />
-
-                  <Text style={[styles.optionText, { color: colors.secondary }]}>
-                    {item.title}
-                  </Text>
-
-                  <Check
-                    size={24}
-                    color={themeColor}
-                    style={{ opacity: isChecked ? 1 : 0 }}
-                  />
-                </TouchableOpacity>
-              );
-            }}
+            extraData={selectedIds}
+            renderItem={renderPlaylistItem}
           />
         </View>
 

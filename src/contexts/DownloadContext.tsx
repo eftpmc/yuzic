@@ -80,16 +80,23 @@ export type DownloadStateType = {
   downloadStateVersion: number;
   totalDownloadedBytes: number;
   downloadedTrackCount: number;
-  // trackId → fraction in [0, 1], or -1 when the server streams without a
-  // Content-Length (transcoded streams) and the total is unknown.
-  downloadProgress: Record<string, number>;
 };
 
 // Backward-compatible combined type.
 export type DownloadContextType = DownloadActionsType & DownloadStateType;
 
+// trackId → fraction in [0, 1], or -1 when the server streams without a
+// Content-Length (transcoded streams) and the total is unknown.
+// Split into its own context: it updates on every progress tick during an
+// active download, and bundling it into DownloadStateContext re-rendered
+// every consumer of useDownloadState() (every SongRow, TrackItem, etc. in
+// the visible list) on each tick even though most only read
+// isTrackDownloaded/isTrackDownloading.
+export type DownloadProgressType = Record<string, number>;
+
 const DownloadActionsContext = createContext<DownloadActionsType | undefined>(undefined);
 const DownloadStateContext = createContext<DownloadStateType | undefined>(undefined);
+const DownloadProgressContext = createContext<DownloadProgressType | undefined>(undefined);
 
 const DOWNLOAD_DIR = `${FileSystem.documentDirectory ?? ''}downloads/audio/`;
 // Scratch dir used by the retired download→upload→transcode pipeline; only
@@ -305,6 +312,14 @@ export const useDownloadActions = (): DownloadActionsType => {
 export const useDownloadState = (): DownloadStateType => {
   const ctx = useContext(DownloadStateContext);
   if (!ctx) throw new Error('useDownloadState must be used within DownloadProvider');
+  return ctx;
+};
+
+// Subscribe to this only from components that render live progress (e.g. a
+// progress ring) — it updates on every tick during an active download.
+export const useDownloadProgress = (): DownloadProgressType => {
+  const ctx = useContext(DownloadProgressContext);
+  if (!ctx) throw new Error('useDownloadProgress must be used within DownloadProvider');
   return ctx;
 };
 
@@ -963,10 +978,8 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     downloadStateVersion: downloadedTracks.length,
     totalDownloadedBytes: state.tracks.reduce((sum, track) => sum + track.fileSize, 0),
     downloadedTrackCount: state.tracks.length,
-    downloadProgress,
   }), [
     downloadedTracks,
-    downloadProgress,
     getCollectionDownloadState,
     getLocalPath,
     isTrackDownloaded,
@@ -978,7 +991,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   return (
     <DownloadActionsContext.Provider value={actionsValue}>
       <DownloadStateContext.Provider value={stateValue}>
-        {children}
+        <DownloadProgressContext.Provider value={downloadProgress}>
+          {children}
+        </DownloadProgressContext.Provider>
       </DownloadStateContext.Provider>
     </DownloadActionsContext.Provider>
   );

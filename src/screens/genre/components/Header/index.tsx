@@ -121,9 +121,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
     if (isDownloadingAll || isDownloading || isFullyDownloaded || !albums.length) return
     setIsDownloadingAll(true)
     try {
-      for (const album of albums) {
-        await downloadAlbumById(album.id)
-      }
+      await Promise.all(albums.map(album => downloadAlbumById(album.id)))
     } finally {
       setIsDownloadingAll(false)
     }

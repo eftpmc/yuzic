@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -22,6 +22,16 @@ export default function GenreContent({ genre, albums }: Props) {
     [genre, albums]
   )
 
+  const renderItem = useCallback(
+    ({ item }: { item: AlbumBase }) => (
+      <AlbumRow
+        album={item}
+        onPress={(album) => navigation.push('albumView', { id: album.id })}
+      />
+    ),
+    [navigation]
+  )
+
   return (
     <View style={{ flex: 1 }}>
       <GenreHeaderBar genre={genre} albums={albums} />
@@ -29,12 +39,7 @@ export default function GenreContent({ genre, albums }: Props) {
         data={albums}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={header}
-        renderItem={({ item }) => (
-          <AlbumRow
-            album={item}
-            onPress={(album) => navigation.push('albumView', { id: album.id })}
-          />
-        )}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingBottom: 140,
