@@ -23,11 +23,8 @@ import { useTranslation } from 'react-i18next';
 import { usePlaying } from '@/contexts/PlayingContext';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
-import SongOptions from '@/components/options/SongOptions';
-import PlaylistList from '@/components/PlaylistList';
-import { Song } from '@/types';
+import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
 import { toast } from '@backpackapp-io/react-native-toast';
-import { useSheetRef } from '@/utils/useSheetRef';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -42,8 +39,7 @@ import { useAccountSheet } from '@/contexts/AccountSheetContext';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
-  const songOptionsRef = useSheetRef();
-  const playlistListRef = useSheetRef();
+  const { openSongOptions } = useSongActionSheets();
   const navigation = useNavigation<any>();
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
@@ -56,7 +52,6 @@ const Search = () => {
   const { openAccountSheet } = useAccountSheet();
 
   const [query, setQuery] = useState('');
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const { searchResults, handleSearchWithFilters, clearSearch, isLoading } = useSearch();
 
@@ -96,11 +91,9 @@ const Search = () => {
 
   const handleSongOptions = async (result: SearchResult) => {
     try {
-      let song: Song | null = result.song ?? null;
-      if (!song) song = await resolvePlayableSong(result.id);
+      const song = result.song ?? await resolvePlayableSong(result.id);
       if (song) {
-        setSelectedSong(song);
-        requestAnimationFrame(() => { songOptionsRef.current?.present(); });
+        openSongOptions(song);
       } else {
         toast.error(t('common.songDetailsError'));
       }
@@ -294,19 +287,6 @@ const Search = () => {
           </Text>
         )}
       </ScrollView>
-
-      {selectedSong && (
-        <SongOptions
-          ref={songOptionsRef}
-          selectedSong={selectedSong}
-          onAddToPlaylist={() => playlistListRef.current?.present()}
-        />
-      )}
-      <PlaylistList
-        ref={playlistListRef}
-        selectedSong={selectedSong}
-        onClose={() => playlistListRef.current?.dismiss()}
-      />
     </SafeAreaView>
   );
 };

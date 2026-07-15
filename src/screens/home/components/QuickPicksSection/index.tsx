@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,9 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { usePlayableSongResolver } from '@/hooks/songs';
+import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
-import SongOptions from '@/components/options/SongOptions';
-import PlaylistList from '@/components/PlaylistList';
-import { useSheetRef } from '@/utils/useSheetRef';
 import {
   selectSongPlayCounts,
   selectSongLastPlayedAt,
@@ -74,21 +72,9 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
   const { resolvePlayableSong } = usePlayableSongResolver();
   const picks = useQuickPicks(refreshKey);
   const { width: screenWidth } = useWindowDimensions();
-
-  const optionsRef = useSheetRef();
-  const playlistRef = useSheetRef();
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-  const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
-  const pendingPresentRef = useRef(false);
+  const { openSongOptions } = useSongActionSheets();
 
   const inFlightRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (selectedSong && pendingPresentRef.current) {
-      pendingPresentRef.current = false;
-      optionsRef.current?.present();
-    }
-  }, [selectedSong, optionsRef]);
 
   const handlePress = async (song: SongBase) => {
     if (inFlightRef.current === song.id) return;
@@ -104,24 +90,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
 
   const handleOptions = async (song: SongBase) => {
     const resolved = await resolvePlayableSong(song, { allowNetwork: false });
-    // Always spread to create a new object reference. Without this, if
-    // resolvePlayableSong returns the same cached object and selectedSong is
-    // already that reference, setSelectedSong is a no-op and the useEffect
-    // never fires — the sheet silently fails to present on a second tap.
-    const target: Song = { ...(resolved ?? ({ ...song, streamUrl: '' } as Song)) };
-    pendingPresentRef.current = true;
-    setSelectedSong(target);
-  };
-
-  const openPlaylistList = () => {
-    optionsRef.current?.dismiss();
-    setPlaylistSong(selectedSong);
-    requestAnimationFrame(() => playlistRef.current?.present());
-  };
-
-  const closePlaylistList = () => {
-    playlistRef.current?.dismiss();
-    setPlaylistSong(null);
+    openSongOptions(resolved ?? ({ ...song, streamUrl: '' } as Song));
   };
 
   const pages = useMemo(() => {
@@ -133,64 +102,48 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
   }, [picks]);
 
   return (
-    <>
-      <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.secondary }]}>
-          {t('explore.sections.quickPicks')}
-        </Text>
+    <View style={styles.container}>
+      <Text style={[styles.title, { color: colors.secondary }]}>
+        {t('explore.sections.quickPicks')}
+      </Text>
 
-        {pages.length === 0 ? (
-          <SectionEmptyState message={t('explore.empty.quickPicks')} />
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={screenWidth - QUICK_PICKS_PEEK}
-            snapToAlignment="start"
-          >
-            {pages.map((page, pageIdx) => (
-              <View key={pageIdx} style={[styles.page, { width: screenWidth - QUICK_PICKS_PEEK }]}>
-                {page.map(song => (
-                  <MediaListRow
-                    key={song.id}
-                    title={song.title}
-                    subtitle={song.artist}
-                    cover={song.cover}
-                    onPress={() => { void handlePress(song); }}
-                    variant="compact"
-                    style={styles.rowWrapper}
-                    rowStyle={styles.row}
-                    trailing={
-                      <IconActionButton
-                        icon={<Ellipsis size={18} color={colors.secondary} />}
-                        onPress={() => { void handleOptions(song); }}
-                        accessibilityLabel={`${song.title} options`}
-                        size="compact"
-                      />
-                    }
-                  />
-                ))}
-              </View>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-
-      {selectedSong && (
-        <SongOptions
-          ref={optionsRef}
-          selectedSong={selectedSong}
-          onAddToPlaylist={openPlaylistList}
-        />
+      {pages.length === 0 ? (
+        <SectionEmptyState message={t('explore.empty.quickPicks')} />
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={screenWidth - QUICK_PICKS_PEEK}
+          snapToAlignment="start"
+        >
+          {pages.map((page, pageIdx) => (
+            <View key={pageIdx} style={[styles.page, { width: screenWidth - QUICK_PICKS_PEEK }]}>
+              {page.map(song => (
+                <MediaListRow
+                  key={song.id}
+                  title={song.title}
+                  subtitle={song.artist}
+                  cover={song.cover}
+                  onPress={() => { void handlePress(song); }}
+                  variant="compact"
+                  style={styles.rowWrapper}
+                  rowStyle={styles.row}
+                  trailing={
+                    <IconActionButton
+                      icon={<Ellipsis size={18} color={colors.secondary} />}
+                      onPress={() => { void handleOptions(song); }}
+                      accessibilityLabel={`${song.title} options`}
+                      size="compact"
+                    />
+                  }
+                />
+              ))}
+            </View>
+          ))}
+        </ScrollView>
       )}
-
-      <PlaylistList
-        ref={playlistRef}
-        selectedSong={playlistSong}
-        onClose={closePlaylistList}
-      />
-    </>
+    </View>
   );
 }
 
