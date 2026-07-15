@@ -161,6 +161,20 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
       return { success: true };
     },
 
+    removeSongs: async (playlistId: string, songIds: string[]) => {
+      if (songIds.length === 0) return;
+      if (playlistId === FAVORITES_ID) {
+        await Promise.all(songIds.map(songId => unstar(client, songId)));
+        return;
+      }
+      const current = await getPlaylistEntryOrder(client, playlistId);
+      const entryIds = songIds
+        .map(songId => current.find(item => item.songId === songId)?.entryId)
+        .filter((id): id is string => !!id);
+      if (entryIds.length === 0) return;
+      await removePlaylistItems(client, playlistId, entryIds);
+    },
+
     reorder: async (playlistId: string, songIds: string[]) => {
       if (playlistId === FAVORITES_ID) throw new Error("Favorites cannot be reordered");
       const current = await getPlaylistEntryOrder(client, playlistId);

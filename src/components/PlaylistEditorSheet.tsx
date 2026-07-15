@@ -10,6 +10,7 @@ import { Playlist, Song } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useApi } from '@/api';
 import { useRemoveSongFromPlaylist } from '@/hooks/playlists';
+import { useIsOffline } from '@/hooks/useIsOffline';
 import { useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -33,6 +34,7 @@ const PlaylistEditorSheet = forwardRef<BottomSheetModal, PlaylistEditorSheetProp
     const queryClient = useQueryClient();
     const activeServer = useSelector(selectActiveServer);
     const removeSong = useRemoveSongFromPlaylist();
+    const isOffline = useIsOffline();
     const sheetBg = useOptionSheetBackground();
     const [songs, setSongs] = useState<Song[]>(playlist.songs ?? []);
     const [saving, setSaving] = useState(false);
@@ -60,8 +62,16 @@ const PlaylistEditorSheet = forwardRef<BottomSheetModal, PlaylistEditorSheetProp
 
       setSaving(true);
       try {
-        for (const songId of removedIds) {
-          await removeSong.mutateAsync({ playlistId: playlist.id, songId });
+        if (!isOffline && api.playlists.removeSongs) {
+          await api.playlists.removeSongs(playlist.id, removedIds);
+        } else {
+          // Sequential on purpose: some backends (e.g. Navidrome) remove by
+          // list index rather than a stable entry ID, so concurrent removals
+          // computed from independently-fetched snapshots can race and
+          // delete the wrong song once earlier removals shift the indices.
+          for (const songId of removedIds) {
+            await removeSong.mutateAsync({ playlistId: playlist.id, songId });
+          }
         }
         if (reordered && reorderSupported) {
           await api.playlists.reorder!(playlist.id, nextIds);
@@ -83,7 +93,7 @@ const PlaylistEditorSheet = forwardRef<BottomSheetModal, PlaylistEditorSheetProp
       } finally {
         setSaving(false);
       }
-    }, [activeServer?.id, api.playlists, close, playlist, queryClient, removeSong, reorderSupported, saving, songs, t]);
+    }, [activeServer?.id, api.playlists, close, isOffline, playlist, queryClient, removeSong, reorderSupported, saving, songs, t]);
 
     const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<Song>) => (
       <ScaleDecorator>
