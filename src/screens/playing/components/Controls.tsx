@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Shuffle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
+import { Shuffle, Sparkles, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -62,8 +62,8 @@ function ToggleButton({
 }
 
 const Controls: React.FC = () => {
-  const { isPlaying, isBuffering, shuffleOn, repeatMode } = usePlayingState();
-  const { pauseSong, resumeSong, skipToNext, skipToPrevious, toggleShuffle, toggleRepeat } = usePlayingActions();
+  const { isPlaying, isBuffering, shuffleMode, repeatMode } = usePlayingState();
+  const { pauseSong, resumeSong, skipToNext, skipToPrevious, cycleShuffleMode, toggleRepeat } = usePlayingActions();
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) pauseSong();
@@ -72,8 +72,11 @@ const Controls: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <ToggleButton active={shuffleOn} onPress={toggleShuffle}>
-        <Shuffle size={23} color="#fff" />
+      <ToggleButton active={shuffleMode !== 'off'} onPress={cycleShuffleMode}>
+        {shuffleMode === 'smart'
+          ? <Sparkles size={23} color="#fff" />
+          : <Shuffle size={23} color="#fff" />
+        }
       </ToggleButton>
 
       <TouchableOpacity onPress={skipToPrevious} hitSlop={HIT_SLOP}>

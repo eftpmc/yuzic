@@ -19,10 +19,11 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import { useCast } from '@/contexts/CastContext';
 
-const AirplayButton = Platform.OS === 'ios'
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ? require('react-airplay').AirplayButton
-  : null;
+const {
+  AirplayButton,
+  useAirplayRoutes,
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+} = Platform.OS === 'ios' ? require('react-airplay') : { AirplayButton: null, useAirplayRoutes: () => [] };
 
 const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const { colors } = useTheme();
@@ -31,6 +32,8 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const {
     activeDevice, isConnecting, connectToDevice, disconnectDevice,
   } = useCast();
+  const airplayRoutes = useAirplayRoutes();
+  const airplayDevice = airplayRoutes[0] ?? null;
 
   const handleOpen = useCallback(() => { scan(); }, [scan]);
 
@@ -89,9 +92,9 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
           />
         </View>
 
-        {/* This device — always shown, highlighted when nothing is casting */}
+        {/* This device — highlighted only when nothing is casting via DLNA or AirPlay */}
         <TouchableOpacity
-          style={[styles.item, { backgroundColor: !activeDevice ? themeColor + '22' : 'transparent' }]}
+          style={[styles.item, { backgroundColor: !activeDevice && !airplayDevice ? themeColor + '22' : 'transparent' }]}
           onPress={async () => {
             if (activeDevice) await disconnectDevice();
             (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
@@ -99,19 +102,26 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
           activeOpacity={0.7}
         >
           <View style={styles.itemLeft}>
-            <Smartphone size={18} color={!activeDevice ? themeColor : colors.subtext} />
+            <Smartphone size={18} color={!activeDevice && !airplayDevice ? themeColor : colors.subtext} />
             <Text style={[styles.itemLabel, { color: colors.secondary }]}>This device</Text>
           </View>
-          {!activeDevice && <Check size={18} color={themeColor} />}
+          {!activeDevice && !airplayDevice && <Check size={18} color={themeColor} />}
         </TouchableOpacity>
 
         {/* AirPlay — iOS only */}
         {Platform.OS === 'ios' && AirplayButton && (
-          <View style={[styles.item, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.item, { backgroundColor: airplayDevice ? themeColor + '22' : 'transparent' }]}>
             <View style={styles.itemLeft}>
-              <Airplay size={18} color={colors.subtext} />
-              <Text style={[styles.itemLabel, { color: colors.secondary }]}>AirPlay</Text>
+              <Airplay size={18} color={airplayDevice ? themeColor : colors.subtext} />
+              <Text style={[
+                styles.itemLabel,
+                { color: colors.secondary, fontWeight: airplayDevice ? '600' : '400' },
+              ]}
+              >
+                {airplayDevice ? airplayDevice.portName : 'AirPlay'}
+              </Text>
             </View>
+            {airplayDevice && <Check size={18} color={themeColor} />}
             <AirplayButton
               style={StyleSheet.absoluteFillObject}
               tintColor="transparent"
@@ -121,8 +131,11 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         )}
 
         {/* ── DLNA ── */}
-        {(devices.length > 0 || activeDevice) && (
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        {(devices.length > 0 || activeDevice || isScanning) && (
+          <>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <Text style={[styles.sectionLabel, { color: colors.subtext }]}>DLNA / UPnP</Text>
+          </>
         )}
 
         {/* Active DLNA device */}
@@ -162,7 +175,15 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
           );
         })}
 
-        {/* Empty state */}
+        {/* Scanning / empty state */}
+        {isScanning && devices.length === 0 && !activeDevice && (
+          <View style={styles.searchingRow}>
+            <SpinningLoaderCircle size={16} color={colors.subtext} />
+            <Text style={[styles.empty, { color: colors.subtext, paddingVertical: 0 }]}>
+              Searching for devices...
+            </Text>
+          </View>
+        )}
         {!isScanning && devices.length === 0 && !activeDevice && (
           <Text style={[styles.empty, { color: colors.subtext }]}>
             No devices found on your network.
@@ -234,5 +255,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingVertical: 12,
     paddingHorizontal: 12,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 12,
+    paddingBottom: 6,
+  },
+  searchingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
 });

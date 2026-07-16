@@ -64,7 +64,11 @@ const AlbumScreen: React.FC = () => {
       );
     }
     if (!localResult.album) {
-      return <NotFoundView message="Album not found" />;
+      return (
+        <NotFoundView
+          message={localResult.error ? "Couldn't load album. Check your connection." : 'Album not found'}
+        />
+      );
     }
     return (
       <SafeAreaView testID="album-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>

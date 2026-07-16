@@ -260,15 +260,20 @@ function LocalActionRow({ album }: { album: Album }) {
 
   return (
     <DetailActionRow>
-      <DetailCircleAction onPress={handleShuffle}>
+      <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle album">
         <Shuffle size={18} color={colors.secondary} />
       </DetailCircleAction>
 
-      <DetailPlayAction onPress={handlePlay}>
+      <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play album">
         <Play size={20} color="#fff" fill="#fff" />
       </DetailPlayAction>
 
-      <DetailCircleAction onPress={() => void toggleDownload()}>
+      <DetailCircleAction
+        onPress={() => void toggleDownload()}
+        accessibilityLabel={
+          isAlbumDownloading ? 'Cancel download' : isAlbumDownloaded ? 'Downloaded' : 'Download album'
+        }
+      >
         {isAlbumDownloading ? (
           <DownloadProgressRing progress={downloadFraction} size={18} />
         ) : isAlbumDownloaded ? (
@@ -324,6 +329,7 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         <DetailPlayAction
           onPress={handleDownload}
           disabled={!canDownload || albumStatus.kind !== 'none'}
+          accessibilityLabel="Download album to server"
         >
           <CloudDownload
             size={20}
@@ -332,7 +338,7 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         </DetailPlayAction>
 
         {previewSongs.length > 0 && (
-          <DetailCircleAction onPress={handlePlay}>
+          <DetailCircleAction onPress={handlePlay} accessibilityLabel="Play preview">
             <Play size={18} color={colors.secondary} fill={colors.secondary} />
           </DetailCircleAction>
         )}

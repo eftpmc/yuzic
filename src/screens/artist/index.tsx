@@ -64,7 +64,11 @@ const ArtistScreen: React.FC = () => {
       );
     }
     if (!localResult.artist) {
-      return <NotFoundView message="Artist not found" />;
+      return (
+        <NotFoundView
+          message={localResult.error ? "Couldn't load artist. Check your connection." : 'Artist not found'}
+        />
+      );
     }
     return (
       <SafeAreaView testID="artist-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>

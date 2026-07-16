@@ -19,7 +19,7 @@ const PlaylistScreen: React.FC = () => {
 
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playlist, isLoading, songsLoading, degraded } = usePlaylist(id);
+  const { playlist, isLoading, songsLoading, degraded, error } = usePlaylist(id);
 
   if (isLoading) {
     return (
@@ -30,7 +30,11 @@ const PlaylistScreen: React.FC = () => {
   }
 
   if (!playlist) {
-    return <NotFoundView message="Playlist not found" />;
+    return (
+      <NotFoundView
+        message={error ? "Couldn't load playlist. Check your connection." : 'Playlist not found'}
+      />
+    );
   }
 
   return (

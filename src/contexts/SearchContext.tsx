@@ -43,6 +43,8 @@ interface SearchContextType {
   searchExternal: (query: string) => Promise<SearchResult[]>;
   clearSearch: () => void;
   isLoading: boolean;
+  /** True when the most recent search failed to reach the server/external source, so results shown (if any) may be incomplete. */
+  hasError: boolean;
   handleSearchWithFilters: (query: string, filters: SearchFilters) => Promise<void>;
 }
 
@@ -248,6 +250,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const searchRequestIdRef = useRef(0);
 
@@ -324,25 +327,22 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   ): Promise<SearchResult[]> => {
     if (!query.trim()) return [];
 
-    try {
-      const [deezerArtists, deezerAlbums] = await Promise.all([
-        deezer.searchDeezerArtists(query, 4),
-        deezer.searchDeezerAlbums(query, 6),
-      ]);
+    const [deezerArtists, deezerAlbums] = await Promise.all([
+      deezer.searchDeezerArtists(query, 4),
+      deezer.searchDeezerAlbums(query, 6),
+    ]);
 
-      return [
-        ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
-        ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
-      ];
-    } catch {
-      return [];
-    }
+    return [
+      ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
+      ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
+    ];
   }, []);
 
   const clearSearch = useCallback(() => {
     searchRequestIdRef.current += 1;
     setSearchResults([]);
     setIsLoading(false);
+    setHasError(false);
   }, []);
 
   const handleSearchWithFilters = useCallback(async (query: string, filters: SearchFilters) => {
@@ -350,9 +350,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     if (!query.trim()) {
       setSearchResults([]);
       setIsLoading(false);
+      setHasError(false);
       return;
     }
     setIsLoading(true);
+    let errored = false;
     try {
       const lowerQuery = query.toLowerCase();
       const results: SearchResult[] = [];
@@ -363,17 +365,18 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         }
         if (requestId !== searchRequestIdRef.current) return;
         if (searchScope.includes('server')) {
-          try { results.push(...await searchServer(query)); } catch {}
+          try { results.push(...await searchServer(query)); } catch { errored = true; }
         }
         if (requestId !== searchRequestIdRef.current) return;
       }
 
       if (filters.deezer) {
-        try { results.push(...await searchExternal(query)); } catch {}
+        try { results.push(...await searchExternal(query)); } catch { errored = true; }
       }
       if (requestId !== searchRequestIdRef.current) return;
 
       setSearchResults(dedupeAndSort(results, lowerQuery));
+      setHasError(errored);
     } finally {
       if (requestId === searchRequestIdRef.current) setIsLoading(false);
     }
@@ -385,6 +388,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     searchExternal,
     clearSearch,
     isLoading,
+    hasError,
     handleSearchWithFilters,
   }), [
     searchResults,
@@ -392,6 +396,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     searchExternal,
     clearSearch,
     isLoading,
+    hasError,
     handleSearchWithFilters,
   ]);
 

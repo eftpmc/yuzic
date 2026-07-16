@@ -8,12 +8,15 @@ import {
   selectPreferredCodec,
   selectShowSleepTimer,
   selectShowPlaybackSpeed,
+  selectAutoplayEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { selectIsAudiomuseConfigured } from '@/utils/redux/selectors/audiomuseSelectors';
 import {
   setPreferredCodec,
   setShowSleepTimer,
   setShowPlaybackSpeed,
+  setAutoplayEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
 const PlayerSettings: React.FC = () => {
@@ -23,6 +26,8 @@ const PlayerSettings: React.FC = () => {
   const activeServer = useSelector(selectActiveServer);
   const showSleepTimer = useSelector(selectShowSleepTimer);
   const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
+  const autoplayEnabled = useSelector(selectAutoplayEnabled);
+  const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
   const supportsOpus = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
 
   const toggleOpus = useCallback((v: boolean) => { dispatch(setPreferredCodec(v ? 'opus' : 'mp3')); }, [dispatch]);
@@ -48,11 +53,23 @@ const PlayerSettings: React.FC = () => {
     },
   ], [t, showSleepTimer, showPlaybackSpeed, dispatch]);
 
+  const autoplayItems = useMemo(() => [
+    {
+      label: t('settings.player.autoplay'),
+      subtext: isAudiomuseConfigured
+        ? t('settings.player.autoplaySubtextAudiomuse')
+        : t('settings.player.autoplaySubtextNative'),
+      value: autoplayEnabled,
+      onValueChange: (v: boolean) => dispatch(setAutoplayEnabled(v)),
+    },
+  ], [t, isAudiomuseConfigured, autoplayEnabled, dispatch]);
+
   return (
     <SettingsScreen title={t('settings.player.title')}>
       <StreamingQuality />
       {supportsOpus && <SettingsToggleGroup items={opusItems} />}
       <SettingsToggleGroup items={playerControlItems} />
+      <SettingsToggleGroup items={autoplayItems} />
     </SettingsScreen>
   );
 };

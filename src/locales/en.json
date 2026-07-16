@@ -208,7 +208,10 @@
       "showSleepTimer": "Sleep Timer",
       "showSleepTimerSubtext": "Show a sleep timer control in the player.",
       "showPlaybackSpeed": "Playback Speed",
-      "showPlaybackSpeedSubtext": "Show a speed control in the player."
+      "showPlaybackSpeedSubtext": "Show a speed control in the player.",
+      "autoplay": "Autoplay",
+      "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
+      "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends."
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -317,6 +320,20 @@
       "artistSection": "Artist",
       "albumSection": "Album",
       "playlistSection": "Playlist"
+    },
+    "audiomuse": {
+      "title": "AudioMuse-AI",
+      "credentialsHelper": "Connect to a self-hosted AudioMuse-AI instance pointed at this server for sonic-analysis-based Smart Shuffle and Smooth Transitions.",
+      "serverUrl": "Server URL",
+      "serverUrlPlaceholder": "http://audiomuse:8000",
+      "apiToken": "API Token",
+      "apiTokenPlaceholder": "API token",
+      "connectivity": "Connectivity",
+      "connectionFailed": "AudioMuse-AI connection failed",
+      "enable": "Enable AudioMuse-AI",
+      "enableSubtext": "Use AudioMuse-AI for Smart Shuffle and Smooth Transitions when connected.",
+      "disconnect": "Disconnect",
+      "disconnected": "Disconnected from AudioMuse-AI."
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -470,7 +487,8 @@
   "search": {
     "title": "Search",
     "placeholder": "Search for music, artists, or playlists...",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "searchError": "Couldn't reach the server — results may be incomplete"
   },
   "artist": {
     "sections": {
@@ -696,6 +714,21 @@
       "songs": "Songs",
       "plays": "Plays",
       "unknown": "—"
+    }
+  },
+  "genreOptions": {
+    "actions": {
+      "addToNext": "Play Next",
+      "addToEnd": "Add to End",
+      "shuffleToQueue": "Shuffle to Queue",
+      "download": "Download All",
+      "downloading": "Downloading…",
+      "downloaded": "Downloaded"
+    },
+    "toasts": {
+      "addedNext": "Playing {{genre}} next",
+      "addedToEnd": "Added {{genre}} to queue",
+      "shuffledToQueue": "Shuffled {{genre}} into queue"
     }
   },
   "playlistOptions": {

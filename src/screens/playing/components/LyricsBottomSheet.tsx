@@ -7,7 +7,6 @@ import {
   Text,
   LayoutChangeEvent,
 } from 'react-native';
-import TrackPlayer from '@rntp/player';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -19,7 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePlayingProgress } from '@/contexts/PlayingContext';
+import { usePlayingProgress, usePlayingActions } from '@/contexts/PlayingContext';
 import { useTheme } from '@/hooks/useTheme';
 import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
@@ -82,6 +81,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     const { t } = useTranslation();
     const { colors } = useTheme();
     const progress = usePlayingProgress();
+    const { seekSong } = usePlayingActions();
     const insets = useSafeAreaInsets();
     const scrollRef = useRef<BottomSheetScrollViewMethods>(null);
     const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
@@ -179,7 +179,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
             <TouchableOpacity
               key={index}
               onLayout={onLineLayout(index)}
-              onPress={() => TrackPlayer.seekTo(line.startMs / 1000)}
+              onPress={() => seekSong(line.startMs / 1000)}
               activeOpacity={0.6}
             >
               <LyricLine

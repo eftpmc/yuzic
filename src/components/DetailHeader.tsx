@@ -37,6 +37,8 @@ export function DetailHeaderBar({ title, rightAction }: DetailHeaderBarProps) {
     <View style={styles.headerRow}>
       <TouchableOpacity
         testID="detail-back-button"
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
         onPress={() => navigation.goBack()}
         style={styles.headerButton}
       >
@@ -136,9 +138,10 @@ type DetailCircleActionProps = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
 };
 
-export function DetailCircleAction({ children, onPress, disabled, style }: DetailCircleActionProps) {
+export function DetailCircleAction({ children, onPress, disabled, style, accessibilityLabel }: DetailCircleActionProps) {
   const { colors } = useTheme();
   return (
     <TouchableOpacity
@@ -146,6 +149,9 @@ export function DetailCircleAction({ children, onPress, disabled, style }: Detai
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
     >
       {children}
     </TouchableOpacity>
@@ -157,9 +163,10 @@ type DetailPlayActionProps = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
 };
 
-export function DetailPlayAction({ children, onPress, disabled, style }: DetailPlayActionProps) {
+export function DetailPlayAction({ children, onPress, disabled, style, accessibilityLabel }: DetailPlayActionProps) {
   const { colors } = useTheme();
   return (
     <TouchableOpacity
@@ -167,6 +174,9 @@ export function DetailPlayAction({ children, onPress, disabled, style }: DetailP
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
     >
       {children}
     </TouchableOpacity>

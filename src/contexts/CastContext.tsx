@@ -144,16 +144,24 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
   const castPause = useCallback(async () => {
     const device = activeDeviceRef.current;
     if (!device) return;
-    await soapAction(device.avTransportUrl, 'AVTransport', 'Pause', `<InstanceID>0</InstanceID>`);
+    try {
+      await soapAction(device.avTransportUrl, 'AVTransport', 'Pause', `<InstanceID>0</InstanceID>`);
+    } catch (err) {
+      console.warn('[Cast] DLNA pause failed', err);
+    }
   }, []);
 
   const castResume = useCallback(async () => {
     const device = activeDeviceRef.current;
     if (!device) return;
-    await soapAction(device.avTransportUrl, 'AVTransport', 'Play', `
-      <InstanceID>0</InstanceID>
-      <Speed>1</Speed>
-    `);
+    try {
+      await soapAction(device.avTransportUrl, 'AVTransport', 'Play', `
+        <InstanceID>0</InstanceID>
+        <Speed>1</Speed>
+      `);
+    } catch (err) {
+      console.warn('[Cast] DLNA resume failed', err);
+    }
   }, []);
 
   const castSeek = useCallback(async (position: number) => {
@@ -163,11 +171,15 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
     const m = Math.floor((position % 3600) / 60);
     const s = Math.floor(position % 60);
     const ts = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    await soapAction(device.avTransportUrl, 'AVTransport', 'Seek', `
-      <InstanceID>0</InstanceID>
-      <Unit>REL_TIME</Unit>
-      <Target>${ts}</Target>
-    `);
+    try {
+      await soapAction(device.avTransportUrl, 'AVTransport', 'Seek', `
+        <InstanceID>0</InstanceID>
+        <Unit>REL_TIME</Unit>
+        <Target>${ts}</Target>
+      `);
+    } catch (err) {
+      console.warn('[Cast] DLNA seek failed', err);
+    }
   }, []);
 
   return (

@@ -247,13 +247,14 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         stackBehavior="push"
         handleComponent={null}
         onChange={(index) => setIsSheetOpen(index >= 0)}
-        backgroundStyle={{ backgroundColor: colors.muted }}
+        backgroundStyle={{ backgroundColor: colors.card }}
       >
         <View
           style={[
             styles.headerContainer,
             {
               backgroundColor: colors.card,
+              borderBottomColor: colors.border,
             },
           ]}
         >
@@ -267,7 +268,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         </View>
 
         <View style={styles.content}>
-          <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
             <Search size={20} color={colors.placeholder} />
             <TextInput
               style={[styles.searchInput, { color: colors.secondary }]}
@@ -280,7 +281,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
           <View style={styles.createContainer}>
             <TextInput
-              style={[styles.newPlaylistInput, { backgroundColor: colors.card, color: colors.secondary }]}
+              style={[styles.newPlaylistInput, { backgroundColor: colors.muted, color: colors.secondary }]}
               placeholder={t('playlistList.newPlaceholder')}
               placeholderTextColor={colors.placeholder}
               value={newPlaylistName}
@@ -338,6 +339,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   cancelButton: {
     position: 'absolute',

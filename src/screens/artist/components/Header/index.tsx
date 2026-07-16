@@ -315,6 +315,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         onPress={() => void playArtist(true)}
         disabled={songsLoading}
         style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
+        accessibilityLabel="Shuffle artist"
       >
         {songsLoading ? (
           <ActivityIndicator size="small" color={colors.secondary} />
@@ -326,6 +327,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
       <DetailPlayAction
         onPress={() => void playArtist(false)}
         disabled={songsLoading}
+        accessibilityLabel="Play artist"
       >
         {songsLoading ? (
           <ActivityIndicator size="small" color="#fff" />
@@ -338,6 +340,13 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         onPress={() => void handleDownloadAll()}
         disabled={isDownloadingAll || isArtistDownloading}
         style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
+        accessibilityLabel={
+          isDownloadingAll || isArtistDownloading
+            ? 'Downloading artist'
+            : isArtistFullyDownloaded
+              ? 'Downloaded'
+              : 'Download all artist songs'
+        }
       >
         {isDownloadingAll || isArtistDownloading ? (
           <ActivityIndicator size="small" color={colors.secondary} />

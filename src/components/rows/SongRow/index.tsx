@@ -85,7 +85,12 @@ const SongRow: React.FC<Props> = ({
             {downloaded && (isAlbumCompact || showDownloadedDot) && (
               <ArrowDownCircle size={16} color={colors.subtext} />
             )}
-            <TouchableOpacity onPress={openOptions} hitSlop={10}>
+            <TouchableOpacity
+              onPress={openOptions}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Song options"
+            >
               <Ellipsis size={18} color={colors.secondary} />
             </TouchableOpacity>
           </View>

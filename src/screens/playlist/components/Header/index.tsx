@@ -109,15 +109,20 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
         }
         actions={
           <DetailActionRow style={{ marginBottom: 18 }}>
-            <DetailCircleAction onPress={handleShuffle}>
+            <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle playlist">
               <Shuffle size={18} color={colors.secondary} />
             </DetailCircleAction>
 
-            <DetailPlayAction onPress={handlePlay}>
+            <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play playlist">
               <Play size={24} color="#fff" fill="#fff" />
             </DetailPlayAction>
 
-            <DetailCircleAction onPress={() => void toggleDownload()}>
+            <DetailCircleAction
+              onPress={() => void toggleDownload()}
+              accessibilityLabel={
+                isPlaylistDownloading ? 'Cancel download' : isPlaylistDownloaded ? 'Downloaded' : 'Download playlist'
+              }
+            >
               {isPlaylistDownloading ? (
                 <DownloadProgressRing progress={downloadFraction} size={18} />
               ) : isPlaylistDownloaded ? (

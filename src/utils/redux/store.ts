@@ -4,6 +4,7 @@ import { reduxStorage as storage } from '@/utils/mmkvStorage';
 
 import serversReducer from './slices/serversSlice';
 import downloadersReducer from './slices/downloadersSlice';
+import audiomuseReducer from './slices/audiomuseSlice';
 import settingsReducer from './slices/settingsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
 import lastfmReducer from './slices/lastfmSlice';
@@ -31,6 +32,7 @@ const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
 
 const serversPersistConfig = { key: 'servers', storage };
 const downloadersPersistConfig = { key: 'downloaders', storage };
+const audiomusePersistConfig = { key: 'audiomuse', storage };
 const settingsPersistConfig = {
   key: 'settings',
   storage,
@@ -63,6 +65,7 @@ const libraryStarredPersistConfig = {
 export const rootReducer = combineReducers({
     servers: serversReducer,
     downloaders: downloadersReducer,
+    audiomuse: audiomuseReducer,
     settings: settingsReducer,
     listenbrainz: listenbrainzReducer,
     lastfm: lastfmReducer,
@@ -75,6 +78,7 @@ export const rootReducer = combineReducers({
 const persistedReducer = combineReducers({
     servers: persistReducer(serversPersistConfig, serversReducer),
     downloaders: persistReducer(downloadersPersistConfig, downloadersReducer),
+    audiomuse: persistReducer(audiomusePersistConfig, audiomuseReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
     lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),

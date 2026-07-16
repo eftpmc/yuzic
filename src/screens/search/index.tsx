@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import { Ellipsis, X } from 'lucide-react-native';
+import { CloudOff, Ellipsis, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,6 +18,7 @@ import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
 import PlaylistRow from '@/components/rows/PlaylistRow';
 import SkeletonListRow from '@/components/SkeletonListRow';
+import StatusBanner from '@/components/StatusBanner';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { usePlaying } from '@/contexts/PlayingContext';
@@ -53,7 +54,7 @@ const Search = () => {
 
   const [query, setQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const { searchResults, handleSearchWithFilters, clearSearch, isLoading } = useSearch();
+  const { searchResults, handleSearchWithFilters, clearSearch, isLoading, hasError } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -243,6 +244,16 @@ const Search = () => {
         </View>
       </View>
 
+      {hasSearched && !isLoading && hasError && (
+        <StatusBanner
+          icon={<CloudOff size={14} color={colors.subtext} />}
+          text={t('search.searchError')}
+          closable
+          style={styles.errorBanner}
+          testID="search-error-banner"
+        />
+      )}
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {isLoading
           ? [...Array(8)].map((_, i) => <SkeletonListRow key={i} />)
@@ -319,6 +330,10 @@ const styles = StyleSheet.create({
     padding: 4,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  errorBanner: {
+    marginHorizontal: 16,
+    marginBottom: 8,
   },
   scrollContent: {
     paddingTop: 8,

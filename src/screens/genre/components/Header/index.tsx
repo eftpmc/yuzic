@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
-import { ChevronLeft, Shuffle, Play, Check, Download } from 'lucide-react-native'
+import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'
@@ -24,8 +24,10 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTracks } from '@/hooks/tracks'
 import { usePlaying } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
+import { useSheetRef } from '@/utils/useSheetRef'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
-import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader'
+import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar, DetailHeaderIconButton } from '@/components/DetailHeader'
+import GenreOptions from '@/components/options/GenreOptions'
 
 type Props = {
   genre: string
@@ -157,6 +159,9 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
         {showNavigation && (
           <View style={styles.header}>
             <TouchableOpacity
+              testID="detail-back-button"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -180,6 +185,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           onPress={() => { void play(true) }}
           disabled={songsLoading}
           style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
+          accessibilityLabel="Shuffle genre"
         >
           {songsLoading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
@@ -191,6 +197,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
         <DetailPlayAction
           onPress={() => { void play(false) }}
           disabled={songsLoading}
+          accessibilityLabel="Play genre"
         >
           {songsLoading ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -203,6 +210,13 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           onPress={() => { void handleDownloadAll() }}
           disabled={isDownloadingAll || isDownloading}
           style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
+          accessibilityLabel={
+            isDownloadingAll || isDownloading
+              ? 'Downloading genre'
+              : isFullyDownloaded
+                ? 'Downloaded'
+                : 'Download all genre songs'
+          }
         >
           {isDownloadingAll || isDownloading ? (
             <ActivityIndicator size="small" color={colors.secondary} />
@@ -217,9 +231,22 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
   )
 }
 
-export const GenreHeaderBar: React.FC<Props> = ({ genre }) => (
-  <DetailHeaderBar title={genre} />
+export const GenreHeaderBar: React.FC<Props> = ({ genre, albums }) => (
+  <DetailHeaderBar title={genre} rightAction={<GenreOptionsButton genre={genre} albums={albums} />} />
 )
+
+function GenreOptionsButton({ genre, albums }: { genre: string; albums: AlbumBase[] }) {
+  const { colors } = useTheme()
+  const optionsSheetRef = useSheetRef()
+  return (
+    <>
+      <DetailHeaderIconButton onPress={() => optionsSheetRef.current?.present()}>
+        <Ellipsis size={24} color={colors.secondary} />
+      </DetailHeaderIconButton>
+      <GenreOptions ref={optionsSheetRef} genre={genre} albums={albums} />
+    </>
+  )
+}
 
 export default GenreHeader
 

@@ -58,6 +58,7 @@ export interface SettingsState {
   /* Player controls */
   showSleepTimer: boolean;
   showPlaybackSpeed: boolean;
+  autoplayEnabled: boolean;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -101,6 +102,7 @@ const initialState: SettingsState = {
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
+  autoplayEnabled: false,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -215,6 +217,9 @@ const settingsSlice = createSlice({
     setShowPlaybackSpeed(state, action: PayloadAction<boolean>) {
       state.showPlaybackSpeed = action.payload;
     },
+    setAutoplayEnabled(state, action: PayloadAction<boolean>) {
+      state.autoplayEnabled = action.payload;
+    },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
@@ -258,6 +263,7 @@ export const {
   setDeezerPlaylistRecommendationsEnabled,
   setShowSleepTimer,
   setShowPlaybackSpeed,
+  setAutoplayEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,
