@@ -7,8 +7,6 @@ interface LibraryState {
   playlists: PlaylistBase[];
   tracks: SongBase[];
   genres: Record<string, string[]>;
-  starred: Song[];
-  starredAlbums: AlbumBase[];
 }
 
 const initialState: LibraryState = {
@@ -17,8 +15,6 @@ const initialState: LibraryState = {
   playlists: [],
   tracks: [],
   genres: {},
-  starred: [],
-  starredAlbums: [],
 };
 
 const librarySlice = createSlice({
@@ -39,20 +35,6 @@ const librarySlice = createSlice({
     },
     setLibraryGenres(state, action: PayloadAction<{ serverId: string; genres: string[] }>) {
       state.genres[action.payload.serverId] = action.payload.genres;
-    },
-    setLibraryStarred(state, action: PayloadAction<Song[]>) {
-      state.starred = action.payload;
-    },
-    addLibraryStarredSong(state, action: PayloadAction<Song>) {
-      if (!state.starred.some(song => song.id === action.payload.id)) {
-        state.starred.push(action.payload);
-      }
-    },
-    removeLibraryStarredSong(state, action: PayloadAction<string>) {
-      state.starred = state.starred.filter(song => song.id !== action.payload);
-    },
-    setLibraryStarredAlbums(state, action: PayloadAction<AlbumBase[]>) {
-      state.starredAlbums = action.payload;
     },
     addLibraryPlaylistSong(
       state,
@@ -84,8 +66,6 @@ const librarySlice = createSlice({
       state.artists = [];
       state.playlists = [];
       state.tracks = [];
-      state.starred = [];
-      state.starredAlbums = [];
       // genres are keyed by serverId so no need to clear them
     },
   },
@@ -97,10 +77,6 @@ export const {
   setLibraryPlaylists,
   setLibraryTracks,
   setLibraryGenres,
-  setLibraryStarred,
-  addLibraryStarredSong,
-  removeLibraryStarredSong,
-  setLibraryStarredAlbums,
   addLibraryPlaylistSong,
   removeLibraryPlaylistSong,
   renameLibraryPlaylist,

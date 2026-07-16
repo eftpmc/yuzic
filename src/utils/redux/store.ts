@@ -9,6 +9,7 @@ import listenbrainzReducer from './slices/listenbrainzSlice';
 import lastfmReducer from './slices/lastfmSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
+import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
 
 // Returns undefined (→ initialState) only on version bump; otherwise passes state through.
@@ -52,6 +53,12 @@ const libraryPersistConfig = {
   version: 2,
   migrate: resetMigrate,
 };
+// Kept separate from libraryPersistConfig: starred toggles on every heart tap and
+// must not re-serialize/re-write the full albums/artists/tracks catalog each time.
+const libraryStarredPersistConfig = {
+  key: 'libraryStarred',
+  storage,
+};
 
 export const rootReducer = combineReducers({
     servers: serversReducer,
@@ -61,6 +68,7 @@ export const rootReducer = combineReducers({
     lastfm: lastfmReducer,
     stats: statsReducer,
     library: libraryReducer,
+    libraryStarred: libraryStarredReducer,
     offlineMutations: offlineMutationsReducer,
 });
 
@@ -72,6 +80,7 @@ const persistedReducer = combineReducers({
     lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),
+    libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),
     offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
 });
 

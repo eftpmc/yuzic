@@ -5,7 +5,7 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useIsOffline } from '@/hooks/useIsOffline';
-import { removeLibraryStarredSong } from '@/utils/redux/slices/librarySlice';
+import { removeLibraryStarredSong } from '@/utils/redux/slices/libraryStarredSlice';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import { createOfflineMutationId } from '@/utils/offline/offlineMutations';
 

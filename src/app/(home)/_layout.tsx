@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { clearLibrary } from '@/utils/redux/slices/librarySlice';
+import { clearLibraryStarred } from '@/utils/redux/slices/libraryStarredSlice';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
 import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachabilityWatcher';
@@ -89,6 +90,7 @@ export default function HomeLayout() {
         prevServerIdRef.current = activeServerId
         if (prev && activeServerId && prev !== activeServerId) {
             dispatch(clearLibrary())
+            dispatch(clearLibraryStarred())
             if (!isOfflineRef.current) sync()
         }
     }, [activeServerId, dispatch, sync])

@@ -7,7 +7,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { Song } from '@/types';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { usePlayableSongResolver } from '@/hooks/songs';
-import { addLibraryStarredSong } from '@/utils/redux/slices/librarySlice';
+import { addLibraryStarredSong } from '@/utils/redux/slices/libraryStarredSlice';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import { createOfflineMutationId } from '@/utils/offline/offlineMutations';
 
