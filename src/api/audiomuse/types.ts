@@ -1,24 +1,24 @@
-// UNVERIFIED — placeholder shapes, not confirmed against a live AudioMuse-AI
-// instance. AudioMuse-AI's endpoint contracts are only browsable via its own
-// Swagger UI (<host>:8000/apidocs/), which hasn't been checked yet. Update
-// these once real payloads are seen; callers only depend on this module, not
-// on these shapes directly.
-
 export interface AudiomuseTrackRef {
-  itemId: string; // assumed to match the active Navidrome/Jellyfin/Emby server's native item id
+  itemId: string;
   title?: string;
   artist?: string;
 }
 
-export interface AudiomusePingResult {
-  ok: boolean;
-  version?: string;
-}
+// AudioMuse returns a JSON array with snake_case item_id fields.
+export type AudiomuseSimilarityResult = {
+  item_id: string;
+  title?: string;
+  author?: string;
+  album?: string;
+  distance?: number;
+}[];
 
-export interface AudiomuseSimilarityResult {
-  tracks: AudiomuseTrackRef[];
-}
-
-export interface AudiomuseSongPathResult {
-  path: AudiomuseTrackRef[];
+export function normalizeAudiomuseSimilarityResult(
+  raw: AudiomuseSimilarityResult
+): AudiomuseTrackRef[] {
+  return raw.map(track => ({
+    itemId: track.item_id,
+    title: track.title,
+    artist: track.author,
+  }));
 }
