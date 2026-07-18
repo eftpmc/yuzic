@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Settings, RefreshCw, LogOut } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useApi } from '@/api';
 import { disconnect } from '@/utils/redux/slices/serversSlice';
@@ -35,7 +35,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
   const themeColor = useSelector(selectThemeColor);
 
   const queryClient = useQueryClient();
-  const { pauseSong, resetQueue } = usePlaying();
+  const { pauseSong, resetQueue } = usePlayingActions();
 
   const initial = username?.[0]?.toUpperCase() ?? '?';
   const cleanUrl = serverUrl?.replace(/^https?:\/\//, '');

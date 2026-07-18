@@ -21,7 +21,7 @@ import SkeletonListRow from '@/components/SkeletonListRow';
 import StatusBanner from '@/components/StatusBanner';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
@@ -45,7 +45,7 @@ const Search = () => {
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSong } = usePlaying();
+  const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const deezerSearchEnabled = useDeezerSearchEnabled();
   const showSourceHeaders = useSelector(selectShowSourceHeaders);

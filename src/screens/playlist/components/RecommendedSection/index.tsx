@@ -16,7 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import SectionHeader from '@/components/SectionHeader';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { createAudiomuseQueueFillProvider } from '@/contexts/queueProviders';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
 import { useApi } from '@/api';
@@ -138,7 +138,7 @@ type LocalRowProps = {
 const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSimilar } = usePlaying();
+  const { playSimilar } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const addToPlaylist = useAddSongToPlaylist();
   const [adding, setAdding] = useState(false);

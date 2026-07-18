@@ -1,7 +1,7 @@
 import React, { memo, useRef } from "react";
 import { InteractionManager } from "react-native";
 import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
-import { usePlaying } from "@/contexts/PlayingContext";
+import { usePlayingActions } from "@/contexts/PlayingContext";
 import { SongBase } from "@/types";
 import { useTranslation } from "react-i18next";
 import { toast } from "@backpackapp-io/react-native-toast";
@@ -18,7 +18,7 @@ type Props = {
 
 const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }) => {
   const { t } = useTranslation();
-  const { playSimilar, playSong } = usePlaying();
+  const { playSimilar, playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const { openSongOptions } = useSongActionSheets();
 
