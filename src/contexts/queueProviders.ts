@@ -13,7 +13,7 @@ export interface QueueFillProvider {
   id: 'audiomuse' | 'native-similarity';
   isAvailable(): boolean;
   fetchExtension(opts: {
-    recentSongs: Song[];
+    recentSongs: { id: string }[];
     excludeIds: Set<string>;
     count: number;
   }): Promise<Song[]>;
