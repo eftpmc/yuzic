@@ -22,12 +22,10 @@ import { usePlaylists } from '@/hooks/playlists';
 
 import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   selectSearchScope,
 } from '@/utils/redux/selectors/settingsSelectors';
-import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
-import { addSearchQuery } from '@/utils/redux/slices/searchHistorySlice';
 import { useDownload } from '@/contexts/DownloadContext';
 import {
   buildDownloadedTrackIdSet,
@@ -211,14 +209,12 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   children,
 }) => {
   const api = useApi();
-  const dispatch = useDispatch();
   const { albums } = useAlbums();
   const { artists } = useArtists();
   const { playlists } = usePlaylists();
   const { tracks } = useTracks();
 
   const searchScope = useSelector(selectSearchScope);
-  const activeServerId = useSelector(selectActiveServerId);
 
   const {
     downloadedTracks,
@@ -357,8 +353,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       setHasError(false);
       return;
     }
-    if (activeServerId) dispatch(addSearchQuery({ serverId: activeServerId, query }));
-
     setIsLoading(true);
     let errored = false;
     try {
@@ -386,7 +380,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     } finally {
       if (requestId === searchRequestIdRef.current) setIsLoading(false);
     }
-  }, [activeServerId, dispatch, searchExternal, searchLibrary, searchScope, searchServer]);
+  }, [searchExternal, searchLibrary, searchScope, searchServer]);
 
   const value = useMemo<SearchContextType>(() => ({
     searchResults,
