@@ -520,6 +520,10 @@
     "title": "検索",
     "placeholder": "音楽、アーティスト、プレイリストを検索...",
     "noResults": "結果が見つかりません",
+    "searchError": "サーバーに接続できませんでした — 結果が不完全な場合があります",
+    "recentSearches": "最近の検索",
+    "clearRecent": "クリア",
+    "removeRecentSearch": "「{{query}}」を最近の検索から削除",
     "chips": {
       "local": "ローカル",
       "external": "外部",

@@ -488,7 +488,10 @@
     "title": "Search",
     "placeholder": "Search for music, artists, or playlists...",
     "noResults": "No results found",
-    "searchError": "Couldn't reach the server — results may be incomplete"
+    "searchError": "Couldn't reach the server — results may be incomplete",
+    "recentSearches": "Recent Searches",
+    "clearRecent": "Clear",
+    "removeRecentSearch": "Remove \"{{query}}\" from recent searches"
   },
   "artist": {
     "sections": {

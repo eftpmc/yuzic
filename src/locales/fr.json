@@ -521,6 +521,10 @@
     "title": "Recherche",
     "placeholder": "Rechercher de la musique, des artistes ou des listes de lecture...",
     "noResults": "Aucun résultat trouvé",
+    "searchError": "Impossible de joindre le serveur — les résultats peuvent être incomplets",
+    "recentSearches": "Recherches récentes",
+    "clearRecent": "Effacer",
+    "removeRecentSearch": "Supprimer « {{query}} » des recherches récentes",
     "chips": {
       "local": "Local",
       "external": "Externe",

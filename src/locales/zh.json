@@ -520,6 +520,10 @@
     "title": "搜索",
     "placeholder": "搜索音乐、歌手或播放列表...",
     "noResults": "未找到结果",
+    "searchError": "无法连接服务器 — 结果可能不完整",
+    "recentSearches": "最近搜索",
+    "clearRecent": "清除",
+    "removeRecentSearch": "从最近搜索中删除“{{query}}”",
     "chips": {
       "local": "本地",
       "external": "外部",
