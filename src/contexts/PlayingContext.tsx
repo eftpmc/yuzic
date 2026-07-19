@@ -799,9 +799,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     bumpQueue();
   }, [bumpQueue, resolvePlayableSong]);
 
+  // AudioMuse-AI first when configured, native similar-songs as fallback —
+  // same tiered provider Autoplay and Smart Shuffle use, so "Play Similar"
+  // gets acoustic similarity too instead of always hitting the native API.
   const playSimilar = useCallback(async (song: Song) => {
     try {
-      const similarSongs = await api.similar.getSimilarSongs(song.id);
+      const provider = resolveQueueFillProvider(providersRef.current);
+      const similarSongs = provider
+        ? await provider.fetchExtension({ recentSongs: [song], excludeIds: new Set([song.id]), count: 20 })
+        : await api.similar.getSimilarSongs(song.id);
       const others = similarSongs.filter(s => s.id !== song.id);
       const songs = [song, ...shuffleArray(others)];
       const collection: Playlist = {

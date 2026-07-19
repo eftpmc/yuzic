@@ -11,7 +11,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
 import IconActionButton from '@/components/IconActionButton';
@@ -68,7 +68,7 @@ type Props = { refreshKey?: number };
 export default function QuickPicksSection({ refreshKey = 0 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSong } = usePlaying();
+  const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const picks = useQuickPicks(refreshKey);
   const { width: screenWidth } = useWindowDimensions();

@@ -4,7 +4,7 @@ import { Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
 import { Playlist } from '@/types';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -40,7 +40,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
 
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
-  const { playSongInCollection } = usePlaying();
+  const { playSongInCollection } = usePlayingActions();
   const { downloadPlaylistById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);

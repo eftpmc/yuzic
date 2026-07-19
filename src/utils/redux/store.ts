@@ -12,6 +12,7 @@ import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
 import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
+import searchHistoryReducer from './slices/searchHistorySlice';
 
 // Returns undefined (→ initialState) only on version bump; otherwise passes state through.
 const resetMigrate = (state: any, currentVersion: number): Promise<any> => {
@@ -42,6 +43,7 @@ const settingsPersistConfig = {
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
 const lastfmPersistConfig = { key: 'lastfm', storage };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
+const searchHistoryPersistConfig = { key: 'searchHistory', storage };
 
 const statsPersistConfig = {
   key: 'stats',
@@ -73,6 +75,7 @@ export const rootReducer = combineReducers({
     library: libraryReducer,
     libraryStarred: libraryStarredReducer,
     offlineMutations: offlineMutationsReducer,
+    searchHistory: searchHistoryReducer,
 });
 
 const persistedReducer = combineReducers({
@@ -86,6 +89,7 @@ const persistedReducer = combineReducers({
     library: persistReducer(libraryPersistConfig, libraryReducer),
     libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),
     offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
+    searchHistory: persistReducer(searchHistoryPersistConfig, searchHistoryReducer),
 });
 
 const store = configureStore({

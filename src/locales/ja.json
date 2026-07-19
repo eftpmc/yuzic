@@ -211,7 +211,10 @@
       "showSleepTimer": "スリープタイマー",
       "showSleepTimerSubtext": "プレイヤーにスリープタイマーを表示します。",
       "showPlaybackSpeed": "再生速度",
-      "showPlaybackSpeedSubtext": "プレイヤーに速度調整を表示します。"
+      "showPlaybackSpeedSubtext": "プレイヤーに速度調整を表示します。",
+      "autoplay": "自動再生",
+      "autoplaySubtextAudiomuse": "AudioMuse-AIを使って、キューが終わった後も音響的に似た曲を再生し続けます。",
+      "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -299,6 +302,20 @@
       "artistSection": "アーティスト",
       "albumSection": "アルバム",
       "playlistSection": "プレイリスト"
+    },
+    "audiomuse": {
+      "title": "AudioMuse-AI",
+      "credentialsHelper": "このサーバーに接続されたセルフホストのAudioMuse-AIインスタンスに接続すると、音響解析に基づくスマートシャッフルとスムーズな切り替えが利用できます。",
+      "serverUrl": "サーバーURL",
+      "serverUrlPlaceholder": "http://audiomuse:8000",
+      "apiToken": "APIトークン",
+      "apiTokenPlaceholder": "APIトークン",
+      "connectivity": "接続状況",
+      "connectionFailed": "AudioMuse-AIへの接続に失敗しました",
+      "enable": "AudioMuse-AIを有効にする",
+      "enableSubtext": "接続時にスマートシャッフルとスムーズな切り替えにAudioMuse-AIを使用します。",
+      "disconnect": "切断",
+      "disconnected": "AudioMuse-AIから切断しました。"
     },
     "scrobbling": {
       "title": "スクロブル",
@@ -503,6 +520,10 @@
     "title": "検索",
     "placeholder": "音楽、アーティスト、プレイリストを検索...",
     "noResults": "結果が見つかりません",
+    "searchError": "サーバーに接続できませんでした — 結果が不完全な場合があります",
+    "recentSearches": "最近の検索",
+    "clearRecent": "クリア",
+    "removeRecentSearch": "「{{query}}」を最近の検索から削除",
     "chips": {
       "local": "ローカル",
       "external": "外部",

@@ -8,7 +8,7 @@ import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pen
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist, PlaylistBase } from '@/types';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -59,7 +59,7 @@ const PlaylistOptions = forwardRef<
     addCollectionToQueue,
     shuffleCollectionToQueue,
     getQueue,
-  } = usePlaying();
+  } = usePlayingActions();
 
   const { downloadPlaylistById, getCollectionDownloadState } =
     useDownload();

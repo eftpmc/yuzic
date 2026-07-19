@@ -22,7 +22,7 @@ import { fetchAlbumDetailsSettled } from '@/hooks/albums'
 import { buildCover } from '@/utils/builders/buildCover'
 import { useTheme } from '@/hooks/useTheme'
 import { useTracks } from '@/hooks/tracks'
-import { usePlaying } from '@/contexts/PlayingContext'
+import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
 import { useSheetRef } from '@/utils/useSheetRef'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
@@ -41,7 +41,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
   const api = useApi()
   const { isDarkMode, colors } = useTheme()
   const activeServer = useSelector(selectActiveServer)
-  const { playSongInCollection } = usePlaying()
+  const { playSongInCollection } = usePlayingActions()
   const { downloadAlbumById, getCollectionDownloadState } = useDownload()
   const { t } = useTranslation()
 

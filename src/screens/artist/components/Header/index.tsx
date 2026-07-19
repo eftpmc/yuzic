@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux';
 import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { Artist, ExternalArtist, Song } from '@/types';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useTracks } from '@/hooks/tracks';
@@ -232,7 +232,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
   const api = useApi();
   const activeServer = useSelector(selectActiveServer);
 
-  const { playSongInCollection } = usePlaying();
+  const { playSongInCollection } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [songsLoading, setSongsLoading] = useState(false);

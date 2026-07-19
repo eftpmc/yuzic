@@ -212,7 +212,10 @@
       "showSleepTimer": "Minuterie de veille",
       "showSleepTimerSubtext": "Affiche une commande de minuterie de veille dans le lecteur.",
       "showPlaybackSpeed": "Vitesse de lecture",
-      "showPlaybackSpeedSubtext": "Affiche une commande de vitesse dans le lecteur."
+      "showPlaybackSpeedSubtext": "Affiche une commande de vitesse dans le lecteur.",
+      "autoplay": "Lecture automatique",
+      "autoplaySubtextAudiomuse": "Continue de jouer des titres sonoriquement similaires une fois la file d'attente terminée, grâce à AudioMuse-AI.",
+      "autoplaySubtextNative": "Continue de jouer des titres similaires depuis votre serveur une fois la file d'attente terminée."
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -300,6 +303,20 @@
       "artistSection": "Artiste",
       "albumSection": "Album",
       "playlistSection": "Playlist"
+    },
+    "audiomuse": {
+      "title": "AudioMuse-AI",
+      "credentialsHelper": "Connectez-vous à une instance AudioMuse-AI auto-hébergée pointant vers ce serveur pour une Lecture aléatoire intelligente et des Transitions fluides basées sur l'analyse sonore.",
+      "serverUrl": "URL du serveur",
+      "serverUrlPlaceholder": "http://audiomuse:8000",
+      "apiToken": "Jeton API",
+      "apiTokenPlaceholder": "Jeton API",
+      "connectivity": "Connectivité",
+      "connectionFailed": "Échec de la connexion à AudioMuse-AI",
+      "enable": "Activer AudioMuse-AI",
+      "enableSubtext": "Utiliser AudioMuse-AI pour la Lecture aléatoire intelligente et les Transitions fluides une fois connecté.",
+      "disconnect": "Déconnecter",
+      "disconnected": "Déconnecté d'AudioMuse-AI."
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -504,6 +521,10 @@
     "title": "Recherche",
     "placeholder": "Rechercher de la musique, des artistes ou des listes de lecture...",
     "noResults": "Aucun résultat trouvé",
+    "searchError": "Impossible de joindre le serveur — les résultats peuvent être incomplets",
+    "recentSearches": "Recherches récentes",
+    "clearRecent": "Effacer",
+    "removeRecentSearch": "Supprimer « {{query}} » des recherches récentes",
     "chips": {
       "local": "Local",
       "external": "Externe",

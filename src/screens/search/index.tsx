@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import { CloudOff, Ellipsis, X } from 'lucide-react-native';
+import { Clock, CloudOff, Ellipsis, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,7 +21,7 @@ import SkeletonListRow from '@/components/SkeletonListRow';
 import StatusBanner from '@/components/StatusBanner';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
@@ -30,9 +30,11 @@ import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { selectActiveServer, selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { selectSearchHistoryForActiveServer } from '@/utils/redux/selectors/searchHistorySelectors';
+import { removeSearchQuery, clearSearchHistory } from '@/utils/redux/slices/searchHistorySlice';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 import HomeHeader from '@/screens/library/components/Header';
@@ -45,11 +47,14 @@ const Search = () => {
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSong } = usePlaying();
+  const dispatch = useDispatch();
+  const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const deezerSearchEnabled = useDeezerSearchEnabled();
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const username = useSelector(selectActiveServer)?.username;
+  const activeServerId = useSelector(selectActiveServerId);
+  const recentSearches = useSelector(selectSearchHistoryForActiveServer);
   const { openAccountSheet } = useAccountSheet();
 
   const [query, setQuery] = useState('');
@@ -64,6 +69,12 @@ const Search = () => {
     };
   }, []);
 
+  const runSearch = (text: string) => {
+    clearSearch();
+    setHasSearched(true);
+    void handleSearchWithFilters(text, { local: true, deezer: deezerSearchEnabled });
+  };
+
   const onSearchChange = (text: string) => {
     setQuery(text);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -72,11 +83,22 @@ const Search = () => {
       setHasSearched(false);
       return;
     }
-    typingTimeoutRef.current = setTimeout(async () => {
-      clearSearch();
-      setHasSearched(true);
-      await handleSearchWithFilters(text, { local: true, deezer: deezerSearchEnabled });
-    }, 300);
+    typingTimeoutRef.current = setTimeout(() => runSearch(text), 300);
+  };
+
+  const handleRecentPress = (value: string) => {
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    Keyboard.dismiss();
+    setQuery(value);
+    runSearch(value);
+  };
+
+  const handleRemoveRecent = (value: string) => {
+    if (activeServerId) dispatch(removeSearchQuery({ serverId: activeServerId, query: value }));
+  };
+
+  const handleClearRecent = () => {
+    if (activeServerId) dispatch(clearSearchHistory({ serverId: activeServerId }));
   };
 
   const handleSongPress = async (result: SearchResult) => {
@@ -254,45 +276,81 @@ const Search = () => {
         />
       )}
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {isLoading
-          ? [...Array(8)].map((_, i) => <SkeletonListRow key={i} />)
-          : (
-            <>
-              {localResults.map(result => (
-                <View key={`local:${result.type}:${result.id}`} style={styles.resultBlock}>
-                  {renderResult(result)}
-                </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        {query.trim() === ''
+          ? recentSearches.length > 0 && (
+            <View style={styles.recentSection} testID="search-recent-section">
+              <View style={styles.recentHeader}>
+                <Text style={[styles.recentTitle, { color: colors.subtext }]}>
+                  {t('search.recentSearches')}
+                </Text>
+                <TouchableOpacity onPress={handleClearRecent} hitSlop={8}>
+                  <Text style={[styles.recentClear, { color: colors.subtext }]}>
+                    {t('search.clearRecent')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              {recentSearches.map(item => (
+                <TouchableOpacity
+                  key={item}
+                  testID="search-recent-item"
+                  style={styles.recentRow}
+                  onPress={() => handleRecentPress(item)}
+                >
+                  <Clock size={16} color={colors.subtext} />
+                  <Text style={[styles.recentQuery, { color: colors.secondary }]} numberOfLines={1}>
+                    {item}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveRecent(item)}
+                    hitSlop={10}
+                    style={styles.recentRemove}
+                    accessibilityLabel={t('search.removeRecentSearch', { query: item })}
+                  >
+                    <X size={16} color={colors.subtext} />
+                  </TouchableOpacity>
+                </TouchableOpacity>
               ))}
-
-              {Array.from(externalResultsBySource.entries()).map(([sourceId, results]) => {
-                const meta = getSourceMeta(sourceId);
-                const label = meta?.label ?? sourceId;
-                const color = meta?.color ?? colors.subtext;
-                const letter = label.charAt(0).toUpperCase();
-                return (
-                  <React.Fragment key={sourceId}>
-                    <View style={styles.sourceHeader}>
-                      {showSourceHeaders && (
-                        <View style={[styles.sourceBadge, { backgroundColor: color }]}>
-                          <Text style={styles.sourceBadgeLetter}>{letter}</Text>
-                        </View>
-                      )}
-                      <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>{label}</Text>
-                    </View>
-                    {results.map((result, i) => (
-                      <View key={`external:${result.type}:${result.id}`} style={[styles.resultBlock, i === 0 && styles.resultBlockFirst]}>
-                        {renderResult(result)}
-                      </View>
-                    ))}
-                  </React.Fragment>
-                );
-              })}
-            </>
+            </View>
           )
+          : isLoading
+            ? [...Array(8)].map((_, i) => <SkeletonListRow key={i} />)
+            : (
+              <>
+                {localResults.map(result => (
+                  <View key={`local:${result.type}:${result.id}`} style={styles.resultBlock}>
+                    {renderResult(result)}
+                  </View>
+                ))}
+
+                {Array.from(externalResultsBySource.entries()).map(([sourceId, results]) => {
+                  const meta = getSourceMeta(sourceId);
+                  const label = meta?.label ?? sourceId;
+                  const color = meta?.color ?? colors.subtext;
+                  const letter = label.charAt(0).toUpperCase();
+                  return (
+                    <React.Fragment key={sourceId}>
+                      <View style={styles.sourceHeader}>
+                        {showSourceHeaders && (
+                          <View style={[styles.sourceBadge, { backgroundColor: color }]}>
+                            <Text style={styles.sourceBadgeLetter}>{letter}</Text>
+                          </View>
+                        )}
+                        <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>{label}</Text>
+                      </View>
+                      {results.map((result, i) => (
+                        <View key={`external:${result.type}:${result.id}`} style={[styles.resultBlock, i === 0 && styles.resultBlockFirst]}>
+                          {renderResult(result)}
+                        </View>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </>
+            )
         }
 
-        {hasSearched && !isLoading && searchResults.length === 0 && (
+        {query.trim() !== '' && hasSearched && !isLoading && searchResults.length === 0 && (
           <Text testID="search-no-results" style={[styles.noResults, { color: colors.subtext }]}>
             {t('search.noResults')}
           </Text>
@@ -371,5 +429,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
+  },
+  recentSection: {
+    paddingTop: 4,
+  },
+  recentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  recentTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  recentClear: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  recentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  recentQuery: {
+    flex: 1,
+    fontSize: 15,
+  },
+  recentRemove: {
+    padding: 4,
   },
 });

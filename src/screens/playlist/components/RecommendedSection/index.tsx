@@ -16,9 +16,19 @@ import { useTheme } from '@/hooks/useTheme';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import SectionHeader from '@/components/SectionHeader';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
+import { createAudiomuseQueueFillProvider } from '@/contexts/queueProviders';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
-import { selectThemeColor, selectShowSourceHeaders, selectDeezerDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { useApi } from '@/api';
+import {
+  selectThemeColor,
+  selectShowSourceHeaders,
+  selectDeezerDiscoveryEnabled,
+} from '@/utils/redux/selectors/settingsSelectors';
+import {
+  selectIsAudiomuseConfigured,
+  selectAudiomuseConfig,
+} from '@/utils/redux/selectors/audiomuseSelectors';
 import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -128,7 +138,7 @@ type LocalRowProps = {
 const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSimilar } = usePlaying();
+  const { playSimilar } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const addToPlaylist = useAddSongToPlaylist();
   const [adding, setAdding] = useState(false);
@@ -231,6 +241,10 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { tracks } = useTracks();
+  const api = useApi();
+  const isOffline = useIsOffline();
+  const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
+  const audiomuseConfig = useSelector(selectAudiomuseConfig);
 
   const playlistSongIds = useMemo(
     () => new Set((playlist.songs ?? []).map(s => s.id)),
@@ -247,13 +261,43 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
     return [...names].slice(0, 3);
   }, [playlist.songs]);
 
-  const localSongs = useMemo<SongBase[]>(() => {
+  // Same-artist shuffle from the local library — used whenever AudioMuse-AI
+  // isn't configured, and as a safety net if its similarity call fails.
+  const fallbackLocalSongs = useMemo<SongBase[]>(() => {
     const artistSet = new Set(playlistArtistNames.map(n => n.toLowerCase()));
     const pool = tracks.filter(
       s => !playlistSongIds.has(s.id) && s.artist && artistSet.has(s.artist.toLowerCase())
     );
     return seededShuffle(pool, localSeed).slice(0, LOCAL_COUNT);
   }, [tracks, playlistSongIds, playlistArtistNames, localSeed]);
+
+  // Reseed a handful of playlist tracks each refresh so acoustic similarity
+  // results vary too, matching the fallback's shuffled feel.
+  const audiomuseSeeds = useMemo(
+    () => seededShuffle(playlist.songs ?? [], localSeed).slice(0, 5),
+    [playlist.songs, localSeed]
+  );
+
+  const audiomuseQuery = useQuery({
+    queryKey: [
+      QueryKeys.RecommendedLocalSongs,
+      'audiomuse',
+      playlist.id,
+      audiomuseSeeds.map(s => s.id).join(','),
+    ],
+    queryFn: () => createAudiomuseQueueFillProvider(audiomuseConfig, api).fetchExtension({
+      recentSongs: audiomuseSeeds,
+      excludeIds: playlistSongIds,
+      count: LOCAL_COUNT,
+    }),
+    enabled: isAudiomuseConfigured && !isOffline && audiomuseSeeds.length > 0,
+    staleTime: 1000 * 60 * 30,
+    networkMode: 'online',
+  });
+
+  const localSongs: SongBase[] = audiomuseQuery.data?.length
+    ? audiomuseQuery.data
+    : fallbackLocalSongs;
 
   if (localSongs.length === 0) return null;
 

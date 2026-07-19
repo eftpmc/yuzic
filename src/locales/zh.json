@@ -211,7 +211,10 @@
       "showSleepTimer": "睡眠定时器",
       "showSleepTimerSubtext": "在播放器中显示睡眠定时器控件。",
       "showPlaybackSpeed": "播放速度",
-      "showPlaybackSpeedSubtext": "在播放器中显示速度控件。"
+      "showPlaybackSpeedSubtext": "在播放器中显示速度控件。",
+      "autoplay": "自动播放",
+      "autoplaySubtextAudiomuse": "队列播放完毕后，使用 AudioMuse-AI 继续播放声音相似的曲目。",
+      "autoplaySubtextNative": "队列播放完毕后，继续播放服务器中的相似曲目。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -299,6 +302,20 @@
       "artistSection": "艺术家",
       "albumSection": "专辑",
       "playlistSection": "播放列表"
+    },
+    "audiomuse": {
+      "title": "AudioMuse-AI",
+      "credentialsHelper": "连接到指向此服务器的自托管 AudioMuse-AI 实例，以启用基于声音分析的智能随机播放和平滑过渡。",
+      "serverUrl": "服务器地址",
+      "serverUrlPlaceholder": "http://audiomuse:8000",
+      "apiToken": "API 令牌",
+      "apiTokenPlaceholder": "API 令牌",
+      "connectivity": "连接状态",
+      "connectionFailed": "连接 AudioMuse-AI 失败",
+      "enable": "启用 AudioMuse-AI",
+      "enableSubtext": "连接后使用 AudioMuse-AI 实现智能随机播放和平滑过渡。",
+      "disconnect": "断开连接",
+      "disconnected": "已断开与 AudioMuse-AI 的连接。"
     },
     "scrobbling": {
       "title": "Scrobbling",
@@ -503,6 +520,10 @@
     "title": "搜索",
     "placeholder": "搜索音乐、歌手或播放列表...",
     "noResults": "未找到结果",
+    "searchError": "无法连接服务器 — 结果可能不完整",
+    "recentSearches": "最近搜索",
+    "clearRecent": "清除",
+    "removeRecentSearch": "从最近搜索中删除“{{query}}”",
     "chips": {
       "local": "本地",
       "external": "外部",
