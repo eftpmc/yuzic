@@ -34,7 +34,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer, selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { selectSearchHistoryForActiveServer } from '@/utils/redux/selectors/searchHistorySelectors';
-import { removeSearchQuery, clearSearchHistory } from '@/utils/redux/slices/searchHistorySlice';
+import { addSearchQuery, removeSearchQuery, clearSearchHistory } from '@/utils/redux/slices/searchHistorySlice';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 import HomeHeader from '@/screens/library/components/Header';
@@ -75,6 +75,15 @@ const Search = () => {
     void handleSearchWithFilters(text, { local: true, deezer: deezerSearchEnabled });
   };
 
+  // Only called from deliberate actions (submitting, tapping a result, replaying a
+  // recent search) — never from the as-you-type debounce, or every paused keystroke
+  // would get saved as its own history entry.
+  const recordSearch = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || !activeServerId) return;
+    dispatch(addSearchQuery({ serverId: activeServerId, query: trimmed }));
+  };
+
   const onSearchChange = (text: string) => {
     setQuery(text);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -86,11 +95,17 @@ const Search = () => {
     typingTimeoutRef.current = setTimeout(() => runSearch(text), 300);
   };
 
+  const onSearchSubmit = () => {
+    Keyboard.dismiss();
+    recordSearch(query);
+  };
+
   const handleRecentPress = (value: string) => {
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     Keyboard.dismiss();
     setQuery(value);
     runSearch(value);
+    recordSearch(value);
   };
 
   const handleRemoveRecent = (value: string) => {
@@ -102,6 +117,7 @@ const Search = () => {
   };
 
   const handleSongPress = async (result: SearchResult) => {
+    recordSearch(query);
     try {
       if (result.song) { await playSong(result.song); return; }
       const song = await resolvePlayableSong(result.id);
@@ -178,6 +194,7 @@ const Search = () => {
             externalIds: result.externalIds,
           }}
           onPress={album => {
+            recordSearch(query);
             prefetchCovers([album.cover], 'detail');
             navigateToAlbum(album);
           }}
@@ -195,6 +212,7 @@ const Search = () => {
             created: new Date(0),
           }}
           onPress={album => {
+            recordSearch(query);
             prefetchCovers([album.cover], 'detail');
             navigation.navigate('albumView', { id: album.id });
           }}
@@ -208,6 +226,7 @@ const Search = () => {
           artist={{ id: result.id, name: result.title, subtext: result.subtext, cover: result.cover, albumIds: [] }}
           rounded
           onPress={() => {
+            recordSearch(query);
             prefetchCovers([result.cover], 'detail');
             if (result.source === 'external') {
               navigateToArtist({ id: result.id, name: result.title, cover: result.cover, subtext: result.subtext, externalSource: result.externalSource, externalIds: result.externalIds });
@@ -224,6 +243,7 @@ const Search = () => {
         <PlaylistRow
           playlist={{ id: result.id, title: result.title, subtext: result.subtext, cover: result.cover, changed: new Date(), created: new Date() }}
           onPress={() => {
+            recordSearch(query);
             prefetchCovers([result.cover], 'detail');
             navigation.navigate('playlistView', { id: result.id });
           }}
@@ -253,7 +273,7 @@ const Search = () => {
             value={query}
             onChangeText={onSearchChange}
             returnKeyType="search"
-            onSubmitEditing={Keyboard.dismiss}
+            onSubmitEditing={onSearchSubmit}
           />
           {query !== '' && (
             <TouchableOpacity
@@ -443,7 +463,6 @@ const styles = StyleSheet.create({
   recentTitle: {
     fontSize: 13,
     fontWeight: '600',
-    textTransform: 'uppercase',
   },
   recentClear: {
     fontSize: 13,
