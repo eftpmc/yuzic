@@ -25,19 +25,26 @@ export function createAudiomuseQueueFillProvider(config: AudiomuseConfig, api: A
     isAvailable: () => Boolean(config.serverUrl && config.apiToken),
     fetchExtension: async ({ recentSongs, excludeIds, count }) => {
       const client = createAudiomuseClient(config);
+      // AudioMuse ranks results deterministically by similarity, so asking
+      // for exactly `count` would return the same tracks in the same order
+      // every time the same seed (e.g. a favorite replayed as the starting
+      // track) comes up. Over-fetch a larger pool and randomly sample from
+      // it — same pattern the native provider uses — so repeat plays vary.
+      const poolSize = Math.max(count * 3, 30);
       const refs = await getAudiomuseQueueExtension(client, {
         seedItemIds: recentSongs.map(s => s.id),
         excludeItemIds: [...excludeIds],
-        limit: count,
+        limit: poolSize,
       });
       // AudioMuse returns track references keyed to the active media server's
       // native item ids, not full Song objects — resolve each one, dropping
       // any that fail rather than failing the whole batch.
       const resolved = await Promise.allSettled(refs.map(ref => api.songs.get(ref.itemId)));
-      return resolved
+      const songs = resolved
         .filter((r): r is PromiseFulfilledResult<Song | null> => r.status === 'fulfilled')
         .map(r => r.value)
         .filter((s): s is Song => s !== null && !excludeIds.has(s.id));
+      return shuffleArray(songs).slice(0, count);
     },
   };
 }

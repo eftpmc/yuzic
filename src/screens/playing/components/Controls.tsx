@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Shuffle, Sparkles, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
+import { Shuffle, Sparkle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -42,12 +42,14 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
   );
 }
 
+type ToggleBadge = 'none' | 'dot' | 'sparkle';
+
 function ToggleButton({
-  active,
+  badge,
   onPress,
   children,
 }: {
-  active: boolean;
+  badge: ToggleBadge;
   onPress: () => void;
   children: React.ReactNode;
 }) {
@@ -56,7 +58,8 @@ function ToggleButton({
       <TouchableOpacity onPress={onPress} hitSlop={HIT_SLOP}>
         {children}
       </TouchableOpacity>
-      <View style={[styles.activeDot, active && styles.activeDotVisible]} />
+      {badge === 'dot' && <View style={[styles.activeDot, styles.activeDotVisible]} />}
+      {badge === 'sparkle' && <Sparkle size={9} color="#fff" fill="#fff" style={styles.activeBadge} />}
     </View>
   );
 }
@@ -72,11 +75,11 @@ const Controls: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <ToggleButton active={shuffleMode !== 'off'} onPress={cycleShuffleMode}>
-        {shuffleMode === 'smart'
-          ? <Sparkles size={23} color="#fff" />
-          : <Shuffle size={23} color="#fff" />
-        }
+      <ToggleButton
+        badge={shuffleMode === 'smart' ? 'sparkle' : shuffleMode === 'shuffle' ? 'dot' : 'none'}
+        onPress={cycleShuffleMode}
+      >
+        <Shuffle size={23} color="#fff" />
       </ToggleButton>
 
       <TouchableOpacity onPress={skipToPrevious} hitSlop={HIT_SLOP}>
@@ -89,7 +92,7 @@ const Controls: React.FC = () => {
         <SkipForward size={34} color="#fff" fill="#fff" />
       </TouchableOpacity>
 
-      <ToggleButton active={repeatMode !== 'off'} onPress={toggleRepeat}>
+      <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={toggleRepeat}>
         {repeatMode === 'one'
           ? <Repeat1 size={23} color="#fff" />
           : <Repeat size={23} color="#fff" />
@@ -130,6 +133,10 @@ const styles = StyleSheet.create({
   },
   activeDotVisible: {
     backgroundColor: '#fff',
+  },
+  activeBadge: {
+    position: 'absolute',
+    bottom: -5,
   },
 });
 
