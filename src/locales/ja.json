@@ -305,7 +305,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "このサーバーに接続されたセルフホストのAudioMuse-AIインスタンスに接続すると、音響解析に基づくスマートシャッフルとスムーズな切り替えが利用できます。",
+      "credentialsHelper": "このサーバーに接続されたセルフホストのAudioMuse-AIインスタンスに接続すると、音響解析に基づくスマートシャッフルが利用できます。",
       "serverUrl": "サーバーURL",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "APIトークン",
@@ -313,7 +313,7 @@
       "connectivity": "接続状況",
       "connectionFailed": "AudioMuse-AIへの接続に失敗しました",
       "enable": "AudioMuse-AIを有効にする",
-      "enableSubtext": "接続時にスマートシャッフルとスムーズな切り替えにAudioMuse-AIを使用します。",
+      "enableSubtext": "接続時にスマートシャッフルにAudioMuse-AIを使用します。",
       "disconnect": "切断",
       "disconnected": "AudioMuse-AIから切断しました。"
     },

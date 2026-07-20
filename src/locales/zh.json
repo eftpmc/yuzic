@@ -305,7 +305,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "连接到指向此服务器的自托管 AudioMuse-AI 实例，以启用基于声音分析的智能随机播放和平滑过渡。",
+      "credentialsHelper": "连接到指向此服务器的自托管 AudioMuse-AI 实例，以启用基于声音分析的智能随机播放。",
       "serverUrl": "服务器地址",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "API 令牌",
@@ -313,7 +313,7 @@
       "connectivity": "连接状态",
       "connectionFailed": "连接 AudioMuse-AI 失败",
       "enable": "启用 AudioMuse-AI",
-      "enableSubtext": "连接后使用 AudioMuse-AI 实现智能随机播放和平滑过渡。",
+      "enableSubtext": "连接后使用 AudioMuse-AI 实现智能随机播放。",
       "disconnect": "断开连接",
       "disconnected": "已断开与 AudioMuse-AI 的连接。"
     },

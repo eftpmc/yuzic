@@ -323,7 +323,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "Connect to a self-hosted AudioMuse-AI instance pointed at this server for sonic-analysis-based Smart Shuffle and Smooth Transitions.",
+      "credentialsHelper": "Connect to a self-hosted AudioMuse-AI instance pointed at this server for sonic-analysis-based Smart Shuffle.",
       "serverUrl": "Server URL",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "API Token",
@@ -331,7 +331,7 @@
       "connectivity": "Connectivity",
       "connectionFailed": "AudioMuse-AI connection failed",
       "enable": "Enable AudioMuse-AI",
-      "enableSubtext": "Use AudioMuse-AI for Smart Shuffle and Smooth Transitions when connected.",
+      "enableSubtext": "Use AudioMuse-AI for Smart Shuffle when connected.",
       "disconnect": "Disconnect",
       "disconnected": "Disconnected from AudioMuse-AI."
     },

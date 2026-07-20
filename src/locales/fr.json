@@ -306,7 +306,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "Connectez-vous à une instance AudioMuse-AI auto-hébergée pointant vers ce serveur pour une Lecture aléatoire intelligente et des Transitions fluides basées sur l'analyse sonore.",
+      "credentialsHelper": "Connectez-vous à une instance AudioMuse-AI auto-hébergée pointant vers ce serveur pour une Lecture aléatoire intelligente basée sur l'analyse sonore.",
       "serverUrl": "URL du serveur",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "Jeton API",
@@ -314,7 +314,7 @@
       "connectivity": "Connectivité",
       "connectionFailed": "Échec de la connexion à AudioMuse-AI",
       "enable": "Activer AudioMuse-AI",
-      "enableSubtext": "Utiliser AudioMuse-AI pour la Lecture aléatoire intelligente et les Transitions fluides une fois connecté.",
+      "enableSubtext": "Utiliser AudioMuse-AI pour la Lecture aléatoire intelligente une fois connecté.",
       "disconnect": "Déconnecter",
       "disconnected": "Déconnecté d'AudioMuse-AI."
     },
