@@ -131,4 +131,22 @@ describe('createAudiomuseQueueFillProvider', () => {
 
     expect(result.map(s => s.id)).toEqual(['a']);
   });
+
+  it('requests a larger candidate pool than count and samples down, so repeat plays of the same seed vary', async () => {
+    const refs = ['a', 'b', 'c', 'd', 'e'].map(id => ({ itemId: id }));
+    (getAudiomuseQueueExtension as jest.Mock).mockResolvedValue(refs);
+    const get = jest.fn(async (id: string) => song(id));
+    const api = fakeApi({ songs: { get, scrobble: jest.fn(), buildStreamUrl: jest.fn() } });
+    const provider = createAudiomuseQueueFillProvider(config, api);
+
+    const result = await provider.fetchExtension({
+      recentSongs: [song('seed')],
+      excludeIds: new Set(),
+      count: 3,
+    });
+
+    const [, opts] = (getAudiomuseQueueExtension as jest.Mock).mock.calls[0];
+    expect(opts.limit).toBeGreaterThan(3);
+    expect(result.length).toBe(3);
+  });
 });
