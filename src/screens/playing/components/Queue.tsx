@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GripVertical, ChevronLeft, Pause, Play, SkipForward } from 'lucide-react-native';
-import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingActions, usePlayingQueueVersion } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -75,8 +75,9 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   width,
 }) => {
   const { t } = useTranslation();
-  const { currentSong, isPlaying, queueVersion } = usePlayingState();
+  const { currentSong, isPlaying } = usePlayingState();
   const { getQueue, skipTo, moveTrack, pauseSong, resumeSong, skipToNext } = usePlayingActions();
+  const queueVersion = usePlayingQueueVersion();
 
   const albumsById = useSelector(selectAlbumsById);
   const insets = useSafeAreaInsets();

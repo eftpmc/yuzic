@@ -69,7 +69,6 @@ export interface PlayingStateType {
   isPlaying: boolean;
   isBuffering: boolean;
   currentIndex: number;
-  queueVersion: number;
   /** @deprecated use repeatMode instead */
   repeatOn: boolean;
   repeatMode: RepeatModeState;
@@ -110,6 +109,11 @@ export type PlayingContextType = PlayingStateType & PlayingActionsType;
 const PlayingStateContext = createContext<PlayingStateType | undefined>(undefined);
 const PlayingActionsContext = createContext<PlayingActionsType | undefined>(undefined);
 const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, duration: 0, buffered: 0 });
+// Split out of PlayingStateType: queueVersion bumps on every queue mutation
+// (add/remove/reorder/autoplay-fill), which is far more often than most
+// usePlayingState() consumers (the full-screen player, the mini bar, Controls)
+// need to re-render for. Only the queue list itself reads this.
+const PlayingQueueVersionContext = createContext<number>(0);
 
 let playerWasSetup = false;
 
@@ -134,6 +138,7 @@ export const usePlaying = (): PlayingContextType => {
 };
 
 export const usePlayingProgress = () => useContext(PlayingProgressContext);
+export const usePlayingQueueVersion = () => useContext(PlayingQueueVersionContext);
 
 // Separate component so useProgress ticks don't rerender PlayingProvider.
 const PlayingProgressProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -934,13 +939,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     isPlaying,
     isBuffering,
     currentIndex,
-    queueVersion,
     repeatOn: repeatMode !== 'off',
     repeatMode,
     shuffleMode,
     playbackSpeed,
     setCurrentSong,
-  }), [currentSong, isPlaying, isBuffering, currentIndex, queueVersion, repeatMode, shuffleMode, playbackSpeed]);
+  }), [currentSong, isPlaying, isBuffering, currentIndex, repeatMode, shuffleMode, playbackSpeed]);
 
   // All callbacks are stable (deps are empty or other stable values via refs),
   // so actionsValue almost never changes after mount — action-only consumers
@@ -990,9 +994,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   return (
     <PlayingActionsContext.Provider value={actionsValue}>
       <PlayingStateContext.Provider value={stateValue}>
-        <PlayingProgressProvider>
-          {children}
-        </PlayingProgressProvider>
+        <PlayingQueueVersionContext.Provider value={queueVersion}>
+          <PlayingProgressProvider>
+            {children}
+          </PlayingProgressProvider>
+        </PlayingQueueVersionContext.Provider>
       </PlayingStateContext.Provider>
     </PlayingActionsContext.Provider>
   );
