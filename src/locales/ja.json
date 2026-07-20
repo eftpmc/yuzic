@@ -548,7 +548,8 @@
       "similarArtists": "似ているアーティスト",
       "bio": "概要"
     },
-    "showMore": "あと{{count}}件"
+    "showMore": "あと{{count}}件",
+    "showUnowned": "未所持の{{count}}件"
   },
   "explore": {
     "sections": {

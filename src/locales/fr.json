@@ -549,7 +549,8 @@
       "similarArtists": "Artistes similaires",
       "bio": "À propos"
     },
-    "showMore": "{{count}} de plus"
+    "showMore": "{{count}} de plus",
+    "showUnowned": "{{count}} que vous ne possédez pas"
   },
   "explore": {
     "sections": {

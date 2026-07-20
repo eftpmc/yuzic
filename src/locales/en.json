@@ -502,7 +502,8 @@
       "similarArtists": "Similar artists",
       "bio": "About"
     },
-    "showMore": "{{count}} more"
+    "showMore": "{{count}} more",
+    "showUnowned": "{{count}} you don't own"
   },
   "album": {
     "disc": "Disc {{number}}",
