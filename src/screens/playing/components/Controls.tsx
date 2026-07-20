@@ -58,8 +58,14 @@ function ToggleButton({
       <TouchableOpacity onPress={onPress} hitSlop={HIT_SLOP}>
         {children}
       </TouchableOpacity>
-      {badge === 'dot' && <View style={[styles.activeDot, styles.activeDotVisible]} />}
-      {badge === 'sparkle' && <Sparkle size={9} color="#fff" fill="#fff" style={styles.activeBadge} />}
+      {badge !== 'none' && (
+        <View style={styles.activeBadgeSlot}>
+          {badge === 'dot'
+            ? <View style={[styles.activeDot, styles.activeDotVisible]} />
+            : <Sparkle size={9} color="#fff" fill="#fff" />
+          }
+        </View>
+      )}
     </View>
   );
 }
@@ -123,20 +129,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 28,
   },
+  activeBadgeSlot: {
+    position: 'absolute',
+    bottom: -5,
+    width: 4,
+    height: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   activeDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
     backgroundColor: 'transparent',
-    position: 'absolute',
-    bottom: -5,
   },
   activeDotVisible: {
     backgroundColor: '#fff',
-  },
-  activeBadge: {
-    position: 'absolute',
-    bottom: -5,
   },
 });
 

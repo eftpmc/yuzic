@@ -3,7 +3,7 @@ import { statusColor } from '@/constants/design'
 import { Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
-import { Ellipsis } from 'lucide-react-native'
+import { Ellipsis, Globe } from 'lucide-react-native'
 import type { AlbumBase, Artist, ExternalAlbumBase, ExternalArtist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
@@ -40,6 +40,7 @@ type ArtistContentItem =
   | { kind: 'localAlbum'; id: string; album: AlbumBase }
   | { kind: 'externalAlbum'; id: string; album: ExternalAlbumBase }
   | { kind: 'showMore'; id: string; target: 'albums' | 'singles'; remaining: number }
+  | { kind: 'showUnowned'; id: string; target: 'albums' | 'singles'; count: number }
   | { kind: 'similar'; id: string }
   | { kind: 'bio'; id: string }
 
@@ -189,6 +190,8 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
+  const [showUnownedAlbums, setShowUnownedAlbums] = useState(false)
+  const [showUnownedSingles, setShowUnownedSingles] = useState(false)
   const localAlbums = useArtistAlbums(localArtist?.id ?? '')
   const { tracks: libraryTracks } = useTracks()
   const { data: externalDiscography } = useArtistExternalDiscography(localArtist?.name ?? null, !!localArtist)
@@ -211,38 +214,55 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       const albums = localAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
       const singles = localAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
 
-      // Owned releases merged chronologically with whatever the enabled
-      // external sources have for this artist that isn't already matched to
-      // something owned — the row itself (ExternalAlbumRow) double-checks
+      // Owned and unowned releases are kept in separate groups rather than
+      // merged chronologically — the row itself (ExternalAlbumRow) double-checks
       // "already in library" independently as a safety net if this dedup
-      // misses an edge case.
+      // misses an edge case. Unowned releases stay behind a "show unowned" tile
+      // (reusing the pagination row's look) until the user opts in, so scanning
+      // what you actually own isn't interrupted by releases you don't have.
       const missingAlbums = (externalDiscography?.albums ?? [])
         .filter(ext => !matchAlbumToLibrary(ext, localAlbums))
       const missingSingles = (externalDiscography?.singles ?? [])
         .filter(ext => !matchAlbumToLibrary(ext, localAlbums))
 
-      const albumItems: ArtistContentItem[] = [
-        ...albums.map(album => ({ kind: 'localAlbum' as const, id: `album-${album.id}`, album })),
-        ...missingAlbums.map(album => ({ kind: 'externalAlbum' as const, id: `album-ext-${album.id}`, album })),
-      ].sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
-      const singleItems: ArtistContentItem[] = [
-        ...singles.map(album => ({ kind: 'localAlbum' as const, id: `single-${album.id}`, album })),
-        ...missingSingles.map(album => ({ kind: 'externalAlbum' as const, id: `single-ext-${album.id}`, album })),
-      ].sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
+      const ownedAlbumItems: ArtistContentItem[] = albums
+        .map(album => ({ kind: 'localAlbum' as const, id: `album-${album.id}`, album }))
+        .sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
+      const ownedSingleItems: ArtistContentItem[] = singles
+        .map(album => ({ kind: 'localAlbum' as const, id: `single-${album.id}`, album }))
+        .sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
+      const unownedAlbumItems: ArtistContentItem[] = missingAlbums
+        .map(album => ({ kind: 'externalAlbum' as const, id: `album-ext-${album.id}`, album }))
+        .sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
+      const unownedSingleItems: ArtistContentItem[] = missingSingles
+        .map(album => ({ kind: 'externalAlbum' as const, id: `single-ext-${album.id}`, album }))
+        .sort((a, b) => compareByReleaseYearDesc(a.album, b.album))
 
-      if (albumItems.length > 0) {
+      if (ownedAlbumItems.length > 0 || unownedAlbumItems.length > 0) {
         rows.push({ kind: 'section', id: 'albums-section', title: t('artist.sections.albums') })
-        rows.push(...albumItems.slice(0, visibleAlbumsCount))
-        if (visibleAlbumsCount < albumItems.length) {
-          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: albumItems.length - visibleAlbumsCount })
+        rows.push(...ownedAlbumItems.slice(0, visibleAlbumsCount))
+        if (visibleAlbumsCount < ownedAlbumItems.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-albums', target: 'albums', remaining: ownedAlbumItems.length - visibleAlbumsCount })
+        } else if (unownedAlbumItems.length > 0) {
+          if (showUnownedAlbums) {
+            rows.push(...unownedAlbumItems)
+          } else {
+            rows.push({ kind: 'showUnowned', id: 'show-unowned-albums', target: 'albums', count: unownedAlbumItems.length })
+          }
         }
       }
 
-      if (singleItems.length > 0) {
+      if (ownedSingleItems.length > 0 || unownedSingleItems.length > 0) {
         rows.push({ kind: 'section', id: 'singles-section', title: t('artist.sections.singles') })
-        rows.push(...singleItems.slice(0, visibleSinglesCount))
-        if (visibleSinglesCount < singleItems.length) {
-          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: singleItems.length - visibleSinglesCount })
+        rows.push(...ownedSingleItems.slice(0, visibleSinglesCount))
+        if (visibleSinglesCount < ownedSingleItems.length) {
+          rows.push({ kind: 'showMore', id: 'show-more-singles', target: 'singles', remaining: ownedSingleItems.length - visibleSinglesCount })
+        } else if (unownedSingleItems.length > 0) {
+          if (showUnownedSingles) {
+            rows.push(...unownedSingleItems)
+          } else {
+            rows.push({ kind: 'showUnowned', id: 'show-unowned-singles', target: 'singles', count: unownedSingleItems.length })
+          }
         }
       }
 
@@ -279,7 +299,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     }
 
     return rows
-  }, [localArtist, externalArtist, localAlbums, externalDiscography, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, t])
+  }, [localArtist, externalArtist, localAlbums, externalDiscography, songCountByAlbumId, visibleAlbumsCount, visibleSinglesCount, showUnownedAlbums, showUnownedSingles, t])
 
   const renderItem = useCallback(({ item }: { item: ArtistContentItem }) => {
     if (item.kind === 'mostPlayed') {
@@ -320,21 +340,34 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         : <ExternalSimilarArtistsSection similarArtists={externalArtist?.similarArtists ?? []} />
     }
 
-    if (item.kind === 'showMore') {
+    // Same tile-row look for both: "keep reading the list" (showMore) and
+    // "opt into releases you don't own" (showUnowned) are both progressive
+    // disclosure of more rows, just with different icon/copy/trigger.
+    if (item.kind === 'showMore' || item.kind === 'showUnowned') {
+      const isUnowned = item.kind === 'showUnowned'
       return (
         <TouchableOpacity
           style={styles.showMoreRow}
           onPress={() => {
-            if (item.target === 'albums') setVisibleAlbumsCount(c => c + 5)
-            else setVisibleSinglesCount(c => c + 5)
+            if (isUnowned) {
+              if (item.target === 'albums') setShowUnownedAlbums(true)
+              else setShowUnownedSingles(true)
+            } else if (item.target === 'albums') {
+              setVisibleAlbumsCount(c => c + 5)
+            } else {
+              setVisibleSinglesCount(c => c + 5)
+            }
           }}
           activeOpacity={0.65}
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
-            <Ellipsis size={18} color={colors.secondary} />
+            {isUnowned
+              ? <Globe size={18} color={colors.secondary} />
+              : <Ellipsis size={18} color={colors.secondary} />
+            }
           </View>
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>
-            {t('artist.showMore', { count: item.remaining })}
+            {isUnowned ? t('artist.showUnowned', { count: item.count }) : t('artist.showMore', { count: item.remaining })}
           </Text>
         </TouchableOpacity>
       )
@@ -354,11 +387,10 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       <ExternalAlbumRow
         album={item.album}
         onPress={(album) => navigateToAlbum(album)}
-        showExternalBadge={!!localArtist}
         subtextOverride={releaseYearLabel(item.album) ?? undefined}
       />
     )
-  }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, t])
+  }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, setShowUnownedAlbums, setShowUnownedSingles, t])
 
   return (
     <View style={{ flex: 1 }}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
@@ -28,6 +28,40 @@ const formatTime = (seconds: number): string => {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
+// Isolated so the once-a-second progress tick only re-renders the seek bar
+// and timestamps, not the cover art / title / artist / add button above it —
+// same reasoning as ProgressBarStrip in the mini player (PlayingBarBase).
+const PlayingProgressSection: React.FC<{ songDuration: number }> = memo(({ songDuration }) => {
+  const { seekSong } = usePlayingActions();
+  const progress = usePlayingProgress();
+  const nativeDuration = progress.duration;
+  const duration = nativeDuration > 0 ? nativeDuration : songDuration;
+  const position = Math.min(progress.position, duration);
+
+  return (
+    <>
+      <SeekableProgressBar
+        value={position}
+        duration={duration}
+        onSeek={seekSong}
+        fillColor="#fff"
+        trackColor="#555"
+        style={styles.progressBar}
+      />
+
+      <View style={styles.timestamps}>
+        <Text style={styles.timestamp}>
+          {formatTime(position)}
+        </Text>
+        <Text style={styles.timestamp}>
+          -{formatTime(duration - position)}
+        </Text>
+      </View>
+    </>
+  );
+});
+PlayingProgressSection.displayName = 'PlayingProgressSection';
+
 const PlayingMain: React.FC<PlayingMainProps> = ({
   width,
   onPressArtist,
@@ -35,13 +69,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressAdd
 }) => {
   const { currentSong } = usePlayingState();
-  const { seekSong } = usePlayingActions();
   const showQualityBadge = useSelector(selectShowQualityBadge);
-  const progress = usePlayingProgress();
-  const nativeDuration = progress.duration
-  const songDuration = currentSong ? Number(currentSong.duration) : 1
-  const duration = nativeDuration > 0 ? nativeDuration : songDuration
-  const position = Math.min(progress.position, duration)
 
   if (!currentSong) {
     return null;
@@ -61,10 +89,6 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   const coverUri =
     buildCover(currentSong.cover, 'detail') ??
     buildCover({ kind: 'none' } as CoverSource, 'detail');
-
-  const handleSeek = (positionSeconds: number) => {
-    seekSong(positionSeconds);
-  };
 
   return (
     <View style={[styles.root, { width }]}>
@@ -115,23 +139,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         </Text>
       )}
 
-      <SeekableProgressBar
-        value={position}
-        duration={duration}
-        onSeek={handleSeek}
-        fillColor="#fff"
-        trackColor="#555"
-        style={styles.progressBar}
-      />
-
-      <View style={styles.timestamps}>
-        <Text style={styles.timestamp}>
-          {formatTime(position)}
-        </Text>
-        <Text style={styles.timestamp}>
-          -{formatTime(duration - position)}
-        </Text>
-      </View>
+      <PlayingProgressSection songDuration={Number(currentSong.duration)} />
     </View>
   );
 };

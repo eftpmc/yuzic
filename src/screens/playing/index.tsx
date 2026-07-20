@@ -42,6 +42,27 @@ interface PlayingScreenProps {
 
 type PlayingViewMode = "player" | "queue";
 
+// Isolated so the once-a-second progress tick only re-renders this small
+// card, not the whole PlayingScreen tree (header, PlayingMain, Controls,
+// BottomControls, and the other cards) — that tree stays mounted the entire
+// time a song is playing, hidden behind the collapsed player sheet, so an
+// unnecessary full re-render every second was a constant, avoidable cost.
+const LyricsPreviewCardResolver: React.FC<{
+    lyrics: LyricsResult;
+    contentWidth: number;
+    onPress: () => void;
+}> = ({ lyrics, contentWidth, onPress }) => {
+    const progress = usePlayingProgress();
+    return (
+        <LyricsPreviewCard
+            lyrics={lyrics}
+            position={progress.position}
+            contentWidth={contentWidth}
+            onPress={onPress}
+        />
+    );
+};
+
 const usePlayingTransitions = (mode: PlayingViewMode) => {
     const playerOpacity = useSharedValue(1);
     const queueOpacity = useSharedValue(0);
@@ -80,7 +101,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 }) => {
     const router = useRouter();
     const { currentSong } = usePlayingState();
-    const progress = usePlayingProgress();
     const api = useApi();
     const insets = useSafeAreaInsets();
     const { album } = useAlbum(currentSong?.albumId ?? '');
@@ -236,9 +256,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                             </View>
 
                             {lyricsAvailable && lyrics && (
-                                <LyricsPreviewCard
+                                <LyricsPreviewCardResolver
                                     lyrics={lyrics}
-                                    position={progress.position}
                                     contentWidth={contentWidth}
                                     onPress={openLyricsSheet}
                                 />

@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { enableFreeze } from 'react-native-screens';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { CastProvider } from '@/contexts/CastContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
@@ -41,6 +42,14 @@ onlineManager.setEventListener(setOnline => {
     setOnline(!!state.isConnected)
   })
 })
+
+// Stack.Screen entries under (home) (albumView, artistView, playlistView,
+// settings, genreView) don't set freezeOnBlur explicitly, so they fall back
+// to this global flag — without it, screens left behind on the stack (e.g.
+// an artist view still mounted under a pushed album view) keep re-rendering
+// instead of pausing. The (tabs) navigator sets freezeOnBlur explicitly and
+// doesn't depend on this.
+enableFreeze(true);
 
 SplashScreen.preventAutoHideAsync();
 
