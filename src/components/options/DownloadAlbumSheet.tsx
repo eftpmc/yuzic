@@ -52,7 +52,10 @@ const DownloadAlbumSheet: React.FC<Props> = ({ album, sheetRef }) => {
     if (anyLoading) return;
     setLidarrLoading(true);
     try {
-      const result = await lidarr.downloadAlbum(lidarrConfig, album.title, album.artist);
+      const result = await lidarr.downloadAlbum(
+        lidarrConfig,
+        lidarr.albumRequestFromExternal(album)
+      );
       toast[result.success ? 'success' : 'error'](
         result.success
           ? t('externalAlbum.download.addedToLidarr')

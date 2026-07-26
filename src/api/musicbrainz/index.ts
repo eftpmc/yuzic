@@ -24,7 +24,7 @@ export type MbReleaseGroup = {
   'primary-type'?: string;
   'secondary-types'?: string[];
   'first-release-date'?: string;
-  'artist-credit'?: { name?: string; artist: { name: string } }[];
+  'artist-credit'?: { name?: string; artist: { id?: string; name: string } }[];
 };
 
 export type MbTrack = {
@@ -33,7 +33,7 @@ export type MbTrack = {
   length: number | null;
   position: number;
   recording?: { id: string };
-  'artist-credit'?: { name?: string; artist: { name: string } }[];
+  'artist-credit'?: { name?: string; artist: { id?: string; name: string } }[];
 };
 
 export type MbRelease = {
