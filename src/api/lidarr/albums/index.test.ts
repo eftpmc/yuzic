@@ -366,6 +366,34 @@ describe('downloadAlbum', () => {
     expect(commandPosts).toHaveLength(1);
   });
 
+  it('still resolves when the mbid-scoped artist lookup is rejected', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockImplementationOnce(() => response([])) // local artists
+      .mockImplementationOnce(() => response(iveCandidates)) // lookup by name
+      .mockImplementationOnce(() => response('bad request', 400)) // lidarr:<mbid>
+      .mockImplementationOnce(() => response([])) // ensureArtist re-read
+      .mockImplementationOnce(() => response([{ path: '/music' }]))
+      .mockImplementationOnce(() => response({ id: 20 }))
+      .mockImplementationOnce(() => response([lidarrAlbum]))
+      .mockImplementationOnce(() =>
+        response({ ...lidarrAlbum, monitored: true })
+      )
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response({ id: 30 }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await downloadAlbum(
+      config,
+      request({ artistMbid: 'b2f2216a-d7a9-4ce0-8b8f-f494d9a8c196' })
+    );
+
+    expect(result).toEqual({ success: true, status: 'submitted' });
+    expect(
+      fetchMock.mock.calls.some(([url]) => String(url).includes('lidarr%3A'))
+    ).toBe(true);
+  });
+
   it('does not submit a duplicate search already active in Lidarr', async () => {
     const localArtist = {
       ...resolvedArtist,

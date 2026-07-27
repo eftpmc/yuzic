@@ -324,12 +324,17 @@ async function lookupResolvedArtist(
   const byName = await lookupArtist(client, request.artistName);
   let candidates = byName;
   if (request.artistMbid) {
-    const byMbid = await lookupArtist(client, `lidarr:${request.artistMbid}`);
-    const seen = new Set(byName.map(artist => artist.foreignArtistId));
-    candidates = [
-      ...byName,
-      ...byMbid.filter(artist => !seen.has(artist.foreignArtistId)),
-    ];
+    try {
+      const byMbid = await lookupArtist(client, `lidarr:${request.artistMbid}`);
+      const seen = new Set(byName.map(artist => artist.foreignArtistId));
+      candidates = [
+        ...byName,
+        ...byMbid.filter(artist => !seen.has(artist.foreignArtistId)),
+      ];
+    } catch {
+      // Lidarr may reject the mbid-scoped lookup term. Fall back to the name
+      // candidates rather than failing a request the name lookup can resolve.
+    }
   }
   return resolveArtistCandidate(candidates, request);
 }
@@ -345,6 +350,7 @@ async function waitForAlbum(
   }: DownloadOptions
 ): Promise<AlbumResolution | { ok: false; code: 'request_timeout' }> {
   const started = Date.now();
+  let lastResolution: AlbumResolution | null = null;
 
   while (Date.now() - started < timeoutMs) {
     if (signal?.aborted) {
@@ -356,11 +362,15 @@ async function waitForAlbum(
     if (resolution.ok || resolution.code === 'album_identity_ambiguous') {
       return resolution;
     }
+    lastResolution = resolution;
 
     await delay(pollIntervalMs, signal);
   }
 
-  return { ok: false, code: 'request_timeout' };
+  // Prefer the specific "not found" outcome from the last completed read over a
+  // generic timeout, so the user learns the album is absent from Lidarr rather
+  // than assuming a transient stall. Fall back to timeout only if no read landed.
+  return lastResolution ?? { ok: false, code: 'request_timeout' };
 }
 
 async function monitorAlbum(client: LidarrClient, album: LidarrAlbum) {
@@ -416,7 +426,7 @@ function isAlbumAvailable(album: LidarrAlbum) {
   );
 }
 
-function requestKey(request: LidarrAlbumRequest) {
+function requestKey(config: LidarrConfig, request: LidarrAlbumRequest) {
   const artist =
     cleanId(request.artistMbid) ??
     cleanId(request.artistDeezerId) ??
@@ -425,7 +435,9 @@ function requestKey(request: LidarrAlbumRequest) {
     cleanId(request.albumMbid) ??
     cleanId(request.albumDeezerId) ??
     `${normalize(request.albumTitle)}:${releaseYear(request.releaseDate) ?? ''}`;
-  return `${artist}:${album}`;
+  // Scope by server so identical album identities on different Lidarr
+  // instances are not coalesced into one shared in-flight request.
+  return `${cleanId(config.serverUrl) ?? ''}:${artist}:${album}`;
 }
 
 async function performDownload(
@@ -448,12 +460,13 @@ async function performDownload(
     });
     if (!ensured.success) return failure('lidarr_metadata_unavailable');
 
-    const albumResolution = await waitForAlbum(
-      client,
-      ensured.artistId,
-      request,
-      options
-    );
+    const albumResolution = await waitForAlbum(client, ensured.artistId, request, {
+      ...options,
+      // A pre-existing artist already has its album list, so a missing album
+      // won't appear by waiting; only a freshly created artist needs time for
+      // Lidarr to populate metadata.
+      timeoutMs: options.timeoutMs ?? (ensured.created ? 90_000 : 10_000),
+    });
     if (!albumResolution.ok) return failure(albumResolution.code);
 
     if (isAlbumAvailable(albumResolution.album)) {
@@ -487,7 +500,7 @@ export function downloadAlbum(
   request: LidarrAlbumRequest,
   options: DownloadOptions = {}
 ): Promise<AlbumSearchResult> {
-  const key = requestKey(request);
+  const key = requestKey(config, request);
   const pending = pendingRequests.get(key);
   if (pending) return pending;
 
