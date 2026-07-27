@@ -25,12 +25,10 @@ export function createLidarrClient(config: LidarrConfig) {
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(
-        `Lidarr API error (${res.status}): ${text}`
-      );
+      throw new Error(`Lidarr API error (${res.status})`);
     }
 
+    if (res.status === 204) return {} as T;
     return res.json();
   }
 

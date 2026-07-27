@@ -1,6 +1,7 @@
 import type { LidarrClient } from '../client';
 
 export type LidarrArtistLookupResult = {
+  id?: number;
   artistName: string;
   foreignArtistId: string;
   artistType?: string;
@@ -10,13 +11,12 @@ export type LidarrArtistLookupResult = {
   genres?: string[];
   ratings?: any;
   status?: string;
+  monitored?: boolean;
+  links?: { name?: string; url?: string }[];
 };
 
-export type LidarrArtist = {
+export type LidarrArtist = LidarrArtistLookupResult & {
   id: number;
-  artistName: string;
-  foreignArtistId: string;
-  monitored?: boolean;
 };
 
 export type EnsureArtistOptions = {
@@ -103,18 +103,19 @@ export async function ensureArtist(
 
     return { success: true, artistId: created.id, created: true };
   } catch (e: any) {
+    // A different client may have created this artist after our first read.
+    // Lidarr enforces foreignArtistId uniqueness, so re-read and converge.
+    try {
+      const existing = await getArtists(client);
+      const found = existing.find(
+        a => a.foreignArtistId === artist.foreignArtistId
+      );
+      if (found?.id) {
+        return { success: true, artistId: found.id, created: false };
+      }
+    } catch {
+      // Preserve the original error if reconciliation also fails.
+    }
     return { success: false, message: e?.message ?? 'Failed to ensure artist' };
-  }
-}
-
-export async function deleteArtist(
-  client: LidarrClient,
-  artistId: number
-): Promise<{ success: true } | { success: false; message: string }> {
-  try {
-    await client.request(`/artist/${artistId}`, { method: 'DELETE' });
-    return { success: true };
-  } catch (e: any) {
-    return { success: false, message: e?.message ?? 'Failed to delete artist' };
   }
 }

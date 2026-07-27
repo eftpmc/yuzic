@@ -19,12 +19,16 @@ export function ensureArtist(
 ) {
   return artists.ensureArtist(createLidarrClient(config), artist, opts);
 }
-export function deleteArtist(config: LidarrConfig, artistId: number) {
-  return artists.deleteArtist(createLidarrClient(config), artistId);
-}
 
 // Albums
-export { downloadAlbum } from './albums';
+export {
+  albumRequestFromExternal,
+  downloadAlbum,
+} from './albums';
+export type {
+  AlbumSearchResult,
+  LidarrAlbumRequest,
+} from './albums';
 
 // Queue
 export {
