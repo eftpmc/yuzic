@@ -98,18 +98,24 @@ function releaseGroupToCover(rg: mb.MbReleaseGroup): CoverSource {
   return { kind: 'coverartarchive', mbid: rg.id, mbidType: 'release-group' }
 }
 
-function releaseGroupToAlbumBase(rg: mb.MbReleaseGroup, fallbackArtist: string): ExternalAlbumBase {
+function releaseGroupToAlbumBase(
+  rg: mb.MbReleaseGroup,
+  fallbackArtist: string,
+  fallbackArtistMbid?: string
+): ExternalAlbumBase {
   const artistName = rg['artist-credit']?.[0]?.artist.name ?? fallbackArtist
+  const artistMbid = rg['artist-credit']?.[0]?.artist.id ?? fallbackArtistMbid ?? null
   return {
     id: rg.id,
     title: rg.title,
     artist: artistName,
+    artistMbid,
     cover: releaseGroupToCover(rg),
     subtext: rg['first-release-date']?.slice(0, 4) ?? '',
     releaseDate: rg['first-release-date'] ?? undefined,
     releaseType: rg['primary-type']?.toLowerCase() === 'single' ? 'single' : 'album',
     externalSource: 'musicbrainz',
-    externalIds: { mbid: rg.id },
+    externalIds: { mbid: rg.id, artistMbid },
   }
 }
 
@@ -144,6 +150,7 @@ const musicbrainzSource: SourceDefinition = {
       mb.getTracksForReleaseGroup(id),
     ])
     const artistName = rg['artist-credit']?.[0]?.artist.name ?? ''
+    const artistMbid = rg['artist-credit']?.[0]?.artist.id ?? null
     const songs = tracks.map(track => ({
       id: track.recording?.id ?? track.id,
       title: track.title,
@@ -157,10 +164,13 @@ const musicbrainzSource: SourceDefinition = {
       id: rg.id,
       title: rg.title,
       artist: artistName,
+      artistMbid,
       cover: releaseGroupToCover(rg),
       subtext: rg['first-release-date']?.slice(0, 4) ?? '',
+      releaseDate: rg['first-release-date'] ?? undefined,
+      releaseType: rg['primary-type']?.toLowerCase() === 'single' ? 'single' : 'album',
       externalSource: 'musicbrainz',
-      externalIds: { mbid: rg.id },
+      externalIds: { mbid: rg.id, artistMbid },
       songs,
     }
   },
@@ -170,7 +180,7 @@ const musicbrainzSource: SourceDefinition = {
     const rgs = artist['release-groups'] ?? []
     return rgs
       .slice(0, limit)
-      .map(rg => releaseGroupToAlbumBase(rg, artist.name))
+      .map(rg => releaseGroupToAlbumBase(rg, artist.name, artist.id))
   },
 
   async fetchArtist(id) {
@@ -178,10 +188,10 @@ const musicbrainzSource: SourceDefinition = {
     const rgs = artist['release-groups'] ?? []
     const albums = rgs
       .filter(rg => !rg['primary-type'] || rg['primary-type'] === 'Album')
-      .map(rg => releaseGroupToAlbumBase(rg, artist.name))
+      .map(rg => releaseGroupToAlbumBase(rg, artist.name, artist.id))
     const singles = rgs
       .filter(rg => rg['primary-type'] === 'Single' || rg['primary-type'] === 'EP')
-      .map(rg => releaseGroupToAlbumBase(rg, artist.name))
+      .map(rg => releaseGroupToAlbumBase(rg, artist.name, artist.id))
     return {
       id: artist.id,
       name: artist.name,

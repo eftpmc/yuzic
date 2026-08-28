@@ -52,7 +52,7 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
     try {
       const result = track
         ? await def.downloadTrack!(config, { title: track.title, artist: track.artist })
-        : await def.downloadAlbum(config, { title: album.title, artist: album.artist });
+        : await def.downloadAlbum(config, album);
       const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
       toast[result.success ? 'success' : 'error'](
         result.success

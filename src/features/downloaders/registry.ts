@@ -3,6 +3,7 @@ import type { Href } from 'expo-router'
 import * as lidarr from '@/api/lidarr'
 import * as slskd from '@/api/slskd'
 import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice'
+import type { ExternalAlbumBase } from '@/types'
 import { selectDownloadersForActiveServer } from '@/utils/redux/selectors/downloadersSelectors'
 
 export type { DownloaderId }
@@ -13,7 +14,12 @@ export type DownloadResult =
   | { success: true }
   | { success: false; message: string }
 
-export type AlbumDownloadRequest = { title: string; artist: string }
+/**
+ * The whole external album, not just its title and artist: Lidarr resolves the
+ * release by MBID/Deezer id where available, and collapsing it to two strings
+ * here would put it back on fuzzy name matching.
+ */
+export type AlbumDownloadRequest = ExternalAlbumBase
 export type TrackDownloadRequest = { title: string; artist: string }
 
 export type DownloaderDefinition = {
@@ -35,7 +41,7 @@ const lidarrDownloader: DownloaderDefinition = {
   descriptionKey: 'externalAlbum.download.lidarrDesc',
   albumAddedKey: 'externalAlbum.download.addedToLidarr',
   settingsRoute: '/settings/lidarrView',
-  downloadAlbum: (config, req) => lidarr.downloadAlbum(config, req.title, req.artist),
+  downloadAlbum: (config, album) => lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album)),
 }
 
 const slskdDownloader: DownloaderDefinition = {
@@ -45,7 +51,7 @@ const slskdDownloader: DownloaderDefinition = {
   albumAddedKey: 'externalAlbum.download.addedToSlskd',
   trackAddedKey: 'externalAlbum.download.addedTrackToSlskd',
   settingsRoute: '/settings/slskdView',
-  downloadAlbum: (config, req) => slskd.downloadAlbum(config, req.title, req.artist),
+  downloadAlbum: (config, album) => slskd.downloadAlbum(config, album.title, album.artist),
   downloadTrack: (config, req) => slskd.downloadTrack(config, req.title, req.artist),
 }
 
