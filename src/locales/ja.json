@@ -574,12 +574,8 @@
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",
-      "quickPicks": "曲を再生するとクイックピックが表示されます",
-      "recentlyPlayed": "再生したアルバムがここに表示されます",
       "recentlyAdded": "ライブラリにアルバムがありません",
-      "favoriteAlbums": "曲をお気に入りするとここに表示されます",
       "randomAlbums": "ライブラリにアルバムがありません",
-      "mostPlayed": "再生したアルバムがここに表示されます",
       "albumsForYou": "アルバムを探しています...",
       "artistsForYou": "アーティストを探しています..."
     }

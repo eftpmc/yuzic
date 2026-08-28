@@ -574,12 +574,8 @@
     },
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",
-      "quickPicks": "播放歌曲后将显示快速选择",
-      "recentlyPlayed": "播放专辑后将显示在此处",
       "recentlyAdded": "媒体库中暂无专辑",
-      "favoriteAlbums": "收藏曲目可将专辑添加至此",
       "randomAlbums": "媒体库中暂无专辑",
-      "mostPlayed": "播放专辑后将显示在此处",
       "albumsForYou": "正在发现专辑...",
       "artistsForYou": "正在发现艺术家..."
     }

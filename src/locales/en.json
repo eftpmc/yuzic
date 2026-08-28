@@ -534,12 +534,8 @@
       "topArtists": "Top artists"
     },
     "empty": {
-      "quickPicks": "Play some songs to see your quick picks",
-      "recentlyPlayed": "Play albums or playlists to see them here",
       "recentlyAdded": "No albums in your library yet",
-      "favoriteAlbums": "Star songs to add albums here",
-      "randomAlbums": "No albums in your library yet",
-      "mostPlayed": "Play albums to see them here"
+      "randomAlbums": "No albums in your library yet"
     }
   },
   "playing": {

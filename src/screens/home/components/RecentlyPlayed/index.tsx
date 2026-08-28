@@ -7,7 +7,6 @@ import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
 import { useTheme } from '@/hooks/useTheme';
 import MediaTile from '../MediaTile';
-import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { AlbumBase, PlaylistBase } from '@/types';
@@ -113,25 +112,24 @@ export default function RecentlyPlayed() {
   const coversToPrefetch = useMemo(() => items.map(i => i.data.cover), [items]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
+  // Hide the section entirely until there's play history to surface.
+  if (items.length < MIN_ITEMS) return null;
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
         {t('explore.sections.recentlyPlayed')}
       </Text>
-      {items.length < MIN_ITEMS ? (
-        <SectionEmptyState message={t('explore.empty.recentlyPlayed')} />
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          decelerationRate="fast"
-          contentContainerStyle={styles.scrollContent}
-        >
-          {items.map(item => (
-            <RecentTile key={`${item.kind}-${item.data.id}`} item={item} itemWidth={itemWidth} />
-          ))}
-        </ScrollView>
-      )}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        contentContainerStyle={styles.scrollContent}
+      >
+        {items.map(item => (
+          <RecentTile key={`${item.kind}-${item.data.id}`} item={item} itemWidth={itemWidth} />
+        ))}
+      </ScrollView>
     </View>
   );
 }

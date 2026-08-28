@@ -575,12 +575,8 @@
     },
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",
-      "quickPicks": "Écoutez des chansons pour voir votre sélection rapide",
-      "recentlyPlayed": "Écoutez des albums pour les voir ici",
       "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment",
-      "favoriteAlbums": "Marquez des morceaux comme favoris pour ajouter des albums ici",
       "randomAlbums": "Aucun album dans votre bibliothèque pour le moment",
-      "mostPlayed": "Écoutez des albums pour les voir ici",
       "albumsForYou": "Découverte des albums...",
       "artistsForYou": "Découverte des artistes..."
     }

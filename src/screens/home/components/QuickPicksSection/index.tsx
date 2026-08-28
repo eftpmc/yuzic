@@ -22,7 +22,6 @@ import {
 } from '@/utils/redux/selectors/statsSelectors';
 import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { seededShuffle } from '@/features/home/hooks/useDailyLayout';
-import SectionEmptyState from '../SectionEmptyState';
 import type { Song, SongBase } from '@/types';
 import {
   QUICK_PICKS_PAGE_SIZE,
@@ -101,48 +100,48 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
     return result;
   }, [picks]);
 
+  // Hide the whole section until there's something to show, rather than leading
+  // Home with an empty placeholder. It reappears once the user has play history.
+  if (pages.length === 0) return null;
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
         {t('explore.sections.quickPicks')}
       </Text>
 
-      {pages.length === 0 ? (
-        <SectionEmptyState message={t('explore.empty.quickPicks')} />
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          decelerationRate="fast"
-          snapToInterval={screenWidth - QUICK_PICKS_PEEK}
-          snapToAlignment="start"
-        >
-          {pages.map((page, pageIdx) => (
-            <View key={pageIdx} style={[styles.page, { width: screenWidth - QUICK_PICKS_PEEK }]}>
-              {page.map(song => (
-                <MediaListRow
-                  key={song.id}
-                  title={song.title}
-                  subtitle={song.artist}
-                  cover={song.cover}
-                  onPress={() => { void handlePress(song); }}
-                  variant="compact"
-                  style={styles.rowWrapper}
-                  rowStyle={styles.row}
-                  trailing={
-                    <IconActionButton
-                      icon={<Ellipsis size={18} color={colors.secondary} />}
-                      onPress={() => { void handleOptions(song); }}
-                      accessibilityLabel={`${song.title} options`}
-                      size="compact"
-                    />
-                  }
-                />
-              ))}
-            </View>
-          ))}
-        </ScrollView>
-      )}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        snapToInterval={screenWidth - QUICK_PICKS_PEEK}
+        snapToAlignment="start"
+      >
+        {pages.map((page, pageIdx) => (
+          <View key={pageIdx} style={[styles.page, { width: screenWidth - QUICK_PICKS_PEEK }]}>
+            {page.map(song => (
+              <MediaListRow
+                key={song.id}
+                title={song.title}
+                subtitle={song.artist}
+                cover={song.cover}
+                onPress={() => { void handlePress(song); }}
+                variant="compact"
+                style={styles.rowWrapper}
+                rowStyle={styles.row}
+                trailing={
+                  <IconActionButton
+                    icon={<Ellipsis size={18} color={colors.secondary} />}
+                    onPress={() => { void handleOptions(song); }}
+                    accessibilityLabel={`${song.title} options`}
+                    size="compact"
+                  />
+                }
+              />
+            ))}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
