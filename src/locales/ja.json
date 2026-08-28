@@ -524,6 +524,13 @@
     "recentSearches": "最近の検索",
     "clearRecent": "クリア",
     "removeRecentSearch": "「{{query}}」を最近の検索から削除",
+    "recentlyOpened": "最近開いた項目",
+    "entityTypes": {
+      "song": "曲",
+      "album": "アルバム",
+      "artist": "アーティスト",
+      "playlist": "プレイリスト"
+    },
     "chips": {
       "local": "ローカル",
       "external": "外部",

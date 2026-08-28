@@ -491,7 +491,14 @@
     "searchError": "Couldn't reach the server — results may be incomplete",
     "recentSearches": "Recent Searches",
     "clearRecent": "Clear",
-    "removeRecentSearch": "Remove \"{{query}}\" from recent searches"
+    "removeRecentSearch": "Remove \"{{query}}\" from recent searches",
+    "recentlyOpened": "Recently opened",
+    "entityTypes": {
+      "song": "Song",
+      "album": "Album",
+      "artist": "Artist",
+      "playlist": "Playlist"
+    }
   },
   "artist": {
     "sections": {

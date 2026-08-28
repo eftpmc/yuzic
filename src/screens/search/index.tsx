@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import { Clock, CloudOff, Ellipsis, X } from 'lucide-react-native';
+import { CloudOff, Ellipsis, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,8 +33,18 @@ import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer, selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
-import { selectSearchHistoryForActiveServer } from '@/utils/redux/selectors/searchHistorySelectors';
-import { addSearchQuery, removeSearchQuery, clearSearchHistory } from '@/utils/redux/slices/searchHistorySlice';
+import {
+  selectRecentSearchEntities,
+  selectRecentSearchQueries,
+} from '@/utils/redux/selectors/searchHistorySelectors';
+import {
+  addSearchQuery,
+  addSearchEntity,
+  removeSearchEntry,
+  clearSearchHistory,
+  type SearchEntityEntry,
+} from '@/utils/redux/slices/searchHistorySlice';
+import RecentSearches from './components/RecentSearches';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 import HomeHeader from '@/screens/library/components/Header';
@@ -54,7 +64,8 @@ const Search = () => {
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const username = useSelector(selectActiveServer)?.username;
   const activeServerId = useSelector(selectActiveServerId);
-  const recentSearches = useSelector(selectSearchHistoryForActiveServer);
+  const recentQueries = useSelector(selectRecentSearchQueries);
+  const recentEntities = useSelector(selectRecentSearchEntities);
   const { openAccountSheet } = useAccountSheet();
 
   const [query, setQuery] = useState('');
@@ -84,6 +95,27 @@ const Search = () => {
     dispatch(addSearchQuery({ serverId: activeServerId, query: trimmed }));
   };
 
+  // Opening a result is the more useful signal than the text that led to it, so
+  // the item itself is stored alongside the query and can be reopened directly.
+  const recordEntity = (entity: Omit<SearchEntityEntry, 'kind'>) => {
+    if (!activeServerId) return;
+    dispatch(addSearchEntity({ serverId: activeServerId, entity }));
+  };
+
+  const recordResult = (result: SearchResult) => {
+    recordSearch(query);
+    recordEntity({
+      type: result.type,
+      id: result.id,
+      title: result.title,
+      subtitle: result.subtext,
+      cover: result.cover,
+      source: result.source,
+      externalSource: result.externalSource,
+      externalIds: result.externalIds,
+    });
+  };
+
   const onSearchChange = (text: string) => {
     setQuery(text);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -108,8 +140,62 @@ const Search = () => {
     recordSearch(value);
   };
 
-  const handleRemoveRecent = (value: string) => {
-    if (activeServerId) dispatch(removeSearchQuery({ serverId: activeServerId, query: value }));
+  const handleRemoveRecent = (key: string) => {
+    if (activeServerId) dispatch(removeSearchEntry({ serverId: activeServerId, key }));
+  };
+
+  const handleRecentSongPress = async (entity: SearchEntityEntry) => {
+    try {
+      const song = await resolvePlayableSong(entity.id);
+      if (song) await playSong(song);
+      else toast.error(t('common.playbackError'));
+    } catch {
+      toast.error(t('common.playbackError'));
+    }
+  };
+
+  // Recent entities navigate straight to the item — no round-trip through search.
+  const handleRecentEntityPress = (entity: SearchEntityEntry) => {
+    Keyboard.dismiss();
+    recordEntity(entity);
+    prefetchCovers([entity.cover], 'detail');
+
+    if (entity.type === 'song') {
+      void handleRecentSongPress(entity);
+      return;
+    }
+    if (entity.type === 'album') {
+      if (entity.source === 'external') {
+        navigateToAlbum({
+          id: entity.id,
+          title: entity.title,
+          subtext: entity.subtitle,
+          cover: entity.cover,
+          artist: entity.subtitle,
+          externalSource: entity.externalSource,
+          externalIds: entity.externalIds,
+        });
+      } else {
+        navigation.navigate('albumView', { id: entity.id });
+      }
+      return;
+    }
+    if (entity.type === 'artist') {
+      if (entity.source === 'external') {
+        navigateToArtist({
+          id: entity.id,
+          name: entity.title,
+          cover: entity.cover,
+          subtext: entity.subtitle,
+          externalSource: entity.externalSource,
+          externalIds: entity.externalIds,
+        });
+      } else {
+        navigation.navigate('artistView', { id: entity.id });
+      }
+      return;
+    }
+    navigation.navigate('playlistView', { id: entity.id });
   };
 
   const handleClearRecent = () => {
@@ -117,7 +203,7 @@ const Search = () => {
   };
 
   const handleSongPress = async (result: SearchResult) => {
-    recordSearch(query);
+    recordResult(result);
     try {
       if (result.song) { await playSong(result.song); return; }
       const song = await resolvePlayableSong(result.id);
@@ -194,7 +280,7 @@ const Search = () => {
             externalIds: result.externalIds,
           }}
           onPress={album => {
-            recordSearch(query);
+            recordResult(result);
             prefetchCovers([album.cover], 'detail');
             navigateToAlbum(album);
           }}
@@ -212,7 +298,7 @@ const Search = () => {
             created: new Date(0),
           }}
           onPress={album => {
-            recordSearch(query);
+            recordResult(result);
             prefetchCovers([album.cover], 'detail');
             navigation.navigate('albumView', { id: album.id });
           }}
@@ -226,7 +312,7 @@ const Search = () => {
           artist={{ id: result.id, name: result.title, subtext: result.subtext, cover: result.cover, albumIds: [] }}
           rounded
           onPress={() => {
-            recordSearch(query);
+            recordResult(result);
             prefetchCovers([result.cover], 'detail');
             if (result.source === 'external') {
               navigateToArtist({ id: result.id, name: result.title, cover: result.cover, subtext: result.subtext, externalSource: result.externalSource, externalIds: result.externalIds });
@@ -243,7 +329,7 @@ const Search = () => {
         <PlaylistRow
           playlist={{ id: result.id, title: result.title, subtext: result.subtext, cover: result.cover, changed: new Date(), created: new Date() }}
           onPress={() => {
-            recordSearch(query);
+            recordResult(result);
             prefetchCovers([result.cover], 'detail');
             navigation.navigate('playlistView', { id: result.id });
           }}
@@ -298,40 +384,15 @@ const Search = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {query.trim() === ''
-          ? recentSearches.length > 0 && (
-            <View style={styles.recentSection} testID="search-recent-section">
-              <View style={styles.recentHeader}>
-                <Text style={[styles.recentTitle, { color: colors.subtext }]}>
-                  {t('search.recentSearches')}
-                </Text>
-                <TouchableOpacity onPress={handleClearRecent} hitSlop={8}>
-                  <Text style={[styles.recentClear, { color: colors.subtext }]}>
-                    {t('search.clearRecent')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              {recentSearches.map(item => (
-                <TouchableOpacity
-                  key={item}
-                  testID="search-recent-item"
-                  style={styles.recentRow}
-                  onPress={() => handleRecentPress(item)}
-                >
-                  <Clock size={16} color={colors.subtext} />
-                  <Text style={[styles.recentQuery, { color: colors.secondary }]} numberOfLines={1}>
-                    {item}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveRecent(item)}
-                    hitSlop={10}
-                    style={styles.recentRemove}
-                    accessibilityLabel={t('search.removeRecentSearch', { query: item })}
-                  >
-                    <X size={16} color={colors.subtext} />
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              ))}
-            </View>
+          ? (
+            <RecentSearches
+              queries={recentQueries}
+              entities={recentEntities}
+              onQueryPress={handleRecentPress}
+              onEntityPress={handleRecentEntityPress}
+              onRemove={handleRemoveRecent}
+              onClear={handleClearRecent}
+            />
           )
           : isLoading
             ? [...Array(8)].map((_, i) => <SkeletonListRow key={i} />)
@@ -449,37 +510,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
-  },
-  recentSection: {
-    paddingTop: 4,
-  },
-  recentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  recentTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  recentClear: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  recentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  recentQuery: {
-    flex: 1,
-    fontSize: 15,
-  },
-  recentRemove: {
-    padding: 4,
   },
 });

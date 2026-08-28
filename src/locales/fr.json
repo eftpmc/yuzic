@@ -525,6 +525,13 @@
     "recentSearches": "Recherches récentes",
     "clearRecent": "Effacer",
     "removeRecentSearch": "Supprimer « {{query}} » des recherches récentes",
+    "recentlyOpened": "Ouverts récemment",
+    "entityTypes": {
+      "song": "Titre",
+      "album": "Album",
+      "artist": "Artiste",
+      "playlist": "Playlist"
+    },
     "chips": {
       "local": "Local",
       "external": "Externe",

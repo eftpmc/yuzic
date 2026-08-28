@@ -524,6 +524,13 @@
     "recentSearches": "最近搜索",
     "clearRecent": "清除",
     "removeRecentSearch": "从最近搜索中删除“{{query}}”",
+    "recentlyOpened": "最近打开",
+    "entityTypes": {
+      "song": "歌曲",
+      "album": "专辑",
+      "artist": "艺人",
+      "playlist": "播放列表"
+    },
     "chips": {
       "local": "本地",
       "external": "外部",

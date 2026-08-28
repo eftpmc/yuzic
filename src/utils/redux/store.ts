@@ -12,7 +12,7 @@ import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
 import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
-import searchHistoryReducer from './slices/searchHistorySlice';
+import searchHistoryReducer, { normalizeSearchHistoryEntries } from './slices/searchHistorySlice';
 
 // Returns undefined (→ initialState) only on version bump; otherwise passes state through.
 const resetMigrate = (state: any, currentVersion: number): Promise<any> => {
@@ -31,6 +31,19 @@ const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
   return Promise.resolve({ ...state, syncOnAppStart: true, searchScope: migratedScope });
 };
 
+// v1 gave history entries a shape (query vs. opened entity); before that each
+// entry was a bare query string. Lift the old strings instead of dropping them.
+const searchHistoryMigrate = (state: any, currentVersion: number): Promise<any> => {
+  if (state?._persist?.version === currentVersion) return Promise.resolve(state);
+  const byServer = state?.byServer;
+  if (!byServer) return Promise.resolve(state);
+  const migrated: Record<string, unknown> = {};
+  for (const [serverId, entries] of Object.entries(byServer)) {
+    migrated[serverId] = normalizeSearchHistoryEntries(entries);
+  }
+  return Promise.resolve({ ...state, byServer: migrated });
+};
+
 const serversPersistConfig = { key: 'servers', storage };
 const downloadersPersistConfig = { key: 'downloaders', storage };
 const audiomusePersistConfig = { key: 'audiomuse', storage };
@@ -43,7 +56,12 @@ const settingsPersistConfig = {
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
 const lastfmPersistConfig = { key: 'lastfm', storage };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
-const searchHistoryPersistConfig = { key: 'searchHistory', storage };
+const searchHistoryPersistConfig = {
+  key: 'searchHistory',
+  storage,
+  version: 1,
+  migrate: searchHistoryMigrate,
+};
 
 const statsPersistConfig = {
   key: 'stats',
