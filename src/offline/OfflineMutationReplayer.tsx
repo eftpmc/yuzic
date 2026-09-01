@@ -56,6 +56,7 @@ async function replayScrobble(
         listenedAt: Math.floor(mutation.startedAt / 1000),
         durationSeconds: mutation.durationSeconds,
         durationPlayedSeconds: mutation.listenedSeconds,
+        album: mutation.album,
       });
       break;
     case 'lastfm':
@@ -65,6 +66,7 @@ async function replayScrobble(
         track: mutation.track,
         timestamp: Math.floor(mutation.startedAt / 1000),
         duration: mutation.durationSeconds,
+        album: mutation.album,
       });
       break;
   }

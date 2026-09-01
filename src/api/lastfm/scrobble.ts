@@ -5,6 +5,9 @@ export type LastFmScrobblePayload = {
   track: string
   timestamp: number
   duration?: number
+  /** Album title. Last.fm matches a listen to a release far more reliably with
+   * it, so send it whenever the library knows one. */
+  album?: string
 }
 
 export async function submitScrobble(
@@ -19,6 +22,9 @@ export async function submitScrobble(
   }
   if (payload.duration != null && payload.duration > 0) {
     params.duration = String(Math.round(payload.duration))
+  }
+  if (payload.album) {
+    params.album = payload.album
   }
 
   await lastfmRequest(params, {

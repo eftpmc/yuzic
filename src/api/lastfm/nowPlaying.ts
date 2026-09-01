@@ -3,7 +3,7 @@ import type { LastFmConfig } from './client';
 
 export async function updateNowPlaying(
   config: LastFmConfig,
-  payload: { artist: string; track: string; duration?: number }
+  payload: { artist: string; track: string; duration?: number; album?: string }
 ) {
   const params: Record<string, string> = {
     method: 'track.updateNowPlaying',
@@ -12,6 +12,9 @@ export async function updateNowPlaying(
   };
   if (payload.duration != null && payload.duration > 0) {
     params.duration = String(Math.round(payload.duration));
+  }
+  if (payload.album) {
+    params.album = payload.album;
   }
 
   return lastfmRequest(params, {

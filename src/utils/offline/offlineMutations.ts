@@ -46,6 +46,7 @@ export type OfflineMutation =
       songId: string;
       artist: string;
       track: string;
+      album?: string;
       /** Unix ms when playback started. A replayed scrobble keeps this, so a
        * play submitted hours late is still recorded at the time it happened. */
       startedAt: number;
@@ -126,6 +127,7 @@ export type ScrobbleDetails = {
   songId: string;
   artist: string;
   track: string;
+  album?: string;
   /** Unix ms when playback started. */
   startedAt: number;
   durationSeconds?: number;
@@ -150,6 +152,7 @@ export function buildScrobbleMutation(
     songId: details.songId,
     artist: details.artist,
     track: details.track,
+    album: details.album,
     startedAt: details.startedAt,
     durationSeconds:
       details.durationSeconds && details.durationSeconds > 0

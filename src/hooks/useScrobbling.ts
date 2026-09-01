@@ -71,6 +71,7 @@ export function useScrobbling() {
       songId: song.id,
       artist: song.artist,
       track: song.title,
+      album: song.albumTitle,
       startedAt: startTime,
       durationSeconds,
       listenedSeconds,
@@ -132,6 +133,7 @@ export function useScrobbling() {
           listenedAt: Math.floor(opts.startTime / 1000),
           durationSeconds: songDuration > 0 ? songDuration : undefined,
           durationPlayedSeconds: opts.listenedSeconds,
+          album: song.albumTitle,
         });
       } catch {
         queueScrobble('listenbrainz', song, opts.startTime, songDuration, opts.listenedSeconds);
@@ -145,6 +147,7 @@ export function useScrobbling() {
           track: song.title,
           timestamp: Math.floor(opts.startTime / 1000),
           duration: songDuration > 0 ? songDuration : undefined,
+          album: song.albumTitle,
         });
       } catch {
         queueScrobble('lastfm', song, opts.startTime, songDuration, opts.listenedSeconds);
@@ -175,6 +178,7 @@ export function useScrobbling() {
         artist: song.artist,
         track: song.title,
         durationSeconds: songDuration,
+        album: song.albumTitle,
       }).catch(() => {});
     }
     if (lastFmConfig && lastFmNowPlayingEnabled) {
@@ -182,6 +186,7 @@ export function useScrobbling() {
         artist: song.artist,
         track: song.title,
         duration: songDuration,
+        album: song.albumTitle,
       }).catch(() => {});
     }
   }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled, lastFmConfig, lastFmNowPlayingEnabled]);
