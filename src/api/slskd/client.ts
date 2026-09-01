@@ -35,6 +35,11 @@ export function createSlskdClient(config: SlskdConfig) {
       throw new Error(`slskd API error (${res.status}): ${text}`);
     }
 
+    // DELETE and other no-content replies have no body to parse.
+    if (res.status === 204 || res.headers?.get?.('content-length') === '0') {
+      return {} as T;
+    }
+
     return res.json();
   }
 

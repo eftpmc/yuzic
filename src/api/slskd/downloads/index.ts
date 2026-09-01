@@ -79,6 +79,20 @@ function randomUuid(): string {
   });
 }
 
+/**
+ * Removes a search this app created once its results have been read. Without
+ * it every download leaves an entry behind in the user's slskd search list,
+ * which only ever grows. Best-effort: a failed cleanup must not fail the
+ * download that already succeeded.
+ */
+async function deleteSearch(client: SlskdClient, searchId: string): Promise<void> {
+  try {
+    await client.request(`/searches/${searchId}`, { method: 'DELETE' });
+  } catch {
+    // Ignored on purpose — see above.
+  }
+}
+
 async function runSearch(
   client: SlskdClient,
   searchText: string
@@ -105,27 +119,33 @@ async function runSearch(
     return { code: 'search_failed' };
   }
 
-  // Poll search state until complete (slskd API reports isComplete when done)
-  let isComplete = false;
-  for (let i = 0; i < MAX_POLL_ITERATIONS; i++) {
-    await delay(POLL_MS);
-    const state = await client.request<SearchStateResponse>(
-      `/searches/${searchId}`
-    );
-    if (state.isComplete === true) {
-      isComplete = true;
-      break;
+  try {
+    // Poll search state until complete (slskd API reports isComplete when done)
+    let isComplete = false;
+    for (let i = 0; i < MAX_POLL_ITERATIONS; i++) {
+      await delay(POLL_MS);
+      const state = await client.request<SearchStateResponse>(
+        `/searches/${searchId}`
+      );
+      if (state.isComplete === true) {
+        isComplete = true;
+        break;
+      }
     }
-  }
 
-  if (!isComplete) {
-    return { code: 'search_timeout' };
-  }
+    if (!isComplete) {
+      return { code: 'search_timeout' };
+    }
 
-  const list = await client.request<SearchResponseItem[]>(
-    `/searches/${searchId}/responses`
-  );
-  return Array.isArray(list) ? list : [];
+    const list = await client.request<SearchResponseItem[]>(
+      `/searches/${searchId}/responses`
+    );
+    return Array.isArray(list) ? list : [];
+  } finally {
+    // Runs on the timeout and error paths too: an abandoned search is still
+    // ours to clean up.
+    await deleteSearch(client, searchId);
+  }
 }
 
 async function enqueueFiles(

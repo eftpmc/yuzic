@@ -9,16 +9,27 @@ const originalFetch = global.fetch;
  * Minimal slskd stand-in: a search completes immediately and returns one user
  * sharing the requested album.
  */
-function mockSlskd(responses: unknown) {
-  return jest.fn(async (url: string) => {
+function mockSlskd(responses: unknown, onDelete?: () => void) {
+  return jest.fn(async (url: string, init?: RequestInit) => {
     const json = (body: unknown) =>
       ({ ok: true, status: 200, json: async () => body, text: async () => '' }) as Response;
 
+    if (init?.method === 'DELETE') {
+      onDelete?.();
+      return { ok: true, status: 204, json: async () => ({}), text: async () => '' } as Response;
+    }
     if (url.endsWith('/searches')) return json({ id: 'search-1' });
     if (/\/searches\/[^/]+$/.test(url)) return json({ id: 'search-1', isComplete: true });
     if (url.endsWith('/responses')) return json(responses);
     return json({});
   });
+}
+
+/** DELETE calls issued against /searches/<id>. */
+function searchDeletes(fetchMock: jest.Mock) {
+  return fetchMock.mock.calls.filter(
+    ([url, init]) => (init as RequestInit)?.method === 'DELETE' && String(url).includes('/searches/')
+  );
 }
 
 const sharing = [
@@ -133,6 +144,35 @@ describe('slskd downloads', () => {
 
     const searches = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/searches'));
     expect(searches).toHaveLength(2);
+  });
+
+  it('cleans up the search it created', async () => {
+    // Otherwise every download leaves an entry in the user's slskd search list.
+    const fetchMock = mockSlskd(sharing);
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await settle(downloadAlbum(config, 'In Rainbows', 'Radiohead'));
+
+    expect(searchDeletes(fetchMock)).toHaveLength(1);
+  });
+
+  it('still succeeds when the search cleanup fails', async () => {
+    const fetchMock = jest.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'DELETE' && String(url).includes('/searches/')) {
+        throw new Error('cleanup failed');
+      }
+      const json = (body: unknown) =>
+        ({ ok: true, status: 200, json: async () => body, text: async () => '' }) as Response;
+      if (url.endsWith('/searches')) return json({ id: 'search-1' });
+      if (/\/searches\/[^/]+$/.test(url)) return json({ id: 'search-1', isComplete: true });
+      if (url.endsWith('/responses')) return json(sharing);
+      return json({});
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await expect(
+      settle(downloadAlbum(config, 'In Rainbows', 'Radiohead'))
+    ).resolves.toEqual({ success: true });
   });
 
   it('rejects an empty identity without touching the network', async () => {

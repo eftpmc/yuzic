@@ -32,7 +32,7 @@ const SlskdView: React.FC = () => {
                 {item.title || t('settings.downloaders.unknown')}
               </Text>
               <Text style={[styles.itemSub, { color: colors.subtext }]} numberOfLines={1}>
-                {[item.artistName, meta].filter(Boolean).join(' · ')}
+                {[item.artistName || item.username, meta].filter(Boolean).join(' · ')}
               </Text>
             </View>
             {isCompleted ? (

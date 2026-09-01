@@ -1,9 +1,12 @@
 import { createSlskdClient, type SlskdConfig } from '../client';
+import { parseDirectory } from './directoryName';
 
 export interface SlskdQueueRecord {
   id: string;
+  /** The peer serving the files; shown when the path reveals no artist. */
   username: string;
   title: string;
+  /** Read from the remote path, so empty when its layout reveals no artist. */
   artistName: string;
   state: string;
   size: number;
@@ -42,6 +45,7 @@ function groupDownloadsByDirectory(transfers: Transfer[]): SlskdQueueRecord[] {
       if (files.length === 0) continue;
       const dir = (d.directory ?? '').trim() || 'Unknown';
       const id = `${t.username}::${dir}`;
+      const parsed = parseDirectory(dir);
       let size = 0;
       let sizeleft = 0;
       let hasActive = false;
@@ -56,8 +60,8 @@ function groupDownloadsByDirectory(transfers: Transfer[]): SlskdQueueRecord[] {
       out.push({
         id,
         username: t.username,
-        title: basename(dir),
-        artistName: t.username,
+        title: parsed.albumTitle || basename(dir),
+        artistName: parsed.artistName ?? '',
         state: hasActive ? 'Downloading' : 'Completed',
         size,
         sizeleft,
