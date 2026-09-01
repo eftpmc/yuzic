@@ -14,6 +14,7 @@ import {
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { normalize } from '@/utils/normalize';
+import { matchesQueuedRelease } from './externalAlbumMatch';
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch';
 
 export type ExternalAlbumStatus =
@@ -68,8 +69,7 @@ export function useExternalAlbumStatus(album: ExternalAlbumBase | null): Externa
     if (slskdQueue) {
       const match = slskdQueue.find(r => {
         if (r.state.toLowerCase() === 'completed') return false;
-        const t = normalize(r.title);
-        return t.includes(normTitle) || normTitle.includes(t);
+        return matchesQueuedRelease(r, { title: album.title, artist: album.artist });
       });
       if (match) return { kind: 'downloading', progress: match.percentComplete, source: 'slskd' };
     }
