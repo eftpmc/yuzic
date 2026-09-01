@@ -15,10 +15,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import type { Song } from '@/types';
-import {
-  doesTrackMatchProviderScope,
-  DownloadProviderScope,
-} from '@/utils/downloads/provider';
+import { DownloadProviderScope } from '@/utils/downloads/provider';
 import {
   DownloadedCollectionEntry,
   DownloadedTrackEntry,
@@ -33,6 +30,17 @@ import {
 import {
   createDownloadJobRunner,
 } from '@/utils/downloads/jobQueue';
+import {
+  collectionsWithoutTracks,
+  jobMatchesCollectionId,
+  jobMatchesDownloadId,
+  jobsOutsideScope,
+  orphanedTrackIds,
+  trackIdsOfJobs,
+  tracksInCollectionRemoval,
+  tracksInScope,
+  tracksWithout,
+} from '@/utils/downloads/removal';
 import {
   DOWNLOAD_SCHEMA_VERSION,
   STAGING_SUFFIX,
@@ -601,103 +609,75 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   // job. Cancelled resumables resolve undefined in performDownloadTrack, so
   // nothing gets recorded and the staging file is cleaned up there.
   const cancelOrphanedActiveDownloads = useCallback(async (candidateTrackIds: Iterable<string>) => {
-    const stillQueued = new Set(jobsRef.current.flatMap(job => job.tracks.map(track => track.id)));
-    const cancels: Promise<void>[] = [];
-    for (const trackId of candidateTrackIds) {
+    const orphans = orphanedTrackIds(candidateTrackIds, jobsRef.current);
+    await Promise.all(orphans.map(trackId => {
       const resumable = activeDownloadsRef.current.get(trackId);
-      if (resumable && !stillQueued.has(trackId)) {
-        cancels.push(resumable.cancelAsync().catch(() => {}));
-      }
-    }
-    await Promise.all(cancels);
+      return resumable ? resumable.cancelAsync().catch(() => {}) : Promise.resolve();
+    }));
+  }, []);
+
+  const deleteFiles = useCallback(async (tracks: LocalDownloadedTrackEntry[]) => {
+    await Promise.all(tracks.map(track =>
+      FileSystem.deleteAsync(track.localPath, { idempotent: true }).catch(() => {})
+    ));
   }, []);
 
   const deleteDownloadedTrack = useCallback(async (trackId: string) => {
     const entry = state.tracks.find(track => track.trackId === trackId);
-    if (entry) {
-      await FileSystem.deleteAsync(entry.localPath, { idempotent: true }).catch(() => {});
-    }
-    updateTracks(tracks => tracks.filter(track => track.trackId !== trackId));
-    updateCollections(collections => collections
-      .map(collection => ({
-        ...collection,
-        trackIds: collection.trackIds.filter(id => id !== trackId),
-      }))
-      .filter(collection => collection.trackIds.length > 0));
-  }, [state.tracks, updateCollections, updateTracks]);
+    if (entry) await deleteFiles([entry]);
+
+    const removed = new Set([trackId]);
+    updateTracks(tracks => tracksWithout(tracks, removed));
+    updateCollections(collections => collectionsWithoutTracks(collections, removed));
+  }, [deleteFiles, state.tracks, updateCollections, updateTracks]);
 
   const removeDownloadByCollectionId = useCallback(async (
     id: string,
     trackIds: string[],
     scope?: DownloadProviderScope,
   ) => {
-    const ids = new Set(trackIds);
-    const tracksToDelete = state.tracks.filter(track =>
-      ids.has(track.trackId) && doesTrackMatchProviderScope(track, scope)
-    );
+    const tracksToDelete = tracksInCollectionRemoval(state.tracks, trackIds, scope);
+    await deleteFiles(tracksToDelete);
 
-    await Promise.all(tracksToDelete.map(track =>
-      FileSystem.deleteAsync(track.localPath, { idempotent: true }).catch(() => {})
-    ));
-
-    updateTracks(tracks => tracks.filter(track => !tracksToDelete.some(deleted => deleted.trackId === track.trackId)));
+    const removed = new Set(tracksToDelete.map(track => track.trackId));
+    updateTracks(tracks => tracksWithout(tracks, removed));
     updateCollections(collections => collections.filter(collection => collection.id !== id));
-    updateJobs(jobs => jobs.filter(job => job.collectionId !== id && job.id !== id));
+    updateJobs(jobs => jobs.filter(job => !jobMatchesCollectionId(job, id)));
     await cancelOrphanedActiveDownloads(trackIds);
-  }, [cancelOrphanedActiveDownloads, state.tracks, updateCollections, updateJobs, updateTracks]);
+  }, [cancelOrphanedActiveDownloads, deleteFiles, state.tracks, updateCollections, updateJobs, updateTracks]);
 
   const clearDownloadsForProvider = useCallback(async (scope?: DownloadProviderScope) => {
-    const tracksToDelete = state.tracks.filter(track => doesTrackMatchProviderScope(track, scope));
-    await Promise.all(tracksToDelete.map(track =>
-      FileSystem.deleteAsync(track.localPath, { idempotent: true }).catch(() => {})
-    ));
-    const deletedIds = new Set(tracksToDelete.map(track => track.trackId));
+    const tracksToDelete = tracksInScope(state.tracks, scope);
+    await deleteFiles(tracksToDelete);
 
-    updateTracks(tracks => tracks.filter(track => !deletedIds.has(track.trackId)));
-    // Trim the deleted trackIds out of every collection instead of deciding
-    // whether to drop the whole collection from a resolved serverId alone —
-    // that guard dropped every collection (any provider) whenever the scope
-    // couldn't resolve a serverId, e.g. a corrupt "unknown provider" row.
-    updateCollections(collections => collections
-      .map(collection => ({
-        ...collection,
-        trackIds: collection.trackIds.filter(trackId => !deletedIds.has(trackId)),
-      }))
-      .filter(collection => collection.trackIds.length > 0));
-    updateJobs(jobs => jobs.filter(job => job.tracks.some(track => !doesTrackMatchProviderScope(
-      { serverId: track.sourceServerId, serverType: track.sourceServerType },
-      scope
-    ))));
-  }, [state.tracks, updateCollections, updateJobs, updateTracks]);
+    const removed = new Set(tracksToDelete.map(track => track.trackId));
+    updateTracks(tracks => tracksWithout(tracks, removed));
+    updateCollections(collections => collectionsWithoutTracks(collections, removed));
+    updateJobs(jobs => jobsOutsideScope(jobs, scope));
+  }, [deleteFiles, state.tracks, updateCollections, updateJobs, updateTracks]);
 
   const clearAllDownloads = useCallback(async () => {
-    await Promise.all(state.tracks.map(track =>
-      FileSystem.deleteAsync(track.localPath, { idempotent: true }).catch(() => {})
-    ));
+    await deleteFiles(state.tracks);
     updateTracks(() => []);
     updateCollections(() => []);
     updateJobs(() => []);
-  }, [state.tracks, updateCollections, updateJobs, updateTracks]);
+  }, [deleteFiles, state.tracks, updateCollections, updateJobs, updateTracks]);
 
   const cancelDownload = useCallback(async (downloadId: string) => {
-    const matches = (job: PersistedDownloadJob) =>
-      job.id === downloadId ||
-      job.collectionId === downloadId ||
-      job.tracks.some(track => track.id === downloadId);
-    const cancelledTrackIds = jobsRef.current
-      .filter(matches)
-      .flatMap(job => job.tracks.map(track => track.id));
+    const cancelledTrackIds = trackIdsOfJobs(
+      jobsRef.current.filter(job => jobMatchesDownloadId(job, downloadId))
+    );
 
-    updateJobs(jobs => jobs.filter(job => !matches(job)));
+    updateJobs(jobs => jobs.filter(job => !jobMatchesDownloadId(job, downloadId)));
     await cancelOrphanedActiveDownloads(cancelledTrackIds);
   }, [cancelOrphanedActiveDownloads, updateJobs]);
 
   const cancelCollectionDownloads = useCallback(async (collectionId: string) => {
-    const cancelledTrackIds = jobsRef.current
-      .filter(job => job.collectionId === collectionId || job.id === collectionId)
-      .flatMap(job => job.tracks.map(track => track.id));
+    const cancelledTrackIds = trackIdsOfJobs(
+      jobsRef.current.filter(job => jobMatchesCollectionId(job, collectionId))
+    );
 
-    updateJobs(jobs => jobs.filter(job => job.collectionId !== collectionId && job.id !== collectionId));
+    updateJobs(jobs => jobs.filter(job => !jobMatchesCollectionId(job, collectionId)));
     await cancelOrphanedActiveDownloads(cancelledTrackIds);
   }, [cancelOrphanedActiveDownloads, updateJobs]);
 
@@ -707,11 +687,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [cancelOrphanedActiveDownloads, updateJobs]);
 
   const resumeDownload = useCallback(async (downloadId: string) => {
-    const hasJob = jobsRef.current.some(job =>
-      job.id === downloadId ||
-      job.collectionId === downloadId ||
-      job.tracks.some(track => track.id === downloadId)
-    );
+    const hasJob = jobsRef.current.some(job => jobMatchesDownloadId(job, downloadId));
     if (hasJob) {
       await processDownloadQueue();
     }
