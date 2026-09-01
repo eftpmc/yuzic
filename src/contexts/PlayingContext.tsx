@@ -55,10 +55,9 @@ import {
   mediaItemToFallbackSong,
   playableSongsOnly,
 } from './playableMedia';
+import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 
 
-// How many tracks of runway remain before Autoplay fetches more.
-const LOW_WATERMARK = 3;
 
 export interface PlaybackProgress {
   position: number;
@@ -457,8 +456,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     submitNowPlayingRef.current(songFromQueue);
 
-    const remaining = queueRef.current.length - 1 - newIndex;
-    if (autoplayEnabledRef.current && remaining <= LOW_WATERMARK && !isFillingRef.current) {
+    if (shouldFillQueue({
+      queueLength: queueRef.current.length,
+      currentIndex: newIndex,
+      autoplayEnabled: autoplayEnabledRef.current,
+      isFilling: isFillingRef.current,
+    })) {
       void fillQueueIfLowRef.current();
     }
   }, [activeMediaItem, bumpQueue]);
@@ -495,9 +498,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const provider = resolveQueueFillProvider(providersRef.current);
       if (!provider) return;
-      const recentSongs = queueRef.current.slice(Math.max(0, currentIndexRef.current - 5), currentIndexRef.current + 1);
-      const excludeIds = new Set(queueRef.current.map(s => s.id));
-      const extension = await provider.fetchExtension({ recentSongs, excludeIds, count: 10 });
+      const extension = await provider.fetchExtension(
+        buildFillRequest(queueRef.current, currentIndexRef.current)
+      );
       const playable = playableSongsOnly(extension.map(resolvePlayableSongRef.current));
       if (!playable.length) return;
       const insertAt = queueRef.current.length;
@@ -523,9 +526,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const provider = resolveQueueFillProvider(providersRef.current);
       if (!provider) return;
-      const recentSongs = queueRef.current.slice(Math.max(0, currentIndexRef.current - 5), currentIndexRef.current + 1);
-      const excludeIds = new Set(queueRef.current.map(s => s.id));
-      const extension = await provider.fetchExtension({ recentSongs, excludeIds, count: 10 });
+      const extension = await provider.fetchExtension(
+        buildFillRequest(queueRef.current, currentIndexRef.current)
+      );
       const playable = playableSongsOnly(extension.map(resolvePlayableSongRef.current));
       if (!playable.length) return;
       const before = queueRef.current.slice(0, currentIndexRef.current + 1);
