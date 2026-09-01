@@ -4,13 +4,15 @@ import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 
+/** Header shared by the Home, Library and Search tabs: screen title plus the
+ * account avatar. */
 type Props = {
   title: string;
   username?: string;
   onAccountPress: () => void;
 };
 
-export default function HomeHeader({ title, username, onAccountPress }: Props) {
+export default function TabHeader({ title, username, onAccountPress }: Props) {
   const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
 

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, ReactNode } from 'react';
-import AccountBottomSheet from '@/screens/library/components/AccountBottomSheet';
+import AccountBottomSheet from '@/components/AccountBottomSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
 
 type AccountSheetContextType = {

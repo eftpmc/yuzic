@@ -47,7 +47,7 @@ import {
 import RecentSearches from './components/RecentSearches';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
-import HomeHeader from '@/screens/library/components/Header';
+import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 
 const Search = () => {
@@ -342,7 +342,7 @@ const Search = () => {
 
   return (
     <SafeAreaView testID="search-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
-      <HomeHeader
+      <TabHeader
         title={t('search.title')}
         username={username}
         onAccountPress={openAccountSheet}

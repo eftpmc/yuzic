@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useAccountSheet } from '@/contexts/AccountSheetContext'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 
-import HomeHeader from '@/screens/library/components/Header'
+import TabHeader from '@/components/TabHeader'
 import LibraryEntryRows from '@/screens/library/LibraryEntryRows'
 import LibraryList from '@/screens/library/LibraryList'
 import { useLibraryItems } from '@/screens/library/useLibraryItems'
@@ -39,7 +39,7 @@ export default function LibraryScreen() {
       edges={['top']}
       style={[styles.screen, { backgroundColor: colors.background }]}
     >
-      <HomeHeader
+      <TabHeader
         title={t('library.title')}
         username={username}
         onAccountPress={openAccountSheet}

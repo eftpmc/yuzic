@@ -11,8 +11,8 @@ import { useSync } from '@/hooks/useSync'
 import { useIsOffline } from '@/hooks/useIsOffline'
 import { useAccountSheet } from '@/contexts/AccountSheetContext'
 
-import HomeHeader from './components/Header'
-import Explore from '@/screens/home'
+import TabHeader from '@/components/TabHeader'
+import Explore from './Explore'
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -67,7 +67,7 @@ export default function HomeScreen() {
       edges={['top']}
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <HomeHeader
+      <TabHeader
         title="Yuzic"
         username={username}
         onAccountPress={openAccountSheet}
