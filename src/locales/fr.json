@@ -591,8 +591,6 @@
       "quickPicks": "Sélection rapide",
       "recentlyPlayed": "Écoutés récemment",
       "recentlyAdded": "Ajoutés récemment",
-      "favoriteAlbums": "Albums favoris",
-      "randomAlbums": "Albums au hasard",
       "mostPlayed": "Les plus écoutés",
       "newReleases": "Nouvelles sorties",
       "becauseYouListened": "Dans le style de {{artist}}",
@@ -610,7 +608,6 @@
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",
       "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment",
-      "randomAlbums": "Aucun album dans votre bibliothèque pour le moment",
       "albumsForYou": "Découverte des albums...",
       "artistsForYou": "Découverte des artistes..."
     }

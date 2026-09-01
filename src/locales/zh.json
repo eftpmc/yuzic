@@ -590,8 +590,6 @@
       "quickPicks": "快速选择",
       "recentlyPlayed": "最近播放",
       "recentlyAdded": "最近添加",
-      "favoriteAlbums": "收藏专辑",
-      "randomAlbums": "随机专辑",
       "mostPlayed": "最常播放",
       "newReleases": "新发行",
       "becauseYouListened": "更多像{{artist}}的音乐",
@@ -609,7 +607,6 @@
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",
       "recentlyAdded": "媒体库中暂无专辑",
-      "randomAlbums": "媒体库中暂无专辑",
       "albumsForYou": "正在发现专辑...",
       "artistsForYou": "正在发现艺术家..."
     }

@@ -15,11 +15,20 @@ export type LibraryItem =
   | { kind: 'playlist'; data: PlaylistBase }
   | { kind: 'track'; data: SongBase }
 
+/**
+ * A browse destination in the library.
+ *
+ * Mostly entity types, plus two views over them: `downloaded` and
+ * `recentlyAdded` are both albums and playlists filtered or ordered a
+ * particular way, and both earn a place because they answer a question the
+ * entity lists can't — what can I play offline, and what is new.
+ */
 export type LibraryCollectionType =
   | 'playlists'
   | 'albums'
   | 'artists'
   | 'tracks'
+  | 'recentlyAdded'
   | 'downloaded'
 
 export type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded'

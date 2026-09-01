@@ -4,7 +4,14 @@ import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize, radius, spacing } from '@/constants/design';
 
-const SkeletonListRow: React.FC = () => {
+type Props = {
+  /** Art size of the rows this stands in for. Defaults to the shared media row;
+   * the library's own rows are smaller, and a placeholder that is the wrong size
+   * makes the real list jump when it arrives. */
+  artSize?: number;
+};
+
+const SkeletonListRow: React.FC<Props> = ({ artSize = controlSize.mediaRowArt }) => {
   const { isDarkMode } = useTheme();
   const colorMode = isDarkMode ? 'dark' : 'light';
 
@@ -12,8 +19,8 @@ const SkeletonListRow: React.FC = () => {
     <View style={styles.wrapper}>
       <View style={styles.row}>
         <Skeleton
-          width={controlSize.mediaRowArt}
-          height={controlSize.mediaRowArt}
+          width={artSize}
+          height={artSize}
           radius={radius.thumb}
           colorMode={colorMode}
         />

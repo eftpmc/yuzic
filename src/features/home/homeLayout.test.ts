@@ -26,12 +26,12 @@ describe('buildResumeSections', () => {
 })
 
 describe('buildLibrarySections', () => {
-  it('offers the slices Library sort orders express less well', () => {
+  it('carries only what changes on its own', () => {
+    // Static, exhaustive views of the collection are the Library tab's job;
+    // this tier is for the two slices that move without being asked.
     expect(buildLibrarySections(true).map(s => s.type)).toEqual([
       'recentlyAdded',
-      'favoriteAlbums',
       'mostPlayed',
-      'randomAlbums',
     ])
   })
 

@@ -11,8 +11,6 @@ import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelecto
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
 import RecentlyAdded from './components/RecentlyAdded'
-import FavoriteAlbums from './components/FavoriteAlbums'
-import RandomAlbums from './components/RandomAlbums'
 import MostPlayedAlbums from './components/MostPlayedAlbums'
 import BecauseYouListenedSection from './components/BecauseYouListenedSection'
 import TopArtistsSection from './components/TopArtistsSection'
@@ -28,10 +26,6 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <RecentlyPlayed key={config.key} />
     case 'recentlyAdded':
       return <RecentlyAdded key={config.key} />
-    case 'favoriteAlbums':
-      return <FavoriteAlbums key={config.key} />
-    case 'randomAlbums':
-      return <RandomAlbums key={config.key} refreshKey={refreshKey} />
     case 'mostPlayed':
       return <MostPlayedAlbums key={config.key} />
     case 'charts':

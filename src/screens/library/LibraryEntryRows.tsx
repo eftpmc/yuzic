@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import {
   ChevronRight,
+  Clock3,
   Disc3,
   Download,
   ListMusic,
@@ -18,18 +19,27 @@ import { useLibraryCounts } from './useLibraryCounts'
 import type { LibraryCollectionType } from './librarySort'
 
 type Entry = {
-  key: keyof ReturnType<typeof useLibraryCounts>
+  key: string
   labelKey: string
   icon: React.ReactNode
   onPress: () => void
+  /** Omitted where a number would only repeat a row above: "Recently added"
+   * holds the same albums as "Albums", so counting them says nothing. */
+  count?: number
 }
 
 /**
  * The library's browse entry points.
  *
- * Every entity type gets one, including genres, which previously had no way in
- * at all. Each opens a screen of its own rather than filtering this list, so
- * the set can grow without the row of filters growing with it.
+ * Entity types first, then the views over them. Each opens a screen of its own
+ * rather than filtering a list here, so the set can grow without a row of
+ * filters growing with it — which is how genres went so long with no way in.
+ *
+ * "Recently added" is a row rather than the grid it used to be. The grid
+ * duplicated Home's own recently-added shelf, which is the better place for it:
+ * a short, changing view belongs on the screen you open first. The row gives
+ * the Library tab what Home can't — the complete list, sorted and browsable
+ * like any other collection here.
  */
 const LibraryEntryRows: React.FC = () => {
   const navigation = useNavigation<any>()
@@ -49,36 +59,48 @@ const LibraryEntryRows: React.FC = () => {
       labelKey: 'home.filters.playlists',
       icon: <ListMusic size={size} color={color} />,
       onPress: () => openCollection('playlists'),
+      count: counts.playlists,
     },
     {
       key: 'albums',
       labelKey: 'home.filters.albums',
       icon: <Disc3 size={size} color={color} />,
       onPress: () => openCollection('albums'),
+      count: counts.albums,
     },
     {
       key: 'artists',
       labelKey: 'home.filters.artists',
       icon: <Users size={size} color={color} />,
       onPress: () => openCollection('artists'),
+      count: counts.artists,
     },
     {
       key: 'tracks',
       labelKey: 'home.filters.tracks',
       icon: <Music2 size={size} color={color} />,
       onPress: () => openCollection('tracks'),
+      count: counts.tracks,
     },
     {
       key: 'genres',
       labelKey: 'library.genres.title',
       icon: <Tags size={size} color={color} />,
       onPress: () => navigation.push('genresView'),
+      count: counts.genres,
+    },
+    {
+      key: 'recentlyAdded',
+      labelKey: 'library.recentlyAdded',
+      icon: <Clock3 size={size} color={color} />,
+      onPress: () => openCollection('recentlyAdded'),
     },
     {
       key: 'downloaded',
       labelKey: 'home.filters.downloaded',
       icon: <Download size={size} color={color} />,
       onPress: () => openCollection('downloaded'),
+      count: counts.downloaded,
     },
   ]
 
@@ -111,9 +133,9 @@ const LibraryEntryRows: React.FC = () => {
               {t(entry.labelKey)}
             </Text>
             <View style={styles.right}>
-              {counts[entry.key] > 0 && (
+              {entry.count !== undefined && entry.count > 0 && (
                 <Text style={[styles.count, { color: colors.subtext }]}>
-                  {counts[entry.key]}
+                  {entry.count}
                 </Text>
               )}
               <ChevronRight size={18} color={colors.subtext} />

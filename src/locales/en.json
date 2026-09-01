@@ -554,8 +554,6 @@
       "quickPicks": "Quick picks",
       "recentlyPlayed": "Recents",
       "recentlyAdded": "Recently added",
-      "favoriteAlbums": "Favorite albums",
-      "randomAlbums": "Random albums",
       "mostPlayed": "Most played",
       "becauseYouListened": "More like {{artist}}",
       "becauseYouListenedLabel": "More like",
@@ -568,8 +566,7 @@
       "fromYourLibrary": "From your library"
     },
     "empty": {
-      "recentlyAdded": "No albums in your library yet",
-      "randomAlbums": "No albums in your library yet"
+      "recentlyAdded": "No albums in your library yet"
     }
   },
   "playing": {

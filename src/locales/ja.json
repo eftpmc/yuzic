@@ -590,8 +590,6 @@
       "quickPicks": "クイックピック",
       "recentlyPlayed": "最近再生",
       "recentlyAdded": "最近追加",
-      "favoriteAlbums": "お気に入りのアルバム",
-      "randomAlbums": "ランダムアルバム",
       "mostPlayed": "最も再生された",
       "newReleases": "新着リリース",
       "becauseYouListened": "{{artist}}に似た音楽",
@@ -609,7 +607,6 @@
     "empty": {
       "recentSongs": "再生するとここに表示されます",
       "recentlyAdded": "ライブラリにアルバムがありません",
-      "randomAlbums": "ライブラリにアルバムがありません",
       "albumsForYou": "アルバムを探しています...",
       "artistsForYou": "アーティストを探しています..."
     }

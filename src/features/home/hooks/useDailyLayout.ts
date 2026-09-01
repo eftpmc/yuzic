@@ -21,8 +21,6 @@ export type SectionType =
   | 'recentlyAdded'
   | 'becauseYouListened'
   | 'topArtists'
-  | 'favoriteAlbums'
-  | 'randomAlbums'
   | 'mostPlayed'
   | 'charts'
   | 'genre'

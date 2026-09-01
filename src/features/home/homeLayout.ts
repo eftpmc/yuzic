@@ -20,9 +20,14 @@ export function buildResumeSections(): SectionConfig[] {
 }
 
 /**
- * Your own collection, sliced by things Library's sort orders can't express as
- * well — what arrived recently, what you starred, what you play most, and a
- * random draw for rediscovering it.
+ * Your own collection, sliced by the two things a sort order can't express:
+ * what arrived recently, and what you actually play.
+ *
+ * Deliberately short. This tier used to also carry favourites and a random
+ * draw — favourites is reachable as a playlist, and a random shuffle of albums
+ * is a gimmick rather than an answer to a question anyone is asking, so both
+ * cost the screen more than they returned. Anything static and exhaustive
+ * belongs in the Library tab; what earns a place here changes on its own.
  *
  * Empty when there is no library at all, so a new account doesn't get a header
  * with nothing under it. Individual sections still hide themselves when they
@@ -32,9 +37,7 @@ export function buildLibrarySections(hasLibrary: boolean): SectionConfig[] {
   if (!hasLibrary) return []
   return [
     { key: 'recentlyAdded', type: 'recentlyAdded' },
-    { key: 'favoriteAlbums', type: 'favoriteAlbums' },
     { key: 'mostPlayed', type: 'mostPlayed' },
-    { key: 'randomAlbums', type: 'randomAlbums' },
   ]
 }
 

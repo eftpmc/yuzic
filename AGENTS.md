@@ -44,11 +44,18 @@ because both halves of each pair look reasonable in isolation.
   per platform and doesn't match the lucide icon set the rest of the UI uses.
   A skeleton is only worth using when it predicts the real layout; an options
   sheet is a header and a stack of actions, so it keeps a spinner.
-- **Library navigation**: the library tab is an index of entity types, each
-  opening its own screen (`screens/library/LibraryCollectionScreen`), over the
-  mixed recent list. It used to be a row of filter pills, which could only ever
-  show the types it had room for — that is why genres had no way in for so
-  long. Adding an entity type means adding an entry row, not a pill.
+- **Home vs Library**: Home is what changes, Library is what's complete. A view
+  that moves on its own — recently added, most played, what you were listening
+  to — is a Home shelf; the stable, exhaustive, sortable list is a Library
+  collection. The same data may appear in both, but never as the same thing
+  twice: Home shows the first handful and its heading leads to Library's full
+  version (`SectionShelfHeader`'s `onSeeAll`). Recently added is the worked
+  example — a shelf on Home, a row and a collection screen in Library.
+- **Library navigation**: the library tab is an index, each row opening its own
+  screen (`screens/library/LibraryCollectionScreen`) — nothing else lives on it.
+  It used to be a row of filter pills, which could only ever show the types it
+  had room for — that is why genres had no way in for so long. Adding a way to
+  browse means adding an entry row, not a pill and not a section.
 - **Library gutter**: horizontal insets in the library come from
   `screens/library/layout`, never from a literal. A list row and a grid cell
   each carry an inset of their own, so the list's padding is the difference
@@ -66,4 +73,8 @@ because both halves of each pair look reasonable in isolation.
   than as an untranslated string.
 - **Home**: sections are grouped into tiers by `features/home/homeLayout` —
   resume first and unlabelled, then your own library, then external discovery
-  behind its source header. A new section belongs to exactly one tier.
+  behind its source header. A new section belongs to exactly one tier, and the
+  library tier stays short: it carries what changes on its own, not everything
+  that could be shown. Discovery is off by default (`deezerDiscoveryEnabled`)
+  and absent offline, so the local tiers are all a fresh install has — Home
+  cannot be emptied out on the assumption that discovery will fill it.

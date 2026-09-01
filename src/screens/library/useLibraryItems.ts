@@ -77,6 +77,7 @@ export function useLibraryItems(
       case 'albums': return albumsLoading
       case 'artists': return artistsLoading
       case 'tracks': return tracksLoading
+      case 'recentlyAdded': return albumsLoading
       case 'downloaded': return albumsLoading || playlistsLoading
       default: return albumsLoading || artistsLoading || playlistsLoading
     }
@@ -92,6 +93,8 @@ export function useLibraryItems(
         return sortItems(artists.map(a => ({ kind: 'artist' as const, data: a })), sortOrder, statsForSort)
       case 'tracks':
         return sortItems(tracks.map(tr => ({ kind: 'track' as const, data: tr })), sortOrder, statsForSort)
+      case 'recentlyAdded':
+        return sortItems(albums.map(a => ({ kind: 'album' as const, data: a })), sortOrder, statsForSort)
       case 'downloaded':
         return sortItems([
           ...albums.filter(a => downloadedCollectionIds.has(a.id)).map(a => ({ kind: 'album' as const, data: a })),
