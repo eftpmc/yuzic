@@ -12,6 +12,7 @@ import { useIsOffline } from '@/hooks/useIsOffline';
 import { usePollWhile } from '@/hooks/usePollWhile';
 import i18n from '@/i18n';
 import {
+  affectsLibraryQueries,
   shouldDropMutation,
   type OfflineMutation,
   type ScrobbleDestination,
@@ -138,18 +139,19 @@ export default function OfflineMutationReplayer() {
 
     // A scrobble too old to be accepted, or bound for a service the user has
     // since disconnected, is discarded rather than retried until it expires.
-    const undeliverable = due.filter(item =>
-      shouldDropMutation(item, now, configuredDestinations)
+    const undeliverable = new Set(
+      due.filter(item => shouldDropMutation(item, now, configuredDestinations))
     );
     undeliverable.forEach(item => dispatch(removeOfflineMutation(item.id)));
 
-    const pending = due.filter(item => !undeliverable.includes(item));
+    const pending = due.filter(item => !undeliverable.has(item));
     if (pending.length === 0) return;
 
     isReplayingRef.current = true;
 
     (async () => {
       let syncedCount = 0;
+      let syncedLibraryCount = 0;
       let failedCount = 0;
 
       for (const mutation of pending) {
@@ -157,6 +159,7 @@ export default function OfflineMutationReplayer() {
           await replayMutation({ api, listenBrainzConfig, lastFmConfig }, mutation);
           dispatch(removeOfflineMutation(mutation.id));
           syncedCount += 1;
+          if (affectsLibraryQueries(mutation)) syncedLibraryCount += 1;
         } catch (error) {
           const failedAt = Date.now();
           const retryCount = (mutation.retryCount ?? 0) + 1;
@@ -172,13 +175,20 @@ export default function OfflineMutationReplayer() {
         }
       }
 
-      if (syncedCount > 0) {
+      // Only library changes need a refetch. Scrobbles record a play and leave
+      // starred items and playlists alone, so a backlog of them arriving on
+      // reconnect must not drag the whole library down the connection that
+      // just came back.
+      if (syncedLibraryCount > 0) {
         queryClient.invalidateQueries({ queryKey: [QueryKeys.Starred] });
         queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlists, activeServer.id] });
         queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, activeServer.id] });
         queryClient.invalidateQueries({
           queryKey: [QueryKeys.Playlist, activeServer.id, FAVORITES_ID],
         });
+      }
+
+      if (syncedCount > 0) {
         toast.success(i18n.t('common.offline.syncedChanges'), {
           id: SYNCED_TOAST_ID,
         });

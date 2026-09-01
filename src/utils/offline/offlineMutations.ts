@@ -162,6 +162,15 @@ export function buildScrobbleMutation(
   };
 }
 
+/**
+ * Whether a mutation changed server-side library state that cached queries
+ * need to refetch. A scrobble does not: it records a play and leaves starred
+ * items and playlists untouched.
+ */
+export function affectsLibraryQueries(mutation: OfflineMutation): boolean {
+  return mutation.type !== 'scrobble';
+}
+
 export function enqueueOfflineMutation(
   queue: OfflineMutation[],
   mutation: OfflineMutation

@@ -1,5 +1,6 @@
 import {
   MAX_SCROBBLE_AGE_MS,
+  affectsLibraryQueries,
   buildScrobbleMutation,
   enqueueOfflineMutation,
   shouldDropMutation,
@@ -183,4 +184,26 @@ describe('shouldDropMutation', () => {
       })
     ).toBe(false);
   });
+});
+
+describe('affectsLibraryQueries', () => {
+  it('does not refetch the library for a scrobble', () => {
+    // A backlog of scrobbles arriving on reconnect must not drag starred items
+    // and playlists down the connection that just came back.
+    expect(affectsLibraryQueries(scrobble())).toBe(false);
+  });
+
+  it.each(['starSong', 'unstarSong', 'addSongToPlaylist', 'removeSongFromPlaylist', 'deletePlaylist'])(
+    'refetches the library for %s',
+    (type) => {
+      const mutation = {
+        id: 'm',
+        type,
+        serverId: 'server-1',
+        createdAt: NOW,
+      } as unknown as OfflineMutation;
+
+      expect(affectsLibraryQueries(mutation)).toBe(true);
+    }
+  );
 });
