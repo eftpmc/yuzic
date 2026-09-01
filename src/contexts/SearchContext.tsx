@@ -32,6 +32,10 @@ import {
   getFullyDownloadedAlbumIds,
 } from '@/utils/downloads/collectionState';
 
+import { dedupeAndSort, type SearchResult } from './searchRanking';
+
+export type { SearchResult } from './searchRanking';
+
 export type SearchFilters = {
   local: boolean;
   deezer: boolean;
@@ -50,26 +54,6 @@ interface SearchContextType {
 
 interface SearchProviderProps {
   children: ReactNode;
-}
-
-export interface SearchResult {
-  id: string;
-  title: string;
-  subtext: string;
-  cover: CoverSource;
-  type: 'song' | 'album' | 'artist' | 'playlist';
-  source: 'local' | 'external';
-  externalSource?: 'deezer' | 'musicbrainz' | 'lastfm';
-  externalIds?: {
-    deezerId?: string;
-    artistDeezerId?: string;
-    mbid?: string | null;
-    artistMbid?: string | null;
-    upc?: string | null;
-    isrc?: string | null;
-  };
-  isDownloaded: boolean;
-  song?: Song;
 }
 
 // --- result mapping helpers ---
@@ -168,42 +152,6 @@ export const useSearch = () => {
   }
   return context;
 };
-
-const resultKey = (r: SearchResult) =>
-  `${r.source}:${r.type}:${r.id}`;
-
-function dedupeAndSort(results: SearchResult[], lowerQuery: string): SearchResult[] {
-  const uniqueMap = new Map<string, SearchResult>();
-  for (const result of results) {
-    const key = resultKey(result);
-    const existing = uniqueMap.get(key);
-    if (!existing) {
-      uniqueMap.set(key, result);
-    } else if (!existing.isDownloaded && result.isDownloaded) {
-      uniqueMap.set(key, result);
-    }
-  }
-  const unique: SearchResult[] = [];
-  uniqueMap.forEach(v => unique.push(v));
-  unique.sort((a, b) => {
-    const sourceDiff = (a.source === 'local' ? 1 : 2) - (b.source === 'local' ? 1 : 2);
-    if (sourceDiff !== 0) return sourceDiff;
-    if (a.isDownloaded && !b.isDownloaded) return -1;
-    if (b.isDownloaded && !a.isDownloaded) return 1;
-    const aTitle = a.title.toLowerCase();
-    const bTitle = b.title.toLowerCase();
-    if (aTitle === lowerQuery && bTitle !== lowerQuery) return -1;
-    if (bTitle === lowerQuery && aTitle !== lowerQuery) return 1;
-    if (aTitle.includes(lowerQuery) && !bTitle.includes(lowerQuery)) return -1;
-    if (bTitle.includes(lowerQuery) && !aTitle.includes(lowerQuery)) return 1;
-    const typePriority = (type: SearchResult['type']) =>
-      type === 'song' ? 1 : type === 'album' ? 2 : type === 'artist' ? 3 : 4;
-    const diff = typePriority(a.type) - typePriority(b.type);
-    if (diff !== 0) return diff;
-    return aTitle.localeCompare(bTitle);
-  });
-  return unique;
-}
 
 export const SearchProvider: React.FC<SearchProviderProps> = ({
   children,
