@@ -30,6 +30,16 @@ import {
   writeDownloadJobs,
   writeDownloadedTracks,
 } from '@/utils/downloads/localDownloadStore';
+import {
+  DOWNLOAD_SCHEMA_VERSION,
+  STAGING_SUFFIX,
+  extensionFromContentType,
+  headerValue,
+  normalizeLocalUri,
+  restoreDownloadState,
+  sanitizeFileName,
+  type LocalDownloadedTrackEntry,
+} from '@/utils/downloads/restore';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
 
@@ -102,25 +112,9 @@ const DOWNLOAD_DIR = `${FileSystem.documentDirectory ?? ''}downloads/audio/`;
 // Scratch dir used by the retired download→upload→transcode pipeline; only
 // referenced so upgrades can delete anything it left behind.
 const LEGACY_TEMP_DOWNLOAD_DIR = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? ''}downloads/rawarr-source/`;
-const DOWNLOAD_SCHEMA_VERSION = 2;
-const STAGING_SUFFIX = '.part';
 const MAX_JOB_ATTEMPTS = 5;
 const BACKGROUND_FILE_OPTIONS = {
   sessionType: FileSystem.FileSystemSessionType.BACKGROUND,
-};
-
-type LocalDownloadedTrackEntry = DownloadedTrackEntry & {
-  localPath: string;
-  schemaVersion?: number;
-  title?: string;
-  originalTrack?: {
-    id?: string;
-    extraPayload?: {
-      serverId?: string;
-      serverType?: string;
-      coverKind?: string;
-    };
-  };
 };
 
 type DownloadState = {
@@ -131,51 +125,8 @@ type DownloadState = {
 
 let legacyDownloadPathsToDelete: string[] = [];
 
-function sanitizeFileName(value: string): string {
-  return value.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'track';
-}
-
 function buildStagingPath(track: Song): string {
   return `${DOWNLOAD_DIR}${sanitizeFileName(track.id)}${STAGING_SUFFIX}`;
-}
-
-// Streams transcoded by the music server are always mp3 (see
-// qualityToStreamParams), but 'original' quality returns the raw file —
-// pick the extension from what the server actually sent.
-function extensionFromContentType(contentType: string | undefined): string {
-  const mime = (contentType ?? '').split(';')[0].trim().toLowerCase();
-  switch (mime) {
-    case 'audio/mpeg':
-    case 'audio/mp3':
-      return 'mp3';
-    case 'audio/flac':
-    case 'audio/x-flac':
-      return 'flac';
-    case 'audio/ogg':
-    case 'application/ogg':
-      return 'ogg';
-    case 'audio/opus':
-      return 'opus';
-    case 'audio/mp4':
-    case 'audio/x-m4a':
-      return 'm4a';
-    case 'audio/aac':
-      return 'aac';
-    case 'audio/wav':
-    case 'audio/x-wav':
-      return 'wav';
-    default:
-      return 'mp3';
-  }
-}
-
-function headerValue(headers: Record<string, string> | undefined, name: string): string | undefined {
-  if (!headers) return undefined;
-  const target = name.toLowerCase();
-  for (const key of Object.keys(headers)) {
-    if (key.toLowerCase() === target) return headers[key];
-  }
-  return undefined;
 }
 
 async function ensureDownloadDir() {
@@ -206,96 +157,21 @@ async function cleanupStagingFiles() {
   );
 }
 
-function normalizeLocalUri(uri: string): string {
-  if (/^[a-z][a-z0-9+.-]*:/i.test(uri)) return uri;
-  return `file://${uri}`;
-}
-
-// Re-roots a stored localPath to the current documentDirectory so downloads
-// survive app reinstalls or updates that rotate the iOS container UUID.
-function rerootLocalPath(storedPath: string): string {
-  const docDir = FileSystem.documentDirectory;
-  if (!docDir || storedPath.startsWith(docDir)) return storedPath;
-  const marker = 'downloads/';
-  const idx = storedPath.indexOf(marker);
-  if (idx !== -1) return `${docDir}${storedPath.slice(idx)}`;
-  return storedPath;
-}
-
-function hasCurrentDownloadMetadata(track: LocalDownloadedTrackEntry): boolean {
-  if (track.schemaVersion === DOWNLOAD_SCHEMA_VERSION) return true;
-
-  const payload = track.originalTrack?.extraPayload;
-  return Boolean(
-    track.localPath &&
-    track.trackId &&
-    track.serverId &&
-    track.serverType &&
-    track.coverKind &&
-    payload?.serverId &&
-    payload?.serverType &&
-    payload?.coverKind
-  );
-}
-
 function loadInitialState(): DownloadState {
   const snapshot = readDownloadsSnapshot();
-  const stalePaths: string[] = [];
-  let didMigrate = false;
+  const restored = restoreDownloadState(snapshot, FileSystem.documentDirectory ?? null);
 
-  const tracks = snapshot.tracks
-    .map((track): LocalDownloadedTrackEntry | null => {
-      const localTrack = track as LocalDownloadedTrackEntry;
-      const localPath = localTrack.localPath;
-
-      if (!localPath) {
-        didMigrate = true;
-        return null;
-      }
-
-      if (!hasCurrentDownloadMetadata(localTrack)) {
-        stalePaths.push(rerootLocalPath(localPath));
-        didMigrate = true;
-        return null;
-      }
-
-      const rerootedPath = rerootLocalPath(localPath);
-      if (rerootedPath !== localPath) didMigrate = true;
-
-      return {
-        ...localTrack,
-        localPath: rerootedPath,
-        schemaVersion: DOWNLOAD_SCHEMA_VERSION,
-      };
-    })
-    .filter((track): track is LocalDownloadedTrackEntry => !!track);
-
-  const validTrackIds = new Set(tracks.map(track => track.trackId));
-  let didMigrateCollections = false;
-  const collections = snapshot.collections
-    .map(collection => {
-      const trackIds = Array.isArray(collection.trackIds) ? collection.trackIds : [];
-      const validCollectionTrackIds = trackIds.filter(trackId => validTrackIds.has(trackId));
-      if (validCollectionTrackIds.length !== trackIds.length) didMigrateCollections = true;
-      return {
-        ...collection,
-        trackIds: validCollectionTrackIds,
-      };
-    })
-    .filter(collection => collection.trackIds.length > 0);
-  const jobs = snapshot.jobs.filter(job => Array.isArray(job.tracks) && job.tracks.length > 0);
-
-  if (didMigrate || didMigrateCollections || collections.length !== snapshot.collections.length) {
-    writeDownloadedTracks(tracks);
-    writeDownloadedCollections(collections);
+  if (restored.changed) {
+    writeDownloadedTracks(restored.tracks);
+    writeDownloadedCollections(restored.collections);
   }
 
-  legacyDownloadPathsToDelete = stalePaths;
+  legacyDownloadPathsToDelete = restored.stalePaths;
 
   return {
-    tracks,
-    collections,
-    jobs,
+    tracks: restored.tracks,
+    collections: restored.collections,
+    jobs: restored.jobs,
   };
 }
 
