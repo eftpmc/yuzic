@@ -11,6 +11,7 @@ import {
   selectGridColumns,
   selectGridSpacing,
 } from '@/utils/redux/selectors/settingsSelectors'
+import { gridItemWidth, libraryGutter } from './layout'
 import AlbumItem from './components/Items/AlbumItem'
 import ArtistItem from './components/Items/ArtistItem'
 import PlaylistItem from './components/Items/PlaylistItem'
@@ -19,8 +20,6 @@ import SortBottomSheet from './components/SortBottomSheet'
 import GridSettingsBottomSheet from './components/GridSettingsBottomSheet'
 import { useSheetRef } from '@/utils/useSheetRef'
 import type { LibraryItem, SortOrder } from './librarySort'
-
-export const LIST_PADDING = 12
 
 type Props = {
   items: LibraryItem[]
@@ -53,8 +52,8 @@ const LibraryList: React.FC<Props> = ({
   const sortSheetRef = useSheetRef()
   const gridSheetRef = useSheetRef()
 
-  const gridWidth =
-    (screenWidth - LIST_PADDING * 2 - (gridColumns + 1) * gridSpacing) / gridColumns
+  const gutter = libraryGutter(isGridView, gridSpacing)
+  const gridWidth = gridItemWidth(screenWidth, gridColumns, gridSpacing, gutter)
 
   const renderItem = useCallback(({ item }: { item: LibraryItem }) => {
     switch (item.kind) {
@@ -115,7 +114,9 @@ const LibraryList: React.FC<Props> = ({
         numColumns={isGridView ? gridColumns : 1}
         getItemType={item => item.kind}
         ListHeaderComponent={
-          <View>
+          // The gutter is sized for the items; everything above them keeps the
+          // app's own page inset, so give that back before it is applied twice.
+          <View style={{ marginHorizontal: -gutter }}>
             {header}
             <View style={styles.sortRow}>
               <TouchableOpacity
@@ -143,8 +144,7 @@ const LibraryList: React.FC<Props> = ({
         }
         contentContainerStyle={[
           styles.list,
-          isGridView && { paddingHorizontal: LIST_PADDING },
-          { paddingBottom: 180 },
+          { paddingHorizontal: gutter },
         ]}
         showsVerticalScrollIndicator={false}
       />
@@ -163,7 +163,7 @@ const LibraryList: React.FC<Props> = ({
 export default LibraryList
 
 const styles = StyleSheet.create({
-  list: { paddingTop: 0 },
+  list: { paddingTop: 0, paddingBottom: 180 },
   sortRow: {
     flexDirection: 'row',
     alignItems: 'center',

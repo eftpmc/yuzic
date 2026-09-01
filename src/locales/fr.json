@@ -495,6 +495,7 @@
       "playFailed": "Impossible de lancer la lecture."
     },
     "recentlyAdded": "Ajouts récents",
+    "seeAll": "Tout voir",
     "count": {
       "albums_one": "{{count}} album",
       "albums_other": "{{count}} albums",
@@ -895,5 +896,20 @@
   },
   "externalSourcePicker": {
     "empty": "Aucune source n'a pu résoudre cet élément."
+  },
+  "genreOptions": {
+    "actions": {
+      "addToNext": "Lire ensuite",
+      "addToEnd": "Ajouter à la fin",
+      "shuffleToQueue": "Ajouter aléatoirement à la file d'attente",
+      "download": "Tout télécharger",
+      "downloading": "Téléchargement…",
+      "downloaded": "Téléchargé"
+    },
+    "toasts": {
+      "addedNext": "Lecture de {{genre}} ensuite",
+      "addedToEnd": "{{genre}} ajouté à la file",
+      "shuffledToQueue": "{{genre}} ajouté en ordre aléatoire"
+    }
   }
 }

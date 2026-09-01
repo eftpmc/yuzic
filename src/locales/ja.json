@@ -173,7 +173,7 @@
         "locationNote": "ダウンロードはアプリの非公開ストレージに保存されており、端末のファイルマネージャーからは参照できません。表示・削除にはこの画面をご利用ください。",
         "autoDownloadLabel": "新しい曲を自動ダウンロード",
         "autoDownloadSubtext": "ライブラリに追加された曲を自動的にダウンロードしてオフラインで再生できるようにします",
-        "autoDownloadStarted": "新しい曲{{count}}件を自動ダウンロード中"
+        "autoDownloadStarted_other": "新しい曲{{count}}件を自動ダウンロード中"
       },
       "downloadQuality": {
         "title": "ダウンロード音質",
@@ -494,6 +494,7 @@
       "playFailed": "再生を開始できませんでした。"
     },
     "recentlyAdded": "最近追加した項目",
+    "seeAll": "すべて表示",
     "count": {
       "albums_one": "{{count}} 枚のアルバム",
       "albums_other": "{{count}} 枚のアルバム",
@@ -894,5 +895,20 @@
   },
   "externalSourcePicker": {
     "empty": "この項目を解決できるソースがありません。"
+  },
+  "genreOptions": {
+    "actions": {
+      "addToNext": "次に再生",
+      "addToEnd": "末尾に追加",
+      "shuffleToQueue": "シャッフルで追加",
+      "download": "すべてダウンロード",
+      "downloading": "ダウンロード中…",
+      "downloaded": "ダウンロード済み"
+    },
+    "toasts": {
+      "addedNext": "{{genre}}を次に再生",
+      "addedToEnd": "{{genre}}をキューに追加",
+      "shuffledToQueue": "{{genre}}をシャッフルで追加"
+    }
   }
 }

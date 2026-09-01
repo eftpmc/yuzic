@@ -84,30 +84,40 @@ const LibraryEntryRows: React.FC = () => {
 
   return (
     <View>
-      {entries.map(entry => (
+      {entries.map((entry, index) => (
         <TouchableOpacity
           key={entry.key}
           testID={`library-entry-${entry.key}`}
           accessibilityRole="button"
           accessibilityLabel={t(entry.labelKey)}
-          style={[styles.row, { borderBottomColor: colors.border }]}
+          style={styles.row}
           onPress={entry.onPress}
         >
-          <View style={styles.left}>
-            <View style={[styles.iconWell, { backgroundColor: colors.muted }]}>
-              {entry.icon}
-            </View>
+          <View style={[styles.iconWell, { backgroundColor: colors.muted }]}>
+            {entry.icon}
+          </View>
+          {/* The rule starts at the label and stops at the last row, so the
+              icons read as a column rather than a stack of boxed cells. */}
+          <View
+            style={[
+              styles.body,
+              index < entries.length - 1 && {
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
             <Text style={[styles.label, { color: colors.secondary }]} numberOfLines={1}>
               {t(entry.labelKey)}
             </Text>
-          </View>
-          <View style={styles.right}>
-            {counts[entry.key] > 0 && (
-              <Text style={[styles.count, { color: colors.subtext }]}>
-                {counts[entry.key]}
-              </Text>
-            )}
-            <ChevronRight size={18} color={colors.subtext} />
+            <View style={styles.right}>
+              {counts[entry.key] > 0 && (
+                <Text style={[styles.count, { color: colors.subtext }]}>
+                  {counts[entry.key]}
+                </Text>
+              )}
+              <ChevronRight size={18} color={colors.subtext} />
+            </View>
           </View>
         </TouchableOpacity>
       ))}
@@ -121,17 +131,17 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.page,
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: spacing.rowGap,
+    paddingHorizontal: spacing.page,
+  },
+  body: {
     flex: 1,
     minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
   },
   iconWell: {
     width: 34,
@@ -142,5 +152,5 @@ const styles = StyleSheet.create({
   },
   right: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   count: { ...typography.caption },
-  label: { ...typography.rowTitle },
+  label: { ...typography.rowTitle, flexShrink: 1 },
 })

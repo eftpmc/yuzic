@@ -465,6 +465,7 @@
       "playFailed": "Couldn't start playback."
     },
     "recentlyAdded": "Recently added",
+    "seeAll": "See all",
     "count": {
       "albums_one": "{{count}} album",
       "albums_other": "{{count}} albums",

@@ -173,7 +173,7 @@
         "locationNote": "下载内容存储在应用的私有存储空间中，无法通过设备的文件管理器访问。请使用此页面查看和删除下载内容。",
         "autoDownloadLabel": "自动下载新歌曲",
         "autoDownloadSubtext": "自动下载资料库中新增的歌曲以供离线播放",
-        "autoDownloadStarted": "正在自动下载 {{count}} 首新歌曲"
+        "autoDownloadStarted_other": "正在自动下载 {{count}} 首新歌曲"
       },
       "downloadQuality": {
         "title": "下载音质",
@@ -494,6 +494,7 @@
       "playFailed": "无法开始播放。"
     },
     "recentlyAdded": "最近添加",
+    "seeAll": "查看全部",
     "count": {
       "albums_one": "{{count}} 张专辑",
       "albums_other": "{{count}} 张专辑",
@@ -894,5 +895,20 @@
   },
   "externalSourcePicker": {
     "empty": "没有来源能够解析此项目。"
+  },
+  "genreOptions": {
+    "actions": {
+      "addToNext": "播放下一首",
+      "addToEnd": "添加至队尾",
+      "shuffleToQueue": "随机添加至队列",
+      "download": "全部下载",
+      "downloading": "下载中…",
+      "downloaded": "已下载"
+    },
+    "toasts": {
+      "addedNext": "{{genre}} 将作为下一曲播放。",
+      "addedToEnd": "{{genre}} 已添加至队尾。",
+      "shuffledToQueue": "{{genre}} 已随机添加至队列。"
+    }
   }
 }

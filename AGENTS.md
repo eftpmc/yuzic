@@ -49,6 +49,21 @@ because both halves of each pair look reasonable in isolation.
   mixed recent list. It used to be a row of filter pills, which could only ever
   show the types it had room for — that is why genres had no way in for so
   long. Adding an entity type means adding an entry row, not a pill.
+- **Library gutter**: horizontal insets in the library come from
+  `screens/library/layout`, never from a literal. A list row and a grid cell
+  each carry an inset of their own, so the list's padding is the difference
+  that lands artwork exactly `spacing.page` from the screen edge in both modes.
+  Anything drawn above the items — a header, the sort row — cancels that
+  padding with a negative margin and keeps `spacing.page`, so all of it lines
+  up on one edge.
+- **Collection actions**: a screen led by artwork uses `DetailHeader`'s centred
+  circle-and-pill pair. A screen without artwork uses
+  `screens/library/CollectionActions` — two square-shouldered halves of the
+  content width, which have to carry the top of the screen on their own.
+- **Translations**: every key added to `locales/en.json` is added to all four
+  locales in the same change; `locales/locales.test.ts` fails otherwise. A
+  missing key falls back to English mid-sentence, so it reads as a bug rather
+  than as an untranslated string.
 - **Home**: sections are grouped into tiers by `features/home/homeLayout` —
   resume first and unlabelled, then your own library, then external discovery
   behind its source header. A new section belongs to exactly one tier.

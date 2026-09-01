@@ -3,18 +3,13 @@ import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Play, Shuffle } from 'lucide-react-native'
 import { toast } from '@backpackapp-io/react-native-toast'
 
-import {
-  DetailActionRow,
-  DetailCircleAction,
-  DetailHeaderBar,
-  DetailPlayAction,
-} from '@/components/DetailHeader'
+import { DetailHeaderBar } from '@/components/DetailHeader'
 import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useTheme } from '@/hooks/useTheme'
 import { spacing, typography } from '@/constants/design'
+import CollectionActions from './CollectionActions'
 import LibraryList from './LibraryList'
 import LoadingLibraryList from './Loading'
 import { useLibraryItems } from './useLibraryItems'
@@ -92,20 +87,12 @@ const LibraryCollectionScreen: React.FC = () => {
       )}
 
       {playableTracks.length > 0 && (
-        <DetailActionRow style={styles.actions}>
-          <DetailCircleAction
-            onPress={() => { void play(true) }}
-            accessibilityLabel="Shuffle tracks"
-          >
-            <Shuffle size={18} color={colors.secondary} />
-          </DetailCircleAction>
-          <DetailPlayAction
-            onPress={() => { void play(false) }}
-            accessibilityLabel="Play tracks"
-          >
-            <Play size={24} color="#fff" fill="#fff" />
-          </DetailPlayAction>
-        </DetailActionRow>
+        <View style={styles.actions}>
+          <CollectionActions
+            onPlay={() => { void play(false) }}
+            onShuffle={() => { void play(true) }}
+          />
+        </View>
       )}
     </View>
   )
