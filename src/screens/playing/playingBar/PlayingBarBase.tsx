@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { ActivityIndicator, BackHandler, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { BackHandler, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Music, Play, Pause } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
@@ -23,6 +23,7 @@ import {
 
 import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type Variant = 'ios' | 'android';
 
@@ -339,7 +340,7 @@ export default function PlayingBarBase({ variant }: Props) {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {isBuffering
-            ? <ActivityIndicator size="small" color={colors.secondary} />
+            ? <SpinningLoaderCircle size={18} color={colors.secondary} />
             : isPlaying
               ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
               : <Play size={20} color={colors.secondary} fill={colors.secondary} />

@@ -1,5 +1,5 @@
 import React, { forwardRef, useMemo, useState } from 'react';
-import { View, ActivityIndicator, Alert } from 'react-native';
+import { View, Alert } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -28,6 +28,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import { statusColor } from '@/constants/design';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export type PlaylistOptionsProps = {
   playlist: PlaylistBase | Playlist | null;
@@ -180,7 +181,7 @@ const PlaylistOptions = forwardRef<
         backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
         <View style={[optionSheetStyles.loading, sheetBg]}>
-          <ActivityIndicator size="large" color={colors.subtext} />
+          <SpinningLoaderCircle size={26} color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );

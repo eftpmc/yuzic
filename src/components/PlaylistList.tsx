@@ -11,7 +11,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import {
   BottomSheetModal,
@@ -39,6 +38,7 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -317,7 +317,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             onPress={handleDone}
           >
             {membershipLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <SpinningLoaderCircle size={18} color="#fff" />
             ) : (
               <Text style={styles.doneButtonText}>{t('common.done')}</Text>
             )}

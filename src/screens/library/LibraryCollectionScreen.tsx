@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -15,6 +15,7 @@ import {
 import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useTheme } from '@/hooks/useTheme'
 import LibraryList from './LibraryList'
+import LoadingLibraryList from './Loading'
 import { useLibraryItems } from './useLibraryItems'
 import { useSortLabels } from './useSortLabels'
 import type { LibraryCollectionType, SortOrder } from './librarySort'
@@ -78,7 +79,7 @@ const LibraryCollectionScreen: React.FC = () => {
       {isLoading && items.length === 0 ? (
         // A syncing library is not an empty one — saying "nothing here" while
         // the first sync is still running reads as data loss.
-        <ActivityIndicator style={styles.loading} color={colors.subtext} />
+        <LoadingLibraryList />
       ) : items.length === 0 ? (
         <Text style={[styles.empty, { color: colors.subtext }]}>
           {t('library.collection.empty')}
@@ -119,5 +120,4 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 32, fontSize: 14 },
   actions: { paddingVertical: 12 },
-  loading: { marginTop: 32 },
 })

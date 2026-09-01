@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   TouchableOpacity,
@@ -14,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -33,7 +33,7 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
       style={[styles.playButton, animStyle]}
     >
       {isBuffering
-        ? <ActivityIndicator size="small" color="#000" />
+        ? <SpinningLoaderCircle size={18} color="#000" />
         : isPlaying
           ? <Pause size={26} color="#000" fill="#000" />
           : <Play size={26} color="#000" fill="#000" />

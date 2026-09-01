@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +16,7 @@ import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type Library = { id: string; name: string };
 
@@ -94,7 +94,7 @@ export default function LibrariesOnboarding() {
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator size="large" color="#fff" style={styles.loader} />
+          <SpinningLoaderCircle size={26} color="#fff" />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>

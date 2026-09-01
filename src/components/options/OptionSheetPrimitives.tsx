@@ -1,7 +1,6 @@
 import React from 'react';
 import { spacing } from '@/constants/design';
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import {
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import type { CoverSource } from '@/types';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type HeaderProps = {
   cover: CoverSource;
@@ -69,7 +69,7 @@ export function OptionSheetRow({
   trailing,
 }: RowProps) {
   const { colors } = useTheme();
-  const leading = loading ? <ActivityIndicator size="small" color={colors.subtext} /> : icon;
+  const leading = loading ? <SpinningLoaderCircle size={18} color={colors.subtext} /> : icon;
 
   return (
     <TouchableOpacity

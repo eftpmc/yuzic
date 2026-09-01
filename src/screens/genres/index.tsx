@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useAlbums } from '@/hooks/albums'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import { buildGenreRows, type GenreRow } from '@/utils/library/genreList'
+import LoadingGenreList from './Loading'
 
 const GenresScreen: React.FC = () => {
   const navigation = useNavigation<any>()
@@ -52,7 +53,7 @@ const GenresScreen: React.FC = () => {
       {isLoading && rows.length === 0 ? (
         // Genres are counted from albums, so an unfinished album sync looks
         // exactly like a library with no genres.
-        <ActivityIndicator style={styles.loading} color={colors.subtext} />
+        <LoadingGenreList />
       ) : rows.length === 0 ? (
         <Text style={[styles.empty, { color: colors.subtext }]}>
           {t('library.genres.empty')}
@@ -87,5 +88,4 @@ const styles = StyleSheet.create({
   genre: { fontSize: 16, fontWeight: '500' },
   count: { fontSize: 12, marginTop: 2 },
   empty: { textAlign: 'center', marginTop: 32, fontSize: 14 },
-  loading: { marginTop: 32 },
 })

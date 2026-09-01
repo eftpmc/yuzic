@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     StyleSheet,
     Text,
     TextInput,
@@ -203,7 +202,9 @@ export default function Credentials() {
                             {quickCode ? (
                                 <Text style={styles.quickConnectCode}>{quickCode}</Text>
                             ) : (
-                                <ActivityIndicator color="#fff" style={{ marginVertical: 20 }} />
+                                <View style={{ marginVertical: 20 }}>
+                                  <SpinningLoaderCircle size={26} color="#fff" />
+                                </View>
                             )}
                             {isPolling && quickCode ? (
                                 <View style={styles.quickConnectWaiting}>
@@ -328,7 +329,7 @@ export default function Credentials() {
                             disabled={isTesting}
                         >
                             {isTesting
-                                ? <ActivityIndicator size="small" color="#000" />
+                                ? <SpinningLoaderCircle size={18} color="#000" />
                                 : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                             }
                         </TouchableOpacity>

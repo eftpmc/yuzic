@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -29,6 +28,7 @@ import { useApi } from '@/api';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type Props = {
   localArtist: Artist | null;
@@ -318,7 +318,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         accessibilityLabel="Shuffle artist"
       >
         {songsLoading ? (
-          <ActivityIndicator size="small" color={colors.secondary} />
+          <SpinningLoaderCircle size={18} color={colors.secondary} />
         ) : (
           <Shuffle size={18} color={colors.secondary} />
         )}
@@ -330,7 +330,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         accessibilityLabel="Play artist"
       >
         {songsLoading ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <SpinningLoaderCircle size={18} color="#fff" />
         ) : (
           <Play size={24} color="#fff" fill="#fff" />
         )}
@@ -349,7 +349,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         }
       >
         {isDownloadingAll || isArtistDownloading ? (
-          <ActivityIndicator size="small" color={colors.secondary} />
+          <SpinningLoaderCircle size={18} color={colors.secondary} />
         ) : isArtistFullyDownloaded ? (
           <Check size={18} color={colors.secondary} />
         ) : (

@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
@@ -13,6 +13,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from '@/components/options/OptionSheetPrimitives'
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -51,7 +52,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         <BottomSheetScrollView style={sheetBg} contentContainerStyle={optionSheetStyles.sheetContent}>
           {isLoading && (
             <View style={styles.loading}>
-              <ActivityIndicator size="large" color={colors.subtext} />
+              <SpinningLoaderCircle size={26} color={colors.subtext} />
             </View>
           )}
 

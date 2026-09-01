@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { CheckCircle, CirclePlus, RefreshCw, CloudDownload } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +20,6 @@ import { createAudiomuseQueueFillProvider } from '@/contexts/queueProviders';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
 import { useApi } from '@/api';
 import {
-  selectThemeColor,
   selectShowSourceHeaders,
   selectDeezerDiscoveryEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
@@ -45,6 +43,7 @@ import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/type
 
 import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
+import SkeletonListRow from '@/components/SkeletonListRow';
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
@@ -323,7 +322,6 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
@@ -402,7 +400,13 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
       />
 
       {externalQuery.isLoading ? (
-        <ActivityIndicator color={themeColor} style={styles.loader} />
+        // Rows rather than a spinner: this is loading a list, and the
+        // placeholder should keep the shape the list is about to take.
+        <View style={styles.loader}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonListRow key={`recommended-loading-${index}`} />
+          ))}
+        </View>
       ) : (externalQuery.data ?? []).length === 0 ? (
         <Text style={[styles.emptyText, { color: colors.placeholder }]}>
           {t('playlist.recommended.externalEmpty')}

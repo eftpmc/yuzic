@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type Item = {
   key: string;
@@ -39,11 +40,9 @@ export default function ChecklistSection({
       )}
 
       {isLoading ? (
-        <ActivityIndicator
-          size="small"
-          color={themeColor}
-          style={[styles.optionList, styles.loader]}
-        />
+        <View style={[styles.optionList, styles.loader]}>
+          <SpinningLoaderCircle size={18} color={themeColor} />
+        </View>
       ) : (
         <View style={[styles.optionList, !infoText && styles.optionListTopPad]}>
           {items.map(item => {

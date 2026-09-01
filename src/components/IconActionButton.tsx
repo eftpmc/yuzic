@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   type GestureResponderEvent,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize } from '@/constants/design';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type Props = {
   icon: React.ReactNode;
@@ -48,7 +48,7 @@ export default function IconActionButton({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
-      {loading ? <ActivityIndicator size="small" color={colors.subtext} /> : icon}
+      {loading ? <SpinningLoaderCircle size={18} color={colors.subtext} /> : icon}
     </TouchableOpacity>
   );
 }

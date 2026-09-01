@@ -4,7 +4,6 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    ActivityIndicator,
     ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -17,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { ServerType } from '@/types';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -74,7 +74,7 @@ export default function Connect() {
     if (!isLayoutMounted) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#555" />
+                <SpinningLoaderCircle size={26} color="#555" />
             </View>
         );
     }
@@ -136,7 +136,7 @@ export default function Connect() {
                     disabled={isTesting}
                 >
                     {isTesting ? (
-                        <ActivityIndicator size="small" color="#000" />
+                        <SpinningLoaderCircle size={18} color="#000" />
                     ) : (
                         <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}

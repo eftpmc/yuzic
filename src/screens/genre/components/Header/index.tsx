@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  ActivityIndicator,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
@@ -28,6 +27,7 @@ import { useSheetRef } from '@/utils/useSheetRef'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar, DetailHeaderIconButton } from '@/components/DetailHeader'
 import GenreOptions from '@/components/options/GenreOptions'
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 type Props = {
   genre: string
@@ -188,7 +188,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           accessibilityLabel="Shuffle genre"
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.secondary} />
+            <SpinningLoaderCircle size={18} color={colors.secondary} />
           ) : (
             <Shuffle size={18} color={colors.secondary} />
           )}
@@ -200,7 +200,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           accessibilityLabel="Play genre"
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <SpinningLoaderCircle size={18} color="#fff" />
           ) : (
             <Play size={24} color="#fff" fill="#fff" />
           )}
@@ -219,7 +219,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           }
         >
           {isDownloadingAll || isDownloading ? (
-            <ActivityIndicator size="small" color={colors.secondary} />
+            <SpinningLoaderCircle size={18} color={colors.secondary} />
           ) : isFullyDownloaded ? (
             <Check size={18} color={colors.secondary} />
           ) : (

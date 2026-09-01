@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -28,6 +28,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -178,7 +179,7 @@ const ArtistOptions = forwardRef<
         backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
         <View style={[optionSheetStyles.loading, sheetBg]}>
-          <ActivityIndicator size="large" color={colors.subtext} />
+          <SpinningLoaderCircle size={26} color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );

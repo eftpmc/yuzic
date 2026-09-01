@@ -1,0 +1,38 @@
+import React, { useMemo } from 'react'
+import { StyleSheet, View } from 'react-native'
+import { Skeleton } from 'moti/skeleton'
+
+import { useTheme } from '@/hooks/useTheme'
+import { spacing } from '@/constants/design'
+
+const PLACEHOLDER_ROWS = 10
+
+/**
+ * Genre rows carry no artwork, so this is text-shaped rather than reusing
+ * SkeletonListRow — a row of fake album art would misdescribe the screen.
+ */
+const LoadingGenreList: React.FC = () => {
+  const { isDarkMode } = useTheme()
+  const colorMode = isDarkMode ? 'dark' : 'light'
+  const rows = useMemo(() => Array.from({ length: PLACEHOLDER_ROWS }), [])
+
+  return (
+    <View style={styles.wrapper}>
+      {rows.map((_, index) => (
+        <View key={`genre-loading-${index}`} style={styles.row}>
+          <Skeleton width="45%" height={16} radius={6} colorMode={colorMode} />
+          <View style={styles.lineSpacer} />
+          <Skeleton width="22%" height={12} radius={6} colorMode={colorMode} />
+        </View>
+      ))}
+    </View>
+  )
+}
+
+export default LoadingGenreList
+
+const styles = StyleSheet.create({
+  wrapper: { paddingHorizontal: spacing.page, paddingTop: 12 },
+  row: { paddingVertical: 14 },
+  lineSpacer: { height: 6 },
+})

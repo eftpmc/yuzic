@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
 import SettingsRow from './SettingsRow';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export type SelectItem = { key: string; label: string };
 
@@ -36,7 +37,7 @@ const SettingsSelectCard: React.FC<Props> = ({
       <SettingsCard>
         {isLoading ? (
           <View style={styles.loader}>
-            <ActivityIndicator size="small" color={colors.themeColor} />
+            <SpinningLoaderCircle size={18} color={colors.themeColor} />
           </View>
         ) : (
           items.map((item, index) => (
