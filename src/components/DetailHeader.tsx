@@ -7,8 +7,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
+import { useCoverAccent } from '@/features/theme/useCoverAccent';
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
@@ -75,9 +77,22 @@ export function DetailHeader({
   showNavigation = true,
 }: DetailHeaderProps) {
   const { colors } = useTheme();
+  const accent = useCoverAccent(cover);
 
   return (
     <View style={styles.container}>
+      {/* A wash of the cover's own colour behind it, fading out before the
+          content below. Absolute and non-interactive so nothing here has to
+          move to make room for it, and absent until extraction returns rather
+          than flashing a placeholder band on the way to the real colour. */}
+      {accent ? (
+        <LinearGradient
+          pointerEvents="none"
+          colors={[accent, 'transparent']}
+          style={styles.wash}
+        />
+      ) : null}
+
       {showNavigation && <DetailHeaderBar title={title} rightAction={rightAction} />}
 
       <View style={styles.coverWrapper}>
@@ -215,6 +230,15 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
     alignItems: 'center',
+  },
+  wash: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    // Past the cover and into the title, so the colour has somewhere to fade
+    // rather than stopping on an edge.
+    height: 420,
   },
   headerRow: {
     flexDirection: 'row',

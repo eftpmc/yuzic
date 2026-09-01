@@ -52,6 +52,12 @@ because both halves of each pair look reasonable in isolation.
   `"none"` for a wrapper handling a press on something else's behalf. There is
   deliberately no `activeOpacity`: seven different values were in use, which is
   seven answers to a question nobody was asking.
+- **Cover colour**: `features/theme` extracts one accent from a piece of cover
+  art and darkens it. `useCoverAccent` is the hook; `pickAccent` and `darken`
+  are pure and tested, because the extraction library returns a different shape
+  per platform and that choice is the part worth checking. The accent is null
+  until it arrives, so a screen fades it in rather than flashing a placeholder.
+  Do not re-extract colours locally — the cache is shared and bounded.
 - **Home vs Library**: Home is what changes, Library is what's complete. A view
   that moves on its own — recently added, most played, what you were listening
   to — is a Home shelf; the stable, exhaustive, sortable list is a Library

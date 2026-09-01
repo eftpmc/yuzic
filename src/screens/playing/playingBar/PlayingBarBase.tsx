@@ -6,6 +6,8 @@ import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import ImageColors from 'react-native-image-colors';
+import { createAccentCache, darken, pickAccent } from '@/features/theme/coverAccent';
+import { PLAYING_GRADIENT_CACHE_MAX } from '@/constants/features';
 
 import PlaylistList from '@/components/PlaylistList';
 import OutputDeviceSheet from '@/screens/playing/components/OutputDeviceSheet';
@@ -183,20 +185,7 @@ const variantStyles = {
   },
 };
 
-const GRADIENT_CACHE_MAX = 150;
-const gradientCache = new Map<string, [string, string]>();
-
-function darkenHexColor(hex: string, amount = 0.3) {
-  let col = hex.replace('#', '');
-  if (col.length === 3) col = col.split('').map(c => c + c).join('');
-  const num = parseInt(col, 16);
-  const r = Math.floor(((num >> 16) & 0xff) * (1 - amount));
-  const g = Math.floor(((num >> 8) & 0xff) * (1 - amount));
-  const b = Math.floor((num & 0xff) * (1 - amount));
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b)
-    .toString(16)
-    .slice(1)}`;
-}
+const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE_MAX);
 
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
@@ -242,17 +231,8 @@ export default function PlayingBarBase({ variant }: Props) {
       return;
     }
     try {
-      const colors = await ImageColors.getColors(uri, { fallback: '#121212' });
-      let dominant = '#121212';
-      if (colors.platform === 'android') {
-        dominant = colors.darkVibrant || colors.dominant || dominant;
-      } else {
-        dominant = (colors as any).primary || dominant;
-      }
-      const gradient: [string, string] = [darkenHexColor(dominant), '#000'];
-      if (gradientCache.size >= GRADIENT_CACHE_MAX) {
-        gradientCache.delete(gradientCache.keys().next().value!);
-      }
+      const result = await ImageColors.getColors(uri, { fallback: '#121212' });
+      const gradient: [string, string] = [darken(pickAccent(result, '#121212')), '#000'];
       gradientCache.set(uri, gradient);
       setNextGradient(gradient);
     } catch {
