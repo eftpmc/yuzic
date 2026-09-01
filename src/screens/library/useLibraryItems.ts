@@ -30,10 +30,17 @@ import {
  * Shared by the library tab and the per-type screens so both read the same
  * data and order it the same way.
  */
+export type LibraryItemsResult = {
+  items: LibraryItem[]
+  /** True until the data this type needs has arrived. Distinguishes a library
+   * that is still syncing from one that is genuinely empty. */
+  isLoading: boolean
+}
+
 export function useLibraryItems(
   type: LibraryCollectionType | null,
   sortOrder: SortOrder
-): LibraryItem[] {
+): LibraryItemsResult {
   const songLastPlayed = useSelector(selectSongLastPlayedAt)
   const songPlays = useSelector(selectSongPlayCounts)
   const albumLastPlayed = useSelector(selectAlbumLastPlayedAt)
@@ -41,10 +48,10 @@ export function useLibraryItems(
   const artistLastPlayed = useSelector(selectArtistLastPlayedAt)
   const artistPlays = useSelector(selectArtistPlayCounts)
 
-  const { albums } = useAlbums()
-  const { artists } = useArtists()
-  const { playlists } = usePlaylists()
-  const { tracks } = useTracks()
+  const { albums, isLoading: albumsLoading } = useAlbums()
+  const { artists, isLoading: artistsLoading } = useArtists()
+  const { playlists, isLoading: playlistsLoading } = usePlaylists()
+  const { tracks, isLoading: tracksLoading } = useTracks()
   const { getAllDownloadedCollections } = useDownload()
 
   const stats = useMemo<SortStats>(
@@ -62,7 +69,20 @@ export function useLibraryItems(
     return ids
   }, [getAllDownloadedCollections])
 
-  return useMemo(() => {
+  // Only the sources this type actually draws from: a slow track sync must not
+  // make the albums screen look like it is still loading.
+  const isLoading = (() => {
+    switch (type) {
+      case 'playlists': return playlistsLoading
+      case 'albums': return albumsLoading
+      case 'artists': return artistsLoading
+      case 'tracks': return tracksLoading
+      case 'downloaded': return albumsLoading || playlistsLoading
+      default: return albumsLoading || artistsLoading || playlistsLoading
+    }
+  })()
+
+  const items = useMemo(() => {
     switch (type) {
       case 'playlists':
         return sortItems(playlists.map(p => ({ kind: 'playlist' as const, data: p })), sortOrder, statsForSort)
@@ -85,4 +105,6 @@ export function useLibraryItems(
         ], sortOrder, statsForSort)
     }
   }, [type, sortOrder, statsForSort, albums, artists, playlists, tracks, downloadedCollectionIds])
+
+  return { items, isLoading }
 }

@@ -31,7 +31,7 @@ export default function LibraryScreen() {
   const sortLabels = useSortLabels()
 
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
-  const items = useLibraryItems(null, sortOrder)
+  const { items } = useLibraryItems(null, sortOrder)
 
   return (
     <SafeAreaView

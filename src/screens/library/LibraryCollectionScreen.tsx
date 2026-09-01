@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -47,7 +47,7 @@ const LibraryCollectionScreen: React.FC = () => {
     type ? DEFAULT_SORT[type] : 'recent'
   )
 
-  const items = useLibraryItems(type ?? null, sortOrder)
+  const { items, isLoading } = useLibraryItems(type ?? null, sortOrder)
   const { playSongs } = usePlayingActions()
 
   // Only a list of tracks is a queue. A screen of albums or artists is a list
@@ -75,7 +75,11 @@ const LibraryCollectionScreen: React.FC = () => {
       style={[styles.screen, { backgroundColor: colors.background }]}
     >
       <DetailHeaderBar title={type ? t(TITLE_KEY[type]) : t('library.title')} />
-      {items.length === 0 ? (
+      {isLoading && items.length === 0 ? (
+        // A syncing library is not an empty one — saying "nothing here" while
+        // the first sync is still running reads as data loss.
+        <ActivityIndicator style={styles.loading} color={colors.subtext} />
+      ) : items.length === 0 ? (
         <Text style={[styles.empty, { color: colors.subtext }]}>
           {t('library.collection.empty')}
         </Text>
@@ -115,4 +119,5 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 32, fontSize: 14 },
   actions: { paddingVertical: 12 },
+  loading: { marginTop: 32 },
 })
