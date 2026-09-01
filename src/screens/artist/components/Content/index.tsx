@@ -15,6 +15,7 @@ import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
 import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch'
 import { compareByReleaseYearDesc, releaseYearLabel } from './discography'
+import { isSingleOrEp } from './releaseKind'
 import { useTracks } from '@/hooks/tracks'
 import MediaTile from '@/screens/home/components/MediaTile'
 import MostPlayedSection from './MostPlayedSection'
@@ -45,13 +46,6 @@ type ArtistContentItem =
   | { kind: 'bio'; id: string }
 
 const INITIAL_RELEASE_ROWS = 3
-
-function isSingleOrEp(album: AlbumBase, songCount: number): boolean {
-  if (songCount > 0 && songCount <= 6) return true
-
-  const title = album.title.toLowerCase()
-  return title.includes('single') || title.includes(' ep')
-}
 
 const LASTFM_COLOR = '#D51007'
 const LOCAL_COLOR = statusColor.success
