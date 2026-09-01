@@ -26,10 +26,13 @@ type DetailHeaderProps = {
 
 type DetailHeaderBarProps = {
   title: string;
+  /** A line under the title, for a screen whose only other heading would repeat
+   * this one — a collection's item count rather than a second "Albums". */
+  subtitle?: string;
   rightAction?: React.ReactNode;
 };
 
-export function DetailHeaderBar({ title, rightAction }: DetailHeaderBarProps) {
+export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBarProps) {
   const navigation = useNavigation<any>();
   const { colors } = useTheme();
 
@@ -49,6 +52,11 @@ export function DetailHeaderBar({ title, rightAction }: DetailHeaderBarProps) {
         <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
           {title}
         </Text>
+        {subtitle ? (
+          <Text style={[styles.headerSubtitle, { color: colors.subtext }]} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
 
       {rightAction ?? <View style={styles.headerButton} />}
@@ -224,8 +232,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.navigationTitle,
+    maxWidth: '60%',
+  },
+  headerSubtitle: {
+    ...typography.caption,
     maxWidth: '60%',
   },
   headerButton: {

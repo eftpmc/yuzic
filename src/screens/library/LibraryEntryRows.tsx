@@ -14,7 +14,7 @@ import {
 } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { radius, spacing, typography } from '@/constants/design'
+import { controlSize, radius, spacing, typography } from '@/constants/design'
 import { useLibraryCounts } from './useLibraryCounts'
 import type { LibraryCollectionType } from './librarySort'
 
@@ -50,7 +50,7 @@ const LibraryEntryRows: React.FC = () => {
   const openCollection = (type: LibraryCollectionType) =>
     navigation.push('libraryCollectionView', { type })
 
-  const size = 19
+  const size = 20
   const color = colors.secondary
 
   const entries: Entry[] = [
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.rowGap,
+    gap: spacing.lg,
     paddingHorizontal: spacing.page,
   },
   body: {
@@ -163,11 +163,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
   },
   iconWell: {
-    width: 34,
-    height: 34,
+    width: controlSize.iconCompact,
+    height: controlSize.iconCompact,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',

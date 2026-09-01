@@ -10,7 +10,6 @@ import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useTheme } from '@/hooks/useTheme'
 import { spacing, typography } from '@/constants/design'
 import CollectionActions from './CollectionActions'
-import CollectionArtwork from './CollectionArtwork'
 import LibraryList from './LibraryList'
 import LoadingLibraryList from './Loading'
 import { useLibraryItems } from './useLibraryItems'
@@ -35,14 +34,6 @@ const TITLE_KEY: Record<LibraryCollectionType, string> = {
   recentlyAdded: 'library.recentlyAdded',
   downloaded: 'home.filters.downloaded',
 }
-
-/** Big enough to carry the top of the screen, small enough to leave the title
- * beside it rather than under it. */
-const ARTWORK_SIZE = 132
-
-/** Covers are only worth reading from the front of the list — the mosaic shows
- * four, and scanning thousands of items for them would cost more than it says. */
-const ARTWORK_SEARCH_DEPTH = 24
 
 const COUNT_KEY: Record<LibraryCollectionType, string> = {
   playlists: 'library.count.playlists',
@@ -78,17 +69,6 @@ const LibraryCollectionScreen: React.FC = () => {
     [type, items]
   )
 
-  // Whatever is at the top of the current sort, so the artwork changes with the
-  // order rather than being fixed to one arbitrary four.
-  const covers = useMemo(
-    () => items
-      .slice(0, ARTWORK_SEARCH_DEPTH)
-      .map(item => item.data.cover)
-      .filter(cover => cover != null)
-      .slice(0, 4),
-    [items]
-  )
-
   const play = useCallback(async (shuffle: boolean) => {
     if (!playableTracks.length) return
     try {
@@ -98,32 +78,20 @@ const LibraryCollectionScreen: React.FC = () => {
     }
   }, [playableTracks, playSongs, t])
 
-  const header = (
-    <View style={styles.header}>
-      <View style={styles.heading}>
-        <CollectionArtwork covers={covers} size={ARTWORK_SIZE} />
-        <View style={styles.headingText}>
-          <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={3}>
-            {title}
-          </Text>
-          {items.length > 0 && (
-            <Text style={[styles.count, { color: colors.subtext }]}>
-              {t(type ? COUNT_KEY[type] : 'library.count.items', { count: items.length })}
-            </Text>
-          )}
-        </View>
-      </View>
+  const count = items.length > 0
+    ? t(type ? COUNT_KEY[type] : 'library.count.items', { count: items.length })
+    : undefined
 
-      {playableTracks.length > 0 && (
-        <View style={styles.actions}>
-          <CollectionActions
-            onPlay={() => { void play(false) }}
-            onShuffle={() => { void play(true) }}
-          />
-        </View>
-      )}
+  // The bar above already names the screen, so there is no heading here — only
+  // the actions, where the collection is actually a queue.
+  const header = playableTracks.length > 0 ? (
+    <View style={styles.actions}>
+      <CollectionActions
+        onPlay={() => { void play(false) }}
+        onShuffle={() => { void play(true) }}
+      />
     </View>
-  )
+  ) : null
 
   return (
     <SafeAreaView
@@ -131,14 +99,13 @@ const LibraryCollectionScreen: React.FC = () => {
       edges={['top']}
       style={[styles.screen, { backgroundColor: colors.background }]}
     >
-      <DetailHeaderBar title={title} />
+      <DetailHeaderBar title={title} subtitle={count} />
 
       {isLoading && items.length === 0 ? (
         <LoadingLibraryList />
       ) : items.length === 0 ? (
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
-          <Text style={[styles.empty, { color: colors.subtext }]}>
+        <View style={styles.empty}>
+          <Text style={[styles.emptyText, { color: colors.subtext }]}>
             {t('library.collection.empty')}
           </Text>
         </View>
@@ -159,11 +126,7 @@ export default LibraryCollectionScreen
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  header: { paddingHorizontal: spacing.page, paddingTop: spacing.sm },
-  heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
-  headingText: { flex: 1, minWidth: 0 },
-  title: { ...typography.detailTitle },
-  count: { ...typography.caption, marginTop: spacing.xs },
-  actions: { marginTop: spacing.lg },
-  empty: { ...typography.rowSubtitle, marginTop: spacing.lg },
+  actions: { paddingHorizontal: spacing.page, paddingTop: spacing.sm },
+  empty: { paddingHorizontal: spacing.page, paddingTop: spacing.xl },
+  emptyText: { ...typography.rowSubtitle },
 })
