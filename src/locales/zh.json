@@ -488,6 +488,9 @@
       "albumCount_other": "{{count}} 张专辑",
       "empty": "音乐库中还没有流派。",
       "browse": "按流派浏览"
+    },
+    "collection": {
+      "empty": "这里还没有内容。"
     }
   },
   "home": {

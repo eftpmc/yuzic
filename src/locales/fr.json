@@ -489,6 +489,9 @@
       "albumCount_other": "{{count}} albums",
       "empty": "Aucun genre dans votre bibliothèque.",
       "browse": "Parcourir par genre"
+    },
+    "collection": {
+      "empty": "Rien ici pour l'instant."
     }
   },
   "home": {

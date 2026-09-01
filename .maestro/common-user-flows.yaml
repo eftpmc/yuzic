@@ -13,8 +13,14 @@ appId: com.arinora.rawarr
 - assertVisible:
     id: "library-screen"
 
+# Tracks now open their own screen from the library index rather than
+# filtering the list in place, so getting back to the tabs takes a step.
 - tapOn:
-    id: "library-filter-tracks"
+    id: "library-entry-tracks"
+- extendedWaitUntil:
+    visible:
+      id: "library-collection-screen"
+    timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "library-track-item"
@@ -25,6 +31,10 @@ appId: com.arinora.rawarr
     visible:
       id: "playing-bar"
     timeout: 30000
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-screen"
 
 - tapOn:
     id: "home-tab"

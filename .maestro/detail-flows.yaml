@@ -17,7 +17,7 @@ appId: com.arinora.rawarr
 
 # Album detail
 - tapOn:
-    id: "library-filter-albums"
+    id: "library-entry-albums"
 - extendedWaitUntil:
     visible:
       id: "library-album-item"
@@ -32,11 +32,15 @@ appId: com.arinora.rawarr
 - tapOn:
     id: "detail-back-button"
 - assertVisible:
+    id: "library-collection-screen"
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
     id: "library-screen"
 
 # Artist detail
 - tapOn:
-    id: "library-filter-artists"
+    id: "library-entry-artists"
 - extendedWaitUntil:
     visible:
       id: "library-artist-item"
@@ -51,12 +55,20 @@ appId: com.arinora.rawarr
 - tapOn:
     id: "detail-back-button"
 - assertVisible:
+    id: "library-collection-screen"
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
     id: "library-screen"
 
 # Playlist detail — playlists on a shared/demo server come and go, so only
 # exercise this when at least one exists.
 - tapOn:
-    id: "library-filter-playlists"
+    id: "library-entry-playlists"
+- extendedWaitUntil:
+    visible:
+      id: "library-collection-screen"
+    timeout: 30000
 - runFlow:
     when:
       visible:
@@ -72,12 +84,16 @@ appId: com.arinora.rawarr
       - tapOn:
           id: "detail-back-button"
       - assertVisible:
-          id: "library-screen"
+          id: "library-collection-screen"
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-screen"
 
 # Track options sheet via long-press. Opening the sheet resolves the song
 # over the network with a short timeout, so allow one retry for a cold call.
 - tapOn:
-    id: "library-filter-tracks"
+    id: "library-entry-tracks"
 - extendedWaitUntil:
     visible:
       id: "library-track-item"

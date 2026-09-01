@@ -488,6 +488,9 @@
       "albumCount_other": "{{count}} 枚のアルバム",
       "empty": "ライブラリにジャンルがありません。",
       "browse": "ジャンルから探す"
+    },
+    "collection": {
+      "empty": "まだ何もありません。"
     }
   },
   "home": {

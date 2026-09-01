@@ -35,11 +35,14 @@ function referencedIds(): Map<string, string[]> {
 }
 
 function sourceText(): string {
-  // git grep keeps this to tracked source and off node_modules.
-  return execFileSync('git', ['grep', '-h', '-E', 'testID=', '--', 'src'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  });
+  // --untracked so a screen added but not yet committed still counts; without
+  // it this fails spuriously for anyone writing a new screen. --exclude-standard
+  // keeps gitignored build output out.
+  return execFileSync(
+    'git',
+    ['grep', '-h', '--untracked', '--exclude-standard', '-E', 'testID=', '--', 'src'],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
 }
 
 /**

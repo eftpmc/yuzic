@@ -459,6 +459,9 @@
       "albumCount_other": "{{count}} albums",
       "empty": "No genres in your library yet.",
       "browse": "Browse by genre"
+    },
+    "collection": {
+      "empty": "Nothing here yet."
     }
   },
   "home": {
