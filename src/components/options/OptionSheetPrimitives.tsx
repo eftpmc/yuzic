@@ -168,14 +168,14 @@ export const optionSheetStyles = StyleSheet.create({
     borderTopRightRadius: 16,
   },
   sheetContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 48,
+    paddingVertical: spacing.generous,
   },
 });
 
@@ -194,26 +194,26 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.sm,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   headerText: { flex: 1 },
   title: { ...typography.rowTitle },
-  subtitle: { ...typography.rowSubtitle, marginTop: 2 },
+  subtitle: { ...typography.rowSubtitle, marginTop: spacing.xxs },
   divider: {
     height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
+    marginVertical: spacing.md,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
   },
   optionDimmed: {
     opacity: 0.55,
   },
   optionBody: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: spacing.lg,
   },
   optionBodyNoIcon: {
     marginLeft: 0,
@@ -224,41 +224,41 @@ const styles = StyleSheet.create({
   },
   optionDescription: {
     ...typography.caption,
-    marginTop: 1,
+    marginTop: spacing.xxs,
   },
   sectionLabel: {
     ...typography.caption,
     fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   sectionLabelSpaced: {
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   infoLabel: { ...typography.rowSubtitle },
-  infoValue: { ...typography.rowSubtitle, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
+  infoValue: { ...typography.rowSubtitle, fontWeight: '500', marginLeft: spacing.md, flex: 1, textAlign: 'right' },
   chipsRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   chipsList: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.inlineGap,
-    marginLeft: 12,
+    marginLeft: spacing.md,
     justifyContent: 'flex-end',
     alignContent: 'flex-end',
   },
   chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.controlGap,
+    paddingVertical: spacing.xs,
     borderRadius: radius.card,
   },
   chipText: {

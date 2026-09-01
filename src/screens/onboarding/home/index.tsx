@@ -14,7 +14,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export default function Home() {
     const { t } = useTranslation();
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#000',
-        paddingHorizontal: 20,
+        paddingHorizontal: spacing.roomy,
     },
     content: {
         flex: 1,
@@ -108,20 +108,20 @@ const styles = StyleSheet.create({
     appIcon: {
         width: 150,
         height: 150,
-        marginBottom: 30,
+        marginBottom: spacing.xxl,
         borderRadius: radius.md,
     },
     appName: {
         ...typography.display,
         color: '#fff',
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     subtext: {
         ...typography.body,
         color: '#ccc',
         textAlign: 'center',
-        paddingHorizontal: 30,
+        paddingHorizontal: spacing.xxl,
     },
     bottomContent: {
         width: '100%',
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: '90%',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     offsetButton: {
         position: 'absolute',
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.md,
         alignItems: 'center',
         justifyContent: 'center',
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
         ...typography.caption,
         color: '#888',
         textAlign: 'center',
-        paddingHorizontal: 10,
-        marginTop: 12,
+        paddingHorizontal: spacing.controlGap,
+        marginTop: spacing.md,
     },
 });

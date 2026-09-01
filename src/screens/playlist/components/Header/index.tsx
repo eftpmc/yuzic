@@ -26,6 +26,7 @@ import {
   DetailMetaText,
   DetailPlayAction,
 } from '@/components/DetailHeader';
+import { spacing } from '@/constants/design';
 
 type Props = {
   playlist: Playlist;
@@ -108,7 +109,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
           </DetailMetaRow>
         }
         actions={
-          <DetailActionRow style={{ marginBottom: 18 }}>
+          <DetailActionRow style={{ marginBottom: spacing.lg }}>
             <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle playlist">
               <Shuffle size={18} color={colors.secondary} />
             </DetailCircleAction>

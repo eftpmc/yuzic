@@ -8,7 +8,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 type HeaderProps = {
     title: string;
@@ -66,11 +66,11 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.md,
     },
     backButton: {
-        padding: 6,
+        padding: spacing.tight,
     },
     titleWrapper: {
         position: 'absolute',

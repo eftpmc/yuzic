@@ -11,6 +11,7 @@ import PlaylistOptions from '@/components/options/PlaylistOptions';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { spacing } from '@/constants/design';
 
 type Props = {
   playlist: PlaylistBase;
@@ -61,6 +62,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
 });

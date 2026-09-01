@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Platform, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import Header from './Header';
+import { spacing } from '@/constants/design';
 
 type Props = {
   title: string;
@@ -26,7 +27,7 @@ const SettingsScreen: React.FC<Props> = ({
       style={[
         styles.container,
         { backgroundColor: colors.background },
-        Platform.OS === 'android' && { paddingTop: 24 },
+        Platform.OS === 'android' && { paddingTop: spacing.xl },
       ]}
     >
       <Header title={title} onBackPress={onBackPress} rightAction={rightAction} />
@@ -42,7 +43,7 @@ export default SettingsScreen;
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 180,
+    padding: spacing.lg,
+    paddingBottom: spacing.scrollClearance,
   },
 });

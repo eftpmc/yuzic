@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -50,19 +50,19 @@ export default SettingsInputField;
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
   },
   label: {
     ...typography.caption,
     fontWeight: '500',
-    marginBottom: 6,
+    marginBottom: spacing.tight,
   },
   input: {
     ...typography.body,
     borderWidth: 1,
     borderRadius: radius.md,
-    padding: 10,
+    padding: spacing.controlGap,
   },
 });

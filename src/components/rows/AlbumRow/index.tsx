@@ -11,6 +11,7 @@ import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { spacing } from '@/constants/design';
 
 type Props = {
   album: AlbumBase;
@@ -68,6 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
 });

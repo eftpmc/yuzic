@@ -9,7 +9,7 @@ import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreview
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useTheme } from '@/hooks/useTheme';
 import { ALBUM_EXTERNAL_HORIZONTAL_PADDING } from '@/constants/features';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 type Props = {
   album: ExternalAlbum;
@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
   },
   statsFooter: {
     paddingHorizontal: ALBUM_EXTERNAL_HORIZONTAL_PADDING,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   statsText: {
     ...typography.caption,

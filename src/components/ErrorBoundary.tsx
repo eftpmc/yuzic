@@ -2,7 +2,7 @@ import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import RNRestart from 'react-native-restart';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 interface Props {
   children: ReactNode;
@@ -47,23 +47,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xxl,
   },
   title: {
     ...typography.sectionTitle,
     fontWeight: '700',
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   message: {
     ...typography.rowSubtitle,
     color: '#aaa',
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxl,
   },
   button: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
     backgroundColor: '#1a1a1a',
     borderRadius: radius.md,
     borderWidth: 1,

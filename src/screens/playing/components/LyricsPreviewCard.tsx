@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LyricsResult } from '@/api/types';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   lyrics: LyricsResult;
@@ -150,20 +150,20 @@ export default function LyricsPreviewCard({
 
 const styles = StyleSheet.create({
   card: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     paddingVertical: CARD_PADDING_V,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
     borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },
   scrollContent: {
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   line: {
     ...typography.sectionTitle,
     textAlign: 'center',
-    marginVertical: 6,
+    marginVertical: spacing.tight,
   },
   activeLine: {
     color: '#fff',

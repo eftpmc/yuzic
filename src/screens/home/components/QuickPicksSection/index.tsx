@@ -31,7 +31,7 @@ import {
   QUICK_PICKS_PEEK,
   HOME_SECTION_HORIZONTAL_PADDING,
 } from '@/constants/home';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 function useQuickPicks(refreshKey: number): SongBase[] {
   const songsById = useSelector(selectSongsById);
@@ -149,12 +149,12 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
     ...typography.sectionTitle,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
   },
   page: {
@@ -165,6 +165,6 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
-    paddingVertical: 6,
+    paddingVertical: spacing.tight,
   },
 });

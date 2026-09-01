@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { statusColor } from '@/constants/design';
+import { spacing, statusColor } from '@/constants/design';
 import {
   StyleSheet,
 } from 'react-native';
@@ -353,6 +353,6 @@ export default AlbumHeader;
 
 const styles = StyleSheet.create({
   serverStatusRow: {
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
 });

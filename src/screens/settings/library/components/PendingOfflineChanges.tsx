@@ -13,7 +13,7 @@ import {
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    marginBottom: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   iconWrap: {
     width: 38,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   textWrap: { flex: 1 },
   title: {
@@ -128,19 +128,19 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...typography.caption,
-    marginTop: 3,
+    marginTop: spacing.xxs,
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 10,
+    marginTop: spacing.controlGap,
   },
   actionButton: {
     minHeight: 30,
     borderRadius: radius.md,
     borderWidth: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.controlGap,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
-    marginLeft: 10,
+    paddingHorizontal: spacing.sm,
+    marginLeft: spacing.controlGap,
   },
   badgeText: {
     ...typography.caption,

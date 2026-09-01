@@ -32,7 +32,7 @@ const LoadingGenreList: React.FC = () => {
 export default LoadingGenreList
 
 const styles = StyleSheet.create({
-  wrapper: { paddingHorizontal: spacing.page, paddingTop: 12 },
-  row: { paddingVertical: 14 },
+  wrapper: { paddingHorizontal: spacing.page, paddingTop: spacing.md },
+  row: { paddingVertical: spacing.md },
   lineSpacer: { height: 6 },
 })

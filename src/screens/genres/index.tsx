@@ -88,7 +88,7 @@ export default GenresScreen
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  list: { paddingBottom: 180 },
+  list: { paddingBottom: spacing.scrollClearance },
   heading: { paddingHorizontal: spacing.page, paddingTop: spacing.sm, paddingBottom: spacing.md },
   headingTitle: { ...typography.screenTitle },
   headingCount: { ...typography.caption, marginTop: spacing.xs },
@@ -102,6 +102,6 @@ const styles = StyleSheet.create({
   },
   rowText: { flex: 1, minWidth: 0, marginRight: spacing.rowGap },
   genre: { ...typography.rowTitle },
-  count: { ...typography.caption, marginTop: 2 },
+  count: { ...typography.caption, marginTop: spacing.xxs },
   empty: { ...typography.rowSubtitle, textAlign: 'center', marginTop: spacing.xxl },
 })

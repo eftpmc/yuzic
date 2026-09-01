@@ -13,7 +13,7 @@ import { AlbumBase, PlaylistBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 const H_PADDING = 12;
 const GAP = 10;
@@ -137,12 +137,12 @@ export default function RecentlyPlayed() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
     ...typography.sectionTitle,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
   },
   scrollContent: {

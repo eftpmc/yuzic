@@ -20,7 +20,7 @@ import {
 import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types'
-import { typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
 
 type Props = { refreshKey?: number }
 
@@ -106,17 +106,17 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
     ...typography.sectionTitle,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
   },
   emptyState: {
     paddingHorizontal: H_PADDING,
-    paddingVertical: 24,
+    paddingVertical: spacing.xl,
   },
   emptyText: {
     ...typography.rowSubtitle,

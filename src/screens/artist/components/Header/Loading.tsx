@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 const LoadingArtistHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -33,7 +33,7 @@ const LoadingArtistHeader: React.FC = () => {
       </View>
 
       {/* ARTIST META */}
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={{ paddingHorizontal: spacing.lg }}>
         <View style={styles.content}>
           <Skeleton
             width={180}
@@ -111,11 +111,11 @@ const styles = StyleSheet.create({
 
   content: {
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   metaRow: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
 });
 

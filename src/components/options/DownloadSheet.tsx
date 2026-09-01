@@ -25,6 +25,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import { spacing } from '@/constants/design';
 
 interface Props {
   album: ExternalAlbumBase;
@@ -113,7 +114,7 @@ export default DownloadSheet;
 
 const styles = StyleSheet.create({
   content: {
-    padding: 16,
-    paddingBottom: 48,
+    padding: spacing.lg,
+    paddingBottom: spacing.generous,
   },
 });

@@ -3,6 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 
 import LoadingHeader from '../Header/Loading';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
+import { spacing } from '@/constants/design';
 
 const PLACEHOLDER_ROWS = 8;
 
@@ -29,7 +30,7 @@ const LoadingAlbumContent: React.FC = () => {
       keyExtractor={(_, index) => `skeleton-${index}`}
       renderItem={renderItem}
       ListHeaderComponent={header}
-      contentContainerStyle={{ paddingBottom: 140 }}
+      contentContainerStyle={{ paddingBottom: spacing.scrollClearance }}
       showsVerticalScrollIndicator={false}
     />
   );

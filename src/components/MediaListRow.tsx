@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.rowGap,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   compactRow: rowDensity.compact,
   content: {
@@ -150,10 +150,10 @@ const styles = StyleSheet.create({
     gap: spacing.inlineGap,
   },
   subtitleSpacing: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   compactSubtitleSpacing: {
-    marginTop: 1,
+    marginTop: spacing.xxs,
   },
   subtitleText: typography.rowSubtitle,
   compactSubtitleText: typography.compactRowSubtitle,

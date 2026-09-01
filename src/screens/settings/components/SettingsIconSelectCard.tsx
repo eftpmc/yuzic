@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export type IconSelectItem = {
   id: string;
@@ -55,13 +55,13 @@ export default SettingsIconSelectCard;
 
 const styles = StyleSheet.create({
   inner: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   title: {
     ...typography.caption,
     fontWeight: '500',
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   row: {
     flexDirection: 'row',

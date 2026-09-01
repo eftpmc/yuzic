@@ -4,7 +4,7 @@ import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 import Touchable from '@/components/Touchable';
 
 type Props = {
@@ -56,7 +56,7 @@ const LibraryItem: React.FC<Props> = ({
         style={
           isGridView
             ? { width: gridWidth, aspectRatio: 1, borderRadius: gridRadius }
-            : { width: 52, height: 52, borderRadius: listRadius, marginRight: 12 }
+            : { width: 52, height: 52, borderRadius: listRadius, marginRight: spacing.md }
         }
       />
 
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
   listContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 4,
+    paddingVertical: spacing.tight,
+    paddingHorizontal: spacing.xs,
     borderRadius: radius.sm,
   },
   gridContainer: {
@@ -93,10 +93,10 @@ const styles = StyleSheet.create({
   },
   listText: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   gridText: {
-    marginTop: 6,
+    marginTop: spacing.tight,
     width: '100%',
   },
   title: {

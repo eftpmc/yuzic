@@ -72,7 +72,7 @@ export default memo(ExternalSongRow);
 
 const styles = StyleSheet.create({
   row: {
-    paddingVertical: 13,
+    paddingVertical: spacing.md,
   },
   rowRight: {
     flexDirection: 'row',

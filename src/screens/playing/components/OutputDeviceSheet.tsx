@@ -18,7 +18,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 const {
   AirplayButton,
@@ -214,29 +214,29 @@ export default OutputDeviceSheet;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
+    paddingBottom: spacing.xl,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   title: {
     ...typography.sheetTitle,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    marginVertical: 4,
+    marginVertical: spacing.xs,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 15,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.md,
   },
   itemLeft: {
@@ -249,22 +249,22 @@ const styles = StyleSheet.create({
   },
   empty: {
     ...typography.rowSubtitle,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   sectionLabel: {
     ...typography.caption,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    paddingHorizontal: 12,
-    paddingBottom: 6,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.tight,
   },
   searchingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
 });

@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type QueueItemProps = {
   item: Song;
@@ -217,31 +217,31 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 32
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl
   },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
 
   backButton: {
-    padding: 8,
-    marginRight: 8,
+    padding: spacing.sm,
+    marginRight: spacing.sm,
     marginLeft: -8,
   },
 
   playControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
 
   controlButton: {
-    padding: 6,
-    marginLeft: 6,
+    padding: spacing.tight,
+    marginLeft: spacing.tight,
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: radius.md,
   },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: radius.md,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
 
   headerTextContainer: {
@@ -271,20 +271,20 @@ const styles = StyleSheet.create({
   sectionLabel: {
     ...typography.rowTitle,
     color: '#fff',
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
 
   subLabel: {
     ...typography.caption,
     color: '#888',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
 
   queueItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.controlGap,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.md,
   },
 
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: radius.md,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
 
   metadata: {

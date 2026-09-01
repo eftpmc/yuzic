@@ -44,14 +44,18 @@ because both halves of each pair look reasonable in isolation.
   per platform and doesn't match the lucide icon set the rest of the UI uses.
   A skeleton is only worth using when it predicts the real layout; an options
   sheet is a header and a stack of actions, so it keeps a spinner.
-- **Scales**: sizes come from `typography`, corner radii from `radius`, both in
-  `constants/design`, everywhere — `eslint.config.js` fails the build on a
+- **Scales**: sizes come from `typography`, corner radii from `radius`, padding
+  and margin from `spacing`, all in `constants/design`, everywhere — `eslint.config.js` fails the build on a
   literal `fontSize` or `borderRadius` outside that file. A role carries a size
   and a line height; a weight may be overridden at the call site
   (`{ ...typography.rowSubtitle, fontWeight: '500' }`), since weight was never
   the thing that drifted. Adding a role is fine; adding one that differs from an
   existing role only in size is how the app got to thirteen font sizes and
-  twelve corner radii in the first place.
+  twelve corner radii in the first place. `0` stays a literal — it is the
+  absence of spacing rather than an amount of it. Any scrolling list ends with
+  `spacing.scrollClearance`, which is what keeps its last row clear of the
+  playing bar; four different numbers were doing that job and the short ones
+  didn't.
 - **Pressing**: `components/Touchable`, never `TouchableOpacity` — the whole app
   was swapped over in one pass and there is no reason for a second answer to a
   press to exist. Android gets a ripple bounded to the component, every other

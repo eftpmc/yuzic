@@ -7,6 +7,7 @@ import { AlbumBase } from '@/types'
 import { useTheme } from '@/hooks/useTheme'
 import AlbumRow from '@/components/rows/AlbumRow'
 import GenreHeader, { GenreHeaderBar } from '../Header'
+import { spacing } from '@/constants/design'
 
 type Props = {
   genre: string
@@ -42,7 +43,7 @@ export default function GenreContent({ genre, albums }: Props) {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 140,
+          paddingBottom: spacing.scrollClearance,
           backgroundColor: colors.background,
         }}
       />

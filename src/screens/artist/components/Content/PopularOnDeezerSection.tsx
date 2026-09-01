@@ -8,7 +8,7 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { radius, typography } from '@/constants/design'
+import { radius, spacing, typography } from '@/constants/design'
 
 type Props = {
   topTracks: ExternalSong[]
@@ -79,9 +79,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingTop: 18,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.controlGap,
+    paddingHorizontal: spacing.lg,
   },
   badge: {
     width: 20,
@@ -101,12 +101,12 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   toggleButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
     borderRadius: radius.pill,
   },
   toggleText: {

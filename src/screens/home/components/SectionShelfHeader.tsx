@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
   title: { flexShrink: 1 },
   chevron: {
     marginLeft: spacing.xs,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
 })

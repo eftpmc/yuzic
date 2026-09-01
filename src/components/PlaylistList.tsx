@@ -39,7 +39,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -296,7 +296,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           <BottomSheetFlatList
             data={filteredPlaylists}
             keyExtractor={item => item.id}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: spacing.scrollClearance }}
             extraData={selectedIds}
             renderItem={renderPlaylistItem}
           />
@@ -335,8 +335,8 @@ export default PlaylistList;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -355,55 +355,55 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: spacing.lg,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radius.md,
-    padding: 10,
-    marginBottom: 16,
+    padding: spacing.controlGap,
+    marginBottom: spacing.lg,
   },
   searchInput: {
     ...typography.body,
     flex: 1,
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   createContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   newPlaylistInput: {
     ...typography.body,
     flex: 1,
     borderRadius: radius.md,
-    padding: 10,
-    marginRight: 8,
+    padding: spacing.controlGap,
+    marginRight: spacing.sm,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.controlGap,
   },
   playlistCover: {
     width: 48,
     height: 48,
     borderRadius: radius.sm,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   optionText: {
     ...typography.body,
     flex: 1,
   },
   doneWrapper: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
     backgroundColor: 'transparent',
   },
   doneButton: {
     borderRadius: radius.card,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   doneButtonDisabled: {

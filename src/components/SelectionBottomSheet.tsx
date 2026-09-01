@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import Touchable from '@/components/Touchable'
-import { radius, typography } from '@/constants/design'
+import { radius, spacing, typography } from '@/constants/design'
 
 type Props = {
   items: string[]
@@ -104,28 +104,28 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 12,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
     borderRadius: radius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   input: {
     ...typography.body,
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   shuffleButton: {
-    paddingLeft: 10,
-    paddingVertical: 8,
+    paddingLeft: spacing.controlGap,
+    paddingVertical: spacing.sm,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   item: {
-    paddingVertical: 13,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   itemText: {

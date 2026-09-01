@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import Touchable from '@/components/Touchable'
-import { typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
 
 type Props = {
   biography?: string
@@ -46,16 +46,16 @@ export default function BioSection({ biography }: Props) {
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    paddingTop: 18,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.controlGap,
+    paddingHorizontal: spacing.lg,
   },
   sectionTitle: {
     ...typography.navigationTitle,
   },
   bioContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   bioText: {
     ...typography.rowSubtitle,
@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
   bioToggle: {
     ...typography.caption,
     fontWeight: '500',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 })

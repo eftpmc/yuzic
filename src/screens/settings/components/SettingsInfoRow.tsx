@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     gap: 16,
   },
   label: {
@@ -61,19 +61,19 @@ const styles = StyleSheet.create({
   stackedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   stackedLeft: {
     flex: 1,
   },
   stackedRight: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   stackedLabel: {
     ...typography.caption,
     fontWeight: '500',
-    marginBottom: 3,
+    marginBottom: spacing.xxs,
   },
   stackedValue: {
     ...typography.rowTitle,

@@ -34,7 +34,7 @@ import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { isLikelyNetworkError, setServerUnreachable } from '@/features/connectivity/serverReachability';
 import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -231,7 +231,7 @@ function AppShell() {
                       color: colors.secondary,
                     },
                     indicator: {
-                      marginRight: 12,
+                      marginRight: spacing.md,
                     },
                   }}
                 />

@@ -6,6 +6,7 @@ import SettingsInputField from './SettingsInputField';
 import SettingsInfoRow from './SettingsInfoRow';
 import ConnectivityIndicator from './ConnectivityIndicator';
 import Touchable from '@/components/Touchable';
+import { spacing } from '@/constants/design';
 
 export type AuthField = {
   label: string;
@@ -39,7 +40,7 @@ const SettingsAuthCard: React.FC<Props> = ({
       {fields.map((field, index) => (
         <SettingsInputField key={index} {...field} />
       ))}
-      <SettingsDivider style={{ marginTop: 8 }} />
+      <SettingsDivider style={{ marginTop: spacing.sm }} />
       <SettingsInfoRow
         label={connectivityLabel}
         right={

@@ -15,7 +15,7 @@ import {
   PLAYING_ARTIST_CARD_PADDING,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
@@ -93,7 +93,7 @@ export default function AboutTheArtistCard({
 
 const styles = StyleSheet.create({
   touchable: {
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   card: {
     borderRadius: radius.panel,
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: PLAYING_ARTIST_TEXT_MIN_HEIGHT,
     paddingHorizontal: PLAYING_ARTIST_CARD_PADDING,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
   },
   title: {
     ...typography.navigationTitle,
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
   subtext: {
     ...typography.rowSubtitle,
     color: 'rgba(255,255,255,0.75)',
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

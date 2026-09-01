@@ -2,6 +2,7 @@ import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import SkeletonTile from './SkeletonTile'
+import { spacing } from '@/constants/design'
 
 type Props = {
   itemSize: number
@@ -42,6 +43,6 @@ export default function SkeletonTiles({
 
 const styles = StyleSheet.create({
   content: {
-    paddingBottom: 2,
+    paddingBottom: spacing.xxs,
   },
 })

@@ -27,7 +27,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Variant = 'ios' | 'android';
 
@@ -70,8 +70,8 @@ const variantStyles = {
   ios: {
     blurIntensity: 100,
     wrapper: {
-      marginHorizontal: 12,
-      marginTop: 12,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.md,
       marginBottom: 0,
       borderRadius: radius.card,
       overflow: 'hidden' as const,
@@ -81,9 +81,9 @@ const variantStyles = {
     },
     container: {
       flexDirection: 'column' as const,
-      padding: 8,
+      padding: spacing.sm,
       paddingBottom: 0,
-      paddingHorizontal: 12,
+      paddingHorizontal: spacing.md,
       borderRadius: radius.card,
     },
     topRowWrapper: {
@@ -92,12 +92,12 @@ const variantStyles = {
     },
     topRow: {
       minHeight: 40,
-      paddingRight: 4,
+      paddingRight: spacing.xs,
     },
     coverArt: {
       width: 42,
       height: 42,
-      marginRight: 10,
+      marginRight: spacing.controlGap,
     },
     title: {
       ...typography.caption,
@@ -107,13 +107,13 @@ const variantStyles = {
     },
     progressBarContainer: {
       height: 3,
-      marginTop: 6,
+      marginTop: spacing.tight,
     },
     playPauseButton: {
-      padding: 8,
+      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      marginRight: 4,
+      marginRight: spacing.xs,
     },
     fabButton: {
       width: 38,
@@ -130,8 +130,8 @@ const variantStyles = {
   android: {
     blurIntensity: 0,
     wrapper: {
-      marginHorizontal: 12,
-      marginTop: 12,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.md,
       marginBottom: 0,
       borderRadius: radius.card,
       overflow: 'hidden' as const,
@@ -142,9 +142,9 @@ const variantStyles = {
     },
     container: {
       flexDirection: 'column' as const,
-      padding: 8,
+      padding: spacing.sm,
       paddingBottom: 0,
-      paddingHorizontal: 12,
+      paddingHorizontal: spacing.md,
       borderRadius: radius.card,
     },
     topRowWrapper: {
@@ -153,12 +153,12 @@ const variantStyles = {
     },
     topRow: {
       minHeight: 40,
-      paddingRight: 4,
+      paddingRight: spacing.xs,
     },
     coverArt: {
       width: 42,
       height: 42,
-      marginRight: 10,
+      marginRight: spacing.controlGap,
     },
     title: {
       ...typography.caption,
@@ -168,13 +168,13 @@ const variantStyles = {
     },
     progressBarContainer: {
       height: 3,
-      marginTop: 6,
+      marginTop: spacing.tight,
     },
     playPauseButton: {
-      padding: 8,
+      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      marginRight: 4,
+      marginRight: spacing.xs,
     },
     fabButton: {
       width: 38,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   artist: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   iconPlaceholder: {
     justifyContent: 'center',
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   },
   playPauseButton: {},
   fabButton: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
   },

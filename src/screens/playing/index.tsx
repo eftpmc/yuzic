@@ -35,6 +35,7 @@ import PlaybackSpeedCard from './components/PlaybackSpeedCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
+import { spacing } from '@/constants/design';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -343,8 +344,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingBottom: 40,
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
     },
     headerButton: {
         width: 40,
@@ -356,8 +357,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: 12,
-        paddingBottom: 12,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.md,
     },
 });
 

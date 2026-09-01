@@ -9,7 +9,7 @@ import {
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 type Props = {
   cover: any;
@@ -48,10 +48,10 @@ export default memo(MediaTile);
 const styles = StyleSheet.create({
   title: {
     ...typography.compactRowTitle,
-    marginTop: 6,
+    marginTop: spacing.tight,
   },
   subtitle: {
     ...typography.caption,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 const H_PADDING = 12;
 
@@ -21,7 +21,7 @@ export default function SectionEmptyState({ message }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    paddingVertical: spacing.lg,
     paddingHorizontal: H_PADDING,
   },
   text: { ...typography.rowSubtitle },

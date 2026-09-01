@@ -14,7 +14,7 @@ import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -72,7 +72,7 @@ const LanguageBottomSheet = forwardRef<
                 <Languages
                   size={18}
                   color={isSelected ? themeColor : colors.subtext}
-                  style={{ marginRight: 10 }}
+                  style={{ marginRight: spacing.controlGap }}
                 />
                 <Text
                   style={[
@@ -104,20 +104,20 @@ export default LanguageBottomSheet;
 
 const styles = StyleSheet.create({
   sheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
   },
   sheetTitle: {
     ...typography.sheetTitle,
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   pickerItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     borderRadius: radius.md,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   pickerLeft: {
     flexDirection: 'row',

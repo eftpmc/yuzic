@@ -19,7 +19,7 @@ import {
   setGridColumns,
 } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
@@ -86,7 +86,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                     color={
                       isSelected ? themeColor : colors.subtext
                     }
-                    style={{ marginRight: 10 }}
+                    style={{ marginRight: spacing.controlGap }}
                   />
                   <Text
                     style={[styles.pickerText, { color: colors.secondary, fontWeight: isSelected ? '600' : '400' }]}
@@ -147,20 +147,20 @@ export default GridSettingsBottomSheet;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
   },
   title: {
     ...typography.sheetTitle,
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   pickerItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     borderRadius: radius.md,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   pickerLeft: {
     flexDirection: 'row',
@@ -170,24 +170,24 @@ const styles = StyleSheet.create({
     ...typography.body,
   },
   slidersSection: {
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   sliderRow: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   sliderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
-    paddingHorizontal: 4,
+    marginBottom: spacing.xs,
+    paddingHorizontal: spacing.xs,
   },
   sliderLabel: {
     ...typography.body,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.controlGap,
+    paddingVertical: spacing.xxs,
     borderRadius: radius.card,
   },
   badgeText: {

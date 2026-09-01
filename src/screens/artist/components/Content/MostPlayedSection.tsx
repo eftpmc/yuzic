@@ -11,7 +11,7 @@ import { usePlayableSongResolver } from '@/hooks/songs'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import { rankMostPlayedTracks } from './mostPlayed'
 import type { Artist } from '@/types'
-import { typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
 
 type Props = {
   artist: Artist
@@ -68,9 +68,9 @@ export default function MostPlayedSection({ artist }: Props) {
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    paddingTop: 18,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.controlGap,
+    paddingHorizontal: spacing.lg,
   },
   sectionTitle: {
     ...typography.navigationTitle,

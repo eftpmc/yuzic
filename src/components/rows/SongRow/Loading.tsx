@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing } from '@/constants/design';
 
 const LoadingSongRow: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -31,7 +32,7 @@ const LoadingSongRow: React.FC = () => {
           />
 
           {/* Subtitle (artist • duration) */}
-          <View style={{ marginTop: 6 }}>
+          <View style={{ marginTop: spacing.tight }}>
             <Skeleton
               width="50%"
               height={14}
@@ -58,8 +59,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.controlGap,
+    paddingHorizontal: spacing.lg,
   },
   songInfo: {
     flexDirection: 'row',
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
 });
 

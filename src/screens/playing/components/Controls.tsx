@@ -14,7 +14,7 @@ import Animated, {
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 4,
-    marginTop: 8,
+    paddingHorizontal: spacing.xs,
+    marginTop: spacing.sm,
   },
   playButton: {
     width: 68,

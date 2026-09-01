@@ -29,7 +29,7 @@ import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   localArtist: Artist | null;
@@ -114,7 +114,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
         )}
       </View>
 
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={{ paddingHorizontal: spacing.lg }}>
         <View style={styles.content}>
           <Text
             style={[styles.artistName, { color: colors.secondary }]}
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     zIndex: 20,
   },
   backButton: {
@@ -408,8 +408,8 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   artistName: {
     ...typography.display,
@@ -421,18 +421,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 6,
+    marginTop: spacing.tight,
     flexWrap: 'wrap',
   },
   metaDot: {
     ...typography.rowSubtitle,
-    marginHorizontal: 6,
+    marginHorizontal: spacing.tight,
   },
   metaText: {
     ...typography.rowSubtitle,
   },
   buttonRow: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   secondaryButton: {
     backgroundColor: 'rgba(0,0,0,0.05)',

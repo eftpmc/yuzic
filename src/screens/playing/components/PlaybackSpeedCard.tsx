@@ -11,7 +11,7 @@ import {
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = { contentWidth: number };
 
@@ -112,12 +112,12 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
-    paddingHorizontal: 22,
-    paddingTop: 20,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.roomy,
+    paddingBottom: spacing.xl,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
   label: {
     ...typography.caption,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   bigValue: {
     ...typography.hero,
     color: 'rgba(255,255,255,0.3)',
-    marginBottom: 20,
+    marginBottom: spacing.roomy,
   },
   bigUnit: {
     ...typography.screenTitle,

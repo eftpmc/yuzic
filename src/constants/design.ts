@@ -1,15 +1,38 @@
+/**
+ * The spacing scale.
+ *
+ * Named roles first, then the raw steps. Literal paddings ran to thirty
+ * distinct values; the ones here are the ones real layouts actually wanted,
+ * with the near-misses (13, 14, 18, 22, 30 and friends) folded onto the step
+ * beside them.
+ */
 export const spacing = {
   page: 16,
   section: 24,
   rowGap: 12,
   controlGap: 10,
   inlineGap: 8,
+  /**
+   * Bottom padding for any scrolling list, so its last row clears the playing
+   * bar and the tab bar. Lists used 100, 120, 140 and 180 for this — the short
+   * ones hid their last row behind the player, which is a bug rather than a
+   * style, so there is one number now.
+   */
+  scrollClearance: 180,
+  xxs: 2,
   xs: 4,
+  tight: 6,
   sm: 8,
   md: 12,
   lg: 16,
+  roomy: 20,
   xl: 24,
   xxl: 32,
+  xxxl: 40,
+  /** Empty states and sheet bodies, where the gap is the point. */
+  generous: 48,
+  /** The two detail-header skeletons, clearing a nav bar that overlays them. */
+  headerOffset: 60,
 } as const;
 
 export const statusColor = {

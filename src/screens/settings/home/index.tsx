@@ -19,7 +19,7 @@ import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export default function Settings() {
     const { t } = useTranslation();
@@ -155,19 +155,19 @@ export default function Settings() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     scrollContent: {
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        paddingBottom: 120,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.lg,
+        paddingBottom: spacing.scrollClearance,
     },
     sectionTitle: {
         ...typography.label,
-        marginBottom: 6,
-        marginTop: 16,
-        marginLeft: 4,
+        marginBottom: spacing.tight,
+        marginTop: spacing.lg,
+        marginLeft: spacing.xs,
     },
     profileCard: {
-        padding: 16,
-        marginBottom: 12,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
     },
     profileRow: {
         flexDirection: 'row',
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
         borderRadius: radius.pill,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 14,
+        marginRight: spacing.md,
     },
     avatarText: {
         ...typography.sectionTitle,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     profileName: {
         ...typography.rowTitle,
         fontWeight: '600',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     serverMeta: {
         flexDirection: 'row',
@@ -200,8 +200,8 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     typeBadge: {
-        paddingHorizontal: 6,
-        paddingVertical: 2,
+        paddingHorizontal: spacing.tight,
+        paddingVertical: spacing.xxs,
         borderRadius: radius.xs,
     },
     typeBadgeText: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     versionText: {
         ...typography.caption,
         textAlign: 'center',
-        marginTop: 32,
-        marginBottom: 60,
+        marginTop: spacing.xxl,
+        marginBottom: spacing.headerOffset,
     },
 });

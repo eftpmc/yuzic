@@ -34,7 +34,7 @@ import {
   HOME_GENRE_ARTIST_LIMIT,
 } from '@/constants/home';
 import Touchable from '@/components/Touchable';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -280,15 +280,15 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
     gap: 5,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
     marginRight: H_PADDING,
   },
@@ -298,11 +298,11 @@ const styles = StyleSheet.create({
   genreName: {
     ...typography.sectionTitle,
     borderBottomWidth: 1.5,
-    paddingBottom: 1,
+    paddingBottom: spacing.xxs,
   },
   emptyState: {
     paddingHorizontal: H_PADDING,
-    paddingVertical: 24,
+    paddingVertical: spacing.xl,
   },
   emptyText: {
     ...typography.rowSubtitle,

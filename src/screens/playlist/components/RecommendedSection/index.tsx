@@ -44,7 +44,7 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
@@ -485,10 +485,10 @@ export default RecommendedSection;
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 40,
+    paddingBottom: spacing.xxxl,
   },
   section: {
-    paddingTop: 24,
+    paddingTop: spacing.xl,
   },
   sourceBadge: {
     width: 22,
@@ -505,12 +505,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  actionBtn: { padding: 4 },
-  loader: { marginVertical: 24 },
+  actionBtn: { padding: spacing.xs },
+  loader: { marginVertical: spacing.xl },
   emptyText: {
     ...typography.caption,
     textAlign: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.roomy,
   },
 });

@@ -17,7 +17,7 @@ import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Library = { id: string; name: string };
 
@@ -159,22 +159,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.roomy,
   },
   title: {
     ...typography.display,
     color: '#fff',
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   subtitle: {
     ...typography.body,
     color: '#888',
-    marginBottom: 28,
+    marginBottom: spacing.xxl,
   },
   loader: {
-    marginTop: 40,
+    marginTop: spacing.xxxl,
   },
   optionList: {
     gap: 8,
@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#222',
     borderRadius: radius.md,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     gap: 12,
   },
   checkbox: {
@@ -207,12 +207,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonContainer: {
-    padding: 20,
+    padding: spacing.roomy,
     backgroundColor: '#000',
     alignItems: 'center',
   },
   errorContainer: {
-    marginTop: 40,
+    marginTop: spacing.xxxl,
     alignItems: 'center' as const,
     gap: 16,
   },
@@ -223,8 +223,8 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     backgroundColor: '#333',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
     borderRadius: radius.pill,
   },
   retryButtonText: {
@@ -234,11 +234,11 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: '#fff',
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     borderRadius: radius.pill,
     alignItems: 'center',
     width: '100%',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   continueButtonText: {
     ...typography.sheetTitle,
@@ -246,11 +246,11 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#333',
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     borderRadius: radius.pill,
     alignItems: 'center',
     width: '100%',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   backButtonText: {
     ...typography.sheetTitle,

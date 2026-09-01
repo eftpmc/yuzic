@@ -14,7 +14,7 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type PlayingMainProps = {
   width: number;
@@ -151,22 +151,22 @@ const styles = StyleSheet.create({
   },
   cover: {
     borderRadius: radius.card,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
     backgroundColor: '#111',
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   textContainer: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: spacing.md,
   },
   title: {
     ...typography.sectionTitle,
     color: '#fff',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   artist: {
     ...typography.rowSubtitle,
@@ -176,19 +176,19 @@ const styles = StyleSheet.create({
     ...typography.micro,
     color: '#888',
     textAlign: 'left',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     letterSpacing: 0.3,
   },
   optionsButton: {
-    padding: 6,
+    padding: spacing.tight,
   },
   progressBar: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   timestamps: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: spacing.controlGap,
   },
   timestamp: {
     ...typography.caption,

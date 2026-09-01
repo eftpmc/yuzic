@@ -12,6 +12,7 @@ import StatusBanner from '@/components/StatusBanner';
 
 import PlaylistContent from './components/Content';
 import LoadingPlaylistContent from './components/Content/Loading';
+import { spacing } from '@/constants/design';
 
 const PlaylistScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   degradedBanner: {
-    marginHorizontal: 16,
-    marginTop: 8,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
 });

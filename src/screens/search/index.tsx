@@ -49,7 +49,7 @@ import { getSourceMeta } from '@/features/sources/registry';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -451,45 +451,45 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radius.md,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   searchInput: {
     ...typography.body,
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   clearButton: {
-    padding: 4,
+    padding: spacing.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorBanner: {
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
   },
   scrollContent: {
-    paddingTop: 8,
-    paddingBottom: 180,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.scrollClearance,
   },
   resultBlock: {},
   resultBlockFirst: {
-    paddingTop: 8,
+    paddingTop: spacing.sm,
   },
   sourceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 4,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.roomy,
+    paddingBottom: spacing.xs,
   },
   sourceBadge: {
     width: 20,
@@ -510,6 +510,6 @@ const styles = StyleSheet.create({
   noResults: {
     ...typography.body,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: spacing.xl,
   },
 });

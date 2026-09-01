@@ -14,6 +14,7 @@ import StatusBanner from '@/components/StatusBanner';
 
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
+import { spacing } from '@/constants/design';
 
 type RouteParams = {
   id?: string;
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   degradedBanner: {
-    marginHorizontal: 16,
-    marginTop: 8,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
 });

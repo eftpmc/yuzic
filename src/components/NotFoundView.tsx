@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
 import Touchable from '@/components/Touchable'
-import { typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
 
 type Props = {
   message?: string
@@ -38,12 +38,12 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerButton: {
-    padding: 6,
+    padding: spacing.tight,
   },
   headerSpacer: {
     flex: 1,
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 80,
-    paddingHorizontal: 32,
+    paddingBottom: spacing.generous,
+    paddingHorizontal: spacing.xxl,
   },
   message: {
     ...typography.rowTitle,

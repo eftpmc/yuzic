@@ -28,6 +28,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import Touchable from '@/components/Touchable';
+import { spacing } from '@/constants/design';
 
 interface ExternalSongOptionsProps {
   song: ExternalSong;
@@ -147,5 +148,5 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
 export default ExternalSongOptions;
 
 const styles = StyleSheet.create({
-  chevron: { marginLeft: 4 },
+  chevron: { marginLeft: spacing.xs },
 });

@@ -20,7 +20,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -202,27 +202,27 @@ export default DownloadsInfoScreen;
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.scrollClearance,
   },
   emptyText: {
     ...typography.caption,
-    paddingTop: 20,
+    paddingTop: spacing.roomy,
     textAlign: 'center',
   },
   locationNote: {
     ...typography.caption,
-    paddingTop: 10,
-    paddingHorizontal: 4,
+    paddingTop: spacing.controlGap,
+    paddingHorizontal: spacing.xs,
   },
   providerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 20,
-    marginBottom: 8,
-    paddingHorizontal: 2,
+    marginTop: spacing.roomy,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.xxs,
   },
   providerTitle: {
     ...typography.button,
@@ -237,12 +237,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radius.md,
-    padding: 12,
-    marginBottom: 8,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   coverCell: {
     width: 44,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   cover: {
     width: 44,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   trackCell: {
     flex: 1,
     minWidth: 0,
-    paddingRight: 8,
+    paddingRight: spacing.sm,
   },
   titleLine: {
     flexDirection: 'row',
@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
   metaLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   meta: { ...typography.caption },
   metaDot: {
     ...typography.caption,
-    marginHorizontal: 4,
+    marginHorizontal: spacing.xs,
   },
   shrink: { flexShrink: 1 },
   removeButton: {

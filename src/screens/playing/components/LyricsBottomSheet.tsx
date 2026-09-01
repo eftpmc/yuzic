@@ -23,7 +23,7 @@ import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -148,7 +148,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         backgroundStyle={{ backgroundColor: colors.card }}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
-        <View style={[styles.header, { paddingTop: 12 }]}>
+        <View style={[styles.header, { paddingTop: spacing.md }]}>
           <Touchable onPress={onClose} style={styles.closeButton}>
             <ChevronDown size={28} color={colors.secondary} />
           </Touchable>
@@ -167,8 +167,8 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingHorizontal: 24,
-              paddingTop: 16,
+              paddingHorizontal: spacing.xl,
+              paddingTop: spacing.lg,
               paddingBottom: insets.bottom + 48,
             },
           ]}
@@ -202,8 +202,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
   },
   closeButton: {
     width: 40,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   line: {
     ...typography.screenTitle,
     textAlign: 'center',
-    marginVertical: 10,
+    marginVertical: spacing.controlGap,
   },
 });
 

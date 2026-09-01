@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Scheme = 'https' | 'http';
 
@@ -55,7 +55,7 @@ export default function Address() {
                                 onPress={() => schemeSheetRef.current?.present()}
                             >
                                 <Text style={styles.schemeText}>{scheme}://</Text>
-                                <ChevronDown size={14} color="#888" style={{ marginLeft: 4 }} />
+                                <ChevronDown size={14} color="#888" style={{ marginLeft: spacing.xs }} />
                             </Touchable>
 
                             <TextInput
@@ -114,8 +114,8 @@ export default function Address() {
                             >
                                 <View style={styles.schemeOptionLeft}>
                                     {s === 'https'
-                                      ? <Lock size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: 10 }} />
-                                      : <LockOpen size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: 10 }} />
+                                      ? <Lock size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: spacing.controlGap }} />
+                                      : <LockOpen size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: spacing.controlGap }} />
                                     }
                                     <View>
                                         <Text style={[styles.schemeOptionText, isSelected && styles.schemeOptionTextSelected]}>
@@ -145,18 +145,18 @@ const styles = StyleSheet.create({
     },
     mainContent: {
         flexGrow: 1,
-        paddingHorizontal: 20,
-        marginTop: 40,
+        paddingHorizontal: spacing.roomy,
+        marginTop: spacing.xxxl,
     },
     title: {
         ...typography.display,
         color: '#fff',
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     subtitle: {
         ...typography.body,
         color: '#888',
-        marginBottom: 20,
+        marginBottom: spacing.roomy,
     },
     inputRow: {
         flexDirection: 'row',
@@ -165,14 +165,14 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#555',
         borderRadius: radius.md,
-        paddingHorizontal: 12,
+        paddingHorizontal: spacing.md,
         height: 50,
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     schemeButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingRight: 8,
+        paddingRight: spacing.sm,
         borderRightWidth: 1,
         borderRightColor: '#444',
         height: '100%',
@@ -185,24 +185,24 @@ const styles = StyleSheet.create({
         ...typography.body,
         flex: 1,
         color: '#fff',
-        marginLeft: 10,
+        marginLeft: spacing.controlGap,
     },
     hint: {
         ...typography.caption,
         color: '#555',
     },
     buttonContainer: {
-        padding: 20,
+        padding: spacing.roomy,
         backgroundColor: '#000',
         alignItems: 'center',
     },
     nextButton: {
         backgroundColor: '#fff',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     nextButtonText: {
         ...typography.sheetTitle,
@@ -210,11 +210,11 @@ const styles = StyleSheet.create({
     },
     backButton: {
         backgroundColor: '#333',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     backButtonText: {
         ...typography.sheetTitle,
@@ -227,20 +227,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#555',
     },
     sheetContent: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingHorizontal: spacing.roomy,
+        paddingTop: spacing.controlGap,
     },
     sheetTitle: {
         ...typography.sheetTitle,
         color: '#fff',
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     schemeOption: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 12,
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.md,
         borderRadius: radius.md,
     },
     schemeOptionSelected: {
@@ -261,6 +261,6 @@ const styles = StyleSheet.create({
     schemeOptionDesc: {
         ...typography.caption,
         color: '#666',
-        marginTop: 1,
+        marginTop: spacing.xxs,
     },
 });

@@ -22,7 +22,7 @@ import {
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 // Quick Connect codes expire server-side; without a client-side ceiling too,
 // polling would continue forever showing "waiting for approval" with no
@@ -203,7 +203,7 @@ export default function Credentials() {
                             {quickCode ? (
                                 <Text style={styles.quickConnectCode}>{quickCode}</Text>
                             ) : (
-                                <View style={{ marginVertical: 20 }}>
+                                <View style={{ marginVertical: spacing.roomy }}>
                                   <SpinningLoaderCircle size={26} color="#fff" />
                                 </View>
                             )}
@@ -350,8 +350,8 @@ export default function Credentials() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#000' },
-    mainContent: { flexGrow: 1, paddingHorizontal: 20, marginTop: 40 },
-    buttonContainer: { padding: 20, backgroundColor: '#000', alignItems: 'center' },
+    mainContent: { flexGrow: 1, paddingHorizontal: spacing.roomy, marginTop: spacing.xxxl },
+    buttonContainer: { padding: spacing.roomy, backgroundColor: '#000', alignItems: 'center' },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -359,31 +359,31 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#555',
         borderRadius: radius.md,
-        marginBottom: 16,
-        paddingHorizontal: 12,
+        marginBottom: spacing.lg,
+        paddingHorizontal: spacing.md,
         height: 50,
     },
-    inputIcon: { marginRight: 10 },
+    inputIcon: { marginRight: spacing.controlGap },
     input: { ...typography.body, flex: 1, color: '#fff' },
-    title: { ...typography.display, color: '#fff', marginBottom: 10 },
-    subtitle: { ...typography.body, color: '#888', marginBottom: 20 },
+    title: { ...typography.display, color: '#fff', marginBottom: spacing.controlGap },
+    subtitle: { ...typography.body, color: '#888', marginBottom: spacing.roomy },
     proxyToggle: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        marginBottom: 4,
+        paddingVertical: spacing.controlGap,
+        paddingHorizontal: spacing.md,
+        marginBottom: spacing.xs,
     },
     quickConnectToggle: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        marginTop: 8,
+        paddingVertical: spacing.controlGap,
+        paddingHorizontal: spacing.md,
+        marginTop: spacing.sm,
     },
-    proxyToggleIcon: { marginRight: 7 },
+    proxyToggleIcon: { marginRight: spacing.tight },
     proxyToggleText: { ...typography.rowSubtitle, flex: 1, color: '#666' },
-    proxySection: { marginTop: 4, marginBottom: 8 },
+    proxySection: { marginTop: spacing.xs, marginBottom: spacing.sm },
     warningRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
@@ -391,15 +391,15 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#78450a',
         borderRadius: radius.md,
-        padding: 10,
-        marginBottom: 14,
+        padding: spacing.controlGap,
+        marginBottom: spacing.md,
         gap: 8,
     },
     warningText: { ...typography.caption, flex: 1, color: '#f59e0b' },
     // Quick Connect panel
     quickConnectPanel: {
         alignItems: 'center',
-        paddingVertical: 24,
+        paddingVertical: spacing.xl,
         gap: 16,
     },
     quickConnectLabel: {
@@ -426,26 +426,26 @@ const styles = StyleSheet.create({
         ...typography.caption,
         color: '#555',
         textAlign: 'center',
-        paddingHorizontal: 12,
+        paddingHorizontal: spacing.md,
     },
     // Buttons
     nextButton: {
         backgroundColor: '#fff',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     nextButtonDisabled: { opacity: 0.6 },
     nextButtonText: { ...typography.sheetTitle, color: '#000' },
     backButton: {
         backgroundColor: '#333',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     backButtonText: { ...typography.sheetTitle, color: '#fff' },
 });

@@ -23,7 +23,7 @@ import {
   ALBUM_RECOMMENDATION_RELATED_LIMIT,
   ALBUM_RECOMMENDATION_TARGET_ALBUMS,
 } from '@/constants/album';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   artistName: string
@@ -107,15 +107,15 @@ export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: 
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 24,
-    paddingBottom: 8,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.sm,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   badge: {
     width: 20,

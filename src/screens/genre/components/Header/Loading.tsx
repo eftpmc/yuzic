@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing } from '@/constants/design';
 
 const LoadingGenreHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -37,19 +38,19 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   subtextGap: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
 });
 

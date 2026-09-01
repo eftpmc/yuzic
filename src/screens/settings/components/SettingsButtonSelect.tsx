@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export type ButtonSelectItem = {
   id: string;
@@ -70,22 +70,22 @@ export default SettingsButtonSelect;
 const styles = StyleSheet.create({
   caption: {
     ...typography.caption,
-    marginBottom: 6,
-    marginTop: 16,
-    marginLeft: 4,
+    marginBottom: spacing.tight,
+    marginTop: spacing.lg,
+    marginLeft: spacing.xs,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   title: {
     ...typography.rowTitle,
   },
   paddedRow: {
-    padding: 16,
+    padding: spacing.lg,
   },
   row: {
     flexDirection: 'row',

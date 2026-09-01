@@ -23,7 +23,7 @@ import {
   type DownloaderConfig,
 } from './useDownloaderConnection';
 import { useDownloaderQueue, type QueueDiff } from './useDownloaderQueue';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props<T extends { id: string }> = {
   id: DownloaderId;
@@ -152,24 +152,24 @@ export default DownloaderSettingsScreen;
 
 /** Shared by both screens' queue rows so the two lists stay visually identical. */
 export const downloaderQueueStyles = StyleSheet.create({
-  itemRow: { paddingVertical: 10, paddingHorizontal: 16, marginBottom: 4 },
+  itemRow: { paddingVertical: spacing.controlGap, paddingHorizontal: spacing.lg, marginBottom: spacing.xs },
   itemHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: spacing.tight,
   },
-  itemMain: { flex: 1, minWidth: 0, marginRight: 8 },
+  itemMain: { flex: 1, minWidth: 0, marginRight: spacing.sm },
   itemTitle: { ...typography.rowSubtitle, fontWeight: '500' },
-  itemSub: { ...typography.caption, marginTop: 2 },
+  itemSub: { ...typography.caption, marginTop: spacing.xxs },
   itemPct: { ...typography.caption },
   progressTrack: { height: 4, width: '100%', borderRadius: radius.pill, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: radius.xs },
-  warningContainer: { marginTop: 8, padding: 8, borderRadius: radius.sm },
-  warningMessage: { ...typography.caption, marginLeft: 8, marginTop: 2 },
+  warningContainer: { marginTop: spacing.sm, padding: spacing.sm, borderRadius: radius.sm },
+  warningMessage: { ...typography.caption, marginLeft: spacing.sm, marginTop: spacing.xxs },
 });
 
 const styles = StyleSheet.create({
-  queueLoading: { alignItems: 'center', paddingVertical: 20 },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center', marginVertical: 16 },
+  queueLoading: { alignItems: 'center', paddingVertical: spacing.roomy },
+  emptyText: { ...typography.rowSubtitle, textAlign: 'center', marginVertical: spacing.lg },
 });

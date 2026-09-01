@@ -22,7 +22,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { statusColor } from '@/constants/design';
+import { spacing, statusColor } from '@/constants/design';
 import Touchable from '@/components/Touchable';
 
 interface ExternalAlbumOptionsProps {
@@ -101,7 +101,7 @@ export default ExternalAlbumOptions;
 
 const styles = StyleSheet.create({
   moreButton: {
-    padding: 8,
+    padding: spacing.sm,
   },
-  chevron: { marginLeft: 4 },
+  chevron: { marginLeft: spacing.xs },
 });

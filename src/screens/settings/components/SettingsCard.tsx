@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 type Props = {
   children: React.ReactNode;
@@ -23,6 +23,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radius.card,
     overflow: 'hidden',
-    marginBottom: 18,
+    marginBottom: spacing.lg,
   },
 });

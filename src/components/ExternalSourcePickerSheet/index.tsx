@@ -15,7 +15,7 @@ import {
 } from '@/components/options/OptionSheetPrimitives'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -114,23 +114,23 @@ export default ExternalSourcePickerSheet
 
 const styles = StyleSheet.create({
   loading: {
-    paddingVertical: 32,
+    paddingVertical: spacing.xxl,
     alignItems: 'center',
   },
   empty: {
     ...typography.body,
     textAlign: 'center',
-    paddingVertical: 24,
+    paddingVertical: spacing.xl,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.controlGap,
   },
   cover: {
     width: COVER_SIZE,
     height: COVER_SIZE,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   optionText: {
     flex: 1,
@@ -140,6 +140,6 @@ const styles = StyleSheet.create({
   },
   artist: {
     ...typography.rowSubtitle,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 })

@@ -10,6 +10,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 
 import TabHeader from '@/components/TabHeader'
 import LibraryEntryRows from '@/screens/library/LibraryEntryRows'
+import { spacing } from '@/constants/design'
 
 /**
  * The library index: one entry point per way of browsing the collection.
@@ -54,5 +55,5 @@ export default function LibraryScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { paddingBottom: 180 },
+  content: { paddingBottom: spacing.scrollClearance },
 })

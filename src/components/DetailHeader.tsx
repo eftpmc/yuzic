@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.page,
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     width: '100%',
   },
   headerTitleWrapper: {
@@ -263,15 +263,15 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   headerButton: {
-    padding: 6,
+    padding: spacing.tight,
     width: controlSize.iconCompact,
   },
   coverWrapper: {
     width: 280,
     height: 280,
     borderRadius: radius.lg,
-    marginTop: 32,
-    marginBottom: 24,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.xl,
     overflow: 'hidden',
   },
   coverImage: {
@@ -281,12 +281,12 @@ const styles = StyleSheet.create({
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 20,
+    marginBottom: spacing.roomy,
     alignItems: 'center',
   },
   title: {
     ...typography.detailTitle,
-    marginBottom: 6,
+    marginBottom: spacing.tight,
     textAlign: 'center',
   },
   subtext: {
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   metaDot: {
     ...typography.rowSubtitle,
-    marginHorizontal: 6,
+    marginHorizontal: spacing.tight,
   },
   metaRow: {
     flexDirection: 'row',
@@ -303,12 +303,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexWrap: 'nowrap',
     maxWidth: '94%',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   actionsRow: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   actions: {
     flexDirection: 'row',

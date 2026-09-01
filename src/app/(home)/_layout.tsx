@@ -19,7 +19,7 @@ import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachab
 import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -201,12 +201,12 @@ const styles = StyleSheet.create({
     },
     tabRow: {
         flexDirection: 'row',
-        paddingTop: 12,
+        paddingTop: spacing.md,
     },
     tab: {
         flex: 1,
         alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: spacing.sm,
         justifyContent: 'center',
     },
     activeIndicator: {

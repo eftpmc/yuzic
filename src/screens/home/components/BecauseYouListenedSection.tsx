@@ -26,7 +26,7 @@ import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types';
 import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
 import Touchable from '@/components/Touchable';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -186,15 +186,15 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
     gap: 5,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
     marginRight: H_PADDING,
   },
@@ -204,11 +204,11 @@ const styles = StyleSheet.create({
   artistName: {
     ...typography.sectionTitle,
     borderBottomWidth: 1.5,
-    paddingBottom: 1,
+    paddingBottom: spacing.xxs,
   },
   emptyState: {
     paddingHorizontal: H_PADDING,
-    paddingVertical: 24,
+    paddingVertical: spacing.xl,
   },
   emptyText: {
     ...typography.rowSubtitle,

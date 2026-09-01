@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export const ESTIMATED_ROW_HEIGHT = 108;
 
@@ -8,17 +8,17 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   summaryCard: {
-    margin: 16,
-    marginBottom: 10,
+    margin: spacing.lg,
+    marginBottom: spacing.controlGap,
     borderRadius: radius.md,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: spacing.tight,
   },
   summaryLabel: {
     ...typography.rowSubtitle,
@@ -31,9 +31,9 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
-    marginBottom: 8,
-    paddingHorizontal: 2,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.xxs,
   },
   providerHeaderText: {
     ...typography.navigationTitle,
@@ -46,21 +46,21 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.scrollClearance,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.scrollClearance,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radius.md,
-    padding: 12,
-    marginBottom: 10,
+    padding: spacing.md,
+    marginBottom: spacing.controlGap,
   },
   cover: {
     width: 44,
@@ -70,12 +70,12 @@ export const styles = StyleSheet.create({
   },
   coverCell: {
     width: 44,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   trackCell: {
     flex: 1,
     minWidth: 0,
-    paddingRight: 8,
+    paddingRight: spacing.sm,
   },
   titleLine: {
     flexDirection: 'row',
@@ -92,12 +92,12 @@ export const styles = StyleSheet.create({
   metaLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
     minWidth: 0,
   },
   metaDot: {
     ...typography.caption,
-    marginHorizontal: 5,
+    marginHorizontal: spacing.tight,
   },
   downloadedDate: {
     flexShrink: 1,
@@ -119,7 +119,7 @@ export const styles = StyleSheet.create({
   },
   emptyText: {
     ...typography.caption,
-    paddingTop: 20,
+    paddingTop: spacing.roomy,
     textAlign: 'center',
   },
 });

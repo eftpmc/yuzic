@@ -11,6 +11,7 @@ import NotFoundView from '@/components/NotFoundView'
 import StatusBanner from '@/components/StatusBanner'
 import GenreContent from './components/Content'
 import LoadingGenreContent from './components/Content/Loading'
+import { spacing } from '@/constants/design'
 
 const GenreScreen: React.FC = () => {
   const route = useRoute<any>()
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   degradedBanner: {
-    marginHorizontal: 16,
-    marginTop: 8,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
 })

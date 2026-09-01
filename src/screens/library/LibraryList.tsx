@@ -164,7 +164,7 @@ const LibraryList: React.FC<Props> = ({
 export default LibraryList
 
 const styles = StyleSheet.create({
-  list: { paddingTop: 0, paddingBottom: 180 },
+  list: { paddingTop: 0, paddingBottom: spacing.scrollClearance },
   sortRow: {
     flexDirection: 'row',
     alignItems: 'center',

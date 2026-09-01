@@ -23,7 +23,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export default function Servers() {
     const { t } = useTranslation();
@@ -139,8 +139,8 @@ export default function Servers() {
                         </Text>
                     }
                     contentContainerStyle={{
-                        paddingTop: 20,
-                        paddingBottom: 20,
+                        paddingTop: spacing.roomy,
+                        paddingBottom: spacing.roomy,
                     }}
                 />
             </View>
@@ -163,17 +163,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
-        paddingHorizontal: 20,
+        paddingHorizontal: spacing.roomy,
         justifyContent: 'space-between',
     },
     content: {
         flex: 1,
-        paddingTop: 30,
+        paddingTop: spacing.xxl,
     },
     title: {
         ...typography.display,
         color: '#fff',
-        marginBottom: 8,
+        marginBottom: spacing.sm,
     },
     subtitle: {
         ...typography.body,
@@ -186,22 +186,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         backgroundColor: '#111',
         borderRadius: radius.card,
-        paddingHorizontal: 14,
-        paddingVertical: 14,
-        marginBottom: 10,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.md,
+        marginBottom: spacing.controlGap,
     },
 
     serverInfo: {
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
-        paddingRight: 12,
+        paddingRight: spacing.md,
     },
 
     serverIcon: {
         width: 36,
         height: 36,
-        marginRight: 12,
+        marginRight: spacing.md,
     },
 
     textContainer: {
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     serverName: {
         ...typography.body,
         color: '#fff',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
 
     subRow: {
@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
 
     activeBadge: {
         backgroundColor: '#1f6feb',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: spacing.xxs,
         borderRadius: radius.pill,
     },
 
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     },
 
     menuButton: {
-        padding: 6,
+        padding: spacing.tight,
         borderRadius: radius.md,
     },
 
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
         ...typography.rowSubtitle,
         textAlign: 'center',
         color: '#777',
-        marginTop: 40,
+        marginTop: spacing.xxxl,
     },
 
     bottomContent: {
@@ -256,11 +256,11 @@ const styles = StyleSheet.create({
 
     addButton: {
         backgroundColor: '#fff',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
 
     addButtonText: {

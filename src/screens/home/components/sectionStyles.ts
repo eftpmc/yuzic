@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native'
-import { typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
 
 export const SECTION_H_PADDING = 12
 export const SECTION_GAP = 12
@@ -12,12 +12,12 @@ export function getSectionItemWidth(screenWidth: number): number {
 
 export const sectionStyles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
     ...typography.sectionTitle,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: SECTION_H_PADDING,
   },
   scrollContent: {

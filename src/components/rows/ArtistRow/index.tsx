@@ -11,6 +11,7 @@ import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { spacing } from '@/constants/design';
 
 type Props = {
   artist: Artist;
@@ -63,6 +64,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
 });

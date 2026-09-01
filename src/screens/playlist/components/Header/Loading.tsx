@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 const LoadingPlaylistHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -114,8 +114,8 @@ const LoadingPlaylistHeader: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 60,
-    paddingHorizontal: 16,
+    paddingTop: spacing.headerOffset,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
   },
   headerRow: {
@@ -127,32 +127,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
   coverWrapper: {
     width: 280,
     height: 280,
     borderRadius: radius.lg,
-    marginTop: 32,
-    marginBottom: 24,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.xl,
     overflow: 'hidden',
   },
   titleInfo: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: spacing.md,
     alignItems: 'center',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
     gap: 8,
   },
   actionsRow: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   actions: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -38,11 +38,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     gap: 16,
   },
   left: { flex: 1 },
   label: { ...typography.rowTitle },
-  subtext: { ...typography.caption, marginTop: 2 },
+  subtext: { ...typography.caption, marginTop: spacing.xxs },
 });

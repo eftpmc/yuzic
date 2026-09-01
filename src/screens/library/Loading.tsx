@@ -40,7 +40,7 @@ const LoadingLibraryList: React.FC = () => {
     <ScrollView
       scrollEnabled={false}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: 140 }}
+      contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.scrollClearance }}
     >
       {isGridView ? (
         <View style={{ paddingHorizontal: gutter }}>

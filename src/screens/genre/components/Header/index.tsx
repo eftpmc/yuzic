@@ -28,7 +28,7 @@ import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar,
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   genre: string
@@ -266,19 +266,19 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     zIndex: 20,
   },
   backButton: {
-    padding: 6,
+    padding: spacing.tight,
     borderRadius: radius.pill,
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
   content: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   genreName: {
     ...typography.display,
@@ -286,10 +286,10 @@ const styles = StyleSheet.create({
   },
   subtext: {
     ...typography.rowSubtitle,
-    marginTop: 6,
+    marginTop: spacing.tight,
   },
   buttonRow: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   secondaryButton: {
     backgroundColor: 'rgba(0,0,0,0.05)',

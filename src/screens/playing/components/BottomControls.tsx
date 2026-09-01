@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Cast, ListMusic } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 type BottomControlsProps = {
   mode: 'player' | 'queue';
@@ -43,10 +43,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   leftButton: {
-    padding: 6,
+    padding: spacing.tight,
   },
   rightButton: {
-    padding: 6,
+    padding: spacing.tight,
     borderRadius: radius.md,
   },
   activeButton: {

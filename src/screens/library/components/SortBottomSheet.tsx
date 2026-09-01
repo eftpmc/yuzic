@@ -10,7 +10,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
@@ -77,7 +77,7 @@ const SortBottomSheet = forwardRef<
                 <option.Icon
                   size={18}
                   color={isSelected ? themeColor : colors.subtext}
-                  style={{ marginRight: 10 }}
+                  style={{ marginRight: spacing.controlGap }}
                 />
                 <Text
                   style={[styles.pickerText, { color: colors.secondary, fontWeight: isSelected ? '600' : '400' }]}
@@ -103,20 +103,20 @@ export default SortBottomSheet;
 
 const styles = StyleSheet.create({
   sheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
   },
   sheetTitle: {
     ...typography.sheetTitle,
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   pickerItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     borderRadius: radius.md,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   pickerLeft: {
     flexDirection: 'row',

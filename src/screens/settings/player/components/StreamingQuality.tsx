@@ -7,7 +7,7 @@ import { setWifiStreamQuality, setCellularStreamQuality, AudioQuality } from '@/
 import SettingsSelectCard from '../../components/SettingsSelectCard';
 import { useTheme } from '@/hooks/useTheme';
 import { DOWNLOAD_QUALITY_OPTIONS } from '@/constants/settings';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 const StreamingQuality: React.FC = () => {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ export default StreamingQuality;
 const styles = StyleSheet.create({
   caption: {
     ...typography.caption,
-    marginTop: 8,
-    marginHorizontal: 4,
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.xs,
   },
 });

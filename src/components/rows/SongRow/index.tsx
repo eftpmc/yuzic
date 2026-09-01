@@ -102,7 +102,7 @@ const SongRow: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   mediaRowAlbumCompact: {
-    paddingVertical: 13,
+    paddingVertical: spacing.md,
   },
   rowRight: {
     flexDirection: 'row',

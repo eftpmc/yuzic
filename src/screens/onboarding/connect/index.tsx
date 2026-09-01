@@ -17,7 +17,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -106,7 +106,7 @@ export default function Connect() {
                             >
                                 <Image
                                     source={provider.icon}
-                                    style={{ width: 36, height: 36, marginBottom: 6 }}
+                                    style={{ width: 36, height: 36, marginBottom: spacing.tight }}
                                     contentFit="contain"
                                     cachePolicy="memory-disk"
                                 />
@@ -177,33 +177,33 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingHorizontal: 20,
-        paddingTop: 40,
-        paddingBottom: 20,
+        paddingHorizontal: spacing.roomy,
+        paddingTop: spacing.xxxl,
+        paddingBottom: spacing.roomy,
     },
     title: {
         ...typography.display,
         color: '#fff',
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     subtitle: {
         ...typography.body,
         color: '#888',
-        marginBottom: 20,
+        marginBottom: spacing.roomy,
     },
     description: {
         color: '#aaa',
-        marginBottom: 20,
-        marginTop: 8,
+        marginBottom: spacing.roomy,
+        marginTop: spacing.sm,
     },
     serverTypeContainer: {
         flexDirection: 'row',
         gap: 12,
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     serverTypeButton: {
         flex: 1,
-        paddingVertical: 14,
+        paddingVertical: spacing.md,
         borderRadius: radius.card,
         borderWidth: 1,
         borderColor: '#555',
@@ -218,23 +218,23 @@ const styles = StyleSheet.create({
     serverTypeText: {
         ...typography.label,
         color: '#fff',
-        marginTop: 6,
+        marginTop: spacing.tight,
     },
     serverTypeTextSelected: {
         color: '#000',
     },
     buttonContainer: {
-        padding: 20,
+        padding: spacing.roomy,
         backgroundColor: '#000',
         alignItems: 'center',
     },
     nextButton: {
         backgroundColor: '#fff',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     buttonDisabled: {
         opacity: 0.6,
@@ -245,11 +245,11 @@ const styles = StyleSheet.create({
     },
     demoButton: {
         backgroundColor: '#333',
-        paddingVertical: 15,
+        paddingVertical: spacing.lg,
         borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     demoButtonText: {
         ...typography.sheetTitle,

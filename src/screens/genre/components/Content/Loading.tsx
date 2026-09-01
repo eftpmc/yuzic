@@ -3,6 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 
 import LoadingGenreHeader from '../Header/Loading';
 import SkeletonListRow from '@/components/SkeletonListRow';
+import { spacing } from '@/constants/design';
 
 const PLACEHOLDER_ROWS = 6;
 
@@ -17,7 +18,7 @@ const LoadingGenreContent: React.FC = () => {
       renderItem={({ index }) => <SkeletonListRow key={index} />}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom: 140,
+        paddingBottom: spacing.scrollClearance,
       }}
     />
   );

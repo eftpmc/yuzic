@@ -17,7 +17,7 @@ import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
-import { radius, typography } from '@/constants/design'
+import { radius, spacing, typography } from '@/constants/design'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
@@ -94,7 +94,7 @@ export default function Home() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingBottom: 180 }]}
+      contentContainerStyle={[styles.content, { paddingBottom: spacing.scrollClearance }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -142,15 +142,15 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: {
-    paddingTop: 12,
+    paddingTop: spacing.md,
   },
   sourceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 4,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.roomy,
+    paddingBottom: spacing.xs,
   },
   sourceBadge: {
     width: 20,

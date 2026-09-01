@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { radius } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 const LoadingAlbumHeader: React.FC = () => {
     const { isDarkMode } = useTheme();
@@ -104,8 +104,8 @@ const LoadingAlbumHeader: React.FC = () => {
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 60,
-        paddingHorizontal: 16,
+        paddingTop: spacing.headerOffset,
+        paddingHorizontal: spacing.lg,
         alignItems: 'center',
     },
     headerRow: {
@@ -117,20 +117,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 16,
+        paddingHorizontal: spacing.lg,
     },
     coverWrapper: {
         width: 280,
         height: 280,
         borderRadius: radius.lg,
-        marginTop: 32,
-        marginBottom: 24,
+        marginTop: spacing.xxl,
+        marginBottom: spacing.xl,
         overflow: 'hidden',
     },
     titleInfo: {
         width: '100%',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     artistRow: {
         flexDirection: 'row',
@@ -140,12 +140,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 6,
+        marginTop: spacing.tight,
     },
     actionsRow: {
         width: '100%',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     actions: {
         flexDirection: 'row',

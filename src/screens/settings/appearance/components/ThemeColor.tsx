@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
@@ -75,17 +75,17 @@ export const ThemeColor: React.FC = () => {
 const styles = StyleSheet.create({
   caption: {
     ...typography.caption,
-    marginBottom: 6,
-    marginTop: 16,
-    marginLeft: 4,
+    marginBottom: spacing.tight,
+    marginTop: spacing.lg,
+    marginLeft: spacing.xs,
   },
   card: {
-    padding: 16,
+    padding: spacing.lg,
   },
   presets: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   preset: {
     flex: 1,
@@ -104,8 +104,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.md,
     borderWidth: 1,
   },
@@ -117,12 +117,12 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: radius.xs,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   expandText: {
     ...typography.compactRowTitle,
   },
   picker: {
-    paddingTop: 16,
+    paddingTop: spacing.lg,
   },
 });

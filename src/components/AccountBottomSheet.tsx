@@ -15,7 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { radius, typography } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   onDismiss?: () => void;
@@ -138,14 +138,14 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
   },
   container: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   avatar: {
     width: 44,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   username: {
     ...typography.sheetTitle,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   serverMeta: {
     flexDirection: 'row',
@@ -172,8 +172,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   typeBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: spacing.tight,
+    paddingVertical: spacing.xxs,
     borderRadius: radius.xs,
   },
   typeBadgeText: {
@@ -187,14 +187,14 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 13,
-    paddingHorizontal: 4,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   rowText: {
     ...typography.compactRowTitle,

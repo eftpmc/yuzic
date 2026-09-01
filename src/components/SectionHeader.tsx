@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.page,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     gap: spacing.inlineGap,
   },
   title: {

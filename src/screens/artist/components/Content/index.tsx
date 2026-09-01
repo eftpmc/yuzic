@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { radius, statusColor, typography } from '@/constants/design'
+import { radius, spacing, statusColor, typography } from '@/constants/design'
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -455,26 +455,26 @@ function BioSectionResolver({ localArtist, externalArtist }: {
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    paddingTop: 18,
-    paddingBottom: 10,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.controlGap,
   },
   sectionTitle: {
     ...typography.navigationTitle,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
   sectionTitleNopad: {
     paddingHorizontal: 0,
   },
   similarSection: {
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: spacing.roomy,
+    paddingBottom: spacing.controlGap,
   },
   similarTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.controlGap,
   },
   sourceBadge: {
     width: 20,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   similarListContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
   similarGap: {
     width: 12,
@@ -497,15 +497,15 @@ const styles = StyleSheet.create({
   showMoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 4,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.xs,
   },
   showMoreIcon: {
     width: 64,
     height: 64,
     borderRadius: radius.sm,
-    marginRight: 12,
+    marginRight: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
   },

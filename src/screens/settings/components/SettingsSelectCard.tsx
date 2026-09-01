@@ -5,7 +5,7 @@ import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
 import SettingsRow from './SettingsRow';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 
 export type SelectItem = { key: string; label: string };
 
@@ -65,12 +65,12 @@ export default SettingsSelectCard;
 const styles = StyleSheet.create({
   title: {
     ...typography.caption,
-    marginBottom: 6,
-    marginTop: 16,
-    marginLeft: 4,
+    marginBottom: spacing.tight,
+    marginTop: spacing.lg,
+    marginLeft: spacing.xs,
   },
   loader: {
-    paddingVertical: 20,
+    paddingVertical: spacing.roomy,
     alignItems: 'center',
   },
 });
