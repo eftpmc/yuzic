@@ -1,8 +1,12 @@
 import { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNetInfo } from '@react-native-community/netinfo';
 import { Song } from '@/types';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
+import {
+  buildScrobbleMutation,
+  type ScrobbleDestination,
+} from '@/utils/offline/offlineMutations';
+import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
 import * as lastfm from '@/api/lastfm';
 import * as navidromeScrobble from '@/api/navidrome/scrobble';
@@ -42,15 +46,36 @@ export function useScrobbling() {
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
 
-  const netInfo = useNetInfo();
-  const isOfflineRef = useRef(false);
-  isOfflineRef.current = netInfo.isConnected === false || netInfo.isInternetReachable === false;
-
   const lastScrobbledIdRef = useRef<string | null>(null);
 
   const resetLastScrobbled = useCallback(() => {
     lastScrobbledIdRef.current = null;
   }, []);
+
+  /**
+   * Parks a failed scrobble in the offline queue instead of dropping it. Each
+   * destination is queued on its own, so a Last.fm outage never re-submits to
+   * ListenBrainz, which already accepted the play.
+   */
+  const queueScrobble = useCallback((
+    destination: ScrobbleDestination,
+    song: Song,
+    startTime: number,
+    durationSeconds: number,
+    listenedSeconds: number
+  ) => {
+    if (!activeServer?.id) return;
+    dispatch(enqueueOfflineMutationAction(buildScrobbleMutation({
+      serverId: activeServer.id,
+      destination,
+      songId: song.id,
+      artist: song.artist,
+      track: song.title,
+      startedAt: startTime,
+      durationSeconds,
+      listenedSeconds,
+    })));
+  }, [activeServer, dispatch]);
 
   const scrobbleIfNeeded = useCallback(async (
     song: Song | null,
@@ -86,8 +111,8 @@ export function useScrobbling() {
               song.id,
               opts.startTime
             );
-          } catch (err) {
-            console.warn('Navidrome scrobble failed', err);
+          } catch {
+            queueScrobble('server', song, opts.startTime, songDuration, opts.listenedSeconds);
           }
         }
       }
@@ -95,7 +120,7 @@ export function useScrobbling() {
       try {
         await api.songs.scrobble(song.id, opts.startTime);
       } catch {
-        // best-effort
+        queueScrobble('server', song, opts.startTime, songDuration, opts.listenedSeconds);
       }
     }
 
@@ -108,8 +133,8 @@ export function useScrobbling() {
           durationSeconds: songDuration > 0 ? songDuration : undefined,
           durationPlayedSeconds: opts.listenedSeconds,
         });
-      } catch (err) {
-        console.warn('ListenBrainz scrobble failed', err);
+      } catch {
+        queueScrobble('listenbrainz', song, opts.startTime, songDuration, opts.listenedSeconds);
       }
     }
 
@@ -121,11 +146,11 @@ export function useScrobbling() {
           timestamp: Math.floor(opts.startTime / 1000),
           duration: songDuration > 0 ? songDuration : undefined,
         });
-      } catch (err) {
-        console.warn('LastFM scrobble failed', err);
+      } catch {
+        queueScrobble('lastfm', song, opts.startTime, songDuration, opts.listenedSeconds);
       }
     }
-  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, lastFmConfig, lastFmScrobbleEnabled, dispatch, api]);
+  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, lastFmConfig, lastFmScrobbleEnabled, dispatch, api, queueScrobble]);
 
   const submitNowPlaying = useCallback((song: Song) => {
     const songDuration = Number(song.duration) || undefined;
