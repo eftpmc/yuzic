@@ -491,7 +491,8 @@
       "browse": "Parcourir par genre"
     },
     "collection": {
-      "empty": "Rien ici pour l'instant."
+      "empty": "Rien ici pour l'instant.",
+      "playFailed": "Impossible de lancer la lecture."
     }
   },
   "home": {

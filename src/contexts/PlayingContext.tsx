@@ -19,7 +19,7 @@ import TrackPlayer, {
   useProgress,
 } from '@rntp/player';
 
-import { Album, Playlist, Song } from '@/types';
+import { Album, Playlist, Song, SongBase } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
 import { useApi } from '@/api';
 import { buildTrackItem } from '@/utils/builders/buildTrackItem';
@@ -56,6 +56,7 @@ import {
   playableSongsOnly,
 } from './playableMedia';
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
+import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
 
 
@@ -95,6 +96,12 @@ export interface PlayingActionsType {
     selectedSong: Song,
     collection: Album | Playlist,
     shuffle?: boolean
+  ): Promise<void>;
+  /** Plays an arbitrary list of songs — a library screen, a genre, a filter —
+   * rather than an album or playlist. */
+  playSongs(
+    songs: (Song | SongBase)[],
+    options?: { startIndex?: number; shuffle?: boolean; contextId?: string }
   ): Promise<void>;
   addCollectionToQueue(collection: Album | Playlist): void;
   shuffleCollectionToQueue(collection: Album | Playlist): void;
@@ -567,6 +574,50 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     await loadQueue([playableSong], 0);
   }, [bumpQueue, loadQueue, resolvePlayableSong]);
 
+  const playSongs = useCallback(async (
+    input: (Song | SongBase)[],
+    options: { startIndex?: number; shuffle?: boolean; contextId?: string } = {}
+  ) => {
+    // Library rows carry no stream URL — resolvePlayableSong derives one from
+    // the id, so this needs no per-track network call.
+    let songs = playableSongsOnly(
+      (input as Song[]).map(resolvePlayableSongRef.current)
+    );
+    if (!songs.length) throw new Error('No playable tracks in selection');
+
+    let index = clampStartIndex(songs.length, options.startIndex);
+
+    if (options.shuffle) {
+      // Shuffle the whole list before trimming, so the cap bounds the queue
+      // without bounding what the shuffle can draw from.
+      originalQueueRef.current = songs;
+      songs = shuffleArray(songs);
+      index = 0;
+      setShuffleMode('shuffle');
+    } else {
+      originalQueueRef.current = null;
+      setShuffleMode('off');
+    }
+
+    const trimmed = trimQueueAroundIndex(songs, index);
+    songs = trimmed.songs;
+    index = trimmed.index;
+
+    const contextId = options.contextId ?? `adhoc-${Date.now()}`;
+    queueRef.current = songs;
+    queueSegmentsRef.current = [{
+      startIndex: 0,
+      length: songs.length,
+      source: { kind: 'user', contextId, contextType: 'adhoc' },
+    }];
+    currentIndexRef.current = index;
+    setCurrentIndex(index);
+    currentSongRef.current = songs[index];
+    setCurrentSong(songs[index]);
+    bumpQueue();
+    await loadQueue(songs, index);
+  }, [bumpQueue, loadQueue]);
+
   const playSongInCollection = useCallback(async (
     selectedSong: Song,
     collection: Album | Playlist,
@@ -906,6 +957,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     seekSong,
     playSong,
     playSongInCollection,
+    playSongs,
     addCollectionToQueue,
     shuffleCollectionToQueue,
     skipTo,
@@ -926,6 +978,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     seekSong,
     playSong,
     playSongInCollection,
+    playSongs,
     addCollectionToQueue,
     shuffleCollectionToQueue,
     skipTo,

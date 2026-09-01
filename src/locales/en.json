@@ -461,7 +461,8 @@
       "browse": "Browse by genre"
     },
     "collection": {
-      "empty": "Nothing here yet."
+      "empty": "Nothing here yet.",
+      "playFailed": "Couldn't start playback."
     }
   },
   "home": {

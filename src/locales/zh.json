@@ -490,7 +490,8 @@
       "browse": "按流派浏览"
     },
     "collection": {
-      "empty": "这里还没有内容。"
+      "empty": "这里还没有内容。",
+      "playFailed": "无法开始播放。"
     }
   },
   "home": {
