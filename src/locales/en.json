@@ -452,7 +452,14 @@
     }
   },
   "library": {
-    "title": "Library"
+    "title": "Library",
+    "genres": {
+      "title": "Genres",
+      "albumCount_one": "{{count}} album",
+      "albumCount_other": "{{count}} albums",
+      "empty": "No genres in your library yet.",
+      "browse": "Browse by genre"
+    }
   },
   "home": {
     "title": "Home",

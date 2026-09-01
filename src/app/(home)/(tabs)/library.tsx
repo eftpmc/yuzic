@@ -12,7 +12,8 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
+import { ChevronRight, ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
 
 import { useAlbums } from '@/hooks/albums'
 import { useArtists } from '@/hooks/artists'
@@ -230,6 +231,7 @@ export default function LibraryScreen() {
     userplays:     t('home.sort.mostPlayed'),
   }), [t])
 
+  const navigation = useNavigation<any>()
   const activeTextColor = colors.background
 
   const renderItem = useCallback(({ item }: { item: LibraryItem }) => {
@@ -331,25 +333,41 @@ export default function LibraryScreen() {
         numColumns={isGridView ? gridColumns : 1}
         getItemType={item => item.kind}
         ListHeaderComponent={
-          <View style={[styles.sortRow, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>
+          <View>
+            {/* Genres are the one library entity with no filter pill of their
+                own — browsing them needs a screen of its own. */}
             <TouchableOpacity
-              style={styles.sortButton}
-              onPress={() => sortSheetRef.current?.present()}
+              testID="library-browse-genres"
+              accessibilityRole="button"
+              style={[styles.browseRow, { borderBottomColor: colors.border }]}
+              onPress={() => navigation.push('genresView')}
             >
-              <ArrowUpDown size={17} color={colors.secondary} />
-              <Text style={[styles.sortLabel, { color: colors.secondary }]}>
-                {SORT_LABELS[sortOrder]}
+              <Text style={[styles.browseLabel, { color: colors.secondary }]}>
+                {t('library.genres.browse')}
               </Text>
+              <ChevronRight size={18} color={colors.subtext} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.gridButton}
-              onPress={() => gridSheetRef.current?.present()}
-            >
-              {isGridView
-                ? <List size={17} color={colors.secondary} />
-                : <Grid2x2 size={17} color={colors.secondary} />
-              }
-            </TouchableOpacity>
+
+            <View style={[styles.sortRow, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>
+              <TouchableOpacity
+                style={styles.sortButton}
+                onPress={() => sortSheetRef.current?.present()}
+              >
+                <ArrowUpDown size={17} color={colors.secondary} />
+                <Text style={[styles.sortLabel, { color: colors.secondary }]}>
+                  {SORT_LABELS[sortOrder]}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.gridButton}
+                onPress={() => gridSheetRef.current?.present()}
+              >
+                {isGridView
+                  ? <List size={17} color={colors.secondary} />
+                  : <Grid2x2 size={17} color={colors.secondary} />
+                }
+              </TouchableOpacity>
+            </View>
           </View>
         }
         contentContainerStyle={[
@@ -373,6 +391,15 @@ export default function LibraryScreen() {
 }
 
 const styles = StyleSheet.create({
+  browseRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  browseLabel: { fontSize: 15, fontWeight: '500' },
   container: {
     flex: 1,
   },

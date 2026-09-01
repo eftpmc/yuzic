@@ -481,6 +481,13 @@
       "all": "すべてシャッフル",
       "favorites": "お気に入りをシャッフル",
       "downloaded": "ダウンロード済みをシャッフル"
+    },
+    "genres": {
+      "title": "ジャンル",
+      "albumCount_one": "{{count}} 枚のアルバム",
+      "albumCount_other": "{{count}} 枚のアルバム",
+      "empty": "ライブラリにジャンルがありません。",
+      "browse": "ジャンルから探す"
     }
   },
   "home": {

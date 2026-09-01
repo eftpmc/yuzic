@@ -482,6 +482,13 @@
       "all": "Tout mélanger",
       "favorites": "Mélanger les favoris",
       "downloaded": "Mélanger les téléchargements"
+    },
+    "genres": {
+      "title": "Genres",
+      "albumCount_one": "{{count}} album",
+      "albumCount_other": "{{count}} albums",
+      "empty": "Aucun genre dans votre bibliothèque.",
+      "browse": "Parcourir par genre"
     }
   },
   "home": {
