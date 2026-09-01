@@ -588,7 +588,8 @@
       "searchArtists": "搜索艺术家…",
       "searchGenres": "搜索流派…",
       "genrePrefix": "更多",
-      "topArtists": "热门艺术家"
+      "topArtists": "热门艺术家",
+      "fromYourLibrary": "来自你的音乐库"
     },
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",

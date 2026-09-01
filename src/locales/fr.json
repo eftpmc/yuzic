@@ -589,7 +589,8 @@
       "searchArtists": "Rechercher des artistes…",
       "searchGenres": "Rechercher des genres…",
       "genrePrefix": "Plus",
-      "topArtists": "Meilleurs artistes"
+      "topArtists": "Meilleurs artistes",
+      "fromYourLibrary": "Dans votre bibliothèque"
     },
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",

@@ -588,7 +588,8 @@
       "searchArtists": "アーティストを検索…",
       "searchGenres": "ジャンルを検索…",
       "genrePrefix": "その他",
-      "topArtists": "人気アーティスト"
+      "topArtists": "人気アーティスト",
+      "fromYourLibrary": "ライブラリから"
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",

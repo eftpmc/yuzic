@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useIsFetching } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
@@ -21,6 +22,8 @@ import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
+    case 'quickPicks':
+      return <QuickPicksSection key={config.key} refreshKey={refreshKey} />
     case 'recentlyPlayed':
       return <RecentlyPlayed key={config.key} />
     case 'recentlyAdded':
@@ -45,9 +48,10 @@ function renderSection(config: SectionConfig, refreshKey: number) {
 }
 
 export default function Home() {
+  const { t } = useTranslation()
   const { colors } = useTheme()
   const [refreshKey, setRefreshKey] = useState(0)
-  const { local, deezer } = useDailyLayout(refreshKey)
+  const { resume, library, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -105,8 +109,18 @@ export default function Home() {
         />
       }
     >
-      <QuickPicksSection refreshKey={refreshKey} />
-      {local.map(config => renderSection(config, refreshKey))}
+      {resume.map(config => renderSection(config, refreshKey))}
+
+      {library.length > 0 && (
+        <>
+          <View style={styles.sourceHeader}>
+            <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
+              {t('explore.sections.fromYourLibrary')}
+            </Text>
+          </View>
+          {library.map(config => renderSection(config, refreshKey))}
+        </>
+      )}
 
       {activeSources.map(source => {
         if (!source.enabled || source.sections.length === 0) return null
