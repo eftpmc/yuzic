@@ -498,7 +498,6 @@
   "home": {
     "title": "Accueil",
     "filters": {
-      "all": "Tout",
       "albums": "Albums",
       "artists": "Artistes",
       "playlists": "Listes de lecture",

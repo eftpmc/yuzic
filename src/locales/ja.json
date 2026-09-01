@@ -497,7 +497,6 @@
   "home": {
     "title": "ホーム",
     "filters": {
-      "all": "すべて",
       "albums": "アルバム",
       "artists": "アーティスト",
       "playlists": "プレイリスト",

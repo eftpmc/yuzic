@@ -468,7 +468,6 @@
   "home": {
     "title": "Home",
     "filters": {
-      "all": "All",
       "albums": "Albums",
       "artists": "Artists",
       "playlists": "Playlists",

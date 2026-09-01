@@ -60,9 +60,10 @@ placeholders there — that's the server, not the app.
 - App launches without crashing.
 - First-run onboarding connects via the Navidrome demo (`onboarding-demo.yaml`).
 - Authenticated shell can move between Home, Library, and Search.
-- Library filters to albums/artists/playlists/tracks; album, artist, and
-  playlist detail screens open and navigate back (playlist step is skipped
-  when the server has no playlists).
+- The library index opens a screen per entity type (albums/artists/playlists/
+  tracks); album, artist, and playlist detail screens open from there and
+  navigate back through the collection screen to the index (the playlist step
+  is skipped when the server has no playlists).
 - Long-pressing a track opens the song options sheet.
 - Tapping a track starts playback, the player bar appears, the full player
   opens from it, the queue view toggles in and out, and the close button
@@ -71,6 +72,12 @@ placeholders there — that's the server, not the app.
 
 The suite intentionally avoids assumptions about specific song titles or
 server fixtures.
+
+`testIds.test.ts` runs with the unit tests and checks that every element the
+flows reach for still exists in the source. It cannot tell whether a flow
+passes — only that a renamed testID hasn't silently broken one, which is the
+failure that actually happens given nothing runs Maestro in CI. It reads
+untracked files too, so a screen added but not yet committed still counts.
 
 Gotcha for future sheet-based flows: @gorhom/bottom-sheet defaults
 `accessible=true` on its container, which collapses everything inside into

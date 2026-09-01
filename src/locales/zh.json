@@ -497,7 +497,6 @@
   "home": {
     "title": "首页",
     "filters": {
-      "all": "全部",
       "albums": "专辑",
       "artists": "歌手",
       "playlists": "播放列表",

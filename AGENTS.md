@@ -30,3 +30,25 @@ If you ever need to raise these offset constants (e.g. because a manual/local Fa
 
 - Audio playback goes through `@rntp/player` (the npm-scoped continuation of `react-native-track-player`, now under a commercial license as of v5 — see `node_modules/@rntp/player/package.json`). Keep it reasonably current; v5.0.0 → v5.6.0 fixed real bugs (notably `file://` local-playback support added in 5.2.0).
 - `src/contexts/PlayingContext.tsx` is the central playback state/controls context — most player-related work touches this file.
+
+## UI conventions
+
+These were made consistent across the app in one pass; they drift back easily
+because both halves of each pair look reasonable in isolation.
+
+- **Loading**: skeletons (`components/Skeleton*`, or a screen's own
+  `Loading.tsx`) when a list is loading, so the placeholder holds the shape the
+  list is about to take. `components/SpinningLoaderCircle` everywhere else —
+  inside a control at size 18, for a whole sheet or screen at 26. React
+  Native's `ActivityIndicator` is deliberately unused: it renders differently
+  per platform and doesn't match the lucide icon set the rest of the UI uses.
+  A skeleton is only worth using when it predicts the real layout; an options
+  sheet is a header and a stack of actions, so it keeps a spinner.
+- **Library navigation**: the library tab is an index of entity types, each
+  opening its own screen (`screens/library/LibraryCollectionScreen`), over the
+  mixed recent list. It used to be a row of filter pills, which could only ever
+  show the types it had room for — that is why genres had no way in for so
+  long. Adding an entity type means adding an entry row, not a pill.
+- **Home**: sections are grouped into tiers by `features/home/homeLayout` —
+  resume first and unlabelled, then your own library, then external discovery
+  behind its source header. A new section belongs to exactly one tier.
