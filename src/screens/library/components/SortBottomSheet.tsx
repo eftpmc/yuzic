@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { ArrowDownAZ, Calendar, CalendarPlus, Check, Clock3, Flame } from 'lucide-react-native';
@@ -13,6 +12,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
 
@@ -60,7 +60,7 @@ const SortBottomSheet = forwardRef<
           const isSelected = sortOrder === option.value;
 
           return (
-            <TouchableOpacity
+            <Touchable
               key={option.value}
               style={[
                 styles.pickerItem,
@@ -88,7 +88,7 @@ const SortBottomSheet = forwardRef<
               {isSelected && (
                 <Check size={20} color={themeColor} />
               )}
-            </TouchableOpacity>
+            </Touchable>
           );
         })}
       </BottomSheetView>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   label: string;
@@ -22,14 +23,13 @@ const SettingsActionButton: React.FC<Props> = ({
     : colors.themeColor;
 
   return (
-    <TouchableOpacity
+    <Touchable
       style={[styles.button, { backgroundColor, opacity: disabled ? 0.4 : 1 }]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.8}
     >
       <Text style={styles.label}>{label}</Text>
-    </TouchableOpacity>
+    </Touchable>
   );
 };
 

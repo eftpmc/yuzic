@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { Languages, Check } from 'lucide-react-native';
@@ -14,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -55,7 +55,7 @@ const LanguageBottomSheet = forwardRef<
           const isSelected = selected === lang.code;
 
           return (
-            <TouchableOpacity
+            <Touchable
               key={lang.code}
               style={[
                 styles.pickerItem,
@@ -89,7 +89,7 @@ const LanguageBottomSheet = forwardRef<
                   color={themeColor}
                 />
               )}
-            </TouchableOpacity>
+            </Touchable>
           );
         })}
       </BottomSheetView>

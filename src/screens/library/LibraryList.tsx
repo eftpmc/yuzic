@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native'
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useSelector } from 'react-redux'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
@@ -20,6 +20,7 @@ import SortBottomSheet from './components/SortBottomSheet'
 import GridSettingsBottomSheet from './components/GridSettingsBottomSheet'
 import { useSheetRef } from '@/utils/useSheetRef'
 import type { LibraryItem, SortOrder } from './librarySort'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   items: LibraryItem[]
@@ -119,7 +120,7 @@ const LibraryList: React.FC<Props> = ({
           <View style={{ marginHorizontal: -gutter }}>
             {header}
             <View style={styles.sortRow}>
-              <TouchableOpacity
+              <Touchable
                 style={[styles.sortButton, { backgroundColor: colors.muted }]}
                 onPress={() => sortSheetRef.current?.present()}
                 accessibilityRole="button"
@@ -128,8 +129,8 @@ const LibraryList: React.FC<Props> = ({
                 <Text style={[styles.sortLabel, { color: colors.secondary }]}>
                   {sortLabel}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Touchable>
+              <Touchable
                 style={[styles.gridButton, { backgroundColor: colors.muted }]}
                 onPress={() => gridSheetRef.current?.present()}
                 accessibilityRole="button"
@@ -138,7 +139,7 @@ const LibraryList: React.FC<Props> = ({
                   ? <List size={17} color={colors.secondary} />
                   : <Grid2x2 size={17} color={colors.secondary} />
                 }
-              </TouchableOpacity>
+              </Touchable>
             </View>
           </View>
         }

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { statusColor } from '@/constants/design';
 import {
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -43,6 +42,7 @@ import {
   DetailMetaText,
   DetailPlayAction,
 } from '@/components/DetailHeader';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   localAlbum: Album | null;
@@ -129,13 +129,13 @@ function LocalMetaRow({ album }: { album: Album }) {
         <React.Fragment key={`${item.label}-${index}`}>
           {index > 0 && <DetailMetaDot />}
           {item.type === 'artist' && album.artist ? (
-            <TouchableOpacity onPress={() => navigation.push('artistView', { id: album.artist.id })}>
+            <Touchable onPress={() => navigation.push('artistView', { id: album.artist.id })}>
               <DetailMetaText>{item.label}</DetailMetaText>
-            </TouchableOpacity>
+            </Touchable>
           ) : item.type === 'genre' ? (
-            <TouchableOpacity onPress={() => handleGenrePress(item.label)}>
+            <Touchable onPress={() => handleGenrePress(item.label)}>
               <DetailMetaText>{item.label}</DetailMetaText>
-            </TouchableOpacity>
+            </Touchable>
           ) : (
             <DetailMetaText>{item.label}</DetailMetaText>
           )}
@@ -164,7 +164,7 @@ function ExternalMetaRow({ album }: { album: ExternalAlbum }) {
         <React.Fragment key={`${item}-${index}`}>
           {index > 0 && <DetailMetaDot />}
           {index === 0 && album.artist ? (
-            <TouchableOpacity
+            <Touchable
               onPress={() =>
                 navigateToArtist({
                   id: album.externalIds?.artistDeezerId ?? '',
@@ -177,7 +177,7 @@ function ExternalMetaRow({ album }: { album: ExternalAlbum }) {
               }
             >
               <DetailMetaText>{item}</DetailMetaText>
-            </TouchableOpacity>
+            </Touchable>
           ) : (
             <DetailMetaText>{item}</DetailMetaText>
           )}

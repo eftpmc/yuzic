@@ -1,9 +1,10 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { ChevronLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   message?: string
@@ -16,9 +17,9 @@ export default function NotFoundView({ message = 'Not found' }: Props) {
   return (
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+        <Touchable onPress={() => navigation.goBack()} style={styles.headerButton}>
           <ChevronLeft size={24} color={colors.secondary} />
-        </TouchableOpacity>
+        </Touchable>
         <View style={styles.headerSpacer} />
       </View>
 

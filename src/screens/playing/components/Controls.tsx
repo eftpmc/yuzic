@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import {
   Pressable,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { Shuffle, Sparkle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
@@ -14,6 +13,7 @@ import Animated, {
 
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -55,9 +55,9 @@ function ToggleButton({
 }) {
   return (
     <View style={styles.toggleWrapper}>
-      <TouchableOpacity onPress={onPress} hitSlop={HIT_SLOP}>
+      <Touchable onPress={onPress} hitSlop={HIT_SLOP}>
         {children}
-      </TouchableOpacity>
+      </Touchable>
       {badge !== 'none' && (
         <View style={styles.activeBadgeSlot}>
           {badge === 'dot'
@@ -88,15 +88,15 @@ const Controls: React.FC = () => {
         <Shuffle size={23} color="#fff" />
       </ToggleButton>
 
-      <TouchableOpacity onPress={skipToPrevious} hitSlop={HIT_SLOP}>
+      <Touchable onPress={skipToPrevious} hitSlop={HIT_SLOP}>
         <SkipBack size={34} color="#fff" fill="#fff" />
-      </TouchableOpacity>
+      </Touchable>
 
       <PlayPauseButton isPlaying={isPlaying} isBuffering={isBuffering} onPress={handlePlayPause} />
 
-      <TouchableOpacity onPress={skipToNext} hitSlop={HIT_SLOP}>
+      <Touchable onPress={skipToNext} hitSlop={HIT_SLOP}>
         <SkipForward size={34} color="#fff" fill="#fff" />
-      </TouchableOpacity>
+      </Touchable>
 
       <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={toggleRepeat}>
         {repeatMode === 'one'

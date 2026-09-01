@@ -1,10 +1,11 @@
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { Play, Shuffle } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useTheme } from '@/hooks/useTheme'
 import { controlSize, radius, spacing, typography } from '@/constants/design'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   onPlay: () => void
@@ -26,11 +27,10 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
 
   return (
     <View style={styles.row}>
-      <TouchableOpacity
+      <Touchable
         testID="collection-play"
         style={[styles.button, { backgroundColor: colors.themeColor }]}
         onPress={onPlay}
-        activeOpacity={0.85}
         accessibilityRole="button"
         accessibilityLabel={t('common.play')}
       >
@@ -38,13 +38,12 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
         <Text style={[styles.label, { color: colors.onThemeColor }]}>
           {t('common.play')}
         </Text>
-      </TouchableOpacity>
+      </Touchable>
 
-      <TouchableOpacity
+      <Touchable
         testID="collection-shuffle"
         style={[styles.button, { backgroundColor: colors.muted }]}
         onPress={onShuffle}
-        activeOpacity={0.85}
         accessibilityRole="button"
         accessibilityLabel={t('common.shuffle')}
       >
@@ -52,7 +51,7 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
         <Text style={[styles.label, { color: colors.secondary }]}>
           {t('common.shuffle')}
         </Text>
-      </TouchableOpacity>
+      </Touchable>
     </View>
   )
 }

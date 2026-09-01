@@ -3,13 +3,13 @@ import { spacing } from '@/constants/design';
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import type { CoverSource } from '@/types';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type HeaderProps = {
   cover: CoverSource;
@@ -72,7 +72,7 @@ export function OptionSheetRow({
   const leading = loading ? <SpinningLoaderCircle size={18} color={colors.subtext} /> : icon;
 
   return (
-    <TouchableOpacity
+    <Touchable
       style={[styles.option, dimRow && styles.optionDimmed]}
       onPress={onPress}
       disabled={disabled || !onPress}
@@ -93,7 +93,7 @@ export function OptionSheetRow({
         )}
       </View>
       {trailing}
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 

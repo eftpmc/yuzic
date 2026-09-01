@@ -1,13 +1,13 @@
 import React from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 type HeaderProps = {
     title: string;
@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
+            <Touchable
                 onPress={handleBack}
                 style={styles.backButton}
             >
@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
                     size={24}
                     color={colors.secondary}
                 />
-            </TouchableOpacity>
+            </Touchable>
 
             <View pointerEvents="none" style={styles.titleWrapper}>
                 <Text

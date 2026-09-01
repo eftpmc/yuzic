@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
+import Touchable from '@/components/Touchable';
 
 export type ButtonSelectItem = {
   id: string;
@@ -24,7 +25,7 @@ const SettingsButtonSelect: React.FC<Props> = ({ items, selected, onSelect, titl
       {items.map(item => {
         const active = selected === item.id;
         return (
-          <TouchableOpacity
+          <Touchable
             key={item.id}
             onPress={() => onSelect(item.id)}
             style={[
@@ -38,7 +39,7 @@ const SettingsButtonSelect: React.FC<Props> = ({ items, selected, onSelect, titl
             {React.cloneElement(item.icon, {
               color: active ? '#fff' : colors.secondary,
             })}
-          </TouchableOpacity>
+          </Touchable>
         );
       })}
     </View>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
+import Touchable from '@/components/Touchable';
 
 export type IconSelectItem = {
   id: string;
@@ -26,10 +27,9 @@ const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSel
           {items.map(item => {
             const active = selected === item.id;
             return (
-              <TouchableOpacity
+              <Touchable
                 key={item.id}
                 onPress={() => onSelect(item.id)}
-                activeOpacity={0.7}
                 style={[
                   styles.button,
                   {
@@ -41,7 +41,7 @@ const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSel
                 {React.cloneElement(item.icon, {
                   color: active ? '#fff' : colors.secondary,
                 })}
-              </TouchableOpacity>
+              </Touchable>
             );
           })}
         </View>

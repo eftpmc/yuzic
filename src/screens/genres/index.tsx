@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -14,6 +14,7 @@ import { useAlbums } from '@/hooks/albums'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import { buildGenreRows, type GenreRow } from '@/utils/library/genreList'
 import LoadingGenreList from './Loading'
+import Touchable from '@/components/Touchable'
 
 const GenresScreen: React.FC = () => {
   const navigation = useNavigation<any>()
@@ -25,7 +26,7 @@ const GenresScreen: React.FC = () => {
   const rows = useMemo(() => buildGenreRows(genres, albums), [genres, albums])
 
   const renderItem = useCallback(({ item }: { item: GenreRow }) => (
-    <TouchableOpacity
+    <Touchable
       testID="genres-item"
       accessibilityRole="button"
       accessibilityLabel={item.genre}
@@ -41,7 +42,7 @@ const GenresScreen: React.FC = () => {
         </Text>
       </View>
       <ChevronRight size={18} color={colors.subtext} />
-    </TouchableOpacity>
+    </Touchable>
   ), [colors, navigation, t])
 
   return (

@@ -1,10 +1,11 @@
 import React, { memo } from 'react'
-import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
 import { Play } from 'lucide-react-native'
 import MediaListRow from '@/components/MediaListRow'
 import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   song: ExternalSong
@@ -31,14 +32,14 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
       }
       trailing={
         song.previewUrl ? (
-          <TouchableOpacity
+          <Touchable
             style={[styles.previewButton, { backgroundColor: colors.card }]}
             onPress={onPress}
             disabled={!onPress}
             hitSlop={8}
           >
             <Play size={13} color={colors.secondary} fill={colors.secondary} />
-          </TouchableOpacity>
+          </Touchable>
         ) : undefined
       }
     />

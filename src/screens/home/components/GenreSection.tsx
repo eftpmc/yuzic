@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -33,6 +33,7 @@ import {
   HOME_RELATED_PER_SEED,
   HOME_GENRE_ARTIST_LIMIT,
 } from '@/constants/home';
+import Touchable from '@/components/Touchable';
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -221,14 +222,14 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.genrePrefix')}
           </Text>
-          <TouchableOpacity onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
             <Text
               style={[styles.genreName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}
             >
               {selectedGenre}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
 
         {query.isLoading ? (

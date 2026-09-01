@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { Check, Grid2x2, List } from 'lucide-react-native';
@@ -22,6 +21,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
 const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
   (_, ref) => {
@@ -67,7 +67,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
             const isSelected = isGridView === option.value;
 
             return (
-              <TouchableOpacity
+              <Touchable
                 key={String(option.value)}
                 style={[
                   styles.pickerItem,
@@ -97,7 +97,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                 {isSelected && (
                   <Check size={20} color={themeColor} />
                 )}
-              </TouchableOpacity>
+              </Touchable>
             );
           })}
 

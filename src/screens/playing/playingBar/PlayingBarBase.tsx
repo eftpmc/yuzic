@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { BackHandler, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Music, Play, Pause } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
@@ -24,6 +24,7 @@ import {
 import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type Variant = 'ios' | 'android';
 
@@ -331,7 +332,7 @@ export default function PlayingBarBase({ variant }: Props) {
       </View>
 
       {currentSong && (
-        <TouchableOpacity
+        <Touchable
           accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
           accessibilityRole="button"
           testID="playing-bar-play-pause"
@@ -345,17 +346,17 @@ export default function PlayingBarBase({ variant }: Props) {
               ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
               : <Play size={20} color={colors.secondary} fill={colors.secondary} />
           }
-        </TouchableOpacity>
+        </Touchable>
       )}
 
       {primaryAction && (
-        <TouchableOpacity
+        <Touchable
           style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor }]}
           onPress={primaryAction.onPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {primaryAction.icon}
-        </TouchableOpacity>
+        </Touchable>
       )}
     </View>
   );
@@ -376,12 +377,11 @@ export default function PlayingBarBase({ variant }: Props) {
 
   return (
     <>
-      <TouchableOpacity
+      <Touchable
         accessibilityLabel={currentSong ? 'Now playing bar' : 'No song playing'}
         accessibilityRole="button"
         testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
         onPress={handleExpand}
-        activeOpacity={0.9}
       >
         <View style={[styles.wrapper, stylesForVariant.wrapper]}>
           {variant === 'android' ? (
@@ -398,7 +398,7 @@ export default function PlayingBarBase({ variant }: Props) {
             </BlurView>
           )}
         </View>
-      </TouchableOpacity>
+      </Touchable>
 
       <BottomSheetModal
         ref={bottomSheetRef}

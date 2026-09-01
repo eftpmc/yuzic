@@ -2,7 +2,6 @@ import React, { useMemo, useRef, useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   LayoutChangeEvent,
 } from 'react-native';
@@ -12,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { LyricsResult } from '@/api/types';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   lyrics: LyricsResult;
@@ -122,10 +122,9 @@ export default function LyricsPreviewCard({
   };
 
   return (
-    <TouchableOpacity
+    <Touchable
       style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
       onPress={onPress}
-      activeOpacity={0.8}
     >
       <ScrollView
         ref={scrollRef}
@@ -144,7 +143,7 @@ export default function LyricsPreviewCard({
         ))}
       </ScrollView>
 
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Search as SearchIcon, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +13,7 @@ import {
   type SearchEntityEntry,
   type SearchQueryEntry,
 } from '@/utils/redux/slices/searchHistorySlice';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   queries: SearchQueryEntry[];
@@ -45,9 +46,9 @@ export default function RecentSearches({
         <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
           {t('search.recentSearches')}
         </Text>
-        <TouchableOpacity onPress={onClear} hitSlop={8}>
+        <Touchable onPress={onClear} hitSlop={8}>
           <Text style={[styles.clear, { color: colors.subtext }]}>{t('search.clearRecent')}</Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
 
       {queries.length > 0 && (
@@ -58,7 +59,7 @@ export default function RecentSearches({
               testID="search-recent-chip"
               style={[styles.chip, { backgroundColor: colors.muted }]}
             >
-              <TouchableOpacity
+              <Touchable
                 style={styles.chipMain}
                 accessibilityRole="button"
                 accessibilityLabel={entry.text}
@@ -68,14 +69,14 @@ export default function RecentSearches({
                 <Text style={[styles.chipText, { color: colors.secondary }]} numberOfLines={1}>
                   {entry.text}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Touchable>
+              <Touchable
                 onPress={() => onRemove(searchHistoryEntryKey(entry))}
                 hitSlop={16}
                 accessibilityLabel={t('search.removeRecentSearch', { query: entry.text })}
               >
                 <X size={14} color={colors.subtext} />
-              </TouchableOpacity>
+              </Touchable>
             </View>
           ))}
         </View>

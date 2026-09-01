@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +14,7 @@ import { ServerType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useSheetRef } from '@/utils/useSheetRef';
+import Touchable from '@/components/Touchable';
 
 type Scheme = 'https' | 'http';
 
@@ -49,14 +49,13 @@ export default function Address() {
                         <Text style={styles.subtitle}>{t('onboarding.address.subtitle')}</Text>
 
                         <View style={styles.inputRow}>
-                            <TouchableOpacity
+                            <Touchable
                                 style={styles.schemeButton}
                                 onPress={() => schemeSheetRef.current?.present()}
-                                activeOpacity={0.75}
                             >
                                 <Text style={styles.schemeText}>{scheme}://</Text>
                                 <ChevronDown size={14} color="#888" style={{ marginLeft: 4 }} />
-                            </TouchableOpacity>
+                            </Touchable>
 
                             <TextInput
                                 style={styles.hostInput}
@@ -78,13 +77,13 @@ export default function Address() {
                     </View>
 
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                        <Touchable style={styles.nextButton} onPress={handleNext}>
                             <Text style={styles.nextButtonText}>{t('common.next')}</Text>
-                        </TouchableOpacity>
+                        </Touchable>
 
-                        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <Touchable style={styles.backButton} onPress={() => router.back()}>
                             <Text style={styles.backButtonText}>{t('common.back')}</Text>
-                        </TouchableOpacity>
+                        </Touchable>
                     </View>
                 </View>
             </SafeAreaView>
@@ -104,7 +103,7 @@ export default function Address() {
                     {(['https', 'http'] as Scheme[]).map((s) => {
                         const isSelected = scheme === s;
                         return (
-                            <TouchableOpacity
+                            <Touchable
                                 key={s}
                                 style={[styles.schemeOption, isSelected && styles.schemeOptionSelected]}
                                 onPress={() => {
@@ -129,7 +128,7 @@ export default function Address() {
                                     </View>
                                 </View>
                                 {isSelected && <Check size={20} color="#fff" />}
-                            </TouchableOpacity>
+                            </Touchable>
                         );
                     })}
                 </BottomSheetView>

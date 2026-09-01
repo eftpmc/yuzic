@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    View,
-    StyleSheet,
-    TouchableOpacity,
-    StatusBar,
-    useWindowDimensions,
-    InteractionManager,
+  View,
+  StyleSheet,
+  StatusBar,
+  useWindowDimensions,
+  InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
@@ -35,6 +34,7 @@ import SleepTimerCard from './components/SleepTimerCard';
 import PlaybackSpeedCard from './components/PlaybackSpeedCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
+import Touchable from '@/components/Touchable';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -207,7 +207,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         >
                             <View style={[styles.playerSection, { minHeight: playerMinHeight }]}>
                                 <View style={[styles.header, { paddingTop: insets.top }]}>
-                                    <TouchableOpacity
+                                    <Touchable
                                         testID="playing-close"
                                         accessibilityRole="button"
                                         accessibilityLabel="Close player"
@@ -215,14 +215,14 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         style={styles.headerButton}
                                     >
                                         <ChevronDown size={28} color="#fff" />
-                                    </TouchableOpacity>
+                                    </Touchable>
 
-                                    <TouchableOpacity
+                                    <Touchable
                                         onPress={() => songOptionsRef.current?.present()}
                                         style={styles.headerButton}
                                     >
                                         <Ellipsis size={24} color="#fff" />
-                                    </TouchableOpacity>
+                                    </Touchable>
                                 </View>
 
                                 <View style={styles.centerContent}>

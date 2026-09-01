@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 /** Header shared by the Home, Library and Search tabs: screen title plus the
  * account avatar. */
@@ -21,7 +22,7 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
       <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
 
       <View style={styles.actions}>
-        <TouchableOpacity
+        <Touchable
           accessibilityLabel="Account"
           accessibilityRole="button"
           style={[styles.avatar, { backgroundColor: themeColor }]}
@@ -31,7 +32,7 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
           <Text style={styles.avatarText}>
             {username?.[0]?.toUpperCase() ?? '?'}
           </Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
     </View>
   );

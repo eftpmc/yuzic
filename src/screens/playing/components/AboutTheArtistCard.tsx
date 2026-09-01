@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,6 +14,7 @@ import {
   PLAYING_ARTIST_TEXT_MIN_HEIGHT,
   PLAYING_ARTIST_CARD_PADDING,
 } from '@/constants/features';
+import Touchable from '@/components/Touchable';
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
@@ -78,13 +78,12 @@ export default function AboutTheArtistCard({
 
   if (onPress) {
     return (
-      <TouchableOpacity
+      <Touchable
         onPress={onPress}
-        activeOpacity={0.8}
         style={styles.touchable}
       >
         {card}
-      </TouchableOpacity>
+      </Touchable>
     );
   }
 

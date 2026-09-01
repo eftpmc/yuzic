@@ -44,6 +44,14 @@ because both halves of each pair look reasonable in isolation.
   per platform and doesn't match the lucide icon set the rest of the UI uses.
   A skeleton is only worth using when it predicts the real layout; an options
   sheet is a header and a stack of actions, so it keeps a spinner.
+- **Pressing**: `components/Touchable`, never `TouchableOpacity` — the whole app
+  was swapped over in one pass and there is no reason for a second answer to a
+  press to exist. Android gets a ripple bounded to the component, every other
+  platform an opacity dip, from one file so they can't drift apart per screen.
+  `feedback="control"` for a bare icon whose target is bigger than the glyph,
+  `"none"` for a wrapper handling a press on something else's behalf. There is
+  deliberately no `activeOpacity`: seven different values were in use, which is
+  seven answers to a question nobody was asking.
 - **Home vs Library**: Home is what changes, Library is what's complete. A view
   that moves on its own — recently added, most played, what you were listening
   to — is a Home shelf; the stable, exhaustive, sortable list is a Library

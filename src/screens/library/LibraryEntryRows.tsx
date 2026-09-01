@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import {
@@ -17,6 +17,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { controlSize, radius, spacing, typography } from '@/constants/design'
 import { useLibraryCounts } from './useLibraryCounts'
 import type { LibraryCollectionType } from './librarySort'
+import Touchable from '@/components/Touchable'
 
 type Entry = {
   key: string
@@ -107,7 +108,7 @@ const LibraryEntryRows: React.FC = () => {
   return (
     <View>
       {entries.map((entry, index) => (
-        <TouchableOpacity
+        <Touchable
           key={entry.key}
           testID={`library-entry-${entry.key}`}
           accessibilityRole="button"
@@ -141,7 +142,7 @@ const LibraryEntryRows: React.FC = () => {
               <ChevronRight size={18} color={colors.subtext} />
             </View>
           </View>
-        </TouchableOpacity>
+        </Touchable>
       ))}
     </View>
   )

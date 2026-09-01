@@ -1,5 +1,5 @@
 import React, { forwardRef, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Settings, RefreshCw, LogOut } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   onDismiss?: () => void;
@@ -107,20 +108,20 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
         {/* Actions */}
-        <TouchableOpacity style={styles.row} onPress={handleSettings} activeOpacity={0.7}>
+        <Touchable style={styles.row} onPress={handleSettings}>
           <Settings size={18} color={colors.subtext} />
           <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.settings')}</Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity style={styles.row} onPress={handleScan} activeOpacity={0.7}>
+        <Touchable style={styles.row} onPress={handleScan}>
           <RefreshCw size={18} color={colors.subtext} />
           <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.triggerScan')}</Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity style={styles.row} onPress={handleSignOut} activeOpacity={0.7}>
+        <Touchable style={styles.row} onPress={handleSignOut}>
           <LogOut size={18} color={destructiveColor} />
           <Text style={[styles.rowText, { color: destructiveColor }]}>{t('home.account.signOut')}</Text>
-        </TouchableOpacity>
+        </Touchable>
       </BottomSheetView>
     </BottomSheetModal>
   );

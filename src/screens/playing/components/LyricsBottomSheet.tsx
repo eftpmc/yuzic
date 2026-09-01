@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   Text,
   LayoutChangeEvent,
 } from 'react-native';
@@ -23,6 +22,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -148,9 +148,9 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
         <View style={[styles.header, { paddingTop: 12 }]}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <Touchable onPress={onClose} style={styles.closeButton}>
             <ChevronDown size={28} color={colors.secondary} />
-          </TouchableOpacity>
+          </Touchable>
           <Text
             style={[styles.title, { color: colors.secondary }]}
             numberOfLines={1}
@@ -176,11 +176,10 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
         >
           {lines.map((line, index) => (
-            <TouchableOpacity
+            <Touchable
               key={index}
               onLayout={onLineLayout(index)}
               onPress={() => seekSong(line.startMs / 1000)}
-              activeOpacity={0.6}
             >
               <LyricLine
                 text={line.text}
@@ -188,7 +187,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
                 activeColor={colors.secondary}
                 inactiveColor={colors.subtext}
               />
-            </TouchableOpacity>
+            </Touchable>
           ))}
         </BottomSheetScrollView>
       </BottomSheetModal>

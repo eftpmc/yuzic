@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import TurboImage from 'react-native-turbo-image';
 
@@ -14,6 +13,7 @@ import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelector
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
+import Touchable from '@/components/Touchable';
 
 type PlayingMainProps = {
   width: number;
@@ -111,16 +111,16 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           </Text>
 
           {currentSong.artist && (
-            <TouchableOpacity onPress={onPressArtist} activeOpacity={0.7}>
+            <Touchable onPress={onPressArtist}>
               <Text style={styles.artist} numberOfLines={1}>
                 {currentSong.artist}
               </Text>
-            </TouchableOpacity>
+            </Touchable>
           )}
         </View>
 
         <View>
-          <TouchableOpacity
+          <Touchable
           onPress={onPressAdd}
           style={styles.optionsButton}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -129,7 +129,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
             size={32}
             color="#fff"
           />
-        </TouchableOpacity>
+        </Touchable>
         </View>
       </View>
 

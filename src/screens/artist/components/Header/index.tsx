@@ -5,7 +5,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,6 +28,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   localArtist: Artist | null;
@@ -95,7 +95,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
 
         {showNavigation && (
           <View style={styles.header}>
-            <TouchableOpacity
+            <Touchable
               testID="detail-back-button"
               accessibilityRole="button"
               accessibilityLabel="Go back"
@@ -103,7 +103,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               onPress={() => navigation.goBack()}
             >
               <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
-            </TouchableOpacity>
+            </Touchable>
             {localArtist ? (
               <LocalOptionsButton artist={localArtist} />
             ) : (
@@ -150,14 +150,14 @@ function LocalOptionsButton({ artist }: { artist: Artist }) {
   const optionsSheetRef = useSheetRef();
   return (
     <>
-      <TouchableOpacity
+      <Touchable
         accessibilityRole="button"
         accessibilityLabel="Artist options"
         style={styles.backButton}
         onPress={() => optionsSheetRef.current?.present()}
       >
         <Ellipsis size={24} color="#fff" />
-      </TouchableOpacity>
+      </Touchable>
       <ArtistOptions ref={optionsSheetRef} artist={artist} hideGoToArtist />
     </>
   );

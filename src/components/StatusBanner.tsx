@@ -1,7 +1,8 @@
 import React, { ReactNode, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   icon: ReactNode;
@@ -35,7 +36,7 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
         {text}
       </Text>
       {closable && (
-        <TouchableOpacity
+        <Touchable
           accessibilityRole="button"
           accessibilityLabel="Dismiss notification"
           onPress={() => setDismissed(true)}
@@ -43,7 +44,7 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
           testID={testID ? `${testID}-close` : undefined}
         >
           <X size={14} color={textColor} />
-        </TouchableOpacity>
+        </Touchable>
       )}
     </View>
   );

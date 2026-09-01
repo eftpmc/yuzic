@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   cover: CoverSource;
@@ -68,9 +69,9 @@ const LibraryItem: React.FC<Props> = ({
       </View>
 
       {!isGridView && (
-        <TouchableOpacity onPress={onLongPress} hitSlop={10}>
+        <Touchable onPress={onLongPress} hitSlop={10} feedback="control">
           <Ellipsis size={18} color={colors.subtext} />
-        </TouchableOpacity>
+        </Touchable>
       )}
     </Pressable>
   );

@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type Item = {
   key: string;
@@ -48,11 +49,10 @@ export default function ChecklistSection({
           {items.map(item => {
             const active = isSelected(item.key);
             return (
-              <TouchableOpacity
+              <Touchable
                 key={item.key}
                 onPress={() => onSelect(item.key)}
                 disabled={disabled}
-                activeOpacity={0.7}
                 style={[
                   styles.optionRow,
                   {
@@ -73,7 +73,7 @@ export default function ChecklistSection({
                 <Text style={[styles.optionLabel, { color: colors.secondary }]}>
                   {item.label}
                 </Text>
-              </TouchableOpacity>
+              </Touchable>
             );
           })}
         </View>

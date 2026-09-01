@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -17,6 +16,7 @@ import { ServerType } from '@/types';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -95,7 +95,7 @@ export default function Connect() {
                     {providers.map((provider) => {
                         const isSelected = selectedType === provider.type;
                         return (
-                            <TouchableOpacity
+                            <Touchable
                                 key={provider.type}
                                 onPress={() => setSelectedType(provider.type)}
                                 style={[
@@ -117,7 +117,7 @@ export default function Connect() {
                                 >
                                     {provider.label}
                                 </Text>
-                            </TouchableOpacity>
+                            </Touchable>
                         );
                     })}
                 </View>
@@ -130,7 +130,7 @@ export default function Connect() {
             </ScrollView>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity
+                <Touchable
                     style={[styles.nextButton, isTesting && styles.buttonDisabled]}
                     onPress={handleNext}
                     disabled={isTesting}
@@ -140,9 +140,9 @@ export default function Connect() {
                     ) : (
                         <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}
-                </TouchableOpacity>
+                </Touchable>
 
-                <TouchableOpacity
+                <Touchable
                     style={[
                         styles.demoButton,
                         (!selectedType || !SERVER_PROVIDERS[selectedType]?.capabilities.supportsDemo || isTesting) && styles.buttonDisabled,
@@ -155,7 +155,7 @@ export default function Connect() {
                             ? t('onboarding.connect.useDemo', { provider: SERVER_PROVIDERS[selectedType].label })
                             : t('onboarding.connect.demoUnavailable')}
                     </Text>
-                </TouchableOpacity>
+                </Touchable>
             </View>
         </SafeAreaView>
     );

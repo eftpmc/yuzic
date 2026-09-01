@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Text, TouchableOpacity, Linking, StyleSheet } from 'react-native';
+import { Text, Linking, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -31,6 +31,7 @@ import {
   setSimilarArtistsEnabled,
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
+import Touchable from '@/components/Touchable';
 
 const LastFmView: React.FC = () => {
   const { t } = useTranslation();
@@ -123,7 +124,7 @@ const LastFmView: React.FC = () => {
               {t('settings.lastfm.pendingInstruction')}
             </Text>
           )}
-          <TouchableOpacity
+          <Touchable
             style={[styles.connectButton, { backgroundColor: themeColor }]}
             onPress={pendingToken ? handleFinishAuth : handleConnect}
             disabled={isLoading}
@@ -131,7 +132,7 @@ const LastFmView: React.FC = () => {
             <Text style={styles.connectButtonText}>
               {pendingToken ? t('settings.lastfm.iAuthorized') : t('settings.lastfm.connectWithLastfm')}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </>
       )}
 

@@ -1,6 +1,6 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { AppState, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { Home, Library, Search } from 'lucide-react-native';
@@ -18,6 +18,7 @@ import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutio
 import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachabilityWatcher';
 import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
+import Touchable from '@/components/Touchable';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -40,16 +41,17 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
     }));
 
     return (
-        <TouchableOpacity
+        <Touchable
             accessibilityLabel={accessibilityLabel}
             accessibilityRole="tab"
             testID={testID}
             style={styles.tab}
             onPress={onPress}
+            feedback="control"
         >
             <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg }, indicatorStyle]} />
             {children(active ? activeColor : inactiveColor)}
-        </TouchableOpacity>
+        </Touchable>
     );
 }
 

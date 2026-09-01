@@ -2,7 +2,6 @@ import React from 'react';
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   type StyleProp,
   type ViewStyle,
@@ -11,6 +10,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize, radius, rowDensity, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   title: string;
@@ -51,14 +51,13 @@ export default function MediaListRow({
   return (
     <View style={[styles.wrapper, style]}>
       <View style={[styles.row, isCompact && styles.compactRow, rowStyle]}>
-        <TouchableOpacity
+        <Touchable
           accessibilityRole={onPress ? 'button' : undefined}
           accessibilityLabel={onPress ? title : undefined}
           accessibilityState={{ disabled: disabled || !onPress }}
           style={styles.content}
           onPress={onPress}
           disabled={disabled || !onPress}
-          activeOpacity={disabled ? 1 : 0.7}
         >
           {leading}
           {showCover && (
@@ -97,7 +96,7 @@ export default function MediaListRow({
               </View>
             )}
           </View>
-        </TouchableOpacity>
+        </Touchable>
 
         {trailing}
       </View>

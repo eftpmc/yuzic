@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   biography?: string
@@ -24,10 +25,9 @@ export default function BioSection({ biography }: Props) {
           {t('artist.sections.bio')}
         </Text>
       </View>
-      <TouchableOpacity
+      <Touchable
         style={styles.bioContainer}
         onPress={() => setExpanded(e => !e)}
-        activeOpacity={0.7}
       >
         <Text
           style={[styles.bioText, { color: colors.subtext }]}
@@ -38,7 +38,7 @@ export default function BioSection({ biography }: Props) {
         <Text style={[styles.bioToggle, { color: colors.subtext }]}>
           {expanded ? t('common.less') : t('common.more')}
         </Text>
-      </TouchableOpacity>
+      </Touchable>
     </View>
   )
 }

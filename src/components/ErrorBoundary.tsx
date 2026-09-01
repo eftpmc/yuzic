@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import RNRestart from 'react-native-restart';
+import Touchable from '@/components/Touchable';
 
 interface Props {
   children: ReactNode;
@@ -31,9 +32,9 @@ export class ErrorBoundary extends Component<Props, State> {
         <Text style={styles.message} numberOfLines={4}>
           {this.state.error?.message ?? 'An unexpected error occurred.'}
         </Text>
-        <TouchableOpacity style={styles.button} onPress={() => RNRestart.Restart()}>
+        <Touchable style={styles.button} onPress={() => RNRestart.Restart()}>
           <Text style={styles.buttonText}>Restart App</Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
     );
   }

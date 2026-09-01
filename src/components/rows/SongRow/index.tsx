@@ -3,7 +3,6 @@ import { spacing, statusColor } from '@/constants/design';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -20,6 +19,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useDownloadState } from '@/contexts/DownloadContext';
 import { formatSongDuration } from '@/utils/formatDuration';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   song: Song;
@@ -85,14 +85,14 @@ const SongRow: React.FC<Props> = ({
             {downloaded && (isAlbumCompact || showDownloadedDot) && (
               <ArrowDownCircle size={16} color={colors.subtext} />
             )}
-            <TouchableOpacity
+            <Touchable
               onPress={openOptions}
               hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel="Song options"
             >
               <Ellipsis size={18} color={colors.secondary} />
-            </TouchableOpacity>
+            </Touchable>
           </View>
         }
       />

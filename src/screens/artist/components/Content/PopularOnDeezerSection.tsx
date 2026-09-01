@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +7,7 @@ import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelecto
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import type { ExternalSong } from '@/types'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   topTracks: ExternalSong[]
@@ -58,15 +59,14 @@ export default function PopularOnDeezerSection({ topTracks, artistId, artistName
       ))}
       {allTracks.length > 5 && (
         <View style={styles.toggleRow}>
-          <TouchableOpacity
+          <Touchable
             style={[styles.toggleButton, { backgroundColor: colors.card }]}
             onPress={() => setShowAll(v => !v)}
-            activeOpacity={0.7}
           >
             <Text style={[styles.toggleText, { color: colors.secondary }]}>
               {showAll ? t('common.less') : t('common.more')}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
       )}
     </View>

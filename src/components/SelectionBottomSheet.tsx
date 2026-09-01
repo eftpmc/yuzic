@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo, useState, useCallback } from 'react'
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native'
 import {
@@ -14,6 +13,7 @@ import { Dices } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   items: string[]
@@ -46,14 +46,14 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
     }, [query, onSelect])
 
     const renderItem = useCallback(({ item }: { item: string }) => (
-      <TouchableOpacity
+      <Touchable
         style={[styles.item, { borderBottomColor: colors.muted }]}
         onPress={() => onSelect(item)}
       >
         <Text style={[styles.itemText, { color: colors.secondary }]}>
           {item}
         </Text>
-      </TouchableOpacity>
+      </Touchable>
     ), [onSelect, colors])
 
     return (
@@ -79,9 +79,9 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
             returnKeyType="done"
             onSubmitEditing={handleSubmit}
           />
-          <TouchableOpacity onPress={onRandomize} style={styles.shuffleButton} hitSlop={8}>
+          <Touchable onPress={onRandomize} style={styles.shuffleButton} hitSlop={8}>
             <Dices size={18} color={colors.subtext} />
-          </TouchableOpacity>
+          </Touchable>
         </View>
 
         <BottomSheetFlatList

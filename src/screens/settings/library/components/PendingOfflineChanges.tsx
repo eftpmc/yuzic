@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { CloudUpload, RotateCcw, Trash2 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import {
   retryOfflineMutationsForServer,
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
+import Touchable from '@/components/Touchable';
 
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
@@ -74,8 +75,7 @@ export default function PendingOfflineChanges() {
         </Text>
         <View style={styles.actions}>
           {failedCount > 0 && (
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <Touchable
               onPress={retryFailed}
               style={[
                 styles.actionButton,
@@ -86,10 +86,9 @@ export default function PendingOfflineChanges() {
               <Text style={[styles.actionText, { color: colors.themeColor }]}>
                 {t('settings.library.offlineChanges.retry')}
               </Text>
-            </TouchableOpacity>
+            </Touchable>
           )}
-          <TouchableOpacity
-            activeOpacity={0.8}
+          <Touchable
             onPress={discardPending}
             style={[styles.actionButton, discardBtnStyle]}
           >
@@ -97,7 +96,7 @@ export default function PendingOfflineChanges() {
             <Text style={[styles.actionText, { color: discardTextColor }]}>
               {t('settings.library.offlineChanges.discard')}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
       </View>
       <View style={[styles.badge, { backgroundColor: colors.themeColor }]}>

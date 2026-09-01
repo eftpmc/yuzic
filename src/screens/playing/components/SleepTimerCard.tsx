@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
 import TrackPlayer from '@rntp/player';
 import { useSelector } from 'react-redux';
@@ -10,6 +10,7 @@ import {
   SLEEP_TIMER_MAX_SECONDS,
   SLEEP_TIMER_INCREMENTS,
 } from '@/constants/features';
+import Touchable from '@/components/Touchable';
 
 function formatCountdown(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -129,9 +130,8 @@ export default function SleepTimerCard({ contentWidth }: Props) {
 
       {/* Controls */}
       <View style={styles.controls}>
-        <TouchableOpacity
+        <Touchable
           onPress={handleOff}
-          activeOpacity={0.7}
           disabled={!isActive}
           style={[
             styles.offButton,
@@ -143,19 +143,18 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           <Text style={[styles.offLabel, !isActive && { opacity: 0.35 }]}>
             Off
           </Text>
-        </TouchableOpacity>
+        </Touchable>
 
         {SLEEP_TIMER_INCREMENTS.map(min => (
-          <TouchableOpacity
+          <Touchable
             key={min}
             onPress={() => handleIncrement(min)}
-            activeOpacity={0.7}
             style={styles.incrButton}
           >
             <Text style={styles.incrLabel}>
               +{min}m
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         ))}
       </View>
     </View>

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { statusColor } from '@/constants/design'
-import { Platform, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
+import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ellipsis, Globe } from 'lucide-react-native'
@@ -28,6 +28,7 @@ import { useSelector } from 'react-redux'
 import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   localArtist: Artist | null
@@ -340,7 +341,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     if (item.kind === 'showMore' || item.kind === 'showUnowned') {
       const isUnowned = item.kind === 'showUnowned'
       return (
-        <TouchableOpacity
+        <Touchable
           style={styles.showMoreRow}
           onPress={() => {
             if (isUnowned) {
@@ -352,7 +353,6 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
               setVisibleSinglesCount(c => c + 5)
             }
           }}
-          activeOpacity={0.65}
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
             {isUnowned
@@ -363,7 +363,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>
             {isUnowned ? t('artist.showUnowned', { count: item.count }) : t('artist.showMore', { count: item.remaining })}
           </Text>
-        </TouchableOpacity>
+        </Touchable>
       )
     }
 

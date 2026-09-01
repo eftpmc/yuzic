@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -25,6 +25,7 @@ import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types';
 import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
+import Touchable from '@/components/Touchable';
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -127,14 +128,14 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.becauseYouListenedLabel')}
           </Text>
-          <TouchableOpacity onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
             <Text
               style={[styles.artistName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}
             >
               {selectedArtist}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
 
         {query.isLoading ? (

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Keyboard,
   ScrollView,
-  TouchableOpacity,
   Text,
 } from 'react-native';
 import { CloudOff, Ellipsis, X } from 'lucide-react-native';
@@ -49,6 +48,7 @@ import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
+import Touchable from '@/components/Touchable';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -362,12 +362,12 @@ const Search = () => {
             onSubmitEditing={onSearchSubmit}
           />
           {query !== '' && (
-            <TouchableOpacity
+            <Touchable
               style={styles.clearButton}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
               <X size={20} color={colors.secondary} />
-            </TouchableOpacity>
+            </Touchable>
           )}
         </View>
       </View>

@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  TouchableOpacity,
   type GestureResponderEvent,
   type StyleProp,
   type ViewStyle,
@@ -9,6 +8,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   icon: React.ReactNode;
@@ -33,7 +33,7 @@ export default function IconActionButton({
   const isDisabled = disabled || loading;
 
   return (
-    <TouchableOpacity
+    <Touchable
       style={[
         styles.button,
         size === 'compact' ? styles.compact : styles.default,
@@ -42,14 +42,13 @@ export default function IconActionButton({
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.7}
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       {loading ? <SpinningLoaderCircle size={18} color={colors.subtext} /> : icon}
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 

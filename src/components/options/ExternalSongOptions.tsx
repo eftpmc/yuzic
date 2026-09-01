@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -27,6 +27,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
+import Touchable from '@/components/Touchable';
 
 interface ExternalSongOptionsProps {
   song: ExternalSong;
@@ -69,12 +70,12 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
 
   return (
     <>
-      <TouchableOpacity
+      <Touchable
         onPress={() => bottomSheetRef.current?.present()}
         hitSlop={10}
       >
         <Ellipsis size={18} color={colors.secondary} />
-      </TouchableOpacity>
+      </Touchable>
 
       <BottomSheetModal
         ref={bottomSheetRef}

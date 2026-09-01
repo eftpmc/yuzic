@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { SETTINGS_STATUS_COLORS } from '@/constants/features';
+import Touchable from '@/components/Touchable';
 
  type Props = {
   label: string;
@@ -20,7 +21,7 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
   const isCheckbox = checked !== undefined;
 
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
+    <Touchable style={styles.row} onPress={onPress}>
       <View style={styles.left}>
         {leftIcon && (
           <View style={styles.iconContainer}>
@@ -55,7 +56,7 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
           <ChevronRight size={18} color={colors.border} />
         )}
       </View>
-    </TouchableOpacity>
+    </Touchable>
   );
 };
 

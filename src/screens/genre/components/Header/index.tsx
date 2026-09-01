@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Platform,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -28,6 +27,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar, DetailHeaderIconButton } from '@/components/DetailHeader'
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   genre: string
@@ -158,7 +158,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
 
         {showNavigation && (
           <View style={styles.header}>
-            <TouchableOpacity
+            <Touchable
               testID="detail-back-button"
               accessibilityRole="button"
               accessibilityLabel="Go back"
@@ -166,7 +166,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
               onPress={() => navigation.goBack()}
             >
               <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
-            </TouchableOpacity>
+            </Touchable>
           </View>
         )}
       </View>

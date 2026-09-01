@@ -1,12 +1,11 @@
 import React from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    Platform,
-    FlatList,
-    Alert,
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  FlatList,
+  Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -23,6 +22,7 @@ import { Ellipsis } from 'lucide-react-native';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
+import Touchable from '@/components/Touchable';
 
 export default function Servers() {
     const { t } = useTranslation();
@@ -77,10 +77,9 @@ export default function Servers() {
 
         return (
             <View style={styles.serverCard}>
-                <TouchableOpacity
+                <Touchable
                     style={styles.serverInfo}
                     onPress={() => handleSelectServer(item.id)}
-                    activeOpacity={0.75}
                 >
                     <Image
                         source={icon}
@@ -108,15 +107,15 @@ export default function Servers() {
                             )}
                         </View>
                     </View>
-                </TouchableOpacity>
+                </Touchable>
 
-                <TouchableOpacity
+                <Touchable
                     style={styles.menuButton}
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
                     <Ellipsis size={18} color="#888" />
-                </TouchableOpacity>
+                </Touchable>
             </View>
         );
     };
@@ -146,15 +145,14 @@ export default function Servers() {
             </View>
 
             <View style={styles.bottomContent}>
-                <TouchableOpacity
+                <Touchable
                     style={[
                         styles.addButton,
                     ]}
-                    activeOpacity={0.85}
                     onPress={handleAddServer}
                 >
                     <Text style={styles.addButtonText}>{t('onboarding.servers.add')}</Text>
-                </TouchableOpacity>
+                </Touchable>
             </View>
         </SafeAreaView>
     );

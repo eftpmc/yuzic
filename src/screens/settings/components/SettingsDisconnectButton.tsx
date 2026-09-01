@@ -1,7 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { LogOut } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   label: string;
@@ -13,10 +14,10 @@ const SettingsDisconnectButton: React.FC<Props> = ({ label, onPress }) => {
   const color = isDarkMode ? '#FF453A' : '#FF3B30';
 
   return (
-    <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={onPress}>
+    <Touchable style={[styles.button, { backgroundColor: color }]} onPress={onPress}>
       <LogOut size={18} color="#fff" />
       <Text style={styles.label}>{label}</Text>
-    </TouchableOpacity>
+    </Touchable>
   );
 };
 

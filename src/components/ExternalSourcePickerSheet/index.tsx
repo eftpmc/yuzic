@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
@@ -14,6 +14,7 @@ import {
   useOptionSheetBackground,
 } from '@/components/options/OptionSheetPrimitives'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -74,11 +75,10 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
                   const sublabel = item.kind === 'album' ? (item as SourceResolvedAlbum).artist : undefined
                   const isArtist = item.kind === 'artist'
                   return (
-                    <TouchableOpacity
+                    <Touchable
                       key={`${item.source}-${i}`}
                       style={styles.option}
                       onPress={() => onSelect(item)}
-                      activeOpacity={0.7}
                     >
                       <MediaImage
                         cover={item.coverUrl ? { kind: 'url', url: item.coverUrl } : { kind: 'letter', name: label }}
@@ -95,7 +95,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
                           </Text>
                         )}
                       </View>
-                    </TouchableOpacity>
+                    </Touchable>
                   )
                 })}
               </View>

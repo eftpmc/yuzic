@@ -2,13 +2,13 @@ import React, { memo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   StyleProp,
   ViewStyle,
 } from 'react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   cover: any;
@@ -23,7 +23,7 @@ type Props = {
 function MediaTile({ cover, title, subtitle, size, radius, onPress, onLongPress }: Props) {
   const { colors } = useTheme();
 
-  const Wrapper: React.ComponentType<any> = onPress || onLongPress ? TouchableOpacity : View;
+  const Wrapper: React.ComponentType<any> = onPress || onLongPress ? Touchable : View;
 
   const containerStyle: StyleProp<ViewStyle> = { width: size };
   const imageStyle: StyleProp<ViewStyle> = {
@@ -34,7 +34,7 @@ function MediaTile({ cover, title, subtitle, size, radius, onPress, onLongPress 
   };
 
   return (
-    <Wrapper onPress={onPress} onLongPress={onLongPress} activeOpacity={onPress || onLongPress ? 0.7 : undefined} style={containerStyle}>
+    <Wrapper onPress={onPress} onLongPress={onLongPress} style={containerStyle}>
       <MediaImage cover={cover} size="grid" style={imageStyle} />
       <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{title}</Text>
       <Text numberOfLines={1} style={[styles.subtitle, { color: colors.subtext }]}>{subtitle}</Text>

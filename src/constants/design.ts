@@ -19,6 +19,19 @@ export const statusColor = {
   downloading: '#007AFF',
 } as const;
 
+/**
+ * Pressed-state overlay opacity.
+ *
+ * One value for the whole app: the codebase had seven different `activeOpacity`
+ * settings, which is seven answers to a question nobody was asking. Android
+ * spends it on a ripple bounded to the component, iOS on a dip in opacity.
+ */
+export const stateLayer = {
+  rippleDark: 'rgba(255, 255, 255, 0.12)',
+  rippleLight: 'rgba(0, 0, 0, 0.10)',
+  pressedOpacity: 0.6,
+} as const;
+
 export const radius = {
   xs: 4,
   sm: 6,

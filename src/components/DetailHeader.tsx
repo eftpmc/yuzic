@@ -2,7 +2,6 @@ import React from 'react';
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   type StyleProp,
   type ViewStyle,
@@ -13,6 +12,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
+import Touchable from '@/components/Touchable';
 
 type DetailHeaderProps = {
   title: string;
@@ -38,15 +38,16 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
 
   return (
     <View style={styles.headerRow}>
-      <TouchableOpacity
+      <Touchable
         testID="detail-back-button"
         accessibilityRole="button"
         accessibilityLabel="Go back"
         onPress={() => navigation.goBack()}
         style={styles.headerButton}
+        feedback="control"
       >
         <ChevronLeft size={24} color={colors.secondary} />
-      </TouchableOpacity>
+      </Touchable>
 
       <View pointerEvents="none" style={styles.headerTitleWrapper}>
         <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
@@ -152,17 +153,16 @@ type DetailCircleActionProps = {
 export function DetailCircleAction({ children, onPress, disabled, style, accessibilityLabel }: DetailCircleActionProps) {
   const { colors } = useTheme();
   return (
-    <TouchableOpacity
+    <Touchable
       style={[styles.secondaryButton, { backgroundColor: colors.card }, style]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
     >
       {children}
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 
@@ -177,17 +177,16 @@ type DetailPlayActionProps = {
 export function DetailPlayAction({ children, onPress, disabled, style, accessibilityLabel }: DetailPlayActionProps) {
   const { colors } = useTheme();
   return (
-    <TouchableOpacity
+    <Touchable
       style={[styles.playButton, { backgroundColor: colors.themeColor }, style]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
     >
       {children}
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 
@@ -199,16 +198,16 @@ type DetailHeaderIconButtonProps = {
 
 export function DetailHeaderIconButton({ children, onPress, accessibilityLabel = 'More options' }: DetailHeaderIconButtonProps) {
   return (
-    <TouchableOpacity
+    <Touchable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       style={styles.headerButton}
-      activeOpacity={0.7}
+      feedback="control"
       hitSlop={8}
     >
       {children}
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 

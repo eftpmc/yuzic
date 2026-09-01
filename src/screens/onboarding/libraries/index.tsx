@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
 } from 'react-native';
@@ -17,6 +16,7 @@ import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type Library = { id: string; name: string };
 
@@ -98,23 +98,23 @@ export default function LibrariesOnboarding() {
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={() => setRetryCount(c => c + 1)}>
+            <Touchable style={styles.retryButton} onPress={() => setRetryCount(c => c + 1)}>
               <Text style={styles.retryButtonText}>{t('onboarding.libraries.retry')}</Text>
-            </TouchableOpacity>
+            </Touchable>
           </View>
         ) : (
           <View style={styles.optionList}>
-            <TouchableOpacity onPress={selectAll} style={styles.optionRow}>
+            <Touchable onPress={selectAll} style={styles.optionRow}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
                 {isAll && <Check size={14} color="#000" />}
               </View>
               <Text style={styles.optionText}>{t('onboarding.libraries.allLibraries')}</Text>
-            </TouchableOpacity>
+            </Touchable>
 
             {libraries.map(lib => {
               const selected = selectedIds.includes(lib.id);
               return (
-                <TouchableOpacity
+                <Touchable
                   key={lib.id}
                   onPress={() => toggle(lib.id)}
                   style={styles.optionRow}
@@ -125,7 +125,7 @@ export default function LibrariesOnboarding() {
                   <Text style={styles.optionText} numberOfLines={1}>
                     {lib.name}
                   </Text>
-                </TouchableOpacity>
+                </Touchable>
               );
             })}
           </View>
@@ -133,17 +133,17 @@ export default function LibrariesOnboarding() {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <Touchable style={styles.continueButton} onPress={handleContinue}>
           <Text style={styles.continueButtonText}>
             {isAll
               ? t('onboarding.libraries.useAll')
               : t('onboarding.libraries.continueWith', { count: selectedIds.length })}
           </Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Touchable style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>{t('common.back')}</Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
     </SafeAreaView>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
+import Touchable from '@/components/Touchable';
 
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ export const ThemeColor: React.FC = () => {
       <SettingsCard style={styles.card}>
         <View style={styles.presets}>
           {THEME_PRESET_COLORS.map(color => (
-            <TouchableOpacity
+            <Touchable
               key={color}
               onPress={() => dispatch(setThemeColor(color))}
               style={[
@@ -37,7 +38,7 @@ export const ThemeColor: React.FC = () => {
           ))}
         </View>
 
-        <TouchableOpacity
+        <Touchable
           style={[styles.expandButton, { backgroundColor: colors.muted, borderColor: colors.border }]}
           onPress={() => setOpen(v => !v)}
         >
@@ -51,7 +52,7 @@ export const ThemeColor: React.FC = () => {
             ? <ChevronUp size={18} color={colors.subtext} />
             : <ChevronDown size={18} color={colors.subtext} />
           }
-        </TouchableOpacity>
+        </Touchable>
 
         {open && (
           <View style={styles.picker}>

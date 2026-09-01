@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { User, Lock, Shield, ChevronUp, ChevronDown, TriangleAlert, QrCode, ChevronRight } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -22,6 +21,7 @@ import {
     pollQuickConnect,
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
+import Touchable from '@/components/Touchable';
 
 // Quick Connect codes expire server-side; without a client-side ceiling too,
 // polling would continue forever showing "waiting for approval" with no
@@ -252,15 +252,14 @@ export default function Credentials() {
                             </View>
 
                             {/* Reverse proxy auth */}
-                            <TouchableOpacity
+                            <Touchable
                                 style={styles.proxyToggle}
                                 onPress={() => setProxyExpanded(v => !v)}
-                                activeOpacity={0.7}
                             >
                                 <Shield size={16} color="#666" style={styles.proxyToggleIcon} />
                                 <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
                                 {proxyExpanded ? <ChevronUp size={16} color="#666" /> : <ChevronDown size={16} color="#666" />}
-                            </TouchableOpacity>
+                            </Touchable>
 
                             {proxyExpanded && (
                                 <View style={styles.proxySection}>
@@ -306,16 +305,15 @@ export default function Credentials() {
 
                             {/* Quick Connect option — Jellyfin only */}
                             {isJellyfin && (
-                                <TouchableOpacity
+                                <Touchable
                                     style={styles.quickConnectToggle}
                                     onPress={handleStartQuickConnect}
                                     disabled={isTesting}
-                                    activeOpacity={0.7}
                                 >
                                     <QrCode size={16} color="#666" style={styles.proxyToggleIcon} />
                                     <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
                                     <ChevronRight size={16} color="#666" />
-                                </TouchableOpacity>
+                                </Touchable>
                             )}
                         </>
                     )}
@@ -323,7 +321,7 @@ export default function Credentials() {
 
                 <View style={styles.buttonContainer}>
                     {!quickConnectMode && (
-                        <TouchableOpacity
+                        <Touchable
                             style={[styles.nextButton, isTesting && styles.nextButtonDisabled]}
                             onPress={handleNext}
                             disabled={isTesting}
@@ -332,17 +330,17 @@ export default function Credentials() {
                                 ? <SpinningLoaderCircle size={18} color="#000" />
                                 : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                             }
-                        </TouchableOpacity>
+                        </Touchable>
                     )}
 
-                    <TouchableOpacity
+                    <Touchable
                         style={styles.backButton}
                         onPress={quickConnectMode ? handleCancelQuickConnect : () => router.back()}
                     >
                         <Text style={styles.backButtonText}>
                             {quickConnectMode ? 'Use password instead' : t('common.back')}
                         </Text>
-                    </TouchableOpacity>
+                    </Touchable>
                 </View>
             </View>
         </SafeAreaView>

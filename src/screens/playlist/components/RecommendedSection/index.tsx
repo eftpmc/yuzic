@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import { CheckCircle, CirclePlus, RefreshCw, CloudDownload } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +43,7 @@ import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/type
 import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
+import Touchable from '@/components/Touchable';
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
@@ -163,12 +163,12 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
       onPress={() => void handlePress()}
       variant="compact"
       trailing={
-        <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
+        <Touchable onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
           {added
             ? <CheckCircle size={22} color={colors.placeholder} />
             : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
           }
-        </TouchableOpacity>
+        </Touchable>
       }
     />
   );
@@ -196,7 +196,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
       disabled={!hasPreview}
       variant="compact"
       trailing={
-        <TouchableOpacity
+        <Touchable
           onPress={() => hasDownloader && onDownload(song)}
           disabled={!hasDownloader}
           hitSlop={10}
@@ -206,7 +206,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
             size={22}
             color={hasDownloader ? colors.subtext : colors.muted}
           />
-        </TouchableOpacity>
+        </Touchable>
       }
     />
   );

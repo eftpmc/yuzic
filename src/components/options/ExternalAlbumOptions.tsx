@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import {
   BottomSheetModal,
@@ -23,6 +23,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import { statusColor } from '@/constants/design';
+import Touchable from '@/components/Touchable';
 
 interface ExternalAlbumOptionsProps {
   album: ExternalAlbumBase;
@@ -43,12 +44,12 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
   return (
     <>
-      <TouchableOpacity
+      <Touchable
         style={styles.moreButton}
         onPress={() => bottomSheetRef.current?.present()}
       >
         <Ellipsis size={24} color={colors.secondary} />
-      </TouchableOpacity>
+      </Touchable>
 
       <BottomSheetModal
         ref={bottomSheetRef}

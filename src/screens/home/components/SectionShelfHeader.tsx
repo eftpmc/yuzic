@@ -1,10 +1,11 @@
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { ChevronRight } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
 import { spacing } from '@/constants/design'
 import { sectionStyles } from './sectionStyles'
+import Touchable from '@/components/Touchable'
 
 type Props = {
   title: string
@@ -35,19 +36,18 @@ export default function SectionShelfHeader({ title, onSeeAll, seeAllLabel, testI
   if (!onSeeAll) return heading
 
   return (
-    <TouchableOpacity
+    <Touchable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={seeAllLabel ?? title}
       onPress={onSeeAll}
       style={styles.row}
-      activeOpacity={0.6}
     >
       {heading}
       <View style={styles.chevron}>
         <ChevronRight size={20} color={colors.subtext} />
       </View>
-    </TouchableOpacity>
+    </Touchable>
   )
 }
 

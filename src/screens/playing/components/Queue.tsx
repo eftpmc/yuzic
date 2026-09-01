@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GripVertical, ChevronLeft, Pause, Play, SkipForward } from 'lucide-react-native';
@@ -14,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
+import Touchable from '@/components/Touchable';
 
 type QueueItemProps = {
   item: Song;
@@ -36,7 +36,7 @@ function queueItemPropsAreEqual(prev: QueueItemProps, next: QueueItemProps) {
 
 const QueueItem = memo(
   ({ item, index, isCurrent, onPress, onLongPress }: QueueItemProps) => (
-    <TouchableOpacity
+    <Touchable
       onPress={() => onPress(index)}
       onLongPress={onLongPress}
       style={[
@@ -63,7 +63,7 @@ const QueueItem = memo(
       </View>
 
       <GripVertical color="#888" />
-    </TouchableOpacity>
+    </Touchable>
   ),
   queueItemPropsAreEqual
 );
@@ -135,7 +135,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
     <View testID="playing-queue" style={[styles.container, { width }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity
+        <Touchable
           testID="queue-back-button"
           accessibilityRole="button"
           accessibilityLabel="Back to player"
@@ -143,7 +143,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           style={styles.backButton}
         >
           <ChevronLeft size={28} color="#fff" />
-        </TouchableOpacity>
+        </Touchable>
 
         {currentSong && (
           <MediaImage
@@ -169,7 +169,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
         </View>
 
         <View style={styles.playControls}>
-          <TouchableOpacity
+          <Touchable
             onPress={isPlaying ? pauseSong : resumeSong}
             style={styles.controlButton}
           >
@@ -177,14 +177,14 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
               ? <Pause size={20} color="#fff" fill="#fff" />
               : <Play size={20} color="#fff" fill="#fff" />
             }
-          </TouchableOpacity>
+          </Touchable>
 
-          <TouchableOpacity
+          <Touchable
             onPress={skipToNext}
             style={styles.controlButton}
           >
             <SkipForward size={20} color="#fff" fill="#fff" />
-          </TouchableOpacity>
+          </Touchable>
         </View>
       </View>
 

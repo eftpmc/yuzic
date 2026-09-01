@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Cast, ListMusic } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
+import Touchable from '@/components/Touchable';
 
 type BottomControlsProps = {
   mode: 'player' | 'queue';
@@ -16,11 +17,11 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onOpenOutputSheet} style={styles.leftButton}>
+      <Touchable onPress={onOpenOutputSheet} style={styles.leftButton}>
         <Cast size={24} color={isCasting ? '#fff' : '#ccc'} />
-      </TouchableOpacity>
+      </Touchable>
 
-      <TouchableOpacity
+      <Touchable
         testID="playing-queue-toggle"
         accessibilityRole="button"
         accessibilityLabel="Toggle queue"
@@ -28,7 +29,7 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
         style={[styles.rightButton, mode === 'queue' && styles.activeButton]}
       >
         <ListMusic size={24} color={iconColor(mode === 'queue')} />
-      </TouchableOpacity>
+      </Touchable>
     </View>
   );
 };

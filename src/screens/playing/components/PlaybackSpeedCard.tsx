@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Gauge } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -10,6 +10,7 @@ import {
   PLAYBACK_MIN_SPEED,
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
+import Touchable from '@/components/Touchable';
 
 type Props = { contentWidth: number };
 
@@ -73,9 +74,8 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
 
       {/* Controls */}
       <View style={styles.controls}>
-        <TouchableOpacity
+        <Touchable
           onPress={reset}
-          activeOpacity={0.7}
           disabled={!isAltered}
           style={[
             styles.resetButton,
@@ -87,25 +87,23 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
           <Text style={[styles.resetLabel, !isAltered && { opacity: 0.35 }]}>
             1×
           </Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity
+        <Touchable
           onPress={decrease}
-          activeOpacity={0.7}
           disabled={!canDecrease}
           style={[styles.stepButton, !canDecrease && { opacity: 0.35 }]}
         >
           <Text style={styles.stepLabel}>−</Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity
+        <Touchable
           onPress={increase}
-          activeOpacity={0.7}
           disabled={!canIncrease}
           style={[styles.stepButton, !canIncrease && { opacity: 0.35 }]}
         >
           <Text style={styles.stepLabel}>+</Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
     </View>
   );

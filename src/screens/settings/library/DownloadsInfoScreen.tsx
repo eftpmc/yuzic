@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Alert, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -19,6 +19,7 @@ import { formatBytes } from '@/utils/downloads/downloadStore';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
+import Touchable from '@/components/Touchable';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -154,9 +155,9 @@ const DownloadsInfoScreen: React.FC = () => {
                 {showSectionHeader && (
                   <View style={styles.providerHeader}>
                     <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
-                    <TouchableOpacity onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
+                    <Touchable onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
                       <Trash2 size={16} color={colors.subtext} />
-                    </TouchableOpacity>
+                    </Touchable>
                   </View>
                 )}
                 <View style={[styles.row, { backgroundColor: colors.card }]}>
@@ -178,13 +179,13 @@ const DownloadsInfoScreen: React.FC = () => {
                       <Text numberOfLines={1} style={[styles.meta, styles.shrink, { color: colors.subtext }]}>{item.downloaded}</Text>
                     </View>
                   </View>
-                  <TouchableOpacity
+                  <Touchable
                     style={[styles.removeButton, removingId === item.id && styles.disabled]}
                     onPress={() => confirmRemove(item)}
                     disabled={removingId === item.id}
                   >
                     <Trash2 size={16} color={colors.subtext} />
-                  </TouchableOpacity>
+                  </Touchable>
                 </View>
               </View>
             );

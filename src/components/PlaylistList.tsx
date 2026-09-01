@@ -9,7 +9,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
 } from 'react-native';
 import {
@@ -39,6 +38,7 @@ import { useIsOffline } from '@/hooks/useIsOffline';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -165,7 +165,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       const isChecked = selectedIds.has(item.id);
 
       return (
-        <TouchableOpacity
+        <Touchable
           style={styles.option}
           disabled={membershipLoading}
           onPress={() => togglePlaylist(item.id)}
@@ -185,7 +185,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             color={themeColor}
             style={{ opacity: isChecked ? 1 : 0 }}
           />
-        </TouchableOpacity>
+        </Touchable>
       );
     }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor]);
 
@@ -258,9 +258,9 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             },
           ]}
         >
-          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+          <Touchable onPress={onClose} style={styles.cancelButton}>
             <X size={20} color={colors.secondary} strokeWidth={2.5} />
-          </TouchableOpacity>
+          </Touchable>
 
           <Text style={[styles.headerTitle, { color: colors.secondary }]}>
             {t('playlistList.title')}
@@ -287,9 +287,9 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
-            <TouchableOpacity onPress={handleCreatePlaylist}>
+            <Touchable onPress={handleCreatePlaylist}>
               <Plus size={26} color={colors.secondary} />
-            </TouchableOpacity>
+            </Touchable>
           </View>
 
           <BottomSheetFlatList
@@ -307,7 +307,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             { paddingBottom: insets.bottom + 12 },
           ]}
         >
-          <TouchableOpacity
+          <Touchable
             style={[
               styles.doneButton,
               { backgroundColor: themeColor },
@@ -321,7 +321,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             ) : (
               <Text style={styles.doneButtonText}>{t('common.done')}</Text>
             )}
-          </TouchableOpacity>
+          </Touchable>
         </View>
       </BottomSheetModal>
     );
