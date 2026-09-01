@@ -1,6 +1,11 @@
 import { createSlskdClient, type SlskdClient, type SlskdConfig } from '../client';
+import {
+  selectAlbumDirectory,
+  selectTrackFile,
+  type SearchFile,
+  type SearchResponseItem,
+} from './selection';
 
-const ALLOWED_EXTENSIONS = ['flac', 'mp3'];
 const SEARCH_TIMEOUT_MS = 15000;
 const POLL_MS = 2000;
 // Max poll iterations as safety fallback if isComplete never becomes true (~45s)
@@ -11,43 +16,34 @@ type SearchStateResponse = {
   isComplete?: boolean;
 };
 
-type SearchFile = {
-  filename: string;
-  size: number;
-  code: number;
-  isLocked: boolean;
-  extension: string;
-  bitRate?: number;
-  bitDepth?: number;
-};
-
-type SearchResponseItem = {
-  username: string;
-  files: SearchFile[];
-  hasFreeUploadSlot?: boolean;
-  lockedFileCount?: number;
-  queueLength?: number;
-};
+/** Stable reasons a download can fail, so the UI can translate them. */
+export type SlskdDownloadErrorCode =
+  | 'missing_identity'
+  | 'search_failed'
+  | 'search_timeout'
+  | 'no_matching_release'
+  | 'no_matching_track'
+  | 'enqueue_failed'
+  | 'request_failed';
 
 export type DownloadAlbumResult =
   | { success: true }
-  | { success: false; message: string };
+  | { success: false; code: SlskdDownloadErrorCode; message: string };
 
 export type DownloadTrackResult = DownloadAlbumResult;
 
-function ext(path: string): string {
-  const i = path.lastIndexOf('.');
-  return i < 0 ? '' : path.slice(i + 1).toLowerCase();
-}
+const errorMessages: Record<SlskdDownloadErrorCode, string> = {
+  missing_identity: 'Missing album or artist name',
+  search_failed: 'Soulseek search failed',
+  search_timeout: 'Soulseek search timed out before completing',
+  no_matching_release: 'No matching release found on Soulseek',
+  no_matching_track: 'No matching track found on Soulseek',
+  enqueue_failed: 'Could not queue the download on Soulseek',
+  request_failed: 'Could not reach Soulseek',
+};
 
-function basename(path: string): string {
-  const normalized = path.replace(/\//g, '\\');
-  const i = normalized.lastIndexOf('\\');
-  return i < 0 ? normalized : normalized.slice(i + 1);
-}
-
-function normalize(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]/gi, '');
+function failure(code: SlskdDownloadErrorCode): DownloadAlbumResult {
+  return { success: false, code, message: errorMessages[code] };
 }
 
 function delay(ms: number): Promise<void> {
@@ -68,7 +64,7 @@ function randomUuid(): string {
 async function runSearch(
   client: SlskdClient,
   searchText: string
-): Promise<SearchResponseItem[] | { error: string }> {
+): Promise<SearchResponseItem[] | { code: SlskdDownloadErrorCode }> {
   const searchBody = {
     id: randomUuid(),
     searchText,
@@ -88,7 +84,7 @@ async function runSearch(
 
   const searchId = searchState.id;
   if (!searchId) {
-    return { error: 'Search failed' };
+    return { code: 'search_failed' };
   }
 
   // Poll search state until complete (slskd API reports isComplete when done)
@@ -105,20 +101,13 @@ async function runSearch(
   }
 
   if (!isComplete) {
-    return { error: 'Search timed out before completing' };
+    return { code: 'search_timeout' };
   }
 
   const list = await client.request<SearchResponseItem[]>(
     `/searches/${searchId}/responses`
   );
   return Array.isArray(list) ? list : [];
-}
-
-function playableFiles(response: SearchResponseItem): SearchFile[] {
-  return (response.files ?? []).filter((f) => {
-    if (f.isLocked) return false;
-    return ALLOWED_EXTENSIONS.includes(ext(f.filename ?? ''));
-  });
 }
 
 async function enqueueFiles(
@@ -139,7 +128,7 @@ export async function downloadAlbum(
   artistName: string
 ): Promise<DownloadAlbumResult> {
   if (!albumTitle || !artistName) {
-    return { success: false, message: 'Missing album or artist name' };
+    return failure('missing_identity');
   }
 
   const searchText = `${artistName} ${albumTitle}`.trim();
@@ -147,68 +136,23 @@ export async function downloadAlbum(
 
   try {
     const result = await runSearch(client, searchText);
-    if (!Array.isArray(result)) {
-      return { success: false, message: result.error };
+    if (!Array.isArray(result)) return failure(result.code);
+
+    // Soulseek returns whatever matched loosely, so the chosen directory has to
+    // name the album; otherwise this would queue a different release entirely.
+    const chosen = selectAlbumDirectory(result, albumTitle, artistName);
+    if (!chosen) return failure('no_matching_release');
+
+    try {
+      await enqueueFiles(client, chosen.username, chosen.files);
+    } catch {
+      return failure('enqueue_failed');
     }
-
-    type DirGroup = { dir: string; files: SearchFile[] };
-    type Candidate = {
-      username: string;
-      hasFreeUploadSlot: boolean;
-      dirs: DirGroup[];
-    };
-    const candidates: Candidate[] = [];
-
-    for (const r of result) {
-      const userFiles = playableFiles(r);
-      if (userFiles.length === 0) continue;
-
-      const byDir = new Map<string, SearchFile[]>();
-      for (const f of userFiles) {
-        const path = (f.filename ?? '').replace(/\//g, '\\');
-        const last = path.lastIndexOf('\\');
-        const dir = last < 0 ? '' : path.slice(0, last);
-        const list = byDir.get(dir) ?? [];
-        list.push(f);
-        byDir.set(dir, list);
-      }
-
-      const dirs: DirGroup[] = [];
-      byDir.forEach((files, dir) => dirs.push({ dir, files }));
-
-      candidates.push({
-        username: r.username,
-        hasFreeUploadSlot: r.hasFreeUploadSlot === true,
-        dirs,
-      });
-    }
-
-    if (candidates.length === 0) {
-      return {
-        success: false,
-        message: 'No matching flac/mp3 files found on Soulseek',
-      };
-    }
-
-    candidates.sort((a, b) => {
-      if (a.hasFreeUploadSlot !== b.hasFreeUploadSlot) {
-        return a.hasFreeUploadSlot ? -1 : 1;
-      }
-      const aTotal = a.dirs.reduce((n, d) => n + d.files.length, 0);
-      const bTotal = b.dirs.reduce((n, d) => n + d.files.length, 0);
-      return bTotal - aTotal;
-    });
-
-    const user = candidates[0];
-    user.dirs.sort((a, b) => b.files.length - a.files.length);
-    const chosenDir = user.dirs[0];
-
-    await enqueueFiles(client, user.username, chosenDir.files);
-
     return { success: true };
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'slskd download failed';
-    return { success: false, message: msg };
+  } catch {
+    // Reaching here means the search itself failed — a bad URL, a dead server,
+    // or the request deadline — not a problem with queueing the transfer.
+    return failure('request_failed');
   }
 }
 
@@ -218,12 +162,7 @@ export async function downloadTrack(
   artistName: string
 ): Promise<DownloadTrackResult> {
   if (!trackTitle || !artistName) {
-    return { success: false, message: 'Missing track or artist name' };
-  }
-
-  const normTitle = normalize(trackTitle);
-  if (!normTitle) {
-    return { success: false, message: 'Missing track or artist name' };
+    return failure('missing_identity');
   }
 
   const searchText = `${artistName} ${trackTitle}`.trim();
@@ -231,51 +170,18 @@ export async function downloadTrack(
 
   try {
     const result = await runSearch(client, searchText);
-    if (!Array.isArray(result)) {
-      return { success: false, message: result.error };
+    if (!Array.isArray(result)) return failure(result.code);
+
+    const chosen = selectTrackFile(result, trackTitle);
+    if (!chosen) return failure('no_matching_track');
+
+    try {
+      await enqueueFiles(client, chosen.username, [chosen.file]);
+    } catch {
+      return failure('enqueue_failed');
     }
-
-    type Candidate = {
-      username: string;
-      hasFreeUploadSlot: boolean;
-      file: SearchFile;
-    };
-    const candidates: Candidate[] = [];
-
-    for (const r of result) {
-      for (const f of playableFiles(r)) {
-        if (!normalize(basename(f.filename ?? '')).includes(normTitle)) continue;
-        candidates.push({
-          username: r.username,
-          hasFreeUploadSlot: r.hasFreeUploadSlot === true,
-          file: f,
-        });
-      }
-    }
-
-    if (candidates.length === 0) {
-      return {
-        success: false,
-        message: 'No matching flac/mp3 file found on Soulseek',
-      };
-    }
-
-    candidates.sort((a, b) => {
-      if (a.hasFreeUploadSlot !== b.hasFreeUploadSlot) {
-        return a.hasFreeUploadSlot ? -1 : 1;
-      }
-      const aFlac = ext(a.file.filename) === 'flac' ? 1 : 0;
-      const bFlac = ext(b.file.filename) === 'flac' ? 1 : 0;
-      if (aFlac !== bFlac) return bFlac - aFlac;
-      return (b.file.bitRate ?? 0) - (a.file.bitRate ?? 0);
-    });
-
-    const chosen = candidates[0];
-    await enqueueFiles(client, chosen.username, [chosen.file]);
-
     return { success: true };
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'slskd download failed';
-    return { success: false, message: msg };
+  } catch {
+    return failure('request_failed');
   }
 }

@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../fetchWithTimeout';
+
 export interface AudiomuseConfig {
   serverUrl: string;
   apiToken: string;
@@ -18,7 +20,7 @@ export function createAudiomuseClient(config: AudiomuseConfig) {
     path: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const res = await fetch(`${baseUrl}${path}`, {
+    const res = await fetchWithTimeout(`${baseUrl}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

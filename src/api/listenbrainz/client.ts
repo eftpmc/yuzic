@@ -1,4 +1,5 @@
 import { ListenBrainzConfig } from '@/types';
+import { fetchWithTimeout } from '../fetchWithTimeout';
 
 const BASE_URL = 'https://api.listenbrainz.org/1';
 
@@ -30,7 +31,7 @@ export function createListenBrainzClient(config: ListenBrainzConfig) {
       auth = true,
     } = options || {};
 
-    const res = await fetch(`${BASE_URL}${path}`, {
+    const res = await fetchWithTimeout(`${BASE_URL}${path}`, {
       method,
       headers: {
         'Content-Type': 'application/json',

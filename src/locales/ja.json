@@ -722,7 +722,28 @@
       "startFailed": "ダウンロードを開始できませんでした。",
       "chooseService": "サービスを選択",
       "lidarrDesc": "音楽コレクションマネージャー",
-      "slskdDesc": "P2P ファイル共有"
+      "slskdDesc": "P2P ファイル共有",
+      "errors": {
+        "lidarr": {
+          "album_identity_ambiguous": "Lidarr で同名のリリースが複数見つかりました。",
+          "album_not_found_for_artist": "Lidarr にこのアーティストのこのアルバムがありません。",
+          "artist_identity_ambiguous": "Lidarr で同名のアーティストが複数見つかりました。",
+          "artist_identity_unresolved": "Lidarr はこのアーティストを特定できませんでした。",
+          "external_identity_mismatch": "このアーティストの情報が Lidarr の情報と一致しません。",
+          "lidarr_metadata_unavailable": "Lidarr に接続できません。サーバーを確認してもう一度お試しください。",
+          "missing_album_identity": "アルバムまたはアーティストの情報が不足しています。",
+          "request_timeout": "Lidarr の応答に時間がかかりすぎました。"
+        },
+        "slskd": {
+          "enqueue_failed": "Soulseek のキューに追加できませんでした。",
+          "missing_identity": "アルバムまたはアーティストの情報が不足しています。",
+          "no_matching_release": "このリリースを共有しているユーザーが Soulseek にいません。",
+          "no_matching_track": "この曲を共有しているユーザーが Soulseek にいません。",
+          "request_failed": "Soulseek に接続できません。サーバーを確認してもう一度お試しください。",
+          "search_failed": "Soulseek で検索を開始できませんでした。",
+          "search_timeout": "Soulseek の検索がタイムアウトしました。"
+        }
+      }
     },
     "header": {
       "songs": "{{count}} 曲",

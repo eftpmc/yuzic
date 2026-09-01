@@ -6,13 +6,15 @@ import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice'
 import type { ExternalAlbumBase } from '@/types'
 import { selectDownloadersForActiveServer } from '@/utils/redux/selectors/downloadersSelectors'
 
+export { downloadErrorKey } from './errorKeys'
+
 export type { DownloaderId }
 
 export type DownloaderConfig = { serverUrl: string; apiKey: string }
 
 export type DownloadResult =
   | { success: true }
-  | { success: false; message: string }
+  | { success: false; code?: string; message: string }
 
 /**
  * The whole external album, not just its title and artist: Lidarr resolves the

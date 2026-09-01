@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../fetchWithTimeout';
+
 const LASTFM_BASE = 'https://ws.audioscrobbler.com/2.0/';
 
 // Pure JS MD5 — used only for LastFM request signing (api_sig)
@@ -127,7 +129,7 @@ export async function lastfmRequest<T = unknown>(
   }
 
   const body = new URLSearchParams(fullParams);
-  const res = await fetch(LASTFM_BASE, {
+  const res = await fetchWithTimeout(LASTFM_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),

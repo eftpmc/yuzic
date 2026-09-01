@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../fetchWithTimeout';
+
 const BASE = 'https://musicbrainz.org/ws/2';
 const HEADERS = {
   'User-Agent': 'yuzic/1.0 (https://github.com/yuzic)',
@@ -5,7 +7,7 @@ const HEADERS = {
 };
 
 async function mb<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { headers: HEADERS });
+  const res = await fetchWithTimeout(`${BASE}${path}`, { headers: HEADERS });
   if (!res.ok) throw new Error(`MusicBrainz ${res.status}: ${path}`);
   return res.json() as Promise<T>;
 }

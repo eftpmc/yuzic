@@ -1,4 +1,5 @@
 import { LidarrConfig } from '@/types';
+import { fetchWithTimeout } from '../fetchWithTimeout';
 
 export type LidarrClient = ReturnType<typeof createLidarrClient>;
 
@@ -15,7 +16,7 @@ export function createLidarrClient(config: LidarrConfig) {
     path: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const res = await fetch(`${baseUrl}${path}`, {
+    const res = await fetchWithTimeout(`${baseUrl}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

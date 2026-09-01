@@ -723,7 +723,28 @@
       "startFailed": "Échec du démarrage du téléchargement.",
       "chooseService": "Choisir un service",
       "lidarrDesc": "Gestionnaire de collection musicale",
-      "slskdDesc": "Partage de fichiers pair à pair"
+      "slskdDesc": "Partage de fichiers pair à pair",
+      "errors": {
+        "lidarr": {
+          "album_identity_ambiguous": "Lidarr a trouvé plusieurs éditions portant ce titre.",
+          "album_not_found_for_artist": "Lidarr ne répertorie pas cet album pour cet artiste.",
+          "artist_identity_ambiguous": "Lidarr a trouvé plusieurs artistes portant ce nom.",
+          "artist_identity_unresolved": "Lidarr n'a pas pu identifier cet artiste.",
+          "external_identity_mismatch": "Les informations de cet artiste ne correspondent pas à celles de Lidarr.",
+          "lidarr_metadata_unavailable": "Lidarr est injoignable. Vérifiez le serveur et réessayez.",
+          "missing_album_identity": "Informations d'album ou d'artiste manquantes.",
+          "request_timeout": "Lidarr a mis trop de temps à répondre."
+        },
+        "slskd": {
+          "enqueue_failed": "Impossible d'ajouter ceci à la file Soulseek.",
+          "missing_identity": "Informations d'album ou d'artiste manquantes.",
+          "no_matching_release": "Personne ne partage cette édition sur Soulseek.",
+          "no_matching_track": "Personne ne partage ce morceau sur Soulseek.",
+          "request_failed": "Soulseek est injoignable. Vérifiez le serveur et réessayez.",
+          "search_failed": "Soulseek n'a pas pu lancer la recherche.",
+          "search_timeout": "La recherche Soulseek a expiré."
+        }
+      }
     },
     "header": {
       "songs": "{{count}} morceau",

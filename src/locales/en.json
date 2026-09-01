@@ -680,7 +680,28 @@
       "startFailed": "Failed to start download.",
       "chooseService": "Choose a service",
       "lidarrDesc": "Music collection manager",
-      "slskdDesc": "Peer-to-peer file sharing"
+      "slskdDesc": "Peer-to-peer file sharing",
+      "errors": {
+        "lidarr": {
+          "album_identity_ambiguous": "Lidarr found more than one release with this title.",
+          "album_not_found_for_artist": "Lidarr doesn't list this album for the artist.",
+          "artist_identity_ambiguous": "Lidarr found more than one artist with this name.",
+          "artist_identity_unresolved": "Lidarr couldn't identify this artist.",
+          "external_identity_mismatch": "This artist's details don't match Lidarr's.",
+          "lidarr_metadata_unavailable": "Couldn't reach Lidarr. Check the server and try again.",
+          "missing_album_identity": "Missing album or artist details.",
+          "request_timeout": "Lidarr took too long to respond."
+        },
+        "slskd": {
+          "enqueue_failed": "Couldn't add this to the Soulseek queue.",
+          "missing_identity": "Missing album or artist details.",
+          "no_matching_release": "No one on Soulseek is sharing this release.",
+          "no_matching_track": "No one on Soulseek is sharing this song.",
+          "request_failed": "Could not reach Soulseek. Check the server and try again.",
+          "search_failed": "Soulseek couldn't start the search.",
+          "search_timeout": "The Soulseek search timed out."
+        }
+      }
     },
     "header": {
       "songs": "{{count}} song",

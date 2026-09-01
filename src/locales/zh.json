@@ -722,7 +722,28 @@
       "startFailed": "启动下载失败。",
       "chooseService": "选择服务",
       "lidarrDesc": "音乐收藏管理器",
-      "slskdDesc": "点对点文件共享"
+      "slskdDesc": "点对点文件共享",
+      "errors": {
+        "lidarr": {
+          "album_identity_ambiguous": "Lidarr 找到多个同名版本。",
+          "album_not_found_for_artist": "Lidarr 中没有该艺人的这张专辑。",
+          "artist_identity_ambiguous": "Lidarr 找到多位同名艺人。",
+          "artist_identity_unresolved": "Lidarr 无法识别该艺人。",
+          "external_identity_mismatch": "该艺人的信息与 Lidarr 的不一致。",
+          "lidarr_metadata_unavailable": "无法连接 Lidarr。请检查服务器后重试。",
+          "missing_album_identity": "缺少专辑或艺人信息。",
+          "request_timeout": "Lidarr 响应超时。"
+        },
+        "slskd": {
+          "enqueue_failed": "无法加入 Soulseek 队列。",
+          "missing_identity": "缺少专辑或艺人信息。",
+          "no_matching_release": "Soulseek 上没有人分享该版本。",
+          "no_matching_track": "Soulseek 上没有人分享该歌曲。",
+          "request_failed": "无法连接 Soulseek。请检查服务器后重试。",
+          "search_failed": "Soulseek 无法开始搜索。",
+          "search_timeout": "Soulseek 搜索超时。"
+        }
+      }
     },
     "header": {
       "songs": "{{count}} 首曲目",

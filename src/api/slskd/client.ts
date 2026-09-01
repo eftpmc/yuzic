@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../fetchWithTimeout';
+
 export interface SlskdConfig {
   serverUrl: string;
   apiKey: string;
@@ -18,7 +20,7 @@ export function createSlskdClient(config: SlskdConfig) {
     path: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const res = await fetch(`${baseUrl}${path}`, {
+    const res = await fetchWithTimeout(`${baseUrl}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

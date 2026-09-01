@@ -11,6 +11,7 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import {
+  downloadErrorKey,
   useDownloaderStates,
   type DownloaderId,
   type DownloaderState,
@@ -54,10 +55,11 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
         ? await def.downloadTrack!(config, { title: track.title, artist: track.artist })
         : await def.downloadAlbum(config, album);
       const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
+      const fallback = t('externalAlbum.download.failed');
       toast[result.success ? 'success' : 'error'](
         result.success
           ? t(successKey)
-          : (result.message ?? t('externalAlbum.download.failed'))
+          : t(downloadErrorKey(def.id, result.code), { defaultValue: fallback })
       );
       if (result.success) sheetRef.current?.dismiss();
     } catch {
