@@ -1,5 +1,7 @@
 import { createSlskdClient, type SlskdClient, type SlskdConfig } from '../client';
+import { createRequestCoalescer } from '../../coalesceRequest';
 import {
+  normalize,
   selectAlbumDirectory,
   selectTrackFile,
   type SearchFile,
@@ -44,6 +46,22 @@ const errorMessages: Record<SlskdDownloadErrorCode, string> = {
 
 function failure(code: SlskdDownloadErrorCode): DownloadAlbumResult {
   return { success: false, code, message: errorMessages[code] };
+}
+
+const coalesce = createRequestCoalescer<DownloadAlbumResult>();
+
+/**
+ * Scoped by server so the same album on two slskd instances isn't collapsed
+ * into one shared request, matching how Lidarr keys its own coalescing.
+ */
+function requestKey(
+  config: SlskdConfig,
+  kind: 'album' | 'track',
+  title: string,
+  artistName: string
+) {
+  const server = config.serverUrl.replace(/\/$/, '').toLowerCase();
+  return `${server}:${kind}:${normalize(artistName)}:${normalize(title)}`;
 }
 
 function delay(ms: number): Promise<void> {
@@ -122,7 +140,7 @@ async function enqueueFiles(
   });
 }
 
-export async function downloadAlbum(
+async function performAlbumDownload(
   config: SlskdConfig,
   albumTitle: string,
   artistName: string
@@ -156,7 +174,7 @@ export async function downloadAlbum(
   }
 }
 
-export async function downloadTrack(
+async function performTrackDownload(
   config: SlskdConfig,
   trackTitle: string,
   artistName: string
@@ -184,4 +202,28 @@ export async function downloadTrack(
   } catch {
     return failure('request_failed');
   }
+}
+
+/**
+ * A second tap while a search is running would otherwise start another
+ * 45-second search and queue the same files twice when both landed.
+ */
+export function downloadAlbum(
+  config: SlskdConfig,
+  albumTitle: string,
+  artistName: string
+): Promise<DownloadAlbumResult> {
+  return coalesce(requestKey(config, 'album', albumTitle, artistName), () =>
+    performAlbumDownload(config, albumTitle, artistName)
+  );
+}
+
+export function downloadTrack(
+  config: SlskdConfig,
+  trackTitle: string,
+  artistName: string
+): Promise<DownloadTrackResult> {
+  return coalesce(requestKey(config, 'track', trackTitle, artistName), () =>
+    performTrackDownload(config, trackTitle, artistName)
+  );
 }
