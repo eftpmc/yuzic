@@ -31,6 +31,9 @@ import {
   writeDownloadedTracks,
 } from '@/utils/downloads/localDownloadStore';
 import {
+  createDownloadJobRunner,
+} from '@/utils/downloads/jobQueue';
+import {
   DOWNLOAD_SCHEMA_VERSION,
   STAGING_SUFFIX,
   extensionFromContentType,
@@ -224,8 +227,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(() => new Set());
   const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
   const jobsRef = useRef<PersistedDownloadJob[]>(state.jobs);
-  const queueProcessingPromiseRef = useRef<Promise<void> | null>(null);
-  const queueRerunRequestedRef = useRef(false);
+  const jobRunnerRef = useRef(createDownloadJobRunner<Song, PersistedDownloadJob>());
   const activeDownloadsRef = useRef<Map<string, FileSystem.DownloadResumable>>(new Map());
   const progressRef = useRef<Record<string, number>>({});
   const progressFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -457,77 +459,30 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const CONCURRENT_TRACK_DOWNLOADS = 3;
 
   const processDownloadQueue = useCallback(async () => {
-    // Reentrant calls (e.g. tapping download on another collection while one
-    // is already in flight) must await the *same* in-flight run rather than
-    // no-op — otherwise the caller's promise resolves before the job it just
-    // enqueued has actually been processed. The rerun flag closes the window
-    // where a job is enqueued after the running loop already broke out but
-    // before the run promise settled — without it that job sat unprocessed
-    // until the next app foreground.
-    if (queueProcessingPromiseRef.current) {
-      queueRerunRequestedRef.current = true;
-      await queueProcessingPromiseRef.current;
-      return;
-    }
-
-    do {
-      queueRerunRequestedRef.current = false;
-
-      const run = (async () => {
+    await jobRunnerRef.current.run({
+      getJobs: () => jobsRef.current,
+      downloadTrack: (track, collectionId) => performDownloadTrack(track, collectionId),
+      onJobComplete: job => removeJob(job.id),
+      onJobRescheduled: (job, attempts) => {
+        console.warn(`Download job ${job.id} paused until next resume (attempt ${attempts}/${MAX_JOB_ATTEMPTS})`);
+        updateJobs(jobs => jobs.map(existing => (
+          existing.id === job.id
+            ? { ...existing, attempts, updatedAt: Date.now() }
+            : existing
+        )));
+      },
+      onJobDropped: (job, attempts) => {
+        console.warn(`Download job ${job.id} dropped after ${attempts} failed attempts`);
+        removeJob(job.id);
+        toast.error(t('externalAlbum.download.failed'));
+      },
+      prepare: async () => {
         await ensureDownloadDir();
         await cleanupStagingFiles();
-
-        // A job that keeps failing (dead link, deleted track, server outage)
-        // must not wedge every other queued download behind it — skip it for
-        // the rest of this run instead of stopping the whole queue. It stays
-        // persisted (with an attempt count) and is retried on the next run
-        // (app foreground, manual resume) until MAX_JOB_ATTEMPTS.
-        const failedJobIds = new Set<string>();
-
-        while (true) {
-          const job = jobsRef.current.find(candidate => !failedJobIds.has(candidate.id));
-          if (!job) break;
-
-          let failed = false;
-          for (let i = 0; i < job.tracks.length; i += CONCURRENT_TRACK_DOWNLOADS) {
-            const chunk = job.tracks.slice(i, i + CONCURRENT_TRACK_DOWNLOADS);
-            const results = await Promise.allSettled(
-              chunk.map(track => performDownloadTrack(track, job.collectionId))
-            );
-            if (results.some(r => r.status === 'rejected')) {
-              failed = true;
-              break;
-            }
-          }
-
-          if (failed) {
-            failedJobIds.add(job.id);
-            const attempts = (job.attempts ?? 0) + 1;
-            if (attempts >= MAX_JOB_ATTEMPTS) {
-              console.warn(`Download job ${job.id} dropped after ${attempts} failed attempts`);
-              removeJob(job.id);
-              toast.error(t('externalAlbum.download.failed'));
-            } else {
-              console.warn(`Download job ${job.id} paused until next resume (attempt ${attempts}/${MAX_JOB_ATTEMPTS})`);
-              updateJobs(jobs => jobs.map(existing => (
-                existing.id === job.id
-                  ? { ...existing, attempts, updatedAt: Date.now() }
-                  : existing
-              )));
-            }
-            continue;
-          }
-          removeJob(job.id);
-        }
-      })();
-
-      queueProcessingPromiseRef.current = run;
-      try {
-        await run;
-      } finally {
-        queueProcessingPromiseRef.current = null;
-      }
-    } while (queueRerunRequestedRef.current && jobsRef.current.length > 0);
+      },
+      concurrency: CONCURRENT_TRACK_DOWNLOADS,
+      maxAttempts: MAX_JOB_ATTEMPTS,
+    });
   }, [performDownloadTrack, removeJob, t, updateJobs]);
 
   const enqueueDownloadJob = useCallback(async (job: Omit<PersistedDownloadJob, 'createdAt' | 'updatedAt'>) => {
@@ -772,7 +727,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [isTrackDownloaded, isTrackDownloading, state.jobs]);
 
   useEffect(() => {
-    if (!queueProcessingPromiseRef.current) {
+    if (!jobRunnerRef.current.isRunning()) {
       cleanupStagingFiles().catch(() => {});
     }
 
