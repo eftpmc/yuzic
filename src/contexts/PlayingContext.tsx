@@ -46,6 +46,16 @@ import {
   createAudiomuseQueueFillProvider,
   resolveQueueFillProvider,
 } from './queueProviders';
+import {
+  assertPlayableSongs,
+  getMediaItemId,
+  getSourceKind,
+  hasPlayableMediaUrl,
+  hasSameQueueIds,
+  mediaItemToFallbackSong,
+  playableSongsOnly,
+} from './playableMedia';
+
 
 // How many tracks of runway remain before Autoplay fetches more.
 const LOW_WATERMARK = 3;
@@ -157,69 +167,7 @@ const PlayingProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
-function getMediaItemId(item: MediaItem): string {
-  return item.mediaId ?? (typeof item.url === 'string' ? item.url : '');
-}
-
-function getMediaItemUrl(item: MediaItem): string {
-  if (typeof item.url === 'string') return item.url;
-  if (typeof item.url === 'object' && item.url && 'uri' in item.url) {
-    return typeof item.url.uri === 'string' ? item.url.uri : '';
-  }
-  return '';
-}
-
-function mediaItemToFallbackSong(item: MediaItem): Song | null {
-  const id = getMediaItemId(item);
-  const streamUrl = getMediaItemUrl(item);
-  if (!id || !streamUrl) return null;
-  return {
-    id,
-    title: item.title ?? '',
-    artist: item.artist ?? '',
-    albumId: '',
-    artistId: '',
-    duration: String(item.duration ?? 0),
-    streamUrl,
-    cover: { kind: 'none' },
-    isPreview: false,
-  } as Song;
-}
-
-function hasSameQueueIds(current: Song[], next: Song[]): boolean {
-  return current.length === next.length && current.every((song, index) => song.id === next[index]?.id);
-}
-
 const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
-
-function getSourceKind(song: Song | null): string {
-  if (!song?.streamUrl) return 'none';
-  if (song.filePath || song.streamUrl.startsWith('file:')) return 'file';
-  if (song.streamUrl.startsWith('http://') || song.streamUrl.startsWith('https://')) return 'remote';
-  return 'unknown';
-}
-
-function hasPlayableMediaUrl(song: Song): boolean {
-  const url = song.streamUrl?.trim();
-  if (!url) return false;
-  return (
-    url.startsWith('http://') ||
-    url.startsWith('https://') ||
-    url.startsWith('file://') ||
-    url.startsWith('/')
-  );
-}
-
-function assertPlayableSongs(songs: Song[]) {
-  const invalid = songs.find(song => !hasPlayableMediaUrl(song));
-  if (invalid) {
-    throw new Error(`Track has no playable media URL: ${invalid.id}`);
-  }
-}
-
-function playableSongsOnly(songs: Song[]): Song[] {
-  return songs.filter(hasPlayableMediaUrl);
-}
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
