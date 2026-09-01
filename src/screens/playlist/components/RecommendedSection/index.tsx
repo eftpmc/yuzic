@@ -43,23 +43,11 @@ import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
+import shuffleArray from '@/utils/shuffleArray';
+import seededShuffle from '@/utils/seededShuffle';
+
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
-
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
-function seededShuffle<T>(arr: T[], seed: number): T[] {
-  const a = [...arr];
-  let s = (seed * 2 ** 31) | 0;
-  for (let i = a.length - 1; i > 0; i--) {
-    s = Math.imul(s, 1664525) + 1013904223;
-    const j = Math.abs(s) % (i + 1);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]> {
   if (!artistNames.length) return [];
@@ -72,7 +60,7 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
     const seen = new Set<string>(artistNames.map(n => n.toLowerCase()));
     const candidates: string[] = [];
     for (const similar of similarResults) {
-      for (const s of shuffle(similar)) {
+      for (const s of shuffleArray(similar)) {
         if (candidates.length >= artistNames.length * 8) break;
         const key = s.name.toLowerCase();
         if (!seen.has(key)) {
@@ -82,7 +70,7 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
       }
     }
 
-    const shuffledCandidates = shuffle(candidates);
+    const shuffledCandidates = shuffleArray(candidates);
     const trackGroupResults = await Promise.allSettled(
       shuffledCandidates.map(async name => {
         const artist = await deezer.resolveDeezerArtistByName(name);
@@ -96,7 +84,7 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
 
     const seenIds = new Set<string>();
     const tracks: ExternalSong[] = [];
-    const groups = shuffle(trackGroups.filter(group => group.length > 0));
+    const groups = shuffleArray(trackGroups.filter(group => group.length > 0));
 
     for (let trackIndex = 0; trackIndex < 2; trackIndex++) {
       for (const group of groups) {
