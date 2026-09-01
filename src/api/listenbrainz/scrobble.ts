@@ -1,5 +1,12 @@
+import Constants from 'expo-constants';
+
 import { ListenBrainzConfig } from '@/types';
 import { createListenBrainzClient } from './client';
+
+// Read from the app manifest rather than hardcoded: the literal that used to
+// live here said 1.1.5 long after the app had moved on, so every listen was
+// attributed to a version that no longer existed.
+const CLIENT_VERSION = Constants.expoConfig?.version ?? 'unknown';
 
 export type ScrobblePayload = {
   artist: string;
@@ -21,7 +28,7 @@ export async function submitScrobble(
   const additionalInfo: Record<string, unknown> = {
     media_player: 'Yuzic',
     submission_client: 'Yuzic',
-    submission_client_version: '1.1.5',
+    submission_client_version: CLIENT_VERSION,
   };
   if (payload.durationSeconds != null && payload.durationSeconds > 0) {
     additionalInfo.duration_ms = Math.round(payload.durationSeconds * 1000);
