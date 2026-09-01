@@ -492,6 +492,21 @@
     "collection": {
       "empty": "这里还没有内容。",
       "playFailed": "无法开始播放。"
+    },
+    "recentlyAdded": "最近添加",
+    "count": {
+      "albums_one": "{{count}} 张专辑",
+      "albums_other": "{{count}} 张专辑",
+      "artists_one": "{{count}} 位艺人",
+      "artists_other": "{{count}} 位艺人",
+      "genres_one": "{{count}} 个流派",
+      "genres_other": "{{count}} 个流派",
+      "items_one": "{{count}} 项",
+      "items_other": "{{count}} 项",
+      "playlists_one": "{{count}} 个播放列表",
+      "playlists_other": "{{count}} 个播放列表",
+      "tracks_one": "{{count}} 首歌曲",
+      "tracks_other": "{{count}} 首歌曲"
     }
   },
   "home": {

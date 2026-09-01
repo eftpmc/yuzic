@@ -493,6 +493,21 @@
     "collection": {
       "empty": "Rien ici pour l'instant.",
       "playFailed": "Impossible de lancer la lecture."
+    },
+    "recentlyAdded": "Ajouts récents",
+    "count": {
+      "albums_one": "{{count}} album",
+      "albums_other": "{{count}} albums",
+      "artists_one": "{{count}} artiste",
+      "artists_other": "{{count}} artistes",
+      "genres_one": "{{count}} genre",
+      "genres_other": "{{count}} genres",
+      "items_one": "{{count}} élément",
+      "items_other": "{{count}} éléments",
+      "playlists_one": "{{count}} playlist",
+      "playlists_other": "{{count}} playlists",
+      "tracks_one": "{{count}} titre",
+      "tracks_other": "{{count}} titres"
     }
   },
   "home": {

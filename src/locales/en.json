@@ -463,6 +463,21 @@
     "collection": {
       "empty": "Nothing here yet.",
       "playFailed": "Couldn't start playback."
+    },
+    "recentlyAdded": "Recently added",
+    "count": {
+      "albums_one": "{{count}} album",
+      "albums_other": "{{count}} albums",
+      "artists_one": "{{count}} artist",
+      "artists_other": "{{count}} artists",
+      "genres_one": "{{count}} genre",
+      "genres_other": "{{count}} genres",
+      "items_one": "{{count}} item",
+      "items_other": "{{count}} items",
+      "playlists_one": "{{count}} playlist",
+      "playlists_other": "{{count}} playlists",
+      "tracks_one": "{{count}} song",
+      "tracks_other": "{{count}} songs"
     }
   },
   "home": {

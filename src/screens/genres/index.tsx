@@ -9,6 +9,7 @@ import { ChevronRight } from 'lucide-react-native'
 
 import { DetailHeaderBar } from '@/components/DetailHeader'
 import { useTheme } from '@/hooks/useTheme'
+import { spacing, typography } from '@/constants/design'
 import { useAlbums } from '@/hooks/albums'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import { buildGenreRows, type GenreRow } from '@/utils/library/genreList'
@@ -50,6 +51,17 @@ const GenresScreen: React.FC = () => {
       style={[styles.screen, { backgroundColor: colors.background }]}
     >
       <DetailHeaderBar title={t('library.genres.title')} />
+
+      <View style={styles.heading}>
+        <Text style={[styles.headingTitle, { color: colors.secondary }]}>
+          {t('library.genres.title')}
+        </Text>
+        {rows.length > 0 && (
+          <Text style={[styles.headingCount, { color: colors.subtext }]}>
+            {t('library.count.genres', { count: rows.length })}
+          </Text>
+        )}
+      </View>
       {isLoading && rows.length === 0 ? (
         // Genres are counted from albums, so an unfinished album sync looks
         // exactly like a library with no genres.
@@ -76,16 +88,19 @@ export default GenresScreen
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { paddingBottom: 180 },
+  heading: { paddingHorizontal: spacing.page, paddingTop: spacing.sm, paddingBottom: spacing.md },
+  headingTitle: { ...typography.screenTitle },
+  headingCount: { ...typography.caption, marginTop: spacing.xs },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.page,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  rowText: { flex: 1, minWidth: 0, marginRight: 12 },
-  genre: { fontSize: 16, fontWeight: '500' },
-  count: { fontSize: 12, marginTop: 2 },
-  empty: { textAlign: 'center', marginTop: 32, fontSize: 14 },
+  rowText: { flex: 1, minWidth: 0, marginRight: spacing.rowGap },
+  genre: { ...typography.rowTitle },
+  count: { ...typography.caption, marginTop: 2 },
+  empty: { ...typography.rowSubtitle, textAlign: 'center', marginTop: spacing.xxl },
 })

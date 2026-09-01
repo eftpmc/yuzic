@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
+import { radius, spacing, typography } from '@/constants/design'
 import {
   selectIsGridView,
   selectGridColumns,
@@ -116,10 +117,11 @@ const LibraryList: React.FC<Props> = ({
         ListHeaderComponent={
           <View>
             {header}
-            <View style={[styles.sortRow, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>
+            <View style={styles.sortRow}>
               <TouchableOpacity
-                style={styles.sortButton}
+                style={[styles.sortButton, { backgroundColor: colors.muted }]}
                 onPress={() => sortSheetRef.current?.present()}
+                accessibilityRole="button"
               >
                 <ArrowUpDown size={17} color={colors.secondary} />
                 <Text style={[styles.sortLabel, { color: colors.secondary }]}>
@@ -127,8 +129,9 @@ const LibraryList: React.FC<Props> = ({
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.gridButton}
+                style={[styles.gridButton, { backgroundColor: colors.muted }]}
                 onPress={() => gridSheetRef.current?.present()}
+                accessibilityRole="button"
               >
                 {isGridView
                   ? <List size={17} color={colors.secondary} />
@@ -165,11 +168,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: spacing.page,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  sortButton: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  sortLabel: { fontSize: 14 },
-  gridButton: { padding: 4 },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.inlineGap,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+  },
+  sortLabel: { ...typography.caption },
+  gridButton: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 })

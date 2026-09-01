@@ -13,10 +13,12 @@ import {
 } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
+import { radius, spacing, typography } from '@/constants/design'
+import { useLibraryCounts } from './useLibraryCounts'
 import type { LibraryCollectionType } from './librarySort'
 
 type Entry = {
-  key: string
+  key: keyof ReturnType<typeof useLibraryCounts>
   labelKey: string
   icon: React.ReactNode
   onPress: () => void
@@ -33,11 +35,12 @@ const LibraryEntryRows: React.FC = () => {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const counts = useLibraryCounts()
 
   const openCollection = (type: LibraryCollectionType) =>
     navigation.push('libraryCollectionView', { type })
 
-  const size = 20
+  const size = 19
   const color = colors.secondary
 
   const entries: Entry[] = [
@@ -91,12 +94,21 @@ const LibraryEntryRows: React.FC = () => {
           onPress={entry.onPress}
         >
           <View style={styles.left}>
-            {entry.icon}
+            <View style={[styles.iconWell, { backgroundColor: colors.muted }]}>
+              {entry.icon}
+            </View>
             <Text style={[styles.label, { color: colors.secondary }]} numberOfLines={1}>
               {t(entry.labelKey)}
             </Text>
           </View>
-          <ChevronRight size={18} color={colors.subtext} />
+          <View style={styles.right}>
+            {counts[entry.key] > 0 && (
+              <Text style={[styles.count, { color: colors.subtext }]}>
+                {counts[entry.key]}
+              </Text>
+            )}
+            <ChevronRight size={18} color={colors.subtext} />
+          </View>
         </TouchableOpacity>
       ))}
     </View>
@@ -110,10 +122,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.page,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  left: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 },
-  label: { fontSize: 16, fontWeight: '500' },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.rowGap,
+    flex: 1,
+    minWidth: 0,
+  },
+  iconWell: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  right: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  count: { ...typography.caption },
+  label: { ...typography.rowTitle },
 })

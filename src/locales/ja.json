@@ -492,6 +492,21 @@
     "collection": {
       "empty": "まだ何もありません。",
       "playFailed": "再生を開始できませんでした。"
+    },
+    "recentlyAdded": "最近追加した項目",
+    "count": {
+      "albums_one": "{{count}} 枚のアルバム",
+      "albums_other": "{{count}} 枚のアルバム",
+      "artists_one": "{{count}} 組のアーティスト",
+      "artists_other": "{{count}} 組のアーティスト",
+      "genres_one": "{{count}} 件のジャンル",
+      "genres_other": "{{count}} 件のジャンル",
+      "items_one": "{{count}} 件",
+      "items_other": "{{count}} 件",
+      "playlists_one": "{{count}} 件のプレイリスト",
+      "playlists_other": "{{count}} 件のプレイリスト",
+      "tracks_one": "{{count}} 曲",
+      "tracks_other": "{{count}} 曲"
     }
   },
   "home": {

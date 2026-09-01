@@ -14,6 +14,7 @@ import {
 } from '@/components/DetailHeader'
 import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useTheme } from '@/hooks/useTheme'
+import { spacing, typography } from '@/constants/design'
 import LibraryList from './LibraryList'
 import LoadingLibraryList from './Loading'
 import { useLibraryItems } from './useLibraryItems'
@@ -37,6 +38,14 @@ const TITLE_KEY: Record<LibraryCollectionType, string> = {
   downloaded: 'home.filters.downloaded',
 }
 
+const COUNT_KEY: Record<LibraryCollectionType, string> = {
+  playlists: 'library.count.playlists',
+  albums: 'library.count.albums',
+  artists: 'library.count.artists',
+  tracks: 'library.count.tracks',
+  downloaded: 'library.count.items',
+}
+
 const LibraryCollectionScreen: React.FC = () => {
   const route = useRoute<any>()
   const type = route.params?.type as LibraryCollectionType | undefined
@@ -50,6 +59,8 @@ const LibraryCollectionScreen: React.FC = () => {
 
   const { items, isLoading } = useLibraryItems(type ?? null, sortOrder)
   const { playSongs } = usePlayingActions()
+
+  const title = type ? t(TITLE_KEY[type]) : t('library.title')
 
   // Only a list of tracks is a queue. A screen of albums or artists is a list
   // of collections, each with its own play action already.
@@ -69,45 +80,60 @@ const LibraryCollectionScreen: React.FC = () => {
     }
   }, [playableTracks, playSongs, t])
 
+  const header = (
+    <View style={styles.header}>
+      <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
+        {title}
+      </Text>
+      {items.length > 0 && (
+        <Text style={[styles.count, { color: colors.subtext }]}>
+          {t(type ? COUNT_KEY[type] : 'library.count.items', { count: items.length })}
+        </Text>
+      )}
+
+      {playableTracks.length > 0 && (
+        <DetailActionRow style={styles.actions}>
+          <DetailCircleAction
+            onPress={() => { void play(true) }}
+            accessibilityLabel="Shuffle tracks"
+          >
+            <Shuffle size={18} color={colors.secondary} />
+          </DetailCircleAction>
+          <DetailPlayAction
+            onPress={() => { void play(false) }}
+            accessibilityLabel="Play tracks"
+          >
+            <Play size={24} color="#fff" fill="#fff" />
+          </DetailPlayAction>
+        </DetailActionRow>
+      )}
+    </View>
+  )
+
   return (
     <SafeAreaView
       testID="library-collection-screen"
       edges={['top']}
       style={[styles.screen, { backgroundColor: colors.background }]}
     >
-      <DetailHeaderBar title={type ? t(TITLE_KEY[type]) : t('library.title')} />
+      <DetailHeaderBar title={title} />
+
       {isLoading && items.length === 0 ? (
-        // A syncing library is not an empty one — saying "nothing here" while
-        // the first sync is still running reads as data loss.
         <LoadingLibraryList />
       ) : items.length === 0 ? (
-        <Text style={[styles.empty, { color: colors.subtext }]}>
-          {t('library.collection.empty')}
-        </Text>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
+          <Text style={[styles.empty, { color: colors.subtext }]}>
+            {t('library.collection.empty')}
+          </Text>
+        </View>
       ) : (
         <LibraryList
           items={items}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
           sortLabel={sortLabels[sortOrder]}
-          header={playableTracks.length > 0 ? (
-            <View style={styles.actions}>
-              <DetailActionRow>
-                <DetailCircleAction
-                  onPress={() => { void play(true) }}
-                  accessibilityLabel="Shuffle tracks"
-                >
-                  <Shuffle size={18} color={colors.secondary} />
-                </DetailCircleAction>
-                <DetailPlayAction
-                  onPress={() => { void play(false) }}
-                  accessibilityLabel="Play tracks"
-                >
-                  <Play size={24} color="#fff" fill="#fff" />
-                </DetailPlayAction>
-              </DetailActionRow>
-            </View>
-          ) : undefined}
+          header={header}
         />
       )}
     </SafeAreaView>
@@ -118,6 +144,9 @@ export default LibraryCollectionScreen
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  empty: { textAlign: 'center', marginTop: 32, fontSize: 14 },
-  actions: { paddingVertical: 12 },
+  header: { paddingHorizontal: spacing.page, paddingTop: spacing.sm },
+  title: { ...typography.screenTitle },
+  count: { ...typography.caption, marginTop: spacing.xs },
+  actions: { marginTop: spacing.lg },
+  empty: { ...typography.rowSubtitle, marginTop: spacing.lg },
 })
