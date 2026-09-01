@@ -4,6 +4,7 @@ import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
+import { radius, typography } from '@/constants/design';
 import Touchable from '@/components/Touchable';
 
 type Props = {
@@ -85,10 +86,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    borderRadius: 6,
+    borderRadius: radius.sm,
   },
   gridContainer: {
-    borderRadius: 8,
+    borderRadius: radius.md,
   },
   listText: {
     flex: 1,
@@ -99,11 +100,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.compactRowTitle,
   },
   subtext: {
-    fontSize: 13,
+    ...typography.compactRowSubtitle,
   },
   pressed: {
     opacity: 0.9,

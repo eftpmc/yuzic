@@ -44,6 +44,12 @@ because both halves of each pair look reasonable in isolation.
   per platform and doesn't match the lucide icon set the rest of the UI uses.
   A skeleton is only worth using when it predicts the real layout; an options
   sheet is a header and a stack of actions, so it keeps a spinner.
+- **Scales**: sizes come from `typography`, corner radii from `radius`, both in
+  `constants/design`. `eslint.config.js` enforces this per-directory, and its
+  `SCALED_DIRECTORIES` list is the migration frontier — a directory joins it as
+  part of removing its literals, never ahead of that. Adding a role to either
+  scale is fine; adding one that differs from an existing role only in size is
+  how the app got to thirteen font sizes and twelve corner radii.
 - **Pressing**: `components/Touchable`, never `TouchableOpacity` — the whole app
   was swapped over in one pass and there is no reason for a second answer to a
   press to exist. Android gets a ripple bounded to the component, every other

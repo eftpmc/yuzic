@@ -32,6 +32,12 @@ export const stateLayer = {
   pressedOpacity: 0.6,
 } as const;
 
+/**
+ * The shape scale. Same rule as the type scale: pick by what the thing is.
+ *
+ * Literal `borderRadius` ran to twelve distinct values — 2, 4, 5, 6, 8, 10, 11,
+ * 12, 14, 16, 24, 60 — which is one per developer-day rather than a decision.
+ */
 export const radius = {
   xs: 4,
   sm: 6,
@@ -42,17 +48,34 @@ export const radius = {
   pill: 999,
 } as const;
 
+/**
+ * The type scale: nine sizes, each with a role that says where it goes.
+ *
+ * The point is not that nine is few — Apple's own scale is about this size —
+ * but that a size is chosen by naming what the text is, so the same decision
+ * comes out the same way twice. Literal `fontSize` was up to thirteen distinct
+ * values across the app, including 13, 14 and 15 all doing the job of "small",
+ * which is the drift that reads as unfinished even when each screen is fine.
+ *
+ * Adding a role is fine. Adding one that differs from an existing role only in
+ * size is how the drift starts again.
+ */
 export const typography = {
+  display: { fontSize: 28, lineHeight: 34, fontWeight: '700' as const },
   screenTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },
   detailTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },
   sectionTitle: { fontSize: 20, lineHeight: 25, fontWeight: '600' as const },
-  rowTitle: { fontSize: 16, lineHeight: 20, fontWeight: '500' as const },
-  rowSubtitle: { fontSize: 14, lineHeight: 18 },
-  compactRowTitle: { fontSize: 15, lineHeight: 19, fontWeight: '500' as const },
-  compactRowSubtitle: { fontSize: 13, lineHeight: 17 },
-  caption: { fontSize: 13, lineHeight: 17 },
-  button: { fontSize: 15, lineHeight: 20, fontWeight: '600' as const },
   navigationTitle: { fontSize: 18, lineHeight: 22, fontWeight: '600' as const },
+  sheetTitle: { fontSize: 16, lineHeight: 20, fontWeight: '600' as const },
+  rowTitle: { fontSize: 16, lineHeight: 20, fontWeight: '500' as const },
+  body: { fontSize: 16, lineHeight: 21 },
+  button: { fontSize: 15, lineHeight: 20, fontWeight: '600' as const },
+  compactRowTitle: { fontSize: 15, lineHeight: 19, fontWeight: '500' as const },
+  label: { fontSize: 14, lineHeight: 18, fontWeight: '600' as const },
+  rowSubtitle: { fontSize: 14, lineHeight: 18 },
+  caption: { fontSize: 13, lineHeight: 17 },
+  compactRowSubtitle: { fontSize: 13, lineHeight: 17 },
+  micro: { fontSize: 11, lineHeight: 14 },
 } as const;
 
 export const controlSize = {

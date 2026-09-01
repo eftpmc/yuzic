@@ -10,6 +10,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { radius, typography } from '@/constants/design';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
@@ -106,8 +107,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   sheetTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.sheetTitle,
     marginBottom: 10,
   },
   pickerItem: {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 15,
-    borderRadius: 8,
+    borderRadius: radius.md,
     paddingHorizontal: 12,
   },
   pickerLeft: {
@@ -123,6 +123,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickerText: {
-    fontSize: 16,
+    ...typography.body,
   },
 });
