@@ -23,6 +23,7 @@ import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
+import { typography } from '@/constants/design';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -211,9 +212,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
+    ...typography.navigationTitle,
     flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
     textAlign: 'center',
   },
   scrollView: {
@@ -223,8 +223,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   line: {
+    ...typography.screenTitle,
     textAlign: 'center',
-    fontSize: 24,
     marginVertical: 10,
   },
 });

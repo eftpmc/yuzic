@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { typography } from '@/constants/design';
 
 type Props = {
   title: string;
@@ -33,8 +34,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.sheetTitle,
   },
   subtleHeader: {
     flexDirection: 'row',
@@ -45,6 +45,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   subtleTitle: {
-    fontSize: 13,
+    ...typography.caption,
   },
 });

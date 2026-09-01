@@ -32,6 +32,7 @@ import {
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 const LastFmView: React.FC = () => {
   const { t } = useTranslation();
@@ -158,20 +159,18 @@ export default LastFmView;
 const styles = StyleSheet.create({
   divider: { marginTop: 8 },
   hint: {
-    fontSize: 13,
-    lineHeight: 20,
+    ...typography.caption,
     marginBottom: 8,
     marginLeft: 4,
   },
   connectButton: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radius.md,
     alignItems: 'center',
     marginBottom: 16,
   },
   connectButtonText: {
+    ...typography.sheetTitle,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

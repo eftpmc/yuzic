@@ -11,6 +11,7 @@ import { usePlayableSongResolver } from '@/hooks/songs'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import { rankMostPlayedTracks } from './mostPlayed'
 import type { Artist } from '@/types'
+import { typography } from '@/constants/design'
 
 type Props = {
   artist: Artist
@@ -72,7 +73,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.navigationTitle,
   },
 })

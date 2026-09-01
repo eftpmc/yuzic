@@ -34,6 +34,7 @@ import {
   HOME_GENRE_ARTIST_LIMIT,
 } from '@/constants/home';
 import Touchable from '@/components/Touchable';
+import { typography } from '@/constants/design';
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -292,12 +293,10 @@ const styles = StyleSheet.create({
     marginRight: H_PADDING,
   },
   titlePrefix: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
   },
   genreName: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     borderBottomWidth: 1.5,
     paddingBottom: 1,
   },
@@ -306,6 +305,6 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   emptyText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
 })

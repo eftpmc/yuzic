@@ -15,6 +15,7 @@ import {
   PLAYING_ARTIST_CARD_PADDING,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
@@ -95,17 +96,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   card: {
-    borderRadius: 24,
+    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },
   header: {
+    ...typography.label,
     position: 'absolute',
     top: PLAYING_ARTIST_CARD_PADDING,
     left: PLAYING_ARTIST_CARD_PADDING,
     right: PLAYING_ARTIST_CARD_PADDING,
-    fontSize: 14,
-    fontWeight: '600',
     color: '#fff',
     textAlign: 'left',
   },
@@ -122,12 +122,11 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.navigationTitle,
     color: '#fff',
   },
   subtext: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
   },

@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -38,13 +39,12 @@ export default SettingsActionButton;
 const styles = StyleSheet.create({
   button: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radius.md,
     alignItems: 'center',
     marginTop: 8,
   },
   label: {
+    ...typography.sheetTitle,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

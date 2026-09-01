@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
@@ -73,7 +74,7 @@ export const ThemeColor: React.FC = () => {
 
 const styles = StyleSheet.create({
   caption: {
-    fontSize: 13,
+    ...typography.caption,
     marginBottom: 6,
     marginTop: 16,
     marginLeft: 4,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
   preset: {
     flex: 1,
     height: 28,
-    borderRadius: 6,
+    borderRadius: radius.sm,
   },
   presetSelected: {
     borderWidth: 2,
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: radius.md,
     borderWidth: 1,
   },
   expandLeft: {
@@ -115,12 +116,11 @@ const styles = StyleSheet.create({
   colorPreview: {
     width: 20,
     height: 20,
-    borderRadius: 4,
+    borderRadius: radius.xs,
     marginRight: 12,
   },
   expandText: {
-    fontSize: 15,
-    fontWeight: '500',
+    ...typography.compactRowTitle,
   },
   picker: {
     paddingTop: 16,

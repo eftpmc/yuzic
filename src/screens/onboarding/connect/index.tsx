@@ -17,6 +17,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -181,13 +182,12 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
     },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        ...typography.display,
         color: '#fff',
         marginBottom: 10,
     },
     subtitle: {
-        fontSize: 16,
+        ...typography.body,
         color: '#888',
         marginBottom: 20,
     },
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     serverTypeButton: {
         flex: 1,
         paddingVertical: 14,
-        borderRadius: 12,
+        borderRadius: radius.card,
         borderWidth: 1,
         borderColor: '#555',
         backgroundColor: '#111',
@@ -216,9 +216,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     serverTypeText: {
+        ...typography.label,
         color: '#fff',
-        fontWeight: '600',
-        fontSize: 14,
         marginTop: 6,
     },
     serverTypeTextSelected: {
@@ -232,7 +231,7 @@ const styles = StyleSheet.create({
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 12,
@@ -241,21 +240,19 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     nextButtonText: {
+        ...typography.sheetTitle,
         color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
     },
     demoButton: {
         backgroundColor: '#333',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 4,
     },
     demoButtonText: {
+        ...typography.sheetTitle,
         color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
     },
 });

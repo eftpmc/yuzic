@@ -45,6 +45,9 @@ export const radius = {
   md: 8,
   card: 12,
   lg: 16,
+  /** The now-playing screen's cards, which are large enough that a card radius
+   * reads as a sharp corner on them. */
+  panel: 24,
   pill: 999,
 } as const;
 
@@ -61,6 +64,7 @@ export const radius = {
  * size is how the drift starts again.
  */
 export const typography = {
+  hero: { fontSize: 48, lineHeight: 52, fontWeight: '600' as const },
   display: { fontSize: 28, lineHeight: 34, fontWeight: '700' as const },
   screenTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },
   detailTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },

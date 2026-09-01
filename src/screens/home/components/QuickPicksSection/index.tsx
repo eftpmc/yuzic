@@ -31,6 +31,7 @@ import {
   QUICK_PICKS_PEEK,
   HOME_SECTION_HORIZONTAL_PADDING,
 } from '@/constants/home';
+import { typography } from '@/constants/design';
 
 function useQuickPicks(refreshKey: number): SongBase[] {
   const songsById = useSelector(selectSongsById);
@@ -152,8 +153,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     marginBottom: 8,
     paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
   },

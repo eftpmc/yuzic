@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import Touchable from '@/components/Touchable'
+import { typography } from '@/constants/design'
 
 type Props = {
   biography?: string
@@ -50,20 +51,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.navigationTitle,
   },
   bioContainer: {
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
   bioText: {
-    fontSize: 14,
-    lineHeight: 20,
+    ...typography.rowSubtitle,
   },
   bioToggle: {
-    fontSize: 13,
-    marginTop: 4,
+    ...typography.caption,
     fontWeight: '500',
+    marginTop: 4,
   },
 })

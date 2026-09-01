@@ -18,6 +18,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 const {
   AirplayButton,
@@ -224,8 +225,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.sheetTitle,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 15,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: radius.md,
   },
   itemLeft: {
     flexDirection: 'row',
@@ -245,15 +245,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   itemLabel: {
-    fontSize: 16,
+    ...typography.body,
   },
   empty: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
   sectionLabel: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,

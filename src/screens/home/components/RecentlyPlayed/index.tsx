@@ -13,6 +13,7 @@ import { AlbumBase, PlaylistBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { typography } from '@/constants/design';
 
 const H_PADDING = 12;
 const GAP = 10;
@@ -140,8 +141,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     marginBottom: 12,
     marginLeft: H_PADDING,
   },

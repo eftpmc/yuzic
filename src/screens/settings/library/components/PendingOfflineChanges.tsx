@@ -13,6 +13,7 @@ import {
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
@@ -116,19 +117,18 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   textWrap: { flex: 1 },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
   },
   subtitle: {
+    ...typography.caption,
     marginTop: 3,
-    fontSize: 13,
   },
   actions: {
     flexDirection: 'row',
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     minHeight: 30,
-    borderRadius: 8,
+    borderRadius: radius.md,
     borderWidth: 1,
     paddingHorizontal: 10,
     flexDirection: 'row',
@@ -146,21 +146,21 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   actionText: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '600',
   },
   badge: {
     minWidth: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
     marginLeft: 10,
   },
   badgeText: {
-    color: '#fff',
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '700',
+    color: '#fff',
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -54,14 +55,14 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   label: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '500',
     marginBottom: 6,
   },
   input: {
+    ...typography.body,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.md,
     padding: 10,
-    fontSize: 15,
   },
 });

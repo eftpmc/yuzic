@@ -20,6 +20,7 @@ import {
 import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalArtistBase } from '@/types'
+import { typography } from '@/constants/design'
 
 type Props = { refreshKey?: number }
 
@@ -109,8 +110,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     marginBottom: 12,
     marginLeft: H_PADDING,
   },
@@ -119,6 +119,6 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   emptyText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
 })

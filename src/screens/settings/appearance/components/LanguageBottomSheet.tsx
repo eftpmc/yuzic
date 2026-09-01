@@ -14,6 +14,7 @@ import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -107,8 +108,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   sheetTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.sheetTitle,
     marginBottom: 10,
   },
   pickerItem: {
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 15,
-    borderRadius: 8,
+    borderRadius: radius.md,
     paddingHorizontal: 12,
   },
   pickerLeft: {
@@ -124,6 +124,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickerText: {
-    fontSize: 16,
+    ...typography.body,
   },
 });

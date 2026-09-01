@@ -20,6 +20,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -206,15 +207,14 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   emptyText: {
+    ...typography.caption,
     paddingTop: 20,
     textAlign: 'center',
-    fontSize: 13,
   },
   locationNote: {
+    ...typography.caption,
     paddingTop: 10,
     paddingHorizontal: 4,
-    fontSize: 12,
-    lineHeight: 16,
   },
   providerHeader: {
     flexDirection: 'row',
@@ -225,8 +225,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   providerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
   },
   providerDelete: {
     width: 28,
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: radius.md,
     padding: 12,
     marginBottom: 8,
   },
@@ -248,7 +247,7 @@ const styles = StyleSheet.create({
   cover: {
     width: 44,
     height: 44,
-    borderRadius: 8,
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
   trackCell: {
@@ -262,21 +261,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
+    ...typography.compactRowTitle,
     flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
   },
   sizeText: {
-    fontSize: 12,
+    ...typography.caption,
   },
   metaLine: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
   },
-  meta: { fontSize: 12 },
+  meta: { ...typography.caption },
   metaDot: {
-    fontSize: 12,
+    ...typography.caption,
     marginHorizontal: 4,
   },
   shrink: { flexShrink: 1 },

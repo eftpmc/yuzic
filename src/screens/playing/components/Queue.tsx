@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type QueueItemProps = {
   item: Song;
@@ -242,13 +243,13 @@ const styles = StyleSheet.create({
     padding: 6,
     marginLeft: 6,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
+    borderRadius: radius.md,
   },
 
   headerImage: {
     width: 60,
     height: 60,
-    borderRadius: 8,
+    borderRadius: radius.md,
     marginRight: 12,
   },
 
@@ -257,25 +258,24 @@ const styles = StyleSheet.create({
   },
 
   nowPlayingTitle: {
-    fontSize: 18,
+    ...typography.navigationTitle,
     fontWeight: '500',
     color: '#fff',
   },
 
   nowPlayingArtist: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     color: '#aaa',
   },
 
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
     color: '#fff',
     marginBottom: 2,
   },
 
   subLabel: {
-    fontSize: 12,
+    ...typography.caption,
     color: '#888',
     marginBottom: 12,
   },
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: radius.md,
   },
 
   activeQueueItem: {
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   artwork: {
     width: 50,
     height: 50,
-    borderRadius: 8,
+    borderRadius: radius.md,
     marginRight: 12,
   },
 
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    ...typography.body,
     color: '#fff',
   },
 
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   },
 
   artist: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     color: '#aaa',
   },
 });

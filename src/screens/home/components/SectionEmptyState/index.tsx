@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { typography } from '@/constants/design';
 
 const H_PADDING = 12;
 
@@ -23,5 +24,5 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: H_PADDING,
   },
-  text: { fontSize: 14 },
+  text: { ...typography.rowSubtitle },
 });

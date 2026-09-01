@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
+import { radius, typography } from '@/constants/design'
 
 type Props = {
   song: ExternalSong
@@ -50,14 +51,14 @@ export default memo(TopTrackRow)
 
 const styles = StyleSheet.create({
   trackIndex: {
+    ...typography.caption,
     width: 16,
-    fontSize: 13,
     textAlign: 'left',
   },
   previewButton: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

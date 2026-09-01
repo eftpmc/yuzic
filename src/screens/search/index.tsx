@@ -49,6 +49,7 @@ import { getSourceMeta } from '@/features/sources/registry';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -457,12 +458,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: radius.md,
     paddingHorizontal: 12,
   },
   searchInput: {
+    ...typography.body,
     flex: 1,
-    fontSize: 16,
     paddingVertical: 8,
   },
   clearButton: {
@@ -493,22 +494,22 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sourceBadgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '500',
     color: '#fff',
   },
   sourceHeaderText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     fontWeight: '500',
   },
   noResults: {
+    ...typography.body,
     textAlign: 'center',
     marginTop: 24,
-    fontSize: 16,
   },
 });

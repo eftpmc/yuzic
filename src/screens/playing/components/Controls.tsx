@@ -14,6 +14,7 @@ import Animated, {
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius } from '@/constants/design';
 
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   playButton: {
     width: 68,
     height: 68,
-    borderRadius: 34,
+    borderRadius: radius.pill,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   activeDot: {
     width: 4,
     height: 4,
-    borderRadius: 2,
+    borderRadius: radius.pill,
     backgroundColor: 'transparent',
   },
   activeDotVisible: {

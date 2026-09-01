@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -50,11 +51,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   value: {
-    fontSize: 15,
+    ...typography.body,
     flexShrink: 1,
     textAlign: 'right',
   },
@@ -71,12 +71,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   stackedLabel: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '500',
     marginBottom: 3,
   },
   stackedValue: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
 });

@@ -4,6 +4,7 @@ import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { SETTINGS_STATUS_COLORS } from '@/constants/features';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
  type Props = {
   label: string;
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  label: { fontSize: 16, fontWeight: '500' },
+  label: { ...typography.rowTitle },
   right: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -91,13 +92,13 @@ const styles = StyleSheet.create({
   statusDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: radius.pill,
   },
-  rightText: { fontSize: 14 },
+  rightText: { ...typography.rowSubtitle },
   radio: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -105,12 +106,12 @@ const styles = StyleSheet.create({
   radioFill: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: radius.pill,
   },
   checkbox: {
     width: 20,
     height: 20,
-    borderRadius: 5,
+    borderRadius: radius.sm,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',

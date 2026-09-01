@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
+import { radius } from '@/constants/design';
 
 const LoadingPlaylistHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   coverWrapper: {
     width: 280,
     height: 280,
-    borderRadius: 16,
+    borderRadius: radius.lg,
     marginTop: 32,
     marginBottom: 24,
     overflow: 'hidden',

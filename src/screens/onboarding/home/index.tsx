@@ -14,6 +14,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
+import { radius, typography } from '@/constants/design';
 
 export default function Home() {
     const { t } = useTranslation();
@@ -108,17 +109,16 @@ const styles = StyleSheet.create({
         width: 150,
         height: 150,
         marginBottom: 30,
-        borderRadius: 8,
+        borderRadius: radius.md,
     },
     appName: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        ...typography.display,
         color: '#fff',
         textAlign: 'center',
         marginBottom: 10,
     },
     subtext: {
-        fontSize: 16,
+        ...typography.body,
         color: '#ccc',
         textAlign: 'center',
         paddingHorizontal: 30,
@@ -138,13 +138,13 @@ const styles = StyleSheet.create({
         top: 6,
         width: '100%',
         height: 48,
-        borderRadius: 8,
+        borderRadius: radius.md,
         zIndex: -1,
     },
     button: {
         width: '100%',
         paddingVertical: 15,
-        borderRadius: 8,
+        borderRadius: radius.md,
         alignItems: 'center',
         justifyContent: 'center',
         shadowOffset: { width: 0, height: 5 },
@@ -157,13 +157,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0,
     },
     buttonText: {
+        ...typography.sheetTitle,
         color: '#fff',
-        fontWeight: '600',
-        fontSize: 16,
     },
     termsText: {
+        ...typography.caption,
         color: '#888',
-        fontSize: 12,
         textAlign: 'center',
         paddingHorizontal: 10,
         marginTop: 12,

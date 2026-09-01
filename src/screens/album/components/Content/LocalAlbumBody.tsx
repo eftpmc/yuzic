@@ -23,6 +23,7 @@ import {
   ALBUM_RECOMMENDATION_TILE_GAP,
   ALBUM_RECOMMENDATION_VISIBLE_TILES,
 } from '@/constants/album';
+import { typography } from '@/constants/design';
 
 type Props = {
   album: Album;
@@ -186,11 +187,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   discHeader: {
+    ...typography.caption,
+    fontWeight: '600',
     height: ALBUM_DISC_HEADER_HEIGHT,
     paddingHorizontal: 16,
     paddingTop: 14,
-    fontSize: 13,
-    fontWeight: '600',
   },
   statsFooter: {
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
@@ -198,15 +199,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   statsText: {
-    fontSize: 13,
+    ...typography.caption,
   },
   moreSection: {
     paddingTop: 24,
     paddingBottom: 8,
   },
   moreSectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
     marginBottom: 12,
   },

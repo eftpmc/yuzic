@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -42,6 +43,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   left: { flex: 1 },
-  label: { fontSize: 16, fontWeight: '500' },
-  subtext: { fontSize: 13, marginTop: 2 },
+  label: { ...typography.rowTitle },
+  subtext: { ...typography.caption, marginTop: 2 },
 });

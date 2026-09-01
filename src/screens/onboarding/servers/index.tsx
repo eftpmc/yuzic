@@ -23,6 +23,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 export default function Servers() {
     const { t } = useTranslation();
@@ -170,13 +171,12 @@ const styles = StyleSheet.create({
         paddingTop: 30,
     },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        ...typography.display,
         color: '#fff',
         marginBottom: 8,
     },
     subtitle: {
-        fontSize: 16,
+        ...typography.body,
         color: '#aaa',
     },
 
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: '#111',
-        borderRadius: 14,
+        borderRadius: radius.card,
         paddingHorizontal: 14,
         paddingVertical: 14,
         marginBottom: 10,
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     },
 
     serverName: {
-        fontSize: 16,
+        ...typography.body,
         color: '#fff',
         marginBottom: 4,
     },
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     },
 
     serverSubtext: {
-        fontSize: 13,
+        ...typography.caption,
         color: '#888',
     },
 
@@ -229,25 +229,25 @@ const styles = StyleSheet.create({
         backgroundColor: '#1f6feb',
         paddingHorizontal: 8,
         paddingVertical: 2,
-        borderRadius: 999,
+        borderRadius: radius.pill,
     },
 
     activeBadgeText: {
-        fontSize: 11,
+        ...typography.micro,
         fontWeight: '600',
         color: '#fff',
     },
 
     menuButton: {
         padding: 6,
-        borderRadius: 8,
+        borderRadius: radius.md,
     },
 
     emptyText: {
+        ...typography.rowSubtitle,
         textAlign: 'center',
         color: '#777',
         marginTop: 40,
-        fontSize: 14,
     },
 
     bottomContent: {
@@ -257,15 +257,14 @@ const styles = StyleSheet.create({
     addButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 12,
     },
 
     addButtonText: {
+        ...typography.sheetTitle,
         color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
     },
 });

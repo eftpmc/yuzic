@@ -8,6 +8,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
+import { typography } from '@/constants/design';
 
 type HeaderProps = {
     title: string;
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     title: {
-        fontSize: 18,
+        ...typography.navigationTitle,
         fontWeight: '700',
         maxWidth: '60%',
     },

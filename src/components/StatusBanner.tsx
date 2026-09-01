@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   icon: ReactNode;
@@ -57,11 +58,11 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: radius.card,
   },
   text: {
-    flex: 1,
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '500',
+    flex: 1,
   },
 });

@@ -17,6 +17,7 @@ import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
+import { radius, typography } from '@/constants/design'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
@@ -154,17 +155,16 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sourceBadgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
   sourceHeaderText: {
-    fontSize: 14,
-    fontWeight: '600',
+    ...typography.label,
   },
 })

@@ -8,6 +8,7 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
+import { radius, typography } from '@/constants/design'
 
 type Props = {
   topTracks: ExternalSong[]
@@ -85,18 +86,17 @@ const styles = StyleSheet.create({
   badge: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.navigationTitle,
     paddingHorizontal: 0,
   },
   toggleRow: {
@@ -107,10 +107,10 @@ const styles = StyleSheet.create({
   toggleButton: {
     paddingHorizontal: 24,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: radius.pill,
   },
   toggleText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     fontWeight: '500',
   },
 })

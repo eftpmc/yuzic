@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, type GestureResponderEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { radius } from '@/constants/design';
 
 type SeekableProgressBarProps = {
   value: number;
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   },
   track: {
     height: 4,
-    borderRadius: 2,
+    borderRadius: radius.pill,
     overflow: 'hidden',
   },
   fill: {

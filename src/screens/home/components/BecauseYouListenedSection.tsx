@@ -26,6 +26,7 @@ import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types';
 import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
 import Touchable from '@/components/Touchable';
+import { typography } from '@/constants/design';
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -198,12 +199,10 @@ const styles = StyleSheet.create({
     marginRight: H_PADDING,
   },
   titlePrefix: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
   },
   artistName: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     borderBottomWidth: 1.5,
     paddingBottom: 1,
   },
@@ -212,6 +211,6 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   emptyText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
 })

@@ -29,6 +29,7 @@ import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   localArtist: Artist | null;
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
     bottom: -32,
     width: 120,
     height: 120,
-    borderRadius: 60,
+    borderRadius: radius.pill,
     overflow: 'hidden',
     backgroundColor: '#222',
     alignItems: 'center',
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
   centeredCover: {
     width: '100%',
     height: '100%',
-    borderRadius: 60,
+    borderRadius: radius.pill,
   },
   header: {
     position: 'absolute',
@@ -400,7 +401,7 @@ const styles = StyleSheet.create({
   backButton: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: radius.md,
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -411,7 +412,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   artistName: {
-    fontSize: 28,
+    ...typography.display,
     fontWeight: '600',
     textAlign: 'center',
     width: '100%',
@@ -424,11 +425,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   metaDot: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     marginHorizontal: 6,
   },
   metaText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
   buttonRow: {
     marginBottom: 24,

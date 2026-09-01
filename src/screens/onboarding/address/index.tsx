@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Scheme = 'https' | 'http';
 
@@ -148,13 +149,12 @@ const styles = StyleSheet.create({
         marginTop: 40,
     },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        ...typography.display,
         color: '#fff',
         marginBottom: 10,
     },
     subtitle: {
-        fontSize: 16,
+        ...typography.body,
         color: '#888',
         marginBottom: 20,
     },
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#222',
         borderWidth: 1,
         borderColor: '#555',
-        borderRadius: 8,
+        borderRadius: radius.md,
         paddingHorizontal: 12,
         height: 50,
         marginBottom: 10,
@@ -178,20 +178,18 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     schemeText: {
+        ...typography.compactRowTitle,
         color: '#fff',
-        fontSize: 15,
-        fontWeight: '500',
     },
     hostInput: {
+        ...typography.body,
         flex: 1,
         color: '#fff',
-        fontSize: 16,
         marginLeft: 10,
     },
     hint: {
-        fontSize: 13,
+        ...typography.caption,
         color: '#555',
-        lineHeight: 18,
     },
     buttonContainer: {
         padding: 20,
@@ -201,28 +199,26 @@ const styles = StyleSheet.create({
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 12,
     },
     nextButtonText: {
+        ...typography.sheetTitle,
         color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
     },
     backButton: {
         backgroundColor: '#333',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 4,
     },
     backButtonText: {
+        ...typography.sheetTitle,
         color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
     },
     sheetBackground: {
         backgroundColor: '#222',
@@ -235,8 +231,7 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     sheetTitle: {
-        fontSize: 16,
-        fontWeight: '600',
+        ...typography.sheetTitle,
         color: '#fff',
         marginBottom: 10,
     },
@@ -246,7 +241,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 14,
         paddingHorizontal: 12,
-        borderRadius: 8,
+        borderRadius: radius.md,
     },
     schemeOptionSelected: {
         backgroundColor: 'rgba(255,255,255,0.08)',
@@ -256,16 +251,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     schemeOptionText: {
-        fontSize: 16,
+        ...typography.rowTitle,
         color: '#aaa',
-        fontWeight: '500',
     },
     schemeOptionTextSelected: {
         color: '#fff',
         fontWeight: '600',
     },
     schemeOptionDesc: {
-        fontSize: 12,
+        ...typography.caption,
         color: '#666',
         marginTop: 1,
     },

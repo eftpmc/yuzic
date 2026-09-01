@@ -44,6 +44,7 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
@@ -492,7 +493,7 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 22,
     height: 22,
-    borderRadius: 11,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -500,14 +501,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#A238CA',
   },
   sourceBadgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
   actionBtn: { padding: 4 },
   loader: { marginVertical: 24 },
   emptyText: {
-    fontSize: 13,
+    ...typography.caption,
     textAlign: 'center',
     paddingHorizontal: 16,
     paddingVertical: 20,

@@ -17,6 +17,7 @@ import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Library = { id: string; name: string };
 
@@ -163,16 +164,14 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    ...typography.display,
     color: '#fff',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
+    ...typography.body,
     color: '#888',
     marginBottom: 28,
-    lineHeight: 22,
   },
   loader: {
     marginTop: 40,
@@ -184,7 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#222',
-    borderRadius: 10,
+    borderRadius: radius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 12,
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 22,
     height: 22,
-    borderRadius: 5,
+    borderRadius: radius.sm,
     borderWidth: 1.5,
     borderColor: '#555',
     alignItems: 'center',
@@ -203,7 +202,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   optionText: {
-    fontSize: 16,
+    ...typography.body,
     color: '#fff',
     flex: 1,
   },
@@ -218,46 +217,43 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   errorText: {
+    ...typography.body,
     color: '#888',
-    fontSize: 15,
     textAlign: 'center' as const,
-    lineHeight: 22,
   },
   retryButton: {
     backgroundColor: '#333',
     paddingVertical: 12,
     paddingHorizontal: 32,
-    borderRadius: 999,
+    borderRadius: radius.pill,
   },
   retryButtonText: {
+    ...typography.body,
     color: '#fff',
-    fontSize: 15,
     fontWeight: '600' as const,
   },
   continueButton: {
     backgroundColor: '#fff',
     paddingVertical: 15,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     alignItems: 'center',
     width: '100%',
     marginBottom: 12,
   },
   continueButtonText: {
+    ...typography.sheetTitle,
     color: '#000',
-    fontSize: 16,
-    fontWeight: '600',
   },
   backButton: {
     backgroundColor: '#333',
     paddingVertical: 15,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     alignItems: 'center',
     width: '100%',
     marginBottom: 4,
   },
   backButtonText: {
+    ...typography.sheetTitle,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

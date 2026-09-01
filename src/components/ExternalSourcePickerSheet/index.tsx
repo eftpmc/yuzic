@@ -15,6 +15,7 @@ import {
 } from '@/components/options/OptionSheetPrimitives'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { typography } from '@/constants/design';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   empty: {
-    fontSize: 15,
+    ...typography.body,
     textAlign: 'center',
     paddingVertical: 24,
   },
@@ -135,11 +136,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   artist: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     marginTop: 2,
   },
 })

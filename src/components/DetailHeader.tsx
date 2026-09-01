@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, spacing, typography } from '@/constants/design';
+import { controlSize, radius, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
 
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   coverWrapper: {
     width: 280,
     height: 280,
-    borderRadius: 16,
+    borderRadius: radius.lg,
     marginTop: 32,
     marginBottom: 24,
     overflow: 'hidden',
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   coverImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 16,
+    borderRadius: radius.lg,
   },
   titleInfo: {
     width: '100%',
@@ -290,10 +290,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtext: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
   metaDot: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     marginHorizontal: 6,
   },
   metaRow: {
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playButton: {
-    borderRadius: 22,
+    borderRadius: radius.pill,
     width: controlSize.detailPrimaryWidth,
     height: controlSize.detailPrimaryHeight,
     justifyContent: 'center',

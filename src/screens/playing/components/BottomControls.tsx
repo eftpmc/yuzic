@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Cast, ListMusic } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
+import { radius } from '@/constants/design';
 
 type BottomControlsProps = {
   mode: 'player' | 'queue';
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
   },
   rightButton: {
     padding: 6,
-    borderRadius: 8,
+    borderRadius: radius.md,
   },
   activeButton: {
     backgroundColor: 'rgba(255,255,255,0.12)',

@@ -2,6 +2,7 @@ import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import RNRestart from 'react-native-restart';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 interface Props {
   children: ReactNode;
@@ -49,29 +50,27 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   title: {
-    fontSize: 20,
+    ...typography.sectionTitle,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 12,
   },
   message: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     color: '#aaa',
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 20,
   },
   button: {
     paddingHorizontal: 24,
     paddingVertical: 12,
     backgroundColor: '#1a1a1a',
-    borderRadius: 10,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: '#333',
   },
   buttonText: {
+    ...typography.button,
     color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

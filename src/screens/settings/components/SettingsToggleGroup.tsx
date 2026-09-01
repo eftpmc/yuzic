@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { typography } from '@/constants/design';
 
 export type ToggleItem = {
   label: string;
@@ -64,11 +65,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   subtext: {
-    fontSize: 13,
+    ...typography.caption,
     marginTop: 2,
   },
 });

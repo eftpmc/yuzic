@@ -22,6 +22,7 @@ import {
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 // Quick Connect codes expire server-side; without a client-side ceiling too,
 // polling would continue forever showing "waiting for approval" with no
@@ -357,15 +358,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#222',
         borderWidth: 1,
         borderColor: '#555',
-        borderRadius: 8,
+        borderRadius: radius.md,
         marginBottom: 16,
         paddingHorizontal: 12,
         height: 50,
     },
     inputIcon: { marginRight: 10 },
-    input: { flex: 1, color: '#fff', fontSize: 16 },
-    title: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 10 },
-    subtitle: { fontSize: 16, color: '#888', marginBottom: 20 },
+    input: { ...typography.body, flex: 1, color: '#fff' },
+    title: { ...typography.display, color: '#fff', marginBottom: 10 },
+    subtitle: { ...typography.body, color: '#888', marginBottom: 20 },
     proxyToggle: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     proxyToggleIcon: { marginRight: 7 },
-    proxyToggleText: { flex: 1, fontSize: 14, color: '#666' },
+    proxyToggleText: { ...typography.rowSubtitle, flex: 1, color: '#666' },
     proxySection: { marginTop: 4, marginBottom: 8 },
     warningRow: {
         flexDirection: 'row',
@@ -389,12 +390,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#1c1400',
         borderWidth: 1,
         borderColor: '#78450a',
-        borderRadius: 8,
+        borderRadius: radius.md,
         padding: 10,
         marginBottom: 14,
         gap: 8,
     },
-    warningText: { flex: 1, fontSize: 13, color: '#f59e0b', lineHeight: 18 },
+    warningText: { ...typography.caption, flex: 1, color: '#f59e0b' },
     // Quick Connect panel
     quickConnectPanel: {
         alignItems: 'center',
@@ -402,12 +403,12 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     quickConnectLabel: {
-        fontSize: 15,
+        ...typography.body,
         color: '#888',
         textAlign: 'center',
     },
     quickConnectCode: {
-        fontSize: 48,
+        ...typography.hero,
         fontWeight: '700',
         color: '#fff',
         letterSpacing: 8,
@@ -418,34 +419,33 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     quickConnectWaitingText: {
-        fontSize: 14,
+        ...typography.rowSubtitle,
         color: '#888',
     },
     quickConnectHint: {
-        fontSize: 13,
+        ...typography.caption,
         color: '#555',
         textAlign: 'center',
-        lineHeight: 18,
         paddingHorizontal: 12,
     },
     // Buttons
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 12,
     },
     nextButtonDisabled: { opacity: 0.6 },
-    nextButtonText: { color: '#000', fontSize: 16, fontWeight: '600' },
+    nextButtonText: { ...typography.sheetTitle, color: '#000' },
     backButton: {
         backgroundColor: '#333',
         paddingVertical: 15,
-        borderRadius: 999,
+        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: 4,
     },
-    backButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+    backButtonText: { ...typography.sheetTitle, color: '#fff' },
 });

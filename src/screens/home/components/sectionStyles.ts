@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native'
+import { typography } from '@/constants/design'
 
 export const SECTION_H_PADDING = 12
 export const SECTION_GAP = 12
@@ -15,8 +16,7 @@ export const sectionStyles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     marginBottom: 12,
     marginLeft: SECTION_H_PADDING,
   },

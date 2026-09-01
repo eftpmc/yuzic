@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 /** Header shared by the Home, Library and Search tabs: screen title plus the
  * account avatar. */
@@ -47,8 +48,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    ...typography.screenTitle,
   },
   actions: {
     flexDirection: 'row',
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

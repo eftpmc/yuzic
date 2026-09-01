@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 export type IconSelectItem = {
   id: string;
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   title: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '500',
     marginBottom: 10,
   },
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     height: 40,
-    borderRadius: 8,
+    borderRadius: radius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

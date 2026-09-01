@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Item = {
   key: string;
@@ -84,12 +85,12 @@ export default function ChecklistSection({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: 12,
+    borderRadius: radius.card,
     overflow: 'hidden',
     marginBottom: 18,
   },
   infoText: {
-    fontSize: 13,
+    ...typography.caption,
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
@@ -111,21 +112,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: radius.md,
     borderWidth: 1.5,
     gap: 12,
   },
   checkbox: {
     width: 22,
     height: 22,
-    borderRadius: 5,
+    borderRadius: radius.sm,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   optionLabel: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
     flex: 1,
   },
 });

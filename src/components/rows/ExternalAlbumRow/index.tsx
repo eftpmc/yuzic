@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { statusColor } from '@/constants/design';
+import { statusColor, typography } from '@/constants/design';
 import {
   View,
   Text,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   badgeText: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '500',
   },
   badgeTextBlue: {

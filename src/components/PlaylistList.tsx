@@ -39,6 +39,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -350,8 +351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   content: {
     flex: 1,
@@ -360,14 +360,14 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: radius.md,
     padding: 10,
     marginBottom: 16,
   },
   searchInput: {
+    ...typography.body,
     flex: 1,
     marginLeft: 8,
-    fontSize: 16,
   },
   createContainer: {
     flexDirection: 'row',
@@ -375,10 +375,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   newPlaylistInput: {
+    ...typography.body,
     flex: 1,
-    borderRadius: 10,
+    borderRadius: radius.md,
     padding: 10,
-    fontSize: 16,
     marginRight: 8,
   },
   option: {
@@ -389,12 +389,12 @@ const styles = StyleSheet.create({
   playlistCover: {
     width: 48,
     height: 48,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     marginRight: 12,
   },
   optionText: {
+    ...typography.body,
     flex: 1,
-    fontSize: 16,
   },
   doneWrapper: {
     paddingHorizontal: 16,
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   doneButton: {
-    borderRadius: 12,
+    borderRadius: radius.card,
     paddingVertical: 14,
     alignItems: 'center',
   },
@@ -410,8 +410,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   doneButtonText: {
-    fontSize: 17,
-    fontWeight: '500',
+    ...typography.rowTitle,
     color: '#fff',
   },
 });

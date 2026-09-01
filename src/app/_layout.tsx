@@ -34,6 +34,7 @@ import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { isLikelyNetworkError, setServerUnreachable } from '@/features/connectivity/serverReachability';
 import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
+import { radius, typography } from '@/constants/design';
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -216,7 +217,7 @@ function AppShell() {
                       backgroundColor: isDarkMode
                         ? 'rgba(34,34,34,0.9)'
                         : 'rgba(255,255,255,0.9)',
-                      borderRadius: 10,
+                      borderRadius: radius.md,
                       shadowColor: '#000',
                       shadowOpacity: 0.15,
                       shadowRadius: 10,
@@ -226,9 +227,8 @@ function AppShell() {
                       backgroundColor: 'transparent',
                     },
                     text: {
+                      ...typography.rowTitle,
                       color: colors.secondary,
-                      fontSize: 16,
-                      fontWeight: '500',
                     },
                     indicator: {
                       marginRight: 12,

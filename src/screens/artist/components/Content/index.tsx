@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { statusColor } from '@/constants/design'
+import { radius, statusColor, typography } from '@/constants/design'
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -459,8 +459,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.navigationTitle,
     paddingHorizontal: 16,
   },
   sectionTitleNopad: {
@@ -480,12 +479,12 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sourceBadgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
@@ -505,13 +504,12 @@ const styles = StyleSheet.create({
   showMoreIcon: {
     width: 64,
     height: 64,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   showMoreText: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
   },
 })

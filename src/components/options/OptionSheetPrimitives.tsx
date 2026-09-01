@@ -1,5 +1,5 @@
 import React from 'react';
-import { spacing } from '@/constants/design';
+import { radius, spacing, typography } from '@/constants/design';
 import {
   StyleSheet,
   Text,
@@ -193,12 +193,12 @@ const styles = StyleSheet.create({
   cover: {
     width: 48,
     height: 48,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     marginRight: 12,
   },
   headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '500' },
-  subtitle: { fontSize: 14, marginTop: 2 },
+  title: { ...typography.rowTitle },
+  subtitle: { ...typography.rowSubtitle, marginTop: 2 },
   divider: {
     height: StyleSheet.hairlineWidth,
     marginVertical: 12,
@@ -218,16 +218,16 @@ const styles = StyleSheet.create({
   optionBodyNoIcon: {
     marginLeft: 0,
   },
-  optionText: { fontSize: 16, fontWeight: '500' },
+  optionText: { ...typography.rowTitle },
   optionTextDimmed: {
     opacity: 0.6,
   },
   optionDescription: {
-    fontSize: 13,
+    ...typography.caption,
     marginTop: 1,
   },
   sectionLabel: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '500',
     marginBottom: 8,
   },
@@ -240,8 +240,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
   },
-  infoLabel: { fontSize: 14 },
-  infoValue: { fontSize: 14, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
+  infoLabel: { ...typography.rowSubtitle },
+  infoValue: { ...typography.rowSubtitle, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
   chipsRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -259,10 +259,10 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: radius.card,
   },
   chipText: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '500',
   },
 });

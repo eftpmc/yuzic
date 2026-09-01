@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import Touchable from '@/components/Touchable'
+import { radius, typography } from '@/constants/design'
 
 type Props = {
   items: string[]
@@ -106,13 +107,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 8,
     marginBottom: 12,
-    borderRadius: 10,
+    borderRadius: radius.md,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
   input: {
+    ...typography.body,
     flex: 1,
-    fontSize: 16,
     paddingVertical: 8,
   },
   shuffleButton: {
@@ -128,6 +129,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   itemText: {
-    fontSize: 15,
+    ...typography.body,
   },
 })

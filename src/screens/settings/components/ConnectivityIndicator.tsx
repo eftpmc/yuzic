@@ -1,5 +1,5 @@
 import React from 'react';
-import { statusColor } from '@/constants/design';
+import { radius, statusColor } from '@/constants/design';
 import { View, StyleSheet } from 'react-native';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,6 +32,6 @@ const styles = StyleSheet.create({
   dot: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: radius.pill,
   },
 });

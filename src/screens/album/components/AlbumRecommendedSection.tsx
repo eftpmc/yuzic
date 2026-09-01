@@ -23,6 +23,7 @@ import {
   ALBUM_RECOMMENDATION_RELATED_LIMIT,
   ALBUM_RECOMMENDATION_TARGET_ALBUMS,
 } from '@/constants/album';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   artistName: string
@@ -119,18 +120,17 @@ const styles = StyleSheet.create({
   badge: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
   },
   scroll: {
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,

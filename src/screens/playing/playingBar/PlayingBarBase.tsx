@@ -27,6 +27,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Variant = 'ios' | 'android';
 
@@ -72,7 +73,7 @@ const variantStyles = {
       marginHorizontal: 12,
       marginTop: 12,
       marginBottom: 0,
-      borderRadius: 14,
+      borderRadius: radius.card,
       overflow: 'hidden' as const,
       shadowColor: '#000',
       shadowOpacity: 0.1,
@@ -83,7 +84,7 @@ const variantStyles = {
       padding: 8,
       paddingBottom: 0,
       paddingHorizontal: 12,
-      borderRadius: 14,
+      borderRadius: radius.card,
     },
     topRowWrapper: {
       height: 40,
@@ -99,10 +100,10 @@ const variantStyles = {
       marginRight: 10,
     },
     title: {
-      fontSize: 13,
+      ...typography.caption,
     },
     artist: {
-      fontSize: 13,
+      ...typography.caption,
     },
     progressBarContainer: {
       height: 3,
@@ -117,7 +118,7 @@ const variantStyles = {
     fabButton: {
       width: 38,
       height: 38,
-      borderRadius: 19,
+      borderRadius: radius.pill,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -132,7 +133,7 @@ const variantStyles = {
       marginHorizontal: 12,
       marginTop: 12,
       marginBottom: 0,
-      borderRadius: 14,
+      borderRadius: radius.card,
       overflow: 'hidden' as const,
       shadowColor: '#000',
       shadowOpacity: 0.1,
@@ -144,7 +145,7 @@ const variantStyles = {
       padding: 8,
       paddingBottom: 0,
       paddingHorizontal: 12,
-      borderRadius: 14,
+      borderRadius: radius.card,
     },
     topRowWrapper: {
       height: 40,
@@ -160,10 +161,10 @@ const variantStyles = {
       marginRight: 10,
     },
     title: {
-      fontSize: 13,
+      ...typography.caption,
     },
     artist: {
-      fontSize: 13,
+      ...typography.caption,
     },
     progressBarContainer: {
       height: 3,
@@ -178,7 +179,7 @@ const variantStyles = {
     fabButton: {
       width: 38,
       height: 38,
-      borderRadius: 19,
+      borderRadius: radius.pill,
       elevation: 4,
     },
     placeholderIconSize: 32,
@@ -423,7 +424,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   coverArt: {
-    borderRadius: 5,
+    borderRadius: radius.sm,
   },
   details: {
     flex: 1,
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
   },
   progressBarContainer: {
     backgroundColor: '#666',
-    borderRadius: 2,
+    borderRadius: radius.xs,
     overflow: 'hidden',
   },
   progressBar: {

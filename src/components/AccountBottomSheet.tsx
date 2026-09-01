@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   onDismiss?: () => void;
@@ -149,21 +150,20 @@ const styles = StyleSheet.create({
   avatar: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    color: '#fff',
+    ...typography.navigationTitle,
     fontWeight: '700',
-    fontSize: 18,
+    color: '#fff',
   },
   headerInfo: {
     flex: 1,
   },
   username: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.sheetTitle,
     marginBottom: 4,
   },
   serverMeta: {
@@ -174,15 +174,15 @@ const styles = StyleSheet.create({
   typeBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radius.xs,
   },
   typeBadgeText: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '500',
     textTransform: 'capitalize',
   },
   serverUrl: {
-    fontSize: 12,
+    ...typography.caption,
     flex: 1,
   },
   divider: {
@@ -197,7 +197,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   rowText: {
-    fontSize: 15,
-    fontWeight: '500',
+    ...typography.compactRowTitle,
   },
 });

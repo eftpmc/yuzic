@@ -19,6 +19,7 @@ import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachab
 import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
+import { radius } from '@/constants/design';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: 64,
         height: 36,
-        borderRadius: 8,
+        borderRadius: radius.md,
         alignSelf: 'center',
     },
     playingBarHolder: {

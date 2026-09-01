@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { radius, typography } from '@/constants/design';
 
 export const ESTIMATED_ROW_HEIGHT = 108;
 
@@ -9,7 +10,7 @@ export const styles = StyleSheet.create({
   summaryCard: {
     margin: 16,
     marginBottom: 10,
-    borderRadius: 10,
+    borderRadius: radius.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -20,10 +21,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   summaryLabel: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
   summaryValue: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '600',
   },
   providerHeader: {
@@ -35,7 +36,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   providerHeaderText: {
-    fontSize: 18,
+    ...typography.navigationTitle,
     fontWeight: '700',
   },
   providerHeaderDelete: {
@@ -57,14 +58,14 @@ export const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: radius.md,
     padding: 12,
     marginBottom: 10,
   },
   cover: {
     width: 44,
     height: 44,
-    borderRadius: 8,
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
   coverCell: {
@@ -82,12 +83,11 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
+    ...typography.button,
     flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
   },
   subtitle: {
-    fontSize: 12,
+    ...typography.caption,
   },
   metaLine: {
     flexDirection: 'row',
@@ -96,20 +96,20 @@ export const styles = StyleSheet.create({
     minWidth: 0,
   },
   metaDot: {
-    fontSize: 12,
+    ...typography.caption,
     marginHorizontal: 5,
   },
   downloadedDate: {
     flexShrink: 1,
   },
   sizeText: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '600',
   },
   removeButton: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.04)',
@@ -118,8 +118,8 @@ export const styles = StyleSheet.create({
     opacity: 0.45,
   },
   emptyText: {
+    ...typography.caption,
     paddingTop: 20,
     textAlign: 'center',
-    fontSize: 13,
   },
 });

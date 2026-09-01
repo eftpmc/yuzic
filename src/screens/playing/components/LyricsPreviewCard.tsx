@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LyricsResult } from '@/api/types';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Props = {
   lyrics: LyricsResult;
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingVertical: CARD_PADDING_V,
     paddingHorizontal: 24,
-    borderRadius: 24,
+    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },
@@ -160,8 +161,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   line: {
+    ...typography.sectionTitle,
     textAlign: 'center',
-    fontSize: 20,
     marginVertical: 6,
   },
   activeLine: {

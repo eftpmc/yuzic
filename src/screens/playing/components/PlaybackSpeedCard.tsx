@@ -11,6 +11,7 @@ import {
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
 import Touchable from '@/components/Touchable';
+import { radius, typography } from '@/constants/design';
 
 type Props = { contentWidth: number };
 
@@ -112,7 +113,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
 const styles = StyleSheet.create({
   card: {
     marginTop: 16,
-    borderRadius: 24,
+    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     paddingHorizontal: 22,
     paddingTop: 20,
@@ -133,19 +134,17 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   label: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '600',
     color: 'rgba(255,255,255,0.5)',
   },
   bigValue: {
-    fontSize: 48,
-    fontWeight: '600',
+    ...typography.hero,
     color: 'rgba(255,255,255,0.3)',
-    lineHeight: 52,
     marginBottom: 20,
   },
   bigUnit: {
-    fontSize: 24,
+    ...typography.screenTitle,
     fontWeight: '400',
   },
   controls: {
@@ -155,26 +154,26 @@ const styles = StyleSheet.create({
   resetButton: {
     flex: 1,
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   resetLabel: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     fontWeight: '500',
     color: '#fff',
   },
   stepButton: {
     flex: 1,
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepLabel: {
-    fontSize: 20,
+    ...typography.sectionTitle,
     fontWeight: '400',
     color: 'rgba(255,255,255,0.45)',
   },

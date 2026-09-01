@@ -19,6 +19,7 @@ import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
+import { radius, typography } from '@/constants/design';
 
 export default function Settings() {
     const { t } = useTranslation();
@@ -159,8 +160,7 @@ const styles = StyleSheet.create({
         paddingBottom: 120,
     },
     sectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
+        ...typography.label,
         marginBottom: 6,
         marginTop: 16,
         marginLeft: 4,
@@ -176,13 +176,13 @@ const styles = StyleSheet.create({
     avatar: {
         width: 52,
         height: 52,
-        borderRadius: 26,
+        borderRadius: radius.pill,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 14,
     },
     avatarText: {
-        fontSize: 20,
+        ...typography.sectionTitle,
         fontWeight: '700',
         color: '#fff',
     },
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     profileName: {
-        fontSize: 17,
+        ...typography.rowTitle,
         fontWeight: '600',
         marginBottom: 4,
     },
@@ -202,21 +202,21 @@ const styles = StyleSheet.create({
     typeBadge: {
         paddingHorizontal: 6,
         paddingVertical: 2,
-        borderRadius: 4,
+        borderRadius: radius.xs,
     },
     typeBadgeText: {
-        fontSize: 11,
+        ...typography.micro,
         fontWeight: '500',
         textTransform: 'capitalize',
     },
     serverUrl: {
-        fontSize: 12,
+        ...typography.caption,
         flex: 1,
     },
     versionText: {
+        ...typography.caption,
         textAlign: 'center',
         marginTop: 32,
         marginBottom: 60,
-        fontSize: 13,
     },
 });

@@ -23,6 +23,7 @@ import {
   type DownloaderConfig,
 } from './useDownloaderConnection';
 import { useDownloaderQueue, type QueueDiff } from './useDownloaderQueue';
+import { radius, typography } from '@/constants/design';
 
 type Props<T extends { id: string }> = {
   id: DownloaderId;
@@ -159,16 +160,16 @@ export const downloaderQueueStyles = StyleSheet.create({
     marginBottom: 6,
   },
   itemMain: { flex: 1, minWidth: 0, marginRight: 8 },
-  itemTitle: { fontSize: 14, fontWeight: '500' },
-  itemSub: { fontSize: 12, marginTop: 2 },
-  itemPct: { fontSize: 12 },
-  progressTrack: { height: 4, width: '100%', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 2 },
-  warningContainer: { marginTop: 8, padding: 8, borderRadius: 6 },
-  warningMessage: { fontSize: 12, marginLeft: 8, marginTop: 2 },
+  itemTitle: { ...typography.rowSubtitle, fontWeight: '500' },
+  itemSub: { ...typography.caption, marginTop: 2 },
+  itemPct: { ...typography.caption },
+  progressTrack: { height: 4, width: '100%', borderRadius: radius.pill, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: radius.xs },
+  warningContainer: { marginTop: 8, padding: 8, borderRadius: radius.sm },
+  warningMessage: { ...typography.caption, marginLeft: 8, marginTop: 2 },
 });
 
 const styles = StyleSheet.create({
   queueLoading: { alignItems: 'center', paddingVertical: 20 },
-  emptyText: { textAlign: 'center', marginVertical: 16, fontSize: 14 },
+  emptyText: { ...typography.rowSubtitle, textAlign: 'center', marginVertical: 16 },
 });

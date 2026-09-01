@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
+import { radius } from '@/constants/design';
 
 const LoadingArtistHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     bottom: -32,
     width: 120,
     height: 120,
-    borderRadius: 60,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
 import Touchable from '@/components/Touchable'
+import { typography } from '@/constants/design'
 
 type Props = {
   message?: string
@@ -55,7 +56,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   message: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
 })
