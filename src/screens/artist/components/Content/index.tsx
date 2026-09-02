@@ -8,6 +8,7 @@ import type { AlbumBase, Artist, ExternalAlbumBase, ExternalArtist, ExternalArti
 import AlbumRow from '@/components/rows/AlbumRow'
 import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
 import Header, { ArtistHeaderBar } from '../Header'
+import { DetailScreen } from '@/components/DetailHeader'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
@@ -387,8 +388,8 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, setShowUnownedAlbums, setShowUnownedSingles, t])
 
   return (
-    <View style={{ flex: 1 }}>
-      <ArtistHeaderBar localArtist={localArtist} externalArtist={externalArtist} />
+    <DetailScreen bar={<ArtistHeaderBar localArtist={localArtist} externalArtist={externalArtist} />}>
+      {scroll => (
       <FlashList
         data={items}
         keyExtractor={(item) => item.id}
@@ -399,8 +400,10 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
           paddingBottom: Platform.OS === 'android' ? 180 : 140,
           backgroundColor: colors.background,
         }}
+        {...scroll}
       />
-    </View>
+      )}
+    </DetailScreen>
   )
 }
 

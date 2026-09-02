@@ -24,6 +24,7 @@ import {
   ALBUM_RECOMMENDATION_VISIBLE_TILES,
 } from '@/constants/album';
 import { spacing, typography } from '@/constants/design';
+import { DetailScreen } from '@/components/DetailHeader';
 
 type Props = {
   album: Album;
@@ -157,8 +158,8 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   }, [colors, starredSongIds, album, t]);
 
   return (
-    <View style={styles.listContainer}>
-      <AlbumHeaderBar localAlbum={album} externalAlbum={null} />
+    <DetailScreen bar={<AlbumHeaderBar localAlbum={album} externalAlbum={null} />}>
+      {scroll => (
       <FlashList
         data={items}
         keyExtractor={(item) =>
@@ -177,15 +178,14 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
         ListFooterComponent={footer}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
+        {...scroll}
       />
-    </View>
+      )}
+    </DetailScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  listContainer: {
-    flex: 1,
-  },
   discHeader: {
     ...typography.caption,
     fontWeight: '600',

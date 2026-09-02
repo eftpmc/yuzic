@@ -24,7 +24,15 @@ import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
 import { useSheetRef } from '@/utils/useSheetRef'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
-import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar, DetailHeaderIconButton } from '@/components/DetailHeader'
+import {
+  DetailActionRow,
+  DetailCircleAction,
+  DetailPlayAction,
+  DetailHeaderBar,
+  DetailHeaderIconButton,
+  useDetailHeaderInset,
+  useDetailHeroTitleLayout,
+} from '@/components/DetailHeader'
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
@@ -45,6 +53,12 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
   const { playSongInCollection } = usePlayingActions()
   const { downloadAlbumById, getCollectionDownloadState } = useDownload()
   const { t } = useTranslation()
+
+  // The bar floats over this art now, so the wrapper grows by exactly the room
+  // it and the status bar take: the content below stays put and the extra strip
+  // at the top is filled with art rather than a band.
+  const barInset = useDetailHeaderInset()
+  const onTitleLayout = useDetailHeroTitleLayout()
 
   const [isDownloadingAll, setIsDownloadingAll] = useState(false)
   const [songsLoading, setSongsLoading] = useState(false)
@@ -132,7 +146,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
 
   return (
     <>
-      <View style={styles.fullBleedWrapper}>
+      <View style={[styles.fullBleedWrapper, { height: GENRE_HERO_HEIGHT + barInset }]}>
         {coverUri && (
           <TurboImage
             source={{ uri: coverUri }}
@@ -172,7 +186,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
         )}
       </View>
 
-      <View style={styles.content}>
+      <View style={styles.content} onLayout={onTitleLayout}>
         <Text style={[styles.genreName, { color: colors.secondary }]}>
           {genre}
         </Text>
@@ -251,10 +265,13 @@ function GenreOptionsButton({ genre, albums }: { genre: string; albums: AlbumBas
 
 export default GenreHeader
 
+/** The blurred cover behind a genre's name, before the floating bar's inset. */
+const GENRE_HERO_HEIGHT = 220;
+
 const styles = StyleSheet.create({
   fullBleedWrapper: {
     width: '100%',
-    height: 220,
+    height: GENRE_HERO_HEIGHT,
     justifyContent: 'flex-end',
     alignItems: 'center',
     overflow: 'hidden',

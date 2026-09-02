@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { useStarredSongs } from '@/hooks/starred';
 import Header, { PlaylistHeaderBar } from '../Header';
 import RecommendedSection from '../RecommendedSection';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
+import { DetailScreen } from '@/components/DetailHeader';
 
 type Props = {
   playlist: Playlist;
@@ -56,8 +57,11 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
   }, [starredSongIds, playlist]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <PlaylistHeaderBar playlist={playlist} onOptions={() => optionsRef.current?.present()} />
+    <DetailScreen
+      bar={<PlaylistHeaderBar playlist={playlist} onOptions={() => optionsRef.current?.present()} />}
+    >
+      {scroll => (
+        <>
       <FlashList<ListItem>
         data={items}
         keyExtractor={(item, index) => item.type === 'song' ? `${item.song.id}:${index}` : item.id}
@@ -67,9 +71,12 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
         ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
+        {...scroll}
       />
       <PlaylistOptions ref={optionsRef} playlist={playlist} hideGoToPlaylist />
-    </View>
+        </>
+      )}
+    </DetailScreen>
   );
 };
 

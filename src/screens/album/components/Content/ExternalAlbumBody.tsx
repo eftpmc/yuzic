@@ -10,6 +10,7 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import { useTheme } from '@/hooks/useTheme';
 import { ALBUM_EXTERNAL_HORIZONTAL_PADDING } from '@/constants/features';
 import { spacing, typography } from '@/constants/design';
+import { DetailScreen } from '@/components/DetailHeader';
 
 type Props = {
   album: ExternalAlbum;
@@ -63,8 +64,8 @@ const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
   }, [previews, handleSongPress, album.title, album.artist]);
 
   return (
-    <View style={styles.listContainer}>
-      <AlbumHeaderBar localAlbum={null} externalAlbum={album} />
+    <DetailScreen bar={<AlbumHeaderBar localAlbum={null} externalAlbum={album} />}>
+      {scroll => (
       <FlashList
         data={songs}
         keyExtractor={(item) => item.id}
@@ -74,15 +75,14 @@ const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
         ListFooterComponent={footer}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
+        {...scroll}
       />
-    </View>
+      )}
+    </DetailScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  listContainer: {
-    flex: 1,
-  },
   statsFooter: {
     paddingHorizontal: ALBUM_EXTERNAL_HORIZONTAL_PADDING,
     paddingTop: spacing.lg,

@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react'
-import { View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 
@@ -7,6 +6,7 @@ import { AlbumBase } from '@/types'
 import { useTheme } from '@/hooks/useTheme'
 import AlbumRow from '@/components/rows/AlbumRow'
 import GenreHeader, { GenreHeaderBar } from '../Header'
+import { DetailScreen } from '@/components/DetailHeader'
 import { spacing } from '@/constants/design'
 
 type Props = {
@@ -34,8 +34,8 @@ export default function GenreContent({ genre, albums }: Props) {
   )
 
   return (
-    <View style={{ flex: 1 }}>
-      <GenreHeaderBar genre={genre} albums={albums} />
+    <DetailScreen bar={<GenreHeaderBar genre={genre} albums={albums} />}>
+      {scroll => (
       <FlashList
         data={albums}
         keyExtractor={(item) => item.id}
@@ -46,7 +46,9 @@ export default function GenreContent({ genre, albums }: Props) {
           paddingBottom: spacing.scrollClearance,
           backgroundColor: colors.background,
         }}
+        {...scroll}
       />
-    </View>
+      )}
+    </DetailScreen>
   )
 }

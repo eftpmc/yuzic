@@ -1,20 +1,47 @@
-import React from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   StyleSheet,
   Text,
   View,
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
+import { ACCENT_WASH_LOCATIONS, accentWashColors } from '@/features/theme/coverAccent';
 import { useTheme } from '@/hooks/useTheme';
 import { controlSize, radius, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
+
+/** How far the wash reaches past the top of the hero, before the safe-area and
+ * bar height that sit above the cover are added to it. */
+const WASH_REACH = 420;
+
+const TITLE_FADE_MS = 180;
+
+/** The floating bar's own height, below the status bar. Exported so a screen
+ * can put something (a status banner) directly under it. */
+export const DETAIL_BAR_HEIGHT = controlSize.topBarHeight;
 
 type DetailHeaderProps = {
   title: string;
@@ -34,24 +61,115 @@ type DetailHeaderBarProps = {
   rightAction?: React.ReactNode;
 };
 
+/**
+ * What a floating bar needs from the screen under it: whether the hero title
+ * has scrolled away, and somewhere for that title to report where it is.
+ *
+ * Null on a screen with no hero — a plain list keeps a plain, always-titled
+ * bar, because there is nothing else on it saying where you are.
+ */
+type DetailScrollValue = {
+  titleVisible: boolean;
+  onHeroTitleLayout: (event: LayoutChangeEvent) => void;
+};
+
+const DetailScrollContext = createContext<DetailScrollValue | null>(null);
+
+type DetailScreenProps = {
+  /** The floating bar, rendered over the list rather than above it. */
+  bar: React.ReactNode;
+  children: (scroll: {
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    scrollEventThrottle: number;
+  }) => React.ReactNode;
+};
+
+/**
+ * A detail screen: a scrolling body with a bar floating over it.
+ *
+ * The bar used to sit *above* the list, on an opaque background, which put a
+ * hard black edge across the top of every cover wash — the one thing a wash
+ * must not have. Floating it lets the colour run to the top of the screen and
+ * under the status bar, and lets the bar stay out of the way until there is a
+ * reason for it: the title appears only once the hero's own title has scrolled
+ * under it, so the screen never says the same name twice.
+ */
+export function DetailScreen({ bar, children }: DetailScreenProps) {
+  const insets = useSafeAreaInsets();
+  const [titleVisible, setTitleVisible] = useState(false);
+
+  // The scroll offset past which the hero title is behind the bar. Infinite
+  // until the hero has laid out, so nothing shows before it is known.
+  const revealAt = useRef(Number.POSITIVE_INFINITY);
+
+  const onHeroTitleLayout = useCallback((event: LayoutChangeEvent) => {
+    const { y, height } = event.nativeEvent.layout;
+    revealAt.current = y + height - insets.top - DETAIL_BAR_HEIGHT;
+  }, [insets.top]);
+
+  const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // Setting the same boolean is a no-op in React, so this re-renders on the
+    // two frames the threshold is crossed rather than on every scroll event.
+    setTitleVisible(event.nativeEvent.contentOffset.y > revealAt.current);
+  }, []);
+
+  return (
+    <DetailScrollContext.Provider value={{ titleVisible, onHeroTitleLayout }}>
+      <View style={styles.screen}>
+        {children({ onScroll, scrollEventThrottle: 16 })}
+        <View
+          pointerEvents="box-none"
+          style={[styles.floatingBar, { paddingTop: insets.top }]}
+        >
+          {bar}
+        </View>
+      </View>
+    </DetailScrollContext.Provider>
+  );
+}
+
 export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBarProps) {
   const navigation = useNavigation<any>();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
+  const floating = useContext(DetailScrollContext);
+
+  const progress = useSharedValue(floating ? 0 : 1);
+
+  useEffect(() => {
+    const target = floating?.titleVisible === false ? 0 : 1;
+    progress.value = withTiming(target, { duration: TITLE_FADE_MS });
+  }, [floating?.titleVisible, progress]);
+
+  const fadeStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
 
   return (
     <View style={styles.headerRow}>
-      <Touchable
+      {/* Behind the bar rather than on it, so it can arrive with the title and
+          give the rows scrolling underneath something to stop against. */}
+      {floating ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: colors.background },
+            fadeStyle,
+          ]}
+        />
+      ) : null}
+
+      <BarButton
         testID="detail-back-button"
-        accessibilityRole="button"
         accessibilityLabel="Go back"
         onPress={() => navigation.goBack()}
-        style={styles.headerButton}
-        feedback="control"
+        scrim={floating ? (isDarkMode ? SCRIM_DARK : SCRIM_LIGHT) : undefined}
       >
         <ChevronLeft size={24} color={colors.secondary} />
-      </Touchable>
+      </BarButton>
 
-      <View pointerEvents="none" style={styles.headerTitleWrapper}>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.headerTitleWrapper, floating ? fadeStyle : null]}
+      >
         <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
           {title}
         </Text>
@@ -60,7 +178,7 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
             {subtitle}
           </Text>
         ) : null}
-      </View>
+      </Animated.View>
 
       {rightAction ?? <View style={styles.headerButton} />}
     </View>
@@ -77,10 +195,16 @@ export function DetailHeader({
   showNavigation = true,
 }: DetailHeaderProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const accent = useCoverAccent(cover);
+  const floating = useContext(DetailScrollContext);
+
+  // The hero starts at the very top of the scroll view so the wash can too;
+  // the room the bar and the status bar need is padding here instead.
+  const inset = floating ? insets.top + DETAIL_BAR_HEIGHT : 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: inset }]}>
       {/* A wash of the cover's own colour behind it, fading out before the
           content below. Absolute and non-interactive so nothing here has to
           move to make room for it, and absent until extraction returns rather
@@ -88,8 +212,9 @@ export function DetailHeader({
       {accent ? (
         <LinearGradient
           pointerEvents="none"
-          colors={[accent, 'transparent']}
-          style={styles.wash}
+          colors={accentWashColors(accent)}
+          locations={[...ACCENT_WASH_LOCATIONS]}
+          style={[styles.wash, { height: inset + WASH_REACH }]}
         />
       ) : null}
 
@@ -99,7 +224,7 @@ export function DetailHeader({
         <MediaImage cover={cover} size="detail" style={styles.coverImage} />
       </View>
 
-      <View style={styles.titleInfo}>
+      <View style={styles.titleInfo} onLayout={floating?.onHeroTitleLayout}>
         <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
           {title}
         </Text>
@@ -111,6 +236,28 @@ export function DetailHeader({
       {actions}
     </View>
   );
+}
+
+/**
+ * Room at the top of a hero that draws its own art, for the floating bar and
+ * the status bar above it.
+ *
+ * The artist header bleeds a blurred cover to the edges instead of using
+ * `DetailHeader`, and has to leave the same gap.
+ */
+export function useDetailHeaderInset(): number {
+  const insets = useSafeAreaInsets();
+  const floating = useContext(DetailScrollContext);
+  return floating ? insets.top + DETAIL_BAR_HEIGHT : 0;
+}
+
+/**
+ * `onLayout` for a hero's own title, so the floating bar knows when to show
+ * its copy of it. Undefined outside a `DetailScreen`, where there is no bar
+ * waiting on it.
+ */
+export function useDetailHeroTitleLayout(): ((event: LayoutChangeEvent) => void) | undefined {
+  return useContext(DetailScrollContext)?.onHeroTitleLayout;
 }
 
 type DetailMetaRowProps = {
@@ -205,19 +352,33 @@ export function DetailPlayAction({ children, onPress, disabled, style, accessibi
   );
 }
 
-type DetailHeaderIconButtonProps = {
+/**
+ * The scrim behind a bar icon.
+ *
+ * A bare glyph on a floating bar has to stay readable over whatever the cover
+ * turns out to be, and the cover is a different colour on every screen. A disc
+ * the opposite side of the theme from the icon settles it once, for every
+ * cover, without the icon having to change colour halfway through a scroll.
+ */
+const SCRIM_DARK = 'rgba(0, 0, 0, 0.35)';
+const SCRIM_LIGHT = 'rgba(255, 255, 255, 0.6)';
+
+type BarButtonProps = {
   children: React.ReactNode;
   onPress?: () => void;
   accessibilityLabel?: string;
+  testID?: string;
+  scrim?: string;
 };
 
-export function DetailHeaderIconButton({ children, onPress, accessibilityLabel = 'More options' }: DetailHeaderIconButtonProps) {
+function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: BarButtonProps) {
   return (
     <Touchable
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={styles.headerButton}
+      style={[styles.headerButton, scrim ? { backgroundColor: scrim } : null]}
       feedback="control"
       hitSlop={8}
     >
@@ -226,7 +387,36 @@ export function DetailHeaderIconButton({ children, onPress, accessibilityLabel =
   );
 }
 
+type DetailHeaderIconButtonProps = {
+  children: React.ReactNode;
+  onPress?: () => void;
+  accessibilityLabel?: string;
+};
+
+export function DetailHeaderIconButton({ children, onPress, accessibilityLabel = 'More options' }: DetailHeaderIconButtonProps) {
+  const { isDarkMode } = useTheme();
+  const floating = useContext(DetailScrollContext);
+  return (
+    <BarButton
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      scrim={floating ? (isDarkMode ? SCRIM_DARK : SCRIM_LIGHT) : undefined}
+    >
+      {children}
+    </BarButton>
+  );
+}
+
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  floatingBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
   container: {
     paddingHorizontal: 0,
     alignItems: 'center',
@@ -236,16 +426,13 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    // Past the cover and into the title, so the colour has somewhere to fade
-    // rather than stopping on an edge.
-    height: 420,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.page,
-    paddingVertical: spacing.md,
+    height: DETAIL_BAR_HEIGHT,
     width: '100%',
   },
   headerTitleWrapper: {
@@ -263,8 +450,11 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   headerButton: {
-    padding: spacing.tight,
     width: controlSize.iconCompact,
+    height: controlSize.iconCompact,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   coverWrapper: {
     width: 280,

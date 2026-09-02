@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CloudOff } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ import StatusBanner from '@/components/StatusBanner';
 
 import PlaylistContent from './components/Content';
 import LoadingPlaylistContent from './components/Content/Loading';
+import { DETAIL_BAR_HEIGHT } from '@/components/DetailHeader'
 import { spacing } from '@/constants/design';
 
 const PlaylistScreen: React.FC = () => {
@@ -21,6 +22,7 @@ const PlaylistScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playlist, isLoading, songsLoading, degraded, error } = usePlaylist(id);
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -39,18 +41,22 @@ const PlaylistScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView testID="playlist-screen" edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+    <View testID="playlist-screen" style={[styles.screen, { backgroundColor: colors.background }]}>
       {degraded && (
-        <StatusBanner
-          icon={<CloudOff size={14} color={colors.subtext} />}
-          text={t('common.serverUnreachableBanner')}
-          closable
-          style={styles.degradedBanner}
-          testID="server-unreachable-banner"
-        />
+        <View
+          pointerEvents="box-none"
+          style={[styles.degradedBanner, { top: insets.top + DETAIL_BAR_HEIGHT }]}
+        >
+          <StatusBanner
+            icon={<CloudOff size={14} color={colors.subtext} />}
+            text={t('common.serverUnreachableBanner')}
+            closable
+            testID="server-unreachable-banner"
+          />
+        </View>
       )}
       <PlaylistContent playlist={playlist} songsLoading={songsLoading} />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -60,8 +66,11 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  // Under the floating bar rather than above the content: the art runs to the
+  // top of the screen now, and there is nowhere above it left to push.
   degradedBanner: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.sm,
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
   },
 });
