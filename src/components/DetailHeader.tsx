@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -23,6 +24,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MediaImage } from '@/components/MediaImage';
@@ -69,7 +71,10 @@ type DetailHeaderBarProps = {
  * bar, because there is nothing else on it saying where you are.
  */
 type DetailScrollValue = {
-  titleVisible: boolean;
+  /** 0 while the hero title is on screen, 1 once it is behind the bar. A shared
+   * value rather than a boolean prop, so crossing the threshold fades the bar
+   * on the UI thread without re-rendering anything inside it. */
+  progress: SharedValue<number>;
   onHeroTitleLayout: (event: LayoutChangeEvent) => void;
 };
 
@@ -96,11 +101,20 @@ type DetailScreenProps = {
  */
 export function DetailScreen({ bar, children }: DetailScreenProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [titleVisible, setTitleVisible] = useState(false);
 
   // The scroll offset past which the hero title is behind the bar. Infinite
   // until the hero has laid out, so nothing shows before it is known.
   const revealAt = useRef(Number.POSITIVE_INFINITY);
+
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(titleVisible ? 1 : 0, { duration: TITLE_FADE_MS });
+  }, [titleVisible, progress]);
+
+  const fadeStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
 
   const onHeroTitleLayout = useCallback((event: LayoutChangeEvent) => {
     const { y, height } = event.nativeEvent.layout;
@@ -113,14 +127,30 @@ export function DetailScreen({ bar, children }: DetailScreenProps) {
     setTitleVisible(event.nativeEvent.contentOffset.y > revealAt.current);
   }, []);
 
+  const scroll = useMemo(
+    () => ({ progress, onHeroTitleLayout }),
+    [progress, onHeroTitleLayout]
+  );
+
   return (
-    <DetailScrollContext.Provider value={{ titleVisible, onHeroTitleLayout }}>
+    <DetailScrollContext.Provider value={scroll}>
       <View style={styles.screen}>
         {children({ onScroll, scrollEventThrottle: 16 })}
         <View
           pointerEvents="box-none"
           style={[styles.floatingBar, { paddingTop: insets.top }]}
         >
+          {/* The whole overlay, status-bar strip included — painting only the
+              bar left that strip transparent, so a scrolled list showed
+              through above an otherwise solid header. */}
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: colors.background },
+              fadeStyle,
+            ]}
+          />
           {bar}
         </View>
       </View>
@@ -133,13 +163,8 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
   const { colors, isDarkMode } = useTheme();
   const floating = useContext(DetailScrollContext);
 
-  const progress = useSharedValue(floating ? 0 : 1);
-
-  useEffect(() => {
-    const target = floating?.titleVisible === false ? 0 : 1;
-    progress.value = withTiming(target, { duration: TITLE_FADE_MS });
-  }, [floating?.titleVisible, progress]);
-
+  const fallback = useSharedValue(1);
+  const progress = floating?.progress ?? fallback;
   const fadeStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
 
   return (
@@ -147,32 +172,18 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
     // and a plain view across the top of it would swallow every drag that
     // started in that strip.
     <View pointerEvents="box-none" style={styles.headerRow}>
-      {/* Behind the bar rather than on it, so it can arrive with the title and
-          give the rows scrolling underneath something to stop against. */}
-      {floating ? (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: colors.background },
-            fadeStyle,
-          ]}
-        />
-      ) : null}
-
       <BarButton
         testID="detail-back-button"
         accessibilityLabel="Go back"
         onPress={() => navigation.goBack()}
         scrim={floating ? (isDarkMode ? SCRIM_DARK : SCRIM_LIGHT) : undefined}
       >
-        <ChevronLeft size={24} color={colors.secondary} />
+        {/* A chevron's ink is a "<": its geometric centre sits right of where
+            the eye puts it, so centring it in the disc reads as pushed over. */}
+        <ChevronLeft size={24} color={colors.secondary} style={styles.chevron} />
       </BarButton>
 
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.headerTitleWrapper, floating ? fadeStyle : null]}
-      >
+      <Animated.View pointerEvents="none" style={[styles.headerTitleWrapper, fadeStyle]}>
         <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
           {title}
         </Text>
@@ -451,6 +462,9 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     ...typography.caption,
     maxWidth: '60%',
+  },
+  chevron: {
+    marginLeft: -2,
   },
   headerButton: {
     width: controlSize.iconCompact,
