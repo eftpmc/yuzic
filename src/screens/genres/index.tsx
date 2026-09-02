@@ -51,18 +51,12 @@ const GenresScreen: React.FC = () => {
       edges={['top']}
       style={[styles.screen, { backgroundColor: colors.background }]}
     >
-      <DetailHeaderBar title={t('library.genres.title')} />
-
-      <View style={styles.heading}>
-        <Text style={[styles.headingTitle, { color: colors.secondary }]}>
-          {t('library.genres.title')}
-        </Text>
-        {rows.length > 0 && (
-          <Text style={[styles.headingCount, { color: colors.subtext }]}>
-            {t('library.count.genres', { count: rows.length })}
-          </Text>
-        )}
-      </View>
+      {/* The bar names the screen; a heading under it would only say it
+          again, which is the pattern every other list screen here follows. */}
+      <DetailHeaderBar
+        title={t('library.genres.title')}
+        subtitle={rows.length > 0 ? t('library.count.genres', { count: rows.length }) : undefined}
+      />
       {isLoading && rows.length === 0 ? (
         // Genres are counted from albums, so an unfinished album sync looks
         // exactly like a library with no genres.
@@ -88,10 +82,7 @@ export default GenresScreen
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  list: { paddingBottom: spacing.scrollClearance },
-  heading: { paddingHorizontal: spacing.page, paddingTop: spacing.sm, paddingBottom: spacing.md },
-  headingTitle: { ...typography.screenTitle },
-  headingCount: { ...typography.caption, marginTop: spacing.xs },
+  list: { paddingTop: spacing.sm, paddingBottom: spacing.scrollClearance },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
