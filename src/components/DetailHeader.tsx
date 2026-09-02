@@ -143,7 +143,10 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
   const fadeStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
 
   return (
-    <View style={styles.headerRow}>
+    // Only the two buttons take touches. The bar floats over a scrolling list,
+    // and a plain view across the top of it would swallow every drag that
+    // started in that strip.
+    <View pointerEvents="box-none" style={styles.headerRow}>
       {/* Behind the bar rather than on it, so it can arrive with the title and
           give the rows scrolling underneath something to stop against. */}
       {floating ? (
