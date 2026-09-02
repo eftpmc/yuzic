@@ -460,6 +460,10 @@
       "empty": "No genres in your library yet.",
       "browse": "Browse by genre"
     },
+    "sections": {
+      "collection": "Collection",
+      "browse": "Browse"
+    },
     "collection": {
       "empty": "Nothing here yet.",
       "playFailed": "Couldn't start playback."

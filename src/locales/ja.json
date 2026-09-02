@@ -489,6 +489,10 @@
       "empty": "ライブラリにジャンルがありません。",
       "browse": "ジャンルから探す"
     },
+    "sections": {
+      "collection": "コレクション",
+      "browse": "ブラウズ"
+    },
     "collection": {
       "empty": "まだ何もありません。",
       "playFailed": "再生を開始できませんでした。"
