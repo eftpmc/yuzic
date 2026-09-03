@@ -84,6 +84,8 @@ export interface PlayingStateType {
   repeatMode: RepeatModeState;
   shuffleMode: ShuffleMode;
   playbackSpeed: number;
+  /** Player volume 0..1 (independent of the device's system volume). */
+  volume: number;
   setCurrentSong(song: Song | null): void;
 }
 
@@ -124,6 +126,8 @@ export interface PlayingActionsType {
   cycleShuffleMode(): Promise<void>;
   toggleRepeat(): void;
   setPlaybackSpeed(speed: number): void;
+  /** Sets the in-app player volume 0..1. Clamped; doesn't touch device volume. */
+  setVolume(volume: number): void;
 }
 
 // Combined type kept for backward compat
@@ -210,6 +214,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [repeatMode, setRepeatMode] = useState<RepeatModeState>('off');
   const [shuffleMode, setShuffleMode] = useState<ShuffleMode>('off');
   const [playbackSpeed, setPlaybackSpeedState] = useState(1.0);
+  const [volume, setVolumeState] = useState(1.0);
   const [queueVersion, setQueueVersion] = useState(0);
 
   const queueRef = useRef<Song[]>([]);
@@ -924,6 +929,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   }, []);
 
+  const setVolume = useCallback((next: number) => {
+    const clamped = Math.max(0, Math.min(1, next));
+    setVolumeState(clamped);
+    TrackPlayer.setVolume(clamped);
+  }, []);
+
   const setPlaybackSpeed = useCallback((speed: number) => {
     setPlaybackSpeedState(speed);
     TrackPlayer.setPlaybackSpeed(speed);
@@ -960,8 +971,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     repeatMode,
     shuffleMode,
     playbackSpeed,
+    volume,
     setCurrentSong,
-  }), [currentSong, isPlaying, isBuffering, currentIndex, repeatMode, shuffleMode, playbackSpeed]);
+  }), [currentSong, isPlaying, isBuffering, currentIndex, repeatMode, shuffleMode, playbackSpeed, volume]);
 
   // All callbacks are stable (deps are empty or other stable values via refs),
   // so actionsValue almost never changes after mount — action-only consumers
@@ -984,6 +996,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     cycleShuffleMode,
     toggleRepeat,
     setPlaybackSpeed,
+    setVolume,
     moveTrack,
     addToQueue,
     playNext,
@@ -1006,6 +1019,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     cycleShuffleMode,
     toggleRepeat,
     setPlaybackSpeed,
+    setVolume,
     moveTrack,
     addToQueue,
     playNext,

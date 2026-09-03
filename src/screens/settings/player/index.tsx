@@ -9,6 +9,7 @@ import {
   selectShowSleepTimer,
   selectShowPlaybackSpeed,
   selectShowJumpButtons,
+  selectShowVolumeSlider,
   selectAutoplayEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -18,6 +19,7 @@ import {
   setShowSleepTimer,
   setShowPlaybackSpeed,
   setShowJumpButtons,
+  setShowVolumeSlider,
   setAutoplayEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
@@ -29,6 +31,7 @@ const PlayerSettings: React.FC = () => {
   const showSleepTimer = useSelector(selectShowSleepTimer);
   const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
   const showJumpButtons = useSelector(selectShowJumpButtons);
+  const showVolumeSlider = useSelector(selectShowVolumeSlider);
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
   const supportsOpus = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
@@ -60,7 +63,13 @@ const PlayerSettings: React.FC = () => {
       value: showJumpButtons,
       onValueChange: (v: boolean) => dispatch(setShowJumpButtons(v)),
     },
-  ], [t, showSleepTimer, showPlaybackSpeed, showJumpButtons, dispatch]);
+    {
+      label: t('settings.player.showVolumeSlider'),
+      subtext: t('settings.player.showVolumeSliderSubtext'),
+      value: showVolumeSlider,
+      onValueChange: (v: boolean) => dispatch(setShowVolumeSlider(v)),
+    },
+  ], [t, showSleepTimer, showPlaybackSpeed, showJumpButtons, showVolumeSlider, dispatch]);
 
   const autoplayItems = useMemo(() => [
     {

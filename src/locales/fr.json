@@ -250,6 +250,8 @@
       "showPlaybackSpeedSubtext": "Affiche une commande de vitesse dans le lecteur.",
       "showJumpButtons": "Boutons de saut",
       "showJumpButtonsSubtext": "Affiche des boutons de saut avant et arrière de 15 secondes dans le lecteur.",
+      "showVolumeSlider": "Contrôle du volume",
+      "showVolumeSliderSubtext": "Affiche un contrôle du volume dans le lecteur.",
       "autoplay": "Lecture automatique",
       "autoplaySubtextAudiomuse": "Continue de jouer des titres sonoriquement similaires une fois la file d'attente terminée, grâce à AudioMuse-AI.",
       "autoplaySubtextNative": "Continue de jouer des titres similaires depuis votre serveur une fois la file d'attente terminée."

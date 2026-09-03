@@ -249,6 +249,8 @@
       "showPlaybackSpeedSubtext": "在播放器中显示速度控件。",
       "showJumpButtons": "跳转按钮",
       "showJumpButtonsSubtext": "在播放器中显示15秒后退和前进按钮。",
+      "showVolumeSlider": "音量滑块",
+      "showVolumeSliderSubtext": "在播放器界面显示应用内音量滑块。",
       "autoplay": "自动播放",
       "autoplaySubtextAudiomuse": "队列播放完毕后，使用 AudioMuse-AI 继续播放声音相似的曲目。",
       "autoplaySubtextNative": "队列播放完毕后，继续播放服务器中的相似曲目。"

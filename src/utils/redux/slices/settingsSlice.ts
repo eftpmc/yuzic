@@ -66,6 +66,7 @@ export interface SettingsState {
   showSleepTimer: boolean;
   showPlaybackSpeed: boolean;
   showJumpButtons: boolean;
+  showVolumeSlider: boolean;
   autoplayEnabled: boolean;
   hapticsEnabled: boolean;
   /** When true, respect the system's reduce-motion setting; when false, always animate. */
@@ -115,6 +116,7 @@ const initialState: SettingsState = {
   showSleepTimer: true,
   showPlaybackSpeed: false,
   showJumpButtons: false,
+  showVolumeSlider: false,
   autoplayEnabled: false,
   hapticsEnabled: true,
   respectReducedMotion: true,
@@ -238,6 +240,9 @@ const settingsSlice = createSlice({
     setShowJumpButtons(state, action: PayloadAction<boolean>) {
       state.showJumpButtons = action.payload;
     },
+    setShowVolumeSlider(state, action: PayloadAction<boolean>) {
+      state.showVolumeSlider = action.payload;
+    },
     setHapticsEnabled(state, action: PayloadAction<boolean>) {
       state.hapticsEnabled = action.payload;
     },
@@ -291,6 +296,7 @@ export const {
   setDeezerPlaylistRecommendationsEnabled,
   setShowSleepTimer,
   setShowJumpButtons,
+  setShowVolumeSlider,
   setHapticsEnabled,
   setRespectReducedMotion,
   setShowPlaybackSpeed,

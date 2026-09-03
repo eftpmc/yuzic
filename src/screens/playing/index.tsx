@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
-import { selectShowSleepTimer, selectShowPlaybackSpeed } from '@/utils/redux/selectors/settingsSelectors';
+import { selectShowSleepTimer, selectShowPlaybackSpeed, selectShowVolumeSlider } from '@/utils/redux/selectors/settingsSelectors';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
 import Animated, {
@@ -32,6 +32,7 @@ import OutputDeviceSheet from './components/OutputDeviceSheet';
 import AboutTheArtistCard from './components/AboutTheArtistCard';
 import SleepTimerCard from './components/SleepTimerCard';
 import PlaybackSpeedCard from './components/PlaybackSpeedCard';
+import VolumeCard from './components/VolumeCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
@@ -152,6 +153,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
     const showSleepTimer = useSelector(selectShowSleepTimer);
     const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
+    const showVolumeSlider = useSelector(selectShowVolumeSlider);
     const artistId = currentSong?.artistId ?? album?.artist?.id;
 
     const navigateToArtist = useCallback(() => {
@@ -270,6 +272,10 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
                             {showPlaybackSpeed && (
                                 <PlaybackSpeedCard contentWidth={contentWidth} />
+                            )}
+
+                            {showVolumeSlider && (
+                                <VolumeCard contentWidth={contentWidth} />
                             )}
 
                             <AboutTheArtistCard

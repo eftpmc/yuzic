@@ -246,6 +246,8 @@
       "showPlaybackSpeedSubtext": "Show a speed control in the player.",
       "showJumpButtons": "Jump Buttons",
       "showJumpButtonsSubtext": "Show 15-second skip-back and skip-forward buttons in the player.",
+      "showVolumeSlider": "Volume Slider",
+      "showVolumeSliderSubtext": "Show an in-app volume slider on the player screen.",
       "autoplay": "Autoplay",
       "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
       "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends."
