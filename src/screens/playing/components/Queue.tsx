@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type QueueItemProps = {
@@ -67,7 +67,7 @@ const QueueItem = memo(
         </Text>
       </View>
 
-      <GripVertical color="#888" />
+      <GripVertical color={onDark.mutedText} />
     </Touchable>
     );
   },
@@ -149,7 +149,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           onPress={onBack}
           style={styles.backButton}
         >
-          <ChevronLeft size={28} color="#fff" />
+          <ChevronLeft size={28} color={onDark.text} />
         </Touchable>
 
         {currentSong && (
@@ -181,8 +181,8 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
             style={[styles.controlButton, { borderRadius: rad.md }]}
           >
             {isPlaying
-              ? <Pause size={20} color="#fff" fill="#fff" />
-              : <Play size={20} color="#fff" fill="#fff" />
+              ? <Pause size={20} color={onDark.text} fill={onDark.text} />
+              : <Play size={20} color={onDark.text} fill={onDark.text} />
             }
           </Touchable>
 
@@ -190,7 +190,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
             onPress={skipToNext}
             style={[styles.controlButton, { borderRadius: rad.md }]}
           >
-            <SkipForward size={20} color="#fff" fill="#fff" />
+            <SkipForward size={20} color={onDark.text} fill={onDark.text} />
           </Touchable>
         </View>
       </View>
@@ -264,23 +264,23 @@ const styles = StyleSheet.create({
   nowPlayingTitle: {
     ...typography.navigationTitle,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
 
   nowPlayingArtist: {
     ...typography.rowSubtitle,
-    color: '#aaa',
+    color: onDark.subtext,
   },
 
   sectionLabel: {
     ...typography.rowTitle,
-    color: '#fff',
+    color: onDark.text,
     marginBottom: spacing.xxs,
   },
 
   subLabel: {
     ...typography.caption,
-    color: '#888',
+    color: onDark.mutedText,
     marginBottom: spacing.md,
   },
 
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
 
   title: {
     ...typography.body,
-    color: '#fff',
+    color: onDark.text,
   },
 
   titleActive: {
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
 
   artist: {
     ...typography.rowSubtitle,
-    color: '#aaa',
+    color: onDark.subtext,
   },
 });
 

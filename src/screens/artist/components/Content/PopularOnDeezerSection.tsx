@@ -8,7 +8,7 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { spacing, typography } from '@/constants/design'
+import { sourceColor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
@@ -41,7 +41,7 @@ export default function PopularOnDeezerSection({ topTracks, artistId, artistName
     <View>
       <View style={styles.sectionHeader}>
         {showSourceHeaders && (
-          <View style={[styles.badge, { backgroundColor: '#A238CA', borderRadius: rad.pill }]}>
+          <View style={[styles.badge, { backgroundColor: sourceColor.deezer, borderRadius: rad.pill }]}>
             <Text style={styles.badgeLetter}>D</Text>
           </View>
         )}

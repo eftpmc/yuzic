@@ -11,7 +11,7 @@ import {
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = { contentWidth: number };
@@ -52,7 +52,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       <View style={styles.gaugeDecor} pointerEvents="none">
         <Gauge
           size={96}
-          color={isAltered ? themeColor : '#ffffff'}
+          color={isAltered ? themeColor : onDark.text}
           strokeWidth={0.8}
           style={{ opacity: 0.07 }}
         />
@@ -70,7 +70,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       </View>
 
       {/* Speed display */}
-      <Text style={[styles.bigValue, isAltered && { color: '#fff' }]}>
+      <Text style={[styles.bigValue, isAltered && { color: onDark.text }]}>
         {playbackSpeed === 1 ? '1' : playbackSpeed}
         <Text style={styles.bigUnit}>×</Text>
       </Text>
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   resetLabel: {
     ...typography.rowSubtitle,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
   stepButton: {
     flex: 1,

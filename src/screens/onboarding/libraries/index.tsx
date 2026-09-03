@@ -17,7 +17,7 @@ import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { radius, spacing, typography, onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Library = { id: string; name: string };
@@ -97,7 +97,7 @@ export default function LibrariesOnboarding() {
         </Text>
 
         {isLoading ? (
-          <SpinningLoaderCircle size={26} color="#fff" />
+          <SpinningLoaderCircle size={26} color={onDark.text} />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
@@ -155,7 +155,7 @@ export default function LibrariesOnboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: onDark.background,
   },
   scroll: {
     flex: 1,
@@ -167,12 +167,12 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.display,
-    color: '#fff',
+    color: onDark.text,
     marginBottom: spacing.controlGap,
   },
   subtitle: {
     ...typography.body,
-    color: '#888',
+    color: onDark.mutedText,
     marginBottom: spacing.xxl,
   },
   loader: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#222',
+    backgroundColor: onDark.muted,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     gap: 12,
@@ -194,22 +194,22 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: radius.sm,
     borderWidth: 1.5,
-    borderColor: '#555',
+    borderColor: onDark.mutedText,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#fff',
-    borderColor: '#fff',
+    backgroundColor: onDark.text,
+    borderColor: onDark.text,
   },
   optionText: {
     ...typography.body,
-    color: '#fff',
+    color: onDark.text,
     flex: 1,
   },
   buttonContainer: {
     padding: spacing.roomy,
-    backgroundColor: '#000',
+    backgroundColor: onDark.background,
     alignItems: 'center',
   },
   errorContainer: {
@@ -219,21 +219,21 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...typography.body,
-    color: '#888',
+    color: onDark.mutedText,
     textAlign: 'center' as const,
   },
   retryButton: {
-    backgroundColor: '#333',
+    backgroundColor: onDark.border,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xxl,
   },
   retryButtonText: {
     ...typography.body,
-    color: '#fff',
+    color: onDark.text,
     fontWeight: '600' as const,
   },
   continueButton: {
-    backgroundColor: '#fff',
+    backgroundColor: onDark.text,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     width: '100%',
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   backButton: {
-    backgroundColor: '#333',
+    backgroundColor: onDark.border,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     width: '100%',
@@ -252,6 +252,6 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     ...typography.sheetTitle,
-    color: '#fff',
+    color: onDark.text,
   },
 });

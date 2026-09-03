@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    ...typography.detailTitle,
+    ...typography.screenTitle,
     marginBottom: spacing.tight,
     textAlign: 'center',
   },

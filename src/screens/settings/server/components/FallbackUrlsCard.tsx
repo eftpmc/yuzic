@@ -20,7 +20,7 @@ type Props = {
 
 const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
   const { t } = useTranslation();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
   const dispatch = useDispatch();
   const [draft, setDraft] = useState('');
@@ -98,7 +98,7 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
             value={draft}
             onChangeText={(v) => { setDraft(v); if (error) setError(null); }}
             placeholder={t('settings.server.fallbackUrls.placeholder')}
-            placeholderTextColor={isDarkMode ? '#666' : '#999'}
+            placeholderTextColor={colors.placeholder}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"

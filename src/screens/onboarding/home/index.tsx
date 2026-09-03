@@ -14,7 +14,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
-import { spacing, typography } from '@/constants/design';
+import { spacing, typography, onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Home() {
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
         paddingHorizontal: spacing.roomy,
     },
     content: {
@@ -114,13 +114,13 @@ const styles = StyleSheet.create({
     },
     appName: {
         ...typography.display,
-        color: '#fff',
+        color: onDark.text,
         textAlign: 'center',
         marginBottom: spacing.controlGap,
     },
     subtext: {
         ...typography.body,
-        color: '#ccc',
+        color: onDark.subtext,
         textAlign: 'center',
         paddingHorizontal: spacing.xxl,
     },
@@ -157,11 +157,11 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         ...typography.sheetTitle,
-        color: '#fff',
+        color: onDark.text,
     },
     termsText: {
         ...typography.caption,
-        color: '#888',
+        color: onDark.mutedText,
         textAlign: 'center',
         paddingHorizontal: spacing.controlGap,
         marginTop: spacing.md,

@@ -17,7 +17,7 @@ import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
-import { spacing, typography } from '@/constants/design'
+import { sourceColor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
@@ -90,7 +90,7 @@ export default function Home() {
   }, [clearRefreshing])
 
   const activeSources = [
-    { id: 'deezer', label: 'Deezer', color: '#A238CA', letter: 'D', sections: deezer, enabled: deezerEnabled },
+    { id: 'deezer', label: 'Deezer', color: sourceColor.deezer, letter: 'D', sections: deezer, enabled: deezerEnabled },
   ]
 
   return (

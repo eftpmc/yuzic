@@ -15,7 +15,7 @@ import {
   PLAYING_ARTIST_CARD_PADDING,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 type Props = {
   artistName: string;
@@ -107,13 +107,13 @@ const styles = StyleSheet.create({
     top: PLAYING_ARTIST_CARD_PADDING,
     left: PLAYING_ARTIST_CARD_PADDING,
     right: PLAYING_ARTIST_CARD_PADDING,
-    color: '#fff',
+    color: onDark.text,
     textAlign: 'left',
   },
   imageContainer: {
     width: '100%',
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: onDark.surfaceElevated,
   },
   textContainer: {
     justifyContent: 'center',
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.navigationTitle,
-    color: '#fff',
+    color: onDark.text,
   },
   subtext: {
     ...typography.rowSubtitle,

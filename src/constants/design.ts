@@ -39,7 +39,51 @@ export const statusColor = {
   favorite: '#ff3b30',
   destructive: '#ff3b30',
   success: '#34C759',
+  warning: '#FF9500',
+  /** Softer amber for inline warning text (e.g. onboarding hints, form warnings)
+   *  that would look shouty in the pure iOS orange. */
+  warningText: '#f59e0b',
   downloading: '#007AFF',
+} as const;
+
+/**
+ * External service brand colours. One source of truth so a badge on Home,
+ * a chip on the artist page, and the source-registry entry all read the
+ * same purple/red — instead of drifting to `#A238CA` in six files and
+ * `#a238ca` in a seventh.
+ */
+export const sourceColor = {
+  deezer: '#A238CA',
+  lastfm: '#D51007',
+} as const;
+
+/**
+ * Colours for surfaces that are always dark regardless of the app's theme —
+ * the full-screen player, the playing bar, the onboarding flow. They can't
+ * read from `useTheme()` because they need to look right for a light-theme
+ * user too. Pre-radius/typography rules apply: pick by role, not by hex.
+ *
+ * Every value here was drift before — `#111` vs `#1a1a1a` vs `#121212` for
+ * "one shade above black", `#888` vs `#aaa` for "subtext on dark". Twelve
+ * distinct greys folded onto seven roles.
+ */
+export const onDark = {
+  /** Base page background — the darkest surface. */
+  background: '#000',
+  /** Card / raised surface a step above the background. */
+  surface: '#111',
+  /** A slightly-lighter card, mostly used for player inner cards. */
+  surfaceElevated: '#1a1a1a',
+  /** A step further — chips, badges, muted rows on dark. */
+  muted: '#222',
+  /** Divider / soft border. */
+  border: '#333',
+  /** Primary foreground text. */
+  text: '#fff',
+  /** Secondary foreground (subtitle, timestamps, meta). */
+  subtext: '#aaa',
+  /** Tertiary foreground (very faded meta, disabled). */
+  mutedText: '#888',
 } as const;
 
 /**
@@ -105,22 +149,23 @@ export function scaleRadius(base: number, preset: RadiusPreset): number {
 }
 
 /**
- * The type scale: nine sizes, each with a role that says where it goes.
+ * The type scale: 14 roles, each chosen by naming what the text is so the same
+ * decision comes out the same way twice. Literal `fontSize` was up to thirteen
+ * distinct values across the app, including 13, 14 and 15 all doing the job of
+ * "small"; and the scale itself had drift too (a `detailTitle` byte-for-byte
+ * identical to `screenTitle`, and a `compactRowSubtitle` identical to `caption`,
+ * both since collapsed).
  *
- * The point is not that nine is few — Apple's own scale is about this size —
- * but that a size is chosen by naming what the text is, so the same decision
- * comes out the same way twice. Literal `fontSize` was up to thirteen distinct
- * values across the app, including 13, 14 and 15 all doing the job of "small",
- * which is the drift that reads as unfinished even when each screen is fine.
+ * Weight ladder is 400 / 500 / 600 — hero and display sit at 600 so the whole
+ * app has one bold weight instead of a lonely 700 at the top.
  *
  * Adding a role is fine. Adding one that differs from an existing role only in
  * size is how the drift starts again.
  */
 export const typography = {
   hero: { fontSize: 48, lineHeight: 52, fontWeight: '600' as const },
-  display: { fontSize: 28, lineHeight: 34, fontWeight: '700' as const },
+  display: { fontSize: 28, lineHeight: 34, fontWeight: '600' as const },
   screenTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },
-  detailTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },
   sectionTitle: { fontSize: 20, lineHeight: 25, fontWeight: '600' as const },
   navigationTitle: { fontSize: 18, lineHeight: 22, fontWeight: '600' as const },
   sheetTitle: { fontSize: 16, lineHeight: 20, fontWeight: '600' as const },
@@ -131,7 +176,6 @@ export const typography = {
   label: { fontSize: 14, lineHeight: 18, fontWeight: '600' as const },
   rowSubtitle: { fontSize: 14, lineHeight: 18 },
   caption: { fontSize: 13, lineHeight: 17 },
-  compactRowSubtitle: { fontSize: 13, lineHeight: 17 },
   micro: { fontSize: 11, lineHeight: 14 },
 } as const;
 
@@ -167,7 +211,16 @@ export type SemanticThemeColors = {
   onThemeColor: string;
   success: string;
   warning: string;
+  /** Alias for `destructive`. Kept for callers that read `error`. */
   error: string;
-  sourceDeezer: string;
-  sourceLastfm: string;
+  /** Destructive action color — dark-mode aware (`#FF453A` dark / `#FF3B30` light). */
+  destructive: string;
+  /** Background surface for a destructive info card. */
+  destructiveSurface: string;
+  /** Border on a destructive info card. */
+  destructiveBorder: string;
+  /** Text color on a destructive info card. */
+  destructiveOnSurface: string;
+  /** Warning-toned foreground for inline text like unsaved-changes hints. */
+  warningText: string;
 };

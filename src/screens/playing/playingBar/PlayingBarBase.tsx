@@ -27,7 +27,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { onDark, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Variant = 'ios' | 'android';
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressBarContainer: {
-    backgroundColor: '#666',
+    backgroundColor: onDark.mutedText,
     borderRadius: radius.xs,
     overflow: 'hidden',
   },

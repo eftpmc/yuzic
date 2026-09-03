@@ -24,7 +24,7 @@ type Props = {
 
 const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, ref) => {
   const { t } = useTranslation();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -74,7 +74,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
     }
   };
 
-  const destructiveColor = isDarkMode ? '#FF453A' : '#FF3B30';
+  const destructiveColor = colors.destructive;
 
   return (
     <BottomSheetModal

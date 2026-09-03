@@ -12,12 +12,11 @@ type Props = {
 };
 
 const SettingsDisconnectButton: React.FC<Props> = ({ label, onPress }) => {
-  const { isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
-  const color = isDarkMode ? '#FF453A' : '#FF3B30';
 
   return (
-    <Touchable style={[styles.button, { backgroundColor: color, borderRadius: rad.md }]} onPress={onPress}>
+    <Touchable style={[styles.button, { backgroundColor: colors.destructive, borderRadius: rad.md }]} onPress={onPress}>
       <LogOut size={18} color="#fff" />
       <Text style={styles.label}>{label}</Text>
     </Touchable>

@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxs,
   },
   subtitleText: typography.rowSubtitle,
-  compactSubtitleText: typography.compactRowSubtitle,
+  compactSubtitleText: typography.caption,
   subtitleFlex: {
     flex: 1,
   },

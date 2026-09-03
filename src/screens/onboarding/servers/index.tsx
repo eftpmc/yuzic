@@ -23,7 +23,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { spacing, typography, onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Servers() {
@@ -117,7 +117,7 @@ export default function Servers() {
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <Ellipsis size={18} color="#888" />
+                    <Ellipsis size={18} color={onDark.mutedText} />
                 </Touchable>
             </View>
         );
@@ -165,7 +165,7 @@ export default function Servers() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
         paddingHorizontal: spacing.roomy,
         justifyContent: 'space-between',
     },
@@ -175,19 +175,19 @@ const styles = StyleSheet.create({
     },
     title: {
         ...typography.display,
-        color: '#fff',
+        color: onDark.text,
         marginBottom: spacing.sm,
     },
     subtitle: {
         ...typography.body,
-        color: '#aaa',
+        color: onDark.subtext,
     },
 
     serverCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#111',
+        backgroundColor: onDark.surface,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
         marginBottom: spacing.controlGap,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
 
     serverName: {
         ...typography.body,
-        color: '#fff',
+        color: onDark.text,
         marginBottom: spacing.xs,
     },
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
 
     serverSubtext: {
         ...typography.caption,
-        color: '#888',
+        color: onDark.mutedText,
     },
 
     activeBadge: {
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     activeBadgeText: {
         ...typography.micro,
         fontWeight: '600',
-        color: '#fff',
+        color: onDark.text,
     },
 
     menuButton: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     emptyText: {
         ...typography.rowSubtitle,
         textAlign: 'center',
-        color: '#777',
+        color: onDark.mutedText,
         marginTop: spacing.xxxl,
     },
 
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     },
 
     addButton: {
-        backgroundColor: '#fff',
+        backgroundColor: onDark.text,
         paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',

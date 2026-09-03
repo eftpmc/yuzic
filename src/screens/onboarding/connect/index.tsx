@@ -17,7 +17,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { spacing, typography, onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Connect() {
@@ -77,7 +77,7 @@ export default function Connect() {
     if (!isLayoutMounted) {
         return (
             <View style={styles.loadingContainer}>
-                <SpinningLoaderCircle size={26} color="#555" />
+                <SpinningLoaderCircle size={26} color={onDark.mutedText} />
             </View>
         );
     }
@@ -169,13 +169,13 @@ export default function Connect() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
     },
     scroll: {
         flex: 1,
@@ -187,16 +187,16 @@ const styles = StyleSheet.create({
     },
     title: {
         ...typography.display,
-        color: '#fff',
+        color: onDark.text,
         marginBottom: spacing.controlGap,
     },
     subtitle: {
         ...typography.body,
-        color: '#888',
+        color: onDark.mutedText,
         marginBottom: spacing.roomy,
     },
     description: {
-        color: '#aaa',
+        color: onDark.subtext,
         marginBottom: spacing.roomy,
         marginTop: spacing.sm,
     },
@@ -209,18 +209,18 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: spacing.md,
         borderWidth: 1,
-        borderColor: '#555',
-        backgroundColor: '#111',
+        borderColor: onDark.mutedText,
+        backgroundColor: onDark.surface,
         alignItems: 'center',
         justifyContent: 'center',
     },
     serverTypeButtonSelected: {
-        borderColor: '#fff',
-        backgroundColor: '#fff',
+        borderColor: onDark.text,
+        backgroundColor: onDark.text,
     },
     serverTypeText: {
         ...typography.label,
-        color: '#fff',
+        color: onDark.text,
         marginTop: spacing.tight,
     },
     serverTypeTextSelected: {
@@ -228,11 +228,11 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         padding: spacing.roomy,
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
         alignItems: 'center',
     },
     nextButton: {
-        backgroundColor: '#fff',
+        backgroundColor: onDark.text,
         paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
         color: '#000',
     },
     demoButton: {
-        backgroundColor: '#333',
+        backgroundColor: onDark.border,
         paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
@@ -254,6 +254,6 @@ const styles = StyleSheet.create({
     },
     demoButtonText: {
         ...typography.sheetTitle,
-        color: '#fff',
+        color: onDark.text,
     },
 });

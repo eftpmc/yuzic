@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, type GestureResponderEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type SeekableProgressBarProps = {
@@ -16,8 +17,8 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
   value,
   duration,
   onSeek,
-  fillColor = '#fff',
-  trackColor = '#888',
+  fillColor = onDark.text,
+  trackColor = onDark.mutedText,
   style,
 }) => {
   const rad = useRadius();

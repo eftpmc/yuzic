@@ -35,7 +35,7 @@ import PlaybackSpeedCard from './components/PlaybackSpeedCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { spacing } from '@/constants/design';
+import { onDark, spacing } from '@/constants/design';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -171,7 +171,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     }, [lyricsAvailable, lyrics, lyricsSheetRef]);
 
     if (!currentSong) {
-        return <View style={{ flex: 1, backgroundColor: '#000' }} />;
+        return <View style={{ flex: 1, backgroundColor: onDark.background }} />;
     }
 
     return (
@@ -215,14 +215,14 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         onPress={onClose}
                                         style={styles.headerButton}
                                     >
-                                        <ChevronDown size={28} color="#fff" />
+                                        <ChevronDown size={28} color={onDark.text} />
                                     </Touchable>
 
                                     <Touchable
                                         onPress={() => songOptionsRef.current?.present()}
                                         style={styles.headerButton}
                                     >
-                                        <Ellipsis size={24} color="#fff" />
+                                        <Ellipsis size={24} color={onDark.text} />
                                     </Touchable>
                                 </View>
 

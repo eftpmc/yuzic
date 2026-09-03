@@ -19,7 +19,7 @@ import { useRadius } from '@/hooks/useRadius';
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
   const activeServer = useSelector(selectActiveServer);
   const activeServerId = activeServer?.id;
@@ -53,11 +53,9 @@ export default function PendingOfflineChanges() {
     );
   };
 
-  const discardIconColor = isDarkMode ? '#ffb4ad' : '#c7342f';
-  const discardBtnStyle = isDarkMode
-    ? { borderColor: '#54302d', backgroundColor: '#2a1716' }
-    : { borderColor: '#ead4d2', backgroundColor: '#fff1f0' };
-  const discardTextColor = isDarkMode ? '#ffb4ad' : '#c7342f';
+  const discardIconColor = colors.destructiveOnSurface;
+  const discardBtnStyle = { borderColor: colors.destructiveBorder, backgroundColor: colors.destructiveSurface };
+  const discardTextColor = colors.destructiveOnSurface;
 
   return (
     <SettingsCard style={styles.card}>

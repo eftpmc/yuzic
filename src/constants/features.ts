@@ -21,7 +21,11 @@ export const RECENTLY_PLAYED_MIN_ITEMS = 1;
 export const HOME_SECTION_EMPTY_HORIZONTAL_PADDING = 12;
 
 export const ARTIST_INITIAL_RELEASE_ROWS = 3;
-export const LASTFM_BRAND_COLOR = '#D51007';
+export { sourceColor } from './design';
+import { sourceColor, statusColor } from './design';
+
+/** @deprecated Use `sourceColor.lastfm` from constants/design.ts. */
+export const LASTFM_BRAND_COLOR = sourceColor.lastfm;
 export const ONBOARDING_QUICK_CONNECT_TIMEOUT_MS = 10 * 60 * 1000;
 
 export const PLAYING_ARTIST_CARD_HEIGHT = 280;
@@ -36,9 +40,13 @@ export const PLAYLIST_RECOMMENDATION_LOCAL_COUNT = 8;
 export const PLAYLIST_RECOMMENDATION_EXTERNAL_COUNT = 8;
 export const PLAYING_GRADIENT_CACHE_MAX = 150;
 
+// iOS system-gray for the "off" states so the connected/enabled dots and
+// the disconnected/disabled dots read as one language across settings.
+const IOS_SYSTEM_GRAY = '#8E8E93';
+
 export const SETTINGS_STATUS_COLORS = {
-  connected: '#4CAF50',
-  enabled: '#4CAF50',
-  disconnected: '#8E8E93',
-  disabled: '#8E8E93',
+  connected: statusColor.success,
+  enabled: statusColor.success,
+  disconnected: IOS_SYSTEM_GRAY,
+  disabled: IOS_SYSTEM_GRAY,
 } as const;

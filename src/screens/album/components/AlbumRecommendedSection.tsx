@@ -23,7 +23,7 @@ import {
   ALBUM_RECOMMENDATION_RELATED_LIMIT,
   ALBUM_RECOMMENDATION_TARGET_ALBUMS,
 } from '@/constants/album';
-import { spacing, typography } from '@/constants/design';
+import { sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -77,7 +77,7 @@ export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: 
     <View style={styles.container}>
       <View style={styles.titleRow}>
         {showSourceHeaders && (
-          <View style={[styles.badge, { backgroundColor: '#A238CA', borderRadius: rad.pill }]}>
+          <View style={[styles.badge, { backgroundColor: sourceColor.deezer, borderRadius: rad.pill }]}>
             <Text style={styles.badgeLetter}>D</Text>
           </View>
         )}

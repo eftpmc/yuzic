@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   chipText: {
-    ...typography.compactRowSubtitle,
+    ...typography.caption,
     flexShrink: 1,
   },
 });

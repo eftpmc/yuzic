@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     ...typography.compactRowTitle,
   },
   subtext: {
-    ...typography.compactRowSubtitle,
+    ...typography.caption,
   },
   pressed: {
     opacity: 0.9,

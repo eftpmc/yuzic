@@ -5,7 +5,7 @@ import {
   selectThemeMode,
   selectThemeColor,
 } from '@/utils/redux/selectors/settingsSelectors';
-import type { SemanticThemeColors } from '@/constants/design';
+import { statusColor, type SemanticThemeColors } from '@/constants/design';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type ResolvedTheme = 'light' | 'dark';
@@ -37,9 +37,13 @@ export const useTheme = () => {
       onThemeColor: '#fff',
       success: '#34C759',
       warning: '#FF9500',
-      error: '#FF3B30',
-      sourceDeezer: '#A238CA',
-      sourceLastfm: '#D51007',
+      error: isDarkMode ? '#FF453A' : '#FF3B30',
+      destructive: isDarkMode ? '#FF453A' : '#FF3B30',
+      // Soft red info-card tint, dark-mode aware.
+      destructiveSurface: isDarkMode ? 'rgba(255,69,58,0.12)' : '#fff1f0',
+      destructiveBorder: isDarkMode ? 'rgba(255,69,58,0.35)' : '#ead4d2',
+      destructiveOnSurface: isDarkMode ? '#ffb4ad' : '#c7342f',
+      warningText: statusColor.warningText,
     }),
     [isDarkMode, themeColor]
   );

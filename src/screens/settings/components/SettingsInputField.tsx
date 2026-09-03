@@ -21,7 +21,7 @@ const SettingsInputField: React.FC<Props> = ({
   secureTextEntry,
   autoCapitalize = 'none',
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
 
   return (
@@ -31,7 +31,7 @@ const SettingsInputField: React.FC<Props> = ({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={isDarkMode ? '#666' : '#999'}
+        placeholderTextColor={colors.placeholder}
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         autoCorrect={false}

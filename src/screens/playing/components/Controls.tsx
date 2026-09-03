@@ -17,7 +17,7 @@ import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import haptics from '@/utils/haptics';
@@ -74,7 +74,7 @@ function ToggleButton({
         <View style={styles.activeBadgeSlot}>
           {badge === 'dot'
             ? <View style={[styles.activeDot, { borderRadius: rad.pill }, styles.activeDotVisible]} />
-            : <Sparkle size={9} color="#fff" fill="#fff" />
+            : <Sparkle size={9} color={onDark.text} fill={onDark.text} />
           }
         </View>
       )}
@@ -92,7 +92,7 @@ function JumpButton({ direction, onPress }: { direction: 'back' | 'forward'; onP
       hitSlop={HIT_SLOP}
     >
       <View style={styles.jumpWrapper}>
-        <Icon size={28} color="#fff" />
+        <Icon size={28} color={onDark.text} />
         <Text style={styles.jumpLabel} allowFontScaling={false}>{label}</Text>
       </View>
     </Touchable>
@@ -123,11 +123,11 @@ const Controls: React.FC = () => {
         badge={shuffleMode === 'smart' ? 'sparkle' : shuffleMode === 'shuffle' ? 'dot' : 'none'}
         onPress={handleShuffle}
       >
-        <Shuffle size={23} color="#fff" />
+        <Shuffle size={23} color={onDark.text} />
       </ToggleButton>
 
       <Touchable onPress={handleSkipPrev} hitSlop={HIT_SLOP}>
-        <SkipBack size={34} color="#fff" fill="#fff" />
+        <SkipBack size={34} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
       {showJumpButtons && <JumpButton direction="back" onPress={handleJumpBack} />}
@@ -137,13 +137,13 @@ const Controls: React.FC = () => {
       {showJumpButtons && <JumpButton direction="forward" onPress={handleJumpForward} />}
 
       <Touchable onPress={handleSkipNext} hitSlop={HIT_SLOP}>
-        <SkipForward size={34} color="#fff" fill="#fff" />
+        <SkipForward size={34} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
       <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={handleRepeat}>
         {repeatMode === 'one'
-          ? <Repeat1 size={23} color="#fff" />
-          : <Repeat size={23} color="#fff" />
+          ? <Repeat1 size={23} color={onDark.text} />
+          : <Repeat size={23} color={onDark.text} />
         }
       </ToggleButton>
     </View>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   playButton: {
     width: 68,
     height: 68,
-    backgroundColor: '#fff',
+    backgroundColor: onDark.text,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   activeDotVisible: {
-    backgroundColor: '#fff',
+    backgroundColor: onDark.text,
   },
   jumpWrapper: {
     alignItems: 'center',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   jumpLabel: {
     ...typography.micro,
-    color: '#fff',
+    color: onDark.text,
     fontWeight: '600',
     marginTop: 2,
   },

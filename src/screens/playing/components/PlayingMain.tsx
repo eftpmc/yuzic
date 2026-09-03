@@ -14,7 +14,7 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type PlayingMainProps = {
@@ -46,8 +46,8 @@ const PlayingProgressSection: React.FC<{ songDuration: number }> = memo(({ songD
         value={position}
         duration={duration}
         onSeek={seekSong}
-        fillColor="#fff"
-        trackColor="#555"
+        fillColor={onDark.text}
+        trackColor={onDark.mutedText}
         style={styles.progressBar}
       />
 
@@ -130,7 +130,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         >
           <CirclePlus
             size={32}
-            color="#fff"
+            color={onDark.text}
           />
         </Touchable>
         </View>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   cover: {
     marginBottom: spacing.lg,
-    backgroundColor: '#111',
+    backgroundColor: onDark.surface,
   },
   titleRow: {
     flexDirection: 'row',
@@ -166,16 +166,16 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.sectionTitle,
-    color: '#fff',
+    color: onDark.text,
     marginBottom: spacing.xs,
   },
   artist: {
     ...typography.rowSubtitle,
-    color: '#ccc',
+    color: onDark.subtext,
   },
   qualityBadge: {
     ...typography.micro,
-    color: '#888',
+    color: onDark.mutedText,
     textAlign: 'left',
     marginBottom: spacing.sm,
     letterSpacing: 0.3,
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     ...typography.caption,
-    color: '#bbb',
+    color: onDark.subtext,
   },
 });
 

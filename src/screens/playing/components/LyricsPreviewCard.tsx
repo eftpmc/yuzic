@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LyricsResult } from '@/api/types';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     marginVertical: spacing.tight,
   },
   activeLine: {
-    color: '#fff',
+    color: onDark.text,
     fontWeight: '600',
   },
   inactiveLine: {

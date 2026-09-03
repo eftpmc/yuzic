@@ -18,11 +18,11 @@ const SettingsActionButton: React.FC<Props> = ({
   variant = 'primary',
   disabled,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
 
   const backgroundColor = variant === 'destructive'
-    ? (isDarkMode ? '#FF453A' : '#FF3B30')
+    ? colors.destructive
     : colors.themeColor;
 
   return (

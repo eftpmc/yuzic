@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { radius, spacing, statusColor, typography } from '@/constants/design'
+import { radius, sourceColor, spacing, statusColor, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
@@ -50,7 +50,6 @@ type ArtistContentItem =
 
 const INITIAL_RELEASE_ROWS = 3
 
-const LASTFM_COLOR = '#D51007'
 const LOCAL_COLOR = statusColor.success
 
 function SimilarArtistsSubSection<T extends ExternalArtistBase | LocalArtistSummary>({
@@ -148,7 +147,7 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
           data={deezerSimilar}
           itemSize={itemSize}
           keyPrefix="deezer"
-          badge={{ color: '#A238CA', letter: 'D' }}
+          badge={{ color: sourceColor.deezer, letter: 'D' }}
           onPressItem={item => navigateToArtist(item)}
         />
       )}
@@ -157,7 +156,7 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
           data={lastfmSimilar}
           itemSize={itemSize}
           keyPrefix="lastfm"
-          badge={{ color: LASTFM_COLOR, letter: 'L' }}
+          badge={{ color: sourceColor.lastfm, letter: 'L' }}
           onPressItem={item => navigateToArtist(item)}
         />
       )}
@@ -175,7 +174,7 @@ function ExternalSimilarArtistsSection({ similarArtists }: { similarArtists: Ext
       data={similarArtists}
       itemSize={itemSize}
       keyPrefix="deezer"
-      badge={{ color: '#A238CA', letter: 'D' }}
+      badge={{ color: sourceColor.deezer, letter: 'D' }}
       onPressItem={item => navigateToArtist(item)}
     />
   )

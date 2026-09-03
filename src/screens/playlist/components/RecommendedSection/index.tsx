@@ -44,7 +44,7 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LOCAL_COUNT = 8;
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sourceBadgeDeezer: {
-    backgroundColor: '#A238CA',
+    backgroundColor: sourceColor.deezer,
   },
   sourceBadgeLetter: {
     ...typography.micro,
