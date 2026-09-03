@@ -18,6 +18,7 @@ import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Library = { id: string; name: string };
 
@@ -25,6 +26,7 @@ export default function LibrariesOnboarding() {
   const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
+  const rad = useRadius();
   const { serverId } = useLocalSearchParams<{ serverId: string }>();
 
   const server = useSelector((state: RootState) =>
@@ -99,13 +101,13 @@ export default function LibrariesOnboarding() {
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
-            <Touchable style={styles.retryButton} onPress={() => setRetryCount(c => c + 1)}>
+            <Touchable style={[styles.retryButton, { borderRadius: rad.pill }]} onPress={() => setRetryCount(c => c + 1)}>
               <Text style={styles.retryButtonText}>{t('onboarding.libraries.retry')}</Text>
             </Touchable>
           </View>
         ) : (
           <View style={styles.optionList}>
-            <Touchable onPress={selectAll} style={styles.optionRow}>
+            <Touchable onPress={selectAll} style={[styles.optionRow, { borderRadius: rad.md }]}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
                 {isAll && <Check size={14} color="#000" />}
               </View>
@@ -118,7 +120,7 @@ export default function LibrariesOnboarding() {
                 <Touchable
                   key={lib.id}
                   onPress={() => toggle(lib.id)}
-                  style={styles.optionRow}
+                  style={[styles.optionRow, { borderRadius: rad.md }]}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
                     {selected && <Check size={14} color="#000" />}
@@ -134,7 +136,7 @@ export default function LibrariesOnboarding() {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <Touchable style={styles.continueButton} onPress={handleContinue}>
+        <Touchable style={[styles.continueButton, { borderRadius: rad.pill }]} onPress={handleContinue}>
           <Text style={styles.continueButtonText}>
             {isAll
               ? t('onboarding.libraries.useAll')
@@ -142,7 +144,7 @@ export default function LibrariesOnboarding() {
           </Text>
         </Touchable>
 
-        <Touchable style={styles.backButton} onPress={() => router.back()}>
+        <Touchable style={[styles.backButton, { borderRadius: rad.pill }]} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>{t('common.back')}</Text>
         </Touchable>
       </View>
@@ -183,7 +185,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#222',
-    borderRadius: radius.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     gap: 12,
@@ -225,7 +226,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xxl,
-    borderRadius: radius.pill,
   },
   retryButtonText: {
     ...typography.body,
@@ -235,7 +235,6 @@ const styles = StyleSheet.create({
   continueButton: {
     backgroundColor: '#fff',
     paddingVertical: spacing.lg,
-    borderRadius: radius.pill,
     alignItems: 'center',
     width: '100%',
     marginBottom: spacing.md,
@@ -247,7 +246,6 @@ const styles = StyleSheet.create({
   backButton: {
     backgroundColor: '#333',
     paddingVertical: spacing.lg,
-    borderRadius: radius.pill,
     alignItems: 'center',
     width: '100%',
     marginBottom: spacing.xs,

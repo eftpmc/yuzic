@@ -7,7 +7,8 @@ import { Plus, X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { forgetReachable } from '@/utils/servers/urlFailover';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsDivider from '../../components/SettingsDivider';
@@ -20,6 +21,7 @@ type Props = {
 const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
   const { t } = useTranslation();
   const { colors, isDarkMode } = useTheme();
+  const rad = useRadius();
   const dispatch = useDispatch();
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -104,13 +106,13 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
             onSubmitEditing={handleAdd}
             style={[
               styles.addInput,
-              { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text },
+              { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text, borderRadius: rad.md },
             ]}
           />
           <TouchableOpacity
             accessibilityLabel={t('settings.server.fallbackUrls.addAria')}
             onPress={handleAdd}
-            style={[styles.addButton, { backgroundColor: colors.muted }]}
+            style={[styles.addButton, { backgroundColor: colors.muted, borderRadius: rad.md }]}
           >
             <Plus size={18} color={colors.secondary} />
           </TouchableOpacity>
@@ -154,14 +156,12 @@ const styles = StyleSheet.create({
     ...typography.body,
     flex: 1,
     borderWidth: 1,
-    borderRadius: radius.md,
     paddingVertical: spacing.controlGap,
     paddingHorizontal: spacing.md,
   },
   addButton: {
     width: 40,
     height: 40,
-    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },

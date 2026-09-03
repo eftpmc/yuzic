@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   label: string;
@@ -21,6 +22,7 @@ const SettingsInputField: React.FC<Props> = ({
   autoCapitalize = 'none',
 }) => {
   const { colors, isDarkMode } = useTheme();
+  const rad = useRadius();
 
   return (
     <View style={styles.wrapper}>
@@ -39,6 +41,7 @@ const SettingsInputField: React.FC<Props> = ({
             borderColor: colors.border,
             backgroundColor: colors.muted,
             color: colors.text,
+            borderRadius: rad.md,
           },
         ]}
       />
@@ -62,7 +65,6 @@ const styles = StyleSheet.create({
   input: {
     ...typography.body,
     borderWidth: 1,
-    borderRadius: radius.md,
     padding: spacing.controlGap,
   },
 });

@@ -49,7 +49,8 @@ import { getSourceMeta } from '@/features/sources/registry';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -58,6 +59,7 @@ const Search = () => {
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const dispatch = useDispatch();
   const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
@@ -349,7 +351,7 @@ const Search = () => {
         onAccountPress={openAccountSheet}
       />
       <View style={styles.headerRow}>
-        <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
           <TextInput
             accessibilityLabel="Search input"
             testID="search-input"
@@ -414,7 +416,7 @@ const Search = () => {
                     <React.Fragment key={sourceId}>
                       <View style={styles.sourceHeader}>
                         {showSourceHeaders && (
-                          <View style={[styles.sourceBadge, { backgroundColor: color }]}>
+                          <View style={[styles.sourceBadge, { backgroundColor: color, borderRadius: rad.pill }]}>
                             <Text style={styles.sourceBadgeLetter}>{letter}</Text>
                           </View>
                         )}
@@ -458,7 +460,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
   searchInput: {
@@ -494,7 +495,6 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 20,
     height: 20,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

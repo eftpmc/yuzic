@@ -15,7 +15,8 @@ import {
   PLAYING_ARTIST_CARD_PADDING,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
@@ -32,6 +33,7 @@ export default function AboutTheArtistCard({
   onPress,
 }: Props) {
   const { t } = useTranslation();
+  const rad = useRadius();
   const imageHeight = PLAYING_ARTIST_CARD_HEIGHT - PLAYING_ARTIST_TEXT_MIN_HEIGHT;
   const imageUri = artistCover
     ? buildCover(artistCover, 'detail')
@@ -39,7 +41,7 @@ export default function AboutTheArtistCard({
 
   const card = (
     <View
-      style={[styles.card, { width: contentWidth, height: PLAYING_ARTIST_CARD_HEIGHT }]}
+      style={[styles.card, { width: contentWidth, height: PLAYING_ARTIST_CARD_HEIGHT, borderRadius: rad.panel }]}
     >
       <View style={[styles.imageContainer, { height: imageHeight }]}>
         <Image
@@ -96,7 +98,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   card: {
-    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },

@@ -37,7 +37,8 @@ import {
 } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   localArtist: Artist | null;
@@ -52,6 +53,7 @@ function isAlbumCountText(value?: string | null): boolean {
 const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNavigation = true }) => {
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   // The bar floats over this art now, so the wrapper grows by exactly the room
   // it and the status bar take: the cover stays where it was against the
   // content below, and the extra strip is filled with art rather than a band.
@@ -99,11 +101,11 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
           style={StyleSheet.absoluteFill}
         />
 
-        <View style={styles.centeredCoverContainer}>
+        <View style={[styles.centeredCoverContainer, { borderRadius: rad.pill }]}>
           <MediaImage
             cover={displayCover}
             size="detail"
-            style={styles.centeredCover}
+            style={[styles.centeredCover, { borderRadius: rad.pill }]}
           />
         </View>
 
@@ -113,7 +115,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               testID="detail-back-button"
               accessibilityRole="button"
               accessibilityLabel="Go back"
-              style={styles.backButton}
+              style={[styles.backButton, { borderRadius: rad.md }]}
               onPress={() => navigation.goBack()}
             >
               <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
@@ -391,7 +393,6 @@ const styles = StyleSheet.create({
     bottom: -32,
     width: 120,
     height: 120,
-    borderRadius: radius.pill,
     overflow: 'hidden',
     backgroundColor: '#222',
     alignItems: 'center',
@@ -400,7 +401,6 @@ const styles = StyleSheet.create({
   centeredCover: {
     width: '100%',
     height: '100%',
-    borderRadius: radius.pill,
   },
   header: {
     position: 'absolute',
@@ -416,7 +416,6 @@ const styles = StyleSheet.create({
   backButton: {
     width: 36,
     height: 36,
-    borderRadius: radius.md,
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',

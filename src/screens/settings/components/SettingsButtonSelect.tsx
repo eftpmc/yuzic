@@ -3,7 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export type ButtonSelectItem = {
   id: string;
@@ -20,6 +21,7 @@ type Props = {
 
 const SettingsButtonSelect: React.FC<Props> = ({ items, selected, onSelect, title, caption }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const buttons = (
     <View style={styles.row}>
@@ -34,6 +36,7 @@ const SettingsButtonSelect: React.FC<Props> = ({ items, selected, onSelect, titl
               {
                 backgroundColor: active ? colors.themeColor : colors.muted,
                 borderColor: active ? colors.themeColor : colors.border,
+                borderRadius: rad.md,
               },
             ]}
           >
@@ -94,7 +97,6 @@ const styles = StyleSheet.create({
   button: {
     width: 48,
     height: 40,
-    borderRadius: radius.md,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

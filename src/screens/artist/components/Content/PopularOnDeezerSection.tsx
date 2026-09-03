@@ -8,7 +8,8 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { radius, spacing, typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
   topTracks: ExternalSong[]
@@ -22,6 +23,7 @@ type Props = {
 export default function PopularOnDeezerSection({ topTracks, artistId, artistName }: Props) {
   const { colors } = useTheme()
   const { t } = useTranslation()
+  const rad = useRadius()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const { toggleInAlbum } = usePreviewPlayer()
   const [showAll, setShowAll] = useState(false)
@@ -39,7 +41,7 @@ export default function PopularOnDeezerSection({ topTracks, artistId, artistName
     <View>
       <View style={styles.sectionHeader}>
         {showSourceHeaders && (
-          <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
+          <View style={[styles.badge, { backgroundColor: '#A238CA', borderRadius: rad.pill }]}>
             <Text style={styles.badgeLetter}>D</Text>
           </View>
         )}
@@ -61,7 +63,7 @@ export default function PopularOnDeezerSection({ topTracks, artistId, artistName
       {allTracks.length > 5 && (
         <View style={styles.toggleRow}>
           <Touchable
-            style={[styles.toggleButton, { backgroundColor: colors.card }]}
+            style={[styles.toggleButton, { backgroundColor: colors.card, borderRadius: rad.pill }]}
             onPress={() => setShowAll(v => !v)}
           >
             <Text style={[styles.toggleText, { color: colors.secondary }]}>
@@ -86,7 +88,6 @@ const styles = StyleSheet.create({
   badge: {
     width: 20,
     height: 20,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -107,7 +108,6 @@ const styles = StyleSheet.create({
   toggleButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
   },
   toggleText: {
     ...typography.rowSubtitle,

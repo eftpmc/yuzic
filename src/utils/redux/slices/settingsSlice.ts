@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
+import type { RadiusPreset } from '@/constants/design';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
@@ -13,6 +14,12 @@ export interface SettingsState {
   /* UI */
   themeMode: ThemeMode;
   themeColor: string;
+  /**
+   * Corner-radius preset. Live-reactive — components read scaled values via
+   * `useRadius()` and re-render on change. The static `radius` export in
+   * constants/design.ts continues to hold defaults for unmigrated surfaces.
+   */
+  radiusPreset: RadiusPreset;
   gridColumns: number;
   gridSpacing: number;
   isGridView: boolean;
@@ -69,6 +76,7 @@ export interface SettingsState {
 const initialState: SettingsState = {
   themeMode: 'system',
   themeColor: '#ff7f7f',
+  radiusPreset: 'default',
   gridColumns: 3,
   gridSpacing: 8,
   isGridView: true,
@@ -120,6 +128,9 @@ const settingsSlice = createSlice({
     },
     setThemeColor(state, action: PayloadAction<string>) {
       state.themeColor = action.payload;
+    },
+    setRadiusPreset(state, action: PayloadAction<RadiusPreset>) {
+      state.radiusPreset = action.payload;
     },
     setGridColumns(state, action: PayloadAction<number>) {
       state.gridColumns = action.payload;
@@ -240,6 +251,7 @@ const settingsSlice = createSlice({
 export const {
   setThemeMode,
   setThemeColor,
+  setRadiusPreset,
   setGridColumns,
   setGridSpacing,
   setIsGridView,

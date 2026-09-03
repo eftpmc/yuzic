@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { SETTINGS_STATUS_COLORS } from '@/constants/features';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
  type Props = {
   label: string;
@@ -18,6 +19,7 @@ import { radius, spacing, typography } from '@/constants/design';
 
 const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, status, selected, checked }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
   const isRadio = selected !== undefined;
   const isCheckbox = checked !== undefined;
 
@@ -33,7 +35,7 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
       </View>
       <View style={styles.right}>
         {status && (
-          <View style={[styles.statusDot, { backgroundColor: SETTINGS_STATUS_COLORS[status] }]} />
+          <View style={[styles.statusDot, { backgroundColor: SETTINGS_STATUS_COLORS[status], borderRadius: rad.pill }]} />
         )}
         {rightText && (
           <Text style={[styles.rightText, { color: colors.subtext }]} numberOfLines={1}>
@@ -41,8 +43,8 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
           </Text>
         )}
         {isRadio ? (
-          <View style={[styles.radio, { borderColor: selected ? colors.themeColor : colors.border }]}>
-            {selected && <View style={[styles.radioFill, { backgroundColor: colors.themeColor }]} />}
+          <View style={[styles.radio, { borderColor: selected ? colors.themeColor : colors.border, borderRadius: rad.pill }]}>
+            {selected && <View style={[styles.radioFill, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]} />}
           </View>
         ) : isCheckbox ? (
           <View style={[
@@ -92,13 +94,11 @@ const styles = StyleSheet.create({
   statusDot: {
     width: 8,
     height: 8,
-    borderRadius: radius.pill,
   },
   rightText: { ...typography.rowSubtitle },
   radio: {
     width: 20,
     height: 20,
-    borderRadius: radius.pill,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   radioFill: {
     width: 10,
     height: 10,
-    borderRadius: radius.pill,
   },
   checkbox: {
     width: 20,

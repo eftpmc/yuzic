@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native'
 
 import { MediaImage } from '@/components/MediaImage'
 import { useTheme } from '@/hooks/useTheme'
-import { radius } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 import { MOSAIC_COVERS } from './useLibrarySummary'
 import type { CoverSource } from '@/types'
 
@@ -24,7 +24,8 @@ type Props = {
  */
 const CoverMosaic: React.FC<Props> = ({ covers, fallback, size }) => {
   const { colors } = useTheme()
-  const box = { width: size, height: size, borderRadius: radius.md }
+  const rad = useRadius()
+  const box = { width: size, height: size, borderRadius: rad.md }
 
   if (covers.length >= MOSAIC_COVERS) {
     const half = size / 2

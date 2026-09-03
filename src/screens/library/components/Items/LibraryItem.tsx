@@ -5,6 +5,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import Touchable from '@/components/Touchable';
 
 type Props = {
@@ -33,6 +34,7 @@ const LibraryItem: React.FC<Props> = ({
   testID,
 }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const listRadius = circularImage ? 26 : 4;
   const gridRadius = circularImage ? gridWidth / 2 : 8;
@@ -45,7 +47,7 @@ const LibraryItem: React.FC<Props> = ({
       delayLongPress={300}
       style={({ pressed }) => [
         isGridView
-          ? [styles.gridContainer, { width: gridWidth, marginHorizontal: gridSpacing, marginVertical: gridSpacing }]
+          ? [styles.gridContainer, { width: gridWidth, marginHorizontal: gridSpacing, marginVertical: gridSpacing, borderRadius: rad.md }]
           : styles.listContainer,
         pressed && styles.pressed,
       ]}
@@ -88,9 +90,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     borderRadius: radius.sm,
   },
-  gridContainer: {
-    borderRadius: radius.md,
-  },
+  gridContainer: {},
   listText: {
     flex: 1,
     marginRight: spacing.md,

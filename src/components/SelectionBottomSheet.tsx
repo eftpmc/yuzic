@@ -14,7 +14,8 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import Touchable from '@/components/Touchable'
-import { radius, spacing, typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
   items: string[]
@@ -27,6 +28,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, onSelect, onRandomize, placeholder }, ref) => {
     const { t } = useTranslation()
     const { colors } = useTheme()
+    const rad = useRadius()
     const [query, setQuery] = useState('')
 
     const snapPoints = useMemo(() => ['60%'], [])
@@ -68,7 +70,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
         backgroundStyle={{ backgroundColor: colors.card }}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
-        <View style={[styles.inputRow, { backgroundColor: colors.muted }]}>
+        <View style={[styles.inputRow, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
           <BottomSheetTextInput
             style={[styles.input, { color: colors.secondary }]}
             value={query}
@@ -107,7 +109,6 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
     marginBottom: spacing.md,
-    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },

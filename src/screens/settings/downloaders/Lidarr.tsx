@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import * as lidarr from '@/api/lidarr';
 import type { LidarrQueueRecord } from '@/api/lidarr';
 import { useTheme } from '@/hooks/useTheme';
+import { useRadius } from '@/hooks/useRadius';
 import DownloaderSettingsScreen, {
   downloaderQueueStyles as styles,
 } from './DownloaderSettingsScreen';
@@ -12,6 +13,7 @@ import DownloaderSettingsScreen, {
 const LidarrView: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
   const renderItem = useCallback(
@@ -40,7 +42,7 @@ const LidarrView: React.FC = () => {
             </View>
             <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
           </View>
-          <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+          <View style={[styles.progressTrack, { backgroundColor: colors.border, borderRadius: rad.pill }]}>
             <View
               style={[
                 styles.progressFill,

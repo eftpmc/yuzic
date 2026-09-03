@@ -9,6 +9,7 @@ import { ThemeModeSelector } from './components/ThemeModeSelector';
 import { PlayingBarActionSelector } from './components/PlayingBarActionSelector';
 import { LanguageSelector } from './components/LanguageSelector';
 import { GridColumns } from './components/GridColumns';
+import { RadiusPresetSelector } from './components/RadiusPresetSelector';
 import { selectShowQualityBadge, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { setShowQualityBadge, setShowSourceHeaders } from '@/utils/redux/slices/settingsSlice';
 
@@ -46,6 +47,7 @@ const AppearanceSettings: React.FC = () => {
       <SettingsCardHeader subtle title={t('settings.appearance.display')} />
       <SettingsToggleGroup items={sourceHeaderItems} />
       <GridColumns />
+      <RadiusPresetSelector />
     </SettingsScreen>
   );
 };

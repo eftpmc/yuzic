@@ -23,7 +23,8 @@ import {
   ALBUM_RECOMMENDATION_RELATED_LIMIT,
   ALBUM_RECOMMENDATION_TARGET_ALBUMS,
 } from '@/constants/album';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   artistName: string
@@ -44,6 +45,7 @@ async function fetchRelatedAlbums(
 export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: Props) {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { width: screenWidth } = useWindowDimensions()
   const enabled = useDeezerAlbumRecommendationsEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
@@ -75,7 +77,7 @@ export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: 
     <View style={styles.container}>
       <View style={styles.titleRow}>
         {showSourceHeaders && (
-          <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
+          <View style={[styles.badge, { backgroundColor: '#A238CA', borderRadius: rad.pill }]}>
             <Text style={styles.badgeLetter}>D</Text>
           </View>
         )}
@@ -120,7 +122,6 @@ const styles = StyleSheet.create({
   badge: {
     width: 20,
     height: 20,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

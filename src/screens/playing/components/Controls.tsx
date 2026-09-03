@@ -17,7 +17,8 @@ import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing } from '@/constants/design';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const JUMP_SECONDS = 15;
 
@@ -26,6 +27,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boolean; isBuffering: boolean; onPress: () => void }) {
   const scale = useSharedValue(1);
+  const rad = useRadius();
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -36,7 +38,7 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
       onPress={onPress}
       onPressIn={() => { scale.value = withTiming(0.91, { duration: 80 }); }}
       onPressOut={() => { scale.value = withTiming(1, { duration: 150 }); }}
-      style={[styles.playButton, animStyle]}
+      style={[styles.playButton, { borderRadius: rad.pill }, animStyle]}
     >
       {isBuffering
         ? <SpinningLoaderCircle size={18} color="#000" />
@@ -59,6 +61,7 @@ function ToggleButton({
   onPress: () => void;
   children: React.ReactNode;
 }) {
+  const rad = useRadius();
   return (
     <View style={styles.toggleWrapper}>
       <Touchable onPress={onPress} hitSlop={HIT_SLOP}>
@@ -67,7 +70,7 @@ function ToggleButton({
       {badge !== 'none' && (
         <View style={styles.activeBadgeSlot}>
           {badge === 'dot'
-            ? <View style={[styles.activeDot, styles.activeDotVisible]} />
+            ? <View style={[styles.activeDot, { borderRadius: rad.pill }, styles.activeDotVisible]} />
             : <Sparkle size={9} color="#fff" fill="#fff" />
           }
         </View>
@@ -151,7 +154,6 @@ const styles = StyleSheet.create({
   playButton: {
     width: 68,
     height: 68,
-    borderRadius: radius.pill,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -171,7 +173,6 @@ const styles = StyleSheet.create({
   activeDot: {
     width: 4,
     height: 4,
-    borderRadius: radius.pill,
     backgroundColor: 'transparent',
   },
   activeDotVisible: {

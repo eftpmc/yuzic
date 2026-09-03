@@ -20,6 +20,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Settings() {
     const { t } = useTranslation();
@@ -27,6 +28,7 @@ export default function Settings() {
     const activeServer = useSelector(selectActiveServer);
 
     const { colors } = useTheme();
+    const rad = useRadius();
     const appVersion = Constants.expoConfig?.version ?? '—';
 
     if (!activeServer) return null;
@@ -55,7 +57,7 @@ export default function Settings() {
                 {/* Profile Card */}
                 <SettingsCard style={styles.profileCard}>
                     <View style={styles.profileRow}>
-                        <View style={[styles.avatar, { backgroundColor: colors.themeColor }]}>
+                        <View style={[styles.avatar, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
                             <Text style={styles.avatarText}>{avatarLetter}</Text>
                         </View>
                         <View style={styles.profileInfo}>
@@ -176,7 +178,6 @@ const styles = StyleSheet.create({
     avatar: {
         width: 52,
         height: 52,
-        borderRadius: radius.pill,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: spacing.md,

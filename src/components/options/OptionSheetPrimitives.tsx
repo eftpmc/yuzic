@@ -1,5 +1,6 @@
 import React from 'react';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import {
   StyleSheet,
   Text,
@@ -145,6 +146,7 @@ type ChipsRowProps = {
 
 export function OptionSheetChipsRow({ label, values }: ChipsRowProps) {
   const { isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   const chipBg = isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
 
   return (
@@ -152,7 +154,7 @@ export function OptionSheetChipsRow({ label, values }: ChipsRowProps) {
       <Text style={[styles.infoLabel, { color: colors.subtext }]}>{label}</Text>
       <View style={styles.chipsList}>
         {values.map((value, i) => (
-          <View key={`${value}-${i}`} style={[styles.chip, { backgroundColor: chipBg }]}>
+          <View key={`${value}-${i}`} style={[styles.chip, { backgroundColor: chipBg, borderRadius: rad.card }]}>
             <Text style={[styles.chipText, { color: colors.secondary }]}>{value}</Text>
           </View>
         ))}
@@ -259,7 +261,6 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: spacing.controlGap,
     paddingVertical: spacing.xs,
-    borderRadius: radius.card,
   },
   chipText: {
     ...typography.caption,

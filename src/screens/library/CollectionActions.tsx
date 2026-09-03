@@ -4,7 +4,8 @@ import { Play, Shuffle } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useTheme } from '@/hooks/useTheme'
-import { controlSize, radius, spacing, typography } from '@/constants/design'
+import { controlSize, spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 import Touchable from '@/components/Touchable'
 
 type Props = {
@@ -24,12 +25,13 @@ type Props = {
 const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
 
   return (
     <View style={styles.row}>
       <Touchable
         testID="collection-play"
-        style={[styles.button, { backgroundColor: colors.themeColor }]}
+        style={[styles.button, { backgroundColor: colors.themeColor, borderRadius: rad.md }]}
         onPress={onPlay}
         accessibilityRole="button"
         accessibilityLabel={t('common.play')}
@@ -42,7 +44,7 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
 
       <Touchable
         testID="collection-shuffle"
-        style={[styles.button, { backgroundColor: colors.muted }]}
+        style={[styles.button, { backgroundColor: colors.muted, borderRadius: rad.md }]}
         onPress={onShuffle}
         accessibilityRole="button"
         accessibilityLabel={t('common.shuffle')}
@@ -67,7 +69,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.inlineGap,
     height: controlSize.detailPrimaryHeight,
-    borderRadius: radius.md,
   },
   label: { ...typography.button },
 })

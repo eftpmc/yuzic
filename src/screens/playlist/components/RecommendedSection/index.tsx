@@ -44,7 +44,8 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
@@ -323,6 +324,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
@@ -384,7 +386,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         title={t('playlist.recommended.deezerTitle')}
         badge={
           showSourceHeaders ? (
-            <View style={[styles.sourceBadge, styles.sourceBadgeDeezer]}>
+            <View style={[styles.sourceBadge, styles.sourceBadgeDeezer, { borderRadius: rad.pill }]}>
               <Text style={styles.sourceBadgeLetter}>D</Text>
             </View>
           ) : undefined
@@ -493,7 +495,6 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 22,
     height: 22,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

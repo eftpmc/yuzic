@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Scheme = 'https' | 'http';
 
@@ -23,6 +24,7 @@ export default function Address() {
     const { t } = useTranslation();
     const router = useRouter();
     const { type } = useLocalSearchParams<{ type: ServerType }>();
+    const rad = useRadius();
 
     const [scheme, setScheme] = useState<Scheme>('https');
     const [host, setHost] = useState('');
@@ -49,7 +51,7 @@ export default function Address() {
                         <Text style={styles.title}>{t('onboarding.address.title')}</Text>
                         <Text style={styles.subtitle}>{t('onboarding.address.subtitle')}</Text>
 
-                        <View style={styles.inputRow}>
+                        <View style={[styles.inputRow, { borderRadius: rad.md }]}>
                             <Touchable
                                 style={styles.schemeButton}
                                 onPress={() => schemeSheetRef.current?.present()}
@@ -78,11 +80,11 @@ export default function Address() {
                     </View>
 
                     <View style={styles.buttonContainer}>
-                        <Touchable style={styles.nextButton} onPress={handleNext}>
+                        <Touchable style={[styles.nextButton, { borderRadius: rad.pill }]} onPress={handleNext}>
                             <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                         </Touchable>
 
-                        <Touchable style={styles.backButton} onPress={() => router.back()}>
+                        <Touchable style={[styles.backButton, { borderRadius: rad.pill }]} onPress={() => router.back()}>
                             <Text style={styles.backButtonText}>{t('common.back')}</Text>
                         </Touchable>
                     </View>
@@ -106,7 +108,7 @@ export default function Address() {
                         return (
                             <Touchable
                                 key={s}
-                                style={[styles.schemeOption, isSelected && styles.schemeOptionSelected]}
+                                style={[styles.schemeOption, { borderRadius: rad.md }, isSelected && styles.schemeOptionSelected]}
                                 onPress={() => {
                                     setScheme(s);
                                     schemeSheetRef.current?.dismiss();
@@ -164,7 +166,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#222',
         borderWidth: 1,
         borderColor: '#555',
-        borderRadius: radius.md,
         paddingHorizontal: spacing.md,
         height: 50,
         marginBottom: spacing.controlGap,
@@ -199,7 +200,6 @@ const styles = StyleSheet.create({
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.md,
@@ -211,7 +211,6 @@ const styles = StyleSheet.create({
     backButton: {
         backgroundColor: '#333',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.xs,
@@ -241,7 +240,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: spacing.md,
         paddingHorizontal: spacing.md,
-        borderRadius: radius.md,
     },
     schemeOptionSelected: {
         backgroundColor: 'rgba(255,255,255,0.08)',

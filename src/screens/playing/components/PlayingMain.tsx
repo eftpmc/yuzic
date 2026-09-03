@@ -14,7 +14,8 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type PlayingMainProps = {
   width: number;
@@ -70,6 +71,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressAdd
 }) => {
   const { currentSong } = usePlayingState();
+  const rad = useRadius();
   const showQualityBadge = useSelector(selectShowQualityBadge);
 
   if (!currentSong) {
@@ -96,13 +98,13 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
       {coverUri ? (
         <TurboImage
           source={{ uri: coverUri }}
-          style={[styles.cover, { width, height: width }]}
+          style={[styles.cover, { width, height: width, borderRadius: rad.card }]}
           resizeMode="cover"
           cachePolicy="dataCache"
           fadeDuration={300}
         />
       ) : (
-        <View style={[styles.cover, { width, height: width }]} />
+        <View style={[styles.cover, { width, height: width, borderRadius: rad.card }]} />
       )}
 
       <View style={styles.titleRow}>
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   cover: {
-    borderRadius: radius.card,
     marginBottom: spacing.lg,
     backgroundColor: '#111',
   },

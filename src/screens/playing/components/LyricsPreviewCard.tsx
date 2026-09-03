@@ -12,7 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LyricsResult } from '@/api/types';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   lyrics: LyricsResult;
@@ -73,6 +74,7 @@ export default function LyricsPreviewCard({
   contentWidth,
   onPress,
 }: Props) {
+  const rad = useRadius();
   const scrollRef = useRef<ScrollView>(null);
   const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
   const [contentHeight, setContentHeight] = useState(0);
@@ -124,7 +126,7 @@ export default function LyricsPreviewCard({
 
   return (
     <Touchable
-      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
+      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT, borderRadius: rad.panel }]}
       onPress={onPress}
     >
       <ScrollView
@@ -153,7 +155,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     paddingVertical: CARD_PADDING_V,
     paddingHorizontal: spacing.xl,
-    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },

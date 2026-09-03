@@ -22,7 +22,8 @@ import {
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 // Quick Connect codes expire server-side; without a client-side ceiling too,
 // polling would continue forever showing "waiting for approval" with no
@@ -33,6 +34,7 @@ export default function Credentials() {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const router = useRouter();
+    const rad = useRadius();
 
     const params = useLocalSearchParams<{ type: ServerType; serverUrl: string }>();
     const { type, serverUrl } = params;
@@ -222,7 +224,7 @@ export default function Credentials() {
                     ) : (
                         // ── Username / password form ──────────────────────────
                         <>
-                            <View style={styles.inputWrapper}>
+                            <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
                                 <User size={20} color="#888" style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
@@ -236,7 +238,7 @@ export default function Credentials() {
                                 />
                             </View>
 
-                            <View style={styles.inputWrapper}>
+                            <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
                                 <Lock size={20} color="#888" style={styles.inputIcon} />
                                 <TextInput
                                     ref={passwordRef}
@@ -265,14 +267,14 @@ export default function Credentials() {
                             {proxyExpanded && (
                                 <View style={styles.proxySection}>
                                     {insecureWithProxy && (
-                                        <View style={styles.warningRow}>
+                                        <View style={[styles.warningRow, { borderRadius: rad.md }]}>
                                             <TriangleAlert size={15} color="#f59e0b" />
                                             <Text style={styles.warningText}>
                                                 Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
                                             </Text>
                                         </View>
                                     )}
-                                    <View style={styles.inputWrapper}>
+                                    <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
                                         <User size={20} color="#555" style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyUsernameRef}
@@ -286,7 +288,7 @@ export default function Credentials() {
                                             onSubmitEditing={() => proxyPasswordRef.current?.focus()}
                                         />
                                     </View>
-                                    <View style={styles.inputWrapper}>
+                                    <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
                                         <Lock size={20} color="#555" style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyPasswordRef}
@@ -323,7 +325,7 @@ export default function Credentials() {
                 <View style={styles.buttonContainer}>
                     {!quickConnectMode && (
                         <Touchable
-                            style={[styles.nextButton, isTesting && styles.nextButtonDisabled]}
+                            style={[styles.nextButton, { borderRadius: rad.pill }, isTesting && styles.nextButtonDisabled]}
                             onPress={handleNext}
                             disabled={isTesting}
                         >
@@ -335,7 +337,7 @@ export default function Credentials() {
                     )}
 
                     <Touchable
-                        style={styles.backButton}
+                        style={[styles.backButton, { borderRadius: rad.pill }]}
                         onPress={quickConnectMode ? handleCancelQuickConnect : () => router.back()}
                     >
                         <Text style={styles.backButtonText}>
@@ -358,7 +360,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#222',
         borderWidth: 1,
         borderColor: '#555',
-        borderRadius: radius.md,
         marginBottom: spacing.lg,
         paddingHorizontal: spacing.md,
         height: 50,
@@ -390,7 +391,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#1c1400',
         borderWidth: 1,
         borderColor: '#78450a',
-        borderRadius: radius.md,
         padding: spacing.controlGap,
         marginBottom: spacing.md,
         gap: 8,
@@ -432,7 +432,6 @@ const styles = StyleSheet.create({
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.md,
@@ -442,7 +441,6 @@ const styles = StyleSheet.create({
     backButton: {
         backgroundColor: '#333',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.xs,

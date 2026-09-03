@@ -7,7 +7,8 @@ import MediaListRow from '@/components/MediaListRow';
 import IconActionButton from '@/components/IconActionButton';
 import { useTheme } from '@/hooks/useTheme';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import {
   searchHistoryEntryKey,
   type SearchEntityEntry,
@@ -34,6 +35,7 @@ export default function RecentSearches({
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const coversToPrefetch = useMemo(() => entities.map(e => e.cover), [entities]);
   usePrefetchCovers(coversToPrefetch, 'thumb');
@@ -57,7 +59,7 @@ export default function RecentSearches({
             <View
               key={searchHistoryEntryKey(entry)}
               testID="search-recent-chip"
-              style={[styles.chip, { backgroundColor: colors.muted }]}
+              style={[styles.chip, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
             >
               <Touchable
                 style={styles.chipMain}
@@ -155,7 +157,6 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.md,
     paddingRight: spacing.sm,
     paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
   },
   chipMain: {
     flexDirection: 'row',

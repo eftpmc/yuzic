@@ -13,12 +13,14 @@ import {
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   const activeServer = useSelector(selectActiveServer);
   const activeServerId = activeServer?.id;
   const queue = useSelector(selectOfflineMutationQueue);
@@ -59,7 +61,7 @@ export default function PendingOfflineChanges() {
 
   return (
     <SettingsCard style={styles.card}>
-      <View style={[styles.iconWrap, { backgroundColor: `${colors.themeColor}22` }]}>
+      <View style={[styles.iconWrap, { backgroundColor: `${colors.themeColor}22`, borderRadius: rad.pill }]}>
         <CloudUpload size={21} color={colors.themeColor} />
       </View>
       <View style={styles.textWrap}>
@@ -80,7 +82,7 @@ export default function PendingOfflineChanges() {
               onPress={retryFailed}
               style={[
                 styles.actionButton,
-                { backgroundColor: `${colors.themeColor}18`, borderColor: `${colors.themeColor}44` },
+                { backgroundColor: `${colors.themeColor}18`, borderColor: `${colors.themeColor}44`, borderRadius: rad.md },
               ]}
             >
               <RotateCcw size={14} color={colors.themeColor} />
@@ -91,7 +93,7 @@ export default function PendingOfflineChanges() {
           )}
           <Touchable
             onPress={discardPending}
-            style={[styles.actionButton, discardBtnStyle]}
+            style={[styles.actionButton, discardBtnStyle, { borderRadius: rad.md }]}
           >
             <Trash2 size={14} color={discardIconColor} />
             <Text style={[styles.actionText, { color: discardTextColor }]}>
@@ -100,7 +102,7 @@ export default function PendingOfflineChanges() {
           </Touchable>
         </View>
       </View>
-      <View style={[styles.badge, { backgroundColor: colors.themeColor }]}>
+      <View style={[styles.badge, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
         <Text style={styles.badgeText}>{pendingCount}</Text>
       </View>
     </SettingsCard>
@@ -117,7 +119,6 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 38,
     height: 38,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -138,7 +139,6 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     minHeight: 30,
-    borderRadius: radius.md,
     borderWidth: 1,
     paddingHorizontal: spacing.controlGap,
     flexDirection: 'row',
@@ -152,7 +152,6 @@ const styles = StyleSheet.create({
   badge: {
     minWidth: 28,
     height: 28,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.sm,

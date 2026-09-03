@@ -31,7 +31,8 @@ import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
 import { ACCENT_WASH_LOCATIONS, accentWashColors } from '@/features/theme/coverAccent';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, radius, spacing, typography } from '@/constants/design';
+import { controlSize, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
 
@@ -161,6 +162,7 @@ export function DetailScreen({ bar, children }: DetailScreenProps) {
 export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBarProps) {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useTheme();
+  const rad = useRadius();
   const floating = useContext(DetailScrollContext);
 
   const fallback = useSharedValue(1);
@@ -194,7 +196,7 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
         ) : null}
       </Animated.View>
 
-      {rightAction ?? <View style={styles.headerButton} />}
+      {rightAction ?? <View style={[styles.headerButton, { borderRadius: rad.pill }]} />}
     </View>
   );
 }
@@ -209,6 +211,7 @@ export function DetailHeader({
   showNavigation = true,
 }: DetailHeaderProps) {
   const { colors } = useTheme();
+  const rad = useRadius();
   const insets = useSafeAreaInsets();
   const accent = useCoverAccent(cover);
   const floating = useContext(DetailScrollContext);
@@ -234,8 +237,8 @@ export function DetailHeader({
 
       {showNavigation && <DetailHeaderBar title={title} rightAction={rightAction} />}
 
-      <View style={styles.coverWrapper}>
-        <MediaImage cover={cover} size="detail" style={styles.coverImage} />
+      <View style={[styles.coverWrapper, { borderRadius: rad.lg }]}>
+        <MediaImage cover={cover} size="detail" style={[styles.coverImage, { borderRadius: rad.lg }]} />
       </View>
 
       <View style={styles.titleInfo} onLayout={floating?.onHeroTitleLayout}>
@@ -352,9 +355,10 @@ type DetailPlayActionProps = {
 
 export function DetailPlayAction({ children, onPress, disabled, style, accessibilityLabel }: DetailPlayActionProps) {
   const { colors } = useTheme();
+  const rad = useRadius();
   return (
     <Touchable
-      style={[styles.playButton, { backgroundColor: colors.themeColor }, style]}
+      style={[styles.playButton, { backgroundColor: colors.themeColor, borderRadius: rad.pill }, style]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
@@ -386,13 +390,14 @@ type BarButtonProps = {
 };
 
 function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: BarButtonProps) {
+  const rad = useRadius();
   return (
     <Touchable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={[styles.headerButton, scrim ? { backgroundColor: scrim } : null]}
+      style={[styles.headerButton, { borderRadius: rad.pill }, scrim ? { backgroundColor: scrim } : null]}
       feedback="control"
       hitSlop={8}
     >
@@ -469,14 +474,12 @@ const styles = StyleSheet.create({
   headerButton: {
     width: controlSize.iconCompact,
     height: controlSize.iconCompact,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   coverWrapper: {
     width: 280,
     height: 280,
-    borderRadius: radius.lg,
     marginTop: spacing.xxl,
     marginBottom: spacing.xl,
     overflow: 'hidden',
@@ -484,7 +487,6 @@ const styles = StyleSheet.create({
   coverImage: {
     width: '100%',
     height: '100%',
-    borderRadius: radius.lg,
   },
   titleInfo: {
     width: '100%',
@@ -530,7 +532,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playButton: {
-    borderRadius: radius.pill,
     width: controlSize.detailPrimaryWidth,
     height: controlSize.detailPrimaryHeight,
     justifyContent: 'center',

@@ -7,6 +7,7 @@ import * as slskd from '@/api/slskd';
 import type { SlskdQueueRecord } from '@/api/slskd';
 import { statusColor } from '@/constants/design';
 import { useTheme } from '@/hooks/useTheme';
+import { useRadius } from '@/hooks/useRadius';
 import DownloaderSettingsScreen, {
   downloaderQueueStyles as styles,
 } from './DownloaderSettingsScreen';
@@ -14,6 +15,7 @@ import DownloaderSettingsScreen, {
 const SlskdView: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const renderItem = useCallback(
     (item: SlskdQueueRecord) => {
@@ -42,7 +44,7 @@ const SlskdView: React.FC = () => {
             )}
           </View>
           {!isCompleted && (
-            <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+            <View style={[styles.progressTrack, { backgroundColor: colors.border, borderRadius: rad.pill }]}>
               <View
                 style={[
                   styles.progressFill,

@@ -96,6 +96,21 @@
       "gridColumns": {
         "label": "网格列数",
         "subtext": "网格视图中显示的专辑、艺人和播放列表的列数。"
+      },
+      "radiusPreset": {
+        "info": "整个应用中圆角的圆滑程度。",
+        "sharp": {
+          "label": "直角",
+          "subtext": "各处均使用方形边角。"
+        },
+        "default": {
+          "label": "默认",
+          "subtext": "应用的默认圆角。"
+        },
+        "rounded": {
+          "label": "圆润",
+          "subtext": "更柔和、更圆润的边角。"
+        }
       }
     },
     "library": {

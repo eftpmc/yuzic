@@ -40,6 +40,7 @@ import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -50,6 +51,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
     const { t } = useTranslation();
     const { colors } = useTheme();
+    const rad = useRadius();
     const isOffline = useIsOffline();
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
@@ -269,7 +271,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         </View>
 
         <View style={styles.content}>
-          <View style={[styles.searchContainer, { backgroundColor: colors.muted }]}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
             <Search size={20} color={colors.placeholder} />
             <TextInput
               style={[styles.searchInput, { color: colors.secondary }]}
@@ -282,7 +284,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
           <View style={styles.createContainer}>
             <TextInput
-              style={[styles.newPlaylistInput, { backgroundColor: colors.muted, color: colors.secondary }]}
+              style={[styles.newPlaylistInput, { backgroundColor: colors.muted, color: colors.secondary, borderRadius: rad.md }]}
               placeholder={t('playlistList.newPlaceholder')}
               placeholderTextColor={colors.placeholder}
               value={newPlaylistName}
@@ -311,7 +313,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           <Touchable
             style={[
               styles.doneButton,
-              { backgroundColor: themeColor },
+              { backgroundColor: themeColor, borderRadius: rad.card },
               membershipLoading && styles.doneButtonDisabled,
             ]}
             disabled={membershipLoading}
@@ -360,7 +362,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radius.md,
     padding: spacing.controlGap,
     marginBottom: spacing.lg,
   },
@@ -377,7 +378,6 @@ const styles = StyleSheet.create({
   newPlaylistInput: {
     ...typography.body,
     flex: 1,
-    borderRadius: radius.md,
     padding: spacing.controlGap,
     marginRight: spacing.sm,
   },
@@ -402,7 +402,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   doneButton: {
-    borderRadius: radius.card,
     paddingVertical: spacing.md,
     alignItems: 'center',
   },

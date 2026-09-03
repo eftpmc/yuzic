@@ -96,6 +96,21 @@
       "gridColumns": {
         "label": "Colonnes de la grille",
         "subtext": "Nombre de colonnes d’albums, d’artistes et de listes de lecture affichées en vue grille."
+      },
+      "radiusPreset": {
+        "info": "Arrondi des coins dans toute l’application.",
+        "sharp": {
+          "label": "Anguleux",
+          "subtext": "Coins carrés partout."
+        },
+        "default": {
+          "label": "Par défaut",
+          "subtext": "L’arrondi par défaut de l’application."
+        },
+        "rounded": {
+          "label": "Arrondi",
+          "subtext": "Coins plus doux et plus arrondis."
+        }
       }
     },
     "library": {

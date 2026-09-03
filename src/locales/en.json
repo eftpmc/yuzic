@@ -92,6 +92,21 @@
       "gridColumns": {
         "label": "Grid columns",
         "subtext": "How many columns of albums, artists, and playlists appear in grid view."
+      },
+      "radiusPreset": {
+        "info": "How rounded the corners are across the app.",
+        "sharp": {
+          "label": "Sharp",
+          "subtext": "Squared corners everywhere."
+        },
+        "default": {
+          "label": "Default",
+          "subtext": "The app's default rounding."
+        },
+        "rounded": {
+          "label": "Rounded",
+          "subtext": "Softer, more rounded corners."
+        }
       }
     },
     "library": {

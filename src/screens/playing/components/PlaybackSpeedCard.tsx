@@ -11,12 +11,14 @@ import {
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = { contentWidth: number };
 
 export default function PlaybackSpeedCard({ contentWidth }: Props) {
   const themeColor = useSelector(selectThemeColor);
+  const rad = useRadius();
   const { playbackSpeed } = usePlayingState();
   const { setPlaybackSpeed } = usePlayingActions();
   const isAltered = playbackSpeed !== 1.0;
@@ -42,7 +44,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
     <View
       style={[
         styles.card,
-        { width: contentWidth },
+        { width: contentWidth, borderRadius: rad.panel },
         isAltered && { borderColor: themeColor + '55', borderWidth: 1 },
       ]}
     >
@@ -80,6 +82,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
           disabled={!isAltered}
           style={[
             styles.resetButton,
+            { borderRadius: rad.card },
             isAltered
               ? { borderColor: 'rgba(255,255,255,0.3)' }
               : { borderColor: 'rgba(255,255,255,0.12)' },
@@ -93,7 +96,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
         <Touchable
           onPress={decrease}
           disabled={!canDecrease}
-          style={[styles.stepButton, !canDecrease && { opacity: 0.35 }]}
+          style={[styles.stepButton, { borderRadius: rad.card }, !canDecrease && { opacity: 0.35 }]}
         >
           <Text style={styles.stepLabel}>−</Text>
         </Touchable>
@@ -101,7 +104,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
         <Touchable
           onPress={increase}
           disabled={!canIncrease}
-          style={[styles.stepButton, !canIncrease && { opacity: 0.35 }]}
+          style={[styles.stepButton, { borderRadius: rad.card }, !canIncrease && { opacity: 0.35 }]}
         >
           <Text style={styles.stepLabel}>+</Text>
         </Touchable>
@@ -113,7 +116,6 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
 const styles = StyleSheet.create({
   card: {
     marginTop: spacing.lg,
-    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.roomy,
@@ -154,7 +156,6 @@ const styles = StyleSheet.create({
   resetButton: {
     flex: 1,
     height: 44,
-    borderRadius: radius.card,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -167,7 +168,6 @@ const styles = StyleSheet.create({
   stepButton: {
     flex: 1,
     height: 44,
-    borderRadius: radius.card,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',

@@ -36,7 +36,8 @@ import {
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   genre: string
@@ -49,6 +50,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
   const queryClient = useQueryClient()
   const api = useApi()
   const { isDarkMode, colors } = useTheme()
+  const rad = useRadius()
   const activeServer = useSelector(selectActiveServer)
   const { playSongInCollection } = usePlayingActions()
   const { downloadAlbumById, getCollectionDownloadState } = useDownload()
@@ -177,7 +179,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
               testID="detail-back-button"
               accessibilityRole="button"
               accessibilityLabel="Go back"
-              style={styles.backButton}
+              style={[styles.backButton, { borderRadius: rad.pill }]}
               onPress={() => navigation.goBack()}
             >
               <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
@@ -288,7 +290,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: spacing.tight,
-    borderRadius: radius.pill,
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
   content: {

@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { radius, spacing, typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 import {
   selectIsGridView,
   selectGridColumns,
@@ -47,6 +48,7 @@ const LibraryList: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const dispatch = useDispatch()
   const isGridView = useSelector(selectIsGridView)
   const gridColumns = useSelector(selectGridColumns)
@@ -123,7 +125,7 @@ const LibraryList: React.FC<Props> = ({
             {header}
             <View style={styles.sortRow}>
               <Touchable
-                style={[styles.sortButton, { backgroundColor: colors.muted }]}
+                style={[styles.sortButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
                 onPress={() => sortSheetRef.current?.present()}
                 accessibilityRole="button"
               >
@@ -133,7 +135,7 @@ const LibraryList: React.FC<Props> = ({
                 </Text>
               </Touchable>
               <Touchable
-                style={[styles.gridButton, { backgroundColor: colors.muted }]}
+                style={[styles.gridButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
                 onPress={() => dispatch(setIsGridView(!isGridView))}
                 accessibilityRole="button"
                 accessibilityLabel={isGridView ? t('library.view.switchToList') : t('library.view.switchToGrid')}
@@ -180,13 +182,11 @@ const styles = StyleSheet.create({
     gap: spacing.inlineGap,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
   },
   sortLabel: { ...typography.caption },
   gridButton: {
     width: 34,
     height: 34,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

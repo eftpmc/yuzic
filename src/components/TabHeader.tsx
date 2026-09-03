@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 /** Header shared by the Home, Library and Search tabs: screen title plus the
  * account avatar. */
@@ -16,6 +17,7 @@ type Props = {
 
 export default function TabHeader({ title, username, onAccountPress }: Props) {
   const { colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
 
   return (
@@ -26,7 +28,7 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
         <Touchable
           accessibilityLabel="Account"
           accessibilityRole="button"
-          style={[styles.avatar, { backgroundColor: themeColor }]}
+          style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}
           onPress={onAccountPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -58,7 +60,6 @@ const styles = StyleSheet.create({
     marginLeft: spacing.md,
     width: 32,
     height: 32,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

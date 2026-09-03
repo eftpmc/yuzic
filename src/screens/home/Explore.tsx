@@ -17,7 +17,8 @@ import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
-import { radius, spacing, typography } from '@/constants/design'
+import { spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
@@ -45,6 +46,7 @@ function renderSection(config: SectionConfig, refreshKey: number) {
 export default function Home() {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const [refreshKey, setRefreshKey] = useState(0)
   const { resume, library, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
@@ -123,7 +125,7 @@ export default function Home() {
           <React.Fragment key={source.id}>
             <View style={styles.sourceHeader}>
               {showSourceHeaders && (
-                <View style={[styles.sourceBadge, { backgroundColor: source.color }]}>
+                <View style={[styles.sourceBadge, { backgroundColor: source.color, borderRadius: rad.pill }]}>
                   <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
                 </View>
               )}
@@ -155,7 +157,6 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 20,
     height: 20,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

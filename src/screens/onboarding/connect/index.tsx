@@ -17,7 +17,8 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -27,6 +28,7 @@ export default function Connect() {
     const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch();
+    const rad = useRadius();
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLayoutMounted(true), 0);
@@ -101,6 +103,7 @@ export default function Connect() {
                                 onPress={() => setSelectedType(provider.type)}
                                 style={[
                                     styles.serverTypeButton,
+                                    { borderRadius: rad.card },
                                     isSelected && styles.serverTypeButtonSelected,
                                 ]}
                             >
@@ -132,7 +135,7 @@ export default function Connect() {
 
             <View style={styles.buttonContainer}>
                 <Touchable
-                    style={[styles.nextButton, isTesting && styles.buttonDisabled]}
+                    style={[styles.nextButton, { borderRadius: rad.pill }, isTesting && styles.buttonDisabled]}
                     onPress={handleNext}
                     disabled={isTesting}
                 >
@@ -146,6 +149,7 @@ export default function Connect() {
                 <Touchable
                     style={[
                         styles.demoButton,
+                        { borderRadius: rad.pill },
                         (!selectedType || !SERVER_PROVIDERS[selectedType]?.capabilities.supportsDemo || isTesting) && styles.buttonDisabled,
                     ]}
                     onPress={handleDemo}
@@ -204,7 +208,6 @@ const styles = StyleSheet.create({
     serverTypeButton: {
         flex: 1,
         paddingVertical: spacing.md,
-        borderRadius: radius.card,
         borderWidth: 1,
         borderColor: '#555',
         backgroundColor: '#111',
@@ -231,7 +234,6 @@ const styles = StyleSheet.create({
     nextButton: {
         backgroundColor: '#fff',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.md,
@@ -246,7 +248,6 @@ const styles = StyleSheet.create({
     demoButton: {
         backgroundColor: '#333',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.xs,

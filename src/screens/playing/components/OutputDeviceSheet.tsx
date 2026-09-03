@@ -18,7 +18,8 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const {
   AirplayButton,
@@ -28,6 +29,7 @@ const {
 
 const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const { colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const { devices, isScanning, isProbing, scan, probeManual } = useDlnaDiscovery();
   const {
@@ -95,7 +97,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* This device — highlighted only when nothing is casting via DLNA or AirPlay */}
         <Touchable
-          style={[styles.item, { backgroundColor: !activeDevice && !airplayDevice ? themeColor + '22' : 'transparent' }]}
+          style={[styles.item, { backgroundColor: !activeDevice && !airplayDevice ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}
           onPress={async () => {
             if (activeDevice) await disconnectDevice();
             (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
@@ -110,7 +112,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* AirPlay — iOS only */}
         {Platform.OS === 'ios' && AirplayButton && (
-          <View style={[styles.item, { backgroundColor: airplayDevice ? themeColor + '22' : 'transparent' }]}>
+          <View style={[styles.item, { backgroundColor: airplayDevice ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}>
             <View style={styles.itemLeft}>
               <Airplay size={18} color={airplayDevice ? themeColor : colors.subtext} />
               <Text style={[
@@ -141,7 +143,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {/* Active DLNA device */}
         {activeDevice && (
           <Touchable
-            style={[styles.item, { backgroundColor: themeColor + '22' }]}
+            style={[styles.item, { backgroundColor: themeColor + '22', borderRadius: rad.md }]}
             onPress={disconnectDevice}
           >
             <View style={styles.itemLeft}>
@@ -160,7 +162,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
           return (
             <Touchable
               key={device.udn}
-              style={[styles.item, { backgroundColor: 'transparent' }]}
+              style={[styles.item, { backgroundColor: 'transparent', borderRadius: rad.md }]}
               onPress={() => handleConnectDlna(device)}
               disabled={isConnecting}
             >
@@ -191,7 +193,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {/* Manual DLNA entry */}
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <Touchable
-          style={[styles.item, { backgroundColor: 'transparent' }]}
+          style={[styles.item, { backgroundColor: 'transparent', borderRadius: rad.md }]}
           onPress={handleManualEntry}
           disabled={isProbing}
         >
@@ -237,7 +239,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
   },
   itemLeft: {
     flexDirection: 'row',

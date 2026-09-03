@@ -14,7 +14,8 @@ import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type QueueItemProps = {
   item: Song;
@@ -36,19 +37,22 @@ function queueItemPropsAreEqual(prev: QueueItemProps, next: QueueItemProps) {
 }
 
 const QueueItem = memo(
-  ({ item, index, isCurrent, onPress, onLongPress }: QueueItemProps) => (
+  ({ item, index, isCurrent, onPress, onLongPress }: QueueItemProps) => {
+    const rad = useRadius();
+    return (
     <Touchable
       onPress={() => onPress(index)}
       onLongPress={onLongPress}
       style={[
         styles.queueItem,
+        { borderRadius: rad.md },
         isCurrent && styles.activeQueueItem,
       ]}
     >
       <MediaImage
         cover={item.cover}
         size="thumb"
-        style={styles.artwork}
+        style={[styles.artwork, { borderRadius: rad.md }]}
       />
 
       <View style={styles.metadata}>
@@ -65,7 +69,8 @@ const QueueItem = memo(
 
       <GripVertical color="#888" />
     </Touchable>
-  ),
+    );
+  },
   queueItemPropsAreEqual
 );
 
@@ -76,6 +81,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   width,
 }) => {
   const { t } = useTranslation();
+  const rad = useRadius();
   const { currentSong, isPlaying } = usePlayingState();
   const { getQueue, skipTo, moveTrack, pauseSong, resumeSong, skipToNext } = usePlayingActions();
   const queueVersion = usePlayingQueueVersion();
@@ -150,7 +156,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           <MediaImage
             cover={currentSong.cover}
             size="thumb"
-            style={styles.headerImage}
+            style={[styles.headerImage, { borderRadius: rad.md }]}
           />
         )}
 
@@ -172,7 +178,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
         <View style={styles.playControls}>
           <Touchable
             onPress={isPlaying ? pauseSong : resumeSong}
-            style={styles.controlButton}
+            style={[styles.controlButton, { borderRadius: rad.md }]}
           >
             {isPlaying
               ? <Pause size={20} color="#fff" fill="#fff" />
@@ -182,7 +188,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 
           <Touchable
             onPress={skipToNext}
-            style={styles.controlButton}
+            style={[styles.controlButton, { borderRadius: rad.md }]}
           >
             <SkipForward size={20} color="#fff" fill="#fff" />
           </Touchable>
@@ -243,13 +249,11 @@ const styles = StyleSheet.create({
     padding: spacing.tight,
     marginLeft: spacing.tight,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: radius.md,
   },
 
   headerImage: {
     width: 60,
     height: 60,
-    borderRadius: radius.md,
     marginRight: spacing.md,
   },
 
@@ -285,7 +289,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.controlGap,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
   },
 
   activeQueueItem: {
@@ -295,7 +298,6 @@ const styles = StyleSheet.create({
   artwork: {
     width: 50,
     height: 50,
-    borderRadius: radius.md,
     marginRight: spacing.md,
   },
 

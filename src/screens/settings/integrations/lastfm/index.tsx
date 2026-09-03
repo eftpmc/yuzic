@@ -32,13 +32,15 @@ import {
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LastFmView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
@@ -126,7 +128,7 @@ const LastFmView: React.FC = () => {
             </Text>
           )}
           <Touchable
-            style={[styles.connectButton, { backgroundColor: themeColor }]}
+            style={[styles.connectButton, { backgroundColor: themeColor, borderRadius: rad.md }]}
             onPress={pendingToken ? handleFinishAuth : handleConnect}
             disabled={isLoading}
           >
@@ -165,7 +167,6 @@ const styles = StyleSheet.create({
   },
   connectButton: {
     paddingVertical: spacing.md,
-    borderRadius: radius.md,
     alignItems: 'center',
     marginBottom: spacing.lg,
   },

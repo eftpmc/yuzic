@@ -11,6 +11,7 @@ import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ export const ThemeColor: React.FC = () => {
   const themeColor = useSelector(selectThemeColor);
   const [open, setOpen] = useState(false);
   const { colors } = useTheme();
+  const rad = useRadius();
 
   return (
     <>
@@ -40,7 +42,7 @@ export const ThemeColor: React.FC = () => {
         </View>
 
         <Touchable
-          style={[styles.expandButton, { backgroundColor: colors.muted, borderColor: colors.border }]}
+          style={[styles.expandButton, { backgroundColor: colors.muted, borderColor: colors.border, borderRadius: rad.md }]}
           onPress={() => setOpen(v => !v)}
         >
           <View style={styles.expandLeft}>
@@ -106,7 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
     borderWidth: 1,
   },
   expandLeft: {

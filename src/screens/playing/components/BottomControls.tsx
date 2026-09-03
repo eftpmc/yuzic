@@ -3,7 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { Cast, ListMusic } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
-import { radius, spacing } from '@/constants/design';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type BottomControlsProps = {
   mode: 'player' | 'queue';
@@ -13,6 +14,7 @@ type BottomControlsProps = {
 
 const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
   const { activeDevice } = useCast();
+  const rad = useRadius();
   const isCasting = activeDevice != null;
   const iconColor = (active: boolean) => (active ? '#fff' : '#ccc');
 
@@ -27,7 +29,7 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
         accessibilityRole="button"
         accessibilityLabel="Toggle queue"
         onPress={() => setMode(mode === 'queue' ? 'player' : 'queue')}
-        style={[styles.rightButton, mode === 'queue' && styles.activeButton]}
+        style={[styles.rightButton, { borderRadius: rad.md }, mode === 'queue' && styles.activeButton]}
       >
         <ListMusic size={24} color={iconColor(mode === 'queue')} />
       </Touchable>
@@ -47,7 +49,6 @@ const styles = StyleSheet.create({
   },
   rightButton: {
     padding: spacing.tight,
-    borderRadius: radius.md,
   },
   activeButton: {
     backgroundColor: 'rgba(255,255,255,0.12)',

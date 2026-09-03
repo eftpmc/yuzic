@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { selectGridColumns, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setGridColumns } from '@/utils/redux/slices/settingsSlice';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 
 const MIN_COLUMNS = 2;
@@ -17,6 +18,7 @@ export const GridColumns: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { colors } = useTheme();
+  const rad = useRadius();
   const gridColumns = useSelector(selectGridColumns);
   const themeColor = useSelector(selectThemeColor);
 
@@ -26,7 +28,7 @@ export const GridColumns: React.FC = () => {
         <Text style={[styles.label, { color: colors.secondary }]}>
           {t('settings.appearance.gridColumns.label')}
         </Text>
-        <View style={[styles.badge, { backgroundColor: themeColor + '22' }]}>
+        <View style={[styles.badge, { backgroundColor: themeColor + '22', borderRadius: rad.card }]}>
           <Text style={[styles.badgeText, { color: themeColor }]}>{gridColumns}</Text>
         </View>
       </View>
@@ -62,7 +64,6 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: spacing.controlGap,
     paddingVertical: spacing.xxs,
-    borderRadius: radius.card,
   },
   badgeText: {
     ...typography.label,

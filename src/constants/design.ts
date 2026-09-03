@@ -60,7 +60,20 @@ export const stateLayer = {
  *
  * Literal `borderRadius` ran to twelve distinct values — 2, 4, 5, 6, 8, 10, 11,
  * 12, 14, 16, 24, 60 — which is one per developer-day rather than a decision.
+ *
+ * These are the **default** values, always static. Small structural nudges
+ * (`xs`/`sm`/`thumb`) are left this way on purpose — they don't drive the app's
+ * shape and shouldn't jitter as the user tries presets. The scale below is
+ * what an untouched preset renders.
+ *
+ * User-facing shape (album covers, playing bar, player controls, library
+ * tiles, buttons) reads its corners from {@link useRadius} instead, which
+ * scales the same base numbers by whichever preset the user picked. This is
+ * what {@link RadiusPreset} controls — it never reaches back to change these
+ * defaults, so anything unmigrated stays at "default" regardless of preset.
  */
+export type RadiusPreset = 'sharp' | 'default' | 'rounded';
+
 export const radius = {
   xs: 4,
   sm: 6,
@@ -73,6 +86,23 @@ export const radius = {
   panel: 24,
   pill: 999,
 } as const;
+
+/** Multiplier applied to each base radius by preset. `pill` is special-cased
+ *  because it's already at effective maximum — it becomes 0 (square) under
+ *  `sharp` and stays pill otherwise. */
+export const RADIUS_MULTIPLIER: Record<RadiusPreset, number> = {
+  sharp: 0,
+  default: 1,
+  rounded: 1.75,
+};
+
+/** Scales one base value by preset. Pill (>= 100) stays at its own maximum
+ *  under `rounded` — a pill scaled 1.75x is still a pill. */
+export function scaleRadius(base: number, preset: RadiusPreset): number {
+  if (base >= 100) return preset === 'sharp' ? 0 : base;
+  const m = RADIUS_MULTIPLIER[preset];
+  return Math.round(base * m);
+}
 
 /**
  * The type scale: nine sizes, each with a role that says where it goes.

@@ -7,6 +7,7 @@ import {
   SearchScope,
   AppLanguage
 } from '@/utils/redux/slices/settingsSlice';
+import type { RadiusPreset } from '@/constants/design';
 
 export const selectSettings = (state: RootState) => state.settings;
 
@@ -15,6 +16,9 @@ export const selectThemeMode = (state: RootState): ThemeMode =>
 
 export const selectThemeColor = (state: RootState): string =>
   state.settings.themeColor;
+
+export const selectRadiusPreset = (state: RootState): RadiusPreset =>
+  (state.settings.radiusPreset as RadiusPreset | undefined) ?? 'default';
 
 export const selectGridColumns = (state: RootState): number =>
   state.settings.gridColumns;

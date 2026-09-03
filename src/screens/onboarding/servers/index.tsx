@@ -23,12 +23,14 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Servers() {
     const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch();
+    const rad = useRadius();
 
     const servers = useSelector((state: RootState) => state.servers.servers);
     const activeServerId = useSelector(
@@ -77,7 +79,7 @@ export default function Servers() {
         const icon = SERVER_PROVIDERS[item.type]?.icon;
 
         return (
-            <View style={styles.serverCard}>
+            <View style={[styles.serverCard, { borderRadius: rad.card }]}>
                 <Touchable
                     style={styles.serverInfo}
                     onPress={() => handleSelectServer(item.id)}
@@ -100,7 +102,7 @@ export default function Servers() {
                             </Text>
 
                             {isActive && (
-                                <View style={styles.activeBadge}>
+                                <View style={[styles.activeBadge, { borderRadius: rad.pill }]}>
                                     <Text style={styles.activeBadgeText}>
                                         {t('onboarding.servers.active')}
                                     </Text>
@@ -111,7 +113,7 @@ export default function Servers() {
                 </Touchable>
 
                 <Touchable
-                    style={styles.menuButton}
+                    style={[styles.menuButton, { borderRadius: rad.md }]}
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
@@ -149,6 +151,7 @@ export default function Servers() {
                 <Touchable
                     style={[
                         styles.addButton,
+                        { borderRadius: rad.pill },
                     ]}
                     onPress={handleAddServer}
                 >
@@ -185,7 +188,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: '#111',
-        borderRadius: radius.card,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
         marginBottom: spacing.controlGap,
@@ -229,7 +231,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#1f6feb',
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xxs,
-        borderRadius: radius.pill,
     },
 
     activeBadgeText: {
@@ -240,7 +241,6 @@ const styles = StyleSheet.create({
 
     menuButton: {
         padding: spacing.tight,
-        borderRadius: radius.md,
     },
 
     emptyText: {
@@ -257,7 +257,6 @@ const styles = StyleSheet.create({
     addButton: {
         backgroundColor: '#fff',
         paddingVertical: spacing.lg,
-        borderRadius: radius.pill,
         alignItems: 'center',
         width: '100%',
         marginBottom: spacing.md,

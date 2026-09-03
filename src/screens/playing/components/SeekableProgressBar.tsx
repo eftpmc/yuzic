@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, type GestureResponderEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
-import { radius } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type SeekableProgressBarProps = {
   value: number;
@@ -20,6 +20,7 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
   trackColor = '#888',
   style,
 }) => {
+  const rad = useRadius();
   const trackRef = useRef<View>(null);
   const durationRef = useRef(duration);
   const onSeekRef = useRef(onSeek);
@@ -80,7 +81,7 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
 
   return (
     <View style={[styles.touchTarget, style]} {...panResponder.panHandlers}>
-      <View ref={trackRef} style={[styles.track, { backgroundColor: trackColor }]}>
+      <View ref={trackRef} style={[styles.track, { backgroundColor: trackColor, borderRadius: rad.pill }]}>
         <Animated.View style={[styles.fill, fillStyle, { backgroundColor: fillColor }]} />
       </View>
     </View>
@@ -95,7 +96,6 @@ const styles = StyleSheet.create({
   },
   track: {
     height: 4,
-    borderRadius: radius.pill,
     overflow: 'hidden',
   },
   fill: {

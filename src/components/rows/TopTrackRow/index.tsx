@@ -6,7 +6,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { radius, typography } from '@/constants/design'
+import { typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
   song: ExternalSong
@@ -17,6 +18,7 @@ type Props = {
 
 function TopTrackRow({ song, index, artistName, onPress }: Props) {
   const { colors } = useTheme()
+  const rad = useRadius()
   const duration = formatSongDuration(song.duration)
 
   return (
@@ -34,7 +36,7 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
       trailing={
         song.previewUrl ? (
           <Touchable
-            style={[styles.previewButton, { backgroundColor: colors.card }]}
+            style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pill }]}
             onPress={onPress}
             disabled={!onPress}
             hitSlop={8}
@@ -58,7 +60,6 @@ const styles = StyleSheet.create({
   previewButton: {
     width: 28,
     height: 28,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

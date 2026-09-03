@@ -2,7 +2,8 @@ import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   label: string;
@@ -18,6 +19,7 @@ const SettingsActionButton: React.FC<Props> = ({
   disabled,
 }) => {
   const { colors, isDarkMode } = useTheme();
+  const rad = useRadius();
 
   const backgroundColor = variant === 'destructive'
     ? (isDarkMode ? '#FF453A' : '#FF3B30')
@@ -25,7 +27,7 @@ const SettingsActionButton: React.FC<Props> = ({
 
   return (
     <Touchable
-      style={[styles.button, { backgroundColor, opacity: disabled ? 0.4 : 1 }]}
+      style={[styles.button, { backgroundColor, opacity: disabled ? 0.4 : 1, borderRadius: rad.md }]}
       onPress={onPress}
       disabled={disabled}
     >
@@ -39,7 +41,6 @@ export default SettingsActionButton;
 const styles = StyleSheet.create({
   button: {
     paddingVertical: spacing.md,
-    borderRadius: radius.md,
     alignItems: 'center',
     marginTop: spacing.sm,
   },

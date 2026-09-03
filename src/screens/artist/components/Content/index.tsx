@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { radius, spacing, statusColor, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
@@ -63,6 +64,7 @@ function SimilarArtistsSubSection<T extends ExternalArtistBase | LocalArtistSumm
 }) {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
 
   const renderArtist = useCallback(({ item }: { item: T }) => (
@@ -82,7 +84,7 @@ function SimilarArtistsSubSection<T extends ExternalArtistBase | LocalArtistSumm
     <View style={styles.similarSection}>
       <View style={styles.similarTitleRow}>
         {showSourceHeaders && (
-          <View style={[styles.sourceBadge, { backgroundColor: badge.color }]}>
+          <View style={[styles.sourceBadge, { backgroundColor: badge.color, borderRadius: rad.pill }]}>
             <Text style={styles.sourceBadgeLetter}>{badge.letter}</Text>
           </View>
         )}
@@ -482,7 +484,6 @@ const styles = StyleSheet.create({
   sourceBadge: {
     width: 20,
     height: 20,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

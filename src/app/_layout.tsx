@@ -34,7 +34,8 @@ import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { isLikelyNetworkError, setServerUnreachable } from '@/features/connectivity/serverReachability';
 import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -171,6 +172,7 @@ function useImageMemoryCleanup() {
 
 function AppShell() {
   const { resolved, isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   const language = useSelector(selectLanguage);
   useImageMemoryCleanup();
 
@@ -217,7 +219,7 @@ function AppShell() {
                       backgroundColor: isDarkMode
                         ? 'rgba(34,34,34,0.9)'
                         : 'rgba(255,255,255,0.9)',
-                      borderRadius: radius.md,
+                      borderRadius: rad.md,
                       shadowColor: '#000',
                       shadowOpacity: 0.15,
                       shadowRadius: 10,

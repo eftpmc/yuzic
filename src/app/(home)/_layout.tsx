@@ -19,7 +19,8 @@ import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachab
 import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { radius, spacing } from '@/constants/design';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -31,6 +32,7 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
     activeIndicatorBg: string;
     children: (color: string) => React.ReactNode;
 }) {
+    const rad = useRadius();
     const opacity = useSharedValue(active ? 1 : 0);
 
     useEffect(() => {
@@ -50,7 +52,7 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
             onPress={onPress}
             feedback="control"
         >
-            <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg }, indicatorStyle]} />
+            <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg, borderRadius: rad.md }, indicatorStyle]} />
             {children(active ? activeColor : inactiveColor)}
         </Touchable>
     );
@@ -213,7 +215,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: 64,
         height: 36,
-        borderRadius: radius.md,
         alignSelf: 'center',
     },
     playingBarHolder: {

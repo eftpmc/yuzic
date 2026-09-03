@@ -28,6 +28,7 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Variant = 'ios' | 'android';
 
@@ -73,7 +74,6 @@ const variantStyles = {
       marginHorizontal: spacing.md,
       marginTop: spacing.md,
       marginBottom: 0,
-      borderRadius: radius.card,
       overflow: 'hidden' as const,
       shadowColor: '#000',
       shadowOpacity: 0.1,
@@ -84,7 +84,6 @@ const variantStyles = {
       padding: spacing.sm,
       paddingBottom: 0,
       paddingHorizontal: spacing.md,
-      borderRadius: radius.card,
     },
     topRowWrapper: {
       height: 40,
@@ -118,7 +117,6 @@ const variantStyles = {
     fabButton: {
       width: 38,
       height: 38,
-      borderRadius: radius.pill,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -133,7 +131,6 @@ const variantStyles = {
       marginHorizontal: spacing.md,
       marginTop: spacing.md,
       marginBottom: 0,
-      borderRadius: radius.card,
       overflow: 'hidden' as const,
       shadowColor: '#000',
       shadowOpacity: 0.1,
@@ -145,7 +142,6 @@ const variantStyles = {
       padding: spacing.sm,
       paddingBottom: 0,
       paddingHorizontal: spacing.md,
-      borderRadius: radius.card,
     },
     topRowWrapper: {
       height: 40,
@@ -179,7 +175,6 @@ const variantStyles = {
     fabButton: {
       width: 38,
       height: 38,
-      borderRadius: radius.pill,
       elevation: 4,
     },
     placeholderIconSize: 32,
@@ -191,6 +186,7 @@ const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
 
@@ -332,7 +328,7 @@ export default function PlayingBarBase({ variant }: Props) {
 
       {primaryAction && (
         <Touchable
-          style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor }]}
+          style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor, borderRadius: rad.pill }]}
           onPress={primaryAction.onPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -364,16 +360,16 @@ export default function PlayingBarBase({ variant }: Props) {
         testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
         onPress={handleExpand}
       >
-        <View style={[styles.wrapper, stylesForVariant.wrapper]}>
+        <View style={[styles.wrapper, stylesForVariant.wrapper, { borderRadius: rad.card }]}>
           {variant === 'android' ? (
-            <View style={[styles.container, stylesForVariant.container, androidSurfaceStyle]}>
+            <View style={[styles.container, stylesForVariant.container, { borderRadius: rad.card }, androidSurfaceStyle]}>
               {barContent}
             </View>
           ) : (
             <BlurView
               intensity={stylesForVariant.blurIntensity}
               tint={isDarkMode ? 'dark' : 'light'}
-              style={[styles.container, stylesForVariant.container]}
+              style={[styles.container, stylesForVariant.container, { borderRadius: rad.card }]}
             >
               {barContent}
             </BlurView>

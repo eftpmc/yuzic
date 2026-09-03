@@ -20,11 +20,13 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const activeServer = useSelector(selectActiveServer);
   const {
     removeDownloadByCollectionId,
@@ -161,9 +163,9 @@ const DownloadsInfoScreen: React.FC = () => {
                     </Touchable>
                   </View>
                 )}
-                <View style={[styles.row, { backgroundColor: colors.card }]}>
+                <View style={[styles.row, { backgroundColor: colors.card, borderRadius: rad.md }]}>
                   <View style={styles.coverCell}>
-                    <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
+                    <MediaImage cover={item.cover} size="thumb" style={[styles.cover, { borderRadius: rad.md }]} />
                   </View>
                   <View style={styles.trackCell}>
                     <View style={styles.titleLine}>
@@ -236,7 +238,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
@@ -247,7 +248,6 @@ const styles = StyleSheet.create({
   cover: {
     width: 44,
     height: 44,
-    borderRadius: radius.md,
     overflow: 'hidden',
   },
   trackCell: {

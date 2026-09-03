@@ -3,7 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export type IconSelectItem = {
   id: string;
@@ -19,6 +20,7 @@ type Props = {
 
 const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSelect }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
 
   return (
     <SettingsCard>
@@ -36,6 +38,7 @@ const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSel
                   {
                     backgroundColor: active ? colors.themeColor : colors.muted,
                     borderColor: active ? colors.themeColor : colors.border,
+                    borderRadius: rad.md,
                   },
                 ]}
               >
@@ -70,7 +73,6 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     height: 40,
-    borderRadius: radius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

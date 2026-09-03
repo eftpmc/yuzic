@@ -14,7 +14,8 @@ import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -27,6 +28,7 @@ const LanguageBottomSheet = forwardRef<
 >(({ selected, onSelect }, ref) => {
   const themeColor = useSelector(selectThemeColor);
   const { colors } = useTheme();
+  const rad = useRadius();
   const { t } = useTranslation();
 
   const snapPoints = useMemo(() => ['35%'], []);
@@ -64,6 +66,7 @@ const LanguageBottomSheet = forwardRef<
                   backgroundColor: isSelected
                     ? themeColor + '22'
                     : 'transparent',
+                  borderRadius: rad.md,
                 },
               ]}
               onPress={() => onSelect(lang.code)}
@@ -116,7 +119,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: spacing.lg,
-    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
   pickerLeft: {

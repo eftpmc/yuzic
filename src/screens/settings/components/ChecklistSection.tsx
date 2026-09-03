@@ -7,6 +7,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Item = {
   key: string;
@@ -31,10 +32,11 @@ export default function ChecklistSection({
   disabled = false,
 }: Props) {
   const { colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <View style={[styles.section, { backgroundColor: colors.card, borderRadius: rad.card }]}>
       {infoText && (
         <Text style={[styles.infoText, { color: colors.subtext }]}>
           {infoText}
@@ -60,6 +62,7 @@ export default function ChecklistSection({
                     backgroundColor: colors.muted,
                     borderColor: active ? themeColor : colors.border,
                     opacity: disabled ? 0.6 : 1,
+                    borderRadius: rad.md,
                   },
                 ]}
               >
@@ -85,7 +88,6 @@ export default function ChecklistSection({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: radius.card,
     overflow: 'hidden',
     marginBottom: spacing.lg,
   },
@@ -112,7 +114,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
     borderWidth: 1.5,
     gap: 12,
   },

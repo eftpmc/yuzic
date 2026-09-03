@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
 import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   onDismiss?: () => void;
@@ -24,6 +25,7 @@ type Props = {
 const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, ref) => {
   const { t } = useTranslation();
   const { colors, isDarkMode } = useTheme();
+  const rad = useRadius();
   const router = useRouter();
   const dispatch = useDispatch();
   const api = useApi();
@@ -88,7 +90,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
       <BottomSheetView style={styles.container}>
         {/* Profile */}
         <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: themeColor }]}>
+          <View style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}>
             <Text style={styles.avatarText}>{initial}</Text>
           </View>
           <View style={styles.headerInfo}>
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
   avatar: {
     width: 44,
     height: 44,
-    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },

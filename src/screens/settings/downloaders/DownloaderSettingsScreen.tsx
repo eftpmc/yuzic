@@ -163,7 +163,9 @@ export const downloaderQueueStyles = StyleSheet.create({
   itemTitle: { ...typography.rowSubtitle, fontWeight: '500' },
   itemSub: { ...typography.caption, marginTop: spacing.xxs },
   itemPct: { ...typography.caption },
-  progressTrack: { height: 4, width: '100%', borderRadius: radius.pill, overflow: 'hidden' },
+  // borderRadius is applied at the callsite from useRadius() so the pill
+  // shape follows the user's radius preset live.
+  progressTrack: { height: 4, width: '100%', overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: radius.xs },
   warningContainer: { marginTop: spacing.sm, padding: spacing.sm, borderRadius: radius.sm },
   warningMessage: { ...typography.caption, marginLeft: spacing.sm, marginTop: spacing.xxs },

@@ -3,7 +3,8 @@ import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   icon: ReactNode;
@@ -23,6 +24,7 @@ type Props = {
 // transient conditions like connectivity.
 export default function StatusBanner({ icon, text, color, closable, style, testID }: Props) {
   const { colors } = useTheme();
+  const rad = useRadius();
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
@@ -31,7 +33,7 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
   const textColor = color ?? colors.subtext;
 
   return (
-    <View style={[styles.row, { backgroundColor: background }, style]} testID={testID}>
+    <View style={[styles.row, { backgroundColor: background, borderRadius: rad.card }, style]} testID={testID}>
       {icon}
       <Text style={[styles.text, { color: textColor }]} numberOfLines={2}>
         {text}
@@ -58,7 +60,6 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.tight,
-    borderRadius: radius.card,
   },
   text: {
     ...typography.caption,

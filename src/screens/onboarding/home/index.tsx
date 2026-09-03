@@ -14,13 +14,15 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Home() {
     const { t } = useTranslation();
     const router = useRouter();
     const themeColor = useSelector(selectThemeColor);
     const dispatch = useDispatch();
+    const rad = useRadius();
     const [isPressed, setIsPressed] = useState(false);
 
     const hasSeenGetStarted = useSelector(selectHasSeenGetStarted);
@@ -50,7 +52,7 @@ export default function Home() {
             <View style={styles.content}>
                 <Image
                     source={require('@assets/images/logo.png')}
-                    style={styles.appIcon}
+                    style={[styles.appIcon, { borderRadius: rad.md }]}
                     contentFit="contain"
                     cachePolicy="memory-disk"
                 />
@@ -69,13 +71,13 @@ export default function Home() {
                         <View
                             style={[
                                 styles.offsetButton,
-                                { backgroundColor: `${themeColor}AA` },
+                                { backgroundColor: `${themeColor}AA`, borderRadius: rad.md },
                             ]}
                         />
                         <View
                             style={[
                                 styles.button,
-                                { backgroundColor: themeColor, shadowColor: themeColor },
+                                { backgroundColor: themeColor, shadowColor: themeColor, borderRadius: rad.md },
                                 isPressed && styles.buttonPressed,
                             ]}
                         >
@@ -109,7 +111,6 @@ const styles = StyleSheet.create({
         width: 150,
         height: 150,
         marginBottom: spacing.xxl,
-        borderRadius: radius.md,
     },
     appName: {
         ...typography.display,
@@ -138,13 +139,11 @@ const styles = StyleSheet.create({
         top: 6,
         width: '100%',
         height: 48,
-        borderRadius: radius.md,
         zIndex: -1,
     },
     button: {
         width: '100%',
         paddingVertical: spacing.lg,
-        borderRadius: radius.md,
         alignItems: 'center',
         justifyContent: 'center',
         shadowOffset: { width: 0, height: 5 },

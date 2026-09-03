@@ -11,7 +11,8 @@ import {
   SLEEP_TIMER_INCREMENTS,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 function formatCountdown(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -23,6 +24,7 @@ type Props = { contentWidth: number };
 
 export default function SleepTimerCard({ contentWidth }: Props) {
   const themeColor = useSelector(selectThemeColor);
+  const rad = useRadius();
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const targetMsRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,7 +100,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     <View
       style={[
         styles.card,
-        { width: contentWidth },
+        { width: contentWidth, borderRadius: rad.panel },
         isActive && { borderColor: themeColor + '55', borderWidth: 1 },
       ]}
     >
@@ -136,6 +138,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           disabled={!isActive}
           style={[
             styles.offButton,
+            { borderRadius: rad.card },
             isActive
               ? { borderColor: 'rgba(255,255,255,0.3)' }
               : { borderColor: 'rgba(255,255,255,0.12)' },
@@ -150,7 +153,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           <Touchable
             key={min}
             onPress={() => handleIncrement(min)}
-            style={styles.incrButton}
+            style={[styles.incrButton, { borderRadius: rad.card }]}
           >
             <Text style={styles.incrLabel}>
               +{min}m
@@ -165,7 +168,6 @@ export default function SleepTimerCard({ contentWidth }: Props) {
 const styles = StyleSheet.create({
   card: {
     marginTop: spacing.lg,
-    borderRadius: radius.panel,
     backgroundColor: 'rgba(255,255,255,0.07)',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.roomy,
@@ -202,7 +204,6 @@ const styles = StyleSheet.create({
   offButton: {
     flex: 1,
     height: 44,
-    borderRadius: radius.card,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -215,7 +216,6 @@ const styles = StyleSheet.create({
   incrButton: {
     flex: 1,
     height: 44,
-    borderRadius: radius.card,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',

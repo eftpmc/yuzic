@@ -5,10 +5,12 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, spacing } from '@/constants/design';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LoadingAlbumHeader: React.FC = () => {
     const { isDarkMode } = useTheme();
+    const rad = useRadius();
 
     const colorMode = isDarkMode ? 'dark' : 'light';
 
@@ -32,7 +34,7 @@ const LoadingAlbumHeader: React.FC = () => {
             </View>
 
             {/* Cover art */}
-            <View style={styles.coverWrapper}>
+            <View style={[styles.coverWrapper, { borderRadius: rad.lg }]}>
                 <Skeleton
                     width={280}
                     height={280}
@@ -122,7 +124,6 @@ const styles = StyleSheet.create({
     coverWrapper: {
         width: 280,
         height: 280,
-        borderRadius: radius.lg,
         marginTop: spacing.xxl,
         marginBottom: spacing.xl,
         overflow: 'hidden',
