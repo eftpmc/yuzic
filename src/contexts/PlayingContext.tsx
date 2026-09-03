@@ -91,6 +91,13 @@ export interface PlayingActionsType {
   pauseSong(): Promise<void>;
   resumeSong(): Promise<void>;
   seekSong(positionSeconds: number): void;
+  /**
+   * Seeks by `deltaSeconds` from the current position, clamped into the track.
+   * Positive jumps forward, negative jumps back. Runs against the live
+   * TrackPlayer position rather than any subscribed state, so callers stay
+   * unsubscribed from the per-second progress ticks.
+   */
+  jumpBy(deltaSeconds: number): void;
   playSong(song: Song): Promise<void>;
   playSongInCollection(
     selectedSong: Song,
@@ -748,6 +755,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (activeDevice) castSeek(positionSeconds);
   }, [activeDevice, castSeek]);
 
+  const jumpBy = useCallback((deltaSeconds: number) => {
+    const { position, duration } = TrackPlayer.getProgress();
+    const max = duration > 0 ? duration : Number.POSITIVE_INFINITY;
+    const target = Math.max(0, Math.min(max, (position || 0) + deltaSeconds));
+    TrackPlayer.seekTo(target);
+    if (activeDevice) castSeek(target);
+  }, [activeDevice, castSeek]);
+
   const getQueue = useCallback(() => [...queueRef.current], []);
 
   const moveTrack = useCallback((from: number, to: number) => {
@@ -955,6 +970,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     pauseSong,
     resumeSong,
     seekSong,
+    jumpBy,
     playSong,
     playSongInCollection,
     playSongs,
@@ -976,6 +992,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     pauseSong,
     resumeSong,
     seekSong,
+    jumpBy,
     playSong,
     playSongInCollection,
     playSongs,

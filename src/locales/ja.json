@@ -212,6 +212,8 @@
       "showSleepTimerSubtext": "プレイヤーにスリープタイマーを表示します。",
       "showPlaybackSpeed": "再生速度",
       "showPlaybackSpeedSubtext": "プレイヤーに速度調整を表示します。",
+      "showJumpButtons": "スキップボタン",
+      "showJumpButtonsSubtext": "プレイヤーに15秒巻き戻し・15秒早送りボタンを表示します。",
       "autoplay": "自動再生",
       "autoplaySubtextAudiomuse": "AudioMuse-AIを使って、キューが終わった後も音響的に似た曲を再生し続けます。",
       "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。"

@@ -57,6 +57,9 @@ export const selectShowSleepTimer = (state: RootState): boolean =>
 export const selectShowPlaybackSpeed = (state: RootState): boolean =>
   state.settings.showPlaybackSpeed ?? true;
 
+export const selectShowJumpButtons = (state: RootState): boolean =>
+  state.settings.showJumpButtons ?? false;
+
 export const selectAutoplayEnabled = (state: RootState): boolean =>
   state.settings.autoplayEnabled ?? false;
 

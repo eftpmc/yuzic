@@ -2,19 +2,24 @@ import React, { useCallback } from 'react';
 import {
   Pressable,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
-import { Shuffle, Sparkle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause } from 'lucide-react-native';
+import { Shuffle, Sparkle, SkipBack, SkipForward, Repeat, Repeat1, Play, Pause, RotateCcw, RotateCw } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
 
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
+import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { radius, spacing } from '@/constants/design';
+
+const JUMP_SECONDS = 15;
 
 const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -71,14 +76,35 @@ function ToggleButton({
   );
 }
 
+function JumpButton({ direction, onPress }: { direction: 'back' | 'forward'; onPress: () => void }) {
+  const Icon = direction === 'back' ? RotateCcw : RotateCw;
+  const label = direction === 'back' ? `−${JUMP_SECONDS}s` : `+${JUMP_SECONDS}s`;
+  return (
+    <Touchable
+      accessibilityLabel={direction === 'back' ? `Jump back ${JUMP_SECONDS} seconds` : `Jump forward ${JUMP_SECONDS} seconds`}
+      onPress={onPress}
+      hitSlop={HIT_SLOP}
+    >
+      <View style={styles.jumpWrapper}>
+        <Icon size={28} color="#fff" />
+        <Text style={styles.jumpLabel} allowFontScaling={false}>{label}</Text>
+      </View>
+    </Touchable>
+  );
+}
+
 const Controls: React.FC = () => {
   const { isPlaying, isBuffering, shuffleMode, repeatMode } = usePlayingState();
-  const { pauseSong, resumeSong, skipToNext, skipToPrevious, cycleShuffleMode, toggleRepeat } = usePlayingActions();
+  const { pauseSong, resumeSong, skipToNext, skipToPrevious, cycleShuffleMode, toggleRepeat, jumpBy } = usePlayingActions();
+  const showJumpButtons = useSelector(selectShowJumpButtons);
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) pauseSong();
     else resumeSong();
   }, [isPlaying, pauseSong, resumeSong]);
+
+  const handleJumpBack = useCallback(() => { jumpBy(-JUMP_SECONDS); }, [jumpBy]);
+  const handleJumpForward = useCallback(() => { jumpBy(JUMP_SECONDS); }, [jumpBy]);
 
   return (
     <View style={styles.container}>
@@ -93,7 +119,11 @@ const Controls: React.FC = () => {
         <SkipBack size={34} color="#fff" fill="#fff" />
       </Touchable>
 
+      {showJumpButtons && <JumpButton direction="back" onPress={handleJumpBack} />}
+
       <PlayPauseButton isPlaying={isPlaying} isBuffering={isBuffering} onPress={handlePlayPause} />
+
+      {showJumpButtons && <JumpButton direction="forward" onPress={handleJumpForward} />}
 
       <Touchable onPress={skipToNext} hitSlop={HIT_SLOP}>
         <SkipForward size={34} color="#fff" fill="#fff" />
@@ -146,6 +176,17 @@ const styles = StyleSheet.create({
   },
   activeDotVisible: {
     backgroundColor: '#fff',
+  },
+  jumpWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 36,
+  },
+  jumpLabel: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '600',
+    marginTop: 2,
   },
 });
 

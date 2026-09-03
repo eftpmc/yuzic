@@ -209,6 +209,8 @@
       "showSleepTimerSubtext": "Show a sleep timer control in the player.",
       "showPlaybackSpeed": "Playback Speed",
       "showPlaybackSpeedSubtext": "Show a speed control in the player.",
+      "showJumpButtons": "Jump Buttons",
+      "showJumpButtonsSubtext": "Show 15-second skip-back and skip-forward buttons in the player.",
       "autoplay": "Autoplay",
       "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
       "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends."
