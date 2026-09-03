@@ -21,6 +21,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Animated, {
+  FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -41,6 +42,9 @@ import Touchable from '@/components/Touchable';
 const WASH_REACH = 420;
 
 const TITLE_FADE_MS = 180;
+
+/** Long enough to read as the colour arriving rather than the screen changing. */
+const WASH_FADE_MS = 450;
 
 /** The floating bar's own height, below the status bar. Exported so a screen
  * can put something (a status banner) directly under it. */
@@ -225,14 +229,23 @@ export function DetailHeader({
       {/* A wash of the cover's own colour behind it, fading out before the
           content below. Absolute and non-interactive so nothing here has to
           move to make room for it, and absent until extraction returns rather
-          than flashing a placeholder band on the way to the real colour. */}
+          than flashing a placeholder band on the way to the real colour.
+
+          Extraction finishes after the screen is already on-screen, so without
+          the fade the colour arrives as a pop — the one moment the seam shows
+          is the moment it should show least. */}
       {accent ? (
-        <LinearGradient
+        <Animated.View
           pointerEvents="none"
-          colors={accentWashColors(accent)}
-          locations={[...ACCENT_WASH_LOCATIONS]}
+          entering={FadeIn.duration(WASH_FADE_MS)}
           style={[styles.wash, { height: inset + WASH_REACH }]}
-        />
+        >
+          <LinearGradient
+            colors={accentWashColors(accent)}
+            locations={[...ACCENT_WASH_LOCATIONS]}
+            style={styles.washFill}
+          />
+        </Animated.View>
       ) : null}
 
       {showNavigation && <DetailHeaderBar title={title} rightAction={rightAction} />}
@@ -446,6 +459,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
+  washFill: { flex: 1 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

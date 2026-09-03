@@ -20,7 +20,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const DownloadsInfoScreen: React.FC = () => {
@@ -184,6 +184,7 @@ const DownloadsInfoScreen: React.FC = () => {
                   </View>
                   <Touchable
                     style={[styles.removeButton, removingId === item.id && styles.disabled]}
+                    hitSlop={hitSlopFor(32)}
                     onPress={() => confirmRemove(item)}
                     disabled={removingId === item.id}
                   >

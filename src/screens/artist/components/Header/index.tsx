@@ -37,7 +37,7 @@ import {
 } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -116,6 +116,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               accessibilityRole="button"
               accessibilityLabel="Go back"
               style={[styles.backButton, { borderRadius: rad.md }]}
+              hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
             >
               <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />

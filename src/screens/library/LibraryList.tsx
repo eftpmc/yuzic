@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { spacing, typography } from '@/constants/design'
+import { hitSlopFor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import {
   selectIsGridView,
@@ -136,6 +136,7 @@ const LibraryList: React.FC<Props> = ({
               </Touchable>
               <Touchable
                 style={[styles.gridButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
+                hitSlop={hitSlopFor(34)}
                 onPress={() => dispatch(setIsGridView(!isGridView))}
                 accessibilityRole="button"
                 accessibilityLabel={isGridView ? t('library.view.switchToList') : t('library.view.switchToGrid')}

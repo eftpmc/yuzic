@@ -56,6 +56,11 @@ because both halves of each pair look reasonable in isolation.
   `spacing.scrollClearance`, which is what keeps its last row clear of the
   playing bar; four different numbers were doing that job and the short ones
   didn't.
+- **Tap targets**: a control may be drawn smaller than `controlSize.minimumTarget`
+  — a 34pt toggle beside a 34pt pill is the right drawing — but what the finger
+  has to hit never is. `hitSlopFor(size)` makes up the difference; it returns
+  undefined when none is needed, so it can be spread unconditionally. Seven
+  controls were between 32 and 40pt with nothing padding them out.
 - **Pressing**: `components/Touchable`, never `TouchableOpacity` — the whole app
   was swapped over in one pass and there is no reason for a second answer to a
   press to exist. Android gets a ripple bounded to the component, every other
