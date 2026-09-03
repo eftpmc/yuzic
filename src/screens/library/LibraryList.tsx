@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { radius, spacing, typography } from '@/constants/design'
+import { hitSlopFor, radius, spacing, typography } from '@/constants/design'
 import {
   selectIsGridView,
   selectGridColumns,
@@ -132,6 +132,7 @@ const LibraryList: React.FC<Props> = ({
               </Touchable>
               <Touchable
                 style={[styles.gridButton, { backgroundColor: colors.muted }]}
+                hitSlop={hitSlopFor(34)}
                 onPress={() => gridSheetRef.current?.present()}
                 accessibilityRole="button"
               >

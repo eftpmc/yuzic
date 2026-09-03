@@ -106,6 +106,15 @@ export const typography = {
 } as const;
 
 export const controlSize = {
+  /**
+   * The smallest a tap target may be, in points.
+   *
+   * Apple's minimum; Material asks for 48. A control is allowed to *look*
+   * smaller than this — a 34pt toggle next to a 34pt pill is the right drawing
+   * — but what the finger has to hit never is. Use `hitSlopFor` to make up the
+   * difference rather than growing the control.
+   */
+  minimumTarget: 44,
   iconDefault: 44,
   iconCompact: 36,
   detailSecondary: 40,
@@ -141,3 +150,17 @@ export type SemanticThemeColors = {
   sourceDeezer: string;
   sourceLastfm: string;
 };
+
+
+/**
+ * The padding a control of this size needs to reach the minimum tap target.
+ *
+ * Returns undefined when it already does, so it can be spread onto a component
+ * unconditionally without adding a slop of zero.
+ */
+export function hitSlopFor(size: number) {
+  const missing = controlSize.minimumTarget - size;
+  if (missing <= 0) return undefined;
+  const pad = Math.ceil(missing / 2);
+  return { top: pad, bottom: pad, left: pad, right: pad };
+}

@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
@@ -15,6 +16,9 @@ import { useTheme } from '@/hooks/useTheme';
 import { controlSize, radius, spacing, typography } from '@/constants/design';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
+
+/** Long enough to read as the colour arriving rather than the screen changing. */
+const WASH_FADE_MS = 450;
 
 type DetailHeaderProps = {
   title: string;
@@ -84,13 +88,19 @@ export function DetailHeader({
       {/* A wash of the cover's own colour behind it, fading out before the
           content below. Absolute and non-interactive so nothing here has to
           move to make room for it, and absent until extraction returns rather
-          than flashing a placeholder band on the way to the real colour. */}
+          than flashing a placeholder band on the way to the real colour.
+
+          Extraction finishes after the screen is already on-screen, so without
+          the fade the colour arrives as a pop — the one moment the seam is
+          visible is the moment it should be least so. */}
       {accent ? (
-        <LinearGradient
+        <Animated.View
           pointerEvents="none"
-          colors={[accent, 'transparent']}
+          entering={FadeIn.duration(WASH_FADE_MS)}
           style={styles.wash}
-        />
+        >
+          <LinearGradient colors={[accent, 'transparent']} style={styles.washFill} />
+        </Animated.View>
       ) : null}
 
       {showNavigation && <DetailHeaderBar title={title} rightAction={rightAction} />}
@@ -240,6 +250,7 @@ const styles = StyleSheet.create({
     // rather than stopping on an edge.
     height: 420,
   },
+  washFill: { flex: 1 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

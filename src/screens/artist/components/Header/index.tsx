@@ -29,7 +29,7 @@ import { fetchAlbumDetailsSettled } from '@/hooks/albums';
 import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
 
 type Props = {
   localArtist: Artist | null;
@@ -101,6 +101,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               accessibilityRole="button"
               accessibilityLabel="Go back"
               style={styles.backButton}
+              hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
             >
               <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
@@ -155,6 +156,7 @@ function LocalOptionsButton({ artist }: { artist: Artist }) {
         accessibilityRole="button"
         accessibilityLabel="Artist options"
         style={styles.backButton}
+        hitSlop={hitSlopFor(36)}
         onPress={() => optionsSheetRef.current?.present()}
       >
         <Ellipsis size={24} color="#fff" />

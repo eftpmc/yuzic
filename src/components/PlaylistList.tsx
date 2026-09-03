@@ -39,7 +39,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -259,7 +259,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             },
           ]}
         >
-          <Touchable onPress={onClose} style={styles.cancelButton}>
+          <Touchable onPress={onClose} style={styles.cancelButton} hitSlop={hitSlopFor(32)}>
             <X size={20} color={colors.secondary} strokeWidth={2.5} />
           </Touchable>
 

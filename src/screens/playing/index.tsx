@@ -35,7 +35,7 @@ import PlaybackSpeedCard from './components/PlaybackSpeedCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { spacing } from '@/constants/design';
+import { hitSlopFor, spacing } from '@/constants/design';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -214,6 +214,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         accessibilityLabel="Close player"
                                         onPress={onClose}
                                         style={styles.headerButton}
+                                        hitSlop={hitSlopFor(40)}
                                     >
                                         <ChevronDown size={28} color="#fff" />
                                     </Touchable>
@@ -221,6 +222,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     <Touchable
                                         onPress={() => songOptionsRef.current?.present()}
                                         style={styles.headerButton}
+                                        hitSlop={hitSlopFor(40)}
                                     >
                                         <Ellipsis size={24} color="#fff" />
                                     </Touchable>
