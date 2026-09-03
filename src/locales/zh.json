@@ -42,6 +42,17 @@
         "clientDescription": "仅搜索本地音乐库",
         "server": "服务器",
         "serverDescription": "使用服务器搜索"
+      },
+      "fallbackUrls": {
+        "title": "备用URL",
+        "subtext": "无法访问主URL时应用会尝试的额外URL — 例如出门在外时使用的 Tailscale 或公网地址。",
+        "placeholder": "https://tailscale-或-domain.example",
+        "addAria": "添加备用URL",
+        "removeAria": "移除 {{url}}",
+        "emptyError": "请输入URL。",
+        "invalidError": "URL 必须以 http:// 或 https:// 开头。",
+        "duplicatePrimaryError": "这已经是主URL。",
+        "duplicateError": "此URL已在列表中。"
       }
     },
     "appearance": {

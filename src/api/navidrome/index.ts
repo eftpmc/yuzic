@@ -52,7 +52,7 @@ import { getSimilarSongs } from "./similar/getSimilarSongs";
 import { search as searchNavidrome } from "./search/search";
 
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
-  const { serverUrl, username, auth: providerAuth, basicAuth } = server;
+  const { id: serverId, serverUrl, fallbackUrls, username, auth: providerAuth, basicAuth } = server;
   const password = providerAuth?.password as string;
 
   // Support new array format (musicFolderIds) and old single-value format (musicFolderId)
@@ -61,10 +61,10 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     providerAuth?.musicFolderId ? [String(providerAuth.musicFolderId)] :
     [];
 
-  const client = createNavidromeClient({ serverUrl, username, password, basicAuth });
+  const client = createNavidromeClient({ serverUrl, serverId, fallbackUrls, username, password, basicAuth });
 
   const clientFor = (folderId: string) =>
-    createNavidromeClient({ serverUrl, username, password, defaultParams: { musicFolderId: folderId }, basicAuth });
+    createNavidromeClient({ serverUrl, serverId, fallbackUrls, username, password, defaultParams: { musicFolderId: folderId }, basicAuth });
 
   async function fromFolders<T extends { id: string }>(
     fn: (c: ReturnType<typeof createNavidromeClient>) => Promise<T[]>

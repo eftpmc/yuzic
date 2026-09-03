@@ -42,6 +42,17 @@
         "clientDescription": "ローカルライブラリのみを検索",
         "server": "サーバー",
         "serverDescription": "サーバーの検索を使用する"
+      },
+      "fallbackUrls": {
+        "title": "フォールバックURL",
+        "subtext": "プライマリURLに接続できないときに試す追加URL（外出時のTailscaleや公開アドレスなど）。",
+        "placeholder": "https://tailscale-または-ドメイン.example",
+        "addAria": "フォールバックURLを追加",
+        "removeAria": "{{url}}を削除",
+        "emptyError": "URLを入力してください。",
+        "invalidError": "URLは http:// または https:// で始まる必要があります。",
+        "duplicatePrimaryError": "これはすでにプライマリURLです。",
+        "duplicateError": "このURLはすでにリストにあります。"
       }
     },
     "appearance": {

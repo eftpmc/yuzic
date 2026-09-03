@@ -38,6 +38,17 @@
         "clientDescription": "Search your local library only",
         "server": "Server",
         "serverDescription": "Use your server’s search instead"
+      },
+      "fallbackUrls": {
+        "title": "Fallback URLs",
+        "subtext": "Extra URLs the app will try if the primary can’t be reached — e.g. a Tailscale or public address when you’re away from home.",
+        "placeholder": "https://tailscale-or-domain.example",
+        "addAria": "Add fallback URL",
+        "removeAria": "Remove {{url}}",
+        "emptyError": "Enter a URL.",
+        "invalidError": "URL must start with http:// or https://",
+        "duplicatePrimaryError": "This is already the primary URL.",
+        "duplicateError": "This URL is already in the list."
       }
     },
     "appearance": {

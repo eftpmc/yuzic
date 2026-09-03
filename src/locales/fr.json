@@ -42,6 +42,17 @@
         "clientDescription": "Rechercher uniquement dans la bibliothèque locale",
         "server": "Serveur",
         "serverDescription": "Utiliser la recherche du serveur à la place"
+      },
+      "fallbackUrls": {
+        "title": "URL de secours",
+        "subtext": "URL supplémentaires que l’application essaiera si la principale est injoignable — par exemple une adresse Tailscale ou publique en déplacement.",
+        "placeholder": "https://tailscale-ou-domaine.exemple",
+        "addAria": "Ajouter une URL de secours",
+        "removeAria": "Supprimer {{url}}",
+        "emptyError": "Entrez une URL.",
+        "invalidError": "L’URL doit commencer par http:// ou https://",
+        "duplicatePrimaryError": "C’est déjà l’URL principale.",
+        "duplicateError": "Cette URL est déjà dans la liste."
       }
     },
     "appearance": {

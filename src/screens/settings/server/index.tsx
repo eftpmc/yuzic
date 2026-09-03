@@ -11,6 +11,7 @@ import SettingsSelectCard from '../components/SettingsSelectCard';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import ConnectivityIndicator from '../components/ConnectivityIndicator';
+import FallbackUrlsCard from './components/FallbackUrlsCard';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectSearchScope,
@@ -99,6 +100,8 @@ const ServerSettings: React.FC = () => {
           }
         />
       </SettingsCard>
+
+      <FallbackUrlsCard server={activeServer} />
 
       <SettingsSelectCard
         title={t('settings.server.searchScopeHelp')}

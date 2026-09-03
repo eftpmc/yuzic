@@ -47,7 +47,7 @@ import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
 import { search as searchEmby } from "../mediaBrowser/search/search";
 
 export const createEmbyAdapter = (server: Server): ApiAdapter => {
-  const { serverUrl, auth: providerAuth, basicAuth } = server;
+  const { id: serverId, serverUrl, fallbackUrls, auth: providerAuth, basicAuth } = server;
   const { token, userId } = providerAuth as { token: string; userId: string };
 
   // Support new array format (parentIds) and old single-value format (parentId)
@@ -56,10 +56,10 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
     (providerAuth as any)?.parentId ? [String((providerAuth as any).parentId)] :
     [];
 
-  const client = createEmbyClient({ serverUrl, token, userId, basicAuth });
+  const client = createEmbyClient({ serverUrl, serverId, fallbackUrls, token, userId, basicAuth });
 
   const clientFor = (pid: string) =>
-    createEmbyClient({ serverUrl, token, userId, parentId: pid, basicAuth });
+    createEmbyClient({ serverUrl, serverId, fallbackUrls, token, userId, parentId: pid, basicAuth });
 
   async function fromParents<T extends { id: string }>(
     fn: (c: ReturnType<typeof createEmbyClient>) => Promise<T[]>
