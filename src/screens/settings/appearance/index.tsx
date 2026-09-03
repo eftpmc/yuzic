@@ -8,6 +8,7 @@ import { ThemeColor } from './components/ThemeColor';
 import { ThemeModeSelector } from './components/ThemeModeSelector';
 import { PlayingBarActionSelector } from './components/PlayingBarActionSelector';
 import { LanguageSelector } from './components/LanguageSelector';
+import { GridColumns } from './components/GridColumns';
 import { selectShowQualityBadge, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { setShowQualityBadge, setShowSourceHeaders } from '@/utils/redux/slices/settingsSlice';
 
@@ -44,6 +45,7 @@ const AppearanceSettings: React.FC = () => {
       <PlayingBarActionSelector />
       <SettingsCardHeader subtle title={t('settings.appearance.display')} />
       <SettingsToggleGroup items={sourceHeaderItems} />
+      <GridColumns />
     </SettingsScreen>
   );
 };

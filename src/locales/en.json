@@ -88,7 +88,11 @@
       "showQualityBadge": "Show quality badge",
       "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen.",
       "showSourceHeaders": "Show source headers",
-      "showSourceHeadersSubtext": "Shows the source badge next to section titles from external services."
+      "showSourceHeadersSubtext": "Shows the source badge next to section titles from external services.",
+      "gridColumns": {
+        "label": "Grid columns",
+        "subtext": "How many columns of albums, artists, and playlists appear in grid view."
+      }
     },
     "library": {
       "title": "Library",
@@ -466,6 +470,10 @@
   },
   "library": {
     "title": "Library",
+    "view": {
+      "switchToList": "Switch to list view",
+      "switchToGrid": "Switch to grid view"
+    },
     "genres": {
       "title": "Genres",
       "albumCount_one": "{{count}} album",

@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react'
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
@@ -11,13 +12,13 @@ import {
   selectGridColumns,
   selectGridSpacing,
 } from '@/utils/redux/selectors/settingsSelectors'
+import { setIsGridView } from '@/utils/redux/slices/settingsSlice'
 import { gridItemWidth, libraryGutter } from './layout'
 import AlbumItem from './components/Items/AlbumItem'
 import ArtistItem from './components/Items/ArtistItem'
 import PlaylistItem from './components/Items/PlaylistItem'
 import TrackItem from './components/Items/TrackItem'
 import SortBottomSheet from './components/SortBottomSheet'
-import GridSettingsBottomSheet from './components/GridSettingsBottomSheet'
 import { useSheetRef } from '@/utils/useSheetRef'
 import type { LibraryItem, SortOrder } from './librarySort'
 import Touchable from '@/components/Touchable'
@@ -44,14 +45,15 @@ const LibraryList: React.FC<Props> = ({
   sortLabel,
   header,
 }) => {
+  const { t } = useTranslation()
   const { colors } = useTheme()
+  const dispatch = useDispatch()
   const isGridView = useSelector(selectIsGridView)
   const gridColumns = useSelector(selectGridColumns)
   const gridSpacing = useSelector(selectGridSpacing)
   const { width: screenWidth } = useWindowDimensions()
 
   const sortSheetRef = useSheetRef()
-  const gridSheetRef = useSheetRef()
 
   const gutter = libraryGutter(isGridView, gridSpacing)
   const gridWidth = gridItemWidth(screenWidth, gridColumns, gridSpacing, gutter)
@@ -132,8 +134,9 @@ const LibraryList: React.FC<Props> = ({
               </Touchable>
               <Touchable
                 style={[styles.gridButton, { backgroundColor: colors.muted }]}
-                onPress={() => gridSheetRef.current?.present()}
+                onPress={() => dispatch(setIsGridView(!isGridView))}
                 accessibilityRole="button"
+                accessibilityLabel={isGridView ? t('library.view.switchToList') : t('library.view.switchToGrid')}
               >
                 {isGridView
                   ? <List size={17} color={colors.secondary} />
@@ -155,8 +158,6 @@ const LibraryList: React.FC<Props> = ({
         sortOrder={sortOrder}
         onSelect={onSortChange}
       />
-
-      <GridSettingsBottomSheet ref={gridSheetRef} />
     </>
   )
 }

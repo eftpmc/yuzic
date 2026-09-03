@@ -92,7 +92,11 @@
       "display": "显示",
       "playing": "播放",
       "showSourceHeaders": "显示来源标识",
-      "showSourceHeadersSubtext": "在外部服务的分区标题旁显示来源徽章。"
+      "showSourceHeadersSubtext": "在外部服务的分区标题旁显示来源徽章。",
+      "gridColumns": {
+        "label": "网格列数",
+        "subtext": "网格视图中显示的专辑、艺人和播放列表的列数。"
+      }
     },
     "library": {
       "title": "媒体库",
@@ -490,6 +494,10 @@
   },
   "library": {
     "title": "媒体库",
+    "view": {
+      "switchToList": "切换到列表视图",
+      "switchToGrid": "切换到网格视图"
+    },
     "shuffle": {
       "all": "随机播放全部",
       "favorites": "随机播放收藏",

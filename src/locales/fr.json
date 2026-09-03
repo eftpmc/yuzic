@@ -92,7 +92,11 @@
       "display": "Affichage",
       "playing": "Lecture",
       "showSourceHeaders": "Afficher les badges de source",
-      "showSourceHeadersSubtext": "Affiche le badge de la source à côté des titres de section des services externes."
+      "showSourceHeadersSubtext": "Affiche le badge de la source à côté des titres de section des services externes.",
+      "gridColumns": {
+        "label": "Colonnes de la grille",
+        "subtext": "Nombre de colonnes d’albums, d’artistes et de listes de lecture affichées en vue grille."
+      }
     },
     "library": {
       "title": "Bibliothèque",
@@ -491,6 +495,10 @@
   },
   "library": {
     "title": "Bibliothèque",
+    "view": {
+      "switchToList": "Passer à la vue liste",
+      "switchToGrid": "Passer à la vue grille"
+    },
     "shuffle": {
       "all": "Tout mélanger",
       "favorites": "Mélanger les favoris",

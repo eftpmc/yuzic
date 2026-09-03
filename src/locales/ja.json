@@ -92,7 +92,11 @@
       "display": "表示",
       "playing": "再生",
       "showSourceHeaders": "ソースヘッダーを表示",
-      "showSourceHeadersSubtext": "外部サービスのセクションタイトルの横にソースバッジを表示します。"
+      "showSourceHeadersSubtext": "外部サービスのセクションタイトルの横にソースバッジを表示します。",
+      "gridColumns": {
+        "label": "グリッドの列数",
+        "subtext": "グリッド表示のアルバム、アーティスト、プレイリストの列数。"
+      }
     },
     "library": {
       "title": "ライブラリ",
@@ -490,6 +494,10 @@
   },
   "library": {
     "title": "ライブラリ",
+    "view": {
+      "switchToList": "リスト表示に切り替え",
+      "switchToGrid": "グリッド表示に切り替え"
+    },
     "shuffle": {
       "all": "すべてシャッフル",
       "favorites": "お気に入りをシャッフル",
