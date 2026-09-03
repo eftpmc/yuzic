@@ -490,6 +490,10 @@
       "empty": "Aucun genre dans votre bibliothèque.",
       "browse": "Parcourir par genre"
     },
+    "sections": {
+      "collection": "Collection",
+      "browse": "Explorer"
+    },
     "collection": {
       "empty": "Rien ici pour l'instant.",
       "playFailed": "Impossible de lancer la lecture."

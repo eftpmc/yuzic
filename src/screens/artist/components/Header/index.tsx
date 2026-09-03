@@ -26,7 +26,15 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import { useApi } from '@/api';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { fetchAlbumDetailsSettled } from '@/hooks/albums';
-import { DetailActionRow, DetailCircleAction, DetailPlayAction, DetailHeaderBar } from '@/components/DetailHeader';
+import {
+  DetailActionRow,
+  DetailCircleAction,
+  DetailPlayAction,
+  DetailHeaderBar,
+  DetailHeaderIconButton,
+  useDetailHeaderInset,
+  useDetailHeroTitleLayout,
+} from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
@@ -44,6 +52,11 @@ function isAlbumCountText(value?: string | null): boolean {
 const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNavigation = true }) => {
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
+  // The bar floats over this art now, so the wrapper grows by exactly the room
+  // it and the status bar take: the cover stays where it was against the
+  // content below, and the extra strip is filled with art rather than a band.
+  const barInset = useDetailHeaderInset();
+  const onTitleLayout = useDetailHeroTitleLayout();
 
   const coverUri = localArtist
     ? buildCover(localArtist.cover, 'background')
@@ -54,7 +67,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
 
   return (
     <>
-      <View style={styles.fullBleedWrapper}>
+      <View style={[styles.fullBleedWrapper, { height: ARTIST_HERO_HEIGHT + barInset }]}>
         {coverUri ? (
           <TurboImage
             source={{ uri: coverUri }}
@@ -115,7 +128,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
         )}
       </View>
 
-      <View style={{ paddingHorizontal: spacing.lg }}>
+      <View style={{ paddingHorizontal: spacing.lg }} onLayout={onTitleLayout}>
         <View style={styles.content}>
           <Text
             style={[styles.artistName, { color: colors.secondary }]}
@@ -149,18 +162,16 @@ export const ArtistHeaderBar: React.FC<Props> = ({ localArtist, externalArtist }
 };
 
 function LocalOptionsButton({ artist }: { artist: Artist }) {
+  const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
   return (
     <>
-      <Touchable
-        accessibilityRole="button"
+      <DetailHeaderIconButton
         accessibilityLabel="Artist options"
-        style={styles.backButton}
-        hitSlop={hitSlopFor(36)}
         onPress={() => optionsSheetRef.current?.present()}
       >
-        <Ellipsis size={24} color="#fff" />
-      </Touchable>
+        <Ellipsis size={24} color={colors.secondary} />
+      </DetailHeaderIconButton>
       <ArtistOptions ref={optionsSheetRef} artist={artist} hideGoToArtist />
     </>
   );
@@ -365,10 +376,13 @@ function LocalActionRow({ artist }: { artist: Artist }) {
 
 export default ArtistHeader;
 
+/** The blurred cover behind an artist's name, before the floating bar's inset. */
+const ARTIST_HERO_HEIGHT = 300;
+
 const styles = StyleSheet.create({
   fullBleedWrapper: {
     width: '100%',
-    height: 300,
+    height: ARTIST_HERO_HEIGHT,
     justifyContent: 'flex-end',
     alignItems: 'center',
     overflow: 'hidden',

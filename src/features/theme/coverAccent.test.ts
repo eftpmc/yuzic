@@ -1,4 +1,11 @@
-import { createAccentCache, darken, pickAccent } from './coverAccent'
+import {
+  ACCENT_WASH_LOCATIONS,
+  accentWashColors,
+  createAccentCache,
+  darken,
+  pickAccent,
+  withAlpha,
+} from './coverAccent'
 
 const FALLBACK = '#121212'
 
@@ -73,5 +80,36 @@ describe('createAccentCache', () => {
     expect(cache.size).toBe(2)
     expect(cache.get('a')).toBeUndefined()
     expect(cache.get('c')).toBe('3')
+  })
+})
+
+describe('withAlpha', () => {
+  it('keeps the hue and moves only the opacity', () => {
+    expect(withAlpha('#3366ff', 0.5)).toBe('rgba(51, 102, 255, 0.5)')
+  })
+
+  it('fades to the colour itself rather than to transparent black', () => {
+    expect(withAlpha('#ffffff', 0)).toBe('rgba(255, 255, 255, 0)')
+  })
+
+  it('expands shorthand hex and clamps out-of-range alpha', () => {
+    expect(withAlpha('#fff', 2)).toBe('rgba(255, 255, 255, 1)')
+    expect(withAlpha('#fff', -1)).toBe('rgba(255, 255, 255, 0)')
+  })
+
+  it('leaves a value it cannot parse alone', () => {
+    expect(withAlpha('rebeccapurple', 0.5)).toBe('rebeccapurple')
+  })
+})
+
+describe('accentWashColors', () => {
+  it('gives every stop a location', () => {
+    expect(accentWashColors('#3366ff')).toHaveLength(ACCENT_WASH_LOCATIONS.length)
+  })
+
+  it('ends fully transparent so the wash has somewhere to stop', () => {
+    const stops = accentWashColors('#3366ff')
+    expect(stops[0]).toBe('rgba(51, 102, 255, 1)')
+    expect(stops[stops.length - 1]).toBe('rgba(51, 102, 255, 0)')
   })
 })

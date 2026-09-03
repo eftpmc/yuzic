@@ -76,3 +76,43 @@ export function createAccentCache<T>(max: number) {
     },
   }
 }
+
+/**
+ * The same colour at a given opacity, as `rgba()`.
+ *
+ * A gradient written as `[accent, 'transparent']` does not fade the accent out
+ * — `transparent` is transparent *black*, so every stop between the two is
+ * partly black and the wash reads as a grey bruise on its way to nothing,
+ * which is worse the lighter the accent and the lighter the background under
+ * it. Fading to the accent's own zero-alpha keeps the hue constant and only
+ * the opacity moves.
+ */
+export function withAlpha(hex: string, alpha: number): string {
+  let col = hex.replace('#', '')
+  if (col.length === 3) col = col.split('').map(c => c + c).join('')
+  if (!/^[0-9a-fA-F]{6}$/.test(col)) return hex
+
+  const num = parseInt(col, 16)
+  const clamped = Math.max(0, Math.min(1, alpha))
+  return `rgba(${(num >> 16) & 0xff}, ${(num >> 8) & 0xff}, ${num & 0xff}, ${clamped})`
+}
+
+/**
+ * The stops of the wash behind a detail header, softest-possible.
+ *
+ * Two stops ramp the alpha linearly, and a linear ramp against a flat
+ * background is exactly the case the eye picks out as a band. These ease the
+ * alpha out instead: full for the first quarter, where the cover sits, then
+ * away faster than the distance to the end.
+ */
+export const ACCENT_WASH_ALPHAS = [1, 0.92, 0.68, 0.38, 0.16, 0.04, 0] as const
+export const ACCENT_WASH_LOCATIONS = [0, 0.22, 0.42, 0.6, 0.76, 0.9, 1] as const
+
+export function accentWashColors(
+  accent: string
+): readonly [string, string, ...string[]] {
+  const [first, second, ...rest] = ACCENT_WASH_ALPHAS.map(alpha =>
+    withAlpha(accent, alpha)
+  )
+  return [first, second, ...rest]
+}
