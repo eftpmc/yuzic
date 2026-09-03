@@ -17,8 +17,10 @@ import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import haptics from '@/utils/haptics';
 
 const JUMP_SECONDS = 15;
 
@@ -28,6 +30,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boolean; isBuffering: boolean; onPress: () => void }) {
   const scale = useSharedValue(1);
   const rad = useRadius();
+  const reduced = useReducedMotion();
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -36,8 +39,8 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
   return (
     <AnimatedPressable
       onPress={onPress}
-      onPressIn={() => { scale.value = withTiming(0.91, { duration: 80 }); }}
-      onPressOut={() => { scale.value = withTiming(1, { duration: 150 }); }}
+      onPressIn={() => { if (!reduced) scale.value = withTiming(0.91, { duration: 80 }); }}
+      onPressOut={() => { if (!reduced) scale.value = withTiming(1, { duration: 150 }); }}
       style={[styles.playButton, { borderRadius: rad.pill }, animStyle]}
     >
       {isBuffering
@@ -102,23 +105,28 @@ const Controls: React.FC = () => {
   const showJumpButtons = useSelector(selectShowJumpButtons);
 
   const handlePlayPause = useCallback(() => {
+    haptics.primary();
     if (isPlaying) pauseSong();
     else resumeSong();
   }, [isPlaying, pauseSong, resumeSong]);
 
-  const handleJumpBack = useCallback(() => { jumpBy(-JUMP_SECONDS); }, [jumpBy]);
-  const handleJumpForward = useCallback(() => { jumpBy(JUMP_SECONDS); }, [jumpBy]);
+  const handleSkipNext = useCallback(() => { haptics.tap(); skipToNext(); }, [skipToNext]);
+  const handleSkipPrev = useCallback(() => { haptics.tap(); skipToPrevious(); }, [skipToPrevious]);
+  const handleShuffle = useCallback(() => { haptics.selection(); cycleShuffleMode(); }, [cycleShuffleMode]);
+  const handleRepeat = useCallback(() => { haptics.selection(); toggleRepeat(); }, [toggleRepeat]);
+  const handleJumpBack = useCallback(() => { haptics.tap(); jumpBy(-JUMP_SECONDS); }, [jumpBy]);
+  const handleJumpForward = useCallback(() => { haptics.tap(); jumpBy(JUMP_SECONDS); }, [jumpBy]);
 
   return (
     <View style={styles.container}>
       <ToggleButton
         badge={shuffleMode === 'smart' ? 'sparkle' : shuffleMode === 'shuffle' ? 'dot' : 'none'}
-        onPress={cycleShuffleMode}
+        onPress={handleShuffle}
       >
         <Shuffle size={23} color="#fff" />
       </ToggleButton>
 
-      <Touchable onPress={skipToPrevious} hitSlop={HIT_SLOP}>
+      <Touchable onPress={handleSkipPrev} hitSlop={HIT_SLOP}>
         <SkipBack size={34} color="#fff" fill="#fff" />
       </Touchable>
 
@@ -128,11 +136,11 @@ const Controls: React.FC = () => {
 
       {showJumpButtons && <JumpButton direction="forward" onPress={handleJumpForward} />}
 
-      <Touchable onPress={skipToNext} hitSlop={HIT_SLOP}>
+      <Touchable onPress={handleSkipNext} hitSlop={HIT_SLOP}>
         <SkipForward size={34} color="#fff" fill="#fff" />
       </Touchable>
 
-      <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={toggleRepeat}>
+      <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={handleRepeat}>
         {repeatMode === 'one'
           ? <Repeat1 size={23} color="#fff" />
           : <Repeat size={23} color="#fff" />
@@ -184,8 +192,8 @@ const styles = StyleSheet.create({
     minWidth: 36,
   },
   jumpLabel: {
+    ...typography.micro,
     color: '#fff',
-    fontSize: 9,
     fontWeight: '600',
     marginTop: 2,
   },

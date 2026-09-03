@@ -93,6 +93,11 @@
       "playing": "再生",
       "showSourceHeaders": "ソースヘッダーを表示",
       "showSourceHeadersSubtext": "外部サービスのセクションタイトルの横にソースバッジを表示します。",
+      "feel": "操作感",
+      "haptics": "触覚フィードバック",
+      "hapticsSubtext": "再生・スキップ・お気に入り・長押しなどで軽く振動します。",
+      "respectReducedMotion": "視差効果を減らす設定を尊重",
+      "respectReducedMotionSubtext": "システムで視差効果の低減が有効なとき、アニメーションを控えめにします。",
       "gridColumns": {
         "label": "グリッドの列数",
         "subtext": "グリッド表示のアルバム、アーティスト、プレイリストの列数。"

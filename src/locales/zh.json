@@ -93,6 +93,11 @@
       "playing": "播放",
       "showSourceHeaders": "显示来源标识",
       "showSourceHeadersSubtext": "在外部服务的分区标题旁显示来源徽章。",
+      "feel": "触感",
+      "haptics": "触觉反馈",
+      "hapticsSubtext": "在播放、切歌、收藏、长按时轻微振动。",
+      "respectReducedMotion": "遵循减弱动态效果",
+      "respectReducedMotionSubtext": "当系统开启减弱动态效果时，动画会变得柔和或直接消失。",
       "gridColumns": {
         "label": "网格列数",
         "subtext": "网格视图中显示的专辑、艺人和播放列表的列数。"

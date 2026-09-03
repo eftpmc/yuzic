@@ -89,6 +89,11 @@
       "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen.",
       "showSourceHeaders": "Show source headers",
       "showSourceHeadersSubtext": "Shows the source badge next to section titles from external services.",
+      "feel": "Feel",
+      "haptics": "Haptic feedback",
+      "hapticsSubtext": "Small taps on play, skip, favourites, and long-press.",
+      "respectReducedMotion": "Respect reduced motion",
+      "respectReducedMotionSubtext": "When your system asks for less motion, animations soften or snap instead.",
       "gridColumns": {
         "label": "Grid columns",
         "subtext": "How many columns of albums, artists, and playlists appear in grid view."

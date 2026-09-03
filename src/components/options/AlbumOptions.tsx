@@ -31,6 +31,7 @@ import {
 } from './OptionSheetPrimitives';
 import { statusColor } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import haptics from '@/utils/haptics';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | null;
@@ -77,6 +78,7 @@ const AlbumOptions = forwardRef<
   };
 
   const toggleFavorite = async () => {
+    haptics.selection();
     if (!album) return;
     try {
       if (isStarred) {

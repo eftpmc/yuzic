@@ -30,6 +30,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import { statusColor } from '@/constants/design';
+import haptics from '@/utils/haptics';
 
 type SongOptionsProps = {
   selectedSong: Song;
@@ -83,6 +84,7 @@ const SongOptions = forwardRef<
     };
 
     const toggleFavorite = async () => {
+      haptics.selection();
       try {
         if (isStarred) {
           await unstarSong.mutateAsync(selectedSong.id);

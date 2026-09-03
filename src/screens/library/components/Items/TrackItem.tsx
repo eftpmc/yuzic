@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "@backpackapp-io/react-native-toast";
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { FULL_TRACK_FETCH_TIMEOUT_MS, TRACK_PRESS_COOLDOWN_MS } from '@/constants/playback';
+import haptics from '@/utils/haptics';
 import LibraryItem from './LibraryItem';
 
 type Props = {
@@ -64,6 +65,7 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
+    haptics.heavy();
     try {
       const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
       if (fullSong) {

@@ -64,6 +64,12 @@ export const selectShowPlaybackSpeed = (state: RootState): boolean =>
 export const selectShowJumpButtons = (state: RootState): boolean =>
   state.settings.showJumpButtons ?? false;
 
+export const selectHapticsEnabled = (state: RootState): boolean =>
+  state.settings.hapticsEnabled ?? true;
+
+export const selectRespectReducedMotion = (state: RootState): boolean =>
+  state.settings.respectReducedMotion ?? true;
+
 export const selectAutoplayEnabled = (state: RootState): boolean =>
   state.settings.autoplayEnabled ?? false;
 

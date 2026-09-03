@@ -10,17 +10,46 @@ import { PlayingBarActionSelector } from './components/PlayingBarActionSelector'
 import { LanguageSelector } from './components/LanguageSelector';
 import { GridColumns } from './components/GridColumns';
 import { RadiusPresetSelector } from './components/RadiusPresetSelector';
-import { selectShowQualityBadge, selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
-import { setShowQualityBadge, setShowSourceHeaders } from '@/utils/redux/slices/settingsSlice';
+import {
+  selectShowQualityBadge,
+  selectShowSourceHeaders,
+  selectHapticsEnabled,
+  selectRespectReducedMotion,
+} from '@/utils/redux/selectors/settingsSelectors';
+import {
+  setShowQualityBadge,
+  setShowSourceHeaders,
+  setHapticsEnabled,
+  setRespectReducedMotion,
+} from '@/utils/redux/slices/settingsSlice';
 
 const AppearanceSettings: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const showQualityBadge = useSelector(selectShowQualityBadge);
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
+  const hapticsEnabled = useSelector(selectHapticsEnabled);
+  const respectReducedMotion = useSelector(selectRespectReducedMotion);
 
   const toggleQualityBadge = useCallback((v: boolean) => { dispatch(setShowQualityBadge(v)); }, [dispatch]);
   const toggleSourceHeaders = useCallback((v: boolean) => { dispatch(setShowSourceHeaders(v)); }, [dispatch]);
+  const toggleHaptics = useCallback((v: boolean) => { dispatch(setHapticsEnabled(v)); }, [dispatch]);
+  const toggleReducedMotion = useCallback((v: boolean) => { dispatch(setRespectReducedMotion(v)); }, [dispatch]);
+
+  const feelItems = useMemo(() => [
+    {
+      label: t('settings.appearance.haptics'),
+      subtext: t('settings.appearance.hapticsSubtext'),
+      value: hapticsEnabled,
+      onValueChange: toggleHaptics,
+    },
+    {
+      label: t('settings.appearance.respectReducedMotion'),
+      subtext: t('settings.appearance.respectReducedMotionSubtext'),
+      value: respectReducedMotion,
+      onValueChange: toggleReducedMotion,
+    },
+  ], [t, hapticsEnabled, respectReducedMotion, toggleHaptics, toggleReducedMotion]);
 
   const qualityBadgeItems = useMemo(() => [{
     label: t('settings.appearance.showQualityBadge'),
@@ -48,6 +77,8 @@ const AppearanceSettings: React.FC = () => {
       <SettingsToggleGroup items={sourceHeaderItems} />
       <GridColumns />
       <RadiusPresetSelector />
+      <SettingsCardHeader subtle title={t('settings.appearance.feel')} />
+      <SettingsToggleGroup items={feelItems} />
     </SettingsScreen>
   );
 };

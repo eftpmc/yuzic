@@ -93,6 +93,11 @@
       "playing": "Lecture",
       "showSourceHeaders": "Afficher les badges de source",
       "showSourceHeadersSubtext": "Affiche le badge de la source à côté des titres de section des services externes.",
+      "feel": "Ressenti",
+      "haptics": "Retour haptique",
+      "hapticsSubtext": "Petits retours tactiles sur lecture, saut, favoris et appui long.",
+      "respectReducedMotion": "Respecter la réduction des animations",
+      "respectReducedMotionSubtext": "Quand le système demande moins d’animations, celles-ci s’adoucissent ou disparaissent.",
       "gridColumns": {
         "label": "Colonnes de la grille",
         "subtext": "Nombre de colonnes d’albums, d’artistes et de listes de lecture affichées en vue grille."

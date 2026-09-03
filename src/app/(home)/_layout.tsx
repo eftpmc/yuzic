@@ -21,6 +21,7 @@ import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
 import { spacing } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -33,11 +34,16 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
     children: (color: string) => React.ReactNode;
 }) {
     const rad = useRadius();
+    const reduced = useReducedMotion();
     const opacity = useSharedValue(active ? 1 : 0);
 
     useEffect(() => {
-        opacity.value = withTiming(active ? 1 : 0, { duration: 200 });
-    }, [active, opacity]);
+        // Under reduce-motion the indicator snaps to its target instead of
+        // easing — same information, no travel.
+        opacity.value = reduced
+          ? (active ? 1 : 0)
+          : withTiming(active ? 1 : 0, { duration: 200 });
+    }, [active, opacity, reduced]);
 
     const indicatorStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,

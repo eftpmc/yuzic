@@ -67,6 +67,9 @@ export interface SettingsState {
   showPlaybackSpeed: boolean;
   showJumpButtons: boolean;
   autoplayEnabled: boolean;
+  hapticsEnabled: boolean;
+  /** When true, respect the system's reduce-motion setting; when false, always animate. */
+  respectReducedMotion: boolean;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -113,6 +116,8 @@ const initialState: SettingsState = {
   showPlaybackSpeed: false,
   showJumpButtons: false,
   autoplayEnabled: false,
+  hapticsEnabled: true,
+  respectReducedMotion: true,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -233,6 +238,12 @@ const settingsSlice = createSlice({
     setShowJumpButtons(state, action: PayloadAction<boolean>) {
       state.showJumpButtons = action.payload;
     },
+    setHapticsEnabled(state, action: PayloadAction<boolean>) {
+      state.hapticsEnabled = action.payload;
+    },
+    setRespectReducedMotion(state, action: PayloadAction<boolean>) {
+      state.respectReducedMotion = action.payload;
+    },
     setAutoplayEnabled(state, action: PayloadAction<boolean>) {
       state.autoplayEnabled = action.payload;
     },
@@ -280,6 +291,8 @@ export const {
   setDeezerPlaylistRecommendationsEnabled,
   setShowSleepTimer,
   setShowJumpButtons,
+  setHapticsEnabled,
+  setRespectReducedMotion,
   setShowPlaybackSpeed,
   setAutoplayEnabled,
   setLastSyncedAt,

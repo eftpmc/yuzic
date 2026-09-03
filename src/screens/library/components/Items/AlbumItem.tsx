@@ -4,6 +4,7 @@ import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { prefetchCovers } from '@/utils/images/imageCache';
+import haptics from '@/utils/haptics';
 import LibraryItem from './LibraryItem';
 
 interface ItemProps {
@@ -24,6 +25,7 @@ const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpac
   }, [album, navigation]);
 
   const handleLongPress = useCallback(() => {
+    haptics.heavy();
     if (!optionsMounted) {
       setOptionsMounted(true);
       requestAnimationFrame(() => sheetRef.current?.present());
