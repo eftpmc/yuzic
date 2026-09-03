@@ -131,21 +131,26 @@ export const radius = {
   pill: 999,
 } as const;
 
-/** Multiplier applied to each base radius by preset. `pill` is special-cased
- *  because it's already at effective maximum — it becomes 0 (square) under
- *  `sharp` and stays pill otherwise. */
+/** Multiplier applied to each base radius by preset. `pill` (>= 100) is
+ *  special-cased in {@link scaleRadius}: it always stays a pill, since a
+ *  circular button reads as a bug when it squares up under `sharp`. `sharp`
+ *  is a softly-rounded square rather than a razor corner — the razor version
+ *  had no real use, and cards under it looked broken. */
 export const RADIUS_MULTIPLIER: Record<RadiusPreset, number> = {
-  sharp: 0,
+  sharp: 0.35,
   default: 1,
   rounded: 1.75,
 };
 
-/** Scales one base value by preset. Pill (>= 100) stays at its own maximum
- *  under `rounded` — a pill scaled 1.75x is still a pill. */
+/** Scales one base value by preset. Pill (>= 100) stays pill under every
+ *  preset — a circular play button should not become a square, and a pill
+ *  scaled 1.75x is still a pill. A base radius under `sharp` rounds up to at
+ *  least 1 so a corner never lands flat when the intent was "softly square". */
 export function scaleRadius(base: number, preset: RadiusPreset): number {
-  if (base >= 100) return preset === 'sharp' ? 0 : base;
+  if (base >= 100) return base;
   const m = RADIUS_MULTIPLIER[preset];
-  return Math.round(base * m);
+  const scaled = Math.round(base * m);
+  return preset === 'sharp' ? Math.max(scaled, 1) : scaled;
 }
 
 /**

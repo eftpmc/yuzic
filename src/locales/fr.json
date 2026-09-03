@@ -105,8 +105,8 @@
       "radiusPreset": {
         "info": "Arrondi des coins dans toute l’application.",
         "sharp": {
-          "label": "Anguleux",
-          "subtext": "Coins carrés partout."
+          "label": "Carré doux",
+          "subtext": "Coins presque carrés, légèrement arrondis."
         },
         "default": {
           "label": "Par défaut",

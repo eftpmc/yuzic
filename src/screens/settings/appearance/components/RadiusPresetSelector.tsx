@@ -16,7 +16,7 @@ import SettingsDivider from '../../components/SettingsDivider';
 // the choice reads visually, not as text. These override radius.card at render
 // time (the exported `radius` reflects the CURRENT preset, not each option).
 const PREVIEW_RADIUS: Record<RadiusPreset, number> = {
-  sharp: 0,
+  sharp: 3,
   default: 8,
   rounded: 14,
 };

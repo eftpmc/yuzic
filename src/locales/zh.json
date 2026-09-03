@@ -105,8 +105,8 @@
       "radiusPreset": {
         "info": "整个应用中圆角的圆滑程度。",
         "sharp": {
-          "label": "直角",
-          "subtext": "各处均使用方形边角。"
+          "label": "微圆方角",
+          "subtext": "近似方形的边角，带有轻微圆润过渡。"
         },
         "default": {
           "label": "默认",

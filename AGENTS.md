@@ -80,13 +80,25 @@ because both halves of each pair look reasonable in isolation.
   to — is a Home shelf; the stable, exhaustive, sortable list is a Library
   collection. The same data may appear in both, but never as the same thing
   twice: Home shows the first handful and its heading leads to Library's full
-  version (`SectionShelfHeader`'s `onSeeAll`). Recently added is the worked
-  example — a shelf on Home, a row and a collection screen in Library.
+  version (`SectionShelfHeader`'s `onSeeAll`), landing on the entity list with
+  the matching sort already applied.
+- **Library entry vs sort order**: an entry row is one of the two things —
+  a kind of thing the library holds (playlists, albums, artists, tracks) or a
+  cross-cutting cut over them that a sort order can't express (genres, which
+  is a hierarchy; downloaded, which is a filter). A time-ordered or play-ordered
+  view of albums is not a row: it is the Albums row with a sort. "Recently
+  added" would have been a row for the same reason "Most played" would be —
+  neither is; both live in the sort sheet, and the changing view of each is
+  the Home shelf.
 - **Library navigation**: the library tab is an index, each row opening its own
   screen (`screens/library/LibraryCollectionScreen`) — nothing else lives on it.
   It used to be a row of filter pills, which could only ever show the types it
   had room for — that is why genres had no way in for so long. Adding a way to
-  browse means adding an entry row, not a pill and not a section.
+  browse means adding an entry row, not a pill and not a section. Deep pushes
+  from a library row (a genre, a collection screen, an album from one of them)
+  keep the Library tab lit — `_layout.tsx` remembers the last tab root you
+  visited and holds it until you visit another, so the icon does not jump to
+  Home the moment you leave `/library`.
 - **Library gutter**: horizontal insets in the library come from
   `screens/library/layout`, never from a literal. A list row and a grid cell
   each carry an inset of their own, so the list's padding is the difference

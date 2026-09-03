@@ -1,5 +1,5 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -106,9 +106,24 @@ export default function HomeLayout() {
         }
     }, [activeServerId, dispatch, sync])
 
-    const isSearch = pathname === '/search'
-    const isLibrary = pathname === '/library'
-    const isHome = !isLibrary && !isSearch
+    // Which tab lit the current screen. Deep pushes (an album, an artist,
+    // a genre, a library collection) sit above the tabs stack, so pathname
+    // alone loses the origin — falling back to "not library, not search =
+    // home" would flip the icon to Home the moment you opened a genre from
+    // Library. Instead we remember the last tab root the user visited, and
+    // hold it until they visit another one.
+    type TabKey = 'home' | 'search' | 'library'
+    const [activeTab, setActiveTab] = useState<TabKey>(
+        pathname === '/library' ? 'library' : pathname === '/search' ? 'search' : 'home'
+    )
+    useEffect(() => {
+        if (pathname === '/') setActiveTab('home')
+        else if (pathname === '/search') setActiveTab('search')
+        else if (pathname === '/library') setActiveTab('library')
+    }, [pathname])
+    const isHome = activeTab === 'home'
+    const isSearch = activeTab === 'search'
+    const isLibrary = activeTab === 'library'
     const activeColor = themeColor
     const inactiveColor = colors.subtext
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`

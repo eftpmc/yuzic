@@ -8,7 +8,7 @@ import { useTracks } from '@/hooks/tracks'
 import { useDownload } from '@/contexts/DownloadContext'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import { buildGenreRows } from '@/utils/library/genreList'
-import type { AlbumBase, CoverSource } from '@/types'
+import type { CoverSource } from '@/types'
 
 export type LibraryEntryKey =
   | 'playlists'
@@ -16,12 +16,10 @@ export type LibraryEntryKey =
   | 'artists'
   | 'tracks'
   | 'genres'
-  | 'recentlyAdded'
   | 'downloaded'
 
 export type LibraryEntrySummary = {
-  /** How much sits behind the entry point, where a number says something.
-   * Absent on "Recently added", which holds the same albums as "Albums". */
+  /** How much sits behind the entry point. */
   count?: number
   /** Art for the row, most-representative first. Fewer than `MOSAIC_COVERS`
    * where the library doesn't have that many with art on them. */
@@ -50,29 +48,6 @@ function coversOf(items: { cover: CoverSource }[]): CoverSource[] {
     if (covers.length === MOSAIC_COVERS) break
   }
   return covers
-}
-
-/** `created` survives persistence as a string, so it is read as a date rather
- * than assumed to be one. */
-function createdAt(album: AlbumBase): number {
-  const value = new Date(album.created as unknown as string | number | Date).getTime()
-  return Number.isFinite(value) ? value : 0
-}
-
-/** The newest albums, without sorting the whole library to find four of them. */
-function newestAlbums(albums: AlbumBase[], limit: number): AlbumBase[] {
-  const newest: AlbumBase[] = []
-  for (const album of albums) {
-    const at = createdAt(album)
-    const index = newest.findIndex(other => at > createdAt(other))
-    if (index === -1) {
-      if (newest.length < limit) newest.push(album)
-    } else {
-      newest.splice(index, 0, album)
-      if (newest.length > limit) newest.pop()
-    }
-  }
-  return newest
 }
 
 /**
@@ -133,9 +108,6 @@ export function useLibrarySummary(): Record<LibraryEntryKey, LibraryEntrySummary
       artists: { count: artists.length, covers: coversOf(artists) },
       tracks: { count: tracks.length, covers: trackCovers },
       genres: { count: genreRows.length, covers: genreCovers },
-      recentlyAdded: {
-        covers: coversOf(newestAlbums(albums, MOSAIC_COVERS * 4)),
-      },
       downloaded: { count: downloaded.length, covers: coversOf(downloaded) },
     }
   }, [albums, artists, playlists, tracks, genres, getAllDownloadedCollections])

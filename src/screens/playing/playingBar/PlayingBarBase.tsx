@@ -198,6 +198,15 @@ export default function PlayingBarBase({ variant }: Props) {
   const playlistSheetRef = useSheetRef();
   const castSheetRef = useSheetRef();
   const [isPlayerSheetOpen, setIsPlayerSheetOpen] = useState(false);
+  // Gate the full-screen player tree behind first open. The tree used to be
+  // mounted the entire time a song was playing so opening it was cheap on the
+  // second try — the cost was renderin' the album cover, lyrics fetch, useAlbum
+  // query, and every optional card (sleep timer, playback speed, volume, about
+  // the artist) constantly in the background whether the user ever opened the
+  // player or not. Mount on first present() instead: opens are still cheap
+  // after the first (the tree stays mounted for the session), and nothing pays
+  // the cost of a player screen no one has looked at.
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
 
   const primaryAction = usePlayingBarAction(actionMode, {
     presentAddToPlaylist: () => {
@@ -255,7 +264,9 @@ export default function PlayingBarBase({ variant }: Props) {
   };
 
   const handleExpand = () => {
-    if (currentSong) bottomSheetRef.current?.present();
+    if (!currentSong) return;
+    setHasBeenOpened(true);
+    bottomSheetRef.current?.present();
   };
 
   const handleFadeComplete = useCallback(() => {
@@ -398,7 +409,9 @@ export default function PlayingBarBase({ variant }: Props) {
           />
         )}
       >
-        <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
+        {hasBeenOpened
+          ? <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
+          : null}
       </BottomSheetModal>
 
       <PlaylistList

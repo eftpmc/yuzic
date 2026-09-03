@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import {
   ChevronRight,
-  Clock3,
   Disc3,
   Download,
   ListMusic,
@@ -40,20 +39,20 @@ type Section = {
  * The library's browse entry points.
  *
  * Two groups, because the rows are two different kinds of thing: the first is
- * what the library *is* — one row per kind of thing in it — and the second is
- * ways of cutting it. A flat list of seven made "Genres" look like a sibling
- * of "Albums" and "Downloaded" look like a sibling of "Tracks", when only one
- * of those pairs is true.
+ * what the library *is* — one row per kind of thing in it — and the second
+ * cuts across those kinds. A flat list made "Genres" look like a sibling of
+ * "Albums" and "Downloaded" look like a sibling of "Tracks", when only one of
+ * those pairs is true.
  *
  * Each opens a screen of its own rather than filtering a list here, so the set
  * can grow without a row of filters growing with it — which is how genres went
  * so long with no way in.
  *
- * "Recently added" is a row rather than the grid it used to be. The grid
- * duplicated Home's own recently-added shelf, which is the better place for it:
- * a short, changing view belongs on the screen you open first. The row gives
- * the Library tab what Home can't — the complete list, sorted and browsable
- * like any other collection here.
+ * A time-ordered view of albums ("recently added") is not a row here: it is
+ * the Albums row with its default sort. Adding "recently added" would beg the
+ * question of why "most played" isn't a row too, when both are the same shape
+ * of thing — a sort order over what you already own — and belong in the sort
+ * sheet. The changing view of it still lives on Home.
  */
 const LibraryEntryRows: React.FC = () => {
   const navigation = useNavigation<any>()
@@ -107,12 +106,6 @@ const LibraryEntryRows: React.FC = () => {
           labelKey: 'library.genres.title',
           icon: <Tags size={size} color={color} />,
           onPress: () => navigation.push('genresView'),
-        },
-        {
-          key: 'recentlyAdded',
-          labelKey: 'library.recentlyAdded',
-          icon: <Clock3 size={size} color={color} />,
-          onPress: () => openCollection('recentlyAdded'),
         },
         {
           key: 'downloaded',
@@ -185,7 +178,6 @@ const COUNT_KEY: Record<LibraryEntryKey, string> = {
   artists: 'library.count.artists',
   tracks: 'library.count.tracks',
   genres: 'library.count.genres',
-  recentlyAdded: 'library.count.albums',
   downloaded: 'library.count.items',
 }
 

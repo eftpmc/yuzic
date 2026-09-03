@@ -101,8 +101,8 @@
       "radiusPreset": {
         "info": "How rounded the corners are across the app.",
         "sharp": {
-          "label": "Sharp",
-          "subtext": "Squared corners everywhere."
+          "label": "Soft square",
+          "subtext": "Almost-square corners with a gentle round."
         },
         "default": {
           "label": "Default",
