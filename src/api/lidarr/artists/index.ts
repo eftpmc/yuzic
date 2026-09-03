@@ -19,12 +19,28 @@ export type LidarrArtist = LidarrArtistLookupResult & {
   id: number;
 };
 
+export type LidarrMonitorPolicy =
+  | 'all'
+  | 'future'
+  | 'missing'
+  | 'existing'
+  | 'first'
+  | 'latest'
+  | 'none';
+
 export type EnsureArtistOptions = {
   qualityProfileId?: number;
   metadataProfileId?: number;
   monitored?: boolean;
   searchForMissingAlbums?: boolean;
   rootFolderIndex?: number;
+  /**
+   * Lidarr `addOptions.monitor` — which of the new artist's albums are
+   * flagged monitored at creation. Omit to let Lidarr apply its own default
+   * (typically `all`), or pass `'none'` when the caller intends to enable
+   * only specific albums after the fact (issue #176).
+   */
+  monitor?: LidarrMonitorPolicy;
 };
 
 export async function lookupArtist(
@@ -89,6 +105,7 @@ export async function ensureArtist(
       metadataProfileId,
       addOptions: {
         searchForMissingAlbums: opts.searchForMissingAlbums ?? true,
+        ...(opts.monitor !== undefined ? { monitor: opts.monitor } : {}),
       },
     };
 

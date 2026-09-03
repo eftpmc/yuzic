@@ -457,6 +457,10 @@ async function performDownload(
     const ensured = await ensureArtist(client, artistResolution.artist, {
       monitored: false,
       searchForMissingAlbums: false,
+      // Do not let Lidarr flag every album on a freshly added artist as
+      // monitored — the user only asked for this one. monitorAlbum() below
+      // then enables monitoring on just the target release (issue #176).
+      monitor: 'none',
     });
     if (!ensured.success) return failure('lidarr_metadata_unavailable');
 
