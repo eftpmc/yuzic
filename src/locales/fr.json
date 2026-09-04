@@ -316,7 +316,16 @@
         "connectionFailed": "Échec de la connexion à slskd",
         "disconnected": "Déconnecté de slskd.",
         "credentialsTitle": "Connexion",
-        "credentialsHelper": "L'URL de votre serveur slskd et votre clé API. Dans slskd : Options → API Keys."
+        "credentialsHelper": "L'URL de votre serveur slskd et votre clé API. Dans slskd : Options → API Keys.",
+        "searchPreferencesTitle": "Préférences de recherche",
+        "preferredFormat": "Format préféré",
+        "formatAuto": "Tout (FLAC préféré)",
+        "formatFlacOnly": "FLAC uniquement",
+        "minBitrate": "Débit MP3 minimum",
+        "minBitrateAny": "Tout",
+        "minBitrateValue": "{{kbps}} kbps",
+        "preferFreeSlot": "Préférer les slots libres",
+        "preferFreeSlotSubtext": "Choisir les pairs dont le slot est libre plutôt qu'en file. Désactivez pour attraper des raretés même en attendant."
       },
       "queueTitle": "File de téléchargement"
     },

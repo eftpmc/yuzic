@@ -315,7 +315,16 @@
         "connectionFailed": "连接 slskd 失败",
         "disconnected": "已断开与 slskd 的连接。",
         "credentialsTitle": "连接",
-        "credentialsHelper": "你的 slskd 服务器地址和 API 密钥。位于 slskd 的 Options → API Keys。"
+        "credentialsHelper": "你的 slskd 服务器地址和 API 密钥。位于 slskd 的 Options → API Keys。",
+        "searchPreferencesTitle": "搜索偏好",
+        "preferredFormat": "首选格式",
+        "formatAuto": "任意（优先 FLAC）",
+        "formatFlacOnly": "仅 FLAC",
+        "minBitrate": "最低 MP3 比特率",
+        "minBitrateAny": "任意",
+        "minBitrateValue": "{{kbps}} kbps",
+        "preferFreeSlot": "优先空闲上传槽",
+        "preferFreeSlotSubtext": "优先选择上传槽空闲的对端。关闭后即使需要排队，也可能获取到罕见的发行版本。"
       },
       "queueTitle": "下载队列"
     },

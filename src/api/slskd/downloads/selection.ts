@@ -9,6 +9,9 @@
  * `downloadTrack` already holds single files to.
  */
 
+import type { SlskdSearchPreferences } from '../client';
+import { DEFAULT_SLSKD_PREFERENCES } from '../client';
+
 export const ALLOWED_EXTENSIONS = ['flac', 'mp3'];
 
 export type SearchFile = {
@@ -68,10 +71,28 @@ export function normalize(value: string): string {
     .replace(/[^a-z0-9]/g, '');
 }
 
-export function playableFiles(response: SearchResponseItem): SearchFile[] {
+export function playableFiles(
+  response: SearchResponseItem,
+  prefs: SlskdSearchPreferences = DEFAULT_SLSKD_PREFERENCES
+): SearchFile[] {
   return (response.files ?? []).filter(file => {
     if (file.isLocked) return false;
-    return ALLOWED_EXTENSIONS.includes(ext(file.filename ?? ''));
+    const extension = ext(file.filename ?? '');
+    if (!ALLOWED_EXTENSIONS.includes(extension)) return false;
+    // A strict "flac only" preference should not fall back to mp3 — that is
+    // the whole point of setting it. Users who accept either keep 'auto'.
+    if (prefs.preferredFormat === 'flac' && extension !== 'flac') return false;
+    // A missing bitrate stays in: many slskd peers just don't report it and
+    // dropping them would leave the picker with nothing to choose from.
+    if (
+      extension === 'mp3' &&
+      prefs.minBitrateKbps > 0 &&
+      typeof file.bitRate === 'number' &&
+      file.bitRate < prefs.minBitrateKbps
+    ) {
+      return false;
+    }
+    return true;
   });
 }
 
@@ -89,10 +110,11 @@ function flacShare(files: SearchFile[]): number {
 export function groupByDirectory(
   response: SearchResponseItem,
   normalizedAlbum: string,
-  normalizedArtist: string
+  normalizedArtist: string,
+  prefs: SlskdSearchPreferences = DEFAULT_SLSKD_PREFERENCES
 ): DirectoryCandidate[] {
   const byDirectory = new Map<string, SearchFile[]>();
-  for (const file of playableFiles(response)) {
+  for (const file of playableFiles(response, prefs)) {
     const directory = dirname(file.filename ?? '');
     const existing = byDirectory.get(directory);
     if (existing) existing.push(file);
@@ -131,14 +153,15 @@ export function groupByDirectory(
 export function selectAlbumDirectory(
   responses: SearchResponseItem[],
   albumTitle: string,
-  artistName: string
+  artistName: string,
+  prefs: SlskdSearchPreferences = DEFAULT_SLSKD_PREFERENCES
 ): DirectoryCandidate | null {
   const normalizedAlbum = normalize(albumTitle);
   const normalizedArtist = normalize(artistName);
   if (!normalizedAlbum) return null;
 
   const candidates = responses.flatMap(response =>
-    groupByDirectory(response, normalizedAlbum, normalizedArtist)
+    groupByDirectory(response, normalizedAlbum, normalizedArtist, prefs)
   );
   if (candidates.length === 0) return null;
 
@@ -146,7 +169,9 @@ export function selectAlbumDirectory(
     // Artist first: among folders that all name the album, the one that also
     // names the artist is the one least likely to be a cover or a compilation.
     if (a.artistMatches !== b.artistMatches) return a.artistMatches ? -1 : 1;
-    if (a.hasFreeUploadSlot !== b.hasFreeUploadSlot) return a.hasFreeUploadSlot ? -1 : 1;
+    if (prefs.preferFreeSlot && a.hasFreeUploadSlot !== b.hasFreeUploadSlot) {
+      return a.hasFreeUploadSlot ? -1 : 1;
+    }
     const flacDelta = flacShare(b.files) - flacShare(a.files);
     if (Math.abs(flacDelta) > 0.001) return flacDelta;
     // More files means fewer gaps in the release, not a bigger sharer: these
@@ -166,14 +191,15 @@ export type TrackCandidate = {
 
 export function selectTrackFile(
   responses: SearchResponseItem[],
-  trackTitle: string
+  trackTitle: string,
+  prefs: SlskdSearchPreferences = DEFAULT_SLSKD_PREFERENCES
 ): TrackCandidate | null {
   const normalizedTitle = normalize(trackTitle);
   if (!normalizedTitle) return null;
 
   const candidates: TrackCandidate[] = [];
   for (const response of responses) {
-    for (const file of playableFiles(response)) {
+    for (const file of playableFiles(response, prefs)) {
       if (!normalize(basename(file.filename ?? '')).includes(normalizedTitle)) continue;
       candidates.push({
         username: response.username,
@@ -185,7 +211,9 @@ export function selectTrackFile(
   if (candidates.length === 0) return null;
 
   candidates.sort((a, b) => {
-    if (a.hasFreeUploadSlot !== b.hasFreeUploadSlot) return a.hasFreeUploadSlot ? -1 : 1;
+    if (prefs.preferFreeSlot && a.hasFreeUploadSlot !== b.hasFreeUploadSlot) {
+      return a.hasFreeUploadSlot ? -1 : 1;
+    }
     const aFlac = ext(a.file.filename) === 'flac' ? 1 : 0;
     const bFlac = ext(b.file.filename) === 'flac' ? 1 : 0;
     if (aFlac !== bFlac) return bFlac - aFlac;

@@ -42,6 +42,11 @@ type Props<T extends { id: string }> = {
    * request; the screen shows an "is cancelling" spinner while the promise runs.
    */
   cancelQueueItem?: (config: DownloaderConfig, item: T) => Promise<void>;
+  /**
+   * Downloader-specific extras rendered between the queue and the disconnect
+   * button — search preferences, filters, anything that only one downloader has.
+   */
+  extraCards?: React.ReactNode;
   /** Called on disconnect so a screen can drop any extra local state. */
   onDisconnected?: () => void;
 };
@@ -68,6 +73,7 @@ function DownloaderSettingsScreen<T extends { id: string }>({
   fetchQueueWithDiff,
   renderItem,
   cancelQueueItem,
+  extraCards,
   onDisconnected,
 }: Props<T>) {
   const { t } = useTranslation();
@@ -203,6 +209,8 @@ function DownloaderSettingsScreen<T extends { id: string }>({
           />
         )}
       </SettingsCard>
+
+      {isAuthenticated && extraCards}
 
       {isAuthenticated && (
         <SettingsDisconnectButton

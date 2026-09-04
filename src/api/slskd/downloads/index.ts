@@ -1,4 +1,4 @@
-import { createSlskdClient, type SlskdClient, type SlskdConfig } from '../client';
+import { createSlskdClient, DEFAULT_SLSKD_PREFERENCES, type SlskdClient, type SlskdConfig, type SlskdSearchPreferences } from '../client';
 import { createRequestCoalescer } from '../../coalesceRequest';
 import {
   normalize,
@@ -160,6 +160,10 @@ async function enqueueFiles(
   });
 }
 
+function preferencesFrom(config: SlskdConfig): SlskdSearchPreferences {
+  return config.preferences ?? DEFAULT_SLSKD_PREFERENCES;
+}
+
 async function performAlbumDownload(
   config: SlskdConfig,
   albumTitle: string,
@@ -171,6 +175,7 @@ async function performAlbumDownload(
 
   const searchText = `${artistName} ${albumTitle}`.trim();
   const client = createSlskdClient(config);
+  const prefs = preferencesFrom(config);
 
   try {
     const result = await runSearch(client, searchText);
@@ -178,7 +183,7 @@ async function performAlbumDownload(
 
     // Soulseek returns whatever matched loosely, so the chosen directory has to
     // name the album; otherwise this would queue a different release entirely.
-    const chosen = selectAlbumDirectory(result, albumTitle, artistName);
+    const chosen = selectAlbumDirectory(result, albumTitle, artistName, prefs);
     if (!chosen) return failure('no_matching_release');
 
     try {
@@ -205,12 +210,13 @@ async function performTrackDownload(
 
   const searchText = `${artistName} ${trackTitle}`.trim();
   const client = createSlskdClient(config);
+  const prefs = preferencesFrom(config);
 
   try {
     const result = await runSearch(client, searchText);
     if (!Array.isArray(result)) return failure(result.code);
 
-    const chosen = selectTrackFile(result, trackTitle);
+    const chosen = selectTrackFile(result, trackTitle, prefs);
     if (!chosen) return failure('no_matching_track');
 
     try {

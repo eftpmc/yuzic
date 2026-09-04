@@ -342,7 +342,16 @@
         "credentialsTitle": "Connection",
         "credentialsHelper": "Your slskd server URL and API key. Found in slskd under Options → API Keys.",
         "connectionFailed": "slskd connection failed",
-        "disconnected": "Disconnected from slskd."
+        "disconnected": "Disconnected from slskd.",
+        "searchPreferencesTitle": "Search Preferences",
+        "preferredFormat": "Preferred Format",
+        "formatAuto": "Any (prefer FLAC)",
+        "formatFlacOnly": "FLAC only",
+        "minBitrate": "Minimum MP3 Bitrate",
+        "minBitrateAny": "Any",
+        "minBitrateValue": "{{kbps}} kbps",
+        "preferFreeSlot": "Prefer Free Upload Slot",
+        "preferFreeSlotSubtext": "Pick peers whose slot is free over ones with a queue. Turn off to catch rare releases even if it means waiting."
       }
     },
     "deezer": {

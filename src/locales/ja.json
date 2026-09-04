@@ -315,7 +315,16 @@
         "connectionFailed": "slskd の接続に失敗しました",
         "disconnected": "slskd から切断しました。",
         "credentialsTitle": "接続",
-        "credentialsHelper": "slskdサーバーのURLとAPIキー。slskdの Options → API Keys にあります。"
+        "credentialsHelper": "slskdサーバーのURLとAPIキー。slskdの Options → API Keys にあります。",
+        "searchPreferencesTitle": "検索の設定",
+        "preferredFormat": "優先フォーマット",
+        "formatAuto": "どちらでも（FLAC 優先）",
+        "formatFlacOnly": "FLAC のみ",
+        "minBitrate": "MP3 最低ビットレート",
+        "minBitrateAny": "指定なし",
+        "minBitrateValue": "{{kbps}} kbps",
+        "preferFreeSlot": "空きスロットを優先",
+        "preferFreeSlotSubtext": "アップロード枠が空いているピアを優先します。オフにすると待ってでも希少なリリースを取得します。"
       },
       "queueTitle": "ダウンロードキュー"
     },

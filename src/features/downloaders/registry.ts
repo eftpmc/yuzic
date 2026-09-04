@@ -2,6 +2,7 @@ import { useSelector } from 'react-redux'
 import type { Href } from 'expo-router'
 import * as lidarr from '@/api/lidarr'
 import * as slskd from '@/api/slskd'
+import type { SlskdSearchPreferences } from '@/api/slskd'
 import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice'
 import type { ExternalAlbumBase } from '@/types'
 import { selectDownloadersForActiveServer } from '@/utils/redux/selectors/downloadersSelectors'
@@ -10,7 +11,17 @@ export { downloadErrorKey } from './errorKeys'
 
 export type { DownloaderId }
 
-export type DownloaderConfig = { serverUrl: string; apiKey: string }
+/**
+ * Common shape every downloader accepts. `preferences` is optional and
+ * downloader-specific — slskd reads its own search settings from it, other
+ * downloaders ignore it. Kept untyped at this layer so a new downloader with
+ * its own preferences shape doesn't have to widen this file.
+ */
+export type DownloaderConfig = {
+  serverUrl: string
+  apiKey: string
+  preferences?: Record<string, unknown>
+}
 
 export type DownloadResult =
   | { success: true }
@@ -46,6 +57,14 @@ const lidarrDownloader: DownloaderDefinition = {
   downloadAlbum: (config, album) => lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album)),
 }
 
+function slskdConfigOf(config: DownloaderConfig): slskd.SlskdConfig {
+  return {
+    serverUrl: config.serverUrl,
+    apiKey: config.apiKey,
+    preferences: config.preferences as SlskdSearchPreferences | undefined,
+  }
+}
+
 const slskdDownloader: DownloaderDefinition = {
   id: 'slskd',
   label: 'Soulseek',
@@ -53,8 +72,8 @@ const slskdDownloader: DownloaderDefinition = {
   albumAddedKey: 'externalAlbum.download.addedToSlskd',
   trackAddedKey: 'externalAlbum.download.addedTrackToSlskd',
   settingsRoute: '/settings/slskdView',
-  downloadAlbum: (config, album) => slskd.downloadAlbum(config, album.title, album.artist),
-  downloadTrack: (config, req) => slskd.downloadTrack(config, req.title, req.artist),
+  downloadAlbum: (config, album) => slskd.downloadAlbum(slskdConfigOf(config), album.title, album.artist),
+  downloadTrack: (config, req) => slskd.downloadTrack(slskdConfigOf(config), req.title, req.artist),
 }
 
 export const ALL_DOWNLOADERS: DownloaderDefinition[] = [lidarrDownloader, slskdDownloader]
@@ -71,7 +90,14 @@ export function useDownloaderStates(): DownloaderState[] {
     const connection = entry[def.id]
     return {
       def,
-      config: { serverUrl: connection?.serverUrl ?? '', apiKey: connection?.apiKey ?? '' },
+      config: {
+        serverUrl: connection?.serverUrl ?? '',
+        apiKey: connection?.apiKey ?? '',
+        // Bundling preferences into the config here means every download-time
+        // call site — the sheet, the auto-downloader, batch flows — carries
+        // them without having to know they exist.
+        preferences: connection?.preferences,
+      },
       isConnected: connection?.isAuthenticated === true,
     }
   })

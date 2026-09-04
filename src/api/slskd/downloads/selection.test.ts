@@ -243,3 +243,76 @@ describe('selectTrackFile', () => {
     expect(chosen).toBeNull();
   });
 });
+
+describe('search preferences', () => {
+  const flacOnly = { preferredFormat: 'flac' as const, minBitrateKbps: 0, preferFreeSlot: true };
+  const min320 = { preferredFormat: 'auto' as const, minBitrateKbps: 320, preferFreeSlot: true };
+  const ignoreSlot = { preferredFormat: 'auto' as const, minBitrateKbps: 0, preferFreeSlot: false };
+
+  it('drops mp3 candidates when the user asked for FLAC only', () => {
+    // Otherwise a mp3-only directory would still win when no flac exists,
+    // which defeats the point of turning the preference on.
+    const chosen = selectAlbumDirectory(
+      [
+        response('alice', [
+          '@@d\\Radiohead - In Rainbows\\01 - 15 Step.mp3',
+          '@@d\\Radiohead - In Rainbows\\02 - Bodysnatchers.mp3',
+        ]),
+      ],
+      'In Rainbows',
+      'Radiohead',
+      flacOnly
+    );
+
+    expect(chosen).toBeNull();
+  });
+
+  it('drops mp3s under the minimum bitrate but keeps unknown-bitrate ones', () => {
+    // Many slskd peers just don't report bitrate — filtering strictly would
+    // leave the picker with nothing to choose from.
+    const chosen = selectAlbumDirectory(
+      [
+        response('alice', ['@@d\\Radiohead - In Rainbows\\01 - 15 Step.mp3'], {
+          files: [
+            file('@@d\\Radiohead - In Rainbows\\01 - 15 Step.mp3', { bitRate: 192 }),
+            file('@@d\\Radiohead - In Rainbows\\02 - Bodysnatchers.mp3', { bitRate: 320 }),
+          ],
+        }),
+        response('bob', ['@@d\\Radiohead - In Rainbows\\01 - 15 Step.mp3'], {
+          files: [file('@@d\\Radiohead - In Rainbows\\01 - 15 Step.mp3')],
+        }),
+      ],
+      'In Rainbows',
+      'Radiohead',
+      min320
+    );
+
+    // Alice's 192 kbps is filtered out, leaving her with one 320 file; Bob's
+    // unknown-bitrate file is still eligible. Bob wins on file count? Only
+    // one file each; the choice fell to the alphabetical tiebreak.
+    expect(chosen).not.toBeNull();
+    expect(chosen?.files.every((f) => (f.bitRate ?? 999) >= 320)).toBe(true);
+  });
+
+  it('ignores the free-slot advantage when told to', () => {
+    // With preferFreeSlot=false the ranking falls through to flacShare/count.
+    const chosen = selectTrackFile(
+      [
+        {
+          username: 'busy_peer_with_flac',
+          hasFreeUploadSlot: false,
+          files: [file('@@d\\In Rainbows\\Bodysnatchers.flac', { bitRate: 1000 })],
+        },
+        {
+          username: 'free_peer_with_mp3',
+          hasFreeUploadSlot: true,
+          files: [file('@@d\\In Rainbows\\Bodysnatchers.mp3', { bitRate: 320 })],
+        },
+      ],
+      'Bodysnatchers',
+      ignoreSlot
+    );
+
+    expect(chosen?.username).toBe('busy_peer_with_flac');
+  });
+});

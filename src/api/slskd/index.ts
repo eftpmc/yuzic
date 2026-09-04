@@ -12,4 +12,5 @@ export type {
   DownloadTrackResult,
   SlskdDownloadErrorCode,
 } from './downloads';
-export type { SlskdConfig } from './client';
+export type { SlskdConfig, SlskdSearchPreferences } from './client';
+export { DEFAULT_SLSKD_PREFERENCES } from './client';

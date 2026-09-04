@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { DEFAULT_SLSKD_PREFERENCES, type SlskdSearchPreferences } from '@/api/slskd';
 
 export type DownloaderId = 'lidarr' | 'slskd';
 
@@ -8,6 +9,12 @@ export interface DownloaderConnection {
   serverUrl: string;
   apiKey: string;
   isAuthenticated: boolean;
+  /**
+   * Downloader-specific preferences, shaped per implementation. slskd stores
+   * `SlskdSearchPreferences` here; lidarr leaves it undefined for now. Kept
+   * as an untyped bag on the base connection so the slice stays generic.
+   */
+  preferences?: Record<string, unknown>;
 }
 
 export type PerServerDownloadersState = Record<DownloaderId, DownloaderConnection>;
@@ -69,6 +76,16 @@ const downloadersSlice = createSlice({
       entry.serverUrl = '';
       entry.apiKey = '';
       entry.isAuthenticated = false;
+      // The user's preferences are theirs — a disconnect is a re-plug, not a
+      // reset of their format/quality choices.
+    },
+    setSlskdPreferences(
+      state,
+      action: PayloadAction<{ serverId: string; preferences: Partial<SlskdSearchPreferences> }>
+    ) {
+      const entry = getOrCreate(state, action.payload.serverId, 'slskd');
+      const current = (entry.preferences as SlskdSearchPreferences | undefined) ?? DEFAULT_SLSKD_PREFERENCES;
+      entry.preferences = { ...current, ...action.payload.preferences };
     },
   },
 });
@@ -79,6 +96,7 @@ export const {
   setDownloaderAuthenticated,
   connectDownloader,
   disconnectDownloader,
+  setSlskdPreferences,
 } = downloadersSlice.actions;
 
 export default downloadersSlice.reducer;
