@@ -55,6 +55,8 @@ export const statusColor = {
 export const sourceColor = {
   deezer: '#A238CA',
   lastfm: '#D51007',
+  listenbrainz: '#EB743B',
+  musicbrainz: '#BA478F',
 } as const;
 
 /**

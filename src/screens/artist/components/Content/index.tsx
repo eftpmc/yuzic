@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
 import { useServerSimilarArtists } from '@/hooks/artists/useServerSimilarArtists'
+import { useLBSimilarArtists } from '@/hooks/artists/useLBSimilarArtists'
 import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch'
 import { compareByReleaseYearDesc, releaseYearLabel } from './discography'
@@ -129,6 +130,13 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
     limit: 8,
   })
 
+  // ListenBrainz similar-artists: MBID-only, no auth required. Runs whenever
+  // the local artist carries an MBID (which most do via server metadata).
+  const { data: lbSimilar = [] } = useLBSimilarArtists(
+    artist.mbid ? { mbid: artist.mbid, excludeName: artist.name } : null,
+    8
+  )
+
   const localSimilar = useMemo(
     () => findArtistsWithSharedGenres(artist.id, libraryAlbums),
     [artist.id, libraryAlbums]
@@ -181,6 +189,15 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
           itemSize={itemSize}
           keyPrefix="lastfm"
           badge={{ color: sourceColor.lastfm, letter: 'L' }}
+          onPressItem={item => navigateToArtist(item)}
+        />
+      )}
+      {lbSimilar.length > 0 && (
+        <SimilarArtistsSubSection
+          data={lbSimilar}
+          itemSize={itemSize}
+          keyPrefix="lb"
+          badge={{ color: sourceColor.listenbrainz, letter: 'B' }}
           onPressItem={item => navigateToArtist(item)}
         />
       )}
