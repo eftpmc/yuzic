@@ -48,6 +48,7 @@ import { getSong } from "./songs/getSong";
 import { scrobble } from "./songs/scrobble";
 import { getTracks } from "./tracks/getTracks";
 import { getSimilarSongs } from "./similar/getSimilarSongs";
+import { getSimilarArtists as getNavidromeSimilarArtists } from "./similar/getSimilarArtists";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -211,6 +212,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
 
   const similar: SimilarApi = {
     getSimilarSongs: async (songId: string) => getSimilarSongs(client, songId),
+    getSimilarArtists: async (artistId, limit) => getNavidromeSimilarArtists(client, artistId, limit),
   };
 
   const lyrics: LyricsApi = {

@@ -18,6 +18,8 @@ export enum QueryKeys {
 	ExploreSimilarArtists = 'explore-similar-artists',
 	ExploreSimilarArtistAlbums = 'explore-similar-artist-albums',
 	ExploreSimilarContent = 'explore-similar-content',
+	SimilarArtists = 'server-similar-artists',
+	SimilarAlbums = 'server-similar-albums',
 	ExploreGenreRow = 'explore-genre-row',
 	ExternalAlbumPreviews = 'external-album-previews',
 	LidarrQueue = 'lidarr-queue',

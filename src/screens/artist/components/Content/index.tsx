@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
+import { useServerSimilarArtists } from '@/hooks/artists/useServerSimilarArtists'
 import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch'
 import { compareByReleaseYearDesc, releaseYearLabel } from './discography'
@@ -133,6 +134,20 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
     [artist.id, libraryAlbums]
   )
 
+  // Server-native similar (Navidrome getArtistInfo2 / Jellyfin+Emby /Similar).
+  // Falls back to nothing when the server adapter doesn't implement it, so
+  // there is no toggle: it either has data or it doesn't render.
+  const { data: serverSimilar = [] } = useServerSimilarArtists(artist.id, 12)
+
+  // Drop server-similar entries that the local-similar shelf already covers —
+  // both usually surface the same shared-genre neighbours, and showing two
+  // identical rows for the same artist is worse than showing one.
+  const localSimilarIds = useMemo(() => new Set(localSimilar.map(a => a.id)), [localSimilar])
+  const dedupedServerSimilar = useMemo(
+    () => serverSimilar.filter(a => !localSimilarIds.has(a.id)),
+    [serverSimilar, localSimilarIds]
+  )
+
   return (
     <>
       <SimilarArtistsSubSection
@@ -142,6 +157,15 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
         badge={{ color: LOCAL_COLOR, letter: 'L' }}
         onPressItem={item => navigation.push('artistView', { id: item.id })}
       />
+      {dedupedServerSimilar.length > 0 && (
+        <SimilarArtistsSubSection
+          data={dedupedServerSimilar}
+          itemSize={itemSize}
+          keyPrefix="server"
+          badge={{ color: LOCAL_COLOR, letter: 'S' }}
+          onPressItem={item => navigation.push('artistView', { id: item.id })}
+        />
+      )}
       {deezerEnabled && deezerSimilar.length > 0 && (
         <SimilarArtistsSubSection
           data={deezerSimilar}

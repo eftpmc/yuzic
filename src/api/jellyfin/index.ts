@@ -45,6 +45,7 @@ import { markPlayed } from "../mediaBrowser/songs/markPlayed";
 import { reportPlaybackStart, reportPlaybackProgress, reportPlaybackStop } from "../mediaBrowser/playback/report";
 import { getTracks } from "../mediaBrowser/tracks/getTracks";
 import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
+import { getSimilarAlbums, getSimilarArtists } from "../mediaBrowser/similar/getSimilarItems";
 import { search as searchJellyfin } from "../mediaBrowser/search/search";
 
 export const createJellyfinAdapter = (server: Server): ApiAdapter => {
@@ -200,6 +201,8 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
 
   const similar: SimilarApi = {
     getSimilarSongs: async (songId: string) => getInstantMix(client, songId),
+    getSimilarArtists: async (artistId, limit) => getSimilarArtists(client, artistId, limit),
+    getSimilarAlbums: async (albumId, limit) => getSimilarAlbums(client, albumId, limit),
   };
 
   const lyrics: LyricsApi = {

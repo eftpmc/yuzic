@@ -4,6 +4,7 @@ import {
   Album,
   AlbumBase,
   Artist,
+  ExternalArtistBase,
   Song,
   SongBase,
 } from "@/types";
@@ -39,6 +40,18 @@ export interface TracksApi {
 
 export interface SimilarApi {
   getSimilarSongs(songId: string): Promise<Song[]>;
+  /**
+   * Similar artists from the server's own metadata graph — Navidrome pulls
+   * these from Last.fm server-side (getArtistInfo2), Jellyfin/Emby from
+   * their tag graph (/Items/{id}/Similar). Distinct from the app's
+   * Deezer/Last.fm/AudioMuse sources: users on a server without those
+   * integrations still get similar-artists. Uses ExternalArtistBase for
+   * the same reason Deezer/Last.fm do — the record needs just enough to
+   * navigate and tile, and the caller uses matched-navigation to resolve
+   * an id that already lives in the local library when it does.
+   */
+  getSimilarArtists?(artistId: string, limit?: number): Promise<ExternalArtistBase[]>;
+  getSimilarAlbums?(albumId: string, limit?: number): Promise<AlbumBase[]>;
 }
 
 export interface ApiAdapter {

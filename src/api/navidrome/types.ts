@@ -124,6 +124,17 @@ export interface SubsonicResponseBody {
     lastFmUrl?: string;
   };
   similarSongs?: { song?: SubsonicSong[] };
+  artistInfo2?: {
+    biography?: string;
+    musicBrainzId?: string;
+    lastFmUrl?: string;
+    similarArtist?: Array<{
+      id?: string;
+      name?: string;
+      coverArt?: string;
+      albumCount?: number;
+    }>;
+  };
   searchResult3?: {
     album?: SubsonicSearchAlbumEntry[];
     artist?: SubsonicArtist[];
