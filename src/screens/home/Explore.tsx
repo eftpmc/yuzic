@@ -19,6 +19,7 @@ import GenreSection from './components/GenreSection'
 import ServerRandomSection from './components/ServerRandomSection'
 import ServerNowPlayingSection from './components/ServerNowPlayingSection'
 import LBSimilarForYouSection from './components/LBSimilarForYouSection'
+import { ResumeQueueBanner } from './components/ResumeQueueBanner'
 import { useApi } from '@/api'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 import { sourceColor, spacing, typography } from '@/constants/design'
@@ -136,6 +137,8 @@ export default function Home() {
         />
       }
     >
+      <ResumeQueueBanner />
+
       {resume.map(config => renderSection(config, refreshKey))}
 
       {library.length > 0 && (
