@@ -1,5 +1,20 @@
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+
+type TabKey = 'home' | 'search' | 'library'
+
+function tabForPath(pathname: string): TabKey | null {
+    if (pathname === '/') return 'home'
+    if (pathname === '/search') return 'search'
+    if (pathname === '/library') return 'library'
+    return null
+}
+
+// Survives a HomeLayout remount. Without it, opening an album from Library
+// would flip the indicator to Home for the frame the layout re-instantiates
+// (expo-router remounts layout groups on some cross-stack pushes), which is
+// exactly what "the fix didn't work" reproduced as in the field.
+let lastVisitedTab: TabKey = 'home'
 import { AppState, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -112,14 +127,21 @@ export default function HomeLayout() {
     // home" would flip the icon to Home the moment you opened a genre from
     // Library. Instead we remember the last tab root the user visited, and
     // hold it until they visit another one.
-    type TabKey = 'home' | 'search' | 'library'
-    const [activeTab, setActiveTab] = useState<TabKey>(
-        pathname === '/library' ? 'library' : pathname === '/search' ? 'search' : 'home'
+    //
+    // The last-tab memory lives at module scope so it survives a HomeLayout
+    // remount (expo-router remounts the group layout on cross-stack navigation,
+    // which was flipping the indicator back to Home the moment you opened an
+    // album from Library). Component state alone loses it; the module var
+    // doesn't.
+    const [activeTab, setActiveTab] = useState<TabKey>(() =>
+      tabForPath(pathname) ?? lastVisitedTab
     )
     useEffect(() => {
-        if (pathname === '/') setActiveTab('home')
-        else if (pathname === '/search') setActiveTab('search')
-        else if (pathname === '/library') setActiveTab('library')
+        const next = tabForPath(pathname)
+        if (next) {
+            lastVisitedTab = next
+            setActiveTab(next)
+        }
     }, [pathname])
     const isHome = activeTab === 'home'
     const isSearch = activeTab === 'search'
