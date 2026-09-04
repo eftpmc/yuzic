@@ -29,7 +29,7 @@ export function DownloadsInProgressBanner() {
   if (totalInFlight === 0) return null;
 
   const handleOpen = () => {
-    router.push('/(home)/downloadsView');
+    router.push('/downloadsView');
   };
 
   const summary = queues

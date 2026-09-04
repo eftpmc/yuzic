@@ -147,7 +147,7 @@ const AlbumOptions = forwardRef<
   const handleGoToAlbum = () => {
     if (!album) return;
     close();
-    router.push({ pathname: '/(home)/albumView', params: { id: album.id } });
+    router.push({ pathname: '/albumView', params: { id: album.id } });
   };
 
   // Recovery path for fuzzy-match false positives, mirroring ArtistOptions:
@@ -159,7 +159,7 @@ const AlbumOptions = forwardRef<
     if (!album?.artist?.name) return;
     close();
     router.push({
-      pathname: '/(home)/albumView',
+      pathname: '/albumView',
       params: {
         forceExternal: 'true',
         artist: album.artist.name,

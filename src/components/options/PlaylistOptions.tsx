@@ -144,7 +144,7 @@ const PlaylistOptions = forwardRef<
   const handleGoToPlaylist = () => {
     if (!playlist) return;
     close();
-    router.push({ pathname: '/(home)/playlistView', params: { id: playlist.id } });
+    router.push({ pathname: '/playlistView', params: { id: playlist.id } });
   };
 
   const handleDownload = async () => {
