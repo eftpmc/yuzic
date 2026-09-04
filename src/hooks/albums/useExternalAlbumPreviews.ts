@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { ExternalAlbum } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { fetchPreviewsForExternalAlbum } from './previewUtils';
-import { useDeezerSamplesEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
 export function useExternalAlbumPreviews(album: ExternalAlbum | null): Record<string, string> {
-  const samplesEnabled = useDeezerSamplesEnabled();
+  const samplesEnabled = useDeezerDiscoveryEnabled();
   const { data } = useQuery({
     queryKey: [QueryKeys.ExternalAlbumPreviews, album?.id],
     enabled: !!album && samplesEnabled,

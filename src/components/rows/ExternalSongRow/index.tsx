@@ -11,7 +11,7 @@ import { ExternalSong } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
 import MediaListRow from '@/components/MediaListRow';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
-import { useDeezerSamplesEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
 type Props = {
   song: ExternalSong;
@@ -31,7 +31,7 @@ const ExternalSongRow: React.FC<Props> = ({
 }) => {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const samplesEnabled = useDeezerSamplesEnabled();
+  const samplesEnabled = useDeezerDiscoveryEnabled();
   const hasPreview = !!previewUrl;
 
   const handlePress = useCallback(() => {

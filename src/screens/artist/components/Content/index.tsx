@@ -27,7 +27,7 @@ import PopularOnDeezerSection from './PopularOnDeezerSection'
 import BioSection from './BioSection'
 import { findArtistsWithSharedGenres, type LocalArtistSummary } from './localSimilarArtists'
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
-import { useDeezerSimilarArtistsEnabled, useDeezerTopTracksEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import { useSelector } from 'react-redux'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
@@ -111,7 +111,7 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
   const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
 
   const { navigateToArtist } = useMatchedNavigation()
-  const deezerEnabled = useDeezerSimilarArtistsEnabled()
+  const deezerEnabled = useDeezerDiscoveryEnabled()
   const libraryAlbums = useSelector(selectLibraryAlbums)
 
   const { similarArtists: deezerSimilar } = useArtistTopTracks({
@@ -457,11 +457,11 @@ function PopularOnDeezerSectionResolver({ localArtist, externalArtist }: {
   localArtist: Artist | null
   externalArtist: ExternalArtist | null
 }) {
-  const deezerTopTracksEnabled = useDeezerTopTracksEnabled()
+  const deezerEnabled = useDeezerDiscoveryEnabled()
   const { topTracks: localTopTracks } = useArtistTopTracks({
     name: localArtist?.name ?? '',
     mbid: localArtist?.mbid,
-    enabled: !!localArtist && deezerTopTracksEnabled,
+    enabled: !!localArtist && deezerEnabled,
   })
 
   if (localArtist) {
@@ -488,11 +488,11 @@ function BioSectionResolver({ localArtist, externalArtist }: {
   localArtist: Artist | null
   externalArtist: ExternalArtist | null
 }) {
-  const deezerTopTracksEnabled = useDeezerTopTracksEnabled()
+  const deezerEnabled = useDeezerDiscoveryEnabled()
   const { biography: localBiography } = useArtistTopTracks({
     name: localArtist?.name ?? '',
     mbid: localArtist?.mbid,
-    enabled: !!localArtist && deezerTopTracksEnabled,
+    enabled: !!localArtist && deezerEnabled,
   })
 
   return <BioSection biography={localArtist ? localBiography : externalArtist?.biography} />

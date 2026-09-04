@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { useArtists } from '@/hooks/artists'
-import { useDeezerAlbumRecommendationsEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
@@ -47,7 +47,7 @@ export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: 
   const { colors } = useTheme()
   const rad = useRadius()
   const { width: screenWidth } = useWindowDimensions()
-  const enabled = useDeezerAlbumRecommendationsEnabled()
+  const enabled = useDeezerDiscoveryEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const { artists } = useArtists()
   const { navigateToAlbum } = useMatchedNavigation()
