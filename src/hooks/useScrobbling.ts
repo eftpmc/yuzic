@@ -14,11 +14,9 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectListenBrainzConfig,
   selectListenBrainzScrobbleEnabled,
-  selectListenBrainzNowPlayingEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
 import {
   selectServerScrobbleEnabled,
-  selectServerNowPlayingEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { useApi } from '@/api';
 
@@ -33,10 +31,10 @@ export function useScrobbling() {
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
+  // Now-playing is not its own toggle — it follows scrobble. See the note
+  // on selectServerNowPlayingEnabled in settingsSelectors.
   const lbScrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
-  const lbNowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
-  const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
 
   const lastScrobbledIdRef = useRef<string | null>(null);
 
@@ -151,7 +149,7 @@ export function useScrobbling() {
     if (!canScrobble(song)) return;
     const songDuration = Number(song.duration) || undefined;
 
-    if (activeServer?.type === 'navidrome' && serverNowPlayingEnabled) {
+    if (activeServer?.type === 'navidrome' && serverScrobbleEnabled) {
       const password = activeServer.auth?.password as string | undefined;
       if (activeServer.serverUrl && activeServer.username && password) {
         navidromeScrobble.nowPlaying(
@@ -169,11 +167,11 @@ export function useScrobbling() {
     // Session-start on Jellyfin/Emby. Fire-and-forget: the scrobble plugin
     // reads these events, but a session-report outage should never block the
     // player. Navidrome adapters don't implement this — the ?. skips them.
-    if (activeServer?.type !== 'navidrome' && serverNowPlayingEnabled) {
+    if (activeServer?.type !== 'navidrome' && serverScrobbleEnabled) {
       api.songs.reportPlaybackStart?.(song.id, 0).catch(() => {});
     }
 
-    if (listenBrainzConfig?.token && lbNowPlayingEnabled) {
+    if (listenBrainzConfig?.token && lbScrobbleEnabled) {
       listenbrainz.submitNowPlaying(listenBrainzConfig, {
         artist: song.artist,
         track: song.title,
@@ -181,7 +179,7 @@ export function useScrobbling() {
         album: song.albumTitle,
       }).catch(() => {});
     }
-  }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled, api]);
+  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, api]);
 
   /**
    * Keeps the Jellyfin/Emby session alive by pinging /Sessions/Playing/Progress
@@ -191,9 +189,9 @@ export function useScrobbling() {
    */
   const reportPlaybackProgress = useCallback((song: Song, positionMs: number, isPaused: boolean) => {
     if (activeServer?.type === 'navidrome') return;
-    if (!serverNowPlayingEnabled) return;
+    if (!serverScrobbleEnabled) return;
     api.songs.reportPlaybackProgress?.(song.id, positionMs, isPaused).catch(() => {});
-  }, [activeServer?.type, serverNowPlayingEnabled, api]);
+  }, [activeServer?.type, serverScrobbleEnabled, api]);
 
   return { scrobbleIfNeeded, submitNowPlaying, reportPlaybackProgress, resetLastScrobbled };
 }

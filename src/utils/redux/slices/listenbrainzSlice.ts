@@ -4,8 +4,9 @@ export interface PerServerListenBrainzState {
   username: string;
   token: string;
   isAuthenticated: boolean;
+  /** Now-playing follows scrobble — a user who opts out of the finished
+   * listen never wanted the in-progress broadcast either. */
   scrobbleEnabled: boolean;
-  nowPlayingEnabled: boolean;
 }
 
 export interface ListenBrainzState {
@@ -17,7 +18,6 @@ const defaultPerServer: PerServerListenBrainzState = {
   token: '',
   isAuthenticated: false,
   scrobbleEnabled: false,
-  nowPlayingEnabled: false,
 };
 
 const initialState: ListenBrainzState = {
@@ -52,9 +52,6 @@ const listenbrainzSlice = createSlice({
     setScrobbleEnabled(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
       getOrCreate(state, action.payload.serverId).scrobbleEnabled = action.payload.value;
     },
-    setNowPlayingEnabled(state, action: PayloadAction<{ serverId: string; value: boolean }>) {
-      getOrCreate(state, action.payload.serverId).nowPlayingEnabled = action.payload.value;
-    },
     disconnect(state, action: PayloadAction<{ serverId: string }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.username = '';
@@ -69,7 +66,6 @@ export const {
   setToken,
   setAuthenticated,
   setScrobbleEnabled,
-  setNowPlayingEnabled,
   disconnect,
 } = listenbrainzSlice.actions;
 

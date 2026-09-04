@@ -13,7 +13,6 @@ import {
   selectListenBrainzAuthenticated,
   selectListenBrainzConfig,
   selectListenBrainzScrobbleEnabled,
-  selectListenBrainzNowPlayingEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
 import {
   setUsername,
@@ -21,7 +20,6 @@ import {
   setAuthenticated,
   disconnect,
   setScrobbleEnabled,
-  setNowPlayingEnabled,
 } from '@/utils/redux/slices/listenbrainzSlice';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import * as listenbrainz from '@/api/listenbrainz';
@@ -37,15 +35,13 @@ const ListenBrainzView: React.FC = () => {
   const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
   const config = useSelector(selectListenBrainzConfig);
   const scrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
-  const nowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }, [dispatch, serverId]);
-  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }, [dispatch, serverId]);
 
+  // Now-playing follows scrobble; see the note in settingsSelectors.
   const scrobbleItems = useMemo(() => [
     { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: toggleScrobble },
-    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: toggleNowPlaying },
-  ], [t, scrobbleEnabled, nowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
+  ], [t, scrobbleEnabled, toggleScrobble]);
 
   const [isLoading, setIsLoading] = useState(false);
 

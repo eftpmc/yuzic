@@ -97,8 +97,12 @@ export const selectAutoDownloadNewSongs = (state: RootState): boolean =>
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;
 
+// Kept as a separate selector name (rather than importing the scrobble one)
+// so callsites read intent — "do we submit now-playing?" — but it resolves
+// to the same lever; broadcasting a play you also intend to hide never
+// matched a real preference.
 export const selectServerNowPlayingEnabled = (state: RootState): boolean =>
-  state.settings.serverNowPlayingEnabled ?? true;
+  state.settings.serverScrobbleEnabled ?? true;
 
 export const selectLastSyncedAt = (state: RootState): number | null =>
   state.settings.lastSyncedAt;
@@ -119,25 +123,36 @@ export const selectMusicbrainzExternalEnabled = (state: RootState): boolean =>
   state.settings.musicbrainzExternalEnabled ?? false;
 
 
+// The former Deezer sub-toggles (top tracks, similar artists, album recs,
+// samples, playlist recs) all resolve to `deezerDiscoveryEnabled`: they were
+// all "should we ask Deezer to fill a discovery surface". Kept as distinct
+// selectors so callsites still read intent; a future refactor can collapse
+// the read hooks and update every caller.
 export const selectDeezerTopTracksEnabled = (state: RootState): boolean =>
-  state.settings.deezerTopTracksEnabled ?? false;
+  state.settings.deezerDiscoveryEnabled ?? false;
 
 export const selectDeezerSimilarArtistsEnabled = (state: RootState): boolean =>
-  state.settings.deezerSimilarArtistsEnabled ?? false;
-
+  state.settings.deezerDiscoveryEnabled ?? false;
 
 export const selectDeezerAlbumRecommendationsEnabled = (state: RootState): boolean =>
-  state.settings.deezerAlbumRecommendationsEnabled ?? false;
+  state.settings.deezerDiscoveryEnabled ?? false;
 
 export const selectDeezerSamplesEnabled = (state: RootState): boolean =>
-  state.settings.deezerSamplesEnabled ?? false;
+  state.settings.deezerDiscoveryEnabled ?? false;
 
 export const selectDeezerPlaylistRecommendationsEnabled = (state: RootState): boolean =>
-  state.settings.deezerPlaylistRecommendationsEnabled ?? false;
+  state.settings.deezerDiscoveryEnabled ?? false;
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||
     state.settings.deezerSearchEnabled ||
-    state.settings.deezerExternalEnabled ||
-    state.settings.deezerTopTracksEnabled ||
-    state.settings.deezerSimilarArtistsEnabled) ?? false;
+    state.settings.deezerExternalEnabled) ?? false;
+
+export const selectQueueSyncEnabled = (state: RootState): boolean =>
+  state.settings.queueSyncEnabled ?? true;
+
+export const selectServerNowPlayingShelfEnabled = (state: RootState): boolean =>
+  state.settings.serverNowPlayingShelfEnabled ?? true;
+
+export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
+  state.settings.resumeLongTracksEnabled ?? true;

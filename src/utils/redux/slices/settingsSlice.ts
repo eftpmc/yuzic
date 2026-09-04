@@ -47,20 +47,25 @@ export interface SettingsState {
 
   language: AppLanguage;
 
-  /* Scrobbling */
+  /* Scrobbling. Now-playing follows scrobble — if a user opts out of one
+   * they opt out of the other; broadcasting "listening now" only to hide
+   * the finished listen was never a real user intent. */
   serverScrobbleEnabled: boolean;
-  serverNowPlayingEnabled: boolean;
 
-  /* Integrations */
+  /* Integrations. Deezer has three distinct dimensions (Home shelves,
+   * search results, external browse); everything else that used to be a
+   * sub-toggle (top tracks, similar artists, album recs, samples, playlist
+   * recs) follows deezerDiscoveryEnabled since they're all "should we ask
+   * Deezer to fill a discovery surface". */
   deezerDiscoveryEnabled: boolean;
   deezerSearchEnabled: boolean;
   deezerExternalEnabled: boolean;
-  deezerTopTracksEnabled: boolean;
-  deezerSimilarArtistsEnabled: boolean;
-  deezerAlbumRecommendationsEnabled: boolean;
-  deezerSamplesEnabled: boolean;
-  deezerPlaylistRecommendationsEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
+
+  /* Privacy / behavior opt-outs. */
+  queueSyncEnabled: boolean;
+  serverNowPlayingShelfEnabled: boolean;
+  resumeLongTracksEnabled: boolean;
 
   /* Player controls */
   showSleepTimer: boolean;
@@ -101,17 +106,18 @@ const initialState: SettingsState = {
   language: DEFAULT_LANGUAGE,
 
   serverScrobbleEnabled: true,
-  serverNowPlayingEnabled: true,
 
   deezerDiscoveryEnabled: false,
   deezerSearchEnabled: false,
   deezerExternalEnabled: false,
-  deezerTopTracksEnabled: false,
-  deezerSimilarArtistsEnabled: false,
-  deezerAlbumRecommendationsEnabled: false,
-  deezerSamplesEnabled: false,
-  deezerPlaylistRecommendationsEnabled: false,
   musicbrainzExternalEnabled: false,
+
+  // Default-on: cross-device continuity and resume are what the user
+  // asked for by pausing an audiobook or opening the app on a tablet.
+  // Both hide themselves behind a clear settings row when off.
+  queueSyncEnabled: true,
+  serverNowPlayingShelfEnabled: true,
+  resumeLongTracksEnabled: true,
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
@@ -199,9 +205,6 @@ const settingsSlice = createSlice({
     setServerScrobbleEnabled(state, action: PayloadAction<boolean>) {
       state.serverScrobbleEnabled = action.payload;
     },
-    setServerNowPlayingEnabled(state, action: PayloadAction<boolean>) {
-      state.serverNowPlayingEnabled = action.payload;
-    },
 
     setDeezerDiscoveryEnabled(state, action: PayloadAction<boolean>) {
       state.deezerDiscoveryEnabled = action.payload;
@@ -215,20 +218,15 @@ const settingsSlice = createSlice({
     setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
       state.musicbrainzExternalEnabled = action.payload;
     },
-    setDeezerTopTracksEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerTopTracksEnabled = action.payload;
+
+    setQueueSyncEnabled(state, action: PayloadAction<boolean>) {
+      state.queueSyncEnabled = action.payload;
     },
-    setDeezerSimilarArtistsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerSimilarArtistsEnabled = action.payload;
+    setServerNowPlayingShelfEnabled(state, action: PayloadAction<boolean>) {
+      state.serverNowPlayingShelfEnabled = action.payload;
     },
-    setDeezerAlbumRecommendationsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerAlbumRecommendationsEnabled = action.payload;
-    },
-    setDeezerSamplesEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerSamplesEnabled = action.payload;
-    },
-    setDeezerPlaylistRecommendationsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerPlaylistRecommendationsEnabled = action.payload;
+    setResumeLongTracksEnabled(state, action: PayloadAction<boolean>) {
+      state.resumeLongTracksEnabled = action.payload;
     },
 
     setShowSleepTimer(state, action: PayloadAction<boolean>) {
@@ -284,16 +282,13 @@ export const {
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
-  setServerNowPlayingEnabled,
   setDeezerDiscoveryEnabled,
   setDeezerSearchEnabled,
   setDeezerExternalEnabled,
   setMusicbrainzExternalEnabled,
-  setDeezerTopTracksEnabled,
-  setDeezerSimilarArtistsEnabled,
-  setDeezerAlbumRecommendationsEnabled,
-  setDeezerSamplesEnabled,
-  setDeezerPlaylistRecommendationsEnabled,
+  setQueueSyncEnabled,
+  setServerNowPlayingShelfEnabled,
+  setResumeLongTracksEnabled,
   setShowSleepTimer,
   setShowJumpButtons,
   setShowVolumeSlider,

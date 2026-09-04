@@ -16,12 +16,10 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectSearchScope,
   selectServerScrobbleEnabled,
-  selectServerNowPlayingEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setSearchScope,
   setServerScrobbleEnabled,
-  setServerNowPlayingEnabled,
   type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 import Touchable from '@/components/Touchable';
@@ -34,17 +32,17 @@ const ServerSettings: React.FC = () => {
   const searchScope = useSelector(selectSearchScope);
   const activeServer = useSelector(selectActiveServer);
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
-  const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
   const isNavidrome = activeServer?.type === 'navidrome';
   const isJellyfinOrEmby = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setServerScrobbleEnabled(v)); }, [dispatch]);
-  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setServerNowPlayingEnabled(v)); }, [dispatch]);
 
+  // Now-playing follows scrobble; there was a separate row for it and the two
+  // states were never independently useful — a user who doesn't want the
+  // finished listen submitted doesn't want the in-progress broadcast either.
   const navidromeScrobbleItems = useMemo(() => [
     { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
-    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: toggleNowPlaying },
-  ], [t, serverScrobbleEnabled, serverNowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
+  ], [t, serverScrobbleEnabled, toggleScrobble]);
 
   const jellyfinScrobbleItems = useMemo(() => [
     { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
