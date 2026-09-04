@@ -84,8 +84,17 @@ const slskdDownloader: DownloaderDefinition = {
   albumAddedKey: 'externalAlbum.download.addedToSlskd',
   trackAddedKey: 'externalAlbum.download.addedTrackToSlskd',
   settingsRoute: '/settings/slskdView',
-  downloadAlbum: (config, album) => slskd.downloadAlbum(slskdConfigOf(config), album.title, album.artist),
-  downloadTrack: (config, req) => slskd.downloadTrack(slskdConfigOf(config), req.title, req.artist),
+  downloadAlbum: (config, album) => slskd.downloadAlbum(slskdConfigOf(config), {
+    title: album.title,
+    artist: album.artist,
+    // Preserve any MBID the resolver captured — the slskd side uses it to
+    // pull canonical strings from MusicBrainz before searching Soulseek.
+    mbid: album.externalIds?.mbid ?? null,
+  }),
+  downloadTrack: (config, req) => slskd.downloadTrack(slskdConfigOf(config), {
+    title: req.title,
+    artist: req.artist,
+  }),
   fetchQueueWithDiff: ((config: DownloaderConfig, previous: { id: string }[]) =>
     slskd.fetchQueueWithDiff(slskdConfigOf(config), previous as any)) as DownloaderDefinition['fetchQueueWithDiff'],
 }

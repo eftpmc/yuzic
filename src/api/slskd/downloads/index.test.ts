@@ -72,7 +72,7 @@ describe('slskd downloads', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     await expect(
-      settle(downloadAlbum(config, 'In Rainbows', 'Radiohead'))
+      settle(downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }))
     ).resolves.toEqual({ success: true });
 
     const enqueued = fetchMock.mock.calls.filter(([url]) =>
@@ -99,7 +99,7 @@ describe('slskd downloads', () => {
     ]) as unknown as typeof fetch;
 
     await expect(
-      settle(downloadAlbum(config, 'In Rainbows', 'Radiohead'))
+      settle(downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }))
     ).resolves.toMatchObject({ success: false, code: 'no_matching_release' });
   });
 
@@ -108,8 +108,8 @@ describe('slskd downloads', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const both = Promise.all([
-      downloadAlbum(config, 'In Rainbows', 'Radiohead'),
-      downloadAlbum(config, 'In Rainbows', 'Radiohead'),
+      downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }),
+      downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }),
     ]);
 
     await expect(settle(both)).resolves.toEqual([{ success: true }, { success: true }]);
@@ -123,8 +123,8 @@ describe('slskd downloads', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const both = Promise.all([
-      downloadAlbum(config, 'In Rainbows', 'Radiohead'),
-      downloadAlbum(otherServer, 'In Rainbows', 'Radiohead'),
+      downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }),
+      downloadAlbum(otherServer, { title: 'In Rainbows', artist: 'Radiohead' }),
     ]);
     await settle(both);
 
@@ -137,8 +137,8 @@ describe('slskd downloads', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const both = Promise.all([
-      downloadAlbum(config, 'In Rainbows', 'Radiohead'),
-      downloadTrack(config, 'In Rainbows', 'Radiohead'),
+      downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }),
+      downloadTrack(config, { title: 'In Rainbows', artist: 'Radiohead' }),
     ]);
     await settle(both);
 
@@ -151,7 +151,7 @@ describe('slskd downloads', () => {
     const fetchMock = mockSlskd(sharing);
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    await settle(downloadAlbum(config, 'In Rainbows', 'Radiohead'));
+    await settle(downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }));
 
     expect(searchDeletes(fetchMock)).toHaveLength(1);
   });
@@ -171,7 +171,7 @@ describe('slskd downloads', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     await expect(
-      settle(downloadAlbum(config, 'In Rainbows', 'Radiohead'))
+      settle(downloadAlbum(config, { title: 'In Rainbows', artist: 'Radiohead' }))
     ).resolves.toEqual({ success: true });
   });
 
@@ -179,7 +179,7 @@ describe('slskd downloads', () => {
     const fetchMock = mockSlskd(sharing);
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    await expect(downloadAlbum(config, '', 'Radiohead')).resolves.toMatchObject({
+    await expect(downloadAlbum(config, { title: '', artist: 'Radiohead' })).resolves.toMatchObject({
       success: false,
       code: 'missing_identity',
     });
