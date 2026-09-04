@@ -89,13 +89,19 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
   const inactiveColor = colors.subtext;
   const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`;
 
+  // Each tab is a Stack group — `(home)`, `(search)`, `(library)`.
   const focusedRouteName = state.routes[state.index]?.name;
 
   const go = (name: string) => {
     const target = state.routes.find(r => r.name === name);
     if (!target) return;
-    navigation.emit({ type: 'tabPress', target: target.key, canPreventDefault: true });
-    navigation.navigate(target.name as never);
+    // Standard react-navigation tab-press semantics: if it's a jump between
+    // tabs, navigate; if the user re-taps the current tab, popToTop so a
+    // deep detail push goes back to the tab root.
+    const event = navigation.emit({ type: 'tabPress', target: target.key, canPreventDefault: true });
+    if (focusedRouteName !== name && !event.defaultPrevented) {
+      navigation.navigate(target.name as never);
+    }
   };
 
   return (
@@ -103,8 +109,8 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
       <PlayingBar />
       <View style={styles.tabRow}>
         <TabButton
-          onPress={() => go('index')}
-          active={focusedRouteName === 'index'}
+          onPress={() => go('(home)')}
+          active={focusedRouteName === '(home)'}
           accessibilityLabel={t('tabs.home', 'Home tab')}
           testID="home-tab"
           activeColor={activeColor}
@@ -114,8 +120,8 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           {color => <Home size={24} color={color} />}
         </TabButton>
         <TabButton
-          onPress={() => go('search')}
-          active={focusedRouteName === 'search'}
+          onPress={() => go('(search)')}
+          active={focusedRouteName === '(search)'}
           accessibilityLabel={t('tabs.search', 'Search tab')}
           testID="search-tab"
           activeColor={activeColor}
@@ -125,8 +131,8 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           {color => <Search size={24} color={color} />}
         </TabButton>
         <TabButton
-          onPress={() => go('library')}
-          active={focusedRouteName === 'library'}
+          onPress={() => go('(library)')}
+          active={focusedRouteName === '(library)'}
           accessibilityLabel={t('tabs.library', 'Library tab')}
           testID="library-tab"
           activeColor={activeColor}
@@ -147,14 +153,12 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         freezeOnBlur: true,
-        // The tabBar owns its own top divider through the PlayingBar's card
-        // shadow; a system border would double it up on Android.
         ...(Platform.OS === 'android' ? { tabBarStyle: { elevation: 0 } } : null),
       }}
     >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="search" />
-      <Tabs.Screen name="library" />
+      <Tabs.Screen name="(home)" />
+      <Tabs.Screen name="(search)" />
+      <Tabs.Screen name="(library)" />
     </Tabs>
   );
 }

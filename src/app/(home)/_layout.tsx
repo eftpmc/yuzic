@@ -15,18 +15,13 @@ import { DownloadersQueueProvider } from '@/features/downloaders/DownloadersQueu
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 
 /**
- * The outer home layout used to render its own tab bar + PlayingBar overlay
- * on top of the Stack — necessary while the tab bar had to stay pinned to
- * the bottom on every route. That job now lives inside (tabs)/_layout.tsx
- * as a real react-navigation tabBar, and this layout is back to what it
- * should have been: providers, watchers, sync effects, and a Stack.
- *
- * The consequence users will feel: pushing a detail screen from a tab
- * (album, artist, playlist, settings, radio, podcasts, shares, downloads)
- * hides the tab bar + PlayingBar for the duration of that screen, matching
- * standard music-app behavior. If the PlayingBar needs to persist across
- * detail views the tabs contract has to change too — kept as one small
- * step for now.
+ * The outer authenticated layout: providers, watchers, and the app-wide sync
+ * effects. Every route the app can reach after login lives inside `(tabs)`,
+ * which owns its own Tabs + per-tab Stack. Detail routes (album, artist,
+ * playlist, settings, radio, podcasts, shares, downloads, genres, library
+ * collections) live in the shared `(tabs)/(home,search,library)/` group so
+ * they push onto the currently-focused tab's stack — the tab bar and
+ * PlayingBar stay docked below across the whole browse session.
  */
 export default function HomeLayout() {
   const { sync } = useSync();
@@ -70,20 +65,8 @@ export default function HomeLayout() {
         <DownloadersQueueProvider>
           <ServerReachabilityWatcher />
           <AutoDownloadWatcher />
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
-            <Stack.Screen name="albumView" options={{ headerShown: false }} />
-            <Stack.Screen name="artistView" options={{ headerShown: false }} />
-            <Stack.Screen name="playlistView" options={{ headerShown: false }} />
-            <Stack.Screen name="settings" options={{ headerShown: false }} />
-            <Stack.Screen name="libraryCollectionView" options={{ headerShown: false }} />
-            <Stack.Screen name="genresView" options={{ headerShown: false }} />
-            <Stack.Screen name="genreView" options={{ headerShown: false }} />
-            <Stack.Screen name="radio" options={{ headerShown: false }} />
-            <Stack.Screen name="podcasts" options={{ headerShown: false }} />
-            <Stack.Screen name="podcastChannel" options={{ headerShown: false }} />
-            <Stack.Screen name="shares" options={{ headerShown: false }} />
-            <Stack.Screen name="downloadsView" options={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
           </Stack>
         </DownloadersQueueProvider>
       </AccountSheetProvider>
