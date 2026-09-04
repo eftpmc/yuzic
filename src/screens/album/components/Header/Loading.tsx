@@ -38,7 +38,7 @@ const LoadingAlbumHeader: React.FC = () => {
                 <Skeleton
                     width={280}
                     height={280}
-                    radius={16}
+                    radius={rad.lg}
                     colorMode={colorMode}
                 />
             </View>
@@ -89,7 +89,7 @@ const LoadingAlbumHeader: React.FC = () => {
                     <Skeleton
                         width={112}
                         height={48}
-                        radius={22}
+                        radius={rad.pill}
                         colorMode={colorMode}
                     />
                     <Skeleton

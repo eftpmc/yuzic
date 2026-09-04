@@ -95,7 +95,7 @@ export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: 
             title={album.title}
             subtitle={album.subtext ?? ''}
             size={tileWidth}
-            radius={6}
+            radius={rad.card}
             onPress={() => {
               prefetchCovers([album.cover], 'detail')
               navigateToAlbum(album)

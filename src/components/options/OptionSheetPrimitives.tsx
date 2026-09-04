@@ -163,12 +163,11 @@ export function OptionSheetChipsRow({ label, values }: ChipsRowProps) {
   );
 }
 
-/** Shared scaffold styles for BottomSheetModal-based option sheets */
+/** Shared scaffold styles for BottomSheetModal-based option sheets.
+ *  Top corners are applied through {@link useOptionSheetBackground} so they
+ *  follow the user's radius preset. */
 export const optionSheetStyles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
+  sheetBackground: {},
   sheetContent: {
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
@@ -181,10 +180,15 @@ export const optionSheetStyles = StyleSheet.create({
   },
 });
 
-/** Sheet surface color: elevated card in dark mode, plain background in light */
+/** Sheet surface color + top-corner radii scaled by the user's preset. */
 export function useOptionSheetBackground() {
   const { isDarkMode, colors } = useTheme();
-  return { backgroundColor: isDarkMode ? colors.card : colors.background };
+  const rad = useRadius();
+  return {
+    backgroundColor: isDarkMode ? colors.card : colors.background,
+    borderTopLeftRadius: rad.lg,
+    borderTopRightRadius: rad.lg,
+  };
 }
 
 const styles = StyleSheet.create({

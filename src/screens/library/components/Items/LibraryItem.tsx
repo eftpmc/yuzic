@@ -36,8 +36,8 @@ const LibraryItem: React.FC<Props> = ({
   const { colors } = useTheme();
   const rad = useRadius();
 
-  const listRadius = circularImage ? 26 : 4;
-  const gridRadius = circularImage ? gridWidth / 2 : 8;
+  const listRadius = circularImage ? 26 : rad.md;
+  const gridRadius = circularImage ? gridWidth / 2 : rad.card;
 
   return (
     <Pressable

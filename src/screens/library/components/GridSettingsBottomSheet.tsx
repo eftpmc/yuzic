@@ -19,7 +19,8 @@ import {
   setGridColumns,
 } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, spacing, typography } from '@/constants/design';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
@@ -32,6 +33,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
     const isGridView = useSelector(selectIsGridView);
     const gridColumns = useSelector(selectGridColumns);
     const { colors } = useTheme();
+    const rad = useRadius();
 
     const snapPoints = useMemo(() => ['34%'], []);
 
@@ -76,6 +78,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                     backgroundColor: isSelected
                       ? themeColor + '22'
                       : 'transparent',
+                    borderRadius: rad.md,
                   },
                 ]}
                 onPress={() => dispatch(setIsGridView(option.value))}
@@ -111,7 +114,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
                   <Text style={[styles.sliderLabel, { color: colors.secondary }]}>
                     {t('home.displaySheet.columns', { defaultValue: 'Columns' })}
                   </Text>
-                  <View style={[styles.badge, { backgroundColor: themeColor + '22' }]}>
+                  <View style={[styles.badge, { backgroundColor: themeColor + '22', borderRadius: rad.card }]}>
                     <Text style={[styles.badgeText, { color: themeColor }]}>
                       {gridColumns}
                     </Text>
@@ -159,7 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: spacing.lg,
-    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
   pickerLeft: {
@@ -188,7 +190,6 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: spacing.controlGap,
     paddingVertical: spacing.xxs,
-    borderRadius: radius.card,
   },
   badgeText: {
     ...typography.label,

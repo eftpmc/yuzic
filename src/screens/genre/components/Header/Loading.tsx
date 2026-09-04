@@ -3,9 +3,11 @@ import { View, StyleSheet } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LoadingGenreHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const rad = useRadius();
   const colorMode = isDarkMode ? 'dark' : 'light';
 
   return (
@@ -23,7 +25,7 @@ const LoadingGenreHeader: React.FC = () => {
 
       <View style={styles.buttonRow}>
         <Skeleton width={40} height={40} radius={20} colorMode={colorMode} />
-        <Skeleton width={112} height={48} radius={22} colorMode={colorMode} />
+        <Skeleton width={112} height={48} radius={rad.pill} colorMode={colorMode} />
         <Skeleton width={40} height={40} radius={20} colorMode={colorMode} />
       </View>
     </>

@@ -14,6 +14,7 @@ import AlbumOptions from '@/components/options/AlbumOptions';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const H_PADDING = 12;
 const GAP = 10;
@@ -39,6 +40,7 @@ const RecentTile = memo(function RecentTile({ item, itemWidth }: TileProps) {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
   const [optionsMounted, setOptionsMounted] = useState(false);
+  const rad = useRadius();
 
   const handlePress = useCallback(() => {
     if (item.kind === 'album') {
@@ -65,7 +67,7 @@ const RecentTile = memo(function RecentTile({ item, itemWidth }: TileProps) {
           title={item.data.title}
           subtitle={item.data.subtext}
           size={itemWidth}
-          radius={item.kind === 'playlist' ? 6 : 8}
+          radius={rad.card}
           onPress={handlePress}
           onLongPress={handleLongPress}
         />

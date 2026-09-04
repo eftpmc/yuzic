@@ -27,6 +27,7 @@ import type { ExternalAlbumBase } from '@/types';
 import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
 import Touchable from '@/components/Touchable';
 import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -49,6 +50,7 @@ type Props = {
 export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }: Props) {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { artists: libraryArtists } = useArtists()
   const { navigateToAlbum } = useMatchedNavigation()
   const { width: screenWidth } = useWindowDimensions()
@@ -112,13 +114,13 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
       title={item.title}
       subtitle={item.subtext}
       size={gridItemWidth}
-      radius={6}
+      radius={rad.card}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
         navigateToAlbum(item)
       }}
     />
-  ), [navigateToAlbum, gridItemWidth])
+  ), [navigateToAlbum, gridItemWidth, rad.card])
 
   const isEmpty = !query.isLoading && albums.length === 0
 

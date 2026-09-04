@@ -3,11 +3,14 @@ import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useRadius } from '@/hooks/useRadius';
 
-const ThemedHeartCover = ({ size, rounded = 4 }: { size?: number; rounded?: number }) => {
+const ThemedHeartCover = ({ size, rounded }: { size?: number; rounded?: number }) => {
     const themeColor = useSelector(selectThemeColor);
+    const rad = useRadius();
 
     const isGrid = size === undefined;
+    const borderRadius = isGrid ? rad.md : (rounded ?? rad.md);
 
     return (
         <View
@@ -16,7 +19,7 @@ const ThemedHeartCover = ({ size, rounded = 4 }: { size?: number; rounded?: numb
                 height: isGrid ? undefined : size,
                 aspectRatio: isGrid ? 1 : undefined,
                 backgroundColor: themeColor,
-                borderRadius: isGrid ? 8 : rounded,
+                borderRadius,
                 justifyContent: 'center',
                 alignItems: 'center',
                 overflow: 'hidden',

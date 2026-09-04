@@ -24,6 +24,7 @@ import {
   ALBUM_RECOMMENDATION_VISIBLE_TILES,
 } from '@/constants/album';
 import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import { DetailScreen } from '@/components/DetailHeader';
 
 type Props = {
@@ -39,6 +40,7 @@ type ListItem = DiscHeader | SongItem | SkeletonItem;
 const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const navigation = useNavigation<any>();
   const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
@@ -88,7 +90,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
                   title={a.title}
                   subtitle={a.subtext || String(a.year || '')}
                   size={tileWidth}
-                  radius={6}
+                  radius={rad.card}
                   onPress={() => navigation.push('albumView', { id: a.id })}
                 />
               ))}
@@ -103,7 +105,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
         )}
       </View>
     );
-  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation, t]);
+  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation, t, rad.card]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {

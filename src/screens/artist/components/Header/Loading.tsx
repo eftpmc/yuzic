@@ -78,7 +78,7 @@ const LoadingArtistHeader: React.FC = () => {
         <Skeleton
           width={112}
           height={48}
-          radius={22}
+          radius={rad.pill}
           colorMode={colorMode}
         />
         <Skeleton
