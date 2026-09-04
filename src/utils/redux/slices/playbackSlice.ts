@@ -32,8 +32,12 @@ export interface PlaybackState {
    * Per-track resume positions. Written on the way out of a bookmarkable
    * track (long-form, podcast), read on song load. Cleared when a track
    * finishes (≥ 97% or explicit clear).
+   *
+   * `updatedAt` lets "Continue Playing" surfaces order by recency without
+   * a second index — the map is small enough (dozens of entries at most,
+   * since it only holds long-form) that a full sort is free.
    */
-  bookmarks: Record<string, number>;
+  bookmarks: Record<string, { positionMs: number; updatedAt: number }>;
 }
 
 const initialState: PlaybackState = {
@@ -108,18 +112,25 @@ const playbackSlice = createSlice({
       if (action.payload.positionMs === null || action.payload.positionMs <= 0) {
         delete state.bookmarks[action.payload.songId];
       } else {
-        state.bookmarks[action.payload.songId] = Math.floor(action.payload.positionMs);
+        state.bookmarks[action.payload.songId] = {
+          positionMs: Math.floor(action.payload.positionMs),
+          updatedAt: Date.now(),
+        };
       }
       state.updatedAt = Date.now();
     },
 
-    /** Server-side seed — replaces the bookmark map wholesale after fetching
-     * from Navidrome (getBookmarks) or Jellyfin (Fields=UserData). Local
-     * writes made while offline win against a stale seed on the next flush;
-     * this simply lays down the ground truth on first connect. */
+    /** Server-side seed — merges from Navidrome (getBookmarks) or Jellyfin
+     * (Fields=UserData). Locally-written entries with a fresher updatedAt
+     * win against a stale server seed. */
     seedPlaybackBookmarks(state, action: PayloadAction<Record<string, number>>) {
-      state.bookmarks = { ...state.bookmarks, ...action.payload };
-      state.updatedAt = Date.now();
+      const now = Date.now();
+      for (const [songId, positionMs] of Object.entries(action.payload)) {
+        const existing = state.bookmarks[songId];
+        if (existing && existing.updatedAt > now - 60_000) continue;
+        state.bookmarks[songId] = { positionMs, updatedAt: existing?.updatedAt ?? now - 60_000 };
+      }
+      state.updatedAt = now;
     },
 
     /** Server-switch invalidation. Called when the app notices the active

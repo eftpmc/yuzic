@@ -18,6 +18,7 @@ const GENRE_COUNT = 1
 export type SectionType =
   | 'quickPicks'
   | 'recentlyPlayed'
+  | 'continuePlaying'
   | 'recentlyAdded'
   | 'becauseYouListened'
   | 'topArtists'

@@ -47,7 +47,7 @@ export function useBookmarkManager() {
   // Fast, always-up-to-date snapshot for the read hot path (song load). The
   // subscribed selector alone would re-render every consumer on every write;
   // a ref updated inside an effect stays free.
-  const bookmarksRef = useRef<Record<string, number>>({});
+  const bookmarksRef = useRef<typeof bookmarksMap>({});
   useEffect(() => { bookmarksRef.current = bookmarksMap; }, [bookmarksMap]);
 
   const supportsServer = Boolean(api.bookmarks);
@@ -74,8 +74,8 @@ export function useBookmarkManager() {
 
   const getResumePosition = useCallback((songId: string): number | null => {
     if (!enabled) return null;
-    const ms = bookmarksRef.current[songId];
-    return typeof ms === 'number' && ms > 0 ? Math.floor(ms / 1000) : null;
+    const entry = bookmarksRef.current[songId];
+    return entry && entry.positionMs > 0 ? Math.floor(entry.positionMs / 1000) : null;
   }, [enabled]);
 
   const saveOrClear = useCallback(async (song: Song | null | undefined, positionSeconds: number) => {

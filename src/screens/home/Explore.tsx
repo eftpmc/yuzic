@@ -19,6 +19,7 @@ import GenreSection from './components/GenreSection'
 import ServerRandomSection from './components/ServerRandomSection'
 import ServerNowPlayingSection from './components/ServerNowPlayingSection'
 import LBSimilarForYouSection from './components/LBSimilarForYouSection'
+import ContinuePlayingSection from './components/ContinuePlayingSection'
 import { ResumeQueueBanner } from './components/ResumeQueueBanner'
 import { useApi } from '@/api'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
@@ -31,6 +32,8 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <QuickPicksSection key={config.key} refreshKey={refreshKey} />
     case 'recentlyPlayed':
       return <RecentlyPlayed key={config.key} />
+    case 'continuePlaying':
+      return <ContinuePlayingSection key={config.key} />
     case 'recentlyAdded':
       return <RecentlyAdded key={config.key} />
     case 'mostPlayed':
