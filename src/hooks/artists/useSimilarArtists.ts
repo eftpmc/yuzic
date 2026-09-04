@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSelector } from 'react-redux'
 
-import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists'
-import { RAWARR_URL } from '@/constants/rawarr'
+import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists'
+import { selectLastFmApiKey } from '@/utils/redux/selectors/lastfmSelectors'
 import { QueryKeys } from '@/enums/queryKeys'
 import type { ExternalArtistBase } from '@/types'
 
@@ -15,11 +16,12 @@ export type SimilarArtistsInput = {
 }
 
 async function fetchLastFmSimilarArtists(
+  apiKey: string,
   name: string,
   excludeName: string | undefined,
   limit: number
 ): Promise<ExternalArtistBase[]> {
-  const candidates = await getLastFmSimilarArtists(RAWARR_URL, name, limit * 3)
+  const candidates = await getLastFmSimilarArtists(apiKey, name, limit * 3)
   if (!candidates.length) return []
 
   const normalizedExclude = excludeName?.trim().toLowerCase()
@@ -44,6 +46,8 @@ async function fetchLastFmSimilarArtists(
 }
 
 export function useSimilarArtists(input: SimilarArtistsInput) {
+  const apiKey = useSelector(selectLastFmApiKey)
+
   const queryKey = useMemo(
     () => [QueryKeys.ExploreSimilarArtists, input.mbid ?? input.name ?? '', input.limit ?? 8],
     [input.limit, input.mbid, input.name]
@@ -51,8 +55,11 @@ export function useSimilarArtists(input: SimilarArtistsInput) {
 
   return useQuery({
     queryKey,
-    queryFn: () => fetchLastFmSimilarArtists(input.name!, input.excludeName ?? undefined, input.limit ?? 8),
-    enabled: (input.enabled ?? true) && Boolean(input.name),
+    queryFn: () => fetchLastFmSimilarArtists(apiKey, input.name!, input.excludeName ?? undefined, input.limit ?? 8),
+    // Requires the user's own Last.fm api_key; if they haven't entered one,
+    // this hook stays quiet (returns nothing) instead of calling out to a
+    // proxy on their behalf.
+    enabled: (input.enabled ?? true) && Boolean(input.name) && Boolean(apiKey),
     staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
   })

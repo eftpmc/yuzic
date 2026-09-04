@@ -32,8 +32,8 @@ import { usePlayableSongResolver } from '@/hooks/songs';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useSheetRef } from '@/utils/useSheetRef';
 import * as deezer from '@/api/deezer';
-import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
-import { RAWARR_URL } from '@/constants/rawarr';
+import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists';
+import { selectLastFmApiKey } from '@/utils/redux/selectors/lastfmSelectors';
 import { QueryKeys } from '@/enums/queryKeys';
 import DownloadSheet from '@/components/options/DownloadSheet';
 import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
@@ -50,12 +50,15 @@ import { useRadius } from '@/hooks/useRadius';
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
 
-async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]> {
-  if (!artistNames.length) return [];
+async function fetchExternalRecs(
+  lastFmApiKey: string,
+  artistNames: string[]
+): Promise<ExternalSong[]> {
+  if (!artistNames.length || !lastFmApiKey) return [];
 
   try {
     const similarResults = await Promise.all(
-      artistNames.map(name => getLastFmSimilarArtists(RAWARR_URL, name, 15))
+      artistNames.map(name => getLastFmSimilarArtists(lastFmApiKey, name, 15))
     );
 
     const seen = new Set<string>(artistNames.map(n => n.toLowerCase()));
@@ -328,6 +331,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
+  const lastFmApiKey = useSelector(selectLastFmApiKey);
   const hasDownloader = useAnyDownloaderConnected();
   const downloadSheetRef = useSheetRef();
   const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
@@ -349,8 +353,11 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 
   const externalQuery = useQuery({
     queryKey: externalQueryKey,
-    queryFn: () => fetchExternalRecs(playlistArtistNames),
-    enabled: deezerEnabled && !isOffline && playlistArtistNames.length > 0,
+    queryFn: () => fetchExternalRecs(lastFmApiKey, playlistArtistNames),
+    // Needs both a Deezer discovery toggle (to fetch top tracks) and a
+    // Last.fm api_key (to expand seed artists into similar ones). Without
+    // the key we'd have nothing to expand, so the section stays hidden.
+    enabled: deezerEnabled && !isOffline && playlistArtistNames.length > 0 && Boolean(lastFmApiKey),
     staleTime: 1000 * 60 * 60 * 6,
     networkMode: 'online',
   });
@@ -378,7 +385,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
     }
   }, [downloadSheetRef, hasDownloader, t]);
 
-  if (!deezerEnabled || isOffline || playlistArtistNames.length === 0) return null;
+  if (!deezerEnabled || isOffline || playlistArtistNames.length === 0 || !lastFmApiKey) return null;
 
   return (
     <View style={styles.section}>
