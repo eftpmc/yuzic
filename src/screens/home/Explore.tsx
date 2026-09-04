@@ -21,6 +21,7 @@ import ServerNowPlayingSection from './components/ServerNowPlayingSection'
 import LBSimilarForYouSection from './components/LBSimilarForYouSection'
 import ContinuePlayingSection from './components/ContinuePlayingSection'
 import { ResumeQueueBanner } from './components/ResumeQueueBanner'
+import { DownloadsInProgressBanner } from './components/DownloadsInProgressBanner'
 import { useApi } from '@/api'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 import { sourceColor, spacing, typography } from '@/constants/design'
@@ -141,6 +142,7 @@ export default function Home() {
       }
     >
       <ResumeQueueBanner />
+      <DownloadsInProgressBanner />
 
       {resume.map(config => renderSection(config, refreshKey))}
 
