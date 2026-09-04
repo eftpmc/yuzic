@@ -108,6 +108,6 @@ const styles = StyleSheet.create({
   },
   subtext: {
     ...typography.caption,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

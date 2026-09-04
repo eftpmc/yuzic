@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     ...typography.micro,
     color: onDark.text,
     fontWeight: '600',
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });
 
