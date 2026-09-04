@@ -27,13 +27,18 @@ export interface SongBase {
 /**
  * What kind of thing the player is playing right now. A regular song is the
  * default: known duration, scrobbleable, safe to jump within, autoplay can
- * fill from it. Radio and podcasts break some of those assumptions — the
- * player checks this field before drawing a progress bar or scrobbling.
+ * fill from it. Radio, podcasts and previews each break some of those
+ * assumptions — the player checks this field before drawing a progress bar
+ * or scrobbling.
  *
- * Undefined is equivalent to `'song'`; a Song synthesised for a live stream
- * or a podcast episode declares its kind explicitly.
+ * `preview` is a 30s external clip (Deezer etc.) — has finite duration but
+ * is neither scrobbleable nor a valid autoplay seed, and its streamUrl can't
+ * be refreshed so a failure removes the track rather than retrying.
+ *
+ * Undefined is equivalent to `'song'`; a Song synthesised for a live stream,
+ * a podcast episode, or a preview declares its kind explicitly.
  */
-export type ContentKind = 'song' | 'liveStream' | 'podcastEpisode';
+export type ContentKind = 'song' | 'liveStream' | 'podcastEpisode' | 'preview';
 
 export interface Song extends SongBase {
     streamUrl: string;
@@ -61,8 +66,6 @@ export interface Song extends SongBase {
     bpm?: number;
     /** Genres; omitted when not available. */
     genres?: string[];
-    /** True when this song is a 30s external preview rather than an owned track. */
-    isPreview?: boolean;
 }
 
 export interface ExternalSong {

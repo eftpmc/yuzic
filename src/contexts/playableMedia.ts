@@ -41,7 +41,6 @@ export function mediaItemToFallbackSong(item: MediaItem): Song | null {
     duration: String(item.duration ?? 0),
     streamUrl,
     cover: { kind: 'none' },
-    isPreview: false,
   } as Song;
 }
 

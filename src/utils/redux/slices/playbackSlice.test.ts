@@ -64,7 +64,7 @@ describe('playbackSlice', () => {
       queueSongIds: ['a', 'b'],
       currentIndex: 1,
       repeatMode: 'all',
-      shuffleMode: 'on',
+      shuffleMode: 'shuffle',
     }))
     const withBookmark = reducer(seeded, setPlaybackBookmark({ songId: 's1', positionMs: 42_000 }))
 

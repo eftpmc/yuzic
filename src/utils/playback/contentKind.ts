@@ -24,25 +24,36 @@ export function isPodcastEpisode(song: Song | null | undefined): boolean {
   return getContentKind(song) === 'podcastEpisode';
 }
 
+/** A 30s external clip — Deezer preview etc. Duration is known but the URL
+ * is not refreshable, and the play should not count as a scrobble. */
+export function isPreview(song: Song | null | undefined): boolean {
+  return getContentKind(song) === 'preview';
+}
+
 /** A live stream has no known duration — hide the progress bar, timestamps
  * and seek. Podcast episodes are finite audio; a progress bar makes sense. */
 export function hasFiniteDuration(song: Song | null | undefined): boolean {
   return !isLiveStream(song);
 }
 
-/** Only regular songs and podcast episodes are scrobbleable. A live stream is
- * a continuous session, not a discrete listen. */
+/** Only regular songs and podcast episodes are scrobbleable. Live streams
+ * are continuous sessions (not discrete listens) and previews are 30s
+ * external clips that shouldn't count as a real play. */
 export function canScrobble(song: Song | null | undefined): boolean {
-  return !isLiveStream(song);
+  const k = getContentKind(song);
+  return k === 'song' || k === 'podcastEpisode';
 }
 
-/** Skip within the "track" — 15s jump buttons. Off for live streams. */
+/** Skip within the "track" — 15s jump buttons. Off for live streams and
+ * previews (which are already short enough that jumps don't make sense). */
 export function canJumpWithin(song: Song | null | undefined): boolean {
-  return !isLiveStream(song);
+  const k = getContentKind(song);
+  return k !== 'liveStream' && k !== 'preview';
 }
 
 /** Autoplay queue-fill from a seed. A radio station is its own infinite feed
- * and should not spawn recommendations at the end. */
+ * and should not spawn recommendations at the end; a preview is a browsing
+ * teaser, not a listening seed. */
 export function canFillQueueFrom(song: Song | null | undefined): boolean {
   return getContentKind(song) === 'song';
 }

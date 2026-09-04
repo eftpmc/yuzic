@@ -504,7 +504,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       const now = Date.now();
 
       // Preview URLs (Deezer etc.) can't be refreshed — remove immediately.
-      if (song?.isPreview) {
+      if (song?.contentKind === 'preview') {
         removeFailedCurrentTrackRef.current();
         return;
       }
@@ -649,12 +649,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [activeMediaItem, bumpQueue]);
 
   const resolvePlayableSong = useCallback((song: Song): Song => {
-    if (song.isPreview) return song;
-    // A radio station's streamUrl is an external URL the server doesn't own —
-    // rebuilding it through api.songs.buildStreamUrl would send the client to
-    // a broken /rest/stream endpoint. Same for podcast episodes when they
-    // carry their own resolved URL. Leave the song as-is.
-    if (song.contentKind === 'liveStream' || song.contentKind === 'podcastEpisode') return song;
+    // Preview URLs (Deezer etc.), live-stream URLs and resolved podcast
+    // episode URLs are external — the server doesn't own them and rebuilding
+    // through api.songs.buildStreamUrl would send the client to a broken
+    // /rest/stream endpoint. Leave the song as-is.
+    if (song.contentKind && song.contentKind !== 'song') return song;
     const localPath = getLocalPath(song.id);
     if (localPath) return { ...song, streamUrl: localPath };
     const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);
