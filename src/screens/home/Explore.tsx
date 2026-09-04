@@ -6,7 +6,11 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
-import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
+import {
+  selectShowSourceHeaders,
+  selectHomeServerSectionsEnabled,
+  selectHomeListenbrainzSectionsEnabled,
+} from '@/utils/redux/selectors/settingsSelectors'
 
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
@@ -66,6 +70,8 @@ export default function Home() {
   const { resume, library, server, listenbrainz, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
+  const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled)
+  const homeListenbrainzEnabled = useSelector(selectHomeListenbrainzSectionsEnabled)
   const api = useApi()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -115,7 +121,7 @@ export default function Home() {
       color: sourceColor.listenbrainz, // fallback source color; server has no brand hex
       letter: 'S',
       sections: server,
-      enabled: Boolean(api.discovery),
+      enabled: Boolean(api.discovery) && homeServerEnabled,
     },
     {
       id: 'listenbrainz',
@@ -123,7 +129,7 @@ export default function Home() {
       color: sourceColor.listenbrainz,
       letter: 'B',
       sections: listenbrainz,
-      enabled: true,
+      enabled: homeListenbrainzEnabled,
     },
     { id: 'deezer', label: 'Deezer', color: sourceColor.deezer, letter: 'D', sections: deezer, enabled: deezerEnabled },
   ]

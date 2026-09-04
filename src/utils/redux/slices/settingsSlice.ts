@@ -67,6 +67,13 @@ export interface SettingsState {
   serverNowPlayingShelfEnabled: boolean;
   resumeLongTracksEnabled: boolean;
 
+  /* Home discovery source visibility. Each family (server, ListenBrainz,
+   * Deezer) has its own toggle so users choose which shelves appear —
+   * Deezer's is the existing deezerDiscoveryEnabled since that setting
+   * already governs whether we call Deezer at all. */
+  homeServerSectionsEnabled: boolean;
+  homeListenbrainzSectionsEnabled: boolean;
+
   /* Player controls */
   showSleepTimer: boolean;
   showPlaybackSpeed: boolean;
@@ -118,6 +125,9 @@ const initialState: SettingsState = {
   queueSyncEnabled: true,
   serverNowPlayingShelfEnabled: true,
   resumeLongTracksEnabled: true,
+
+  homeServerSectionsEnabled: true,
+  homeListenbrainzSectionsEnabled: true,
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
@@ -228,6 +238,12 @@ const settingsSlice = createSlice({
     setResumeLongTracksEnabled(state, action: PayloadAction<boolean>) {
       state.resumeLongTracksEnabled = action.payload;
     },
+    setHomeServerSectionsEnabled(state, action: PayloadAction<boolean>) {
+      state.homeServerSectionsEnabled = action.payload;
+    },
+    setHomeListenbrainzSectionsEnabled(state, action: PayloadAction<boolean>) {
+      state.homeListenbrainzSectionsEnabled = action.payload;
+    },
 
     setShowSleepTimer(state, action: PayloadAction<boolean>) {
       state.showSleepTimer = action.payload;
@@ -289,6 +305,8 @@ export const {
   setQueueSyncEnabled,
   setServerNowPlayingShelfEnabled,
   setResumeLongTracksEnabled,
+  setHomeServerSectionsEnabled,
+  setHomeListenbrainzSectionsEnabled,
   setShowSleepTimer,
   setShowJumpButtons,
   setShowVolumeSlider,
