@@ -151,6 +151,13 @@ export interface SubsonicResponseBody {
       entry?: { id?: string };
     }>;
   };
+  playQueue?: {
+    current?: string;
+    position?: number;
+    changed?: string;
+    changedBy?: string;
+    entry?: Array<{ id?: string }>;
+  };
   artistInfo2?: {
     biography?: string;
     musicBrainzId?: string;

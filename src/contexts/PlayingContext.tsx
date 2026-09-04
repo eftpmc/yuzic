@@ -58,6 +58,7 @@ import {
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
+import { useQueueSync } from '@/hooks/useQueueSync';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
 
@@ -249,6 +250,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const bookmarks = useBookmarkManager();
   const bookmarksRef = useRef(bookmarks);
   useEffect(() => { bookmarksRef.current = bookmarks; }, [bookmarks]);
+
+  const queueSync = useQueueSync();
+  const queueSyncRef = useRef(queueSync);
+  useEffect(() => { queueSyncRef.current = queueSync; }, [queueSync]);
 
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
@@ -507,6 +512,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
 
     submitNowPlayingRef.current(songFromQueue);
+
+    // Server-side queue sync — hands the current queue and position to
+    // Subsonic so opening yuzic on another device resumes here. Throttled
+    // in the hook; a same-queue re-fire is a no-op.
+    void queueSyncRef.current.save(
+      queueRef.current,
+      songFromQueue.id,
+      Math.floor(TrackPlayer.getProgress().position * 1000)
+    );
 
     // Autoplay-fill from a radio station is meaningless: the station is its
     // own infinite feed and there's no seed to compute a follow-up from.

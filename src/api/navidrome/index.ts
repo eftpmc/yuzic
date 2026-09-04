@@ -67,6 +67,7 @@ import {
   createBookmark,
   deleteBookmark,
 } from "./bookmarks/getBookmarks";
+import { getPlayQueue, savePlayQueue } from "./queue/getPlayQueue";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -267,6 +268,12 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     remove: async (songId: string) => deleteBookmark(client, songId),
   };
 
+  const queue = {
+    get: async () => getPlayQueue(client),
+    save: async (input: { songIds: string[]; currentSongId?: string; positionMs?: number }) =>
+      savePlayQueue(client, input),
+  };
+
   return {
     auth,
     albums,
@@ -282,5 +289,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     radio,
     shares,
     bookmarks,
+    queue,
   };
 };

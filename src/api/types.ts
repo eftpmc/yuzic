@@ -76,6 +76,21 @@ export interface ApiAdapter {
   shares?: SharesApi;
   /** Per-track resume positions — audiobooks, podcasts, long mixes. */
   bookmarks?: BookmarksApi;
+  /** Server-persisted play queue for cross-device continuity. */
+  queue?: QueueApi;
+}
+
+export type ServerPlayQueue = {
+  songIds: string[];
+  currentSongId?: string;
+  positionMs?: number;
+  changed?: string;
+  changedBy?: string;
+};
+
+export interface QueueApi {
+  get(): Promise<ServerPlayQueue | null>;
+  save(input: { songIds: string[]; currentSongId?: string; positionMs?: number }): Promise<void>;
 }
 
 export type Bookmark = {
