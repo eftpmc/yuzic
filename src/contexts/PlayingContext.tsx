@@ -243,10 +243,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
   const resolvePlayableSongRef = useRef<(song: Song) => Song>((s) => s);
 
-  const { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled } = useScrobbling();
+  const { scrobbleIfNeeded, submitNowPlaying, reportPlaybackProgress, resetLastScrobbled } = useScrobbling();
 
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
+
+  // Session heartbeat for mediaBrowser servers. Jellyfin will drop the session
+  // (and never fire the Stopped event the Last.fm plugin scrobbles on) if it
+  // stops seeing progress reports. 10s is well inside its ~30s idle window.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      const song = currentSongRef.current;
+      if (!song) return;
+      const positionMs = Math.floor(TrackPlayer.getProgress().position * 1000);
+      reportPlaybackProgress(song, positionMs, false);
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, [isPlaying, reportPlaybackProgress]);
   useEffect(() => { repeatModeRef.current = repeatMode; }, [repeatMode]);
   useEffect(() => { shuffleModeRef.current = shuffleMode; }, [shuffleMode]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);

@@ -21,6 +21,15 @@ export interface SongsApi {
   get(id: string): Promise<Song | null>;
   scrobble(songId: string, timestamp: number): Promise<void>;
   buildStreamUrl(songId: string, quality: AudioQuality, codec?: PreferredCodec): string;
+  /**
+   * Session playback reporting for servers that scrobble on the strength of it
+   * (Jellyfin / Emby's Last.fm plugin reads these events, not scrobble.view or
+   * PlayedItems). Optional — Navidrome's Subsonic path already forwards to
+   * Last.fm through scrobble() and doesn't need session pings.
+   */
+  reportPlaybackStart?(songId: string, positionMs: number): Promise<void>;
+  reportPlaybackProgress?(songId: string, positionMs: number, isPaused: boolean): Promise<void>;
+  reportPlaybackStop?(songId: string, positionMs: number): Promise<void>;
 }
 
 export interface TracksApi {

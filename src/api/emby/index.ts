@@ -42,6 +42,7 @@ import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "../mediaBrowser/lyrics/getLyricsBySongId";
 import { getSong } from "../mediaBrowser/songs/getSong";
 import { markPlayed } from "../mediaBrowser/songs/markPlayed";
+import { reportPlaybackStart, reportPlaybackProgress, reportPlaybackStop } from "../mediaBrowser/playback/report";
 import { getTracks } from "../mediaBrowser/tracks/getTracks";
 import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
 import { search as searchEmby } from "../mediaBrowser/search/search";
@@ -185,6 +186,10 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
     get: async (id: string) => getSong(client, id),
     scrobble: async (songId) => markPlayed(client, songId),
     buildStreamUrl: (songId, quality, codec) => client.buildStreamUrl(songId, quality, codec),
+    reportPlaybackStart: async (songId, positionMs) => reportPlaybackStart(client, songId, positionMs),
+    reportPlaybackProgress: async (songId, positionMs, isPaused) =>
+      reportPlaybackProgress(client, songId, positionMs, isPaused),
+    reportPlaybackStop: async (songId, positionMs) => reportPlaybackStop(client, songId, positionMs),
   };
 
   const tracks: TracksApi = {

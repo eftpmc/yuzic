@@ -114,6 +114,10 @@ export function useScrobbling() {
     } else if (serverScrobbleEnabled) {
       try {
         await api.songs.scrobble(song.id, opts.startTime);
+        // Jellyfin/Emby's Last.fm plugin scrobbles on PlaybackStopped; markPlayed
+        // alone doesn't reach it. Send the session-stop event with the actual
+        // listened position so the plugin picks it up.
+        api.songs.reportPlaybackStop?.(song.id, opts.listenedSeconds * 1000).catch(() => {});
       } catch {
         queueScrobble('server', song, opts.startTime, songDuration, opts.listenedSeconds);
       }
@@ -153,6 +157,13 @@ export function useScrobbling() {
       }
     }
 
+    // Session-start on Jellyfin/Emby. Fire-and-forget: the scrobble plugin
+    // reads these events, but a session-report outage should never block the
+    // player. Navidrome adapters don't implement this — the ?. skips them.
+    if (activeServer?.type !== 'navidrome' && serverNowPlayingEnabled) {
+      api.songs.reportPlaybackStart?.(song.id, 0).catch(() => {});
+    }
+
     if (listenBrainzConfig?.token && lbNowPlayingEnabled) {
       listenbrainz.submitNowPlaying(listenBrainzConfig, {
         artist: song.artist,
@@ -161,7 +172,20 @@ export function useScrobbling() {
         album: song.albumTitle,
       }).catch(() => {});
     }
-  }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled]);
+  }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled, api]);
 
-  return { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled };
+  /**
+   * Keeps the Jellyfin/Emby session alive by pinging /Sessions/Playing/Progress
+   * on a fixed cadence. Without this heartbeat the server can drop the session
+   * before the track finishes, and PlaybackStopped never reaches the Last.fm
+   * plugin. Fire-and-forget; a failed ping is not user-visible.
+   */
+  const reportPlaybackProgress = useCallback((song: Song, positionMs: number, isPaused: boolean) => {
+    if (activeServer?.type === 'navidrome') return;
+    if (!serverNowPlayingEnabled) return;
+    api.songs.reportPlaybackProgress?.(song.id, positionMs, isPaused).catch(() => {});
+  }, [activeServer?.type, serverNowPlayingEnabled, api]);
+
+  return { scrobbleIfNeeded, submitNowPlaying, reportPlaybackProgress, resetLastScrobbled };
 }
+
