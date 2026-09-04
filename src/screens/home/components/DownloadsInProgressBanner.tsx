@@ -16,9 +16,8 @@ import { spacing, typography } from '@/constants/design';
  * of Home so users see what's in flight without diving into Settings →
  * Downloaders → each one. Auto-hides when nothing's queued.
  *
- * Tap → jumps to the downloader that has items. When multiple downloaders
- * are active, it opens the Downloaders index (Settings root for them) so
- * the user picks which one to drill into.
+ * Tap → opens the top-level Downloads screen with every connected
+ * downloader's queue in one place.
  */
 export function DownloadsInProgressBanner() {
   const { t } = useTranslation();
@@ -30,11 +29,7 @@ export function DownloadsInProgressBanner() {
   if (totalInFlight === 0) return null;
 
   const handleOpen = () => {
-    if (queues.length === 1) {
-      router.push(queues[0].id === 'lidarr' ? '/(home)/settings/lidarrView' : '/(home)/settings/slskdView');
-    } else {
-      router.push('/(home)/settings/downloadersView');
-    }
+    router.push('/(home)/downloadsView');
   };
 
   const summary = queues

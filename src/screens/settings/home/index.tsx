@@ -8,7 +8,7 @@ import {
     Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Server, Library, Volume2, Palette, Puzzle, Download, Github, ShieldCheck, ScrollText } from 'lucide-react-native';
+import { Server, Library, Volume2, Palette, Puzzle, Download, CloudDownload, Github, ShieldCheck, ScrollText } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -119,6 +119,12 @@ export default function Settings() {
                         label={t('settings.downloaders.title')}
                         leftIcon={<Download size={22} color={colors.secondary} />}
                         onPress={() => router.push('/settings/downloadersView')}
+                    />
+                    <SettingsDivider />
+                    <SettingsRow
+                        label={t('downloads.title', 'Downloads')}
+                        leftIcon={<CloudDownload size={22} color={colors.secondary} />}
+                        onPress={() => router.push('/downloadsView')}
                     />
                 </SettingsCard>
 

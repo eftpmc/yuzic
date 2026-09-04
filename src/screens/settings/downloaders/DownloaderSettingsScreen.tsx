@@ -1,30 +1,18 @@
 import React from 'react';
-import { Alert, FlatList, StyleSheet, Text } from 'react-native';
-import Animated, {
-  Easing,
-  cancelAnimation,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import { StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
 
 import SettingsScreen from '../components/SettingsScreen';
-import SettingsCard from '../components/SettingsCard';
 import SettingsAuthCard from '../components/SettingsAuthCard';
-import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsDisconnectButton from '../components/SettingsDisconnectButton';
-import { useTheme } from '@/hooks/useTheme';
 import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice';
 import {
   useDownloaderConnection,
   type DownloaderConfig,
 } from './useDownloaderConnection';
-import { useDownloaderQueue, type QueueDiff } from './useDownloaderQueue';
+import type { QueueDiff } from './useDownloaderQueue';
 import { radius, spacing, typography } from '@/constants/design';
+import DownloaderQueueCard from './DownloaderQueueCard';
 
 type Props<T extends { id: string }> = {
   id: DownloaderId;
@@ -77,7 +65,6 @@ function DownloaderSettingsScreen<T extends { id: string }>({
   onDisconnected,
 }: Props<T>) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
 
   const {
     activeServer,
@@ -92,66 +79,10 @@ function DownloaderSettingsScreen<T extends { id: string }>({
     disconnect,
   } = useDownloaderConnection(id, testConnection);
 
-  const { queue, isLoading: loadingQueue, hasError: queueError } = useDownloaderQueue<T>(
-    config,
-    isAuthenticated,
-    fetchQueueWithDiff
-  );
-
-  const rotation = useSharedValue(0);
-  React.useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, { duration: 1000, easing: Easing.linear }),
-      -1,
-      false
-    );
-    return () => cancelAnimation(rotation);
-  }, [rotation]);
-
-  const spinStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
   const handleDisconnect = () => {
     disconnect();
     onDisconnected?.();
   };
-
-  const [cancellingId, setCancellingId] = React.useState<string | null>(null);
-
-  const runCancel = React.useCallback(
-    async (item: T) => {
-      if (!cancelQueueItem) return;
-      setCancellingId(item.id);
-      try {
-        await cancelQueueItem(config, item);
-        toast.success(t('settings.downloaders.cancelled'));
-      } catch {
-        toast.error(t('settings.downloaders.cancelFailed'));
-      } finally {
-        setCancellingId((current) => (current === item.id ? null : current));
-      }
-    },
-    [cancelQueueItem, config, t]
-  );
-
-  const confirmCancel = React.useCallback(
-    (item: T, label: string) => {
-      Alert.alert(
-        t('settings.downloaders.cancelTitle'),
-        t('settings.downloaders.cancelBody', { title: label }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('settings.downloaders.cancelConfirm'),
-            style: 'destructive',
-            onPress: () => runCancel(item),
-          },
-        ]
-      );
-    },
-    [runCancel, t]
-  );
 
   if (!activeServer) return null;
 
@@ -179,36 +110,14 @@ function DownloaderSettingsScreen<T extends { id: string }>({
         onConnectivityPress={ping}
       />
 
-      <SettingsCard>
-        <SettingsCardHeader title={t('settings.downloaders.queue')} />
-        {loadingQueue ? (
-          <Animated.View style={[styles.queueLoading, spinStyle]}>
-            <Loader2 size={32} color={colors.secondary} />
-          </Animated.View>
-        ) : queueError ? (
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t(`settings.downloaders.${id}.connectionFailed`)}
-          </Text>
-        ) : queue.length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('settings.downloaders.emptyQueue')}
-          </Text>
-        ) : (
-          <FlatList
-            data={queue}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) =>
-              renderItem(item, {
-                requestCancel: cancelQueueItem
-                  ? (label) => confirmCancel(item, label)
-                  : undefined,
-                isCancelling: cancellingId === item.id,
-              })
-            }
-            scrollEnabled={false}
-          />
-        )}
-      </SettingsCard>
+      <DownloaderQueueCard<T>
+        id={id}
+        config={config}
+        isAuthenticated={isAuthenticated}
+        fetchQueueWithDiff={fetchQueueWithDiff}
+        renderItem={renderItem}
+        cancelQueueItem={cancelQueueItem}
+      />
 
       {isAuthenticated && extraCards}
 
@@ -245,9 +154,4 @@ export const downloaderQueueStyles = StyleSheet.create({
   warningMessage: { ...typography.caption, marginLeft: spacing.sm, marginTop: spacing.xxs },
   headerTrailing: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   cancelButton: { padding: spacing.xxs, marginLeft: spacing.xs },
-});
-
-const styles = StyleSheet.create({
-  queueLoading: { alignItems: 'center', paddingVertical: spacing.roomy },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center', marginVertical: spacing.lg },
 });
