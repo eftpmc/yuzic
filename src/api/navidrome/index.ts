@@ -68,6 +68,8 @@ import {
   deleteBookmark,
 } from "./bookmarks/getBookmarks";
 import { getPlayQueue, savePlayQueue } from "./queue/getPlayQueue";
+import { getRandomSongs } from "./discovery/random";
+import { getNowPlaying } from "./discovery/nowPlaying";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -274,6 +276,12 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
       savePlayQueue(client, input),
   };
 
+  const discovery = {
+    getRandomSongs: async (opts?: { size?: number; genre?: string; fromYear?: number; toYear?: number }) =>
+      getRandomSongs(client, opts),
+    getNowPlaying: async () => getNowPlaying(client),
+  };
+
   return {
     auth,
     albums,
@@ -290,5 +298,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     shares,
     bookmarks,
     queue,
+    discovery,
   };
 };

@@ -12,6 +12,7 @@ export interface SubsonicSong {
   title?: string;
   artist?: string;
   artistId?: string;
+  album?: string;
   albumId?: string;
   coverArt?: string;
   duration?: number;
@@ -157,6 +158,12 @@ export interface SubsonicResponseBody {
     changed?: string;
     changedBy?: string;
     entry?: Array<{ id?: string }>;
+  };
+  randomSongs?: { song?: SubsonicSong[] };
+  nowPlaying?: {
+    entry?: Array<
+      SubsonicSong & { username?: string; minutesAgo?: number }
+    >;
   };
   artistInfo2?: {
     biography?: string;

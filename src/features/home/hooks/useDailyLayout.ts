@@ -24,6 +24,9 @@ export type SectionType =
   | 'mostPlayed'
   | 'charts'
   | 'genre'
+  | 'serverRandom'
+  | 'serverNowPlaying'
+  | 'lbSimilarArtistsForYou'
 
 export type SectionConfig = {
   key: string
@@ -63,7 +66,13 @@ export type HomeLayout = {
   resume: SectionConfig[]
   /** Your own collection, behind its own header. */
   library: SectionConfig[]
-  /** External discovery, behind the source header. */
+  /** Server-native discovery (random shelves, now-playing) — behind the
+   * server source header. Independent of Deezer/LB. */
+  server: SectionConfig[]
+  /** ListenBrainz-driven discovery (similar-artist expansions, later
+   * Weekly/Daily recs) — behind the LB source header. */
+  listenbrainz: SectionConfig[]
+  /** Deezer external discovery, behind the source header. */
   deezer: SectionConfig[]
   isOffline: boolean
 }
@@ -134,8 +143,28 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
     [dailySeed, isOffline, libraryArtists.length, becauseSeeds, topGenres]
   )
 
+  // Server-native tier — cheap, always-on when a library exists. Random
+  // shelves keep Home changing day-to-day even for users with no external
+  // discovery configured; now-playing is opt-in visible when it has data.
+  const server = useMemo<SectionConfig[]>(() => {
+    if (isOffline || !hasLibrary) return []
+    return [
+      { key: 'serverRandom', type: 'serverRandom' },
+      { key: 'serverNowPlaying', type: 'serverNowPlaying' },
+    ]
+  }, [isOffline, hasLibrary])
+
+  // ListenBrainz tier — needs a seed artist with an MBID and won't render
+  // anything without one, so it's still cheap to include unconditionally.
+  const listenbrainz = useMemo<SectionConfig[]>(() => {
+    if (isOffline || !hasLibrary || becauseSeeds.length === 0) return []
+    return [
+      { key: 'lbSimilarArtistsForYou', type: 'lbSimilarArtistsForYou', artistName: becauseSeeds[0] },
+    ]
+  }, [isOffline, hasLibrary, becauseSeeds])
+
   return useMemo(
-    () => ({ resume, library, deezer, isOffline }),
-    [resume, library, deezer, isOffline]
+    () => ({ resume, library, server, listenbrainz, deezer, isOffline }),
+    [resume, library, server, listenbrainz, deezer, isOffline]
   )
 }

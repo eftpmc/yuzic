@@ -16,6 +16,10 @@ import BecauseYouListenedSection from './components/BecauseYouListenedSection'
 import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
+import ServerRandomSection from './components/ServerRandomSection'
+import ServerNowPlayingSection from './components/ServerNowPlayingSection'
+import LBSimilarForYouSection from './components/LBSimilarForYouSection'
+import { useApi } from '@/api'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 import { sourceColor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
@@ -38,6 +42,12 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <BecauseYouListenedSection key={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
     case 'genre':
       return <GenreSection key={config.key} genre={config.genre!} refreshKey={refreshKey} />
+    case 'serverRandom':
+      return <ServerRandomSection key={config.key} refreshKey={refreshKey} />
+    case 'serverNowPlaying':
+      return <ServerNowPlayingSection key={config.key} />
+    case 'lbSimilarArtistsForYou':
+      return <LBSimilarForYouSection key={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
     default:
       return null
   }
@@ -48,9 +58,10 @@ export default function Home() {
   const { colors } = useTheme()
   const rad = useRadius()
   const [refreshKey, setRefreshKey] = useState(0)
-  const { resume, library, deezer } = useDailyLayout(refreshKey)
+  const { resume, library, server, listenbrainz, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
+  const api = useApi()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Track active query count so the spinner clears when fetches complete rather
@@ -89,7 +100,26 @@ export default function Home() {
     setRefreshKey(k => k + 1)
   }, [clearRefreshing])
 
+  // Server discovery is on whenever the adapter provides it — no per-user
+  // toggle, matching how radio and shares appear only where the server can
+  // back them. ListenBrainz too: MBID-keyed and free.
   const activeSources = [
+    {
+      id: 'server',
+      label: t('explore.sources.server', 'On your server'),
+      color: sourceColor.listenbrainz, // fallback source color; server has no brand hex
+      letter: 'S',
+      sections: server,
+      enabled: Boolean(api.discovery),
+    },
+    {
+      id: 'listenbrainz',
+      label: 'ListenBrainz',
+      color: sourceColor.listenbrainz,
+      letter: 'B',
+      sections: listenbrainz,
+      enabled: true,
+    },
     { id: 'deezer', label: 'Deezer', color: sourceColor.deezer, letter: 'D', sections: deezer, enabled: deezerEnabled },
   ]
 

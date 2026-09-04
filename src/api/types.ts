@@ -78,6 +78,24 @@ export interface ApiAdapter {
   bookmarks?: BookmarksApi;
   /** Server-persisted play queue for cross-device continuity. */
   queue?: QueueApi;
+  /** Home-shelf discovery reads (random songs / who else is listening). */
+  discovery?: DiscoveryApi;
+}
+
+export type NowPlayingEntry = {
+  songId: string;
+  title: string;
+  artist: string;
+  albumTitle?: string;
+  albumId?: string;
+  coverArt?: string;
+  username: string;
+  minutesAgo?: number;
+};
+
+export interface DiscoveryApi {
+  getRandomSongs(opts?: { size?: number; genre?: string; fromYear?: number; toYear?: number }): Promise<Song[]>;
+  getNowPlaying(): Promise<NowPlayingEntry[]>;
 }
 
 export type ServerPlayQueue = {
