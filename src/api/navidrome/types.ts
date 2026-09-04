@@ -124,6 +124,14 @@ export interface SubsonicResponseBody {
     lastFmUrl?: string;
   };
   similarSongs?: { song?: SubsonicSong[] };
+  internetRadioStations?: {
+    internetRadioStation?: Array<{
+      id?: string;
+      name?: string;
+      streamUrl?: string;
+      homepageUrl?: string;
+    }>;
+  };
   artistInfo2?: {
     biography?: string;
     musicBrainzId?: string;
