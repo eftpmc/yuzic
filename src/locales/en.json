@@ -685,7 +685,8 @@
       "instantMix": "Instant Mix",
       "download": "Download",
       "downloading": "Downloading…",
-      "downloaded": "Downloaded"
+      "downloaded": "Downloaded",
+      "generatePlaylist": "Make a playlist from this"
     },
     "sections": {
       "media": "Media",
@@ -729,7 +730,10 @@
       "addToQueueFailed": "Failed to add to queue.",
       "playNext": "{{title}} will play next.",
       "playNextFailed": "Failed to queue song next.",
-      "instantMixFailed": "Failed to start instant mix"
+      "instantMixFailed": "Failed to start instant mix",
+      "playlistGenerated_one": "Playlist created with {{count}} track",
+      "playlistGenerated_other": "Playlist created with {{count}} tracks",
+      "playlistGenerationFailed": "Could not generate playlist"
     }
   },
   "externalAlbum": {

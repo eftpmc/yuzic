@@ -4,7 +4,10 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle, Sparkles } from 'lucide-react-native';
+import { useApi } from '@/api';
+import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
+import { generateSimilarPlaylist } from '@/features/audiomuse/generatePlaylist';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -63,6 +66,11 @@ const SongOptions = forwardRef<
     const { currentSong } = usePlayingState();
     const { addToQueue, playNext, playSimilar } = usePlayingActions();
     const instantMixInFlightRef = useRef(false);
+    const generatePlaylistInFlightRef = useRef(false);
+    const [isGeneratingPlaylist, setIsGeneratingPlaylist] = React.useState(false);
+    const api = useApi();
+    const audiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
+    const audiomuseConfig = useSelector(selectAudiomuseConfig);
     const playCount = useSelector(selectSongPlayCount(selectedSong.id));
 
     const { songs: starredSongs } = useStarredSongs();
@@ -216,6 +224,26 @@ const SongOptions = forwardRef<
       }
     };
 
+    const handleGeneratePlaylist = async () => {
+      if (generatePlaylistInFlightRef.current || !audiomuseConfigured) return;
+      generatePlaylistInFlightRef.current = true;
+      setIsGeneratingPlaylist(true);
+      try {
+        const result = await generateSimilarPlaylist(api, audiomuseConfig, selectedSong, { size: 25 });
+        toast.success(t('songOptions.toasts.playlistGenerated', {
+          count: result.trackCount,
+          defaultValue: `Playlist created with ${result.trackCount} tracks`,
+        }));
+        close();
+        router.push({ pathname: '/(home)/playlistView', params: { id: result.playlistId } });
+      } catch {
+        toast.error(t('songOptions.toasts.playlistGenerationFailed', 'Could not generate playlist'));
+      } finally {
+        generatePlaylistInFlightRef.current = false;
+        setIsGeneratingPlaylist(false);
+      }
+    };
+
     return (
       <BottomSheetModal
         ref={ref}
@@ -300,6 +328,16 @@ const SongOptions = forwardRef<
             label={t('songOptions.actions.instantMix')}
             onPress={handleInstantMix}
           />
+
+          {audiomuseConfigured && (
+            <OptionSheetRow
+              icon={<Sparkles size={26} color={colors.secondary} />}
+              label={t('songOptions.actions.generatePlaylist', 'Make a playlist from this')}
+              onPress={handleGeneratePlaylist}
+              disabled={isGeneratingPlaylist}
+              loading={isGeneratingPlaylist}
+            />
+          )}
 
           <OptionSheetDivider />
 
