@@ -1,12 +1,31 @@
-import { Stack, useRouter, usePathname } from 'expo-router';
+import { Stack, useRouter, usePathname, useSegments } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
 type TabKey = 'home' | 'search' | 'library'
 
-function tabForPath(pathname: string): TabKey | null {
-    if (pathname === '/') return 'home'
-    if (pathname === '/search') return 'search'
-    if (pathname === '/library') return 'library'
+/**
+ * Which tab (if any) the current route belongs to.
+ *
+ * `usePathname()` alone isn't enough — expo-router builds return the pathname
+ * WITHOUT group segments on some routes, so `/(home)/(tabs)/library` and
+ * `/library` both hit `pathname === '/library'` in dev, but a release build
+ * has been observed returning something different (empty, or including the
+ * group), which is why "clicking Library still shows Home lit" reproduced in
+ * the built app while working in dev. Segments are the reliable source: they
+ * include the group names verbatim, so an "in (tabs)" check is unambiguous.
+ *
+ * Returns null for any route that isn't a tab (albumView, libraryCollectionView,
+ * settings, etc.) — the caller keeps the last known tab in that case.
+ */
+function tabForSegments(segments: readonly string[]): TabKey | null {
+    const tabsIdx = segments.indexOf('(tabs)')
+    if (tabsIdx === -1) return null
+    const child = segments[tabsIdx + 1]
+    // No child under (tabs) means the default (index.tsx) — the home tab.
+    if (!child) return 'home'
+    if (child === 'index') return 'home'
+    if (child === 'search') return 'search'
+    if (child === 'library') return 'library'
     return null
 }
 
@@ -90,6 +109,7 @@ export default function HomeLayout() {
     const insets = useSafeAreaInsets()
     const router = useRouter()
     const pathname = usePathname()
+    const segments = useSegments() as readonly string[]
     const { isDarkMode, colors } = useTheme()
     const themeColor = useSelector(selectThemeColor)
     const tabRowHeight = 52 + Math.max(insets.bottom, 8)
@@ -134,15 +154,17 @@ export default function HomeLayout() {
     // album from Library). Component state alone loses it; the module var
     // doesn't.
     const [activeTab, setActiveTab] = useState<TabKey>(() =>
-      tabForPath(pathname) ?? lastVisitedTab
+      tabForSegments(segments) ?? lastVisitedTab
     )
     useEffect(() => {
-        const next = tabForPath(pathname)
+        const next = tabForSegments(segments)
         if (next) {
             lastVisitedTab = next
             setActiveTab(next)
         }
-    }, [pathname])
+        // Depend on the joined segments string so React sees a stable change key
+        // — the array identity is fresh every render.
+    }, [segments.join('/')])
     const isHome = activeTab === 'home'
     const isSearch = activeTab === 'search'
     const isLibrary = activeTab === 'library'
