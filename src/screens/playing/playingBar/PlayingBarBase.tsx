@@ -13,6 +13,7 @@ import PlaylistList from '@/components/PlaylistList';
 import OutputDeviceSheet from '@/screens/playing/components/OutputDeviceSheet';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingState, usePlayingActions, usePlayingProgress } from '@/contexts/PlayingContext';
+import { hasFiniteDuration } from '@/utils/playback/contentKind';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import PlayingScreen from '@/screens/playing';
 import PlayingBackground from '@/screens/playing/components/PlayingBackground';
@@ -355,11 +356,15 @@ export default function PlayingBarBase({ variant }: Props) {
         <View style={stylesForVariant.topRowWrapper}>{content}</View>
       ) : content}
 
-      <ProgressBarStrip
-        fallbackDuration={Number(currentSong?.duration) || 1}
-        themeColor={themeColor}
-        containerStyle={stylesForVariant.progressBarContainer}
-      />
+      {/* A radio station has no meaningful position to draw — hide the strip
+       * entirely rather than let it sit flat at zero. Podcast episodes keep it. */}
+      {hasFiniteDuration(currentSong) && (
+        <ProgressBarStrip
+          fallbackDuration={Number(currentSong?.duration) || 1}
+          themeColor={themeColor}
+          containerStyle={stylesForVariant.progressBarContainer}
+        />
+      )}
     </>
   );
 

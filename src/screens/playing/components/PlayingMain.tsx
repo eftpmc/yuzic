@@ -10,6 +10,7 @@ import { usePlayingState, usePlayingProgress, usePlayingActions } from '@/contex
 import { SeekableProgressBar } from './SeekableProgressBar';
 import { useSelector } from 'react-redux';
 import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
+import { hasFiniteDuration } from '@/utils/playback/contentKind';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
@@ -142,7 +143,12 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         </Text>
       )}
 
-      <PlayingProgressSection songDuration={Number(currentSong.duration)} />
+      {/* Progress + timestamps only make sense for a finite piece of audio.
+       * A radio station's position is meaningless, and the "-0:00 remaining"
+       * label under an infinite stream reads as broken. */}
+      {hasFiniteDuration(currentSong) && (
+        <PlayingProgressSection songDuration={Number(currentSong.duration)} />
+      )}
     </View>
   );
 };

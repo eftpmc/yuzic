@@ -9,6 +9,7 @@ import {
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
 import * as navidromeScrobble from '@/api/navidrome/scrobble';
+import { canScrobble } from '@/utils/playback/contentKind';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectListenBrainzConfig,
@@ -77,6 +78,10 @@ export function useScrobbling() {
     opts: { listenedSeconds: number; startTime: number }
   ) => {
     if (!song) return;
+    // A live radio stream isn't a discrete listen — nothing to record. Podcast
+    // episodes still scrobble; a finished episode is a listen the same way a
+    // finished track is.
+    if (!canScrobble(song)) return;
     if (lastScrobbledIdRef.current === song.id) return;
     const songDuration = Number(song.duration) || 0;
     if (!passesScrobbleThreshold(opts.listenedSeconds, songDuration)) return;
@@ -140,6 +145,10 @@ export function useScrobbling() {
   }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, dispatch, api, queueScrobble]);
 
   const submitNowPlaying = useCallback((song: Song) => {
+    // Live streams don't have a "now playing this track" identity — the
+    // server would either reject an empty-duration nowPlaying or record it
+    // as an odd zero-length listen. Skip the whole path for them.
+    if (!canScrobble(song)) return;
     const songDuration = Number(song.duration) || undefined;
 
     if (activeServer?.type === 'navidrome' && serverNowPlayingEnabled) {

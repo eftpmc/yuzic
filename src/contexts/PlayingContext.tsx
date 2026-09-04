@@ -56,6 +56,7 @@ import {
   playableSongsOnly,
 } from './playableMedia';
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
+import { canFillQueueFrom } from '@/utils/playback/contentKind';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
 
@@ -489,7 +490,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     submitNowPlayingRef.current(songFromQueue);
 
-    if (shouldFillQueue({
+    // Autoplay-fill from a radio station is meaningless: the station is its
+    // own infinite feed and there's no seed to compute a follow-up from.
+    // Podcasts skip fill too — a "next episode" isn't a similarity call.
+    if (canFillQueueFrom(songFromQueue) && shouldFillQueue({
       queueLength: queueRef.current.length,
       currentIndex: newIndex,
       autoplayEnabled: autoplayEnabledRef.current,

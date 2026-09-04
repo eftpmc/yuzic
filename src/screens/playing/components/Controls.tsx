@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors';
+import { canJumpWithin } from '@/utils/playback/contentKind';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { onDark, spacing, typography } from '@/constants/design';
@@ -100,9 +101,13 @@ function JumpButton({ direction, onPress }: { direction: 'back' | 'forward'; onP
 }
 
 const Controls: React.FC = () => {
-  const { isPlaying, isBuffering, shuffleMode, repeatMode } = usePlayingState();
+  const { isPlaying, isBuffering, shuffleMode, repeatMode, currentSong } = usePlayingState();
   const { pauseSong, resumeSong, skipToNext, skipToPrevious, cycleShuffleMode, toggleRepeat, jumpBy } = usePlayingActions();
   const showJumpButtons = useSelector(selectShowJumpButtons);
+  // Jump 15s within a live stream has nothing to skip past — a radio station
+  // has no internal position. Hide the buttons on that kind rather than let
+  // them look tappable and do nothing.
+  const canJump = canJumpWithin(currentSong);
 
   const handlePlayPause = useCallback(() => {
     haptics.primary();
@@ -130,11 +135,11 @@ const Controls: React.FC = () => {
         <SkipBack size={34} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
-      {showJumpButtons && <JumpButton direction="back" onPress={handleJumpBack} />}
+      {showJumpButtons && canJump && <JumpButton direction="back" onPress={handleJumpBack} />}
 
       <PlayPauseButton isPlaying={isPlaying} isBuffering={isBuffering} onPress={handlePlayPause} />
 
-      {showJumpButtons && <JumpButton direction="forward" onPress={handleJumpForward} />}
+      {showJumpButtons && canJump && <JumpButton direction="forward" onPress={handleJumpForward} />}
 
       <Touchable onPress={handleSkipNext} hitSlop={HIT_SLOP}>
         <SkipForward size={34} color={onDark.text} fill={onDark.text} />

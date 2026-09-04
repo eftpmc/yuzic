@@ -24,8 +24,21 @@ export interface SongBase {
     serverLastPlayedAt?: number;
 }
 
+/**
+ * What kind of thing the player is playing right now. A regular song is the
+ * default: known duration, scrobbleable, safe to jump within, autoplay can
+ * fill from it. Radio and podcasts break some of those assumptions — the
+ * player checks this field before drawing a progress bar or scrobbling.
+ *
+ * Undefined is equivalent to `'song'`; a Song synthesised for a live stream
+ * or a podcast episode declares its kind explicitly.
+ */
+export type ContentKind = 'song' | 'liveStream' | 'podcastEpisode';
+
 export interface Song extends SongBase {
     streamUrl: string;
+    /** See {@link ContentKind}. Absent → treated as `'song'`. */
+    contentKind?: ContentKind;
     /** Source server ID; omitted when unknown. */
     sourceServerId?: string;
     /** Source server provider; omitted when unknown. */
