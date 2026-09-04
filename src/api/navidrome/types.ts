@@ -143,6 +143,14 @@ export interface SubsonicResponseBody {
       visitCount?: number;
     }>;
   };
+  bookmarks?: {
+    bookmark?: Array<{
+      position?: number;
+      comment?: string;
+      changed?: string;
+      entry?: { id?: string };
+    }>;
+  };
   artistInfo2?: {
     biography?: string;
     musicBrainzId?: string;

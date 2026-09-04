@@ -57,6 +57,7 @@ import {
 } from './playableMedia';
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
 
@@ -245,6 +246,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const resolvePlayableSongRef = useRef<(song: Song) => Song>((s) => s);
 
   const { scrobbleIfNeeded, submitNowPlaying, reportPlaybackProgress, resetLastScrobbled } = useScrobbling();
+  const bookmarks = useBookmarkManager();
+  const bookmarksRef = useRef(bookmarks);
+  useEffect(() => { bookmarksRef.current = bookmarks; }, [bookmarks]);
 
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
@@ -437,10 +441,16 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     const prev = currentSongRef.current;
     if (prev && prev.id !== mediaId) {
+      const prevPosition = Math.floor(TrackPlayer.getProgress().position);
       scrobbleIfNeededRef.current(prev, {
-        listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
+        listenedSeconds: prevPosition,
         startTime: scrobbleStartTimeRef.current,
       });
+      // Save a resume bookmark on the way out. isBookmarkable filters this
+      // down to long-form tracks and podcasts — a 3-min song leaving mid-way
+      // doesn't get one. Fire-and-forget: a save failing must not delay the
+      // next track loading.
+      void bookmarksRef.current.saveOrClear(prev, prevPosition);
       scrobbleStartTimeRef.current = Date.now();
     }
 
@@ -487,6 +497,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentIndex(newIndex);
     currentSongRef.current = songFromQueue;
     setCurrentSong(songFromQueue);
+
+    // Auto-resume for tracks that earn a bookmark (long-form + podcast).
+    // Only seek when the player is still at the top of the track — a user
+    // who already advanced past zero is where they want to be.
+    const resumeSeconds = bookmarksRef.current.getResumePosition(songFromQueue.id);
+    if (resumeSeconds && Math.floor(TrackPlayer.getProgress().position) < 2) {
+      TrackPlayer.seekTo(resumeSeconds);
+    }
 
     submitNowPlayingRef.current(songFromQueue);
 

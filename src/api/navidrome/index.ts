@@ -62,6 +62,11 @@ import {
   updateShare,
 } from "./shares/getShares";
 import { getTopSongs } from "./artists/getTopSongs";
+import {
+  getBookmarks,
+  createBookmark,
+  deleteBookmark,
+} from "./bookmarks/getBookmarks";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -255,6 +260,13 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     remove: async (id: string) => deleteShare(client, id),
   };
 
+  const bookmarks = {
+    list: async () => getBookmarks(client),
+    create: async (input: { songId: string; positionMs: number; comment?: string }) =>
+      createBookmark(client, input),
+    remove: async (songId: string) => deleteBookmark(client, songId),
+  };
+
   return {
     auth,
     albums,
@@ -269,5 +281,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     search,
     radio,
     shares,
+    bookmarks,
   };
 };

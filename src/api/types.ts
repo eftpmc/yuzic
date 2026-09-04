@@ -74,6 +74,24 @@ export interface ApiAdapter {
   radio?: RadioApi;
   /** Public shareable URLs for albums/playlists/tracks (Subsonic shares). */
   shares?: SharesApi;
+  /** Per-track resume positions — audiobooks, podcasts, long mixes. */
+  bookmarks?: BookmarksApi;
+}
+
+export type Bookmark = {
+  songId: string;
+  /** Playback position in milliseconds. */
+  positionMs: number;
+  comment?: string;
+  changed?: string;
+};
+
+export interface BookmarksApi {
+  list(): Promise<Bookmark[]>;
+  /** Creates or replaces the bookmark for `songId` — Subsonic upserts on the
+   * same call, no distinct update method. */
+  create(input: { songId: string; positionMs: number; comment?: string }): Promise<void>;
+  remove(songId: string): Promise<void>;
 }
 
 export type InternetRadioStation = {
