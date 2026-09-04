@@ -791,7 +791,8 @@
       "downloaded": "Downloaded",
       "favorite": "Favorite",
       "unfavorite": "Unfavorite",
-      "viewExternal": "View External"
+      "viewExternal": "View External",
+      "share": "Share"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",
@@ -799,7 +800,8 @@
       "shuffledToQueue": "Shuffled {{title}} into queue",
       "addedToFavorites": "{{title}} added to favorites.",
       "removedFromFavorites": "{{title}} removed from favorites.",
-      "updateFavoritesFailed": "Failed to update favorites."
+      "updateFavoritesFailed": "Failed to update favorites.",
+      "shareFailed": "Could not create share link"
     },
     "sections": {
       "albumInfo": "Album Info"
@@ -840,7 +842,8 @@
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
       "rename": "Rename",
-      "delete": "Delete playlist"
+      "delete": "Delete playlist",
+      "share": "Share"
     },
     "sections": {
       "info": "Playlist Info"
@@ -862,7 +865,8 @@
       "renamed": "Playlist renamed",
       "renameFailed": "Could not rename playlist",
       "deleted": "Playlist deleted",
-      "deleteFailed": "Could not delete playlist"
+      "deleteFailed": "Could not delete playlist",
+      "shareFailed": "Could not create share link"
     }
   },
   "artistOptions": {

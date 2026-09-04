@@ -4,7 +4,10 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pencil, Share2 } from 'lucide-react-native';
+import { useApi } from '@/api';
+import { shareItem } from '@/utils/share';
+import haptics from '@/utils/haptics';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { Playlist, PlaylistBase } from '@/types';
@@ -67,10 +70,38 @@ const PlaylistOptions = forwardRef<
 
   const deletePlaylist = useDeletePlaylist();
   const renamePlaylist = useRenamePlaylist();
+  const api = useApi();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const { playlistWithSongs, songs, songsLoading } = useLazyPlaylistDetail(playlist, isSheetOpen);
+
+  const handleShare = async () => {
+    if (!playlist || !api.shares || isSharing) return;
+    haptics.selection();
+    setIsSharing(true);
+    try {
+      const created = await api.shares.create({
+        itemId: playlist.id,
+        description: playlist.title,
+      });
+      if (!created?.url) {
+        toast.error(t('playlistOptions.toasts.shareFailed'));
+        return;
+      }
+      const shared = await shareItem({
+        url: created.url,
+        title: playlist.title,
+        message: playlist.title,
+      });
+      if (shared) close();
+    } catch {
+      toast.error(t('playlistOptions.toasts.shareFailed'));
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   const sheetBg = useOptionSheetBackground();
 
@@ -264,6 +295,16 @@ const PlaylistOptions = forwardRef<
           loading={isDownloading}
           dimLabel={isDownloaded || isDownloading}
         />
+
+        {api.shares && (
+          <OptionSheetRow
+            icon={<Share2 size={26} color={colors.secondary} />}
+            label={t('playlistOptions.actions.share')}
+            onPress={handleShare}
+            disabled={isSharing}
+            loading={isSharing}
+          />
+        )}
 
         {playlist.id !== FAVORITES_ID && (
           <OptionSheetRow

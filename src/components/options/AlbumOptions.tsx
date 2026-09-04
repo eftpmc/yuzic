@@ -4,8 +4,10 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe } from 'lucide-react-native';
+import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe, Share2 } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
+import { useApi } from '@/api';
+import { shareItem } from '@/utils/share';
 
 import { Album, AlbumBase } from '@/types';
 import { useSelector } from 'react-redux';
@@ -67,6 +69,8 @@ const AlbumOptions = forwardRef<
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const playCount = useSelector(selectAlbumPlayCount(album?.id ?? ''));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const api = useApi();
   const { albumWithSongs, songs, songsLoading } = useLazyAlbumDetail(album, isSheetOpen);
 
   const isStarred = starredAlbums.some(a => a.id === album?.id);
@@ -164,6 +168,32 @@ const AlbumOptions = forwardRef<
     });
   };
 
+
+  const handleShare = async () => {
+    if (!album || !api.shares || isSharing) return;
+    haptics.selection();
+    setIsSharing(true);
+    try {
+      const created = await api.shares.create({
+        itemId: album.id,
+        description: album.title,
+      });
+      if (!created?.url) {
+        toast.error(t('albumOptions.toasts.shareFailed'));
+        return;
+      }
+      const shared = await shareItem({
+        url: created.url,
+        title: album.title,
+        message: `${album.title}${album.artist?.name ? ` — ${album.artist.name}` : ''}`,
+      });
+      if (shared) close();
+    } catch {
+      toast.error(t('albumOptions.toasts.shareFailed'));
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   const handleDownload = async () => {
     if (!album || isDownloaded || isDownloading) return;
@@ -270,6 +300,16 @@ const AlbumOptions = forwardRef<
             icon={<Globe size={26} color={colors.secondary} />}
             label={t('albumOptions.actions.viewExternal')}
             onPress={handleViewExternal}
+          />
+        )}
+
+        {api.shares && (
+          <OptionSheetRow
+            icon={<Share2 size={26} color={colors.secondary} />}
+            label={t('albumOptions.actions.share')}
+            onPress={handleShare}
+            disabled={isSharing}
+            loading={isSharing}
           />
         )}
 

@@ -72,6 +72,8 @@ export interface ApiAdapter {
    * name so a future adapter can opt in without touching the caller.
    */
   radio?: RadioApi;
+  /** Public shareable URLs for albums/playlists/tracks (Subsonic shares). */
+  shares?: SharesApi;
 }
 
 export type InternetRadioStation = {
@@ -85,6 +87,25 @@ export interface RadioApi {
   list(): Promise<InternetRadioStation[]>;
   create(input: { name: string; streamUrl: string; homepageUrl?: string }): Promise<void>;
   update(input: { id: string; name: string; streamUrl: string; homepageUrl?: string }): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
+export type Share = {
+  id: string;
+  url: string;
+  description?: string;
+  created?: string;
+  expires?: string;
+  visitCount?: number;
+};
+
+export interface SharesApi {
+  list(): Promise<Share[]>;
+  /** Creates a public share URL for an album/playlist/track id and returns
+   * the created record. Nullable so callers can toast an error instead of
+   * throwing — the URL is what they actually need. */
+  create(input: { itemId: string; description?: string; expiresAtMs?: number | null }): Promise<Share | null>;
+  update(input: { id: string; description?: string; expiresAtMs?: number | null }): Promise<void>;
   remove(id: string): Promise<void>;
 }
 

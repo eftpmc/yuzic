@@ -132,6 +132,16 @@ export interface SubsonicResponseBody {
       homepageUrl?: string;
     }>;
   };
+  shares?: {
+    share?: Array<{
+      id?: string;
+      url?: string;
+      description?: string;
+      created?: string;
+      expires?: string;
+      visitCount?: number;
+    }>;
+  };
   artistInfo2?: {
     biography?: string;
     musicBrainzId?: string;

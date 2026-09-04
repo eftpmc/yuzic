@@ -55,6 +55,12 @@ import {
   updateInternetRadioStation,
   deleteInternetRadioStation,
 } from "./radio/getInternetRadioStations";
+import {
+  getShares,
+  createShare,
+  deleteShare,
+  updateShare,
+} from "./shares/getShares";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -238,6 +244,15 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     remove: async (id: string) => deleteInternetRadioStation(client, id),
   };
 
+  const shares = {
+    list: async () => getShares(client),
+    create: async (input: { itemId: string; description?: string; expiresAtMs?: number | null }) =>
+      createShare(client, input),
+    update: async (input: { id: string; description?: string; expiresAtMs?: number | null }) =>
+      updateShare(client, input),
+    remove: async (id: string) => deleteShare(client, id),
+  };
+
   return {
     auth,
     albums,
@@ -251,5 +266,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     lyrics,
     search,
     radio,
+    shares,
   };
 };
