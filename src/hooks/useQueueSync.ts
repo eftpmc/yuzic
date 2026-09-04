@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 
 import { useApi } from '@/api';
 import type { Song } from '@/types';
 import { getContentKind } from '@/utils/playback/contentKind';
+import { selectQueueSyncEnabled } from '@/utils/redux/selectors/settingsSelectors';
 
 /**
  * Subsonic servers store one play queue per user; saving it here means opening
@@ -22,7 +24,8 @@ function isServerAddressable(song: Song): boolean {
 
 export function useQueueSync() {
   const api = useApi();
-  const supported = Boolean(api.queue);
+  const enabled = useSelector(selectQueueSyncEnabled);
+  const supported = Boolean(api.queue) && enabled;
 
   const lastSavedAtRef = useRef(0);
   const lastSignatureRef = useRef<string>('');

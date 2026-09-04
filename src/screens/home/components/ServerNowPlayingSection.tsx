@@ -3,9 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
+import { useSelector } from 'react-redux';
+
 import { useApi } from '@/api';
 import { useTheme } from '@/hooks/useTheme';
 import { QueryKeys } from '@/enums/queryKeys';
+import { selectServerNowPlayingShelfEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { SECTION_H_PADDING as H_PADDING } from '@/features/home/constants';
 import type { NowPlayingEntry } from '@/api/types';
 import { spacing, typography } from '@/constants/design';
@@ -19,17 +22,21 @@ export default function ServerNowPlayingSection() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const api = useApi();
+  // The shelf shows other listeners on shared Navidromes — a legitimate
+  // privacy opt-out for someone who doesn't want to see (or be seen by)
+  // roommates in real time.
+  const shelfEnabled = useSelector(selectServerNowPlayingShelfEnabled);
 
   const query = useQuery<NowPlayingEntry[]>({
     queryKey: [QueryKeys.ServerNowPlaying],
     queryFn: async () => (await api.discovery?.getNowPlaying()) ?? [],
-    enabled: Boolean(api.discovery),
+    enabled: Boolean(api.discovery) && shelfEnabled,
     staleTime: 60_000,
     refetchInterval: 90_000,
   });
 
   const data = query.data ?? [];
-  if (!api.discovery || data.length === 0) return null;
+  if (!api.discovery || !shelfEnabled || data.length === 0) return null;
 
   return (
     <View style={styles.container}>

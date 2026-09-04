@@ -6,6 +6,7 @@ import { useApi } from '@/api';
 import type { Song } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { selectResumeLongTracksEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { isPodcastEpisode } from '@/utils/playback/contentKind';
 
 /**
@@ -43,8 +44,12 @@ export function useBookmarkManager() {
   const api = useApi();
   const serverId = useSelector(selectActiveServerId);
   const queryClient = useQueryClient();
+  const enabled = useSelector(selectResumeLongTracksEnabled);
 
-  const supported = Boolean(api.bookmarks);
+  // "Supported" also means "wanted" — an off toggle turns the manager into a
+  // no-op end-to-end (no fetch, no writes, no seeks) rather than only muting
+  // the seek.
+  const supported = Boolean(api.bookmarks) && enabled;
 
   const bookmarksQuery = useQuery({
     queryKey: [QueryKeys.Bookmarks, serverId ?? ''],

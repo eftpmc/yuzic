@@ -49,7 +49,12 @@
         "invalidError": "URL must start with http:// or https://",
         "duplicatePrimaryError": "This is already the primary URL.",
         "duplicateError": "This URL is already in the list."
-      }
+      },
+      "privacyTitle": "Privacy",
+      "queueSync": "Sync queue across devices",
+      "queueSyncDescription": "Save what you’re playing to the server so another device can pick up where you left off.",
+      "nowPlayingShelf": "Show who else is listening",
+      "nowPlayingShelfDescription": "A Home row listing other users on this server and what they’re playing right now."
     },
     "appearance": {
       "title": "Appearance",
@@ -250,7 +255,9 @@
       "showVolumeSliderSubtext": "Show an in-app volume slider on the player screen.",
       "autoplay": "Autoplay",
       "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
-      "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends."
+      "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends.",
+      "resumeLongTracks": "Resume long tracks",
+      "resumeLongTracksSubtext": "Audiobooks, DJ sets, podcast episodes — pick up where you left off."
     },
     "listenBrainz": {
       "title": "ListenBrainz",

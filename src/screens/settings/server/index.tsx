@@ -16,10 +16,14 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectSearchScope,
   selectServerScrobbleEnabled,
+  selectQueueSyncEnabled,
+  selectServerNowPlayingShelfEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setSearchScope,
   setServerScrobbleEnabled,
+  setQueueSyncEnabled,
+  setServerNowPlayingShelfEnabled,
   type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 import Touchable from '@/components/Touchable';
@@ -32,10 +36,38 @@ const ServerSettings: React.FC = () => {
   const searchScope = useSelector(selectSearchScope);
   const activeServer = useSelector(selectActiveServer);
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
+  const queueSyncEnabled = useSelector(selectQueueSyncEnabled);
+  const nowPlayingShelfEnabled = useSelector(selectServerNowPlayingShelfEnabled);
   const isNavidrome = activeServer?.type === 'navidrome';
   const isJellyfinOrEmby = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setServerScrobbleEnabled(v)); }, [dispatch]);
+  const toggleQueueSync = useCallback((v: boolean) => { dispatch(setQueueSyncEnabled(v)); }, [dispatch]);
+  const toggleNowPlayingShelf = useCallback((v: boolean) => { dispatch(setServerNowPlayingShelfEnabled(v)); }, [dispatch]);
+
+  // Shared-server privacy — only Navidrome exposes these surfaces today, so
+  // gate on that rather than showing a toggle for something a Jellyfin user
+  // can't turn on either way. If the server later grows a queue/nowplaying
+  // API these will appear automatically for that server too.
+  const supportsQueueSync = isNavidrome;
+  const supportsNowPlayingShelf = isNavidrome;
+
+  const privacyItems = useMemo(() => {
+    const items: Array<{ label: string; subtext: string; value: boolean; onValueChange: (v: boolean) => void }> = [];
+    if (supportsQueueSync) items.push({
+      label: t('settings.server.queueSync'),
+      subtext: t('settings.server.queueSyncDescription'),
+      value: queueSyncEnabled,
+      onValueChange: toggleQueueSync,
+    });
+    if (supportsNowPlayingShelf) items.push({
+      label: t('settings.server.nowPlayingShelf'),
+      subtext: t('settings.server.nowPlayingShelfDescription'),
+      value: nowPlayingShelfEnabled,
+      onValueChange: toggleNowPlayingShelf,
+    });
+    return items;
+  }, [supportsQueueSync, supportsNowPlayingShelf, queueSyncEnabled, nowPlayingShelfEnabled, toggleQueueSync, toggleNowPlayingShelf, t]);
 
   // Now-playing follows scrobble; there was a separate row for it and the two
   // states were never independently useful — a user who doesn't want the
@@ -117,6 +149,13 @@ const ServerSettings: React.FC = () => {
 
       {isNavidrome && <SettingsToggleGroup items={navidromeScrobbleItems} />}
       {isJellyfinOrEmby && <SettingsToggleGroup items={jellyfinScrobbleItems} />}
+
+      {privacyItems.length > 0 && (
+        <>
+          <SettingsCardHeader subtle title={t('settings.server.privacyTitle')} />
+          <SettingsToggleGroup items={privacyItems} />
+        </>
+      )}
     </SettingsScreen>
   );
 };

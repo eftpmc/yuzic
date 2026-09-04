@@ -11,6 +11,7 @@ import {
   selectShowJumpButtons,
   selectShowVolumeSlider,
   selectAutoplayEnabled,
+  selectResumeLongTracksEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectIsAudiomuseConfigured } from '@/utils/redux/selectors/audiomuseSelectors';
@@ -21,6 +22,7 @@ import {
   setShowJumpButtons,
   setShowVolumeSlider,
   setAutoplayEnabled,
+  setResumeLongTracksEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
 const PlayerSettings: React.FC = () => {
@@ -33,6 +35,7 @@ const PlayerSettings: React.FC = () => {
   const showJumpButtons = useSelector(selectShowJumpButtons);
   const showVolumeSlider = useSelector(selectShowVolumeSlider);
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
+  const resumeLongTracks = useSelector(selectResumeLongTracksEnabled);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
   const supportsOpus = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
 
@@ -80,7 +83,16 @@ const PlayerSettings: React.FC = () => {
       value: autoplayEnabled,
       onValueChange: (v: boolean) => dispatch(setAutoplayEnabled(v)),
     },
-  ], [t, isAudiomuseConfigured, autoplayEnabled, dispatch]);
+    // Long-form resume (audiobooks, DJ sets, podcast episodes). Off means
+    // a paused 90-min mix restarts from the top next time. Podcast episodes
+    // are always bookmarkable, so this toggle governs songs ≥ 20 minutes.
+    {
+      label: t('settings.player.resumeLongTracks'),
+      subtext: t('settings.player.resumeLongTracksSubtext'),
+      value: resumeLongTracks,
+      onValueChange: (v: boolean) => dispatch(setResumeLongTracksEnabled(v)),
+    },
+  ], [t, isAudiomuseConfigured, autoplayEnabled, resumeLongTracks, dispatch]);
 
   return (
     <SettingsScreen title={t('settings.player.title')}>
