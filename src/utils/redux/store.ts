@@ -10,6 +10,10 @@ import listenbrainzReducer from './slices/listenbrainzSlice';
 import playbackReducer from './slices/playbackSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
+import libraryAlbumsReducer from './slices/libraryAlbumsSlice';
+import libraryArtistsReducer from './slices/libraryArtistsSlice';
+import libraryPlaylistsReducer from './slices/libraryPlaylistsSlice';
+import libraryTracksReducer from './slices/libraryTracksSlice';
 import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
 import searchHistoryReducer, { normalizeSearchHistoryEntries } from './slices/searchHistorySlice';
@@ -124,13 +128,25 @@ const statsPersistConfig = {
   migrate: resetMigrate,
   throttle: 1000,
 };
+// The library shell now carries only genres (a tiny Record<serverId, string[]>).
+// Bumping to v3 wipes any pre-split payload that still had albums/artists/etc.
+// in-tree so the new per-collection slices start clean and this one doesn't
+// pay JSON.parse for a duplicate of them on cold boot.
 const libraryPersistConfig = {
   key: 'library',
   storage,
-  version: 2,
+  version: 3,
   migrate: resetMigrate,
   throttle: 1000,
 };
+// Each collection persists independently so their JSON.parse on cold boot
+// happens in parallel and one big blob (tracks) doesn't block the others.
+// Throttle matches the shared library slice; a full sync writes each of
+// these once per tick.
+const libraryAlbumsPersistConfig = { key: 'libraryAlbums', storage, throttle: 1000 };
+const libraryArtistsPersistConfig = { key: 'libraryArtists', storage, throttle: 1000 };
+const libraryPlaylistsPersistConfig = { key: 'libraryPlaylists', storage, throttle: 1000 };
+const libraryTracksPersistConfig = { key: 'libraryTracks', storage, throttle: 1000 };
 // Kept separate from libraryPersistConfig: starred toggles on every heart tap and
 // must not re-serialize/re-write the full albums/artists/tracks catalog each time.
 const libraryStarredPersistConfig = {
@@ -148,6 +164,10 @@ export const rootReducer = combineReducers({
     playback: playbackReducer,
     stats: statsReducer,
     library: libraryReducer,
+    libraryAlbums: libraryAlbumsReducer,
+    libraryArtists: libraryArtistsReducer,
+    libraryPlaylists: libraryPlaylistsReducer,
+    libraryTracks: libraryTracksReducer,
     libraryStarred: libraryStarredReducer,
     offlineMutations: offlineMutationsReducer,
     searchHistory: searchHistoryReducer,
@@ -162,6 +182,10 @@ const persistedReducer = combineReducers({
     playback: persistReducer(playbackPersistConfig, playbackReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),
+    libraryAlbums: persistReducer(libraryAlbumsPersistConfig, libraryAlbumsReducer),
+    libraryArtists: persistReducer(libraryArtistsPersistConfig, libraryArtistsReducer),
+    libraryPlaylists: persistReducer(libraryPlaylistsPersistConfig, libraryPlaylistsReducer),
+    libraryTracks: persistReducer(libraryTracksPersistConfig, libraryTracksReducer),
     libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),
     offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
     searchHistory: persistReducer(searchHistoryPersistConfig, searchHistoryReducer),

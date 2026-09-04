@@ -1,7 +1,8 @@
-import libraryReducer, {
+import libraryPlaylistsReducer, {
   addLibraryPlaylistSong,
   removeLibraryPlaylistSong,
-} from './librarySlice'
+  setLibraryPlaylists,
+} from './libraryPlaylistsSlice'
 import { PlaylistBase, Song } from '@/types'
 
 const song: Song = {
@@ -26,18 +27,15 @@ const playlist: PlaylistBase = {
 
 describe('library offline reducers', () => {
   it('optimistically adds and removes playlist songs', () => {
-    const initial = libraryReducer(undefined, {
-      type: 'library/setLibraryPlaylists',
-      payload: [playlist],
-    })
+    const initial = libraryPlaylistsReducer(undefined, setLibraryPlaylists([playlist]))
 
-    const added = libraryReducer(
+    const added = libraryPlaylistsReducer(
       initial,
       addLibraryPlaylistSong({ playlistId: playlist.id, song })
     )
     expect(new Date(added.playlists[0].changed).getTime()).toBeGreaterThan(0)
 
-    const removed = libraryReducer(
+    const removed = libraryPlaylistsReducer(
       added,
       removeLibraryPlaylistSong({ playlistId: playlist.id, songId: song.id })
     )

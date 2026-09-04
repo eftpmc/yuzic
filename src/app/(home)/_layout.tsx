@@ -136,7 +136,7 @@ export default function HomeLayout() {
         const prev = prevServerIdRef.current
         prevServerIdRef.current = activeServerId
         if (prev && activeServerId && prev !== activeServerId) {
-            dispatch(clearLibrary())
+            clearLibrary(dispatch)
             dispatch(clearLibraryStarred())
             if (!isOfflineRef.current) sync()
         }
