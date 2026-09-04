@@ -51,6 +51,7 @@ import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
 import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachabilityWatcher';
 import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
+import { DownloaderCompletionWatcher } from '@/features/downloaders/DownloaderCompletionWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
 import { spacing } from '@/constants/design';
@@ -180,6 +181,7 @@ export default function HomeLayout() {
         <AccountSheetProvider>
         <ServerReachabilityWatcher />
         <AutoDownloadWatcher />
+        <DownloaderCompletionWatcher />
         <View style={{ flex: 1 }}>
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />

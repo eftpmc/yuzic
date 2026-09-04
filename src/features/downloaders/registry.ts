@@ -46,6 +46,17 @@ export type DownloaderDefinition = {
   downloadAlbum(config: DownloaderConfig, req: AlbumDownloadRequest): Promise<DownloadResult>
   /** Only downloaders that can fetch individual files support this (Lidarr is album-oriented). */
   downloadTrack?(config: DownloaderConfig, req: TrackDownloadRequest): Promise<DownloadResult>
+  /**
+   * Reads the transfer queue and reports which items disappeared since the
+   * previous read — the global completion watcher uses these disappearances to
+   * kick a server rescan so downloaded music appears without a manual pull.
+   * Typed loosely because each downloader has its own record shape and the
+   * watcher only needs the count of finished items.
+   */
+  fetchQueueWithDiff<T extends { id: string }>(
+    config: DownloaderConfig,
+    previous: T[]
+  ): Promise<{ currentQueue: T[]; finishedItems: T[] }>
 }
 
 const lidarrDownloader: DownloaderDefinition = {
@@ -55,6 +66,7 @@ const lidarrDownloader: DownloaderDefinition = {
   albumAddedKey: 'externalAlbum.download.addedToLidarr',
   settingsRoute: '/settings/lidarrView',
   downloadAlbum: (config, album) => lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album)),
+  fetchQueueWithDiff: lidarr.fetchQueueWithDiff as DownloaderDefinition['fetchQueueWithDiff'],
 }
 
 function slskdConfigOf(config: DownloaderConfig): slskd.SlskdConfig {
@@ -74,6 +86,8 @@ const slskdDownloader: DownloaderDefinition = {
   settingsRoute: '/settings/slskdView',
   downloadAlbum: (config, album) => slskd.downloadAlbum(slskdConfigOf(config), album.title, album.artist),
   downloadTrack: (config, req) => slskd.downloadTrack(slskdConfigOf(config), req.title, req.artist),
+  fetchQueueWithDiff: ((config: DownloaderConfig, previous: { id: string }[]) =>
+    slskd.fetchQueueWithDiff(slskdConfigOf(config), previous as any)) as DownloaderDefinition['fetchQueueWithDiff'],
 }
 
 export const ALL_DOWNLOADERS: DownloaderDefinition[] = [lidarrDownloader, slskdDownloader]
