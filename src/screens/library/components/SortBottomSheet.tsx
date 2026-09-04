@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { ArrowDownAZ, Calendar, CalendarPlus, Check, Clock3, Flame } from 'lucide-react-native';
@@ -11,37 +10,35 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
 
 interface SortBottomSheetProps {
   sortOrder: SortOrder;
   onSelect: (value: SortOrder) => void;
-  /** Restricts which options render, in the given order. Defaults to all five. */
-  options?: SortOrder[];
 }
 
 const SortBottomSheet = forwardRef<
   BottomSheetModal,
   SortBottomSheetProps
->(({ sortOrder, onSelect, options }, ref) => {
+>(({ sortOrder, onSelect }, ref) => {
   const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
   const { colors } = useTheme();
+  const rad = useRadius();
 
-  const allSortOptions = [
+  const sortOptions = [
     { value: 'recent' as const, label: t('home.sort.mostRecent'), Icon: Clock3 },
     { value: 'recentlyAdded' as const, label: t('home.sort.recentlyAdded'), Icon: CalendarPlus },
     { value: 'title' as const, label: t('home.sort.alphabetical'), Icon: ArrowDownAZ },
     { value: 'year' as const, label: t('home.sort.releaseYear'), Icon: Calendar },
     { value: 'userplays' as const, label: t('home.sort.mostPlayed'), Icon: Flame },
   ];
-
-  const sortOptions = options
-    ? allSortOptions.filter(o => options.includes(o.value))
-    : allSortOptions;
 
   const snapPoints = useMemo(() => ['48%'], []);
 
@@ -66,7 +63,7 @@ const SortBottomSheet = forwardRef<
           const isSelected = sortOrder === option.value;
 
           return (
-            <TouchableOpacity
+            <Touchable
               key={option.value}
               style={[
                 styles.pickerItem,
@@ -74,6 +71,7 @@ const SortBottomSheet = forwardRef<
                   backgroundColor: isSelected
                     ? themeColor + '22'
                     : 'transparent',
+                  borderRadius: rad.md,
                 },
               ]}
               onPress={() => onSelect(option.value)}
@@ -82,7 +80,7 @@ const SortBottomSheet = forwardRef<
                 <option.Icon
                   size={18}
                   color={isSelected ? themeColor : colors.subtext}
-                  style={{ marginRight: 10 }}
+                  style={{ marginRight: spacing.controlGap }}
                 />
                 <Text
                   style={[styles.pickerText, { color: colors.secondary, fontWeight: isSelected ? '600' : '400' }]}
@@ -94,7 +92,7 @@ const SortBottomSheet = forwardRef<
               {isSelected && (
                 <Check size={20} color={themeColor} />
               )}
-            </TouchableOpacity>
+            </Touchable>
           );
         })}
       </BottomSheetView>
@@ -108,27 +106,25 @@ export default SortBottomSheet;
 
 const styles = StyleSheet.create({
   sheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
   },
   sheetTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
+    ...typography.sheetTitle,
+    marginBottom: spacing.controlGap,
   },
   pickerItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   pickerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   pickerText: {
-    fontSize: 16,
+    ...typography.body,
   },
 });

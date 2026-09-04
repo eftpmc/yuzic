@@ -4,12 +4,15 @@ import { reduxStorage as storage } from '@/utils/mmkvStorage';
 
 import serversReducer from './slices/serversSlice';
 import downloadersReducer from './slices/downloadersSlice';
+import audiomuseReducer from './slices/audiomuseSlice';
 import settingsReducer from './slices/settingsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
 import lastfmReducer from './slices/lastfmSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
+import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
+import searchHistoryReducer, { normalizeSearchHistoryEntries } from './slices/searchHistorySlice';
 
 // Returns undefined (→ initialState) only on version bump; otherwise passes state through.
 const resetMigrate = (state: any, currentVersion: number): Promise<any> => {
@@ -25,43 +28,40 @@ const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
     scope === 'client+external' ? 'client' :
     scope === 'server+external' ? 'server' :
     scope ?? 'server';
-  // v2 -> v3: isGridView/librarySortOrder became per-category maps. Carry the
-  // old global grid preference forward (songs still defaults to list either way).
-  const carriedGridView = state?.isGridView ?? true;
-  const libraryGridViewByCategory = state?.libraryGridViewByCategory ?? {
-    albums: carriedGridView,
-    artists: carriedGridView,
-    playlists: carriedGridView,
-    songs: false,
-    downloaded: carriedGridView,
-  };
-  const librarySortOrderByCategory = state?.librarySortOrderByCategory ?? {
-    albums: 'recentlyAdded',
-    artists: 'title',
-    playlists: 'recent',
-    songs: 'title',
-    downloaded: 'title',
-  };
-  return Promise.resolve({
-    ...state,
-    syncOnAppStart: true,
-    searchScope: migratedScope,
-    libraryGridViewByCategory,
-    librarySortOrderByCategory,
-  });
+  return Promise.resolve({ ...state, syncOnAppStart: true, searchScope: migratedScope });
+};
+
+// v1 gave history entries a shape (query vs. opened entity); before that each
+// entry was a bare query string. Lift the old strings instead of dropping them.
+const searchHistoryMigrate = (state: any, currentVersion: number): Promise<any> => {
+  if (state?._persist?.version === currentVersion) return Promise.resolve(state);
+  const byServer = state?.byServer;
+  if (!byServer) return Promise.resolve(state);
+  const migrated: Record<string, unknown> = {};
+  for (const [serverId, entries] of Object.entries(byServer)) {
+    migrated[serverId] = normalizeSearchHistoryEntries(entries);
+  }
+  return Promise.resolve({ ...state, byServer: migrated });
 };
 
 const serversPersistConfig = { key: 'servers', storage };
 const downloadersPersistConfig = { key: 'downloaders', storage };
+const audiomusePersistConfig = { key: 'audiomuse', storage };
 const settingsPersistConfig = {
   key: 'settings',
   storage,
-  version: 3,
+  version: 2,
   migrate: settingsMigrate,
 };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
 const lastfmPersistConfig = { key: 'lastfm', storage };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
+const searchHistoryPersistConfig = {
+  key: 'searchHistory',
+  storage,
+  version: 1,
+  migrate: searchHistoryMigrate,
+};
 
 const statsPersistConfig = {
   key: 'stats',
@@ -75,27 +75,39 @@ const libraryPersistConfig = {
   version: 2,
   migrate: resetMigrate,
 };
+// Kept separate from libraryPersistConfig: starred toggles on every heart tap and
+// must not re-serialize/re-write the full albums/artists/tracks catalog each time.
+const libraryStarredPersistConfig = {
+  key: 'libraryStarred',
+  storage,
+};
 
 export const rootReducer = combineReducers({
     servers: serversReducer,
     downloaders: downloadersReducer,
+    audiomuse: audiomuseReducer,
     settings: settingsReducer,
     listenbrainz: listenbrainzReducer,
     lastfm: lastfmReducer,
     stats: statsReducer,
     library: libraryReducer,
+    libraryStarred: libraryStarredReducer,
     offlineMutations: offlineMutationsReducer,
+    searchHistory: searchHistoryReducer,
 });
 
 const persistedReducer = combineReducers({
     servers: persistReducer(serversPersistConfig, serversReducer),
     downloaders: persistReducer(downloadersPersistConfig, downloadersReducer),
+    audiomuse: persistReducer(audiomusePersistConfig, audiomuseReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
     lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),
+    libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),
     offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
+    searchHistory: persistReducer(searchHistoryPersistConfig, searchHistoryReducer),
 });
 
 const store = configureStore({

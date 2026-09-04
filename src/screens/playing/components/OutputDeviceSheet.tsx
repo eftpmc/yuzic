@@ -1,14 +1,14 @@
-import React, { forwardRef, useCallback } from 'react';
+import React, { forwardRef, useCallback, useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   Alert,
 } from 'react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Airplay, Cast, Check, Plus, RotateCcw, Smartphone } from 'lucide-react-native';
+import IconActionButton from '@/components/IconActionButton';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -17,28 +17,40 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import { useCast } from '@/contexts/CastContext';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
-const AirplayButton = Platform.OS === 'ios'
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ? require('react-airplay').AirplayButton
-  : null;
+const {
+  AirplayButton,
+  useAirplayRoutes,
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+} = Platform.OS === 'ios' ? require('react-airplay') : { AirplayButton: null, useAirplayRoutes: () => [] };
 
 const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const { colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const { devices, isScanning, isProbing, scan, probeManual } = useDlnaDiscovery();
   const {
     activeDevice, isConnecting, connectToDevice, disconnectDevice,
   } = useCast();
+  const airplayRoutes = useAirplayRoutes();
+  const airplayDevice = airplayRoutes[0] ?? null;
 
   const handleOpen = useCallback(() => { scan(); }, [scan]);
 
+  const [connectingDlnaUdn, setConnectingDlnaUdn] = useState<string | null>(null);
+
   const handleConnectDlna = useCallback(async (device: DiscoveredDevice) => {
+    setConnectingDlnaUdn(device.udn);
     try {
       await connectToDevice(device);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     } catch {
       toast.error('Could not connect to device');
+    } finally {
+      setConnectingDlnaUdn(null);
     }
   }, [connectToDevice, ref]);
 
@@ -74,37 +86,44 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {/* Title */}
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.secondary }]}>Connect</Text>
-          <TouchableOpacity onPress={scan} disabled={isScanning} style={styles.titleAction} activeOpacity={0.6}>
-            {isScanning
-              ? <SpinningLoaderCircle size={16} color={colors.subtext} />
-              : <RotateCcw size={16} color={colors.subtext} />
-            }
-          </TouchableOpacity>
+          <IconActionButton
+            icon={<RotateCcw size={16} color={colors.subtext} />}
+            onPress={scan}
+            loading={isScanning}
+            accessibilityLabel="Scan for devices"
+            size="compact"
+          />
         </View>
 
-        {/* This device — always shown, highlighted when nothing is casting */}
-        <TouchableOpacity
-          style={[styles.item, { backgroundColor: !activeDevice ? themeColor + '22' : 'transparent' }]}
+        {/* This device — highlighted only when nothing is casting via DLNA or AirPlay */}
+        <Touchable
+          style={[styles.item, { backgroundColor: !activeDevice && !airplayDevice ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}
           onPress={async () => {
             if (activeDevice) await disconnectDevice();
             (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
           }}
-          activeOpacity={0.7}
         >
           <View style={styles.itemLeft}>
-            <Smartphone size={18} color={!activeDevice ? themeColor : colors.subtext} />
+            <Smartphone size={18} color={!activeDevice && !airplayDevice ? themeColor : colors.subtext} />
             <Text style={[styles.itemLabel, { color: colors.secondary }]}>This device</Text>
           </View>
-          {!activeDevice && <Check size={18} color={themeColor} />}
-        </TouchableOpacity>
+          {!activeDevice && !airplayDevice && <Check size={18} color={themeColor} />}
+        </Touchable>
 
         {/* AirPlay — iOS only */}
         {Platform.OS === 'ios' && AirplayButton && (
-          <View style={[styles.item, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.item, { backgroundColor: airplayDevice ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}>
             <View style={styles.itemLeft}>
-              <Airplay size={18} color={colors.subtext} />
-              <Text style={[styles.itemLabel, { color: colors.secondary }]}>AirPlay</Text>
+              <Airplay size={18} color={airplayDevice ? themeColor : colors.subtext} />
+              <Text style={[
+                styles.itemLabel,
+                { color: colors.secondary, fontWeight: airplayDevice ? '600' : '400' },
+              ]}
+              >
+                {airplayDevice ? airplayDevice.portName : 'AirPlay'}
+              </Text>
             </View>
+            {airplayDevice && <Check size={18} color={themeColor} />}
             <AirplayButton
               style={StyleSheet.absoluteFillObject}
               tintColor="transparent"
@@ -114,16 +133,18 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         )}
 
         {/* ── DLNA ── */}
-        {(devices.length > 0 || activeDevice) && (
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        {(devices.length > 0 || activeDevice || isScanning) && (
+          <>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <Text style={[styles.sectionLabel, { color: colors.subtext }]}>DLNA / UPnP</Text>
+          </>
         )}
 
         {/* Active DLNA device */}
         {activeDevice && (
-          <TouchableOpacity
-            style={[styles.item, { backgroundColor: themeColor + '22' }]}
+          <Touchable
+            style={[styles.item, { backgroundColor: themeColor + '22', borderRadius: rad.md }]}
             onPress={disconnectDevice}
-            activeOpacity={0.7}
           >
             <View style={styles.itemLeft}>
               <Cast size={18} color={themeColor} />
@@ -132,30 +153,37 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
               </Text>
             </View>
             <Check size={18} color={themeColor} />
-          </TouchableOpacity>
+          </Touchable>
         )}
 
         {/* Discovered DLNA devices */}
         {devices.map(device => {
           if (activeDevice?.udn === device.udn) return null;
           return (
-            <TouchableOpacity
+            <Touchable
               key={device.udn}
-              style={[styles.item, { backgroundColor: 'transparent' }]}
+              style={[styles.item, { backgroundColor: 'transparent', borderRadius: rad.md }]}
               onPress={() => handleConnectDlna(device)}
               disabled={isConnecting}
-              activeOpacity={0.7}
             >
               <View style={styles.itemLeft}>
                 <Cast size={18} color={colors.subtext} />
                 <Text style={[styles.itemLabel, { color: colors.secondary }]}>{device.name}</Text>
               </View>
-              {isConnecting && <SpinningLoaderCircle size={18} color={colors.subtext} />}
-            </TouchableOpacity>
+              {connectingDlnaUdn === device.udn && <SpinningLoaderCircle size={18} color={colors.subtext} />}
+            </Touchable>
           );
         })}
 
-        {/* Empty state */}
+        {/* Scanning / empty state */}
+        {isScanning && devices.length === 0 && !activeDevice && (
+          <View style={styles.searchingRow}>
+            <SpinningLoaderCircle size={16} color={colors.subtext} />
+            <Text style={[styles.empty, { color: colors.subtext, paddingVertical: 0 }]}>
+              Searching for devices...
+            </Text>
+          </View>
+        )}
         {!isScanning && devices.length === 0 && !activeDevice && (
           <Text style={[styles.empty, { color: colors.subtext }]}>
             No devices found on your network.
@@ -164,11 +192,10 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* Manual DLNA entry */}
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <TouchableOpacity
-          style={[styles.item, { backgroundColor: 'transparent' }]}
+        <Touchable
+          style={[styles.item, { backgroundColor: 'transparent', borderRadius: rad.md }]}
           onPress={handleManualEntry}
           disabled={isProbing}
-          activeOpacity={0.7}
         >
           <View style={styles.itemLeft}>
             {isProbing
@@ -177,7 +204,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
             }
             <Text style={[styles.itemLabel, { color: colors.subtext }]}>Add device manually</Text>
           </View>
-        </TouchableOpacity>
+        </Touchable>
 
       </BottomSheetView>
     </BottomSheetModal>
@@ -189,34 +216,29 @@ export default OutputDeviceSheet;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
+    paddingBottom: spacing.xl,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  titleAction: {
-    padding: 4,
+    ...typography.sheetTitle,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    marginVertical: 4,
+    marginVertical: spacing.xs,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 15,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   itemLeft: {
     flexDirection: 'row',
@@ -224,11 +246,26 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   itemLabel: {
-    fontSize: 16,
+    ...typography.body,
   },
   empty: {
-    fontSize: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    ...typography.rowSubtitle,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  sectionLabel: {
+    ...typography.caption,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.tight,
+  },
+  searchingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
 });

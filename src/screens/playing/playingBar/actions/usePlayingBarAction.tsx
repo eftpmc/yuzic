@@ -8,6 +8,7 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useAlbums } from '@/hooks/albums';
 import { useApi } from '@/api';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { onDark } from '@/constants/design';
 
 export type PlayingBarActionConfig = {
   id: PlayingBarAction;
@@ -42,14 +43,14 @@ export function usePlayingBarAction(
     case 'skip':
       return {
         id,
-        icon: <SkipForward size={20} color="#fff" />,
+        icon: <SkipForward size={20} color={onDark.text} />,
         onPress: skipToNext,
       };
 
     case 'favorite':
       return {
         id,
-        icon: <Heart size={20} color="#fff" fill={isFavorite ? '#fff' : 'none'} />,
+        icon: <Heart size={20} color={onDark.text} fill={isFavorite ? onDark.text : 'none'} />,
         onPress: async () => {
           if (!currentSong) return;
 
@@ -84,7 +85,7 @@ export function usePlayingBarAction(
     case 'randomAlbum':
       return {
         id,
-        icon: <Dices size={20} color="#fff" />,
+        icon: <Dices size={20} color={onDark.text} />,
         onPress: async () => {
           if (!albums.length) return;
           if (isOffline) {
@@ -111,14 +112,14 @@ export function usePlayingBarAction(
     case 'addToPlaylist':
       return {
         id,
-        icon: <PlusCircle size={20} color="#fff" />,
+        icon: <PlusCircle size={20} color={onDark.text} />,
         onPress: options?.presentAddToPlaylist ?? (() => {}),
       };
 
     case 'cast':
       return {
         id,
-        icon: <Cast size={20} color="#fff" />,
+        icon: <Cast size={20} color={onDark.text} />,
         onPress: options?.presentCast ?? (() => {}),
       };
 

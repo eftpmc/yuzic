@@ -1,13 +1,13 @@
-import React, { memo, useEffect, useRef, useState } from "react";
+import React, { memo, useRef } from "react";
 import { InteractionManager } from "react-native";
-import SongOptions from "@/components/options/SongOptions";
-import PlaylistList from "@/components/PlaylistList";
-import { usePlaying } from "@/contexts/PlayingContext";
-import { Song, SongBase } from "@/types";
+import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
+import { usePlayingActions } from "@/contexts/PlayingContext";
+import { SongBase } from "@/types";
 import { useTranslation } from "react-i18next";
 import { toast } from "@backpackapp-io/react-native-toast";
-import { useSheetRef } from '@/utils/useSheetRef';
 import { usePlayableSongResolver } from '@/hooks/songs';
+import { FULL_TRACK_FETCH_TIMEOUT_MS, TRACK_PRESS_COOLDOWN_MS } from '@/constants/playback';
+import haptics from '@/utils/haptics';
 import LibraryItem from './LibraryItem';
 
 type Props = {
@@ -17,24 +17,15 @@ type Props = {
   gridSpacing?: number;
 };
 
-const SHEET_TRANSITION_DELAY_MS = 180;
-const PRESS_COOLDOWN_MS = 700;
-const FULL_TRACK_FETCH_TIMEOUT_MS = 3000;
-
 const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }) => {
   const { t } = useTranslation();
-  const { playSimilar, playSong } = usePlaying();
+  const { playSimilar, playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
+  const { openSongOptions } = useSongActionSheets();
 
-  const optionsRef = useSheetRef();
-  const playlistRef = useSheetRef();
-  const sheetOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressInFlightRef = useRef(false);
   const longPressInFlightRef = useRef(false);
   const lastPressAtRef = useRef(0);
-
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-  const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
   const formatDuration = (duration?: number) => {
     if (!duration) return "";
@@ -45,13 +36,16 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
 
   const handlePress = async () => {
     const now = Date.now();
-    if (now - lastPressAtRef.current < PRESS_COOLDOWN_MS) return;
+    if (now - lastPressAtRef.current < TRACK_PRESS_COOLDOWN_MS) return;
     if (pressInFlightRef.current) return;
     lastPressAtRef.current = now;
     pressInFlightRef.current = true;
     try {
       const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
-      if (!fullSong) return;
+      if (!fullSong) {
+        toast.error(t("common.playbackError"));
+        return;
+      }
       if (fullSong.filePath) {
         await playSong(fullSong);
         return;
@@ -71,11 +65,13 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
   const handleLongPress = async () => {
     if (longPressInFlightRef.current) return;
     longPressInFlightRef.current = true;
+    haptics.heavy();
     try {
       const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
       if (fullSong) {
-        setSelectedSong(fullSong);
-        optionsRef.current?.present();
+        openSongOptions(fullSong);
+      } else {
+        toast.error(t("common.songDetailsError"));
       }
     } catch (error) {
       console.warn("Failed to fetch full track data", error);
@@ -85,22 +81,6 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (sheetOpenTimerRef.current) clearTimeout(sheetOpenTimerRef.current);
-    };
-  }, []);
-
-  const openPlaylistList = () => {
-    if (!selectedSong) return;
-    setPlaylistSong(selectedSong);
-    sheetOpenTimerRef.current = setTimeout(() => {
-      playlistRef.current?.present();
-    }, SHEET_TRANSITION_DELAY_MS);
-  };
-
-  const closePlaylistList = () => setPlaylistSong(null);
-
   const duration = Number(song.duration);
   const subtext = isGridView
     ? song.artist
@@ -109,6 +89,7 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
   return (
     <>
       <LibraryItem
+        testID="library-track-item"
         cover={song.cover}
         title={song.title}
         subtext={subtext}
@@ -117,20 +98,6 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
         gridSpacing={gridSpacing}
         onPress={() => { void handlePress(); }}
         onLongPress={() => { void handleLongPress(); }}
-      />
-
-      {selectedSong && (
-        <SongOptions
-          ref={optionsRef}
-          selectedSong={selectedSong}
-          onAddToPlaylist={openPlaylistList}
-        />
-      )}
-
-      <PlaylistList
-        ref={playlistRef}
-        selectedSong={playlistSong}
-        onClose={closePlaylistList}
       />
     </>
   );

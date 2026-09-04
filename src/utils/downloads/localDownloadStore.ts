@@ -13,6 +13,8 @@ export type PersistedDownloadJob = {
   tracks: Song[];
   createdAt: number;
   updatedAt: number;
+  // Failed runs so far; the queue drops the job once this hits its cap.
+  attempts?: number;
 };
 
 type DownloadsSnapshot = {

@@ -4,13 +4,11 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Platform,
-  ActivityIndicator,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
-import { ChevronLeft, Shuffle, Play, Check, Download } from 'lucide-react-native'
+import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'
@@ -22,26 +20,47 @@ import { fetchAlbumDetailsSettled } from '@/hooks/albums'
 import { buildCover } from '@/utils/builders/buildCover'
 import { useTheme } from '@/hooks/useTheme'
 import { useTracks } from '@/hooks/tracks'
-import { usePlaying } from '@/contexts/PlayingContext'
+import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useDownload } from '@/contexts/DownloadContext'
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors'
+import { useSheetRef } from '@/utils/useSheetRef'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
+import {
+  DetailActionRow,
+  DetailCircleAction,
+  DetailPlayAction,
+  DetailHeaderBar,
+  DetailHeaderIconButton,
+  useDetailHeaderInset,
+  useDetailHeroTitleLayout,
+} from '@/components/DetailHeader'
+import GenreOptions from '@/components/options/GenreOptions'
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   genre: string
   albums: AlbumBase[]
+  showNavigation?: boolean
 }
 
-const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
+const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) => {
   const navigation = useNavigation<any>()
   const queryClient = useQueryClient()
   const api = useApi()
   const { isDarkMode, colors } = useTheme()
-  const themeColor = useSelector(selectThemeColor)
+  const rad = useRadius()
   const activeServer = useSelector(selectActiveServer)
-  const { playSongInCollection } = usePlaying()
+  const { playSongInCollection } = usePlayingActions()
   const { downloadAlbumById, getCollectionDownloadState } = useDownload()
   const { t } = useTranslation()
+
+  // The bar floats over this art now, so the wrapper grows by exactly the room
+  // it and the status bar take: the content below stays put and the extra strip
+  // at the top is filled with art rather than a band.
+  const barInset = useDetailHeaderInset()
+  const onTitleLayout = useDetailHeroTitleLayout()
 
   const [isDownloadingAll, setIsDownloadingAll] = useState(false)
   const [songsLoading, setSongsLoading] = useState(false)
@@ -121,9 +140,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
     if (isDownloadingAll || isDownloading || isFullyDownloaded || !albums.length) return
     setIsDownloadingAll(true)
     try {
-      for (const album of albums) {
-        await downloadAlbumById(album.id)
-      }
+      await Promise.all(albums.map(album => downloadAlbumById(album.id)))
     } finally {
       setIsDownloadingAll(false)
     }
@@ -131,7 +148,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
 
   return (
     <>
-      <View style={styles.fullBleedWrapper}>
+      <View style={[styles.fullBleedWrapper, { height: GENRE_HERO_HEIGHT + barInset }]}>
         {coverUri && (
           <TurboImage
             source={{ uri: coverUri }}
@@ -156,17 +173,22 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
           style={StyleSheet.absoluteFill}
         />
 
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
-          </TouchableOpacity>
-        </View>
+        {showNavigation && (
+          <View style={styles.header}>
+            <Touchable
+              testID="detail-back-button"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              style={[styles.backButton, { borderRadius: rad.pill }]}
+              onPress={() => navigation.goBack()}
+            >
+              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+            </Touchable>
+          </View>
+        )}
       </View>
 
-      <View style={styles.content}>
+      <View style={styles.content} onLayout={onTitleLayout}>
         <Text style={[styles.genreName, { color: colors.secondary }]}>
           {genre}
         </Text>
@@ -175,55 +197,83 @@ const GenreHeader: React.FC<Props> = ({ genre, albums }) => {
         </Text>
       </View>
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
+      <DetailActionRow style={styles.buttonRow}>
+        <DetailCircleAction
           onPress={() => { void play(true) }}
           disabled={songsLoading}
-          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+          style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
+          accessibilityLabel="Shuffle genre"
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.secondary} />
+            <SpinningLoaderCircle size={18} color={colors.secondary} />
           ) : (
             <Shuffle size={18} color={colors.secondary} />
           )}
-        </TouchableOpacity>
+        </DetailCircleAction>
 
-        <TouchableOpacity
+        <DetailPlayAction
           onPress={() => { void play(false) }}
           disabled={songsLoading}
-          style={[styles.playButton, { backgroundColor: themeColor }]}
+          accessibilityLabel="Play genre"
         >
           {songsLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <SpinningLoaderCircle size={18} color="#fff" />
           ) : (
             <Play size={24} color="#fff" fill="#fff" />
           )}
-        </TouchableOpacity>
+        </DetailPlayAction>
 
-        <TouchableOpacity
+        <DetailCircleAction
           onPress={() => { void handleDownloadAll() }}
           disabled={isDownloadingAll || isDownloading}
-          style={[styles.secondaryButton, isDarkMode && styles.secondaryButtonDark]}
+          style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
+          accessibilityLabel={
+            isDownloadingAll || isDownloading
+              ? 'Downloading genre'
+              : isFullyDownloaded
+                ? 'Downloaded'
+                : 'Download all genre songs'
+          }
         >
           {isDownloadingAll || isDownloading ? (
-            <ActivityIndicator size="small" color={colors.secondary} />
+            <SpinningLoaderCircle size={18} color={colors.secondary} />
           ) : isFullyDownloaded ? (
             <Check size={18} color={colors.secondary} />
           ) : (
             <Download size={18} color={colors.secondary} />
           )}
-        </TouchableOpacity>
-      </View>
+        </DetailCircleAction>
+      </DetailActionRow>
+    </>
+  )
+}
+
+export const GenreHeaderBar: React.FC<Props> = ({ genre, albums }) => (
+  <DetailHeaderBar title={genre} rightAction={<GenreOptionsButton genre={genre} albums={albums} />} />
+)
+
+function GenreOptionsButton({ genre, albums }: { genre: string; albums: AlbumBase[] }) {
+  const { colors } = useTheme()
+  const optionsSheetRef = useSheetRef()
+  return (
+    <>
+      <DetailHeaderIconButton onPress={() => optionsSheetRef.current?.present()}>
+        <Ellipsis size={24} color={colors.secondary} />
+      </DetailHeaderIconButton>
+      <GenreOptions ref={optionsSheetRef} genre={genre} albums={albums} />
     </>
   )
 }
 
 export default GenreHeader
 
+/** The blurred cover behind a genre's name, before the floating bar's inset. */
+const GENRE_HERO_HEIGHT = 220;
+
 const styles = StyleSheet.create({
   fullBleedWrapper: {
     width: '100%',
-    height: 220,
+    height: GENRE_HERO_HEIGHT,
     justifyContent: 'flex-end',
     alignItems: 'center',
     overflow: 'hidden',
@@ -235,52 +285,34 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     zIndex: 20,
   },
   backButton: {
-    padding: 6,
-    borderRadius: 20,
+    padding: spacing.tight,
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
   content: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   genreName: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    ...typography.display,
     textAlign: 'center',
   },
   subtext: {
-    fontSize: 14,
-    marginTop: 6,
+    ...typography.rowSubtitle,
+    marginTop: spacing.tight,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   secondaryButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   secondaryButtonDark: {
     backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 })

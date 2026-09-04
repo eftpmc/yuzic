@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   label: string;
@@ -19,7 +21,8 @@ const SettingsInputField: React.FC<Props> = ({
   secureTextEntry,
   autoCapitalize = 'none',
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const rad = useRadius();
 
   return (
     <View style={styles.wrapper}>
@@ -28,7 +31,7 @@ const SettingsInputField: React.FC<Props> = ({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={isDarkMode ? '#666' : '#999'}
+        placeholderTextColor={colors.placeholder}
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         autoCorrect={false}
@@ -38,6 +41,7 @@ const SettingsInputField: React.FC<Props> = ({
             borderColor: colors.border,
             backgroundColor: colors.muted,
             color: colors.text,
+            borderRadius: rad.md,
           },
         ]}
       />
@@ -49,19 +53,18 @@ export default SettingsInputField;
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
   },
   label: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '500',
-    marginBottom: 6,
+    marginBottom: spacing.tight,
   },
   input: {
+    ...typography.body,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 15,
+    padding: spacing.controlGap,
   },
 });

@@ -1,7 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export type IconSelectItem = {
   id: string;
@@ -17,6 +20,7 @@ type Props = {
 
 const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSelect }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
 
   return (
     <SettingsCard>
@@ -26,22 +30,22 @@ const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSel
           {items.map(item => {
             const active = selected === item.id;
             return (
-              <TouchableOpacity
+              <Touchable
                 key={item.id}
                 onPress={() => onSelect(item.id)}
-                activeOpacity={0.7}
                 style={[
                   styles.button,
                   {
                     backgroundColor: active ? colors.themeColor : colors.muted,
                     borderColor: active ? colors.themeColor : colors.border,
+                    borderRadius: rad.md,
                   },
                 ]}
               >
                 {React.cloneElement(item.icon, {
                   color: active ? '#fff' : colors.secondary,
                 })}
-              </TouchableOpacity>
+              </Touchable>
             );
           })}
         </View>
@@ -54,13 +58,13 @@ export default SettingsIconSelectCard;
 
 const styles = StyleSheet.create({
   inner: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   title: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '500',
-    marginBottom: 10,
+    marginBottom: spacing.controlGap,
   },
   row: {
     flexDirection: 'row',
@@ -69,7 +73,6 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     height: 40,
-    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

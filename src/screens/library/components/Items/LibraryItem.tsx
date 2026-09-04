@@ -1,9 +1,12 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
+import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   cover: CoverSource;
@@ -15,6 +18,7 @@ type Props = {
   circularImage?: boolean;
   onPress: () => void;
   onLongPress: () => void;
+  testID?: string;
 };
 
 const LibraryItem: React.FC<Props> = ({
@@ -27,20 +31,23 @@ const LibraryItem: React.FC<Props> = ({
   circularImage = false,
   onPress,
   onLongPress,
+  testID,
 }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const listRadius = circularImage ? 26 : 4;
   const gridRadius = circularImage ? gridWidth / 2 : 8;
 
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={300}
       style={({ pressed }) => [
         isGridView
-          ? [styles.gridContainer, { width: gridWidth, marginHorizontal: gridSpacing, marginVertical: gridSpacing }]
+          ? [styles.gridContainer, { width: gridWidth, marginHorizontal: gridSpacing, marginVertical: gridSpacing, borderRadius: rad.md }]
           : styles.listContainer,
         pressed && styles.pressed,
       ]}
@@ -51,7 +58,7 @@ const LibraryItem: React.FC<Props> = ({
         style={
           isGridView
             ? { width: gridWidth, aspectRatio: 1, borderRadius: gridRadius }
-            : { width: 52, height: 52, borderRadius: listRadius, marginRight: 12 }
+            : { width: 52, height: 52, borderRadius: listRadius, marginRight: spacing.md }
         }
       />
 
@@ -65,9 +72,9 @@ const LibraryItem: React.FC<Props> = ({
       </View>
 
       {!isGridView && (
-        <TouchableOpacity onPress={onLongPress} hitSlop={10}>
+        <Touchable onPress={onLongPress} hitSlop={10} feedback="control">
           <Ellipsis size={18} color={colors.subtext} />
-        </TouchableOpacity>
+        </Touchable>
       )}
     </Pressable>
   );
@@ -79,27 +86,24 @@ const styles = StyleSheet.create({
   listContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    borderRadius: 6,
+    paddingVertical: spacing.tight,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.sm,
   },
-  gridContainer: {
-    borderRadius: 8,
-  },
+  gridContainer: {},
   listText: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   gridText: {
-    marginTop: 6,
+    marginTop: spacing.tight,
     width: '100%',
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.compactRowTitle,
   },
   subtext: {
-    fontSize: 13,
+    ...typography.caption,
   },
   pressed: {
     opacity: 0.9,

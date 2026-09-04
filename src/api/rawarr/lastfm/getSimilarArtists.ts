@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../../fetchWithTimeout';
+
 export type LastFmSimilarArtist = {
   name: string
   mbid: string | null
@@ -15,7 +17,7 @@ export async function getLastFmSimilarArtists(
       artist: artistName,
       limit: String(limit),
     });
-    const res = await fetch(`${rawarrUrl}/api/lastfm/similar-artists?${params}`);
+    const res = await fetchWithTimeout(`${rawarrUrl}/api/lastfm/similar-artists?${params}`);
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data.artists) ? data.artists : [];

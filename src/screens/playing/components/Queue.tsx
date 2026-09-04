@@ -4,16 +4,18 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GripVertical, ChevronLeft, Pause, Play, SkipForward } from 'lucide-react-native';
-import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingActions, usePlayingQueueVersion } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type QueueItemProps = {
   item: Song;
@@ -35,19 +37,22 @@ function queueItemPropsAreEqual(prev: QueueItemProps, next: QueueItemProps) {
 }
 
 const QueueItem = memo(
-  ({ item, index, isCurrent, onPress, onLongPress }: QueueItemProps) => (
-    <TouchableOpacity
+  ({ item, index, isCurrent, onPress, onLongPress }: QueueItemProps) => {
+    const rad = useRadius();
+    return (
+    <Touchable
       onPress={() => onPress(index)}
       onLongPress={onLongPress}
       style={[
         styles.queueItem,
+        { borderRadius: rad.md },
         isCurrent && styles.activeQueueItem,
       ]}
     >
       <MediaImage
         cover={item.cover}
         size="thumb"
-        style={styles.artwork}
+        style={[styles.artwork, { borderRadius: rad.md }]}
       />
 
       <View style={styles.metadata}>
@@ -62,9 +67,10 @@ const QueueItem = memo(
         </Text>
       </View>
 
-      <GripVertical color="#888" />
-    </TouchableOpacity>
-  ),
+      <GripVertical color={onDark.mutedText} />
+    </Touchable>
+    );
+  },
   queueItemPropsAreEqual
 );
 
@@ -75,8 +81,10 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   width,
 }) => {
   const { t } = useTranslation();
-  const { currentSong, isPlaying, queueVersion } = usePlayingState();
+  const rad = useRadius();
+  const { currentSong, isPlaying } = usePlayingState();
   const { getQueue, skipTo, moveTrack, pauseSong, resumeSong, skipToNext } = usePlayingActions();
+  const queueVersion = usePlayingQueueVersion();
 
   const albumsById = useSelector(selectAlbumsById);
   const insets = useSafeAreaInsets();
@@ -131,21 +139,24 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
   );
 
   return (
-    <View style={[styles.container, { width }]}>
+    <View testID="playing-queue" style={[styles.container, { width }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity
+        <Touchable
+          testID="queue-back-button"
+          accessibilityRole="button"
+          accessibilityLabel="Back to player"
           onPress={onBack}
           style={styles.backButton}
         >
-          <ChevronLeft size={28} color="#fff" />
-        </TouchableOpacity>
+          <ChevronLeft size={28} color={onDark.text} />
+        </Touchable>
 
         {currentSong && (
           <MediaImage
             cover={currentSong.cover}
             size="thumb"
-            style={styles.headerImage}
+            style={[styles.headerImage, { borderRadius: rad.md }]}
           />
         )}
 
@@ -165,22 +176,22 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
         </View>
 
         <View style={styles.playControls}>
-          <TouchableOpacity
+          <Touchable
             onPress={isPlaying ? pauseSong : resumeSong}
-            style={styles.controlButton}
+            style={[styles.controlButton, { borderRadius: rad.md }]}
           >
             {isPlaying
-              ? <Pause size={20} color="#fff" fill="#fff" />
-              : <Play size={20} color="#fff" fill="#fff" />
+              ? <Pause size={20} color={onDark.text} fill={onDark.text} />
+              : <Play size={20} color={onDark.text} fill={onDark.text} />
             }
-          </TouchableOpacity>
+          </Touchable>
 
-          <TouchableOpacity
+          <Touchable
             onPress={skipToNext}
-            style={styles.controlButton}
+            style={[styles.controlButton, { borderRadius: rad.md }]}
           >
-            <SkipForward size={20} color="#fff" fill="#fff" />
-          </TouchableOpacity>
+            <SkipForward size={20} color={onDark.text} fill={onDark.text} />
+          </Touchable>
         </View>
       </View>
 
@@ -212,40 +223,38 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 32
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl
   },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
 
   backButton: {
-    padding: 8,
-    marginRight: 8,
+    padding: spacing.sm,
+    marginRight: spacing.sm,
     marginLeft: -8,
   },
 
   playControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
 
   controlButton: {
-    padding: 6,
-    marginLeft: 6,
+    padding: spacing.tight,
+    marginLeft: spacing.tight,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
   },
 
   headerImage: {
     width: 60,
     height: 60,
-    borderRadius: 8,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
 
   headerTextContainer: {
@@ -253,35 +262,33 @@ const styles = StyleSheet.create({
   },
 
   nowPlayingTitle: {
-    fontSize: 18,
+    ...typography.navigationTitle,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
 
   nowPlayingArtist: {
-    fontSize: 14,
-    color: '#aaa',
+    ...typography.rowSubtitle,
+    color: onDark.subtext,
   },
 
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#fff',
-    marginBottom: 2,
+    ...typography.rowTitle,
+    color: onDark.text,
+    marginBottom: spacing.xxs,
   },
 
   subLabel: {
-    fontSize: 12,
-    color: '#888',
-    marginBottom: 12,
+    ...typography.caption,
+    color: onDark.mutedText,
+    marginBottom: spacing.md,
   },
 
   queueItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: spacing.controlGap,
+    paddingHorizontal: spacing.md,
   },
 
   activeQueueItem: {
@@ -291,8 +298,7 @@ const styles = StyleSheet.create({
   artwork: {
     width: 50,
     height: 50,
-    borderRadius: 8,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
 
   metadata: {
@@ -300,8 +306,8 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
-    color: '#fff',
+    ...typography.body,
+    color: onDark.text,
   },
 
   titleActive: {
@@ -309,8 +315,8 @@ const styles = StyleSheet.create({
   },
 
   artist: {
-    fontSize: 14,
-    color: '#aaa',
+    ...typography.rowSubtitle,
+    color: onDark.subtext,
   },
 });
 

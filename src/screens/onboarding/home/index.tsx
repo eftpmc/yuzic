@@ -14,12 +14,15 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
+import { spacing, typography, onDark } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Home() {
     const { t } = useTranslation();
     const router = useRouter();
     const themeColor = useSelector(selectThemeColor);
     const dispatch = useDispatch();
+    const rad = useRadius();
     const [isPressed, setIsPressed] = useState(false);
 
     const hasSeenGetStarted = useSelector(selectHasSeenGetStarted);
@@ -49,7 +52,7 @@ export default function Home() {
             <View style={styles.content}>
                 <Image
                     source={require('@assets/images/logo.png')}
-                    style={styles.appIcon}
+                    style={[styles.appIcon, { borderRadius: rad.md }]}
                     contentFit="contain"
                     cachePolicy="memory-disk"
                 />
@@ -68,13 +71,13 @@ export default function Home() {
                         <View
                             style={[
                                 styles.offsetButton,
-                                { backgroundColor: `${themeColor}AA` },
+                                { backgroundColor: `${themeColor}AA`, borderRadius: rad.md },
                             ]}
                         />
                         <View
                             style={[
                                 styles.button,
-                                { backgroundColor: themeColor, shadowColor: themeColor },
+                                { backgroundColor: themeColor, shadowColor: themeColor, borderRadius: rad.md },
                                 isPressed && styles.buttonPressed,
                             ]}
                         >
@@ -96,8 +99,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#000',
-        paddingHorizontal: 20,
+        backgroundColor: onDark.background,
+        paddingHorizontal: spacing.roomy,
     },
     content: {
         flex: 1,
@@ -107,21 +110,19 @@ const styles = StyleSheet.create({
     appIcon: {
         width: 150,
         height: 150,
-        marginBottom: 30,
-        borderRadius: 8,
+        marginBottom: spacing.xxl,
     },
     appName: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
+        ...typography.display,
+        color: onDark.text,
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     subtext: {
-        fontSize: 16,
-        color: '#ccc',
+        ...typography.body,
+        color: onDark.subtext,
         textAlign: 'center',
-        paddingHorizontal: 30,
+        paddingHorizontal: spacing.xxl,
     },
     bottomContent: {
         width: '100%',
@@ -131,20 +132,18 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: '90%',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     offsetButton: {
         position: 'absolute',
         top: 6,
         width: '100%',
         height: 48,
-        borderRadius: 8,
         zIndex: -1,
     },
     button: {
         width: '100%',
-        paddingVertical: 15,
-        borderRadius: 8,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         justifyContent: 'center',
         shadowOffset: { width: 0, height: 5 },
@@ -157,15 +156,14 @@ const styles = StyleSheet.create({
         shadowOpacity: 0,
     },
     buttonText: {
-        color: '#fff',
-        fontWeight: '600',
-        fontSize: 16,
+        ...typography.sheetTitle,
+        color: onDark.text,
     },
     termsText: {
-        color: '#888',
-        fontSize: 12,
+        ...typography.caption,
+        color: onDark.mutedText,
         textAlign: 'center',
-        paddingHorizontal: 10,
-        marginTop: 12,
+        paddingHorizontal: spacing.controlGap,
+        marginTop: spacing.md,
     },
 });

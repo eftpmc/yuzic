@@ -3,8 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { CheckCircle, CirclePlus, RefreshCw, CloudDownload } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +11,21 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { useTheme } from '@/hooks/useTheme';
-import { MediaImage } from '@/components/MediaImage';
-import { usePlaying } from '@/contexts/PlayingContext';
+import IconActionButton from '@/components/IconActionButton';
+import MediaListRow from '@/components/MediaListRow';
+import SectionHeader from '@/components/SectionHeader';
+import { usePlayingActions } from '@/contexts/PlayingContext';
+import { createAudiomuseQueueFillProvider } from '@/contexts/queueProviders';
 import { usePreviewPlayer } from '@/hooks/usePreviewPlayer';
-import { selectThemeColor, selectShowSourceHeaders, selectDeezerDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { useApi } from '@/api';
+import {
+  selectShowSourceHeaders,
+  selectDeezerDiscoveryEnabled,
+} from '@/utils/redux/selectors/settingsSelectors';
+import {
+  selectIsAudiomuseConfigured,
+  selectAudiomuseConfig,
+} from '@/utils/redux/selectors/audiomuseSelectors';
 import { useAddSongToPlaylist } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -26,32 +35,20 @@ import * as deezer from '@/api/deezer';
 import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
 import { RAWARR_URL } from '@/constants/rawarr';
 import { QueryKeys } from '@/enums/queryKeys';
-import DownloadAlbumSheet from '@/components/options/DownloadAlbumSheet';
-import {
-  selectLidarrAuthenticated,
-  selectSlskdAuthenticated,
-} from '@/utils/redux/selectors/downloadersSelectors';
+import DownloadSheet from '@/components/options/DownloadSheet';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
+import shuffleArray from '@/utils/shuffleArray';
+import seededShuffle from '@/utils/seededShuffle';
+import SkeletonListRow from '@/components/SkeletonListRow';
+import Touchable from '@/components/Touchable';
+import { sourceColor, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
+
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
-const COVER_SIZE = 44;
-
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
-function seededShuffle<T>(arr: T[], seed: number): T[] {
-  const a = [...arr];
-  let s = (seed * 2 ** 31) | 0;
-  for (let i = a.length - 1; i > 0; i--) {
-    s = Math.imul(s, 1664525) + 1013904223;
-    const j = Math.abs(s) % (i + 1);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]> {
   if (!artistNames.length) return [];
@@ -64,7 +61,7 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
     const seen = new Set<string>(artistNames.map(n => n.toLowerCase()));
     const candidates: string[] = [];
     for (const similar of similarResults) {
-      for (const s of shuffle(similar)) {
+      for (const s of shuffleArray(similar)) {
         if (candidates.length >= artistNames.length * 8) break;
         const key = s.name.toLowerCase();
         if (!seen.has(key)) {
@@ -74,7 +71,7 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
       }
     }
 
-    const shuffledCandidates = shuffle(candidates);
+    const shuffledCandidates = shuffleArray(candidates);
     const trackGroupResults = await Promise.allSettled(
       shuffledCandidates.map(async name => {
         const artist = await deezer.resolveDeezerArtistByName(name);
@@ -88,7 +85,7 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
 
     const seenIds = new Set<string>();
     const tracks: ExternalSong[] = [];
-    const groups = shuffle(trackGroups.filter(group => group.length > 0));
+    const groups = shuffleArray(trackGroups.filter(group => group.length > 0));
 
     for (let trackIndex = 0; trackIndex < 2; trackIndex++) {
       for (const group of groups) {
@@ -120,23 +117,6 @@ async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]>
   }
 }
 
-// ── Shared section header ──────────────────────────────────────────────────────
-
-type SectionHeaderProps = {
-  title: string;
-  badge?: React.ReactNode;
-};
-
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title, badge }) => {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.sectionTitleRow}>
-      {badge}
-      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>{title}</Text>
-    </View>
-  );
-};
-
 // ── Local song row ─────────────────────────────────────────────────────────────
 
 type LocalRowProps = {
@@ -147,7 +127,7 @@ type LocalRowProps = {
 const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSimilar } = usePlaying();
+  const { playSimilar } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const addToPlaylist = useAddSongToPlaylist();
   const [adding, setAdding] = useState(false);
@@ -157,6 +137,7 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
     try {
       const full = await resolvePlayableSong(song);
       if (full) await playSimilar(full);
+      else toast.error(t('common.playbackError'));
     } catch {
       toast.error(t('common.playbackError'));
     }
@@ -177,23 +158,21 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
   }, [adding, added, addToPlaylist, playlistId, song.id, t]);
 
   return (
-    <TouchableOpacity style={styles.row} onPress={() => void handlePress()} activeOpacity={0.7}>
-      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
-      <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, { color: colors.secondary }]} numberOfLines={1}>
-          {song.title}
-        </Text>
-        <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
-          {song.artist}{song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}
-        </Text>
-      </View>
-      <TouchableOpacity onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
-        {added
-          ? <CheckCircle size={22} color={colors.placeholder} />
-          : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
-        }
-      </TouchableOpacity>
-    </TouchableOpacity>
+    <MediaListRow
+      title={song.title}
+      subtitle={`${song.artist}${song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}`}
+      cover={song.cover}
+      onPress={() => void handlePress()}
+      variant="compact"
+      trailing={
+        <Touchable onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
+          {added
+            ? <CheckCircle size={22} color={colors.placeholder} />
+            : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
+          }
+        </Touchable>
+      }
+    />
   );
 };
 
@@ -211,33 +190,27 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
   const hasPreview = !!song.previewUrl;
 
   return (
-    <TouchableOpacity
-      style={styles.row}
+    <MediaListRow
+      title={song.title}
+      subtitle={`${song.artist}${song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}`}
+      cover={song.cover}
       onPress={() => song.previewUrl && void toggle(song, song.previewUrl)}
       disabled={!hasPreview}
-      activeOpacity={hasPreview ? 0.7 : 1}
-    >
-      <MediaImage cover={song.cover} size="thumb" style={styles.cover} />
-      <View style={styles.rowText}>
-        <Text style={[styles.rowTitle, { color: colors.secondary }]} numberOfLines={1}>
-          {song.title}
-        </Text>
-        <Text style={[styles.rowSub, { color: colors.subtext }]} numberOfLines={1}>
-          {song.artist}{song.duration ? ` · ${formatSongDuration(song.duration)}` : ''}
-        </Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => hasDownloader && onDownload(song)}
-        disabled={!hasDownloader}
-        hitSlop={10}
-        style={styles.actionBtn}
-      >
-        <CloudDownload
-          size={22}
-          color={hasDownloader ? colors.subtext : colors.muted}
-        />
-      </TouchableOpacity>
-    </TouchableOpacity>
+      variant="compact"
+      trailing={
+        <Touchable
+          onPress={() => hasDownloader && onDownload(song)}
+          disabled={!hasDownloader}
+          hitSlop={10}
+          style={styles.actionBtn}
+        >
+          <CloudDownload
+            size={22}
+            color={hasDownloader ? colors.subtext : colors.muted}
+          />
+        </Touchable>
+      }
+    />
   );
 };
 
@@ -257,6 +230,10 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { tracks } = useTracks();
+  const api = useApi();
+  const isOffline = useIsOffline();
+  const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
+  const audiomuseConfig = useSelector(selectAudiomuseConfig);
 
   const playlistSongIds = useMemo(
     () => new Set((playlist.songs ?? []).map(s => s.id)),
@@ -273,7 +250,9 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
     return [...names].slice(0, 3);
   }, [playlist.songs]);
 
-  const localSongs = useMemo<SongBase[]>(() => {
+  // Same-artist shuffle from the local library — used whenever AudioMuse-AI
+  // isn't configured, and as a safety net if its similarity call fails.
+  const fallbackLocalSongs = useMemo<SongBase[]>(() => {
     const artistSet = new Set(playlistArtistNames.map(n => n.toLowerCase()));
     const pool = tracks.filter(
       s => !playlistSongIds.has(s.id) && s.artist && artistSet.has(s.artist.toLowerCase())
@@ -281,26 +260,53 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
     return seededShuffle(pool, localSeed).slice(0, LOCAL_COUNT);
   }, [tracks, playlistSongIds, playlistArtistNames, localSeed]);
 
+  // Reseed a handful of playlist tracks each refresh so acoustic similarity
+  // results vary too, matching the fallback's shuffled feel.
+  const audiomuseSeeds = useMemo(
+    () => seededShuffle(playlist.songs ?? [], localSeed).slice(0, 5),
+    [playlist.songs, localSeed]
+  );
+
+  const audiomuseQuery = useQuery({
+    queryKey: [
+      QueryKeys.RecommendedLocalSongs,
+      'audiomuse',
+      playlist.id,
+      audiomuseSeeds.map(s => s.id).join(','),
+    ],
+    queryFn: () => createAudiomuseQueueFillProvider(audiomuseConfig, api).fetchExtension({
+      recentSongs: audiomuseSeeds,
+      excludeIds: playlistSongIds,
+      count: LOCAL_COUNT,
+    }),
+    enabled: isAudiomuseConfigured && !isOffline && audiomuseSeeds.length > 0,
+    staleTime: 1000 * 60 * 30,
+    networkMode: 'online',
+  });
+
+  const localSongs: SongBase[] = audiomuseQuery.data?.length
+    ? audiomuseQuery.data
+    : fallbackLocalSongs;
+
   if (localSongs.length === 0) return null;
 
   return (
     <View style={styles.section}>
-      <SectionHeader title={t('playlist.recommended.local')} />
+      <SectionHeader
+        title={t('playlist.recommended.local')}
+        action={
+          <IconActionButton
+            icon={<RefreshCw size={17} color={colors.subtext} />}
+            onPress={onRefresh}
+            accessibilityLabel={t('playlist.recommended.refresh')}
+            size="compact"
+          />
+        }
+      />
 
       {localSongs.map(song => (
         <LocalRow key={song.id} song={song} playlistId={playlist.id} />
       ))}
-
-      <TouchableOpacity
-        style={[styles.refreshBtn, { borderColor: colors.border }]}
-        onPress={onRefresh}
-        activeOpacity={0.7}
-      >
-        <RefreshCw size={16} color={colors.subtext} />
-        <Text style={[styles.refreshText, { color: colors.subtext }]}>
-          {t('playlist.recommended.refresh')}
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -318,13 +324,11 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
 }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
+  const rad = useRadius();
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
-  const isLidarrConnected = useSelector(selectLidarrAuthenticated);
-  const isSlskdConnected = useSelector(selectSlskdAuthenticated);
-  const hasDownloader = isLidarrConnected || isSlskdConnected;
+  const hasDownloader = useAnyDownloaderConnected();
   const downloadSheetRef = useSheetRef();
   const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
 
@@ -382,15 +386,30 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         title={t('playlist.recommended.deezerTitle')}
         badge={
           showSourceHeaders ? (
-            <View style={[styles.sourceBadge, styles.sourceBadgeDeezer]}>
+            <View style={[styles.sourceBadge, styles.sourceBadgeDeezer, { borderRadius: rad.pill }]}>
               <Text style={styles.sourceBadgeLetter}>D</Text>
             </View>
           ) : undefined
         }
+        action={
+          <IconActionButton
+            icon={<RefreshCw size={17} color={colors.subtext} />}
+            onPress={onRefreshExternal}
+            loading={externalQuery.isFetching}
+            accessibilityLabel={t('playlist.recommended.refresh')}
+            size="compact"
+          />
+        }
       />
 
       {externalQuery.isLoading ? (
-        <ActivityIndicator color={themeColor} style={styles.loader} />
+        // Rows rather than a spinner: this is loading a list, and the
+        // placeholder should keep the shape the list is about to take.
+        <View style={styles.loader}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonListRow key={`recommended-loading-${index}`} />
+          ))}
+        </View>
       ) : (externalQuery.data ?? []).length === 0 ? (
         <Text style={[styles.emptyText, { color: colors.placeholder }]}>
           {t('playlist.recommended.externalEmpty')}
@@ -406,24 +425,8 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         ))
       )}
 
-      <TouchableOpacity
-        style={[styles.refreshBtn, { borderColor: colors.border }]}
-        onPress={onRefreshExternal}
-        activeOpacity={0.7}
-        disabled={externalQuery.isFetching}
-      >
-        <RefreshCw
-          size={16}
-          color={colors.subtext}
-          style={{ opacity: externalQuery.isFetching ? 0.3 : 1 }}
-        />
-        <Text style={[styles.refreshText, { color: colors.subtext, opacity: externalQuery.isFetching ? 0.3 : 1 }]}>
-          {t('playlist.recommended.refresh')}
-        </Text>
-      </TouchableOpacity>
-
       {albumForDownload && (
-        <DownloadAlbumSheet
+        <DownloadSheet
           album={albumForDownload}
           sheetRef={downloadSheetRef}
         />
@@ -484,83 +487,31 @@ export default RecommendedSection;
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 40,
+    paddingBottom: spacing.xxxl,
   },
   section: {
-    paddingTop: 24,
-  },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    gap: 8,
+    paddingTop: spacing.xl,
   },
   sourceBadge: {
     width: 22,
     height: 22,
-    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sourceBadgeDeezer: {
-    backgroundColor: '#A238CA',
+    backgroundColor: sourceColor.deezer,
   },
   sourceBadgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  cover: {
-    width: COVER_SIZE,
-    height: COVER_SIZE,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  rowText: {
-    flex: 1,
-    minWidth: 0,
-    marginRight: 6,
-  },
-  rowTitle: {
-    fontSize: 15,
-    fontWeight: '400',
-  },
-  rowSub: {
-    fontSize: 13,
-    marginTop: 1,
-  },
-  actionBtn: { padding: 4 },
-  loader: { marginVertical: 24 },
+  actionBtn: { padding: spacing.xs },
+  loader: { marginVertical: spacing.xl },
   emptyText: {
-    fontSize: 13,
+    ...typography.caption,
     textAlign: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-  },
-  refreshBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-  refreshText: {
-    fontSize: 14,
-    fontWeight: '500',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.roomy,
   },
 });

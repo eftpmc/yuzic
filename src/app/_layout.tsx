@@ -8,9 +8,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { enableFreeze } from 'react-native-screens';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { CastProvider } from '@/contexts/CastContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
+import { SongActionSheetProvider } from '@/contexts/SongActionSheetContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider, useSelector } from 'react-redux';
@@ -29,8 +31,11 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { queryStorage } from '@/utils/mmkvStorage';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
+import { isLikelyNetworkError, setServerUnreachable } from '@/features/connectivity/serverReachability';
 import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -39,6 +44,14 @@ onlineManager.setEventListener(setOnline => {
     setOnline(!!state.isConnected)
   })
 })
+
+// Stack.Screen entries under (home) (albumView, artistView, playlistView,
+// settings, genreView) don't set freezeOnBlur explicitly, so they fall back
+// to this global flag — without it, screens left behind on the stack (e.g.
+// an artist view still mounted under a pushed album view) keep re-rendering
+// instead of pausing. The (tabs) navigator sets freezeOnBlur explicitly and
+// doesn't depend on this.
+enableFreeze(true);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -93,7 +106,15 @@ function isQueryForActiveServer(queryKey: readonly unknown[]): boolean {
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (_error, query) => {
+    onError: (error, query) => {
+      // A fetch-level failure (host unreachable, aborted by our timeout) marks
+      // the server unreachable; ServerReachabilityWatcher then pings to confirm
+      // and clears the flag on the first success, so a one-off blip
+      // self-corrects within seconds.
+      if (isLikelyNetworkError(error)) {
+        setServerUnreachable(true);
+      }
+
       // Only show a toast when a query has no cached data — silent background
       // refreshes shouldn't interrupt the user if stale data is still visible.
       const rootKey = query.queryKey[0];
@@ -151,6 +172,7 @@ function useImageMemoryCleanup() {
 
 function AppShell() {
   const { resolved, isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   const language = useSelector(selectLanguage);
   useImageMemoryCleanup();
 
@@ -182,6 +204,7 @@ function AppShell() {
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
               <BottomSheetModalProvider>
+                <SongActionSheetProvider>
                 <Stack>
                   <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
                   <Stack.Screen name="(home)" options={{ headerShown: false }} />
@@ -196,7 +219,7 @@ function AppShell() {
                       backgroundColor: isDarkMode
                         ? 'rgba(34,34,34,0.9)'
                         : 'rgba(255,255,255,0.9)',
-                      borderRadius: 10,
+                      borderRadius: rad.md,
                       shadowColor: '#000',
                       shadowOpacity: 0.15,
                       shadowRadius: 10,
@@ -206,15 +229,15 @@ function AppShell() {
                       backgroundColor: 'transparent',
                     },
                     text: {
+                      ...typography.rowTitle,
                       color: colors.secondary,
-                      fontSize: 16,
-                      fontWeight: '500',
                     },
                     indicator: {
-                      marginRight: 12,
+                      marginRight: spacing.md,
                     },
                   }}
                 />
+                </SongActionSheetProvider>
               </BottomSheetModalProvider>
               </ErrorBoundary>
             </GestureHandlerRootView>

@@ -29,18 +29,59 @@ or all Maestro flows sequentially:
 npm run test:e2e
 ```
 
-To run the common user-flow coverage directly:
+Individual suites: `test:e2e:flows` (common user flows), `test:e2e:details`
+(detail screens, options sheet, player), `test:e2e:onboarding` (first-run
+onboarding).
+
+## Getting an authenticated app state
+
+`smoke.yaml`, `common-user-flows.yaml`, and `detail-flows.yaml` assume the app
+is already connected to a server with library content. `onboarding-demo.yaml`
+provides that from a fresh install without real credentials: it walks first-run
+onboarding and taps "Use Navidrome demo", which connects to the public
+`demo.navidrome.org` server.
+
+It needs fresh app state (no server configured). On a release build,
+uninstall/reinstall is enough. On an Expo dev build, don't use Maestro's
+`clearState` — it also wipes the dev client's saved Metro URL and the next
+launch lands on the dev-client launcher instead of the app. Clear only the
+app's MMKV storage instead:
 
 ```sh
-npm run test:e2e:flows
+xcrun simctl terminate booted <bundle-id>
+rm -rf "$(xcrun simctl get_app_container booted <bundle-id> data)/Documents/mmkv"
 ```
+
+Note: the demo server rate-limits cover art (HTTP 429), so covers render as
+placeholders there — that's the server, not the app.
 
 ## Current Coverage
 
 - App launches without crashing.
-- Authenticated shell can move between Home and Library.
-- Library can filter to tracks and start playback.
-- The player bar appears after playback starts.
-- Search opens from Home, accepts input, renders a no-results state, and can return.
+- First-run onboarding connects via the Navidrome demo (`onboarding-demo.yaml`).
+- Authenticated shell can move between Home, Library, and Search.
+- The library index opens a screen per entity type (albums/artists/playlists/
+  tracks); album, artist, and playlist detail screens open from there and
+  navigate back through the collection screen to the index (the playlist step
+  is skipped when the server has no playlists).
+- Long-pressing a track opens the song options sheet.
+- Tapping a track starts playback, the player bar appears, the full player
+  opens from it, the queue view toggles in and out, and the close button
+  dismisses the player.
+- Search has its own tab, accepts input, and renders a no-results state.
 
-The suite intentionally avoids assumptions about specific song titles or server fixtures. Good next flows are opening album/artist/playlist detail screens, search result actions against a seeded test server, options sheets, and queue/player detail interactions.
+The suite intentionally avoids assumptions about specific song titles or
+server fixtures.
+
+`testIds.test.ts` runs with the unit tests and checks that every element the
+flows reach for still exists in the source. It cannot tell whether a flow
+passes — only that a renamed testID hasn't silently broken one, which is the
+failure that actually happens given nothing runs Maestro in CI. It reads
+untracked files too, so a screen added but not yet committed still counts.
+
+Gotcha for future sheet-based flows: @gorhom/bottom-sheet defaults
+`accessible=true` on its container, which collapses everything inside into
+one opaque iOS accessibility element — child testIDs become invisible to
+Maestro (and unreachable for VoiceOver). The player sheet passes
+`accessible={false}` to fix this; do the same on any new sheet whose inner
+controls need testIDs.

@@ -1,9 +1,43 @@
-import { Stack, useRouter, usePathname } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { AppState, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Stack, useRouter, usePathname, useSegments } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+
+type TabKey = 'home' | 'search' | 'library'
+
+/**
+ * Which tab (if any) the current route belongs to.
+ *
+ * `usePathname()` alone isn't enough — expo-router builds return the pathname
+ * WITHOUT group segments on some routes, so `/(home)/(tabs)/library` and
+ * `/library` both hit `pathname === '/library'` in dev, but a release build
+ * has been observed returning something different (empty, or including the
+ * group), which is why "clicking Library still shows Home lit" reproduced in
+ * the built app while working in dev. Segments are the reliable source: they
+ * include the group names verbatim, so an "in (tabs)" check is unambiguous.
+ *
+ * Returns null for any route that isn't a tab (albumView, libraryCollectionView,
+ * settings, etc.) — the caller keeps the last known tab in that case.
+ */
+function tabForSegments(segments: readonly string[]): TabKey | null {
+    const tabsIdx = segments.indexOf('(tabs)')
+    if (tabsIdx === -1) return null
+    const child = segments[tabsIdx + 1]
+    // No child under (tabs) means the default (index.tsx) — the home tab.
+    if (!child) return 'home'
+    if (child === 'index') return 'home'
+    if (child === 'search') return 'search'
+    if (child === 'library') return 'library'
+    return null
+}
+
+// Survives a HomeLayout remount. Without it, opening an album from Library
+// would flip the indicator to Home for the frame the layout re-instantiates
+// (expo-router remounts layout groups on some cross-stack pushes), which is
+// exactly what "the fix didn't work" reproduced as in the field.
+let lastVisitedTab: TabKey = 'home'
+import { AppState, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { Home, Library } from 'lucide-react-native';
+import { Home, Library, Search } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSync } from '@/hooks/useSync';
@@ -12,8 +46,16 @@ import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { clearLibrary } from '@/utils/redux/slices/librarySlice';
+import { clearLibraryStarred } from '@/utils/redux/slices/libraryStarredSlice';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutionProvider';
+import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachabilityWatcher';
+import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
+import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
+import Touchable from '@/components/Touchable';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, inactiveColor, activeIndicatorBg, children }: {
     onPress: () => void;
@@ -25,27 +67,34 @@ function TabIcon({ onPress, active, accessibilityLabel, testID, activeColor, ina
     activeIndicatorBg: string;
     children: (color: string) => React.ReactNode;
 }) {
+    const rad = useRadius();
+    const reduced = useReducedMotion();
     const opacity = useSharedValue(active ? 1 : 0);
 
     useEffect(() => {
-        opacity.value = withTiming(active ? 1 : 0, { duration: 200 });
-    }, [active, opacity]);
+        // Under reduce-motion the indicator snaps to its target instead of
+        // easing — same information, no travel.
+        opacity.value = reduced
+          ? (active ? 1 : 0)
+          : withTiming(active ? 1 : 0, { duration: 200 });
+    }, [active, opacity, reduced]);
 
     const indicatorStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
     }));
 
     return (
-        <TouchableOpacity
+        <Touchable
             accessibilityLabel={accessibilityLabel}
             accessibilityRole="tab"
             testID={testID}
             style={styles.tab}
             onPress={onPress}
+            feedback="control"
         >
-            <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg }, indicatorStyle]} />
+            <Animated.View style={[styles.activeIndicator, { backgroundColor: activeIndicatorBg, borderRadius: rad.md }, indicatorStyle]} />
             {children(active ? activeColor : inactiveColor)}
-        </TouchableOpacity>
+        </Touchable>
     );
 }
 
@@ -60,6 +109,7 @@ export default function HomeLayout() {
     const insets = useSafeAreaInsets()
     const router = useRouter()
     const pathname = usePathname()
+    const segments = useSegments() as readonly string[]
     const { isDarkMode, colors } = useTheme()
     const themeColor = useSelector(selectThemeColor)
     const tabRowHeight = 52 + Math.max(insets.bottom, 8)
@@ -86,12 +136,38 @@ export default function HomeLayout() {
         prevServerIdRef.current = activeServerId
         if (prev && activeServerId && prev !== activeServerId) {
             dispatch(clearLibrary())
+            dispatch(clearLibraryStarred())
             if (!isOfflineRef.current) sync()
         }
     }, [activeServerId, dispatch, sync])
 
-    const isLibrary = pathname.startsWith('/library')
-    const isHome = !isLibrary
+    // Which tab lit the current screen. Deep pushes (an album, an artist,
+    // a genre, a library collection) sit above the tabs stack, so pathname
+    // alone loses the origin — falling back to "not library, not search =
+    // home" would flip the icon to Home the moment you opened a genre from
+    // Library. Instead we remember the last tab root the user visited, and
+    // hold it until they visit another one.
+    //
+    // The last-tab memory lives at module scope so it survives a HomeLayout
+    // remount (expo-router remounts the group layout on cross-stack navigation,
+    // which was flipping the indicator back to Home the moment you opened an
+    // album from Library). Component state alone loses it; the module var
+    // doesn't.
+    const [activeTab, setActiveTab] = useState<TabKey>(() =>
+      tabForSegments(segments) ?? lastVisitedTab
+    )
+    useEffect(() => {
+        const next = tabForSegments(segments)
+        if (next) {
+            lastVisitedTab = next
+            setActiveTab(next)
+        }
+        // Depend on the joined segments string so React sees a stable change key
+        // — the array identity is fresh every render.
+    }, [segments.join('/')])
+    const isHome = activeTab === 'home'
+    const isSearch = activeTab === 'search'
+    const isLibrary = activeTab === 'library'
     const activeColor = themeColor
     const inactiveColor = colors.subtext
     const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`
@@ -101,16 +177,18 @@ export default function HomeLayout() {
 
     return (
         <ExternalResolutionProvider>
+        <AccountSheetProvider>
+        <ServerReachabilityWatcher />
+        <AutoDownloadWatcher />
         <View style={{ flex: 1 }}>
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
-                <Stack.Screen name="search" options={{ headerShown: false, animation: "fade", animationDuration: 150 }} />
                 <Stack.Screen name="albumView" options={{ headerShown: false }} />
-                <Stack.Screen name="externalAlbumView" options={{ headerShown: false }} />
-                <Stack.Screen name="externalArtistView" options={{ headerShown: false }} />
                 <Stack.Screen name="artistView" options={{ headerShown: false }} />
                 <Stack.Screen name="playlistView" options={{ headerShown: false }} />
                 <Stack.Screen name="settings" options={{ headerShown: false }} />
+                <Stack.Screen name="libraryCollectionView" options={{ headerShown: false }} />
+                <Stack.Screen name="genresView" options={{ headerShown: false }} />
                 <Stack.Screen name="genreView" options={{ headerShown: false }} />
             </Stack>
 
@@ -127,7 +205,7 @@ export default function HomeLayout() {
                     <TabIcon
                         onPress={() => {
                             if (pathname === '/') return
-                            router.navigate('/(home)/(tabs)' as never)
+                            router.navigate('/(home)/(tabs)')
                         }}
                         active={isHome}
                         accessibilityLabel="Home tab"
@@ -140,8 +218,22 @@ export default function HomeLayout() {
                     </TabIcon>
                     <TabIcon
                         onPress={() => {
+                            if (pathname === '/search') return
+                            router.navigate('/(home)/(tabs)/search')
+                        }}
+                        active={isSearch}
+                        accessibilityLabel="Search tab"
+                        testID="search-tab"
+                        activeColor={activeColor}
+                        inactiveColor={inactiveColor}
+                        activeIndicatorBg={activeIndicatorBg}
+                    >
+                        {color => <Search size={24} color={color} />}
+                    </TabIcon>
+                    <TabIcon
+                        onPress={() => {
                             if (pathname === '/library') return
-                            router.navigate('/(home)/(tabs)/library' as never)
+                            router.navigate('/(home)/(tabs)/library')
                         }}
                         active={isLibrary}
                         accessibilityLabel="Library tab"
@@ -160,6 +252,7 @@ export default function HomeLayout() {
             </View>
 
         </View>
+        </AccountSheetProvider>
         </ExternalResolutionProvider>
     );
 }
@@ -175,19 +268,18 @@ const styles = StyleSheet.create({
     },
     tabRow: {
         flexDirection: 'row',
-        paddingTop: 12,
+        paddingTop: spacing.md,
     },
     tab: {
         flex: 1,
         alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: spacing.sm,
         justifyContent: 'center',
     },
     activeIndicator: {
         position: 'absolute',
         width: 64,
         height: 36,
-        borderRadius: 8,
         alignSelf: 'center',
     },
     playingBarHolder: {

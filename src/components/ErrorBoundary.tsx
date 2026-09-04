@@ -1,6 +1,8 @@
 import React, { Component, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import RNRestart from 'react-native-restart';
+import Touchable from '@/components/Touchable';
+import { radius, spacing, typography } from '@/constants/design';
 
 interface Props {
   children: ReactNode;
@@ -31,9 +33,9 @@ export class ErrorBoundary extends Component<Props, State> {
         <Text style={styles.message} numberOfLines={4}>
           {this.state.error?.message ?? 'An unexpected error occurred.'}
         </Text>
-        <TouchableOpacity style={styles.button} onPress={() => RNRestart.Restart()}>
+        <Touchable style={styles.button} onPress={() => RNRestart.Restart()}>
           <Text style={styles.buttonText}>Restart App</Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
     );
   }
@@ -45,32 +47,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: spacing.xxl,
   },
   title: {
-    fontSize: 20,
+    ...typography.sectionTitle,
     fontWeight: '700',
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   message: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     color: '#aaa',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 20,
+    marginBottom: spacing.xxl,
   },
   button: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
     backgroundColor: '#1a1a1a',
-    borderRadius: 10,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: '#333',
   },
   buttonText: {
+    ...typography.button,
     color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

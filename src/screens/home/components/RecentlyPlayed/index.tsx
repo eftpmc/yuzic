@@ -7,13 +7,13 @@ import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
 import { useTheme } from '@/hooks/useTheme';
 import MediaTile from '../MediaTile';
-import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { AlbumBase, PlaylistBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { spacing, typography } from '@/constants/design';
 
 const H_PADDING = 12;
 const GAP = 10;
@@ -113,38 +113,36 @@ export default function RecentlyPlayed() {
   const coversToPrefetch = useMemo(() => items.map(i => i.data.cover), [items]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
+  // Hide the section entirely until there's play history to surface.
+  if (items.length < MIN_ITEMS) return null;
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
         {t('explore.sections.recentlyPlayed')}
       </Text>
-      {items.length < MIN_ITEMS ? (
-        <SectionEmptyState message={t('explore.empty.recentlyPlayed')} />
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          decelerationRate="fast"
-          contentContainerStyle={styles.scrollContent}
-        >
-          {items.map(item => (
-            <RecentTile key={`${item.kind}-${item.data.id}`} item={item} itemWidth={itemWidth} />
-          ))}
-        </ScrollView>
-      )}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        contentContainerStyle={styles.scrollContent}
+      >
+        {items.map(item => (
+          <RecentTile key={`${item.kind}-${item.data.id}`} item={item} itemWidth={itemWidth} />
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 12,
+    ...typography.sectionTitle,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
   },
   scrollContent: {

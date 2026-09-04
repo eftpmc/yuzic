@@ -11,9 +11,11 @@ import {
   setLibraryPlaylists,
   setLibraryTracks,
   setLibraryGenres,
+} from '@/utils/redux/slices/librarySlice'
+import {
   setLibraryStarred,
   setLibraryStarredAlbums,
-} from '@/utils/redux/slices/librarySlice'
+} from '@/utils/redux/slices/libraryStarredSlice'
 import { setServerAlbumStats, setServerSongStats, clearLocalPlayCounts } from '@/utils/redux/slices/statsSlice'
 import { AlbumBase, Artist, PlaylistBase, SongBase, Song } from '@/types'
 import { useApi } from '@/api'

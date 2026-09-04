@@ -5,18 +5,22 @@ import { useArtists } from '@/hooks/artists'
 import { useIsOffline } from '@/hooks/useIsOffline'
 import { selectArtistPlayCounts } from '@/utils/redux/selectors/statsSelectors'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
+import {
+  buildDiscoverySections,
+  buildLibrarySections,
+  buildResumeSections,
+} from '../homeLayout'
 
 const BECAUSE_SEED_COUNT = 1
 const BECAUSE_SEED_POOL_SIZE = 20
 const GENRE_COUNT = 1
 
 export type SectionType =
+  | 'quickPicks'
   | 'recentlyPlayed'
   | 'recentlyAdded'
   | 'becauseYouListened'
   | 'topArtists'
-  | 'favoriteAlbums'
-  | 'randomAlbums'
   | 'mostPlayed'
   | 'charts'
   | 'genre'
@@ -55,7 +59,11 @@ export function seededShuffle<T>(arr: T[], seed: number): T[] {
 
 
 export type HomeLayout = {
-  local: SectionConfig[]
+  /** What you were listening to. First, unlabelled. */
+  resume: SectionConfig[]
+  /** Your own collection, behind its own header. */
+  library: SectionConfig[]
+  /** External discovery, behind the source header. */
   deezer: SectionConfig[]
   isOffline: boolean
 }
@@ -107,33 +115,27 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
     return seededShuffle(availableGenres, dailySeed).slice(0, GENRE_COUNT)
   }, [availableGenres, dailySeed])
 
-  const local = useMemo((): SectionConfig[] => [
-    { key: 'recentlyPlayed', type: 'recentlyPlayed' },
-    { key: 'recentlyAdded', type: 'recentlyAdded' },
-    { key: 'mostPlayed', type: 'mostPlayed' },
-    { key: 'favoriteAlbums', type: 'favoriteAlbums' },
-    { key: 'randomAlbums', type: 'randomAlbums' },
-  ], [])
+  const hasLibrary = libraryArtists.length > 0 || libraryAlbums.length > 0
 
-  const deezer = useMemo((): SectionConfig[] => {
-    if (isOffline) return []
-    const hasLibrary = libraryArtists.length > 0
-    const pool: SectionConfig[] = []
+  const resume = useMemo(() => buildResumeSections(), [])
 
-    pool.push({ key: 'topArtists', type: 'topArtists' })
-    pool.push({ key: 'charts', type: 'charts' })
+  const library = useMemo(() => buildLibrarySections(hasLibrary), [hasLibrary])
 
-    if (hasLibrary) {
-      for (const name of becauseSeeds) {
-        pool.push({ key: `becauseYouListened:${name}`, type: 'becauseYouListened', artistName: name })
-      }
-      for (const genre of topGenres) {
-        pool.push({ key: `genre:${genre}`, type: 'genre', genre })
-      }
-    }
+  const deezer = useMemo(
+    () => seededShuffle(
+      buildDiscoverySections({
+        isOffline,
+        hasLibrary: libraryArtists.length > 0,
+        becauseSeeds,
+        topGenres,
+      }),
+      dailySeed
+    ),
+    [dailySeed, isOffline, libraryArtists.length, becauseSeeds, topGenres]
+  )
 
-    return seededShuffle(pool, dailySeed)
-  }, [dailySeed, isOffline, libraryArtists.length, becauseSeeds, topGenres])
-
-  return useMemo(() => ({ local, deezer, isOffline }), [local, deezer, isOffline])
+  return useMemo(
+    () => ({ resume, library, deezer, isOffline }),
+    [resume, library, deezer, isOffline]
+  )
 }

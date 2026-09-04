@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
+import type { RadiusPreset } from '@/constants/design';
 
-export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
-export type LibraryCategory = 'albums' | 'artists' | 'playlists' | 'songs' | 'downloaded';
+export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 export type PreferredCodec = 'mp3' | 'opus';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist' | 'cast';
@@ -14,16 +14,22 @@ export interface SettingsState {
   /* UI */
   themeMode: ThemeMode;
   themeColor: string;
+  /**
+   * Corner-radius preset. Live-reactive — components read scaled values via
+   * `useRadius()` and re-render on change. The static `radius` export in
+   * constants/design.ts continues to hold defaults for unmigrated surfaces.
+   */
+  radiusPreset: RadiusPreset;
   gridColumns: number;
   gridSpacing: number;
+  isGridView: boolean;
 
   playingBarAction: PlayingBarAction;
   showQualityBadge: boolean;
   showSourceHeaders: boolean;
 
   /* Library */
-  libraryGridViewByCategory: Record<LibraryCategory, boolean>;
-  librarySortOrderByCategory: Record<LibraryCategory, LibrarySortOrder>;
+  librarySortOrder: LibrarySortOrder;
 
   /* Search */
   searchScope: SearchScope;
@@ -36,6 +42,8 @@ export interface SettingsState {
   cellularStreamQuality: AudioQuality;
   downloadQuality: AudioQuality;
   preferredCodec: PreferredCodec;
+  /** Auto-download songs newly added to the library after a sync. */
+  autoDownloadNewSongs: boolean;
 
   language: AppLanguage;
 
@@ -57,6 +65,12 @@ export interface SettingsState {
   /* Player controls */
   showSleepTimer: boolean;
   showPlaybackSpeed: boolean;
+  showJumpButtons: boolean;
+  showVolumeSlider: boolean;
+  autoplayEnabled: boolean;
+  hapticsEnabled: boolean;
+  /** When true, respect the system's reduce-motion setting; when false, always animate. */
+  respectReducedMotion: boolean;
 
   /* Sync */
   lastSyncedAt: number | null;
@@ -66,14 +80,15 @@ export interface SettingsState {
 const initialState: SettingsState = {
   themeMode: 'system',
   themeColor: '#ff7f7f',
+  radiusPreset: 'default',
   gridColumns: 3,
   gridSpacing: 8,
+  isGridView: true,
   playingBarAction: 'skip',
   showQualityBadge: false,
   showSourceHeaders: true,
 
-  libraryGridViewByCategory: { albums: true, artists: true, playlists: true, songs: false, downloaded: true },
-  librarySortOrderByCategory: { albums: 'recentlyAdded', artists: 'title', playlists: 'recent', songs: 'title', downloaded: 'title' },
+  librarySortOrder: 'title',
   searchScope: 'server',
   hasSeenGetStarted: false,
 
@@ -81,6 +96,7 @@ const initialState: SettingsState = {
   cellularStreamQuality: 'high',
   downloadQuality: 'high',
   preferredCodec: 'mp3',
+  autoDownloadNewSongs: false,
 
   language: DEFAULT_LANGUAGE,
 
@@ -99,6 +115,11 @@ const initialState: SettingsState = {
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
+  showJumpButtons: false,
+  showVolumeSlider: false,
+  autoplayEnabled: false,
+  hapticsEnabled: true,
+  respectReducedMotion: true,
 
   lastSyncedAt: null,
   syncOnAppStart: true,
@@ -115,17 +136,17 @@ const settingsSlice = createSlice({
     setThemeColor(state, action: PayloadAction<string>) {
       state.themeColor = action.payload;
     },
+    setRadiusPreset(state, action: PayloadAction<RadiusPreset>) {
+      state.radiusPreset = action.payload;
+    },
     setGridColumns(state, action: PayloadAction<number>) {
       state.gridColumns = action.payload;
     },
     setGridSpacing(state, action: PayloadAction<number>) {
       state.gridSpacing = action.payload;
     },
-    setLibraryGridView(
-      state,
-      action: PayloadAction<{ category: LibraryCategory; value: boolean }>
-    ) {
-      state.libraryGridViewByCategory[action.payload.category] = action.payload.value;
+    setIsGridView(state, action: PayloadAction<boolean>) {
+      state.isGridView = action.payload;
     },
     setPlayingBarAction(
       state,
@@ -141,11 +162,8 @@ const settingsSlice = createSlice({
     },
 
     /* Library */
-    setLibrarySortOrder(
-      state,
-      action: PayloadAction<{ category: LibraryCategory; value: LibrarySortOrder }>
-    ) {
-      state.librarySortOrderByCategory[action.payload.category] = action.payload.value;
+    setLibrarySortOrder(state, action: PayloadAction<LibrarySortOrder>) {
+      state.librarySortOrder = action.payload;
     },
 
     setSearchScope(state, action: PayloadAction<SearchScope>) {
@@ -169,6 +187,9 @@ const settingsSlice = createSlice({
     },
     setPreferredCodec(state, action: PayloadAction<PreferredCodec>) {
       state.preferredCodec = action.payload;
+    },
+    setAutoDownloadNewSongs(state, action: PayloadAction<boolean>) {
+      state.autoDownloadNewSongs = action.payload;
     },
 
     setLanguage(state, action: PayloadAction<AppLanguage>) {
@@ -216,6 +237,21 @@ const settingsSlice = createSlice({
     setShowPlaybackSpeed(state, action: PayloadAction<boolean>) {
       state.showPlaybackSpeed = action.payload;
     },
+    setShowJumpButtons(state, action: PayloadAction<boolean>) {
+      state.showJumpButtons = action.payload;
+    },
+    setShowVolumeSlider(state, action: PayloadAction<boolean>) {
+      state.showVolumeSlider = action.payload;
+    },
+    setHapticsEnabled(state, action: PayloadAction<boolean>) {
+      state.hapticsEnabled = action.payload;
+    },
+    setRespectReducedMotion(state, action: PayloadAction<boolean>) {
+      state.respectReducedMotion = action.payload;
+    },
+    setAutoplayEnabled(state, action: PayloadAction<boolean>) {
+      state.autoplayEnabled = action.payload;
+    },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
@@ -231,9 +267,10 @@ const settingsSlice = createSlice({
 export const {
   setThemeMode,
   setThemeColor,
+  setRadiusPreset,
   setGridColumns,
   setGridSpacing,
-  setLibraryGridView,
+  setIsGridView,
   setPlayingBarAction,
   setShowQualityBadge,
   setShowSourceHeaders,
@@ -243,6 +280,7 @@ export const {
   setWifiStreamQuality,
   setCellularStreamQuality,
   setDownloadQuality,
+  setAutoDownloadNewSongs,
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
@@ -257,7 +295,12 @@ export const {
   setDeezerSamplesEnabled,
   setDeezerPlaylistRecommendationsEnabled,
   setShowSleepTimer,
+  setShowJumpButtons,
+  setShowVolumeSlider,
+  setHapticsEnabled,
+  setRespectReducedMotion,
   setShowPlaybackSpeed,
+  setAutoplayEnabled,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

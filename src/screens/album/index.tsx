@@ -1,39 +1,116 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CloudOff } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
-import { useAlbum } from '@/hooks/albums';
+import { useAlbum, useExternalAlbum } from '@/hooks/albums';
+import { useLibrary } from '@/contexts/LibraryContext';
+import { matchAlbumToLibrary } from '@/hooks/libraryMatch';
 import { useTheme } from '@/hooks/useTheme';
 import NotFoundView from '@/components/NotFoundView';
+import StatusBanner from '@/components/StatusBanner';
 
 import AlbumContent from './components/Content';
 import LoadingAlbumContent from './components/Content/Loading';
+import { DETAIL_BAR_HEIGHT } from '@/components/DetailHeader'
+import { spacing } from '@/constants/design';
+
+type RouteParams = {
+  id?: string;
+  source?: string;
+  albumId?: string;
+  artist?: string;
+  title?: string;
+  forceExternal?: string;
+};
 
 const AlbumScreen: React.FC = () => {
   const route = useRoute<any>();
-  const { id } = route.params;
+  const { id, source, albumId, artist, title, forceExternal } = (route.params ?? {}) as RouteParams;
 
+  const { t } = useTranslation();
   const { colors } = useTheme();
+  const { albums } = useLibrary();
+  const insets = useSafeAreaInsets();
 
-  const { album, isLoading, songsLoading, error } = useAlbum(id);
+  // Identity is re-resolved only when the route's own identity params change
+  // (a genuine navigation to a different album, including React Navigation
+  // reusing this screen instance instead of pushing a new one) — but not
+  // when `albums` changes on its own, e.g. a library sync completing in the
+  // background must not flip an already-rendered external-only view into
+  // local mode underneath the user.
+  const resolvedLocalId = useMemo(() => {
+    if (id) return id;
+    if (forceExternal === 'true') return null;
+    if (!artist || !title) return null;
+    const match = matchAlbumToLibrary(
+      { id: albumId ?? title, title, artist, cover: { kind: 'none' }, subtext: '' },
+      albums
+    );
+    return match?.id ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, forceExternal, artist, title, albumId]);
 
-  if (isLoading) {
+  const localResult = useAlbum(resolvedLocalId ?? '');
+  const externalResult = useExternalAlbum(
+    resolvedLocalId ? {} : { albumId, source, artist, title }
+  );
+
+  if (resolvedLocalId) {
+    if (localResult.isLoading) {
+      return (
+        <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+          <LoadingAlbumContent />
+        </SafeAreaView>
+      );
+    }
+    if (!localResult.album) {
+      return (
+        <NotFoundView
+          message={localResult.error ? "Couldn't load album. Check your connection." : 'Album not found'}
+        />
+      );
+    }
+    return (
+      <View testID="album-screen" style={[styles.screen, { backgroundColor: colors.background }]}>
+        {localResult.degraded && (
+          <View
+            pointerEvents="box-none"
+            style={[styles.degradedBanner, { top: insets.top + DETAIL_BAR_HEIGHT }]}
+          >
+            <StatusBanner
+              icon={<CloudOff size={14} color={colors.subtext} />}
+              text={t('common.serverUnreachableBanner')}
+              closable
+              testID="server-unreachable-banner"
+            />
+          </View>
+        )}
+        <AlbumContent localAlbum={localResult.album} externalAlbum={null} songsLoading={localResult.songsLoading} />
+      </View>
+    );
+  }
+
+  if (!albumId && !(artist && title)) {
+    return <NotFoundView message="Album not found" />;
+  }
+  if (externalResult.isLoading) {
     return (
       <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
         <LoadingAlbumContent />
       </SafeAreaView>
     );
   }
-
-  if (!album || error) {
-    return <NotFoundView message="Album not found" />;
+  if (externalResult.error || !externalResult.album) {
+    return <NotFoundView message="Couldn't load album. Check your connection." />;
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
-      <AlbumContent album={album} songsLoading={songsLoading} />
-    </SafeAreaView>
+    <View testID="album-screen" style={[styles.screen, { backgroundColor: colors.background }]}>
+      <AlbumContent localAlbum={null} externalAlbum={externalResult.album} />
+    </View>
   );
 };
 
@@ -42,5 +119,12 @@ export default AlbumScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  // Under the floating bar rather than above the content: the art runs to the
+  // top of the screen now, and there is nowhere above it left to push.
+  degradedBanner: {
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
   },
 });

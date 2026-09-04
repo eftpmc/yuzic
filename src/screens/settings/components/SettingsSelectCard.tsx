@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
 import SettingsRow from './SettingsRow';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import { spacing, typography } from '@/constants/design';
 
 export type SelectItem = { key: string; label: string };
 
@@ -36,7 +38,7 @@ const SettingsSelectCard: React.FC<Props> = ({
       <SettingsCard>
         {isLoading ? (
           <View style={styles.loader}>
-            <ActivityIndicator size="small" color={colors.themeColor} />
+            <SpinningLoaderCircle size={18} color={colors.themeColor} />
           </View>
         ) : (
           items.map((item, index) => (
@@ -62,13 +64,13 @@ export default SettingsSelectCard;
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 16,
-    marginLeft: 4,
+    ...typography.caption,
+    marginBottom: spacing.tight,
+    marginTop: spacing.lg,
+    marginLeft: spacing.xs,
   },
   loader: {
-    paddingVertical: 20,
+    paddingVertical: spacing.roomy,
     alignItems: 'center',
   },
 });

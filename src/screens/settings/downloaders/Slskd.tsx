@@ -1,247 +1,190 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  cancelAnimation,
-  Easing,
-} from 'react-native-reanimated';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback, useMemo } from 'react';
+import { Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { CheckCircle, Loader2 } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { useTranslation } from 'react-i18next';
+import { CheckCircle, X } from 'lucide-react-native';
 
-import SettingsScreen from '../components/SettingsScreen';
-import SettingsCard from '../components/SettingsCard';
-import SettingsAuthCard from '../components/SettingsAuthCard';
-import SettingsCardHeader from '../components/SettingsCardHeader';
-import SettingsDisconnectButton from '../components/SettingsDisconnectButton';
 import * as slskd from '@/api/slskd';
-import type { SlskdQueueRecord } from '@/api/slskd';
-
-import {
-  selectSlskdServerUrl,
-  selectSlskdApiKey,
-  selectSlskdAuthenticated,
-  selectSlskdConfig,
-} from '@/utils/redux/selectors/downloadersSelectors';
-import {
-  setSlskdServerUrl,
-  setSlskdApiKey,
-  setSlskdAuthenticated,
-  connectSlskd,
-  disconnectSlskd,
-} from '@/utils/redux/slices/downloadersSlice';
-
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import type { SlskdQueueRecord, SlskdSearchPreferences } from '@/api/slskd';
+import { hitSlopFor, statusColor } from '@/constants/design';
 import { useTheme } from '@/hooks/useTheme';
+import { useRadius } from '@/hooks/useRadius';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { formatBytes } from '@/utils/downloads/downloadStore';
+import SettingsCardHeader from '../components/SettingsCardHeader';
+import SettingsSelectCard from '../components/SettingsSelectCard';
+import SettingsToggleGroup from '../components/SettingsToggleGroup';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { selectSlskdPreferences } from '@/utils/redux/selectors/downloadersSelectors';
+import { setSlskdPreferences } from '@/utils/redux/slices/downloadersSlice';
+import DownloaderSettingsScreen, {
+  downloaderQueueStyles as styles,
+  type RowCancelHelpers,
+} from './DownloaderSettingsScreen';
+
+const MIN_BITRATE_OPTIONS: number[] = [0, 128, 192, 256, 320];
+
+const SearchPreferencesCard: React.FC = () => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const activeServer = useSelector(selectActiveServer);
+  const preferences = useSelector(selectSlskdPreferences);
+  const serverId = activeServer?.id ?? '';
+
+  const update = useCallback(
+    (patch: Partial<SlskdSearchPreferences>) => {
+      if (!serverId) return;
+      dispatch(setSlskdPreferences({ serverId, preferences: patch }));
+    },
+    [dispatch, serverId]
+  );
+
+  const formatItems = useMemo(
+    () => [
+      { key: 'auto', label: t('settings.downloaders.slskd.formatAuto') },
+      { key: 'flac', label: t('settings.downloaders.slskd.formatFlacOnly') },
+    ],
+    [t]
+  );
+
+  const bitrateItems = useMemo(
+    () =>
+      MIN_BITRATE_OPTIONS.map((kbps) => ({
+        key: String(kbps),
+        label:
+          kbps === 0
+            ? t('settings.downloaders.slskd.minBitrateAny')
+            : t('settings.downloaders.slskd.minBitrateValue', { kbps }),
+      })),
+    [t]
+  );
+
+  const preferSlotItems = useMemo(
+    () => [
+      {
+        label: t('settings.downloaders.slskd.preferFreeSlot'),
+        subtext: t('settings.downloaders.slskd.preferFreeSlotSubtext'),
+        value: preferences.preferFreeSlot,
+        onValueChange: (v: boolean) => update({ preferFreeSlot: v }),
+      },
+    ],
+    [preferences.preferFreeSlot, t, update]
+  );
+
+  return (
+    <>
+      <SettingsCardHeader
+        title={t('settings.downloaders.slskd.searchPreferencesTitle')}
+        subtle
+      />
+      <SettingsSelectCard
+        title={t('settings.downloaders.slskd.preferredFormat')}
+        items={formatItems}
+        isSelected={(key) => preferences.preferredFormat === key}
+        onSelect={(key) =>
+          update({ preferredFormat: key as SlskdSearchPreferences['preferredFormat'] })
+        }
+      />
+      <SettingsSelectCard
+        title={t('settings.downloaders.slskd.minBitrate')}
+        items={bitrateItems}
+        isSelected={(key) => Number(key) === preferences.minBitrateKbps}
+        onSelect={(key) => update({ minBitrateKbps: Number(key) })}
+      />
+      <SettingsToggleGroup items={preferSlotItems} />
+    </>
+  );
+};
 
 const SlskdView: React.FC = () => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
   const { colors } = useTheme();
-  const activeServer = useSelector(selectActiveServer);
-  const serverId = activeServer?.id ?? '';
+  const rad = useRadius();
 
-  const serverUrl = useSelector(selectSlskdServerUrl);
-  const apiKey = useSelector(selectSlskdApiKey);
-  const isAuthenticated = useSelector(selectSlskdAuthenticated);
-  const config = useSelector(selectSlskdConfig);
+  const renderItem = useCallback(
+    (item: SlskdQueueRecord, cancel: RowCancelHelpers) => {
+      const isCompleted = item.state.toLowerCase() === 'completed';
+      const percent = Math.min(100, item.percentComplete ?? 0);
+      const fileMeta =
+        item.fileCount > 0
+          ? `${item.fileCount} ${t('settings.downloaders.files', { count: item.fileCount })}`
+          : '';
+      // Total size and live speed give the user something to compare against
+      // when deciding whether a slow transfer is worth waiting on.
+      const sizeMeta = item.size > 0 ? formatBytes(item.size) : '';
+      const speedMeta =
+        !isCompleted && item.averageSpeed > 0
+          ? t('settings.downloaders.speed', { rate: formatBytes(item.averageSpeed) })
+          : '';
+      const subLine = [item.artistName || item.username, fileMeta, sizeMeta, speedMeta]
+        .filter(Boolean)
+        .join(' · ');
+      const title = item.title || t('settings.downloaders.unknown');
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [queue, setQueue] = useState<SlskdQueueRecord[]>([]);
-  const [loadingQueue, setLoadingQueue] = useState(false);
-
-  const previousQueueRef = useRef<SlskdQueueRecord[]>([]);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const rotation = useSharedValue(0);
-
-  useEffect(() => {
-    rotation.value = withRepeat(withTiming(360, { duration: 1000, easing: Easing.linear }), -1, false);
-    return () => cancelAnimation(rotation);
-  }, [rotation]);
-
-  const spinStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
-  useEffect(() => {
-    if (!serverUrl || !apiKey) {
-      dispatch(setSlskdAuthenticated({ serverId, value: false }));
-      return;
-    }
-    if (isAuthenticated) return;
-
-    let cancelled = false;
-    const timeout = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        if (config.serverUrl && config.apiKey) {
-          await slskd.testConnection(config);
-          if (!cancelled) dispatch(connectSlskd({ serverId }));
-        }
-      } catch {
-        if (!cancelled) {
-          dispatch(setSlskdAuthenticated({ serverId, value: false }));
-          toast.error(t('settings.downloaders.slskd.connectionFailed'));
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }, 500);
-
-    return () => { cancelled = true; clearTimeout(timeout); };
-  }, [apiKey, config, dispatch, isAuthenticated, serverId, serverUrl, t]);
-
-  const handlePing = useCallback(async () => {
-    if (!config.serverUrl || !config.apiKey || isLoading) return;
-    setIsLoading(true);
-    try {
-      await slskd.testConnection(config);
-      dispatch(connectSlskd({ serverId }));
-    } catch {
-      dispatch(setSlskdAuthenticated({ serverId, value: false }));
-      toast.error(t('settings.downloaders.slskd.connectionFailed'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [config, dispatch, isLoading, serverId, t]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setQueue([]);
-      previousQueueRef.current = [];
-    }
-  }, [isAuthenticated]);
-
-  const pollQueue = useCallback(async () => {
-    if (!isAuthenticated) return;
-    try {
-      const { currentQueue, finishedItems } = await slskd.fetchQueueWithDiff(config, previousQueueRef.current);
-      previousQueueRef.current = currentQueue;
-      setQueue(currentQueue);
-      if (finishedItems.length > 0) toast(t('settings.downloaders.downloadComplete'));
-    } catch {
-      console.warn('Queue polling failed');
-    }
-  }, [config, isAuthenticated, t]);
-
-  useEffect(() => {
-    if (!config.serverUrl || !config.apiKey || !isAuthenticated) {
-      setQueue([]);
-      previousQueueRef.current = [];
-      setLoadingQueue(false);
-      if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
-      return;
-    }
-    setLoadingQueue(true);
-    pollQueue().finally(() => setLoadingQueue(false));
-    pollingRef.current = setInterval(pollQueue, 10000);
-    return () => { if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; } };
-  }, [config.serverUrl, config.apiKey, isAuthenticated, pollQueue]);
-
-  const handleDisconnect = () => {
-    dispatch(disconnectSlskd({ serverId }));
-    setQueue([]);
-    previousQueueRef.current = [];
-    toast(t('settings.downloaders.slskd.disconnected'));
-  };
-
-  const renderDownloadItem = ({ item }: { item: SlskdQueueRecord }) => {
-    const isCompleted = item.state.toLowerCase() === 'completed';
-    const percent = Math.min(100, item.percentComplete ?? 0);
-    const meta = item.fileCount > 0 ? `${item.fileCount} ${t('settings.downloaders.files', { count: item.fileCount })}` : '';
-
-    return (
-      <View style={styles.itemRow}>
-        <View style={styles.itemHeader}>
-          <View style={styles.itemMain}>
-            <Text style={[styles.itemTitle, { color: colors.secondary }]} numberOfLines={1}>
-              {item.title || t('settings.downloaders.unknown')}
-            </Text>
-            <Text style={[styles.itemSub, { color: colors.subtext }]} numberOfLines={1}>
-              {[item.artistName, meta].filter(Boolean).join(' · ')}
-            </Text>
+      return (
+        <View style={styles.itemRow}>
+          <View style={styles.itemHeader}>
+            <View style={styles.itemMain}>
+              <Text style={[styles.itemTitle, { color: colors.secondary }]} numberOfLines={1}>
+                {title}
+              </Text>
+              <Text style={[styles.itemSub, { color: colors.subtext }]} numberOfLines={1}>
+                {subLine}
+              </Text>
+            </View>
+            <View style={styles.headerTrailing}>
+              {isCompleted ? (
+                <CheckCircle size={16} color={statusColor.success} />
+              ) : (
+                <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
+              )}
+              {cancel.requestCancel && (
+                cancel.isCancelling ? (
+                  <View style={styles.cancelButton}>
+                    <SpinningLoaderCircle size={18} color={colors.subtext} />
+                  </View>
+                ) : (
+                  <Touchable
+                    feedback="control"
+                    style={styles.cancelButton}
+                    hitSlop={hitSlopFor(24)}
+                    onPress={() => cancel.requestCancel!(title)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('settings.downloaders.cancelAria', { title })}
+                  >
+                    <X size={18} color={statusColor.destructive} />
+                  </Touchable>
+                )
+              )}
+            </View>
           </View>
-          {isCompleted
-            ? <CheckCircle size={16} color="#34C759" />
-            : <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
-          }
+          {!isCompleted && (
+            <View style={[styles.progressTrack, { backgroundColor: colors.border, borderRadius: rad.pill }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { backgroundColor: colors.themeColor, width: `${percent}%` },
+                ]}
+              />
+            </View>
+          )}
         </View>
-        {!isCompleted && (
-          <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
-            <View style={[styles.progressFill, { backgroundColor: colors.themeColor, width: `${percent}%` }]} />
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  if (!activeServer) return null;
+      );
+    },
+    [colors, rad.pill, t]
+  );
 
   return (
-    <SettingsScreen title={t('settings.downloaders.slskd.title')}>
-      <SettingsAuthCard
-        fields={[
-          { label: t('settings.downloaders.serverUrl'), value: serverUrl, onChangeText: v => dispatch(setSlskdServerUrl({ serverId, value: v })), placeholder: t('settings.downloaders.serverUrlPlaceholder.slskd') },
-          { label: t('settings.downloaders.apiKey'), value: apiKey, onChangeText: v => dispatch(setSlskdApiKey({ serverId, value: v })), placeholder: t('settings.downloaders.apiKeyPlaceholder'), secureTextEntry: true },
-        ]}
-        isAuthenticated={isAuthenticated}
-        isLoading={isLoading}
-        connectivityLabel={t('settings.downloaders.connectivity')}
-        onConnectivityPress={handlePing}
-      />
-
-      <SettingsCard>
-        <SettingsCardHeader title={t('settings.downloaders.queue')} />
-        {loadingQueue ? (
-          <Animated.View style={[styles.queueLoading, spinStyle]}>
-            <Loader2 size={32} color={colors.secondary} />
-          </Animated.View>
-        ) : queue.length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('settings.downloaders.emptyQueue')}
-          </Text>
-        ) : (
-          <FlatList
-            data={queue}
-            keyExtractor={i => i.id}
-            renderItem={renderDownloadItem}
-            scrollEnabled={false}
-          />
-        )}
-      </SettingsCard>
-
-      {isAuthenticated && (
-        <SettingsDisconnectButton
-          label={t('settings.downloaders.disconnect')}
-          onPress={handleDisconnect}
-        />
-      )}
-    </SettingsScreen>
+    <DownloaderSettingsScreen<SlskdQueueRecord>
+      id="slskd"
+      testConnection={slskd.testConnection}
+      fetchQueueWithDiff={slskd.fetchQueueWithDiff}
+      cancelQueueItem={slskd.cancelQueueItem}
+      renderItem={renderItem}
+      extraCards={<SearchPreferencesCard />}
+    />
   );
 };
 
 export default SlskdView;
-
-const styles = StyleSheet.create({
-  divider: { marginTop: 8 },
-  queueLoading: { alignItems: 'center', paddingVertical: 20 },
-  emptyText: { textAlign: 'center', marginVertical: 16, fontSize: 14 },
-  itemRow: { paddingVertical: 10, paddingHorizontal: 16, marginBottom: 4 },
-  itemHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 },
-  itemMain: { flex: 1, minWidth: 0, marginRight: 8 },
-  itemTitle: { fontSize: 14, fontWeight: '500' },
-  itemSub: { fontSize: 12, marginTop: 2 },
-  itemPct: { fontSize: 12 },
-  progressTrack: { height: 4, width: '100%', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 2 },
-});

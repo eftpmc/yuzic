@@ -19,6 +19,8 @@ import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
+import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Settings() {
     const { t } = useTranslation();
@@ -26,6 +28,7 @@ export default function Settings() {
     const activeServer = useSelector(selectActiveServer);
 
     const { colors } = useTheme();
+    const rad = useRadius();
     const appVersion = Constants.expoConfig?.version ?? '—';
 
     if (!activeServer) return null;
@@ -54,7 +57,7 @@ export default function Settings() {
                 {/* Profile Card */}
                 <SettingsCard style={styles.profileCard}>
                     <View style={styles.profileRow}>
-                        <View style={[styles.avatar, { backgroundColor: colors.themeColor }]}>
+                        <View style={[styles.avatar, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
                             <Text style={styles.avatarText}>{avatarLetter}</Text>
                         </View>
                         <View style={styles.profileInfo}>
@@ -154,20 +157,19 @@ export default function Settings() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     scrollContent: {
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        paddingBottom: 120,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.lg,
+        paddingBottom: spacing.scrollClearance,
     },
     sectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 6,
-        marginTop: 16,
-        marginLeft: 4,
+        ...typography.label,
+        marginBottom: spacing.tight,
+        marginTop: spacing.lg,
+        marginLeft: spacing.xs,
     },
     profileCard: {
-        padding: 16,
-        marginBottom: 12,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
     },
     profileRow: {
         flexDirection: 'row',
@@ -176,13 +178,12 @@ const styles = StyleSheet.create({
     avatar: {
         width: 52,
         height: 52,
-        borderRadius: 26,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 14,
+        marginRight: spacing.md,
     },
     avatarText: {
-        fontSize: 20,
+        ...typography.sectionTitle,
         fontWeight: '700',
         color: '#fff',
     },
@@ -190,9 +191,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     profileName: {
-        fontSize: 17,
+        ...typography.rowTitle,
         fontWeight: '600',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     serverMeta: {
         flexDirection: 'row',
@@ -200,23 +201,23 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     typeBadge: {
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
+        paddingHorizontal: spacing.tight,
+        paddingVertical: spacing.xxs,
+        borderRadius: radius.xs,
     },
     typeBadgeText: {
-        fontSize: 11,
+        ...typography.micro,
         fontWeight: '500',
         textTransform: 'capitalize',
     },
     serverUrl: {
-        fontSize: 12,
+        ...typography.caption,
         flex: 1,
     },
     versionText: {
+        ...typography.caption,
         textAlign: 'center',
-        marginTop: 32,
-        marginBottom: 60,
-        fontSize: 13,
+        marginTop: spacing.xxl,
+        marginBottom: spacing.headerOffset,
     },
 });

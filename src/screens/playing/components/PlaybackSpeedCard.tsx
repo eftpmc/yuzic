@@ -1,44 +1,50 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Gauge } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { usePlayingActions, usePlayingState } from '@/contexts/PlayingContext';
-
-const MIN_SPEED = 0.5;
-const MAX_SPEED = 2.0;
-const STEP = 0.25;
+import {
+  PLAYBACK_DEFAULT_SPEED,
+  PLAYBACK_MAX_SPEED,
+  PLAYBACK_MIN_SPEED,
+  PLAYBACK_SPEED_STEP,
+} from '@/constants/playback';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = { contentWidth: number };
 
 export default function PlaybackSpeedCard({ contentWidth }: Props) {
   const themeColor = useSelector(selectThemeColor);
+  const rad = useRadius();
   const { playbackSpeed } = usePlayingState();
   const { setPlaybackSpeed } = usePlayingActions();
   const isAltered = playbackSpeed !== 1.0;
 
   const decrease = useCallback(() => {
-    const next = Math.round((playbackSpeed - STEP) * 100) / 100;
-    if (next >= MIN_SPEED) setPlaybackSpeed(next);
+    const next = Math.round((playbackSpeed - PLAYBACK_SPEED_STEP) * 100) / 100;
+    if (next >= PLAYBACK_MIN_SPEED) setPlaybackSpeed(next);
   }, [playbackSpeed, setPlaybackSpeed]);
 
   const increase = useCallback(() => {
-    const next = Math.round((playbackSpeed + STEP) * 100) / 100;
-    if (next <= MAX_SPEED) setPlaybackSpeed(next);
+    const next = Math.round((playbackSpeed + PLAYBACK_SPEED_STEP) * 100) / 100;
+    if (next <= PLAYBACK_MAX_SPEED) setPlaybackSpeed(next);
   }, [playbackSpeed, setPlaybackSpeed]);
 
   const reset = useCallback(() => {
-    setPlaybackSpeed(1.0);
+    setPlaybackSpeed(PLAYBACK_DEFAULT_SPEED);
   }, [setPlaybackSpeed]);
 
-  const canDecrease = playbackSpeed > MIN_SPEED;
-  const canIncrease = playbackSpeed < MAX_SPEED;
+  const canDecrease = playbackSpeed > PLAYBACK_MIN_SPEED;
+  const canIncrease = playbackSpeed < PLAYBACK_MAX_SPEED;
 
   return (
     <View
       style={[
         styles.card,
-        { width: contentWidth },
+        { width: contentWidth, borderRadius: rad.panel },
         isAltered && { borderColor: themeColor + '55', borderWidth: 1 },
       ]}
     >
@@ -46,7 +52,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       <View style={styles.gaugeDecor} pointerEvents="none">
         <Gauge
           size={96}
-          color={isAltered ? themeColor : '#ffffff'}
+          color={isAltered ? themeColor : onDark.text}
           strokeWidth={0.8}
           style={{ opacity: 0.07 }}
         />
@@ -64,19 +70,19 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       </View>
 
       {/* Speed display */}
-      <Text style={[styles.bigValue, isAltered && { color: '#fff' }]}>
+      <Text style={[styles.bigValue, isAltered && { color: onDark.text }]}>
         {playbackSpeed === 1 ? '1' : playbackSpeed}
         <Text style={styles.bigUnit}>×</Text>
       </Text>
 
       {/* Controls */}
       <View style={styles.controls}>
-        <TouchableOpacity
+        <Touchable
           onPress={reset}
-          activeOpacity={0.7}
           disabled={!isAltered}
           style={[
             styles.resetButton,
+            { borderRadius: rad.card },
             isAltered
               ? { borderColor: 'rgba(255,255,255,0.3)' }
               : { borderColor: 'rgba(255,255,255,0.12)' },
@@ -85,25 +91,23 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
           <Text style={[styles.resetLabel, !isAltered && { opacity: 0.35 }]}>
             1×
           </Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity
+        <Touchable
           onPress={decrease}
-          activeOpacity={0.7}
           disabled={!canDecrease}
-          style={[styles.stepButton, !canDecrease && { opacity: 0.35 }]}
+          style={[styles.stepButton, { borderRadius: rad.card }, !canDecrease && { opacity: 0.35 }]}
         >
           <Text style={styles.stepLabel}>−</Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity
+        <Touchable
           onPress={increase}
-          activeOpacity={0.7}
           disabled={!canIncrease}
-          style={[styles.stepButton, !canIncrease && { opacity: 0.35 }]}
+          style={[styles.stepButton, { borderRadius: rad.card }, !canIncrease && { opacity: 0.35 }]}
         >
           <Text style={styles.stepLabel}>+</Text>
-        </TouchableOpacity>
+        </Touchable>
       </View>
     </View>
   );
@@ -111,12 +115,11 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    marginTop: 16,
-    borderRadius: 24,
+    marginTop: spacing.lg,
     backgroundColor: 'rgba(255,255,255,0.07)',
-    paddingHorizontal: 22,
-    paddingTop: 20,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.roomy,
+    paddingBottom: spacing.xl,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -130,22 +133,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
   label: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '600',
     color: 'rgba(255,255,255,0.5)',
   },
   bigValue: {
-    fontSize: 48,
-    fontWeight: '600',
+    ...typography.hero,
     color: 'rgba(255,255,255,0.3)',
-    lineHeight: 52,
-    marginBottom: 20,
+    marginBottom: spacing.roomy,
   },
   bigUnit: {
-    fontSize: 24,
+    ...typography.screenTitle,
     fontWeight: '400',
   },
   controls: {
@@ -155,26 +156,24 @@ const styles = StyleSheet.create({
   resetButton: {
     flex: 1,
     height: 44,
-    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   resetLabel: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
   stepButton: {
     flex: 1,
     height: 44,
-    borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepLabel: {
-    fontSize: 20,
+    ...typography.sectionTitle,
     fontWeight: '400',
     color: 'rgba(255,255,255,0.45)',
   },

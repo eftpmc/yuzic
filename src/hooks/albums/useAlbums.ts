@@ -11,6 +11,8 @@ type UseAlbumsResult = {
     albums: AlbumBase[];
   isLoading: boolean;
   error: Error | null;
+  /** True when showing library-synced data because the server couldn't be asked. */
+  degraded: boolean;
 };
 
 export function useAlbums(): UseAlbumsResult {
@@ -31,5 +33,6 @@ export function useAlbums(): UseAlbumsResult {
     albums: query.data,
     isLoading: query.isLoading,
     error: query.error,
+    degraded: query.degraded,
   };
 }

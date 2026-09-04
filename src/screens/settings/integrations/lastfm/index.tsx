@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Text, TouchableOpacity, Linking, StyleSheet } from 'react-native';
+import { Text, Linking, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -31,12 +31,16 @@ import {
   setSimilarArtistsEnabled,
 } from '@/utils/redux/slices/lastfmSlice';
 import * as lastfm from '@/api/lastfm';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LastFmView: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const themeColor = useSelector(selectThemeColor);
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const activeServer = useSelector(selectActiveServer);
   const serverId = activeServer?.id ?? '';
@@ -123,15 +127,15 @@ const LastFmView: React.FC = () => {
               {t('settings.lastfm.pendingInstruction')}
             </Text>
           )}
-          <TouchableOpacity
-            style={[styles.connectButton, { backgroundColor: themeColor }]}
+          <Touchable
+            style={[styles.connectButton, { backgroundColor: themeColor, borderRadius: rad.md }]}
             onPress={pendingToken ? handleFinishAuth : handleConnect}
             disabled={isLoading}
           >
             <Text style={styles.connectButtonText}>
               {pendingToken ? t('settings.lastfm.iAuthorized') : t('settings.lastfm.connectWithLastfm')}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </>
       )}
 
@@ -155,22 +159,19 @@ const LastFmView: React.FC = () => {
 export default LastFmView;
 
 const styles = StyleSheet.create({
-  divider: { marginTop: 8 },
+  divider: { marginTop: spacing.sm },
   hint: {
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 8,
-    marginLeft: 4,
+    ...typography.caption,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
   },
   connectButton: {
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   connectButtonText: {
+    ...typography.sheetTitle,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

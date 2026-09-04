@@ -32,6 +32,10 @@ import {
   getFullyDownloadedAlbumIds,
 } from '@/utils/downloads/collectionState';
 
+import { dedupeAndSort, type SearchResult } from './searchRanking';
+
+export type { SearchResult } from './searchRanking';
+
 export type SearchFilters = {
   local: boolean;
   deezer: boolean;
@@ -43,31 +47,13 @@ interface SearchContextType {
   searchExternal: (query: string) => Promise<SearchResult[]>;
   clearSearch: () => void;
   isLoading: boolean;
+  /** True when the most recent search failed to reach the server/external source, so results shown (if any) may be incomplete. */
+  hasError: boolean;
   handleSearchWithFilters: (query: string, filters: SearchFilters) => Promise<void>;
 }
 
 interface SearchProviderProps {
   children: ReactNode;
-}
-
-export interface SearchResult {
-  id: string;
-  title: string;
-  subtext: string;
-  cover: CoverSource;
-  type: 'song' | 'album' | 'artist' | 'playlist';
-  source: 'local' | 'external';
-  externalSource?: 'deezer' | 'musicbrainz' | 'lastfm';
-  externalIds?: {
-    deezerId?: string;
-    artistDeezerId?: string;
-    mbid?: string | null;
-    artistMbid?: string | null;
-    upc?: string | null;
-    isrc?: string | null;
-  };
-  isDownloaded: boolean;
-  song?: Song;
 }
 
 // --- result mapping helpers ---
@@ -167,42 +153,6 @@ export const useSearch = () => {
   return context;
 };
 
-const resultKey = (r: SearchResult) =>
-  `${r.source}:${r.type}:${r.id}`;
-
-function dedupeAndSort(results: SearchResult[], lowerQuery: string): SearchResult[] {
-  const uniqueMap = new Map<string, SearchResult>();
-  for (const result of results) {
-    const key = resultKey(result);
-    const existing = uniqueMap.get(key);
-    if (!existing) {
-      uniqueMap.set(key, result);
-    } else if (!existing.isDownloaded && result.isDownloaded) {
-      uniqueMap.set(key, result);
-    }
-  }
-  const unique: SearchResult[] = [];
-  uniqueMap.forEach(v => unique.push(v));
-  unique.sort((a, b) => {
-    const sourceDiff = (a.source === 'local' ? 1 : 2) - (b.source === 'local' ? 1 : 2);
-    if (sourceDiff !== 0) return sourceDiff;
-    if (a.isDownloaded && !b.isDownloaded) return -1;
-    if (b.isDownloaded && !a.isDownloaded) return 1;
-    const aTitle = a.title.toLowerCase();
-    const bTitle = b.title.toLowerCase();
-    if (aTitle === lowerQuery && bTitle !== lowerQuery) return -1;
-    if (bTitle === lowerQuery && aTitle !== lowerQuery) return 1;
-    if (aTitle.includes(lowerQuery) && !bTitle.includes(lowerQuery)) return -1;
-    if (bTitle.includes(lowerQuery) && !aTitle.includes(lowerQuery)) return 1;
-    const typePriority = (type: SearchResult['type']) =>
-      type === 'song' ? 1 : type === 'album' ? 2 : type === 'artist' ? 3 : 4;
-    const diff = typePriority(a.type) - typePriority(b.type);
-    if (diff !== 0) return diff;
-    return aTitle.localeCompare(bTitle);
-  });
-  return unique;
-}
-
 export const SearchProvider: React.FC<SearchProviderProps> = ({
   children,
 }) => {
@@ -248,6 +198,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const [searchResults, setSearchResults] =
     useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const searchRequestIdRef = useRef(0);
 
@@ -324,25 +275,22 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   ): Promise<SearchResult[]> => {
     if (!query.trim()) return [];
 
-    try {
-      const [deezerArtists, deezerAlbums] = await Promise.all([
-        deezer.searchDeezerArtists(query, 4),
-        deezer.searchDeezerAlbums(query, 6),
-      ]);
+    const [deezerArtists, deezerAlbums] = await Promise.all([
+      deezer.searchDeezerArtists(query, 4),
+      deezer.searchDeezerAlbums(query, 6),
+    ]);
 
-      return [
-        ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
-        ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
-      ];
-    } catch {
-      return [];
-    }
+    return [
+      ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
+      ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
+    ];
   }, []);
 
   const clearSearch = useCallback(() => {
     searchRequestIdRef.current += 1;
     setSearchResults([]);
     setIsLoading(false);
+    setHasError(false);
   }, []);
 
   const handleSearchWithFilters = useCallback(async (query: string, filters: SearchFilters) => {
@@ -350,9 +298,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     if (!query.trim()) {
       setSearchResults([]);
       setIsLoading(false);
+      setHasError(false);
       return;
     }
     setIsLoading(true);
+    let errored = false;
     try {
       const lowerQuery = query.toLowerCase();
       const results: SearchResult[] = [];
@@ -363,17 +313,18 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
         }
         if (requestId !== searchRequestIdRef.current) return;
         if (searchScope.includes('server')) {
-          try { results.push(...await searchServer(query)); } catch {}
+          try { results.push(...await searchServer(query)); } catch { errored = true; }
         }
         if (requestId !== searchRequestIdRef.current) return;
       }
 
       if (filters.deezer) {
-        try { results.push(...await searchExternal(query)); } catch {}
+        try { results.push(...await searchExternal(query)); } catch { errored = true; }
       }
       if (requestId !== searchRequestIdRef.current) return;
 
       setSearchResults(dedupeAndSort(results, lowerQuery));
+      setHasError(errored);
     } finally {
       if (requestId === searchRequestIdRef.current) setIsLoading(false);
     }
@@ -385,6 +336,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     searchExternal,
     clearSearch,
     isLoading,
+    hasError,
     handleSearchWithFilters,
   }), [
     searchResults,
@@ -392,6 +344,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     searchExternal,
     clearSearch,
     isLoading,
+    hasError,
     handleSearchWithFilters,
   ]);
 

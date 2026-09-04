@@ -1,54 +1,82 @@
 import { RootState } from '@/utils/redux/store';
 import { createSelector } from '@reduxjs/toolkit';
-import { PerServerDownloadersState } from '@/utils/redux/slices/downloadersSlice';
+import {
+  DOWNLOADER_IDS,
+  DownloaderConnection,
+  DownloaderId,
+  PerServerDownloadersState,
+} from '@/utils/redux/slices/downloadersSlice';
+import { DEFAULT_SLSKD_PREFERENCES, type SlskdSearchPreferences } from '@/api/slskd';
+
+const emptyConnection: DownloaderConnection = { serverUrl: '', apiKey: '', isAuthenticated: false };
 
 const defaultEntry: PerServerDownloadersState = {
-  lidarr: { serverUrl: '', apiKey: '', isAuthenticated: false },
-  slskd: { serverUrl: '', apiKey: '', isAuthenticated: false },
+  lidarr: emptyConnection,
+  slskd: emptyConnection,
 };
 
-const selectDownloadersForActiveServer = createSelector(
+export const selectDownloadersForActiveServer = createSelector(
   [(s: RootState) => s.downloaders.byServer, (s: RootState) => s.servers.activeServerId],
   (byServer, activeServerId): PerServerDownloadersState =>
     (activeServerId ? byServer[activeServerId] ?? defaultEntry : defaultEntry)
 );
 
-export const selectLidarrServerUrl = createSelector(
+export interface DownloaderSelectors {
+  serverUrl: (s: RootState) => string;
+  apiKey: (s: RootState) => string;
+  isAuthenticated: (s: RootState) => boolean;
+  config: (s: RootState) => { serverUrl: string; apiKey: string };
+}
+
+function buildSelectors(id: DownloaderId): DownloaderSelectors {
+  const connection = createSelector(
+    [selectDownloadersForActiveServer],
+    (entry) => entry[id] ?? emptyConnection
+  );
+  const serverUrl = createSelector([connection], (c) => c.serverUrl);
+  const apiKey = createSelector([connection], (c) => c.apiKey);
+  const isAuthenticated = createSelector([connection], (c) => c.isAuthenticated);
+  const config = createSelector([serverUrl, apiKey], (serverUrl, apiKey) => ({ serverUrl, apiKey }));
+  return { serverUrl, apiKey, isAuthenticated, config };
+}
+
+export const downloaderSelectors = Object.fromEntries(
+  DOWNLOADER_IDS.map((id) => [id, buildSelectors(id)])
+) as Record<DownloaderId, DownloaderSelectors>;
+
+export const selectLidarrServerUrl = downloaderSelectors.lidarr.serverUrl;
+export const selectLidarrApiKey = downloaderSelectors.lidarr.apiKey;
+export const selectLidarrAuthenticated = downloaderSelectors.lidarr.isAuthenticated;
+export const selectSlskdServerUrl = downloaderSelectors.slskd.serverUrl;
+export const selectSlskdApiKey = downloaderSelectors.slskd.apiKey;
+export const selectSlskdAuthenticated = downloaderSelectors.slskd.isAuthenticated;
+export const selectLidarrConfig = downloaderSelectors.lidarr.config;
+export const selectSlskdConfig = downloaderSelectors.slskd.config;
+
+const selectSlskdConnection = createSelector(
   [selectDownloadersForActiveServer],
-  (entry) => entry.lidarr.serverUrl
+  (entry) => entry.slskd ?? emptyConnection
 );
 
-export const selectLidarrApiKey = createSelector(
-  [selectDownloadersForActiveServer],
-  (entry) => entry.lidarr.apiKey
+/**
+ * Merges the user's stored slskd preferences with the built-in defaults, so
+ * a partially-saved value (e.g. only min bitrate set) still gets defaults for
+ * the other fields. Unknown keys are dropped — this is user-controlled.
+ */
+export const selectSlskdPreferences = createSelector(
+  [selectSlskdConnection],
+  (connection): SlskdSearchPreferences => {
+    const stored = connection.preferences as Partial<SlskdSearchPreferences> | undefined;
+    return {
+      preferredFormat: stored?.preferredFormat ?? DEFAULT_SLSKD_PREFERENCES.preferredFormat,
+      minBitrateKbps: stored?.minBitrateKbps ?? DEFAULT_SLSKD_PREFERENCES.minBitrateKbps,
+      preferFreeSlot: stored?.preferFreeSlot ?? DEFAULT_SLSKD_PREFERENCES.preferFreeSlot,
+    };
+  }
 );
 
-export const selectLidarrAuthenticated = createSelector(
-  [selectDownloadersForActiveServer],
-  (entry) => entry.lidarr.isAuthenticated
-);
-
-export const selectSlskdServerUrl = createSelector(
-  [selectDownloadersForActiveServer],
-  (entry) => entry.slskd.serverUrl
-);
-
-export const selectSlskdApiKey = createSelector(
-  [selectDownloadersForActiveServer],
-  (entry) => entry.slskd.apiKey
-);
-
-export const selectSlskdAuthenticated = createSelector(
-  [selectDownloadersForActiveServer],
-  (entry) => entry.slskd.isAuthenticated
-);
-
-export const selectLidarrConfig = createSelector(
-  [selectLidarrServerUrl, selectLidarrApiKey],
-  (serverUrl, apiKey) => ({ serverUrl, apiKey })
-);
-
-export const selectSlskdConfig = createSelector(
-  [selectSlskdServerUrl, selectSlskdApiKey],
-  (serverUrl, apiKey) => ({ serverUrl, apiKey })
+/** Slskd config with preferences bundled in, for the code paths that need them. */
+export const selectSlskdConfigWithPreferences = createSelector(
+  [selectSlskdConfig, selectSlskdPreferences],
+  (config, preferences) => ({ ...config, preferences })
 );

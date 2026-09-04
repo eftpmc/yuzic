@@ -1,9 +1,8 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
+import { spacing, statusColor } from '@/constants/design';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -13,15 +12,14 @@ import Animated, {
 import { Heart, ArrowDownCircle, Ellipsis } from 'lucide-react-native';
 
 import { Song } from '@/types';
-import SongOptions from '@/components/options/SongOptions';
-import PlaylistList from '@/components/PlaylistList';
 import { usePlayingActions } from '@/contexts/PlayingContext';
-import { MediaImage } from '@/components/MediaImage';
+import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
+import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useDownloadState } from '@/contexts/DownloadContext';
-import { useSheetRef } from '@/utils/useSheetRef';
 import { formatSongDuration } from '@/utils/formatDuration';
+import Touchable from '@/components/Touchable';
 
 type Props = {
   song: Song;
@@ -43,14 +41,10 @@ const SongRow: React.FC<Props> = ({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
+  const { openSongOptions } = useSongActionSheets();
   const { isTrackDownloaded } = useDownloadState();
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
-
-  const optionsRef = useSheetRef();
-  const playlistRef = useSheetRef();
-
-  const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
 
   const heartOpacity = useSharedValue(isFavorite ? 1 : 0);
   useEffect(() => {
@@ -69,132 +63,51 @@ const SongRow: React.FC<Props> = ({
   }, [onPress, collection, song, playSongInCollection]);
 
   const openOptions = useCallback(() => {
-    optionsRef.current?.present();
-  }, [optionsRef]);
-
-  const openPlaylistList = useCallback(() => {
-    optionsRef.current?.dismiss();
-    setPlaylistSong(song);
-    requestAnimationFrame(() => {
-      playlistRef.current?.present();
-    });
-  }, [optionsRef, playlistRef, song]);
-
-  const closePlaylistList = useCallback(() => {
-    playlistRef.current?.dismiss();
-    setPlaylistSong(null);
-  }, [playlistRef]);
+    openSongOptions(song);
+  }, [openSongOptions, song]);
 
   return (
     <>
-      <View style={[styles.row, isAlbumCompact && styles.rowAlbumCompact]}>
-        <TouchableOpacity
-          style={styles.songInfo}
-          onPress={handlePress}
-          disabled={!onPress && !collection}
-        >
-          {!isAlbumCompact && (
-            <View style={styles.defaultLeading}>
-              <MediaImage
-                cover={song.cover}
-                size="thumb"
-                style={styles.cover}
-              />
-            </View>
-          )}
-
-          <View style={styles.textContainer}>
-            <Text
-              style={[styles.title, { color: colors.secondary }]}
-              numberOfLines={1}
+      <MediaListRow
+        title={song.title}
+        subtitle={`${song.artist || t('songOptions.unknownArtist')}${!isAlbumCompact ? ` • ${formatSongDuration(song.duration)}` : ''}`}
+        cover={song.cover}
+        onPress={handlePress}
+        disabled={!onPress && !collection}
+        showCover={!isAlbumCompact}
+        variant="compact"
+        rowStyle={isAlbumCompact ? styles.mediaRowAlbumCompact : undefined}
+        trailing={
+          <View style={styles.rowRight}>
+            <Animated.View style={heartStyle}>
+              <Heart size={15} color={statusColor.favorite} fill={statusColor.favorite} />
+            </Animated.View>
+            {downloaded && (isAlbumCompact || showDownloadedDot) && (
+              <ArrowDownCircle size={16} color={colors.subtext} />
+            )}
+            <Touchable
+              onPress={openOptions}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Song options"
             >
-              {song.title}
-            </Text>
-
-            <Text
-              style={[styles.subtitle, { color: colors.subtext }]}
-              numberOfLines={1}
-            >
-              {song.artist || t('songOptions.unknownArtist')}
-              {!isAlbumCompact && ` • ${formatSongDuration(song.duration)}`}
-            </Text>
+              <Ellipsis size={18} color={colors.secondary} />
+            </Touchable>
           </View>
-        </TouchableOpacity>
-
-        <View style={styles.rowRight}>
-          <Animated.View style={heartStyle}>
-            <Heart size={15} color="#ff4d67" fill="#ff4d67" />
-          </Animated.View>
-          {downloaded && (isAlbumCompact || showDownloadedDot) && (
-            <ArrowDownCircle size={16} color={colors.subtext} />
-          )}
-          <TouchableOpacity onPress={openOptions} hitSlop={10}>
-            <Ellipsis size={18} color={colors.secondary} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <SongOptions
-        ref={optionsRef}
-        selectedSong={song}
-        onAddToPlaylist={openPlaylistList}
-      />
-
-      <PlaylistList
-        ref={playlistRef}
-        selectedSong={playlistSong}
-        onClose={closePlaylistList}
+        }
       />
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  rowAlbumCompact: {
-    paddingVertical: 13,
-  },
-  songInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 12,
-  },
-  cover: {
-    width: 44,
-    height: 44,
-    borderRadius: 6,
-    marginRight: 0,
-  },
-  defaultLeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
+  mediaRowAlbumCompact: {
+    paddingVertical: spacing.md,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  trackNumber: {
-    fontSize: 13,
-    minWidth: 16,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  subtitle: {
-    fontSize: 13,
-    marginTop: 2,
+    gap: spacing.inlineGap,
   },
 });
 

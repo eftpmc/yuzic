@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { Languages, Check } from 'lucide-react-native';
@@ -14,6 +13,9 @@ import { useTheme } from '@/hooks/useTheme';
 import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -26,6 +28,7 @@ const LanguageBottomSheet = forwardRef<
 >(({ selected, onSelect }, ref) => {
   const themeColor = useSelector(selectThemeColor);
   const { colors } = useTheme();
+  const rad = useRadius();
   const { t } = useTranslation();
 
   const snapPoints = useMemo(() => ['35%'], []);
@@ -55,7 +58,7 @@ const LanguageBottomSheet = forwardRef<
           const isSelected = selected === lang.code;
 
           return (
-            <TouchableOpacity
+            <Touchable
               key={lang.code}
               style={[
                 styles.pickerItem,
@@ -63,6 +66,7 @@ const LanguageBottomSheet = forwardRef<
                   backgroundColor: isSelected
                     ? themeColor + '22'
                     : 'transparent',
+                  borderRadius: rad.md,
                 },
               ]}
               onPress={() => onSelect(lang.code)}
@@ -71,7 +75,7 @@ const LanguageBottomSheet = forwardRef<
                 <Languages
                   size={18}
                   color={isSelected ? themeColor : colors.subtext}
-                  style={{ marginRight: 10 }}
+                  style={{ marginRight: spacing.controlGap }}
                 />
                 <Text
                   style={[
@@ -89,7 +93,7 @@ const LanguageBottomSheet = forwardRef<
                   color={themeColor}
                 />
               )}
-            </TouchableOpacity>
+            </Touchable>
           );
         })}
       </BottomSheetView>
@@ -103,27 +107,25 @@ export default LanguageBottomSheet;
 
 const styles = StyleSheet.create({
   sheetContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
   },
   sheetTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
+    ...typography.sheetTitle,
+    marginBottom: spacing.controlGap,
   },
   pickerItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   pickerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   pickerText: {
-    fontSize: 16,
+    ...typography.body,
   },
 });

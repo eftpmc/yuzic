@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Item = {
   key: string;
@@ -28,10 +32,11 @@ export default function ChecklistSection({
   disabled = false,
 }: Props) {
   const { colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
 
   return (
-    <View style={[styles.section, { backgroundColor: colors.card }]}>
+    <View style={[styles.section, { backgroundColor: colors.card, borderRadius: rad.card }]}>
       {infoText && (
         <Text style={[styles.infoText, { color: colors.subtext }]}>
           {infoText}
@@ -39,27 +44,25 @@ export default function ChecklistSection({
       )}
 
       {isLoading ? (
-        <ActivityIndicator
-          size="small"
-          color={themeColor}
-          style={[styles.optionList, styles.loader]}
-        />
+        <View style={[styles.optionList, styles.loader]}>
+          <SpinningLoaderCircle size={18} color={themeColor} />
+        </View>
       ) : (
         <View style={[styles.optionList, !infoText && styles.optionListTopPad]}>
           {items.map(item => {
             const active = isSelected(item.key);
             return (
-              <TouchableOpacity
+              <Touchable
                 key={item.key}
                 onPress={() => onSelect(item.key)}
                 disabled={disabled}
-                activeOpacity={0.7}
                 style={[
                   styles.optionRow,
                   {
                     backgroundColor: colors.muted,
                     borderColor: active ? themeColor : colors.border,
                     opacity: disabled ? 0.6 : 1,
+                    borderRadius: rad.md,
                   },
                 ]}
               >
@@ -74,7 +77,7 @@ export default function ChecklistSection({
                 <Text style={[styles.optionLabel, { color: colors.secondary }]}>
                   {item.label}
                 </Text>
-              </TouchableOpacity>
+              </Touchable>
             );
           })}
         </View>
@@ -85,48 +88,45 @@ export default function ChecklistSection({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 18,
+    marginBottom: spacing.lg,
   },
   infoText: {
-    fontSize: 13,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    ...typography.caption,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
   optionList: {
     gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   optionListTopPad: {
-    paddingTop: 16,
+    paddingTop: spacing.lg,
   },
   loader: {
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
   },
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1.5,
     gap: 12,
   },
   checkbox: {
     width: 22,
     height: 22,
-    borderRadius: 5,
+    borderRadius: radius.sm,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   optionLabel: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
     flex: 1,
   },
 });

@@ -5,9 +5,12 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const LoadingArtistHeader: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const rad = useRadius();
   const colorMode = isDarkMode ? 'dark' : 'light';
 
   return (
@@ -21,7 +24,7 @@ const LoadingArtistHeader: React.FC = () => {
         />
 
         {/* CENTERED ARTIST IMAGE */}
-        <View style={styles.centeredCoverContainer}>
+        <View style={[styles.centeredCoverContainer, { borderRadius: rad.pill }]}>
           <Skeleton
             width={120}
             height={120}
@@ -32,7 +35,7 @@ const LoadingArtistHeader: React.FC = () => {
       </View>
 
       {/* ARTIST META */}
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={{ paddingHorizontal: spacing.lg }}>
         <View style={styles.content}>
           <Skeleton
             width={180}
@@ -103,18 +106,17 @@ const styles = StyleSheet.create({
     bottom: -32,
     width: 120,
     height: 120,
-    borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   content: {
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   metaRow: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -126,7 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
 });
 

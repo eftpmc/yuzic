@@ -4,16 +4,19 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
-
-const CARD_HEIGHT = 280;
-const TEXT_AREA_MIN_HEIGHT = 70;
-const PADDING = 16;
+import {
+  PLAYING_ARTIST_CARD_HEIGHT,
+  PLAYING_ARTIST_TEXT_MIN_HEIGHT,
+  PLAYING_ARTIST_CARD_PADDING,
+} from '@/constants/features';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 type Props = {
   artistName: string;
   artistCover: CoverSource | null;
@@ -30,14 +33,15 @@ export default function AboutTheArtistCard({
   onPress,
 }: Props) {
   const { t } = useTranslation();
-  const imageHeight = CARD_HEIGHT - TEXT_AREA_MIN_HEIGHT;
+  const rad = useRadius();
+  const imageHeight = PLAYING_ARTIST_CARD_HEIGHT - PLAYING_ARTIST_TEXT_MIN_HEIGHT;
   const imageUri = artistCover
     ? buildCover(artistCover, 'detail')
     : null;
 
   const card = (
     <View
-      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
+      style={[styles.card, { width: contentWidth, height: PLAYING_ARTIST_CARD_HEIGHT, borderRadius: rad.panel }]}
     >
       <View style={[styles.imageContainer, { height: imageHeight }]}>
         <Image
@@ -77,13 +81,12 @@ export default function AboutTheArtistCard({
 
   if (onPress) {
     return (
-      <TouchableOpacity
+      <Touchable
         onPress={onPress}
-        activeOpacity={0.8}
         style={styles.touchable}
       >
         {card}
-      </TouchableOpacity>
+      </Touchable>
     );
   }
 
@@ -92,43 +95,40 @@ export default function AboutTheArtistCard({
 
 const styles = StyleSheet.create({
   touchable: {
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   card: {
-    borderRadius: 24,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },
   header: {
+    ...typography.label,
     position: 'absolute',
-    top: PADDING,
-    left: PADDING,
-    right: PADDING,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    top: PLAYING_ARTIST_CARD_PADDING,
+    left: PLAYING_ARTIST_CARD_PADDING,
+    right: PLAYING_ARTIST_CARD_PADDING,
+    color: onDark.text,
     textAlign: 'left',
   },
   imageContainer: {
     width: '100%',
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: onDark.surfaceElevated,
   },
   textContainer: {
     justifyContent: 'center',
-    minHeight: TEXT_AREA_MIN_HEIGHT,
-    paddingHorizontal: PADDING,
-    paddingTop: 12,
-    paddingBottom: 24,
+    minHeight: PLAYING_ARTIST_TEXT_MIN_HEIGHT,
+    paddingHorizontal: PLAYING_ARTIST_CARD_PADDING,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
+    ...typography.navigationTitle,
+    color: onDark.text,
   },
   subtext: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     color: 'rgba(255,255,255,0.75)',
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
 });

@@ -307,6 +307,9 @@ describe('downloadAlbum', () => {
       monitored: false,
       addOptions: {
         searchForMissingAlbums: false,
+        // Regression guard for #176 — without this, Lidarr defaults to
+        // monitor:'all' and flags every album on the artist.
+        monitor: 'none',
       },
     });
 

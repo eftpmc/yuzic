@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { CloudUpload, RotateCcw, Trash2 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -12,11 +12,15 @@ import {
   retryOfflineMutationsForServer,
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function PendingOfflineChanges() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
+  const rad = useRadius();
   const activeServer = useSelector(selectActiveServer);
   const activeServerId = activeServer?.id;
   const queue = useSelector(selectOfflineMutationQueue);
@@ -49,15 +53,13 @@ export default function PendingOfflineChanges() {
     );
   };
 
-  const discardIconColor = isDarkMode ? '#ffb4ad' : '#c7342f';
-  const discardBtnStyle = isDarkMode
-    ? { borderColor: '#54302d', backgroundColor: '#2a1716' }
-    : { borderColor: '#ead4d2', backgroundColor: '#fff1f0' };
-  const discardTextColor = isDarkMode ? '#ffb4ad' : '#c7342f';
+  const discardIconColor = colors.destructiveOnSurface;
+  const discardBtnStyle = { borderColor: colors.destructiveBorder, backgroundColor: colors.destructiveSurface };
+  const discardTextColor = colors.destructiveOnSurface;
 
   return (
     <SettingsCard style={styles.card}>
-      <View style={[styles.iconWrap, { backgroundColor: `${colors.themeColor}22` }]}>
+      <View style={[styles.iconWrap, { backgroundColor: `${colors.themeColor}22`, borderRadius: rad.pill }]}>
         <CloudUpload size={21} color={colors.themeColor} />
       </View>
       <View style={styles.textWrap}>
@@ -74,33 +76,31 @@ export default function PendingOfflineChanges() {
         </Text>
         <View style={styles.actions}>
           {failedCount > 0 && (
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <Touchable
               onPress={retryFailed}
               style={[
                 styles.actionButton,
-                { backgroundColor: `${colors.themeColor}18`, borderColor: `${colors.themeColor}44` },
+                { backgroundColor: `${colors.themeColor}18`, borderColor: `${colors.themeColor}44`, borderRadius: rad.md },
               ]}
             >
               <RotateCcw size={14} color={colors.themeColor} />
               <Text style={[styles.actionText, { color: colors.themeColor }]}>
                 {t('settings.library.offlineChanges.retry')}
               </Text>
-            </TouchableOpacity>
+            </Touchable>
           )}
-          <TouchableOpacity
-            activeOpacity={0.8}
+          <Touchable
             onPress={discardPending}
-            style={[styles.actionButton, discardBtnStyle]}
+            style={[styles.actionButton, discardBtnStyle, { borderRadius: rad.md }]}
           >
             <Trash2 size={14} color={discardIconColor} />
             <Text style={[styles.actionText, { color: discardTextColor }]}>
               {t('settings.library.offlineChanges.discard')}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
       </View>
-      <View style={[styles.badge, { backgroundColor: colors.themeColor }]}>
+      <View style={[styles.badge, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
         <Text style={styles.badgeText}>{pendingCount}</Text>
       </View>
     </SettingsCard>
@@ -111,57 +111,53 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    marginBottom: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   iconWrap: {
     width: 38,
     height: 38,
-    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   textWrap: { flex: 1 },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
   },
   subtitle: {
-    marginTop: 3,
-    fontSize: 13,
+    ...typography.caption,
+    marginTop: spacing.xxs,
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 10,
+    marginTop: spacing.controlGap,
   },
   actionButton: {
     minHeight: 30,
-    borderRadius: 8,
     borderWidth: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.controlGap,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   actionText: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '600',
   },
   badge: {
     minWidth: 28,
     height: 28,
-    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
-    marginLeft: 10,
+    paddingHorizontal: spacing.sm,
+    marginLeft: spacing.controlGap,
   },
   badgeText: {
-    color: '#fff',
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '700',
+    color: '#fff',
   },
 });

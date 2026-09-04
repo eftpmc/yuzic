@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -8,17 +8,10 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from '../../components/SettingsCard';
-
-const DEFAULT_COLOR = '#ff7f7f';
-
-const PRESET_COLORS = [
-  DEFAULT_COLOR,
-  '#ff9f43',
-  '#ffd32a',
-  '#0be881',
-  '#54a0ff',
-  '#5f27cd',
-];
+import { THEME_PRESET_COLORS } from '@/constants/settings';
+import Touchable from '@/components/Touchable';
+import { radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export const ThemeColor: React.FC = () => {
   const { t } = useTranslation();
@@ -26,6 +19,7 @@ export const ThemeColor: React.FC = () => {
   const themeColor = useSelector(selectThemeColor);
   const [open, setOpen] = useState(false);
   const { colors } = useTheme();
+  const rad = useRadius();
 
   return (
     <>
@@ -34,21 +28,21 @@ export const ThemeColor: React.FC = () => {
       </Text>
       <SettingsCard style={styles.card}>
         <View style={styles.presets}>
-          {PRESET_COLORS.map(color => (
-            <TouchableOpacity
+          {THEME_PRESET_COLORS.map(color => (
+            <Touchable
               key={color}
               onPress={() => dispatch(setThemeColor(color))}
               style={[
                 styles.preset,
                 { backgroundColor: color },
-                themeColor === color && styles.presetSelected,
+                themeColor === color && [styles.presetSelected, { borderColor: colors.secondary }],
               ]}
             />
           ))}
         </View>
 
-        <TouchableOpacity
-          style={[styles.expandButton, { backgroundColor: colors.muted, borderColor: colors.border }]}
+        <Touchable
+          style={[styles.expandButton, { backgroundColor: colors.muted, borderColor: colors.border, borderRadius: rad.md }]}
           onPress={() => setOpen(v => !v)}
         >
           <View style={styles.expandLeft}>
@@ -61,7 +55,7 @@ export const ThemeColor: React.FC = () => {
             ? <ChevronUp size={18} color={colors.subtext} />
             : <ChevronDown size={18} color={colors.subtext} />
           }
-        </TouchableOpacity>
+        </Touchable>
 
         {open && (
           <View style={styles.picker}>
@@ -82,27 +76,26 @@ export const ThemeColor: React.FC = () => {
 
 const styles = StyleSheet.create({
   caption: {
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 16,
-    marginLeft: 4,
+    ...typography.caption,
+    marginBottom: spacing.tight,
+    marginTop: spacing.lg,
+    marginLeft: spacing.xs,
   },
   card: {
-    padding: 16,
+    padding: spacing.lg,
   },
   presets: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   preset: {
     flex: 1,
     height: 28,
-    borderRadius: 6,
+    borderRadius: radius.sm,
   },
   presetSelected: {
     borderWidth: 2,
-    borderColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,
@@ -113,9 +106,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
   },
   expandLeft: {
@@ -125,14 +117,13 @@ const styles = StyleSheet.create({
   colorPreview: {
     width: 20,
     height: 20,
-    borderRadius: 4,
-    marginRight: 12,
+    borderRadius: radius.xs,
+    marginRight: spacing.md,
   },
   expandText: {
-    fontSize: 15,
-    fontWeight: '500',
+    ...typography.compactRowTitle,
   },
   picker: {
-    paddingTop: 16,
+    paddingTop: spacing.lg,
   },
 });

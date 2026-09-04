@@ -1,11 +1,13 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 
 import { AlbumBase } from '@/types'
 import { useTheme } from '@/hooks/useTheme'
 import AlbumRow from '@/components/rows/AlbumRow'
-import GenreHeader from '../Header'
+import GenreHeader, { GenreHeaderBar } from '../Header'
+import { DetailScreen } from '@/components/DetailHeader'
+import { spacing } from '@/constants/design'
 
 type Props = {
   genre: string
@@ -17,26 +19,36 @@ export default function GenreContent({ genre, albums }: Props) {
   const { colors } = useTheme()
 
   const header = useMemo(
-    () => <GenreHeader genre={genre} albums={albums} />,
+    () => <GenreHeader genre={genre} albums={albums} showNavigation={false} />,
     [genre, albums]
   )
 
+  const renderItem = useCallback(
+    ({ item }: { item: AlbumBase }) => (
+      <AlbumRow
+        album={item}
+        onPress={(album) => navigation.push('albumView', { id: album.id })}
+      />
+    ),
+    [navigation]
+  )
+
   return (
-    <FlashList
-      data={albums}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={header}
-      renderItem={({ item }) => (
-        <AlbumRow
-          album={item}
-          onPress={(album) => navigation.navigate('albumView', { id: album.id })}
-        />
+    <DetailScreen bar={<GenreHeaderBar genre={genre} albums={albums} />}>
+      {scroll => (
+      <FlashList
+        data={albums}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={header}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: spacing.scrollClearance,
+          backgroundColor: colors.background,
+        }}
+        {...scroll}
+      />
       )}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingBottom: 140,
-        backgroundColor: colors.background,
-      }}
-    />
+    </DetailScreen>
   )
 }

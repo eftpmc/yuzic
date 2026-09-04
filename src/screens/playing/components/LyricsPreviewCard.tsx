@@ -2,7 +2,6 @@ import React, { useMemo, useRef, useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   LayoutChangeEvent,
 } from 'react-native';
@@ -12,6 +11,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { LyricsResult } from '@/api/types';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   lyrics: LyricsResult;
@@ -72,6 +74,7 @@ export default function LyricsPreviewCard({
   contentWidth,
   onPress,
 }: Props) {
+  const rad = useRadius();
   const scrollRef = useRef<ScrollView>(null);
   const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
   const [contentHeight, setContentHeight] = useState(0);
@@ -122,10 +125,9 @@ export default function LyricsPreviewCard({
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT }]}
+    <Touchable
+      style={[styles.card, { width: contentWidth, height: CARD_HEIGHT, borderRadius: rad.panel }]}
       onPress={onPress}
-      activeOpacity={0.8}
     >
       <ScrollView
         ref={scrollRef}
@@ -144,29 +146,28 @@ export default function LyricsPreviewCard({
         ))}
       </ScrollView>
 
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     paddingVertical: CARD_PADDING_V,
-    paddingHorizontal: 24,
-    borderRadius: 24,
+    paddingHorizontal: spacing.xl,
     backgroundColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },
   scrollContent: {
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   line: {
+    ...typography.sectionTitle,
     textAlign: 'center',
-    fontSize: 20,
-    marginVertical: 6,
+    marginVertical: spacing.tight,
   },
   activeLine: {
-    color: '#fff',
+    color: onDark.text,
     fontWeight: '600',
   },
   inactiveLine: {

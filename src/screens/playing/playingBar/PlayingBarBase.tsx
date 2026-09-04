@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { BackHandler, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Music, Play, Pause } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import ImageColors from 'react-native-image-colors';
+import { createAccentCache, darken, pickAccent } from '@/features/theme/coverAccent';
+import { PLAYING_GRADIENT_CACHE_MAX } from '@/constants/features';
 
 import PlaylistList from '@/components/PlaylistList';
 import OutputDeviceSheet from '@/screens/playing/components/OutputDeviceSheet';
@@ -23,6 +25,10 @@ import {
 
 import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { onDark, radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Variant = 'ios' | 'android';
 
@@ -65,10 +71,9 @@ const variantStyles = {
   ios: {
     blurIntensity: 100,
     wrapper: {
-      marginHorizontal: 12,
-      marginTop: 12,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.md,
       marginBottom: 0,
-      borderRadius: 14,
       overflow: 'hidden' as const,
       shadowColor: '#000',
       shadowOpacity: 0.1,
@@ -76,10 +81,9 @@ const variantStyles = {
     },
     container: {
       flexDirection: 'column' as const,
-      padding: 8,
+      padding: spacing.sm,
       paddingBottom: 0,
-      paddingHorizontal: 12,
-      borderRadius: 14,
+      paddingHorizontal: spacing.md,
     },
     topRowWrapper: {
       height: 40,
@@ -87,33 +91,32 @@ const variantStyles = {
     },
     topRow: {
       minHeight: 40,
-      paddingRight: 4,
+      paddingRight: spacing.xs,
     },
     coverArt: {
       width: 42,
       height: 42,
-      marginRight: 10,
+      marginRight: spacing.controlGap,
     },
     title: {
-      fontSize: 13,
+      ...typography.caption,
     },
     artist: {
-      fontSize: 13,
+      ...typography.caption,
     },
     progressBarContainer: {
       height: 3,
-      marginTop: 6,
+      marginTop: spacing.tight,
     },
     playPauseButton: {
-      padding: 8,
+      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      marginRight: 4,
+      marginRight: spacing.xs,
     },
     fabButton: {
       width: 38,
       height: 38,
-      borderRadius: 19,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -125,10 +128,9 @@ const variantStyles = {
   android: {
     blurIntensity: 0,
     wrapper: {
-      marginHorizontal: 12,
-      marginTop: 12,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.md,
       marginBottom: 0,
-      borderRadius: 14,
       overflow: 'hidden' as const,
       shadowColor: '#000',
       shadowOpacity: 0.1,
@@ -137,10 +139,9 @@ const variantStyles = {
     },
     container: {
       flexDirection: 'column' as const,
-      padding: 8,
+      padding: spacing.sm,
       paddingBottom: 0,
-      paddingHorizontal: 12,
-      borderRadius: 14,
+      paddingHorizontal: spacing.md,
     },
     topRowWrapper: {
       height: 40,
@@ -148,57 +149,44 @@ const variantStyles = {
     },
     topRow: {
       minHeight: 40,
-      paddingRight: 4,
+      paddingRight: spacing.xs,
     },
     coverArt: {
       width: 42,
       height: 42,
-      marginRight: 10,
+      marginRight: spacing.controlGap,
     },
     title: {
-      fontSize: 13,
+      ...typography.caption,
     },
     artist: {
-      fontSize: 13,
+      ...typography.caption,
     },
     progressBarContainer: {
       height: 3,
-      marginTop: 6,
+      marginTop: spacing.tight,
     },
     playPauseButton: {
-      padding: 8,
+      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      marginRight: 4,
+      marginRight: spacing.xs,
     },
     fabButton: {
       width: 38,
       height: 38,
-      borderRadius: 19,
       elevation: 4,
     },
     placeholderIconSize: 32,
   },
 };
 
-const GRADIENT_CACHE_MAX = 150;
-const gradientCache = new Map<string, [string, string]>();
-
-function darkenHexColor(hex: string, amount = 0.3) {
-  let col = hex.replace('#', '');
-  if (col.length === 3) col = col.split('').map(c => c + c).join('');
-  const num = parseInt(col, 16);
-  const r = Math.floor(((num >> 16) & 0xff) * (1 - amount));
-  const g = Math.floor(((num >> 8) & 0xff) * (1 - amount));
-  const b = Math.floor((num & 0xff) * (1 - amount));
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b)
-    .toString(16)
-    .slice(1)}`;
-}
+const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE_MAX);
 
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
   const { isDarkMode, colors } = useTheme();
+  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
 
@@ -209,6 +197,16 @@ export default function PlayingBarBase({ variant }: Props) {
   const bottomSheetRef = useSheetRef();
   const playlistSheetRef = useSheetRef();
   const castSheetRef = useSheetRef();
+  const [isPlayerSheetOpen, setIsPlayerSheetOpen] = useState(false);
+  // Gate the full-screen player tree behind first open. The tree used to be
+  // mounted the entire time a song was playing so opening it was cheap on the
+  // second try — the cost was renderin' the album cover, lyrics fetch, useAlbum
+  // query, and every optional card (sleep timer, playback speed, volume, about
+  // the artist) constantly in the background whether the user ever opened the
+  // player or not. Mount on first present() instead: opens are still cheap
+  // after the first (the tree stays mounted for the session), and nothing pays
+  // the cost of a player screen no one has looked at.
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
 
   const primaryAction = usePlayingBarAction(actionMode, {
     presentAddToPlaylist: () => {
@@ -216,6 +214,18 @@ export default function PlayingBarBase({ variant }: Props) {
     },
     presentCast: () => castSheetRef.current?.present(),
   });
+
+  // Android's hardware back button isn't intercepted by the bottom sheet on its
+  // own (it renders in a Portal, not a native Modal) — without this it falls
+  // through to whatever screen is underneath instead of minimizing the player.
+  useEffect(() => {
+    if (!isPlayerSheetOpen) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      bottomSheetRef.current?.close();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [isPlayerSheetOpen, bottomSheetRef]);
 
   const [currentGradient, setCurrentGradient] = useState<[string, string]>(['#000', '#000']);
   const [nextGradient, setNextGradient] = useState<[string, string]>(['#000', '#000']);
@@ -227,17 +237,8 @@ export default function PlayingBarBase({ variant }: Props) {
       return;
     }
     try {
-      const colors = await ImageColors.getColors(uri, { fallback: '#121212' });
-      let dominant = '#121212';
-      if (colors.platform === 'android') {
-        dominant = colors.darkVibrant || colors.dominant || dominant;
-      } else {
-        dominant = (colors as any).primary || dominant;
-      }
-      const gradient: [string, string] = [darkenHexColor(dominant), '#000'];
-      if (gradientCache.size >= GRADIENT_CACHE_MAX) {
-        gradientCache.delete(gradientCache.keys().next().value!);
-      }
+      const result = await ImageColors.getColors(uri, { fallback: '#121212' });
+      const gradient: [string, string] = [darken(pickAccent(result, '#121212')), '#000'];
       gradientCache.set(uri, gradient);
       setNextGradient(gradient);
     } catch {
@@ -263,7 +264,9 @@ export default function PlayingBarBase({ variant }: Props) {
   };
 
   const handleExpand = () => {
-    if (currentSong) bottomSheetRef.current?.present();
+    if (!currentSong) return;
+    setHasBeenOpened(true);
+    bottomSheetRef.current?.present();
   };
 
   const handleFadeComplete = useCallback(() => {
@@ -317,7 +320,7 @@ export default function PlayingBarBase({ variant }: Props) {
       </View>
 
       {currentSong && (
-        <TouchableOpacity
+        <Touchable
           accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
           accessibilityRole="button"
           testID="playing-bar-play-pause"
@@ -326,22 +329,22 @@ export default function PlayingBarBase({ variant }: Props) {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {isBuffering
-            ? <ActivityIndicator size="small" color={colors.secondary} />
+            ? <SpinningLoaderCircle size={18} color={colors.secondary} />
             : isPlaying
               ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
               : <Play size={20} color={colors.secondary} fill={colors.secondary} />
           }
-        </TouchableOpacity>
+        </Touchable>
       )}
 
       {primaryAction && (
-        <TouchableOpacity
-          style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor }]}
+        <Touchable
+          style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor, borderRadius: rad.pill }]}
           onPress={primaryAction.onPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {primaryAction.icon}
-        </TouchableOpacity>
+        </Touchable>
       )}
     </View>
   );
@@ -362,35 +365,40 @@ export default function PlayingBarBase({ variant }: Props) {
 
   return (
     <>
-      <TouchableOpacity
+      <Touchable
         accessibilityLabel={currentSong ? 'Now playing bar' : 'No song playing'}
         accessibilityRole="button"
         testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
         onPress={handleExpand}
-        activeOpacity={0.9}
       >
-        <View style={[styles.wrapper, stylesForVariant.wrapper]}>
+        <View style={[styles.wrapper, stylesForVariant.wrapper, { borderRadius: rad.card }]}>
           {variant === 'android' ? (
-            <View style={[styles.container, stylesForVariant.container, androidSurfaceStyle]}>
+            <View style={[styles.container, stylesForVariant.container, { borderRadius: rad.card }, androidSurfaceStyle]}>
               {barContent}
             </View>
           ) : (
             <BlurView
               intensity={stylesForVariant.blurIntensity}
               tint={isDarkMode ? 'dark' : 'light'}
-              style={[styles.container, stylesForVariant.container]}
+              style={[styles.container, stylesForVariant.container, { borderRadius: rad.card }]}
             >
               {barContent}
             </BlurView>
           )}
         </View>
-      </TouchableOpacity>
+      </Touchable>
 
       <BottomSheetModal
         ref={bottomSheetRef}
+        // The library defaults accessible=true on the sheet container, which
+        // collapses everything inside into a single opaque a11y element on
+        // iOS — VoiceOver can't reach the player controls and E2E tests
+        // can't see their testIDs.
+        accessible={false}
         snapPoints={['100%']}
         enableDynamicSizing={false}
         enablePanDownToClose
+        onChange={(index) => setIsPlayerSheetOpen(index >= 0)}
         backgroundStyle={{ backgroundColor: 'transparent' }}
         backgroundComponent={props => (
           <PlayingBackground
@@ -401,7 +409,9 @@ export default function PlayingBarBase({ variant }: Props) {
           />
         )}
       >
-        <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
+        {hasBeenOpened
+          ? <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
+          : null}
       </BottomSheetModal>
 
       <PlaylistList
@@ -423,7 +433,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   coverArt: {
-    borderRadius: 5,
+    borderRadius: radius.sm,
   },
   details: {
     flex: 1,
@@ -432,15 +442,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   artist: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   iconPlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   progressBarContainer: {
-    backgroundColor: '#666',
-    borderRadius: 2,
+    backgroundColor: onDark.mutedText,
+    borderRadius: radius.xs,
     overflow: 'hidden',
   },
   progressBar: {
@@ -448,7 +458,7 @@ const styles = StyleSheet.create({
   },
   playPauseButton: {},
   fabButton: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
+import { spacing, statusColor } from '@/constants/design';
 import {
-  View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -12,39 +9,97 @@ import Animated, {
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
-import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
+import { Ellipsis, Shuffle, Play, Check, Download, CloudDownload, Link } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
-import { Album } from '@/types';
-import { MediaImage } from '@/components/MediaImage';
+import { Album, ExternalAlbum, Playlist, Song } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
+import DownloadSheet from '@/components/options/DownloadSheet';
+import StatusBanner from '@/components/StatusBanner';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import DownloadProgressRing from '@/components/DownloadProgressRing';
+import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatDuration } from '@/utils/formatDuration';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
+import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
+import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
+import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
+import { externalSongToTrack } from '@/hooks/usePreviewPlayer';
+import {
+  DetailActionRow,
+  DetailCircleAction,
+  DetailHeader,
+  DetailHeaderBar,
+  DetailHeaderIconButton,
+  DetailMetaDot,
+  DetailMetaRow,
+  DetailMetaText,
+  DetailPlayAction,
+} from '@/components/DetailHeader';
+import Touchable from '@/components/Touchable';
 
 type Props = {
-  album: Album;
+  localAlbum: Album | null;
+  externalAlbum: ExternalAlbum | null;
+  showNavigation?: boolean;
 };
 
-const AlbumHeader: React.FC<Props> = ({ album }) => {
-  const navigation = useNavigation<any>();
-  const { colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
-  const optionsSheetRef = useSheetRef();
+function isCountLikeAlbumText(value?: string | null): boolean {
+  return /^\s*\d+\s+albums?\s*$/i.test(value ?? '');
+}
 
-  const { playSongInCollection } = usePlayingActions();
-  const { downloadAlbumById, getCollectionDownloadState } = useDownload();
+const AlbumHeader: React.FC<Props> = ({ localAlbum, externalAlbum, showNavigation = true }) => {
+  const displayTitle = localAlbum?.title ?? externalAlbum?.title ?? '';
+  const displayCover = localAlbum?.cover ?? externalAlbum?.cover ?? { kind: 'none' as const };
+
+  return (
+    <DetailHeader
+      title={displayTitle}
+      cover={displayCover}
+      rightAction={localAlbum ? <LocalOptionsButton album={localAlbum} /> : undefined}
+      meta={localAlbum ? <LocalMetaRow album={localAlbum} /> : <ExternalMetaRow album={externalAlbum!} />}
+      status={!localAlbum ? <ExternalServerStatusRow album={externalAlbum!} /> : undefined}
+      actions={localAlbum ? <LocalActionRow album={localAlbum} /> : <ExternalActionRow album={externalAlbum!} />}
+      showNavigation={showNavigation}
+    />
+  );
+};
+
+export const AlbumHeaderBar: React.FC<Props> = ({ localAlbum, externalAlbum }) => {
+  const displayTitle = localAlbum?.title ?? externalAlbum?.title ?? '';
+  return (
+    <DetailHeaderBar
+      title={displayTitle}
+      rightAction={localAlbum ? <LocalOptionsButton album={localAlbum} /> : undefined}
+    />
+  );
+};
+
+function LocalOptionsButton({ album }: { album: Album }) {
+  const { colors } = useTheme();
+  const optionsSheetRef = useSheetRef();
+  return (
+    <>
+      <DetailHeaderIconButton
+        onPress={() => optionsSheetRef.current?.present()}
+      >
+        <Ellipsis size={24} color={colors.secondary} />
+      </DetailHeaderIconButton>
+      <AlbumOptions ref={optionsSheetRef} album={album} hideGoToAlbum />
+    </>
+  );
+}
+
+function LocalMetaRow({ album }: { album: Album }) {
+  const navigation = useNavigation<any>();
 
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
-  const songIds = useMemo(() => songs.map(s => s.id), [songs]);
-  const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
-    getCollectionDownloadState(songIds);
-
   const totalDuration = useMemo(
     () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
     [songs]
@@ -65,8 +120,109 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   }, [album.artist?.name, album.genres, album.year, songs.length, totalDuration]);
 
   const handleGenrePress = useCallback((genre: string) => {
-    (navigation as any).navigate('genreView', { genre });
+    navigation.push('genreView', { genre });
   }, [navigation]);
+
+  return (
+    <DetailMetaRow>
+      {metadataItems.map((item, index) => (
+        <React.Fragment key={`${item.label}-${index}`}>
+          {index > 0 && <DetailMetaDot />}
+          {item.type === 'artist' && album.artist ? (
+            <Touchable onPress={() => navigation.push('artistView', { id: album.artist.id })}>
+              <DetailMetaText>{item.label}</DetailMetaText>
+            </Touchable>
+          ) : item.type === 'genre' ? (
+            <Touchable onPress={() => handleGenrePress(item.label)}>
+              <DetailMetaText>{item.label}</DetailMetaText>
+            </Touchable>
+          ) : (
+            <DetailMetaText>{item.label}</DetailMetaText>
+          )}
+        </React.Fragment>
+      ))}
+    </DetailMetaRow>
+  );
+}
+
+function ExternalMetaRow({ album }: { album: ExternalAlbum }) {
+  const { t } = useTranslation();
+  const { navigateToArtist } = useMatchedNavigation();
+
+  const songs = useMemo(() => album.songs ?? [], [album.songs]);
+
+  const metadataItems = useMemo(() => {
+    const items: string[] = [];
+    if (album.artist && !isCountLikeAlbumText(album.artist)) items.push(album.artist);
+    if (songs.length > 0) items.push(t('externalAlbum.header.songs', { count: songs.length }));
+    return [...new Set(items.map(item => item.trim()).filter(Boolean))];
+  }, [album.artist, songs.length, t]);
+
+  return (
+    <DetailMetaRow>
+      {metadataItems.map((item, index) => (
+        <React.Fragment key={`${item}-${index}`}>
+          {index > 0 && <DetailMetaDot />}
+          {index === 0 && album.artist ? (
+            <Touchable
+              onPress={() =>
+                navigateToArtist({
+                  id: album.externalIds?.artistDeezerId ?? '',
+                  name: album.artist,
+                  cover: { kind: 'none' },
+                  subtext: '',
+                  externalSource: album.externalSource,
+                  externalIds: { deezerId: album.externalIds?.artistDeezerId, mbid: album.artistMbid },
+                })
+              }
+            >
+              <DetailMetaText>{item}</DetailMetaText>
+            </Touchable>
+          ) : (
+            <DetailMetaText>{item}</DetailMetaText>
+          )}
+        </React.Fragment>
+      ))}
+    </DetailMetaRow>
+  );
+}
+
+function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
+  const { t } = useTranslation();
+  const albumStatus = useExternalAlbumStatus(album);
+
+  if (albumStatus.kind === 'none') return null;
+
+  if (albumStatus.kind === 'in_library') {
+    return (
+      <StatusBanner
+        icon={<Link size={14} color={statusColor.success} />}
+        text={t('externalAlbum.serverStatus.onServer')}
+        color={statusColor.success}
+        style={styles.serverStatusRow}
+      />
+    );
+  }
+  return (
+    <StatusBanner
+      icon={<SpinningLoaderCircle size={14} color={statusColor.downloading} />}
+      text={t('externalAlbum.serverStatus.downloadingToServer', { progress: albumStatus.progress })}
+      color={statusColor.downloading}
+      style={styles.serverStatusRow}
+    />
+  );
+}
+
+function LocalActionRow({ album }: { album: Album }) {
+  const { colors } = useTheme();
+  const { playSongInCollection } = usePlayingActions();
+  const { downloadAlbumById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
+
+  const songs = useMemo(() => album.songs ?? [], [album.songs]);
+  const songIds = useMemo(() => songs.map(s => s.id), [songs]);
+  const { isDownloaded: isAlbumDownloaded, isDownloading: isAlbumDownloading } =
+    getCollectionDownloadState(songIds);
+  const downloadFraction = useCollectionDownloadProgress(songIds);
 
   const checkmarkScale = useSharedValue(isAlbumDownloaded ? 1 : 0);
 
@@ -86,9 +242,13 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   }));
 
   const toggleDownload = useCallback(async () => {
-    if (!songs.length || isAlbumDownloading || isAlbumDownloaded) return;
+    if (isAlbumDownloading) {
+      await cancelCollectionDownloads(album.id);
+      return;
+    }
+    if (!songs.length || isAlbumDownloaded) return;
     await downloadAlbumById(album.id, songs);
-  }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, album.id]);
+  }, [songs, isAlbumDownloading, isAlbumDownloaded, downloadAlbumById, cancelCollectionDownloads, album.id]);
 
   const handlePlay = useCallback(() => {
     if (songs.length > 0) playSongInCollection(songs[0], album, false);
@@ -99,197 +259,100 @@ const AlbumHeader: React.FC<Props> = ({ album }) => {
   }, [songs, album, playSongInCollection]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <ChevronLeft size={24} color={colors.secondary} />
-        </TouchableOpacity>
+    <DetailActionRow>
+      <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle album">
+        <Shuffle size={18} color={colors.secondary} />
+      </DetailCircleAction>
 
-        <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
-            {album.title}
-          </Text>
-        </View>
+      <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play album">
+        <Play size={20} color="#fff" fill="#fff" />
+      </DetailPlayAction>
 
-        <TouchableOpacity
-          onPress={() => optionsSheetRef.current?.present()}
-          style={styles.headerButton}
-        >
-          <Ellipsis size={24} color={colors.secondary} />
-        </TouchableOpacity>
-      </View>
-
-      <AlbumOptions ref={optionsSheetRef} album={album} hideGoToAlbum />
-
-      <View style={styles.coverWrapper}>
-        <MediaImage cover={album.cover} size="detail" style={styles.coverImage} />
-      </View>
-
-      <View style={styles.titleInfo}>
-        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
-          {album.title}
-        </Text>
-
-        <View style={styles.metaRow}>
-          {metadataItems.map((item, index) => (
-            <React.Fragment key={`${item.label}-${index}`}>
-              {index > 0 && (
-                <Text style={[styles.metaDot, { color: colors.subtext }]} numberOfLines={1}>
-                  •
-                </Text>
-              )}
-              {item.type === 'artist' && album.artist ? (
-                <TouchableOpacity
-                  onPress={() => (navigation as any).navigate('artistView', { id: album.artist.id })}
-                >
-                  <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ) : item.type === 'genre' ? (
-                <TouchableOpacity onPress={() => handleGenrePress(item.label)}>
-                  <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
-                  {item.label}
-                </Text>
-              )}
-            </React.Fragment>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.actionsRow}>
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-            onPress={handleShuffle}
-          >
-            <Shuffle size={18} color={colors.secondary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.playButton, { backgroundColor: themeColor }]}
-            onPress={handlePlay}
-          >
-            <Play size={20} color="#fff" fill="#fff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-            onPress={() => void toggleDownload()}
-            disabled={isAlbumDownloading}
-          >
-            {isAlbumDownloading ? (
-              <ActivityIndicator size="small" color={colors.secondary} />
-            ) : isAlbumDownloaded ? (
-              <Animated.View style={checkmarkStyle}>
-                <Check size={18} color={colors.secondary} />
-              </Animated.View>
-            ) : (
-              <Download size={18} color={colors.secondary} />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+      <DetailCircleAction
+        onPress={() => void toggleDownload()}
+        accessibilityLabel={
+          isAlbumDownloading ? 'Cancel download' : isAlbumDownloaded ? 'Downloaded' : 'Download album'
+        }
+      >
+        {isAlbumDownloading ? (
+          <DownloadProgressRing progress={downloadFraction} size={18} />
+        ) : isAlbumDownloaded ? (
+          <Animated.View style={checkmarkStyle}>
+            <Check size={18} color={colors.secondary} />
+          </Animated.View>
+        ) : (
+          <Download size={18} color={colors.secondary} />
+        )}
+      </DetailCircleAction>
+    </DetailActionRow>
   );
-};
+}
+
+function ExternalActionRow({ album }: { album: ExternalAlbum }) {
+  const { colors } = useTheme();
+  const canDownload = useAnyDownloaderConnected();
+  const { playSongInCollection } = usePlayingActions();
+  const albumStatus = useExternalAlbumStatus(album);
+  const previews = useExternalAlbumPreviews(album);
+  const downloadSheetRef = useSheetRef();
+
+  const songs = useMemo(() => album.songs ?? [], [album.songs]);
+
+  const previewSongs = useMemo<Song[]>(
+    () => songs.filter(s => !!previews[s.id]).map(s => externalSongToTrack(s, previews[s.id])),
+    [songs, previews]
+  );
+
+  const previewCollection = useMemo<Playlist>(() => ({
+    id: `preview-${album.id}`,
+    title: album.title,
+    subtext: album.artist,
+    cover: album.cover,
+    changed: new Date(),
+    created: new Date(),
+    songs: previewSongs,
+  }), [album, previewSongs]);
+
+  const handlePlay = useCallback(() => {
+    if (!previewSongs.length) return;
+    playSongInCollection(previewSongs[0], previewCollection);
+  }, [previewSongs, previewCollection, playSongInCollection]);
+
+  const handleDownload = useCallback(() => {
+    if (!canDownload || albumStatus.kind !== 'none') return;
+    downloadSheetRef.current?.present();
+  }, [canDownload, albumStatus.kind, downloadSheetRef]);
+
+  return (
+    <>
+      <DetailActionRow>
+        <DetailPlayAction
+          onPress={handleDownload}
+          disabled={!canDownload || albumStatus.kind !== 'none'}
+          accessibilityLabel="Download album to server"
+        >
+          <CloudDownload
+            size={20}
+            color={!canDownload || albumStatus.kind !== 'none' ? 'rgba(255,255,255,0.4)' : '#fff'}
+          />
+        </DetailPlayAction>
+
+        {previewSongs.length > 0 && (
+          <DetailCircleAction onPress={handlePlay} accessibilityLabel="Play preview">
+            <Play size={18} color={colors.secondary} fill={colors.secondary} />
+          </DetailCircleAction>
+        )}
+      </DetailActionRow>
+
+      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
+    </>
+  );
+}
 
 export default AlbumHeader;
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 0,
-    alignItems: 'center',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    width: '100%',
-  },
-  headerTitleWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    maxWidth: '60%',
-  },
-  headerButton: {
-    padding: 6,
-  },
-  coverWrapper: {
-    width: 280,
-    height: 280,
-    borderRadius: 16,
-    marginTop: 32,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
-  titleInfo: {
-    width: '100%',
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  subtext: {
-    fontSize: 14,
-  },
-  metaDot: {
-    fontSize: 14,
-    marginHorizontal: 6,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    flexWrap: 'nowrap',
-    maxWidth: '94%',
-    marginTop: 4,
-  },
-  actionsRow: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  secondaryButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+  serverStatusRow: {
+    marginBottom: spacing.controlGap,
   },
 });

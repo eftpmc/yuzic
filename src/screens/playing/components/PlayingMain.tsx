@@ -1,20 +1,21 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import TurboImage from 'react-native-turbo-image';
 
-import TrackPlayer from '@rntp/player';
-import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
+import { usePlayingState, usePlayingProgress, usePlayingActions } from '@/contexts/PlayingContext';
 import { SeekableProgressBar } from './SeekableProgressBar';
 import { useSelector } from 'react-redux';
 import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
 import { buildCover } from '@/utils/builders/buildCover';
 import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type PlayingMainProps = {
   width: number;
@@ -29,6 +30,40 @@ const formatTime = (seconds: number): string => {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
+// Isolated so the once-a-second progress tick only re-renders the seek bar
+// and timestamps, not the cover art / title / artist / add button above it —
+// same reasoning as ProgressBarStrip in the mini player (PlayingBarBase).
+const PlayingProgressSection: React.FC<{ songDuration: number }> = memo(({ songDuration }) => {
+  const { seekSong } = usePlayingActions();
+  const progress = usePlayingProgress();
+  const nativeDuration = progress.duration;
+  const duration = nativeDuration > 0 ? nativeDuration : songDuration;
+  const position = Math.min(progress.position, duration);
+
+  return (
+    <>
+      <SeekableProgressBar
+        value={position}
+        duration={duration}
+        onSeek={seekSong}
+        fillColor={onDark.text}
+        trackColor={onDark.mutedText}
+        style={styles.progressBar}
+      />
+
+      <View style={styles.timestamps}>
+        <Text style={styles.timestamp}>
+          {formatTime(position)}
+        </Text>
+        <Text style={styles.timestamp}>
+          -{formatTime(duration - position)}
+        </Text>
+      </View>
+    </>
+  );
+});
+PlayingProgressSection.displayName = 'PlayingProgressSection';
+
 const PlayingMain: React.FC<PlayingMainProps> = ({
   width,
   onPressArtist,
@@ -36,12 +71,8 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressAdd
 }) => {
   const { currentSong } = usePlayingState();
+  const rad = useRadius();
   const showQualityBadge = useSelector(selectShowQualityBadge);
-  const progress = usePlayingProgress();
-  const nativeDuration = progress.duration
-  const songDuration = currentSong ? Number(currentSong.duration) : 1
-  const duration = nativeDuration > 0 ? nativeDuration : songDuration
-  const position = Math.min(progress.position, duration)
 
   if (!currentSong) {
     return null;
@@ -62,22 +93,18 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
     buildCover(currentSong.cover, 'detail') ??
     buildCover({ kind: 'none' } as CoverSource, 'detail');
 
-  const handleSeek = (positionSeconds: number) => {
-    TrackPlayer.seekTo(positionSeconds);
-  };
-
   return (
     <View style={[styles.root, { width }]}>
       {coverUri ? (
         <TurboImage
           source={{ uri: coverUri }}
-          style={[styles.cover, { width, height: width }]}
+          style={[styles.cover, { width, height: width, borderRadius: rad.card }]}
           resizeMode="cover"
           cachePolicy="dataCache"
           fadeDuration={300}
         />
       ) : (
-        <View style={[styles.cover, { width, height: width }]} />
+        <View style={[styles.cover, { width, height: width, borderRadius: rad.card }]} />
       )}
 
       <View style={styles.titleRow}>
@@ -87,25 +114,25 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           </Text>
 
           {currentSong.artist && (
-            <TouchableOpacity onPress={onPressArtist} activeOpacity={0.7}>
+            <Touchable onPress={onPressArtist}>
               <Text style={styles.artist} numberOfLines={1}>
                 {currentSong.artist}
               </Text>
-            </TouchableOpacity>
+            </Touchable>
           )}
         </View>
 
         <View>
-          <TouchableOpacity
+          <Touchable
           onPress={onPressAdd}
           style={styles.optionsButton}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <CirclePlus
             size={32}
-            color="#fff"
+            color={onDark.text}
           />
-        </TouchableOpacity>
+        </Touchable>
         </View>
       </View>
 
@@ -115,23 +142,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         </Text>
       )}
 
-      <SeekableProgressBar
-        value={position}
-        duration={duration}
-        onSeek={handleSeek}
-        fillColor="#fff"
-        trackColor="#555"
-        style={styles.progressBar}
-      />
-
-      <View style={styles.timestamps}>
-        <Text style={styles.timestamp}>
-          {formatTime(position)}
-        </Text>
-        <Text style={styles.timestamp}>
-          -{formatTime(duration - position)}
-        </Text>
-      </View>
+      <PlayingProgressSection songDuration={Number(currentSong.duration)} />
     </View>
   );
 };
@@ -141,50 +152,48 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   cover: {
-    borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: '#111',
+    marginBottom: spacing.lg,
+    backgroundColor: onDark.surface,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   textContainer: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 4,
+    ...typography.sectionTitle,
+    color: onDark.text,
+    marginBottom: spacing.xs,
   },
   artist: {
-    fontSize: 14,
-    color: '#ccc',
+    ...typography.rowSubtitle,
+    color: onDark.subtext,
   },
   qualityBadge: {
-    fontSize: 11,
-    color: '#888',
+    ...typography.micro,
+    color: onDark.mutedText,
     textAlign: 'left',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     letterSpacing: 0.3,
   },
   optionsButton: {
-    padding: 6,
+    padding: spacing.tight,
   },
   progressBar: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   timestamps: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: spacing.controlGap,
   },
   timestamp: {
-    fontSize: 12,
-    color: '#bbb',
+    ...typography.caption,
+    color: onDark.subtext,
   },
 });
 

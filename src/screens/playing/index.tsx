@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    View,
-    StyleSheet,
-    TouchableOpacity,
-    StatusBar,
-    useWindowDimensions,
-    InteractionManager,
+  View,
+  StyleSheet,
+  StatusBar,
+  useWindowDimensions,
+  InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
-import { selectShowSleepTimer, selectShowPlaybackSpeed } from '@/utils/redux/selectors/settingsSelectors';
+import { selectShowSleepTimer, selectShowPlaybackSpeed, selectShowVolumeSlider } from '@/utils/redux/selectors/settingsSelectors';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
 import Animated, {
@@ -33,14 +32,38 @@ import OutputDeviceSheet from './components/OutputDeviceSheet';
 import AboutTheArtistCard from './components/AboutTheArtistCard';
 import SleepTimerCard from './components/SleepTimerCard';
 import PlaybackSpeedCard from './components/PlaybackSpeedCard';
+import VolumeCard from './components/VolumeCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
+import Touchable from '@/components/Touchable';
+import { hitSlopFor, onDark, spacing } from '@/constants/design';
 
 interface PlayingScreenProps {
     onClose: () => void;
 }
 
 type PlayingViewMode = "player" | "queue";
+
+// Isolated so the once-a-second progress tick only re-renders this small
+// card, not the whole PlayingScreen tree (header, PlayingMain, Controls,
+// BottomControls, and the other cards) — that tree stays mounted the entire
+// time a song is playing, hidden behind the collapsed player sheet, so an
+// unnecessary full re-render every second was a constant, avoidable cost.
+const LyricsPreviewCardResolver: React.FC<{
+    lyrics: LyricsResult;
+    contentWidth: number;
+    onPress: () => void;
+}> = ({ lyrics, contentWidth, onPress }) => {
+    const progress = usePlayingProgress();
+    return (
+        <LyricsPreviewCard
+            lyrics={lyrics}
+            position={progress.position}
+            contentWidth={contentWidth}
+            onPress={onPress}
+        />
+    );
+};
 
 const usePlayingTransitions = (mode: PlayingViewMode) => {
     const playerOpacity = useSharedValue(1);
@@ -80,7 +103,6 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 }) => {
     const router = useRouter();
     const { currentSong } = usePlayingState();
-    const progress = usePlayingProgress();
     const api = useApi();
     const insets = useSafeAreaInsets();
     const { album } = useAlbum(currentSong?.albumId ?? '');
@@ -131,6 +153,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
     const showSleepTimer = useSelector(selectShowSleepTimer);
     const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
+    const showVolumeSlider = useSelector(selectShowVolumeSlider);
     const artistId = currentSong?.artistId ?? album?.artist?.id;
 
     const navigateToArtist = useCallback(() => {
@@ -150,11 +173,11 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     }, [lyricsAvailable, lyrics, lyricsSheetRef]);
 
     if (!currentSong) {
-        return <View style={{ flex: 1, backgroundColor: '#000' }} />;
+        return <View style={{ flex: 1, backgroundColor: onDark.background }} />;
     }
 
     return (
-        <View style={styles.gradientContainer}>
+        <View testID="playing-screen" style={styles.gradientContainer}>
             <View style={styles.container}>
                 <View style={styles.playerArea}>
 
@@ -187,19 +210,24 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         >
                             <View style={[styles.playerSection, { minHeight: playerMinHeight }]}>
                                 <View style={[styles.header, { paddingTop: insets.top }]}>
-                                    <TouchableOpacity
+                                    <Touchable
+                                        testID="playing-close"
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Close player"
                                         onPress={onClose}
                                         style={styles.headerButton}
+                                        hitSlop={hitSlopFor(40)}
                                     >
-                                        <ChevronDown size={28} color="#fff" />
-                                    </TouchableOpacity>
+                                        <ChevronDown size={28} color={onDark.text} />
+                                    </Touchable>
 
-                                    <TouchableOpacity
+                                    <Touchable
                                         onPress={() => songOptionsRef.current?.present()}
                                         style={styles.headerButton}
+                                        hitSlop={hitSlopFor(40)}
                                     >
-                                        <Ellipsis size={24} color="#fff" />
-                                    </TouchableOpacity>
+                                        <Ellipsis size={24} color={onDark.text} />
+                                    </Touchable>
                                 </View>
 
                                 <View style={styles.centerContent}>
@@ -233,9 +261,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                             </View>
 
                             {lyricsAvailable && lyrics && (
-                                <LyricsPreviewCard
+                                <LyricsPreviewCardResolver
                                     lyrics={lyrics}
-                                    position={progress.position}
                                     contentWidth={contentWidth}
                                     onPress={openLyricsSheet}
                                 />
@@ -247,6 +274,10 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
                             {showPlaybackSpeed && (
                                 <PlaybackSpeedCard contentWidth={contentWidth} />
+                            )}
+
+                            {showVolumeSlider && (
+                                <VolumeCard contentWidth={contentWidth} />
                             )}
 
                             <AboutTheArtistCard
@@ -321,8 +352,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingBottom: 40,
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.xxxl,
     },
     headerButton: {
         width: 40,
@@ -334,8 +365,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: 12,
-        paddingBottom: 12,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.md,
     },
 });
 

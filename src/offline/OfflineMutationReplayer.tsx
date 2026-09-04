@@ -1,14 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { useApi } from '@/api';
+import * as lastfm from '@/api/lastfm';
+import * as listenbrainz from '@/api/listenbrainz';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { usePollWhile } from '@/hooks/usePollWhile';
 import i18n from '@/i18n';
-import { OfflineMutation } from '@/utils/offline/offlineMutations';
+import {
+  affectsLibraryQueries,
+  shouldDropMutation,
+  type OfflineMutation,
+  type ScrobbleDestination,
+} from '@/utils/offline/offlineMutations';
+import { selectLastFmConfig } from '@/utils/redux/selectors/lastfmSelectors';
+import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { selectOfflineMutationQueue } from '@/utils/redux/selectors/offlineMutationsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
@@ -19,8 +29,52 @@ import {
 const SYNCED_TOAST_ID = 'offline-mutations-synced';
 const FAILED_TOAST_ID = 'offline-mutations-failed';
 const RETRY_BACKOFF_MS = 60_000;
+const RETRY_POLL_MS = 30_000;
 
-async function replayMutation(api: ReturnType<typeof useApi>, mutation: OfflineMutation) {
+type ReplayContext = {
+  api: ReturnType<typeof useApi>;
+  listenBrainzConfig: ReturnType<typeof selectListenBrainzConfig> | null;
+  lastFmConfig: ReturnType<typeof selectLastFmConfig> | null;
+};
+
+async function replayScrobble(
+  ctx: ReplayContext,
+  mutation: Extract<OfflineMutation, { type: 'scrobble' }>
+) {
+  switch (mutation.destination) {
+    case 'server':
+      // The original start time travels with the mutation, so a play submitted
+      // hours late is still recorded when it actually happened.
+      await ctx.api.songs.scrobble(mutation.songId, mutation.startedAt);
+      break;
+    case 'listenbrainz':
+      // shouldDropMutation discards scrobbles for a disconnected service before
+      // they reach here; failing loudly beats a crash if that ever changes.
+      if (!ctx.listenBrainzConfig) throw new Error('ListenBrainz is not configured');
+      await listenbrainz.submitScrobble(ctx.listenBrainzConfig, {
+        artist: mutation.artist,
+        track: mutation.track,
+        listenedAt: Math.floor(mutation.startedAt / 1000),
+        durationSeconds: mutation.durationSeconds,
+        durationPlayedSeconds: mutation.listenedSeconds,
+        album: mutation.album,
+      });
+      break;
+    case 'lastfm':
+      if (!ctx.lastFmConfig) throw new Error('Last.fm is not configured');
+      await lastfm.submitScrobble(ctx.lastFmConfig, {
+        artist: mutation.artist,
+        track: mutation.track,
+        timestamp: Math.floor(mutation.startedAt / 1000),
+        duration: mutation.durationSeconds,
+        album: mutation.album,
+      });
+      break;
+  }
+}
+
+async function replayMutation(ctx: ReplayContext, mutation: OfflineMutation) {
+  const api = ctx.api;
   switch (mutation.type) {
     case 'starSong':
       await api.starred.add(mutation.song.id);
@@ -37,6 +91,9 @@ async function replayMutation(api: ReturnType<typeof useApi>, mutation: OfflineM
     case 'deletePlaylist':
       await api.playlists.delete(mutation.playlistId);
       break;
+    case 'scrobble':
+      await replayScrobble(ctx, mutation);
+      break;
   }
 }
 
@@ -46,31 +103,63 @@ export default function OfflineMutationReplayer() {
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const queue = useSelector(selectOfflineMutationQueue);
+  const listenBrainzConfig = useSelector(selectListenBrainzConfig);
+  const lastFmConfig = useSelector(selectLastFmConfig);
   const isOffline = useIsOffline();
   const isReplayingRef = useRef(false);
+
+  // Both configs are per-server, and the queue is already filtered to the
+  // active server, so these always belong to the mutations being replayed.
+  const configuredDestinations: Record<ScrobbleDestination, boolean> = useMemo(
+    () => ({
+      server: true,
+      listenbrainz: !!listenBrainzConfig?.token,
+      lastfm: !!lastFmConfig?.sessionKey,
+    }),
+    [listenBrainzConfig?.token, lastFmConfig?.sessionKey]
+  );
+
+  // nextRetryAt only matters once it's in the past, and nothing else in this
+  // component's dependencies changes with the passage of time — without this,
+  // a failed mutation's backoff would never actually elapse on its own; it'd
+  // only get re-checked if some unrelated change (new mutation, connectivity
+  // flip) happened to touch the queue/server/offline deps afterward.
+  const hasScheduledRetry = queue.some(item => item.nextRetryAt);
+  const retryTick = usePollWhile(hasScheduledRetry, RETRY_POLL_MS);
 
   useEffect(() => {
     if (isOffline || !activeServer?.id || !activeServer.isAuthenticated) return;
     if (isReplayingRef.current) return;
 
     const now = Date.now();
-    const pending = queue.filter(item =>
+    const due = queue.filter(item =>
       item.serverId === activeServer.id &&
       (!item.nextRetryAt || item.nextRetryAt <= now)
     );
+
+    // A scrobble too old to be accepted, or bound for a service the user has
+    // since disconnected, is discarded rather than retried until it expires.
+    const undeliverable = new Set(
+      due.filter(item => shouldDropMutation(item, now, configuredDestinations))
+    );
+    undeliverable.forEach(item => dispatch(removeOfflineMutation(item.id)));
+
+    const pending = due.filter(item => !undeliverable.has(item));
     if (pending.length === 0) return;
 
     isReplayingRef.current = true;
 
     (async () => {
       let syncedCount = 0;
+      let syncedLibraryCount = 0;
       let failedCount = 0;
 
       for (const mutation of pending) {
         try {
-          await replayMutation(api, mutation);
+          await replayMutation({ api, listenBrainzConfig, lastFmConfig }, mutation);
           dispatch(removeOfflineMutation(mutation.id));
           syncedCount += 1;
+          if (affectsLibraryQueries(mutation)) syncedLibraryCount += 1;
         } catch (error) {
           const failedAt = Date.now();
           const retryCount = (mutation.retryCount ?? 0) + 1;
@@ -86,13 +175,20 @@ export default function OfflineMutationReplayer() {
         }
       }
 
-      if (syncedCount > 0) {
+      // Only library changes need a refetch. Scrobbles record a play and leave
+      // starred items and playlists alone, so a backlog of them arriving on
+      // reconnect must not drag the whole library down the connection that
+      // just came back.
+      if (syncedLibraryCount > 0) {
         queryClient.invalidateQueries({ queryKey: [QueryKeys.Starred] });
         queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlists, activeServer.id] });
         queryClient.invalidateQueries({ queryKey: [QueryKeys.Playlist, activeServer.id] });
         queryClient.invalidateQueries({
           queryKey: [QueryKeys.Playlist, activeServer.id, FAVORITES_ID],
         });
+      }
+
+      if (syncedCount > 0) {
         toast.success(i18n.t('common.offline.syncedChanges'), {
           id: SYNCED_TOAST_ID,
         });
@@ -108,7 +204,10 @@ export default function OfflineMutationReplayer() {
     })().catch(() => {
       isReplayingRef.current = false;
     });
-  }, [activeServer, api, dispatch, isOffline, queryClient, queue]);
+  }, [
+    activeServer, api, dispatch, isOffline, queryClient, queue, retryTick,
+    listenBrainzConfig, lastFmConfig, configuredDestinations,
+  ]);
 
   return null;
 }

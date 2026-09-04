@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '@/api';
@@ -11,6 +11,7 @@ import SettingsSelectCard from '../components/SettingsSelectCard';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import ConnectivityIndicator from '../components/ConnectivityIndicator';
+import FallbackUrlsCard from './components/FallbackUrlsCard';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectSearchScope,
@@ -23,6 +24,7 @@ import {
   setServerNowPlayingEnabled,
   type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
+import Touchable from '@/components/Touchable';
 
 const ServerSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -92,12 +94,14 @@ const ServerSettings: React.FC = () => {
         <SettingsInfoRow
           label={t('settings.server.connectivity')}
           right={
-            <TouchableOpacity onPress={ping} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Touchable onPress={ping} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <ConnectivityIndicator isLoading={isLoading} isConnected={!!isAuthenticated} />
-            </TouchableOpacity>
+            </Touchable>
           }
         />
       </SettingsCard>
+
+      <FallbackUrlsCard server={activeServer} />
 
       <SettingsSelectCard
         title={t('settings.server.searchScopeHelp')}

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -25,13 +25,16 @@ import { getDayKey } from '@/features/home/hooks/useDailyLayout'
 import { collectCoveredAlbumsForArtists } from '@/features/home/utils/albumDiscovery'
 import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
-import LoadingTiles from './LoadingTiles'
+import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types'
-
-const TARGET_ALBUMS = 10
-const SEED_ARTISTS = 4
-const RELATED_PER_SEED = 12
-const GENRE_ARTIST_LIMIT = 40
+import {
+  HOME_TARGET_ALBUMS,
+  HOME_SEED_ARTISTS,
+  HOME_RELATED_PER_SEED,
+  HOME_GENRE_ARTIST_LIMIT,
+} from '@/constants/home';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -76,13 +79,13 @@ async function fetchAlbumsForGenre(
   const albums: ExternalAlbumBase[] = []
   if (seedArtistNames.length > 0) {
     const seedArtists = (await Promise.allSettled(
-      seedArtistNames.slice(0, SEED_ARTISTS).map(name => deezer.resolveDeezerArtistByName(name))
+      seedArtistNames.slice(0, HOME_SEED_ARTISTS).map(name => deezer.resolveDeezerArtistByName(name))
     ))
       .map(result => result.status === 'fulfilled' ? result.value : null)
       .filter((artist): artist is NonNullable<typeof artist> => Boolean(artist))
 
     const relatedGroups = await Promise.allSettled(
-      seedArtists.map(seed => deezer.getDeezerRelatedArtists(seed.id, RELATED_PER_SEED))
+      seedArtists.map(seed => deezer.getDeezerRelatedArtists(seed.id, HOME_RELATED_PER_SEED))
     )
 
     const seenArtists = new Set<string>()
@@ -95,23 +98,23 @@ async function fetchAlbumsForGenre(
         return true
       })
 
-    albums.push(...await collectCoveredAlbumsForArtists(relatedArtists, { targetAlbums: TARGET_ALBUMS }))
+    albums.push(...await collectCoveredAlbumsForArtists(relatedArtists, { targetAlbums: HOME_TARGET_ALBUMS }))
   }
 
-  if (albums.length >= TARGET_ALBUMS) return albums
+  if (albums.length >= HOME_TARGET_ALBUMS) return albums
 
   const genreList = await deezer.getDeezerGenreList()
   const genreId = findDeezerGenreId(genre, genreList)
   if (!genreId) return albums
 
-  const artists = await deezer.getDeezerArtistsByGenreId(genreId, GENRE_ARTIST_LIMIT)
+  const artists = await deezer.getDeezerArtistsByGenreId(genreId, HOME_GENRE_ARTIST_LIMIT)
   const fresh = artists.filter(a => !libraryArtistNames.has(a.name.toLowerCase()))
 
   albums.push(...await collectCoveredAlbumsForArtists(fresh, {
-    targetAlbums: TARGET_ALBUMS - albums.length,
+    targetAlbums: HOME_TARGET_ALBUMS - albums.length,
     excludeAlbumIds: albums.map(album => album.id),
   }))
-  return albums.slice(0, TARGET_ALBUMS)
+  return albums.slice(0, HOME_TARGET_ALBUMS)
 }
 
 type Props = {
@@ -166,7 +169,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
         seen.add(normalized)
         return true
       })
-      .slice(0, SEED_ARTISTS)
+      .slice(0, HOME_SEED_ARTISTS)
   }, [selectedGenre, libraryAlbums])
 
   const handleSelect = useCallback((value: string) => {
@@ -220,18 +223,18 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.genrePrefix')}
           </Text>
-          <TouchableOpacity onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
             <Text
               style={[styles.genreName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}
             >
               {selectedGenre}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
 
         {query.isLoading ? (
-          <LoadingTiles
+          <SkeletonTiles
             itemSize={gridItemWidth}
             gap={SECTION_GRID_GAP}
             horizontalPadding={H_PADDING}
@@ -277,33 +280,31 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
     gap: 5,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
     marginRight: H_PADDING,
   },
   titlePrefix: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
   },
   genreName: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     borderBottomWidth: 1.5,
-    paddingBottom: 1,
+    paddingBottom: spacing.xxs,
   },
   emptyState: {
     paddingHorizontal: H_PADDING,
-    paddingVertical: 24,
+    paddingVertical: spacing.xl,
   },
   emptyText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
 })

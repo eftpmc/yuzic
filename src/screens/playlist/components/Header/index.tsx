@@ -1,49 +1,54 @@
 import React, { useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
 
 import { Playlist } from '@/types';
-import { MediaImage } from '@/components/MediaImage';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatDuration } from '@/utils/formatDuration';
+import DownloadProgressRing from '@/components/DownloadProgressRing';
+import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
+import {
+  DetailActionRow,
+  DetailCircleAction,
+  DetailHeader,
+  DetailHeaderBar,
+  DetailHeaderIconButton,
+  DetailMetaDot,
+  DetailMetaRow,
+  DetailMetaText,
+  DetailPlayAction,
+} from '@/components/DetailHeader';
+import { spacing } from '@/constants/design';
 
 type Props = {
   playlist: Playlist;
+  showNavigation?: boolean;
+  onOptions?: () => void;
 };
 
-const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
+const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOptions }) => {
   const { t } = useTranslation();
-  const navigation = useNavigation<any>();
   const { colors } = useTheme();
-  const themeColor = useSelector(selectThemeColor);
   const optionsSheetRef = useSheetRef();
 
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
-  const { playSongInCollection } = usePlaying();
-  const { downloadPlaylistById, getCollectionDownloadState } = useDownload();
+  const { playSongInCollection } = usePlayingActions();
+  const { downloadPlaylistById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
 
   const songs = useMemo(() => playlist.songs ?? [], [playlist.songs]);
   const songIds = useMemo(() => songs.map(s => s.id), [songs]);
   const { isDownloaded: isPlaylistDownloaded, isDownloading: isPlaylistDownloading } =
     getCollectionDownloadState(songIds);
+  const downloadFraction = useCollectionDownloadProgress(songIds);
 
   const totalDuration = useMemo(
     () => songs.reduce((sum, song) => sum + Number(song.duration), 0),
@@ -59,9 +64,13 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   );
 
   const toggleDownload = useCallback(async () => {
-    if (!songs.length || isPlaylistDownloading || isPlaylistDownloaded) return;
+    if (isPlaylistDownloading) {
+      await cancelCollectionDownloads(playlist.id);
+      return;
+    }
+    if (!songs.length || isPlaylistDownloaded) return;
     await downloadPlaylistById(playlist.id, songs);
-  }, [songs, isPlaylistDownloading, isPlaylistDownloaded, downloadPlaylistById, playlist.id]);
+  }, [songs, isPlaylistDownloading, isPlaylistDownloaded, downloadPlaylistById, cancelCollectionDownloads, playlist.id]);
 
   const handleShuffle = useCallback(() => {
     if (!songs.length) return;
@@ -80,179 +89,70 @@ const PlaylistHeader: React.FC<Props> = ({ playlist }) => {
   }, [songs, playlist, playSongInCollection, activeServer, dispatch]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <ChevronLeft size={24} color={colors.secondary} />
-        </TouchableOpacity>
+    <>
+      <DetailHeader
+        title={playlist.title}
+        cover={playlist.cover}
+        rightAction={
+          <DetailHeaderIconButton onPress={onOptions ?? (() => optionsSheetRef.current?.present())}>
+            <Ellipsis size={24} color={colors.secondary} />
+          </DetailHeaderIconButton>
+        }
+        meta={
+          <DetailMetaRow>
+            {metadataItems.map((item, index) => (
+              <React.Fragment key={`${item}-${index}`}>
+                {index > 0 && <DetailMetaDot />}
+                <DetailMetaText>{item}</DetailMetaText>
+              </React.Fragment>
+            ))}
+          </DetailMetaRow>
+        }
+        actions={
+          <DetailActionRow style={{ marginBottom: spacing.lg }}>
+            <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle playlist">
+              <Shuffle size={18} color={colors.secondary} />
+            </DetailCircleAction>
 
-        <View pointerEvents="none" style={styles.headerTitleWrapper}>
-          <Text style={[styles.headerTitle, { color: colors.secondary }]} numberOfLines={1}>
-            {playlist.title}
-          </Text>
-        </View>
+            <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play playlist">
+              <Play size={24} color="#fff" fill="#fff" />
+            </DetailPlayAction>
 
-        <TouchableOpacity
-          onPress={() => optionsSheetRef.current?.present()}
-          style={styles.headerButton}
-        >
-          <Ellipsis size={24} color={colors.secondary} />
-        </TouchableOpacity>
-      </View>
-
-      <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist />
-
-      <View style={styles.coverWrapper}>
-        <MediaImage cover={playlist.cover} size="detail" style={styles.coverImage} />
-      </View>
-
-      <View style={styles.titleInfo}>
-        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
-          {playlist.title}
-        </Text>
-
-        <View style={styles.metaRow}>
-          {metadataItems.map((item, index) => (
-            <React.Fragment key={`${item}-${index}`}>
-              {index > 0 && (
-                <Text style={[styles.metaDot, { color: colors.subtext }]} numberOfLines={1}>
-                  •
-                </Text>
+            <DetailCircleAction
+              onPress={() => void toggleDownload()}
+              accessibilityLabel={
+                isPlaylistDownloading ? 'Cancel download' : isPlaylistDownloaded ? 'Downloaded' : 'Download playlist'
+              }
+            >
+              {isPlaylistDownloading ? (
+                <DownloadProgressRing progress={downloadFraction} size={18} />
+              ) : isPlaylistDownloaded ? (
+                <Check size={18} color={colors.secondary} />
+              ) : (
+                <Download size={18} color={colors.secondary} />
               )}
-              <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
-                {item}
-              </Text>
-            </React.Fragment>
-          ))}
-        </View>
-      </View>
+            </DetailCircleAction>
+          </DetailActionRow>
+        }
+        showNavigation={showNavigation}
+      />
+      {!onOptions && <PlaylistOptions ref={optionsSheetRef} playlist={playlist} hideGoToPlaylist />}
+    </>
+  );
+};
 
-      <View style={styles.actionsRow}>
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-            onPress={handleShuffle}
-          >
-            <Shuffle size={18} color={colors.secondary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.playButton, { backgroundColor: themeColor }]}
-            onPress={handlePlay}
-          >
-            <Play size={24} color="#fff" fill="#fff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: colors.card }]}
-            onPress={() => void toggleDownload()}
-            disabled={isPlaylistDownloading}
-          >
-            {isPlaylistDownloading ? (
-              <ActivityIndicator size="small" color={colors.secondary} />
-            ) : isPlaylistDownloaded ? (
-              <Check size={18} color={colors.secondary} />
-            ) : (
-              <Download size={18} color={colors.secondary} />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+export const PlaylistHeaderBar: React.FC<Props> = ({ playlist, onOptions }) => {
+  const { colors } = useTheme();
+  return (
+    <DetailHeaderBar
+      title={playlist.title}
+      rightAction={
+        <DetailHeaderIconButton onPress={onOptions}>
+          <Ellipsis size={24} color={colors.secondary} />
+        </DetailHeaderIconButton>
+      }
+    />
   );
 };
 
 export default PlaylistHeader;
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 0,
-    alignItems: 'center',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    width: '100%',
-  },
-  headerTitleWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    maxWidth: '60%',
-  },
-  headerButton: {
-    padding: 6,
-  },
-  coverWrapper: {
-    width: 280,
-    height: 280,
-    borderRadius: 16,
-    marginTop: 32,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
-  titleInfo: {
-    width: '100%',
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  subtext: {
-    fontSize: 14,
-  },
-  metaDot: {
-    fontSize: 14,
-    marginHorizontal: 6,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    flexWrap: 'nowrap',
-    maxWidth: '94%',
-    marginTop: 4,
-  },
-  actionsRow: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  secondaryButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    borderRadius: 22,
-    width: 112,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

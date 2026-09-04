@@ -1,15 +1,18 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
 import TrackPlayer from '@rntp/player';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { mmkv } from '@/utils/mmkvStorage';
-
-const MMKV_KEY = 'sleep_timer_target_ms';
-
-const MAX_SECONDS = 120 * 60;
-const INCREMENTS = [5, 15, 30];
+import {
+  SLEEP_TIMER_STORAGE_KEY,
+  SLEEP_TIMER_MAX_SECONDS,
+  SLEEP_TIMER_INCREMENTS,
+} from '@/constants/features';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 function formatCountdown(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -21,6 +24,7 @@ type Props = { contentWidth: number };
 
 export default function SleepTimerCard({ contentWidth }: Props) {
   const themeColor = useSelector(selectThemeColor);
+  const rad = useRadius();
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const targetMsRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -29,7 +33,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
 
   // Restore persisted timer on mount
   useEffect(() => {
-    const saved = mmkv.getNumber(MMKV_KEY);
+    const saved = mmkv.getNumber(SLEEP_TIMER_STORAGE_KEY);
     if (saved && saved > Date.now()) {
       const remaining = Math.round((saved - Date.now()) / 1000);
       targetMsRef.current = saved;
@@ -42,7 +46,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           intervalRef.current = null;
           targetMsRef.current = null;
           setRemainingSeconds(null);
-          mmkv.remove(MMKV_KEY);
+          mmkv.remove(SLEEP_TIMER_STORAGE_KEY);
         }
       }, 1000);
     }
@@ -51,7 +55,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
   const startCountdown = useCallback((totalSeconds: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     targetMsRef.current = Date.now() + totalSeconds * 1000;
-    mmkv.set(MMKV_KEY, targetMsRef.current);
+    mmkv.set(SLEEP_TIMER_STORAGE_KEY, targetMsRef.current);
     setRemainingSeconds(totalSeconds);
 
     intervalRef.current = setInterval(() => {
@@ -62,7 +66,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
         intervalRef.current = null;
         targetMsRef.current = null;
         setRemainingSeconds(null);
-        mmkv.remove(MMKV_KEY);
+        mmkv.remove(SLEEP_TIMER_STORAGE_KEY);
       }
     }, 1000);
   }, []);
@@ -71,7 +75,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     const current = targetMsRef.current
       ? Math.max(0, Math.round((targetMsRef.current - Date.now()) / 1000))
       : 0;
-    const newSeconds = Math.min(current + minutes * 60, MAX_SECONDS);
+    const newSeconds = Math.min(current + minutes * 60, SLEEP_TIMER_MAX_SECONDS);
     const fadeOut = Math.min(30, Math.round(newSeconds * 0.15));
     TrackPlayer.sleepAfterTime(newSeconds, { fadeOutSeconds: fadeOut });
     startCountdown(newSeconds);
@@ -83,7 +87,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     intervalRef.current = null;
     targetMsRef.current = null;
     setRemainingSeconds(null);
-    mmkv.remove(MMKV_KEY);
+    mmkv.remove(SLEEP_TIMER_STORAGE_KEY);
   }, []);
 
   useEffect(() => {
@@ -96,7 +100,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
     <View
       style={[
         styles.card,
-        { width: contentWidth },
+        { width: contentWidth, borderRadius: rad.panel },
         isActive && { borderColor: themeColor + '55', borderWidth: 1 },
       ]}
     >
@@ -104,7 +108,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
       <View style={styles.moonDecor} pointerEvents="none">
         <Moon
           size={88}
-          color={isActive ? themeColor : '#ffffff'}
+          color={isActive ? themeColor : onDark.text}
           strokeWidth={1}
           style={{ opacity: 0.08 }}
         />
@@ -123,18 +127,18 @@ export default function SleepTimerCard({ contentWidth }: Props) {
       </View>
 
       {/* Countdown */}
-      <Text style={[styles.bigValue, isActive && { color: '#fff' }]}>
+      <Text style={[styles.bigValue, isActive && { color: onDark.text }]}>
         {remainingSeconds === null ? '—' : formatCountdown(remainingSeconds)}
       </Text>
 
       {/* Controls */}
       <View style={styles.controls}>
-        <TouchableOpacity
+        <Touchable
           onPress={handleOff}
-          activeOpacity={0.7}
           disabled={!isActive}
           style={[
             styles.offButton,
+            { borderRadius: rad.card },
             isActive
               ? { borderColor: 'rgba(255,255,255,0.3)' }
               : { borderColor: 'rgba(255,255,255,0.12)' },
@@ -143,19 +147,18 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           <Text style={[styles.offLabel, !isActive && { opacity: 0.35 }]}>
             Off
           </Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        {INCREMENTS.map(min => (
-          <TouchableOpacity
+        {SLEEP_TIMER_INCREMENTS.map(min => (
+          <Touchable
             key={min}
             onPress={() => handleIncrement(min)}
-            activeOpacity={0.7}
-            style={styles.incrButton}
+            style={[styles.incrButton, { borderRadius: rad.card }]}
           >
             <Text style={styles.incrLabel}>
               +{min}m
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         ))}
       </View>
     </View>
@@ -164,12 +167,11 @@ export default function SleepTimerCard({ contentWidth }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    marginTop: 16,
-    borderRadius: 24,
+    marginTop: spacing.lg,
     backgroundColor: 'rgba(255,255,255,0.07)',
-    paddingHorizontal: 22,
-    paddingTop: 20,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.roomy,
+    paddingBottom: spacing.xl,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -183,19 +185,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
   label: {
-    fontSize: 13,
+    ...typography.caption,
     fontWeight: '600',
     color: 'rgba(255,255,255,0.5)',
   },
   bigValue: {
-    fontSize: 48,
-    fontWeight: '600',
+    ...typography.hero,
     color: 'rgba(255,255,255,0.3)',
-    lineHeight: 52,
-    marginBottom: 20,
+    marginBottom: spacing.roomy,
   },
   controls: {
     flexDirection: 'row',
@@ -204,26 +204,24 @@ const styles = StyleSheet.create({
   offButton: {
     flex: 1,
     height: 44,
-    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   offLabel: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
   incrButton: {
     flex: 1,
     height: 44,
-    borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   incrLabel: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
     fontWeight: '500',
     color: 'rgba(255,255,255,0.45)',
   },

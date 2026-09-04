@@ -5,7 +5,6 @@ import { selectAlbumPlayCounts } from '@/utils/redux/selectors/statsSelectors';
 import { useAlbums } from '@/hooks/albums';
 import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/library/components/Items/AlbumItem';
-import SectionEmptyState from '../SectionEmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { sectionStyles, getSectionItemWidth } from '../sectionStyles';
@@ -36,27 +35,26 @@ export default function MostPlayedAlbums() {
   const coversToPrefetch = useMemo(() => itemsToRender.map(a => a.cover), [itemsToRender]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
+  // Hide the section until enough albums have play history to fill it.
+  if (itemsToRender.length < MIN_ALBUMS) return null;
+
   return (
     <View style={sectionStyles.container}>
       <Text style={[sectionStyles.title, { color: colors.secondary }]}>
         {t('explore.sections.mostPlayed')}
       </Text>
-      {itemsToRender.length < MIN_ALBUMS ? (
-        <SectionEmptyState message={t('explore.empty.mostPlayed')} />
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          decelerationRate="fast"
-          contentContainerStyle={sectionStyles.scrollContent}
-        >
-          {itemsToRender.map(album => (
-            <View key={album.id} style={[sectionStyles.item, { width: gridItemWidth }]}>
-              <AlbumItem album={album} isGridView gridWidth={gridItemWidth} gridSpacing={0} />
-            </View>
-          ))}
-        </ScrollView>
-      )}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        contentContainerStyle={sectionStyles.scrollContent}
+      >
+        {itemsToRender.map(album => (
+          <View key={album.id} style={[sectionStyles.item, { width: gridItemWidth }]}>
+            <AlbumItem album={album} isGridView gridWidth={gridItemWidth} gridSpacing={0} />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }

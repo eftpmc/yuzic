@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo, useState, useCallback } from 'react'
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native'
 import {
@@ -11,8 +10,12 @@ import {
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet'
 import { Dices } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
+import Touchable from '@/components/Touchable'
+import { spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
   items: string[]
@@ -23,7 +26,9 @@ type Props = {
 
 const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, onSelect, onRandomize, placeholder }, ref) => {
+    const { t } = useTranslation()
     const { colors } = useTheme()
+    const rad = useRadius()
     const [query, setQuery] = useState('')
 
     const snapPoints = useMemo(() => ['60%'], [])
@@ -44,14 +49,14 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
     }, [query, onSelect])
 
     const renderItem = useCallback(({ item }: { item: string }) => (
-      <TouchableOpacity
+      <Touchable
         style={[styles.item, { borderBottomColor: colors.muted }]}
         onPress={() => onSelect(item)}
       >
         <Text style={[styles.itemText, { color: colors.secondary }]}>
           {item}
         </Text>
-      </TouchableOpacity>
+      </Touchable>
     ), [onSelect, colors])
 
     return (
@@ -65,21 +70,21 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
         backgroundStyle={{ backgroundColor: colors.card }}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
-        <View style={[styles.inputRow, { backgroundColor: colors.muted }]}>
+        <View style={[styles.inputRow, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
           <BottomSheetTextInput
             style={[styles.input, { color: colors.secondary }]}
             value={query}
             onChangeText={setQuery}
-            placeholder={placeholder ?? 'Search…'}
+            placeholder={placeholder ?? t('common.searchPlaceholder')}
             placeholderTextColor={colors.placeholder}
             autoCapitalize="words"
             autoCorrect={false}
             returnKeyType="done"
             onSubmitEditing={handleSubmit}
           />
-          <TouchableOpacity onPress={onRandomize} style={styles.shuffleButton} hitSlop={8}>
+          <Touchable onPress={onRandomize} style={styles.shuffleButton} hitSlop={8}>
             <Dices size={18} color={colors.subtext} />
-          </TouchableOpacity>
+          </Touchable>
         </View>
 
         <BottomSheetFlatList
@@ -101,31 +106,30 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 12,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   input: {
+    ...typography.body,
     flex: 1,
-    fontSize: 16,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   shuffleButton: {
-    paddingLeft: 10,
-    paddingVertical: 8,
+    paddingLeft: spacing.controlGap,
+    paddingVertical: spacing.sm,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   item: {
-    paddingVertical: 13,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   itemText: {
-    fontSize: 15,
+    ...typography.body,
   },
 })

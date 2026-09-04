@@ -1,39 +1,37 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
-import { usePlaying } from '@/contexts/PlayingContext';
+import { usePlayingActions } from '@/contexts/PlayingContext';
 import { usePlayableSongResolver } from '@/hooks/songs';
-import { MediaImage } from '@/components/MediaImage';
-import SongOptions from '@/components/options/SongOptions';
-import PlaylistList from '@/components/PlaylistList';
-import { useSheetRef } from '@/utils/useSheetRef';
+import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
+import IconActionButton from '@/components/IconActionButton';
+import MediaListRow from '@/components/MediaListRow';
 import {
   selectSongPlayCounts,
   selectSongLastPlayedAt,
 } from '@/utils/redux/selectors/statsSelectors';
 import { selectSongsById } from '@/utils/redux/selectors/librarySelectors';
 import { seededShuffle } from '@/features/home/hooks/useDailyLayout';
-import SectionEmptyState from '../SectionEmptyState';
 import type { Song, SongBase } from '@/types';
-
-const PAGE_SIZE = 4;
-const TOTAL_PAGES = 3;
-const TOTAL_PICKS = PAGE_SIZE * TOTAL_PAGES;
-const CANDIDATE_POOL = TOTAL_PICKS * 2; // draw from a wider pool on refresh
-const H_PADDING = 12;
-const IMG_SIZE = 44;
-const DECAY_MS = 7 * 24 * 60 * 60 * 1000;
-const PEEK = 28; // pixels of the next page visible at the right edge
+import {
+  QUICK_PICKS_PAGE_SIZE,
+  QUICK_PICKS_TOTAL,
+  QUICK_PICKS_CANDIDATE_POOL,
+  QUICK_PICKS_DECAY_MS,
+  QUICK_PICKS_PEEK,
+  HOME_SECTION_HORIZONTAL_PADDING,
+} from '@/constants/home';
+import { spacing, typography } from '@/constants/design';
 
 function useQuickPicks(refreshKey: number): SongBase[] {
   const songsById = useSelector(selectSongsById);
@@ -53,15 +51,15 @@ function useQuickPicks(refreshKey: number): SongBase[] {
       if (!song) continue;
       const count = playCounts[id] ?? 0;
       const ts = lastPlayedAt[id] ?? 0;
-      const recency = ts > 0 ? Math.exp(-(now - ts) / DECAY_MS) : 0;
+      const recency = ts > 0 ? Math.exp(-(now - ts) / QUICK_PICKS_DECAY_MS) : 0;
       const freq = count > 0 ? Math.min(1, Math.log(count + 1) / Math.log(50)) : 0;
       scored.push({ song, score: recency * 0.8 + freq * 0.2 });
     }
 
     scored.sort((a, b) => b.score - a.score);
-    const pool = scored.slice(0, CANDIDATE_POOL).map(s => s.song);
-    if (refreshKey === 0) return pool.slice(0, TOTAL_PICKS);
-    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, TOTAL_PICKS);
+    const pool = scored.slice(0, QUICK_PICKS_CANDIDATE_POOL).map(s => s.song);
+    if (refreshKey === 0) return pool.slice(0, QUICK_PICKS_TOTAL);
+    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, QUICK_PICKS_TOTAL);
   }, [songsById, playCounts, lastPlayedAt, refreshKey]);
 }
 
@@ -70,25 +68,13 @@ type Props = { refreshKey?: number };
 export default function QuickPicksSection({ refreshKey = 0 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { playSong } = usePlaying();
+  const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
   const picks = useQuickPicks(refreshKey);
   const { width: screenWidth } = useWindowDimensions();
-
-  const optionsRef = useSheetRef();
-  const playlistRef = useSheetRef();
-  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-  const [playlistSong, setPlaylistSong] = useState<Song | null>(null);
-  const pendingPresentRef = useRef(false);
+  const { openSongOptions } = useSongActionSheets();
 
   const inFlightRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (selectedSong && pendingPresentRef.current) {
-      pendingPresentRef.current = false;
-      optionsRef.current?.present();
-    }
-  }, [selectedSong, optionsRef]);
 
   const handlePress = async (song: SongBase) => {
     if (inFlightRef.current === song.id) return;
@@ -96,6 +82,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
     try {
       const playable = await resolvePlayableSong(song);
       if (playable) await playSong(playable);
+      else toast.error(t('common.playbackError'));
     } finally {
       inFlightRef.current = null;
     }
@@ -103,138 +90,81 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
 
   const handleOptions = async (song: SongBase) => {
     const resolved = await resolvePlayableSong(song, { allowNetwork: false });
-    // Always spread to create a new object reference. Without this, if
-    // resolvePlayableSong returns the same cached object and selectedSong is
-    // already that reference, setSelectedSong is a no-op and the useEffect
-    // never fires — the sheet silently fails to present on a second tap.
-    const target: Song = { ...(resolved ?? ({ ...song, streamUrl: '' } as Song)) };
-    pendingPresentRef.current = true;
-    setSelectedSong(target);
-  };
-
-  const openPlaylistList = () => {
-    optionsRef.current?.dismiss();
-    setPlaylistSong(selectedSong);
-    requestAnimationFrame(() => playlistRef.current?.present());
-  };
-
-  const closePlaylistList = () => {
-    playlistRef.current?.dismiss();
-    setPlaylistSong(null);
+    openSongOptions(resolved ?? ({ ...song, streamUrl: '' } as Song));
   };
 
   const pages = useMemo(() => {
     const result: SongBase[][] = [];
-    for (let i = 0; i < picks.length; i += PAGE_SIZE) {
-      result.push(picks.slice(i, i + PAGE_SIZE));
+    for (let i = 0; i < picks.length; i += QUICK_PICKS_PAGE_SIZE) {
+      result.push(picks.slice(i, i + QUICK_PICKS_PAGE_SIZE));
     }
     return result;
   }, [picks]);
 
+  // Hide the whole section until there's something to show, rather than leading
+  // Home with an empty placeholder. It reappears once the user has play history.
+  if (pages.length === 0) return null;
+
   return (
-    <>
-      <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.secondary }]}>
-          {t('explore.sections.quickPicks')}
-        </Text>
+    <View style={styles.container}>
+      <Text style={[styles.title, { color: colors.secondary }]}>
+        {t('explore.sections.quickPicks')}
+      </Text>
 
-        {pages.length === 0 ? (
-          <SectionEmptyState message={t('explore.empty.quickPicks')} />
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={screenWidth - PEEK}
-            snapToAlignment="start"
-          >
-            {pages.map((page, pageIdx) => (
-              <View key={pageIdx} style={[styles.page, { width: screenWidth - PEEK }]}>
-                {page.map(song => (
-                  <TouchableOpacity
-                    key={song.id}
-                    style={styles.row}
-                    onPress={() => { void handlePress(song); }}
-                    activeOpacity={0.7}
-                  >
-                    <MediaImage cover={song.cover} size="thumb" style={styles.art} />
-                    <View style={styles.info}>
-                      <Text style={[styles.trackTitle, { color: colors.secondary }]} numberOfLines={1}>
-                        {song.title}
-                      </Text>
-                      <Text style={[styles.trackArtist, { color: colors.subtext }]} numberOfLines={1}>
-                        {song.artist}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => { void handleOptions(song); }}
-                      hitSlop={10}
-                    >
-                      <Ellipsis
-                        size={18}
-                        color={colors.secondary}
-                      />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                ))}
-              </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        snapToInterval={screenWidth - QUICK_PICKS_PEEK}
+        snapToAlignment="start"
+      >
+        {pages.map((page, pageIdx) => (
+          <View key={pageIdx} style={[styles.page, { width: screenWidth - QUICK_PICKS_PEEK }]}>
+            {page.map(song => (
+              <MediaListRow
+                key={song.id}
+                title={song.title}
+                subtitle={song.artist}
+                cover={song.cover}
+                onPress={() => { void handlePress(song); }}
+                variant="compact"
+                style={styles.rowWrapper}
+                rowStyle={styles.row}
+                trailing={
+                  <IconActionButton
+                    icon={<Ellipsis size={18} color={colors.secondary} />}
+                    onPress={() => { void handleOptions(song); }}
+                    accessibilityLabel={`${song.title} options`}
+                    size="compact"
+                  />
+                }
+              />
             ))}
-          </ScrollView>
-        )}
-      </View>
-
-      {selectedSong && (
-        <SongOptions
-          ref={optionsRef}
-          selectedSong={selectedSong}
-          onAddToPlaylist={openPlaylistList}
-        />
-      )}
-
-      <PlaylistList
-        ref={playlistRef}
-        selectedSong={playlistSong}
-        onClose={closePlaylistList}
-      />
-    </>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
-    paddingHorizontal: H_PADDING,
+    ...typography.sectionTitle,
+    marginBottom: spacing.sm,
+    paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
   },
   page: {
     gap: 2,
   },
+  rowWrapper: {
+    paddingHorizontal: 0,
+  },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: H_PADDING,
-    paddingVertical: 6,
-    gap: 12,
-  },
-  art: {
-    width: IMG_SIZE,
-    height: IMG_SIZE,
-    borderRadius: 4,
-  },
-  info: {
-    flex: 1,
-    gap: 2,
-  },
-  trackTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  trackArtist: {
-    fontSize: 13,
+    paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
+    paddingVertical: spacing.tight,
   },
 });

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    ActivityIndicator,
-    ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -17,6 +15,10 @@ import { useDispatch } from 'react-redux';
 import { ServerType } from '@/types';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { spacing, typography, onDark } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -26,6 +28,7 @@ export default function Connect() {
     const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch();
+    const rad = useRadius();
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLayoutMounted(true), 0);
@@ -63,7 +66,7 @@ export default function Connect() {
                 isAuthenticated: true,
             }));
             dispatch(setActiveServer(id));
-            router.replace('/(home)/(tabs)' as never);
+            router.replace('/(home)/(tabs)');
         } catch {
             toast.error(t('onboarding.connect.connectError'));
         } finally {
@@ -74,7 +77,7 @@ export default function Connect() {
     if (!isLayoutMounted) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#555" />
+                <SpinningLoaderCircle size={26} color={onDark.mutedText} />
             </View>
         );
     }
@@ -95,17 +98,18 @@ export default function Connect() {
                     {providers.map((provider) => {
                         const isSelected = selectedType === provider.type;
                         return (
-                            <TouchableOpacity
+                            <Touchable
                                 key={provider.type}
                                 onPress={() => setSelectedType(provider.type)}
                                 style={[
                                     styles.serverTypeButton,
+                                    { borderRadius: rad.card },
                                     isSelected && styles.serverTypeButtonSelected,
                                 ]}
                             >
                                 <Image
                                     source={provider.icon}
-                                    style={{ width: 36, height: 36, marginBottom: 6 }}
+                                    style={{ width: 36, height: 36, marginBottom: spacing.tight }}
                                     contentFit="contain"
                                     cachePolicy="memory-disk"
                                 />
@@ -117,7 +121,7 @@ export default function Connect() {
                                 >
                                     {provider.label}
                                 </Text>
-                            </TouchableOpacity>
+                            </Touchable>
                         );
                     })}
                 </View>
@@ -130,21 +134,22 @@ export default function Connect() {
             </ScrollView>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.nextButton, isTesting && styles.buttonDisabled]}
+                <Touchable
+                    style={[styles.nextButton, { borderRadius: rad.pill }, isTesting && styles.buttonDisabled]}
                     onPress={handleNext}
                     disabled={isTesting}
                 >
                     {isTesting ? (
-                        <ActivityIndicator size="small" color="#000" />
+                        <SpinningLoaderCircle size={18} color="#000" />
                     ) : (
                         <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}
-                </TouchableOpacity>
+                </Touchable>
 
-                <TouchableOpacity
+                <Touchable
                     style={[
                         styles.demoButton,
+                        { borderRadius: rad.pill },
                         (!selectedType || !SERVER_PROVIDERS[selectedType]?.capabilities.supportsDemo || isTesting) && styles.buttonDisabled,
                     ]}
                     onPress={handleDemo}
@@ -155,7 +160,7 @@ export default function Connect() {
                             ? t('onboarding.connect.useDemo', { provider: SERVER_PROVIDERS[selectedType].label })
                             : t('onboarding.connect.demoUnavailable')}
                     </Text>
-                </TouchableOpacity>
+                </Touchable>
             </View>
         </SafeAreaView>
     );
@@ -164,98 +169,91 @@ export default function Connect() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
     },
     scroll: {
         flex: 1,
     },
     scrollContent: {
-        paddingHorizontal: 20,
-        paddingTop: 40,
-        paddingBottom: 20,
+        paddingHorizontal: spacing.roomy,
+        paddingTop: spacing.xxxl,
+        paddingBottom: spacing.roomy,
     },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 10,
+        ...typography.display,
+        color: onDark.text,
+        marginBottom: spacing.controlGap,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#888',
-        marginBottom: 20,
+        ...typography.body,
+        color: onDark.mutedText,
+        marginBottom: spacing.roomy,
     },
     description: {
-        color: '#aaa',
-        marginBottom: 20,
-        marginTop: 8,
+        color: onDark.subtext,
+        marginBottom: spacing.roomy,
+        marginTop: spacing.sm,
     },
     serverTypeContainer: {
         flexDirection: 'row',
         gap: 12,
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     serverTypeButton: {
         flex: 1,
-        paddingVertical: 14,
-        borderRadius: 12,
+        paddingVertical: spacing.md,
         borderWidth: 1,
-        borderColor: '#555',
-        backgroundColor: '#111',
+        borderColor: onDark.mutedText,
+        backgroundColor: onDark.surface,
         alignItems: 'center',
         justifyContent: 'center',
     },
     serverTypeButtonSelected: {
-        borderColor: '#fff',
-        backgroundColor: '#fff',
+        borderColor: onDark.text,
+        backgroundColor: onDark.text,
     },
     serverTypeText: {
-        color: '#fff',
-        fontWeight: '600',
-        fontSize: 14,
-        marginTop: 6,
+        ...typography.label,
+        color: onDark.text,
+        marginTop: spacing.tight,
     },
     serverTypeTextSelected: {
         color: '#000',
     },
     buttonContainer: {
-        padding: 20,
-        backgroundColor: '#000',
+        padding: spacing.roomy,
+        backgroundColor: onDark.background,
         alignItems: 'center',
     },
     nextButton: {
-        backgroundColor: '#fff',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.text,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     buttonDisabled: {
         opacity: 0.6,
     },
     nextButtonText: {
+        ...typography.sheetTitle,
         color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
     },
     demoButton: {
-        backgroundColor: '#333',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.border,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     demoButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
+        ...typography.sheetTitle,
+        color: onDark.text,
     },
 });

@@ -1,10 +1,12 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+
 import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
 import SettingsInputField from './SettingsInputField';
 import SettingsInfoRow from './SettingsInfoRow';
 import ConnectivityIndicator from './ConnectivityIndicator';
+import Touchable from '@/components/Touchable';
+import { spacing } from '@/constants/design';
 
 export type AuthField = {
   label: string;
@@ -38,14 +40,14 @@ const SettingsAuthCard: React.FC<Props> = ({
       {fields.map((field, index) => (
         <SettingsInputField key={index} {...field} />
       ))}
-      <SettingsDivider style={{ marginTop: 8 }} />
+      <SettingsDivider style={{ marginTop: spacing.sm }} />
       <SettingsInfoRow
         label={connectivityLabel}
         right={
           onConnectivityPress ? (
-            <TouchableOpacity onPress={onConnectivityPress} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Touchable onPress={onConnectivityPress} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               {indicator}
-            </TouchableOpacity>
+            </Touchable>
           ) : indicator
         }
       />

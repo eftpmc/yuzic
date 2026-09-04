@@ -3,13 +3,14 @@ import { createListenBrainzClient } from './client';
 
 export async function submitNowPlaying(
   config: ListenBrainzConfig,
-  payload: { artist: string; track: string; durationSeconds?: number }
+  payload: { artist: string; track: string; durationSeconds?: number; album?: string }
 ) {
   const client = createListenBrainzClient(config);
 
   const trackMetadata: Record<string, unknown> = {
     artist_name: payload.artist,
     track_name: payload.track,
+    ...(payload.album ? { release_name: payload.album } : {}),
     additional_info: {
       media_player: 'Yuzic',
       submission_client: 'Yuzic',

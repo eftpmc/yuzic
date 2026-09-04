@@ -56,6 +56,7 @@ const ArtistItem: React.FC<ItemProps> = ({
   return (
     <>
       <LibraryItem
+        testID="library-artist-item"
         cover={cover}
         title={name}
         subtext={subtext}

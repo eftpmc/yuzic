@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { Playlist, Song } from '@/types';
+import { Playlist, PlaylistBase, Song } from '@/types';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { addLibraryPlaylistSong } from '@/utils/redux/slices/librarySlice';
@@ -60,9 +60,12 @@ export function useAddSongToPlaylist() {
           [QueryKeys.Playlist, activeServer?.id, playlistId],
           addToCache
         );
-        queryClient.invalidateQueries({
-          queryKey: [QueryKeys.Playlists, activeServer?.id],
-        });
+        queryClient.setQueryData<PlaylistBase[]>(
+          [QueryKeys.Playlists, activeServer?.id],
+          (old) => old?.map(playlist =>
+            playlist.id === playlistId ? { ...playlist, changed: new Date() } : playlist
+          )
+        );
         dispatch(addLibraryPlaylistSong({ playlistId, song }));
       } else {
         // No song object available — fall back to invalidation so UI stays correct

@@ -6,13 +6,8 @@ import { selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors
 import { setDownloadQuality, AudioQuality } from '@/utils/redux/slices/settingsSlice';
 import SettingsSelectCard from '../../components/SettingsSelectCard';
 import { useTheme } from '@/hooks/useTheme';
-
-const QUALITY_OPTIONS = [
-  { key: 'low' as const,      labelKey: 'settings.library.downloadQuality.options.low' },
-  { key: 'medium' as const,   labelKey: 'settings.library.downloadQuality.options.medium' },
-  { key: 'high' as const,     labelKey: 'settings.library.downloadQuality.options.high' },
-  { key: 'original' as const, labelKey: 'settings.library.downloadQuality.options.original' },
-] as const;
+import { DOWNLOAD_QUALITY_OPTIONS } from '@/constants/settings';
+import { spacing, typography } from '@/constants/design';
 
 const DownloadQuality: React.FC = () => {
   const { t } = useTranslation();
@@ -20,7 +15,7 @@ const DownloadQuality: React.FC = () => {
   const { colors } = useTheme();
   const downloadQuality = useSelector(selectDownloadQuality);
 
-  const items = QUALITY_OPTIONS.map(o => ({ key: o.key, label: t(o.labelKey) }));
+  const items = DOWNLOAD_QUALITY_OPTIONS.map(o => ({ key: o.key, label: t(o.labelKey) }));
 
   return (
     <>
@@ -41,9 +36,8 @@ export default DownloadQuality;
 
 const styles = StyleSheet.create({
   caption: {
-    fontSize: 13,
-    marginTop: 8,
-    marginHorizontal: 4,
-    lineHeight: 18,
+    ...typography.caption,
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.xs,
   },
 });

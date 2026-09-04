@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing, typography } from '@/constants/design';
 
 type Props = {
   label: string;
@@ -45,38 +46,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     gap: 16,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   value: {
-    fontSize: 15,
+    ...typography.body,
     flexShrink: 1,
     textAlign: 'right',
   },
   stackedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   stackedLeft: {
     flex: 1,
   },
   stackedRight: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   stackedLabel: {
-    fontSize: 12,
+    ...typography.caption,
     fontWeight: '500',
-    marginBottom: 3,
+    marginBottom: spacing.xxs,
   },
   stackedValue: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
 });

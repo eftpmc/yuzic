@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { Check, Grid2x2, List } from 'lucide-react-native';
@@ -12,25 +11,25 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import {
   selectThemeColor,
+  selectIsGridView,
   selectGridColumns,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
+  setIsGridView,
   setGridColumns,
 } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
+import { radius, spacing, typography } from '@/constants/design';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
 
-interface GridSettingsBottomSheetProps {
-  isGridView: boolean;
-  onSetGridView: (value: boolean) => void;
-}
-
-const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomSheetProps>(
-  ({ isGridView, onSetGridView }, ref) => {
+const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
+  (_, ref) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const themeColor = useSelector(selectThemeColor);
+    const isGridView = useSelector(selectIsGridView);
     const gridColumns = useSelector(selectGridColumns);
     const { colors } = useTheme();
 
@@ -69,7 +68,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomS
             const isSelected = isGridView === option.value;
 
             return (
-              <TouchableOpacity
+              <Touchable
                 key={String(option.value)}
                 style={[
                   styles.pickerItem,
@@ -79,7 +78,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomS
                       : 'transparent',
                   },
                 ]}
-                onPress={() => onSetGridView(option.value)}
+                onPress={() => dispatch(setIsGridView(option.value))}
               >
                 <View style={styles.pickerLeft}>
                   <option.Icon
@@ -87,7 +86,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomS
                     color={
                       isSelected ? themeColor : colors.subtext
                     }
-                    style={{ marginRight: 10 }}
+                    style={{ marginRight: spacing.controlGap }}
                   />
                   <Text
                     style={[styles.pickerText, { color: colors.secondary, fontWeight: isSelected ? '600' : '400' }]}
@@ -99,7 +98,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal, GridSettingsBottomS
                 {isSelected && (
                   <Check size={20} color={themeColor} />
                 )}
-              </TouchableOpacity>
+              </Touchable>
             );
           })}
 
@@ -148,53 +147,51 @@ export default GridSettingsBottomSheet;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.controlGap,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
+    ...typography.sheetTitle,
+    marginBottom: spacing.controlGap,
   },
   pickerItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
   },
   pickerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   pickerText: {
-    fontSize: 16,
+    ...typography.body,
   },
   slidersSection: {
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   sliderRow: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   sliderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
-    paddingHorizontal: 4,
+    marginBottom: spacing.xs,
+    paddingHorizontal: spacing.xs,
   },
   sliderLabel: {
-    fontSize: 16,
+    ...typography.body,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
+    paddingHorizontal: spacing.controlGap,
+    paddingVertical: spacing.xxs,
+    borderRadius: radius.card,
   },
   badgeText: {
-    fontSize: 14,
-    fontWeight: '600',
+    ...typography.label,
   },
   slider: {
     width: '100%',

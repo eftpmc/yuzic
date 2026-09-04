@@ -1,11 +1,21 @@
 import React, { forwardRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import { getSourceMeta } from '@/features/sources/registry'
 import { MediaImage } from '@/components/MediaImage'
 import type { SourceResolvedAlbum, SourceResolvedArtist } from '@/features/sources/registry'
+import {
+  OptionSheetDivider,
+  OptionSheetSectionLabel,
+  optionSheetStyles,
+  useOptionSheetBackground,
+} from '@/components/options/OptionSheetPrimitives'
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -21,8 +31,9 @@ const COVER_SIZE = 48
 
 const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
   ({ items, isLoading, onSelect }, ref) => {
-    const { isDarkMode, colors } = useTheme()
-    const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background }
+    const { t } = useTranslation()
+    const { colors } = useTheme()
+    const sheetBg = useOptionSheetBackground()
 
     const grouped = items.reduce<Record<string, PickerItem[]>>((acc, item) => {
       if (!acc[item.source]) acc[item.source] = []
@@ -37,19 +48,19 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
-        backgroundStyle={[styles.sheetBackground, sheetBg]}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
         stackBehavior="push"
       >
-        <BottomSheetScrollView style={sheetBg} contentContainerStyle={styles.sheetContent}>
+        <BottomSheetScrollView style={sheetBg} contentContainerStyle={optionSheetStyles.sheetContent}>
           {isLoading && (
             <View style={styles.loading}>
-              <ActivityIndicator size="large" color={colors.subtext} />
+              <SpinningLoaderCircle size={26} color={colors.subtext} />
             </View>
           )}
 
           {!isLoading && items.length === 0 && (
             <Text style={[styles.empty, { color: colors.subtext }]}>
-              No sources could resolve this item.
+              {t('externalSourcePicker.empty')}
             </Text>
           )}
 
@@ -58,20 +69,17 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
             const sourceLabel = meta?.label ?? sourceId
             return (
               <View key={sourceId}>
-                {groupIndex > 0 && (
-                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                )}
-                <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{sourceLabel}</Text>
+                {groupIndex > 0 && <OptionSheetDivider />}
+                <OptionSheetSectionLabel label={sourceLabel} />
                 {sourceItems.map((item, i) => {
                   const label = item.kind === 'album' ? item.title : item.name
                   const sublabel = item.kind === 'album' ? (item as SourceResolvedAlbum).artist : undefined
                   const isArtist = item.kind === 'artist'
                   return (
-                    <TouchableOpacity
+                    <Touchable
                       key={`${item.source}-${i}`}
                       style={styles.option}
                       onPress={() => onSelect(item)}
-                      activeOpacity={0.7}
                     >
                       <MediaImage
                         cover={item.coverUrl ? { kind: 'url', url: item.coverUrl } : { kind: 'letter', name: label }}
@@ -88,7 +96,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
                           </Text>
                         )}
                       </View>
-                    </TouchableOpacity>
+                    </Touchable>
                   )
                 })}
               </View>
@@ -105,51 +113,33 @@ ExternalSourcePickerSheet.displayName = 'ExternalSourcePickerSheet'
 export default ExternalSourcePickerSheet
 
 const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  sheetContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
   loading: {
-    paddingVertical: 32,
+    paddingVertical: spacing.xxl,
     alignItems: 'center',
   },
   empty: {
-    fontSize: 15,
+    ...typography.body,
     textAlign: 'center',
-    paddingVertical: 24,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 8,
+    paddingVertical: spacing.xl,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.controlGap,
   },
   cover: {
     width: COVER_SIZE,
     height: COVER_SIZE,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   optionText: {
     flex: 1,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   artist: {
-    fontSize: 14,
-    marginTop: 2,
+    ...typography.rowSubtitle,
+    marginTop: spacing.xxs,
   },
 })

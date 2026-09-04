@@ -1,6 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   label: string;
@@ -15,21 +18,21 @@ const SettingsActionButton: React.FC<Props> = ({
   variant = 'primary',
   disabled,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const rad = useRadius();
 
   const backgroundColor = variant === 'destructive'
-    ? (isDarkMode ? '#FF453A' : '#FF3B30')
+    ? colors.destructive
     : colors.themeColor;
 
   return (
-    <TouchableOpacity
-      style={[styles.button, { backgroundColor, opacity: disabled ? 0.4 : 1 }]}
+    <Touchable
+      style={[styles.button, { backgroundColor, opacity: disabled ? 0.4 : 1, borderRadius: rad.md }]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.8}
     >
       <Text style={styles.label}>{label}</Text>
-    </TouchableOpacity>
+    </Touchable>
   );
 };
 
@@ -37,14 +40,12 @@ export default SettingsActionButton;
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   label: {
+    ...typography.sheetTitle,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing } from '@/constants/design';
 
 const LoadingExternalAlbumRow: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -51,18 +52,18 @@ const LoadingExternalAlbumRow: React.FC = () => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
   },
 
   albumItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
 
   albumTextContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
 });
 

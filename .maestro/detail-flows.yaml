@@ -1,0 +1,153 @@
+# Detail-screen and player coverage: album/artist/playlist detail screens,
+# the track options sheet, and the full player with queue view.
+# Assumes an authenticated server with library content (see onboarding-demo.yaml).
+appId: com.arinora.rawarr
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      id: "library-tab"
+    timeout: 60000
+- tapOn:
+    id: "library-tab"
+- assertVisible:
+    id: "library-screen"
+
+# Album detail
+- tapOn:
+    id: "library-entry-albums"
+- extendedWaitUntil:
+    visible:
+      id: "library-album-item"
+    timeout: 60000
+- tapOn:
+    id: "library-album-item"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "album-screen"
+    timeout: 30000
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-collection-screen"
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-screen"
+
+# Artist detail
+- tapOn:
+    id: "library-entry-artists"
+- extendedWaitUntil:
+    visible:
+      id: "library-artist-item"
+    timeout: 60000
+- tapOn:
+    id: "library-artist-item"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "artist-screen"
+    timeout: 30000
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-collection-screen"
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-screen"
+
+# Playlist detail — playlists on a shared/demo server come and go, so only
+# exercise this when at least one exists.
+- tapOn:
+    id: "library-entry-playlists"
+- extendedWaitUntil:
+    visible:
+      id: "library-collection-screen"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "library-playlist-item"
+    commands:
+      - tapOn:
+          id: "library-playlist-item"
+          index: 0
+      - extendedWaitUntil:
+          visible:
+            id: "playlist-screen"
+          timeout: 30000
+      - tapOn:
+          id: "detail-back-button"
+      - assertVisible:
+          id: "library-collection-screen"
+- tapOn:
+    id: "detail-back-button"
+- assertVisible:
+    id: "library-screen"
+
+# Track options sheet via long-press. Opening the sheet resolves the song
+# over the network with a short timeout, so allow one retry for a cold call.
+- tapOn:
+    id: "library-entry-tracks"
+- extendedWaitUntil:
+    visible:
+      id: "library-track-item"
+    timeout: 60000
+- retry:
+    maxRetries: 2
+    commands:
+      - longPressOn:
+          id: "library-track-item"
+          index: 0
+      - extendedWaitUntil:
+          visible:
+            id: "song-options-sheet"
+          timeout: 15000
+# Dismiss by tapping the backdrop above the sheet
+- tapOn:
+    point: "50%,10%"
+
+# Player detail. Starting playback resolves the song over the network with a
+# short timeout, so allow a retry here too.
+- retry:
+    maxRetries: 2
+    commands:
+      - tapOn:
+          id: "library-track-item"
+          index: 0
+      - extendedWaitUntil:
+          visible:
+            id: "playing-bar"
+          timeout: 15000
+- tapOn:
+    id: "playing-bar"
+- extendedWaitUntil:
+    visible:
+      id: "playing-screen"
+    timeout: 15000
+# Queue view: toggle in from the player, back out via the queue's own back
+# button (the player's controls are pointerEvents: none while the queue shows).
+- tapOn:
+    id: "playing-queue-toggle"
+- extendedWaitUntil:
+    visible:
+      id: "playing-queue"
+    timeout: 10000
+- tapOn:
+    id: "queue-back-button"
+- extendedWaitUntil:
+    visible:
+      id: "playing-queue-toggle"
+    timeout: 10000
+
+- tapOn:
+    id: "playing-close"
+- extendedWaitUntil:
+    visible:
+      id: "library-screen"
+    timeout: 10000

@@ -2,26 +2,31 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { Check } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { selectServerById } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { radius, spacing, typography, onDark } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Library = { id: string; name: string };
 
 export default function LibrariesOnboarding() {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
+  const rad = useRadius();
   const { serverId } = useLocalSearchParams<{ serverId: string }>();
 
   const server = useSelector((state: RootState) =>
@@ -80,42 +85,42 @@ export default function LibrariesOnboarding() {
       id: server.id,
       patch: { auth: { ...server.auth, ...authPatch } as any },
     }));
-    router.replace('/(home)/(tabs)' as never);
+    router.replace('/(home)/(tabs)');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Choose Libraries</Text>
+        <Text style={styles.title}>{t('onboarding.libraries.title')}</Text>
         <Text style={styles.subtitle}>
-          Select which libraries to include. You can pick multiple, or leave all selected to include everything.
+          {t('onboarding.libraries.subtitle')}
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator size="large" color="#fff" style={styles.loader} />
+          <SpinningLoaderCircle size={26} color={onDark.text} />
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Could not load libraries. Check your connection and try again.</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={() => setRetryCount(c => c + 1)}>
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
+            <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
+            <Touchable style={[styles.retryButton, { borderRadius: rad.pill }]} onPress={() => setRetryCount(c => c + 1)}>
+              <Text style={styles.retryButtonText}>{t('onboarding.libraries.retry')}</Text>
+            </Touchable>
           </View>
         ) : (
           <View style={styles.optionList}>
-            <TouchableOpacity onPress={selectAll} style={styles.optionRow}>
+            <Touchable onPress={selectAll} style={[styles.optionRow, { borderRadius: rad.md }]}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
                 {isAll && <Check size={14} color="#000" />}
               </View>
-              <Text style={styles.optionText}>All Libraries</Text>
-            </TouchableOpacity>
+              <Text style={styles.optionText}>{t('onboarding.libraries.allLibraries')}</Text>
+            </Touchable>
 
             {libraries.map(lib => {
               const selected = selectedIds.includes(lib.id);
               return (
-                <TouchableOpacity
+                <Touchable
                   key={lib.id}
                   onPress={() => toggle(lib.id)}
-                  style={styles.optionRow}
+                  style={[styles.optionRow, { borderRadius: rad.md }]}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
                     {selected && <Check size={14} color="#000" />}
@@ -123,7 +128,7 @@ export default function LibrariesOnboarding() {
                   <Text style={styles.optionText} numberOfLines={1}>
                     {lib.name}
                   </Text>
-                </TouchableOpacity>
+                </Touchable>
               );
             })}
           </View>
@@ -131,17 +136,17 @@ export default function LibrariesOnboarding() {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <Touchable style={[styles.continueButton, { borderRadius: rad.pill }]} onPress={handleContinue}>
           <Text style={styles.continueButtonText}>
             {isAll
-              ? 'Use All Libraries'
-              : `Continue with ${selectedIds.length} ${selectedIds.length === 1 ? 'Library' : 'Libraries'}`}
+              ? t('onboarding.libraries.useAll')
+              : t('onboarding.libraries.continueWith', { count: selectedIds.length })}
           </Text>
-        </TouchableOpacity>
+        </Touchable>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
+        <Touchable style={[styles.backButton, { borderRadius: rad.pill }]} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>{t('common.back')}</Text>
+        </Touchable>
       </View>
     </SafeAreaView>
   );
@@ -150,30 +155,28 @@ export default function LibrariesOnboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: onDark.background,
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.roomy,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.roomy,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 10,
+    ...typography.display,
+    color: onDark.text,
+    marginBottom: spacing.controlGap,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#888',
-    marginBottom: 28,
-    lineHeight: 22,
+    ...typography.body,
+    color: onDark.mutedText,
+    marginBottom: spacing.xxl,
   },
   loader: {
-    marginTop: 40,
+    marginTop: spacing.xxxl,
   },
   optionList: {
     gap: 8,
@@ -181,81 +184,74 @@ const styles = StyleSheet.create({
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#222',
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    backgroundColor: onDark.muted,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     gap: 12,
   },
   checkbox: {
     width: 22,
     height: 22,
-    borderRadius: 5,
+    borderRadius: radius.sm,
     borderWidth: 1.5,
-    borderColor: '#555',
+    borderColor: onDark.mutedText,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#fff',
-    borderColor: '#fff',
+    backgroundColor: onDark.text,
+    borderColor: onDark.text,
   },
   optionText: {
-    fontSize: 16,
-    color: '#fff',
+    ...typography.body,
+    color: onDark.text,
     flex: 1,
   },
   buttonContainer: {
-    padding: 20,
-    backgroundColor: '#000',
+    padding: spacing.roomy,
+    backgroundColor: onDark.background,
     alignItems: 'center',
   },
   errorContainer: {
-    marginTop: 40,
+    marginTop: spacing.xxxl,
     alignItems: 'center' as const,
     gap: 16,
   },
   errorText: {
-    color: '#888',
-    fontSize: 15,
+    ...typography.body,
+    color: onDark.mutedText,
     textAlign: 'center' as const,
-    lineHeight: 22,
   },
   retryButton: {
-    backgroundColor: '#333',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 999,
+    backgroundColor: onDark.border,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
   },
   retryButtonText: {
-    color: '#fff',
-    fontSize: 15,
+    ...typography.body,
+    color: onDark.text,
     fontWeight: '600' as const,
   },
   continueButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    borderRadius: 999,
+    backgroundColor: onDark.text,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     width: '100%',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   continueButtonText: {
+    ...typography.sheetTitle,
     color: '#000',
-    fontSize: 16,
-    fontWeight: '600',
   },
   backButton: {
-    backgroundColor: '#333',
-    paddingVertical: 15,
-    borderRadius: 999,
+    backgroundColor: onDark.border,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     width: '100%',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.sheetTitle,
+    color: onDark.text,
   },
 });

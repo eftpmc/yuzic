@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -22,11 +22,11 @@ import { getDayKey } from '@/features/home/hooks/useDailyLayout'
 import { collectCoveredAlbumsForArtists } from '@/features/home/utils/albumDiscovery'
 import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
-import LoadingTiles from './LoadingTiles'
-import type { ExternalAlbumBase } from '@/types'
-
-const TARGET_ALBUMS = 10
-const RELATED_ARTIST_LIMIT = 40
+import SkeletonTiles from '@/components/SkeletonTiles'
+import type { ExternalAlbumBase } from '@/types';
+import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
 
 async function fetchAlbumsForSeed(
   artistName: string,
@@ -35,10 +35,10 @@ async function fetchAlbumsForSeed(
   const seedArtist = await deezer.resolveDeezerArtistByName(artistName)
   if (!seedArtist) return []
 
-  const related = await deezer.getDeezerRelatedArtists(seedArtist.id, RELATED_ARTIST_LIMIT)
+  const related = await deezer.getDeezerRelatedArtists(seedArtist.id, HOME_RELATED_ARTIST_LIMIT)
   const fresh = related.filter(artist => !libraryArtistNames.has(artist.name.toLowerCase()))
 
-  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: TARGET_ALBUMS })
+  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: HOME_TARGET_ALBUMS })
 }
 
 type Props = {
@@ -129,18 +129,18 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.becauseYouListenedLabel')}
           </Text>
-          <TouchableOpacity onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
             <Text
               style={[styles.artistName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}
             >
               {selectedArtist}
             </Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
 
         {query.isLoading ? (
-          <LoadingTiles
+          <SkeletonTiles
             itemSize={gridItemWidth}
             gap={SECTION_GRID_GAP}
             horizontalPadding={H_PADDING}
@@ -186,33 +186,31 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
     gap: 5,
-    marginBottom: 12,
+    marginBottom: spacing.md,
     marginLeft: H_PADDING,
     marginRight: H_PADDING,
   },
   titlePrefix: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
   },
   artistName: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
     borderBottomWidth: 1.5,
-    paddingBottom: 1,
+    paddingBottom: spacing.xxs,
   },
   emptyState: {
     paddingHorizontal: H_PADDING,
-    paddingVertical: 24,
+    paddingVertical: spacing.xl,
   },
   emptyText: {
-    fontSize: 14,
+    ...typography.rowSubtitle,
   },
 })

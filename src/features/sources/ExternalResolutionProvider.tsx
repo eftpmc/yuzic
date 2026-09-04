@@ -6,16 +6,14 @@ import ExternalSourcePickerSheet, { type PickerItem } from '@/components/Externa
 import { useEnabledExternalSources, type SourceResolvedAlbum, type SourceResolvedArtist } from './registry';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { useArtists } from '@/hooks/artists';
-import { normalize } from '@/utils/normalize';
+import { matchAlbumToLibrary, matchArtistToLibrary } from '@/hooks/libraryMatch';
 import type { ExternalAlbumBase, ExternalArtistBase } from '@/types';
 
 const NO_SOURCE_TOAST = 'Enable an external source in Settings to browse this content.';
 
-type ResolutionOptions = { skipLocalMatch?: boolean };
-
 type ResolutionContextType = {
-  resolveAndNavigateToAlbum: (item: ExternalAlbumBase, options?: ResolutionOptions) => void;
-  resolveAndNavigateToArtist: (item: ExternalArtistBase, options?: ResolutionOptions) => void;
+  resolveAndNavigateToAlbum: (item: ExternalAlbumBase) => void;
+  resolveAndNavigateToArtist: (item: ExternalArtistBase) => void;
 };
 
 const ExternalResolutionContext = createContext<ResolutionContextType | null>(null);
@@ -37,14 +35,11 @@ export function ExternalResolutionProvider({ children }: { children: React.React
   const [albumPickerItems, setAlbumPickerItems] = useState<PickerItem[]>([]);
   const [artistPickerItems, setArtistPickerItems] = useState<PickerItem[]>([]);
 
+  // Callers that want to bypass the library match (fuzzy false positives)
+  // don't come through here — they push albumView/artistView directly with
+  // forceExternal, which the unified screens honor.
   const resolveAndNavigateToAlbum = useCallback(async (item: ExternalAlbumBase) => {
-    // Library match
-    const normTitle = normalize(item.title);
-    const normArtist = normalize(item.artist);
-    const localMatch = albums.find(a =>
-      (item.id && a.mbid && a.mbid === item.id) ||
-      (normalize(a.title) === normTitle && normalize(a.artist.name) === normArtist)
-    );
+    const localMatch = matchAlbumToLibrary(item, albums);
     if (localMatch) {
       router.push({ pathname: '/(home)/albumView', params: { id: localMatch.id } });
       return;
@@ -57,7 +52,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
 
     // If only one source enabled and it matches the item's source, navigate directly
     if (enabledSources.length === 1 && (!item.externalSource || enabledSources[0].id === item.externalSource)) {
-      router.push({ pathname: '/(home)/externalAlbumView', params: { source: item.externalSource ?? enabledSources[0].id, albumId: item.id } });
+      router.push({ pathname: '/(home)/albumView', params: { source: item.externalSource ?? enabledSources[0].id, albumId: item.id, artist: item.artist, title: item.title } });
       return;
     }
 
@@ -71,25 +66,18 @@ export function ExternalResolutionProvider({ children }: { children: React.React
       return;
     }
     if (results.length === 1) {
-      router.push({ pathname: '/(home)/externalAlbumView', params: { source: results[0].source, albumId: results[0].id } });
+      router.push({ pathname: '/(home)/albumView', params: { source: results[0].source, albumId: results[0].id, artist: results[0].artist, title: results[0].title } });
       return;
     }
     setAlbumPickerItems(results.map(r => ({ ...r, kind: 'album' as const })));
     albumPickerRef.current?.present();
   }, [albums, enabledSources, router]);
 
-  const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase, options?: ResolutionOptions) => {
-    // Library match — skip when the caller explicitly wants an external view
-    if (!options?.skipLocalMatch) {
-      const normName = normalize(item.name);
-      const localMatch = artists.find(a =>
-        (item.externalIds?.mbid && a.mbid && a.mbid === item.externalIds.mbid) ||
-        normalize(a.name) === normName
-      );
-      if (localMatch) {
-        router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
-        return;
-      }
+  const resolveAndNavigateToArtist = useCallback(async (item: ExternalArtistBase) => {
+    const localMatch = matchArtistToLibrary(item, artists);
+    if (localMatch) {
+      router.push({ pathname: '/(home)/artistView', params: { id: localMatch.id } });
+      return;
     }
 
     if (enabledSources.length === 0) {
@@ -98,7 +86,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     }
 
     if (enabledSources.length === 1 && (!item.externalSource || enabledSources[0].id === item.externalSource)) {
-      router.push({ pathname: '/(home)/externalArtistView', params: { source: item.externalSource ?? enabledSources[0].id, artistId: item.externalIds?.deezerId, mbid: item.externalIds?.mbid ?? item.id, name: item.name } });
+      router.push({ pathname: '/(home)/artistView', params: { source: item.externalSource ?? enabledSources[0].id, artistId: item.externalIds?.deezerId, mbid: item.externalIds?.mbid ?? item.id, name: item.name } });
       return;
     }
 
@@ -111,7 +99,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
       return;
     }
     if (results.length === 1) {
-      router.push({ pathname: '/(home)/externalArtistView', params: { source: results[0].source, artistId: results[0].id, name: results[0].name } });
+      router.push({ pathname: '/(home)/artistView', params: { source: results[0].source, artistId: results[0].id, name: results[0].name } });
       return;
     }
     setArtistPickerItems(results.map(r => ({ ...r, kind: 'artist' as const })));
@@ -126,7 +114,9 @@ export function ExternalResolutionProvider({ children }: { children: React.React
         items={albumPickerItems}
         onSelect={item => {
           albumPickerRef.current?.dismiss();
-          router.push({ pathname: '/(home)/externalAlbumView', params: { source: item.source, albumId: item.id } });
+          const artist = item.kind === 'album' ? item.artist : '';
+          const title = item.kind === 'album' ? item.title : '';
+          router.push({ pathname: '/(home)/albumView', params: { source: item.source, albumId: item.id, artist, title } });
         }}
       />
       <ExternalSourcePickerSheet
@@ -135,7 +125,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
         onSelect={item => {
           artistPickerRef.current?.dismiss();
           const artistName = item.kind === 'artist' ? item.name : '';
-          router.push({ pathname: '/(home)/externalArtistView', params: { source: item.source, artistId: item.id, name: artistName } });
+          router.push({ pathname: '/(home)/artistView', params: { source: item.source, artistId: item.id, name: artistName } });
         }}
       />
     </ExternalResolutionContext.Provider>

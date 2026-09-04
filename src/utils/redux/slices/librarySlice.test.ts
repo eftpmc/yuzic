@@ -1,12 +1,8 @@
 import libraryReducer, {
   addLibraryPlaylistSong,
-  addLibraryStarredSong,
-  clearLibrary,
   removeLibraryPlaylistSong,
-  removeLibraryStarredSong,
-  setLibraryStarredAlbums,
 } from './librarySlice'
-import { AlbumBase, PlaylistBase, Song } from '@/types'
+import { PlaylistBase, Song } from '@/types'
 
 const song: Song = {
   id: 'song-1',
@@ -19,17 +15,6 @@ const song: Song = {
   streamUrl: 'https://example.com/song.mp3',
 }
 
-const album: AlbumBase = {
-  id: 'album-1',
-  title: 'Album',
-  cover: { kind: 'none' },
-  subtext: '',
-  artist: { id: 'artist-1', name: 'Artist', cover: { kind: 'none' }, subtext: '' },
-  year: 2020,
-  genres: [],
-  created: new Date(0),
-}
-
 const playlist: PlaylistBase = {
   id: 'playlist-1',
   title: 'Playlist',
@@ -40,14 +25,6 @@ const playlist: PlaylistBase = {
 }
 
 describe('library offline reducers', () => {
-  it('optimistically adds and removes starred songs', () => {
-    const added = libraryReducer(undefined, addLibraryStarredSong(song))
-    expect(added.starred.map(item => item.id)).toEqual([song.id])
-
-    const removed = libraryReducer(added, removeLibraryStarredSong(song.id))
-    expect(removed.starred).toEqual([])
-  })
-
   it('optimistically adds and removes playlist songs', () => {
     const initial = libraryReducer(undefined, {
       type: 'library/setLibraryPlaylists',
@@ -65,13 +42,5 @@ describe('library offline reducers', () => {
       removeLibraryPlaylistSong({ playlistId: playlist.id, songId: song.id })
     )
     expect(new Date(removed.playlists[0].changed).getTime()).toBeGreaterThan(0)
-  })
-
-  it('sets starred albums and clears them on clearLibrary', () => {
-    const withAlbums = libraryReducer(undefined, setLibraryStarredAlbums([album]))
-    expect(withAlbums.starredAlbums.map(item => item.id)).toEqual([album.id])
-
-    const cleared = libraryReducer(withAlbums, clearLibrary())
-    expect(cleared.starredAlbums).toEqual([])
   })
 })

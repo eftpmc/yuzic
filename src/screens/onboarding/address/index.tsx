@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +14,9 @@ import { ServerType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useSheetRef } from '@/utils/useSheetRef';
+import Touchable from '@/components/Touchable';
+import { spacing, typography, onDark } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Scheme = 'https' | 'http';
 
@@ -22,6 +24,7 @@ export default function Address() {
     const { t } = useTranslation();
     const router = useRouter();
     const { type } = useLocalSearchParams<{ type: ServerType }>();
+    const rad = useRadius();
 
     const [scheme, setScheme] = useState<Scheme>('https');
     const [host, setHost] = useState('');
@@ -48,20 +51,19 @@ export default function Address() {
                         <Text style={styles.title}>{t('onboarding.address.title')}</Text>
                         <Text style={styles.subtitle}>{t('onboarding.address.subtitle')}</Text>
 
-                        <View style={styles.inputRow}>
-                            <TouchableOpacity
+                        <View style={[styles.inputRow, { borderRadius: rad.md }]}>
+                            <Touchable
                                 style={styles.schemeButton}
                                 onPress={() => schemeSheetRef.current?.present()}
-                                activeOpacity={0.75}
                             >
                                 <Text style={styles.schemeText}>{scheme}://</Text>
-                                <ChevronDown size={14} color="#888" style={{ marginLeft: 4 }} />
-                            </TouchableOpacity>
+                                <ChevronDown size={14} color={onDark.mutedText} style={{ marginLeft: spacing.xs }} />
+                            </Touchable>
 
                             <TextInput
                                 style={styles.hostInput}
                                 placeholder="your-server.com"
-                                placeholderTextColor="#555"
+                                placeholderTextColor={onDark.mutedText}
                                 value={host}
                                 onChangeText={setHost}
                                 autoCapitalize="none"
@@ -78,13 +80,13 @@ export default function Address() {
                     </View>
 
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                        <Touchable style={[styles.nextButton, { borderRadius: rad.pill }]} onPress={handleNext}>
                             <Text style={styles.nextButtonText}>{t('common.next')}</Text>
-                        </TouchableOpacity>
+                        </Touchable>
 
-                        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <Touchable style={[styles.backButton, { borderRadius: rad.pill }]} onPress={() => router.back()}>
                             <Text style={styles.backButtonText}>{t('common.back')}</Text>
-                        </TouchableOpacity>
+                        </Touchable>
                     </View>
                 </View>
             </SafeAreaView>
@@ -104,9 +106,9 @@ export default function Address() {
                     {(['https', 'http'] as Scheme[]).map((s) => {
                         const isSelected = scheme === s;
                         return (
-                            <TouchableOpacity
+                            <Touchable
                                 key={s}
-                                style={[styles.schemeOption, isSelected && styles.schemeOptionSelected]}
+                                style={[styles.schemeOption, { borderRadius: rad.md }, isSelected && styles.schemeOptionSelected]}
                                 onPress={() => {
                                     setScheme(s);
                                     schemeSheetRef.current?.dismiss();
@@ -114,8 +116,8 @@ export default function Address() {
                             >
                                 <View style={styles.schemeOptionLeft}>
                                     {s === 'https'
-                                      ? <Lock size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: 10 }} />
-                                      : <LockOpen size={18} color={isSelected ? '#fff' : '#888'} style={{ marginRight: 10 }} />
+                                      ? <Lock size={18} color={isSelected ? onDark.text : onDark.mutedText} style={{ marginRight: spacing.controlGap }} />
+                                      : <LockOpen size={18} color={isSelected ? onDark.text : onDark.mutedText} style={{ marginRight: spacing.controlGap }} />
                                     }
                                     <View>
                                         <Text style={[styles.schemeOptionText, isSelected && styles.schemeOptionTextSelected]}>
@@ -128,8 +130,8 @@ export default function Address() {
                                         </Text>
                                     </View>
                                 </View>
-                                {isSelected && <Check size={20} color="#fff" />}
-                            </TouchableOpacity>
+                                {isSelected && <Check size={20} color={onDark.text} />}
+                            </Touchable>
                         );
                     })}
                 </BottomSheetView>
@@ -141,113 +143,103 @@ export default function Address() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: onDark.background,
     },
     mainContent: {
         flexGrow: 1,
-        paddingHorizontal: 20,
-        marginTop: 40,
+        paddingHorizontal: spacing.roomy,
+        marginTop: spacing.xxxl,
     },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 10,
+        ...typography.display,
+        color: onDark.text,
+        marginBottom: spacing.controlGap,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#888',
-        marginBottom: 20,
+        ...typography.body,
+        color: onDark.mutedText,
+        marginBottom: spacing.roomy,
     },
     inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#222',
+        backgroundColor: onDark.muted,
         borderWidth: 1,
-        borderColor: '#555',
-        borderRadius: 8,
-        paddingHorizontal: 12,
+        borderColor: onDark.mutedText,
+        paddingHorizontal: spacing.md,
         height: 50,
-        marginBottom: 10,
+        marginBottom: spacing.controlGap,
     },
     schemeButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingRight: 8,
+        paddingRight: spacing.sm,
         borderRightWidth: 1,
-        borderRightColor: '#444',
+        borderRightColor: onDark.border,
         height: '100%',
     },
     schemeText: {
-        color: '#fff',
-        fontSize: 15,
-        fontWeight: '500',
+        ...typography.compactRowTitle,
+        color: onDark.text,
     },
     hostInput: {
+        ...typography.body,
         flex: 1,
-        color: '#fff',
-        fontSize: 16,
-        marginLeft: 10,
+        color: onDark.text,
+        marginLeft: spacing.controlGap,
     },
     hint: {
-        fontSize: 13,
-        color: '#555',
-        lineHeight: 18,
+        ...typography.caption,
+        color: onDark.mutedText,
     },
     buttonContainer: {
-        padding: 20,
-        backgroundColor: '#000',
+        padding: spacing.roomy,
+        backgroundColor: onDark.background,
         alignItems: 'center',
     },
     nextButton: {
-        backgroundColor: '#fff',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.text,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     nextButtonText: {
+        ...typography.sheetTitle,
         color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
     },
     backButton: {
-        backgroundColor: '#333',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.border,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     backButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
+        ...typography.sheetTitle,
+        color: onDark.text,
     },
     sheetBackground: {
-        backgroundColor: '#222',
+        backgroundColor: onDark.muted,
     },
     sheetHandle: {
-        backgroundColor: '#555',
+        backgroundColor: onDark.mutedText,
     },
     sheetContent: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingHorizontal: spacing.roomy,
+        paddingTop: spacing.controlGap,
     },
     sheetTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#fff',
-        marginBottom: 10,
+        ...typography.sheetTitle,
+        color: onDark.text,
+        marginBottom: spacing.controlGap,
     },
     schemeOption: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 12,
-        borderRadius: 8,
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.md,
     },
     schemeOptionSelected: {
         backgroundColor: 'rgba(255,255,255,0.08)',
@@ -257,17 +249,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     schemeOptionText: {
-        fontSize: 16,
-        color: '#aaa',
-        fontWeight: '500',
+        ...typography.rowTitle,
+        color: onDark.subtext,
     },
     schemeOptionTextSelected: {
-        color: '#fff',
+        color: onDark.text,
         fontWeight: '600',
     },
     schemeOptionDesc: {
-        fontSize: 12,
-        color: '#666',
-        marginTop: 1,
+        ...typography.caption,
+        color: onDark.mutedText,
+        marginTop: spacing.xxs,
     },
 });

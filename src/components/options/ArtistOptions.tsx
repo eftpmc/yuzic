@@ -1,11 +1,5 @@
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -13,12 +7,10 @@ import {
 import { ListEnd, Play, Shuffle, CheckCircle, ArrowDownCircle, User, Globe } from 'lucide-react-native';
 
 import { Artist, Song } from '@/types';
-import { MediaImage } from '@/components/MediaImage';
 import { usePlayingActions } from '@/contexts/PlayingContext';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useEnabledExternalSources } from '@/features/sources/registry';
-import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
@@ -27,6 +19,16 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyArtistSongs } from './useLazyCollectionDetails';
+import {
+  OptionSheetDivider,
+  OptionSheetHeader,
+  OptionSheetInfoRow,
+  OptionSheetRow,
+  OptionSheetSectionLabel,
+  optionSheetStyles,
+  useOptionSheetBackground,
+} from './OptionSheetPrimitives';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -39,8 +41,8 @@ const ArtistOptions = forwardRef<
   ArtistOptionsProps
 >(({ artist, hideGoToArtist }, ref) => {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
-  const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+  const router = useRouter();
 
   const {
     playSongInCollection,
@@ -50,7 +52,6 @@ const ArtistOptions = forwardRef<
   } = usePlayingActions();
   const { downloadAlbumById, getCollectionDownloadState } = useDownload();
   const enabledSources = useEnabledExternalSources();
-  const { navigateToArtist } = useMatchedNavigation();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -65,7 +66,7 @@ const ArtistOptions = forwardRef<
   );
 
 
-  const sheetBg = { backgroundColor: isDarkMode ? colors.card : colors.background };
+  const sheetBg = useOptionSheetBackground();
 
   const close = useCallback(() => {
     (ref as any)?.current?.dismiss();
@@ -124,23 +125,28 @@ const ArtistOptions = forwardRef<
   const handleGoToArtist = () => {
     if (!artist) return;
     close();
-    navigation.navigate('(home)', {
-      screen: 'artistView',
-      params: { id: artist.id },
-    });
+    router.push({ pathname: '/(home)/artistView', params: { id: artist.id } });
   };
 
+  // Recovery path for fuzzy-match false positives: local library matching
+  // falls back to normalized-name comparison when no mbid is available on
+  // either side, so two different artists sharing a common name (tribute
+  // bands, common band names) can produce a false-positive local match.
+  // This forces the unified artist screen to render in external-only mode
+  // directly, skipping the local-match step, instead of navigating to a
+  // separate screen.
   const handleViewExternal = useCallback(() => {
     if (!artist) return;
     close();
-    navigateToArtist({
-      id: artist.mbid ?? artist.name,
-      name: artist.name,
-      cover: artist.cover,
-      subtext: artist.subtext,
-      externalIds: artist.mbid ? { mbid: artist.mbid } : undefined,
-    }, { skipLocalMatch: true });
-  }, [artist, navigateToArtist, close]);
+    router.push({
+      pathname: '/(home)/artistView',
+      params: {
+        forceExternal: 'true',
+        mbid: artist.mbid ?? undefined,
+        name: artist.name,
+      },
+    });
+  }, [artist, router, close]);
 
 
   const { isDownloaded, isDownloading: isCollectionDownloading } = getCollectionDownloadState(
@@ -153,9 +159,7 @@ const ArtistOptions = forwardRef<
     if (!artist || isDownloaded || isDownloading || !artistAlbums.length) return;
     setIsDownloadingAll(true);
     try {
-      for (const album of artistAlbums) {
-        await downloadAlbumById(album.id);
-      }
+      await Promise.all(artistAlbums.map(album => downloadAlbumById(album.id)));
     } catch {
       toast.error(t('artistOptions.downloadAllFailed'));
     } finally {
@@ -172,10 +176,10 @@ const ArtistOptions = forwardRef<
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
-        backgroundStyle={[styles.sheetBackground, sheetBg]}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
-        <View style={[styles.loading, sheetBg]}>
-          <ActivityIndicator size="large" color={colors.subtext} />
+        <View style={[optionSheetStyles.loading, sheetBg]}>
+          <SpinningLoaderCircle size={26} color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );
@@ -190,119 +194,92 @@ const ArtistOptions = forwardRef<
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
-      backgroundStyle={[styles.sheetBackground, sheetBg]}
+      backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       stackBehavior="push"
       onChange={(index) => setIsSheetOpen(index >= 0)}
     >
       <BottomSheetScrollView
         style={sheetBg}
-        contentContainerStyle={styles.sheetContent}
+        contentContainerStyle={optionSheetStyles.sheetContent}
       >
-        <View style={styles.header}>
-          <MediaImage cover={artist.cover} size="grid" style={styles.cover} />
-          <View style={styles.headerText}>
-            <Text
-              style={[styles.title, { color: colors.secondary }]}
-              numberOfLines={2}
-            >
-              {artist.name}
-            </Text>
-            <Text style={[styles.artist, { color: colors.subtext }]}>{t('artistOptions.artistLabel')}</Text>
-          </View>
-        </View>
+        <OptionSheetHeader
+          cover={artist.cover}
+          title={artist.name}
+          subtitle={t('artistOptions.artistLabel')}
+          titleLines={2}
+        />
 
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <OptionSheetDivider />
 
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+        <OptionSheetRow
+          icon={<Play size={26} color={colors.secondary} fill={colors.secondary} />}
+          label={t('artistOptions.actions.play')}
           onPress={() => handlePlay(false)}
           disabled={playbackDisabled}
-        >
-          {songsLoading ? (
-            <ActivityIndicator size="small" color={colors.subtext} />
-          ) : (
-            <Play size={26} color={colors.secondary} fill={colors.secondary} />
-          )}
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.play')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+          loading={songsLoading}
+        />
+        <OptionSheetRow
+          icon={<Shuffle size={26} color={colors.secondary} />}
+          label={t('artistOptions.actions.shuffle')}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
-        >
-          <Shuffle size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.shuffle')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+        />
+        <OptionSheetRow
+          icon={<ListEnd size={26} color={colors.secondary} />}
+          label={t('artistOptions.actions.addToQueue')}
           onPress={handleAddToQueue}
           disabled={playbackDisabled}
-        >
-          <ListEnd size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.addToQueue')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.option, playbackDisabled && styles.optionDisabled]}
+          dimRow={playbackDisabled}
+        />
+        <OptionSheetRow
+          icon={<Shuffle size={26} color={colors.secondary} />}
+          label={t('artistOptions.actions.shuffleToQueue')}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
-        >
-          <Shuffle size={26} color={colors.secondary} />
-          <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.shuffleToQueue')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.option}
+          dimRow={playbackDisabled}
+        />
+        <OptionSheetRow
+          icon={
+            isDownloaded ? (
+              <CheckCircle size={26} color={colors.subtext} />
+            ) : (
+              <ArrowDownCircle size={26} color={colors.secondary} />
+            )
+          }
+          label={isDownloading
+            ? t('artistOptions.actions.downloading')
+            : isDownloaded
+              ? t('artistOptions.actions.downloaded')
+              : t('artistOptions.actions.download')}
           onPress={() => { void handleDownloadAll(); }}
           disabled={isDownloaded || isDownloading}
-        >
-          {isDownloading ? (
-            <ActivityIndicator size="small" color={colors.subtext} />
-          ) : isDownloaded ? (
-            <CheckCircle size={26} color={colors.subtext} />
-          ) : (
-            <ArrowDownCircle size={26} color={colors.secondary} />
-          )}
-          <Text
-            style={[
-              styles.optionText,
-              { color: colors.secondary },
-              (isDownloaded || isDownloading) && { opacity: 0.6 },
-            ]}
-          >
-            {isDownloading
-              ? t('artistOptions.actions.downloading')
-              : isDownloaded
-                ? t('artistOptions.actions.downloaded')
-                : t('artistOptions.actions.download')}
-          </Text>
-        </TouchableOpacity>
+          loading={isDownloading}
+          dimLabel={isDownloaded || isDownloading}
+        />
 
         {!hideGoToArtist && (
-          <TouchableOpacity style={styles.option} onPress={handleGoToArtist}>
-            <User size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.goToArtist')}</Text>
-          </TouchableOpacity>
+          <OptionSheetRow
+            icon={<User size={26} color={colors.secondary} />}
+            label={t('artistOptions.actions.goToArtist')}
+            onPress={handleGoToArtist}
+          />
         )}
 
         {enabledSources.length > 0 && (
-          <TouchableOpacity style={styles.option} onPress={handleViewExternal}>
-            <Globe size={26} color={colors.secondary} />
-            <Text style={[styles.optionText, { color: colors.secondary }]}>{t('artistOptions.actions.viewExternal')}</Text>
-          </TouchableOpacity>
+          <OptionSheetRow
+            icon={<Globe size={26} color={colors.secondary} />}
+            label={t('artistOptions.actions.viewExternal')}
+            onPress={handleViewExternal}
+          />
         )}
 
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <OptionSheetDivider />
 
-        <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('artistOptions.sections.info')}</Text>
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('artistOptions.info.albums')}</Text>
-          <Text style={[styles.infoValue, { color: colors.secondary }]}>
-            {artistAlbums.length}
-          </Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.subtext }]}>{t('artistOptions.info.plays')}</Text>
-          <Text style={[styles.infoValue, { color: colors.secondary }]}>{playCount}</Text>
-        </View>
+        <OptionSheetSectionLabel label={t('artistOptions.sections.info')} />
+        <OptionSheetInfoRow label={t('artistOptions.info.albums')} value={artistAlbums.length} />
+        <OptionSheetInfoRow label={t('artistOptions.info.plays')} value={playCount} />
       </BottomSheetScrollView>
     </BottomSheetModal>
     </>
@@ -312,59 +289,3 @@ const ArtistOptions = forwardRef<
 ArtistOptions.displayName = 'ArtistOptions';
 
 export default ArtistOptions;
-
-const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  sheetContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cover: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  headerText: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '500' },
-  artist: { fontSize: 14, marginTop: 2 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 12,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  optionDisabled: {
-    opacity: 0.55,
-  },
-  optionText: { marginLeft: 16, fontSize: 16, fontWeight: '500' },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  infoLabel: { fontSize: 14 },
-  infoValue: { fontSize: 14, fontWeight: '500', marginLeft: 12, flex: 1, textAlign: 'right' },
-});

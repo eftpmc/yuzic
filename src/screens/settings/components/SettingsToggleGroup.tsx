@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { spacing, typography } from '@/constants/design';
 
 export type ToggleItem = {
   label: string;
@@ -47,13 +48,13 @@ export default memo(SettingsToggleGroup);
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    marginBottom: 18,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
+    marginBottom: spacing.lg,
   },
   labels: {
     flex: 1,
-    paddingRight: 16,
+    paddingRight: spacing.lg,
   },
   switches: {
     justifyContent: 'space-around',
@@ -61,14 +62,13 @@ const styles = StyleSheet.create({
   item: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.controlGap,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   subtext: {
-    fontSize: 13,
-    marginTop: 2,
+    ...typography.caption,
+    marginTop: spacing.xxs,
   },
 });

@@ -11,6 +11,8 @@ type UseArtistResult = {
   artist: Artist | null;
   isLoading: boolean;
   error: Error | null;
+  /** True when showing library-synced data because the server couldn't be asked. */
+  degraded: boolean;
 };
 
 export function useArtist(id: string): UseArtistResult {
@@ -32,5 +34,6 @@ export function useArtist(id: string): UseArtistResult {
     artist: query.data,
     isLoading: query.isLoading,
     error: query.error,
+    degraded: query.degraded,
   };
 }

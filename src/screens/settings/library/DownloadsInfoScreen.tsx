@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Alert, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -19,10 +19,14 @@ import { formatBytes } from '@/utils/downloads/downloadStore';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
+import Touchable from '@/components/Touchable';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const activeServer = useSelector(selectActiveServer);
   const {
     removeDownloadByCollectionId,
@@ -154,14 +158,14 @@ const DownloadsInfoScreen: React.FC = () => {
                 {showSectionHeader && (
                   <View style={styles.providerHeader}>
                     <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
-                    <TouchableOpacity onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
+                    <Touchable onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
                       <Trash2 size={16} color={colors.subtext} />
-                    </TouchableOpacity>
+                    </Touchable>
                   </View>
                 )}
-                <View style={[styles.row, { backgroundColor: colors.card }]}>
+                <View style={[styles.row, { backgroundColor: colors.card, borderRadius: rad.md }]}>
                   <View style={styles.coverCell}>
-                    <MediaImage cover={item.cover} size="thumb" style={styles.cover} />
+                    <MediaImage cover={item.cover} size="thumb" style={[styles.cover, { borderRadius: rad.md }]} />
                   </View>
                   <View style={styles.trackCell}>
                     <View style={styles.titleLine}>
@@ -178,13 +182,14 @@ const DownloadsInfoScreen: React.FC = () => {
                       <Text numberOfLines={1} style={[styles.meta, styles.shrink, { color: colors.subtext }]}>{item.downloaded}</Text>
                     </View>
                   </View>
-                  <TouchableOpacity
+                  <Touchable
                     style={[styles.removeButton, removingId === item.id && styles.disabled]}
+                    hitSlop={hitSlopFor(32)}
                     onPress={() => confirmRemove(item)}
                     disabled={removingId === item.id}
                   >
                     <Trash2 size={16} color={colors.subtext} />
-                  </TouchableOpacity>
+                  </Touchable>
                 </View>
               </View>
             );
@@ -200,32 +205,30 @@ export default DownloadsInfoScreen;
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.scrollClearance,
   },
   emptyText: {
-    paddingTop: 20,
+    ...typography.caption,
+    paddingTop: spacing.roomy,
     textAlign: 'center',
-    fontSize: 13,
   },
   locationNote: {
-    paddingTop: 10,
-    paddingHorizontal: 4,
-    fontSize: 12,
-    lineHeight: 16,
+    ...typography.caption,
+    paddingTop: spacing.controlGap,
+    paddingHorizontal: spacing.xs,
   },
   providerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 20,
-    marginBottom: 8,
-    paddingHorizontal: 2,
+    marginTop: spacing.roomy,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.xxs,
   },
   providerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.button,
   },
   providerDelete: {
     width: 28,
@@ -236,24 +239,22 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 8,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   coverCell: {
     width: 44,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   cover: {
     width: 44,
     height: 44,
-    borderRadius: 8,
     overflow: 'hidden',
   },
   trackCell: {
     flex: 1,
     minWidth: 0,
-    paddingRight: 8,
+    paddingRight: spacing.sm,
   },
   titleLine: {
     flexDirection: 'row',
@@ -261,22 +262,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
+    ...typography.compactRowTitle,
     flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
   },
   sizeText: {
-    fontSize: 12,
+    ...typography.caption,
   },
   metaLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
-  meta: { fontSize: 12 },
+  meta: { ...typography.caption },
   metaDot: {
-    fontSize: 12,
-    marginHorizontal: 4,
+    ...typography.caption,
+    marginHorizontal: spacing.xs,
   },
   shrink: { flexShrink: 1 },
   removeButton: {

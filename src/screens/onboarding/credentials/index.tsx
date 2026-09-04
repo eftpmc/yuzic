@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { User, Lock, Shield, ChevronUp, ChevronDown, TriangleAlert, QrCode, ChevronRight } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -23,11 +21,20 @@ import {
     pollQuickConnect,
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
+import Touchable from '@/components/Touchable';
+import { onDark, spacing, statusColor, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
+
+// Quick Connect codes expire server-side; without a client-side ceiling too,
+// polling would continue forever showing "waiting for approval" with no
+// indication the code had gone stale.
+const QUICK_CONNECT_TIMEOUT_MS = 10 * 60 * 1000;
 
 export default function Credentials() {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const router = useRouter();
+    const rad = useRadius();
 
     const params = useLocalSearchParams<{ type: ServerType; serverUrl: string }>();
     const { type, serverUrl } = params;
@@ -46,6 +53,7 @@ export default function Credentials() {
     const [, setQuickSecret] = useState('');
     const [isPolling, setIsPolling] = useState(false);
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollStartedAtRef = useRef(0);
 
     const passwordRef = useRef<TextInput>(null);
     const proxyUsernameRef = useRef<TextInput>(null);
@@ -135,8 +143,18 @@ export default function Credentials() {
             setQuickCode(code);
             setQuickSecret(secret);
             setIsPolling(true);
+            pollStartedAtRef.current = Date.now();
 
             pollIntervalRef.current = setInterval(async () => {
+                if (Date.now() - pollStartedAtRef.current > QUICK_CONNECT_TIMEOUT_MS) {
+                    stopPolling();
+                    toast.error('Quick Connect code expired. Please try again.');
+                    setQuickConnectMode(false);
+                    setQuickCode('');
+                    setQuickSecret('');
+                    return;
+                }
+
                 const authenticated = await pollQuickConnect(serverUrl, secret, buildBasicAuth());
                 if (!authenticated) return;
 
@@ -187,11 +205,13 @@ export default function Credentials() {
                             {quickCode ? (
                                 <Text style={styles.quickConnectCode}>{quickCode}</Text>
                             ) : (
-                                <ActivityIndicator color="#fff" style={{ marginVertical: 20 }} />
+                                <View style={{ marginVertical: spacing.roomy }}>
+                                  <SpinningLoaderCircle size={26} color={onDark.text} />
+                                </View>
                             )}
                             {isPolling && quickCode ? (
                                 <View style={styles.quickConnectWaiting}>
-                                    <SpinningLoaderCircle size={16} color="#888" />
+                                    <SpinningLoaderCircle size={16} color={onDark.mutedText} />
                                     <Text style={styles.quickConnectWaitingText}>
                                         Waiting for approval…
                                     </Text>
@@ -204,12 +224,12 @@ export default function Credentials() {
                     ) : (
                         // ── Username / password form ──────────────────────────
                         <>
-                            <View style={styles.inputWrapper}>
-                                <User size={20} color="#888" style={styles.inputIcon} />
+                            <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
+                                <User size={20} color={onDark.mutedText} style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder={t('onboarding.credentials.usernamePlaceholder')}
-                                    placeholderTextColor="#888"
+                                    placeholderTextColor={onDark.mutedText}
                                     value={localUsername}
                                     onChangeText={setLocalUsername}
                                     autoCapitalize="none"
@@ -218,13 +238,13 @@ export default function Credentials() {
                                 />
                             </View>
 
-                            <View style={styles.inputWrapper}>
-                                <Lock size={20} color="#888" style={styles.inputIcon} />
+                            <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
+                                <Lock size={20} color={onDark.mutedText} style={styles.inputIcon} />
                                 <TextInput
                                     ref={passwordRef}
                                     style={styles.input}
                                     placeholder={t('onboarding.credentials.passwordPlaceholder')}
-                                    placeholderTextColor="#888"
+                                    placeholderTextColor={onDark.mutedText}
                                     secureTextEntry
                                     value={localPassword}
                                     onChangeText={setLocalPassword}
@@ -235,33 +255,32 @@ export default function Credentials() {
                             </View>
 
                             {/* Reverse proxy auth */}
-                            <TouchableOpacity
+                            <Touchable
                                 style={styles.proxyToggle}
                                 onPress={() => setProxyExpanded(v => !v)}
-                                activeOpacity={0.7}
                             >
-                                <Shield size={16} color="#666" style={styles.proxyToggleIcon} />
+                                <Shield size={16} color={onDark.mutedText} style={styles.proxyToggleIcon} />
                                 <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
-                                {proxyExpanded ? <ChevronUp size={16} color="#666" /> : <ChevronDown size={16} color="#666" />}
-                            </TouchableOpacity>
+                                {proxyExpanded ? <ChevronUp size={16} color={onDark.mutedText} /> : <ChevronDown size={16} color={onDark.mutedText} />}
+                            </Touchable>
 
                             {proxyExpanded && (
                                 <View style={styles.proxySection}>
                                     {insecureWithProxy && (
-                                        <View style={styles.warningRow}>
+                                        <View style={[styles.warningRow, { borderRadius: rad.md }]}>
                                             <TriangleAlert size={15} color="#f59e0b" />
                                             <Text style={styles.warningText}>
                                                 Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
                                             </Text>
                                         </View>
                                     )}
-                                    <View style={styles.inputWrapper}>
-                                        <User size={20} color="#555" style={styles.inputIcon} />
+                                    <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
+                                        <User size={20} color={onDark.mutedText} style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyUsernameRef}
                                             style={styles.input}
                                             placeholder="Proxy username"
-                                            placeholderTextColor="#555"
+                                            placeholderTextColor={onDark.mutedText}
                                             value={proxyUsername}
                                             onChangeText={setProxyUsername}
                                             autoCapitalize="none"
@@ -269,13 +288,13 @@ export default function Credentials() {
                                             onSubmitEditing={() => proxyPasswordRef.current?.focus()}
                                         />
                                     </View>
-                                    <View style={styles.inputWrapper}>
-                                        <Lock size={20} color="#555" style={styles.inputIcon} />
+                                    <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
+                                        <Lock size={20} color={onDark.mutedText} style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyPasswordRef}
                                             style={styles.input}
                                             placeholder="Proxy password"
-                                            placeholderTextColor="#555"
+                                            placeholderTextColor={onDark.mutedText}
                                             secureTextEntry
                                             value={proxyPassword}
                                             onChangeText={setProxyPassword}
@@ -289,16 +308,15 @@ export default function Credentials() {
 
                             {/* Quick Connect option — Jellyfin only */}
                             {isJellyfin && (
-                                <TouchableOpacity
+                                <Touchable
                                     style={styles.quickConnectToggle}
                                     onPress={handleStartQuickConnect}
                                     disabled={isTesting}
-                                    activeOpacity={0.7}
                                 >
-                                    <QrCode size={16} color="#666" style={styles.proxyToggleIcon} />
+                                    <QrCode size={16} color={onDark.mutedText} style={styles.proxyToggleIcon} />
                                     <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
-                                    <ChevronRight size={16} color="#666" />
-                                </TouchableOpacity>
+                                    <ChevronRight size={16} color={onDark.mutedText} />
+                                </Touchable>
                             )}
                         </>
                     )}
@@ -306,26 +324,26 @@ export default function Credentials() {
 
                 <View style={styles.buttonContainer}>
                     {!quickConnectMode && (
-                        <TouchableOpacity
-                            style={[styles.nextButton, isTesting && styles.nextButtonDisabled]}
+                        <Touchable
+                            style={[styles.nextButton, { borderRadius: rad.pill }, isTesting && styles.nextButtonDisabled]}
                             onPress={handleNext}
                             disabled={isTesting}
                         >
                             {isTesting
-                                ? <ActivityIndicator size="small" color="#000" />
+                                ? <SpinningLoaderCircle size={18} color="#000" />
                                 : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                             }
-                        </TouchableOpacity>
+                        </Touchable>
                     )}
 
-                    <TouchableOpacity
-                        style={styles.backButton}
+                    <Touchable
+                        style={[styles.backButton, { borderRadius: rad.pill }]}
                         onPress={quickConnectMode ? handleCancelQuickConnect : () => router.back()}
                     >
                         <Text style={styles.backButtonText}>
                             {quickConnectMode ? 'Use password instead' : t('common.back')}
                         </Text>
-                    </TouchableOpacity>
+                    </Touchable>
                 </View>
             </View>
         </SafeAreaView>
@@ -333,68 +351,66 @@ export default function Credentials() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#000' },
-    mainContent: { flexGrow: 1, paddingHorizontal: 20, marginTop: 40 },
-    buttonContainer: { padding: 20, backgroundColor: '#000', alignItems: 'center' },
+    container: { flex: 1, backgroundColor: onDark.background },
+    mainContent: { flexGrow: 1, paddingHorizontal: spacing.roomy, marginTop: spacing.xxxl },
+    buttonContainer: { padding: spacing.roomy, backgroundColor: onDark.background, alignItems: 'center' },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#222',
+        backgroundColor: onDark.muted,
         borderWidth: 1,
-        borderColor: '#555',
-        borderRadius: 8,
-        marginBottom: 16,
-        paddingHorizontal: 12,
+        borderColor: onDark.mutedText,
+        marginBottom: spacing.lg,
+        paddingHorizontal: spacing.md,
         height: 50,
     },
-    inputIcon: { marginRight: 10 },
-    input: { flex: 1, color: '#fff', fontSize: 16 },
-    title: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 10 },
-    subtitle: { fontSize: 16, color: '#888', marginBottom: 20 },
+    inputIcon: { marginRight: spacing.controlGap },
+    input: { ...typography.body, flex: 1, color: onDark.text },
+    title: { ...typography.display, color: onDark.text, marginBottom: spacing.controlGap },
+    subtitle: { ...typography.body, color: onDark.mutedText, marginBottom: spacing.roomy },
     proxyToggle: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        marginBottom: 4,
+        paddingVertical: spacing.controlGap,
+        paddingHorizontal: spacing.md,
+        marginBottom: spacing.xs,
     },
     quickConnectToggle: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        marginTop: 8,
+        paddingVertical: spacing.controlGap,
+        paddingHorizontal: spacing.md,
+        marginTop: spacing.sm,
     },
-    proxyToggleIcon: { marginRight: 7 },
-    proxyToggleText: { flex: 1, fontSize: 14, color: '#666' },
-    proxySection: { marginTop: 4, marginBottom: 8 },
+    proxyToggleIcon: { marginRight: spacing.tight },
+    proxyToggleText: { ...typography.rowSubtitle, flex: 1, color: onDark.mutedText },
+    proxySection: { marginTop: spacing.xs, marginBottom: spacing.sm },
     warningRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         backgroundColor: '#1c1400',
         borderWidth: 1,
         borderColor: '#78450a',
-        borderRadius: 8,
-        padding: 10,
-        marginBottom: 14,
+        padding: spacing.controlGap,
+        marginBottom: spacing.md,
         gap: 8,
     },
-    warningText: { flex: 1, fontSize: 13, color: '#f59e0b', lineHeight: 18 },
+    warningText: { ...typography.caption, flex: 1, color: statusColor.warningText },
     // Quick Connect panel
     quickConnectPanel: {
         alignItems: 'center',
-        paddingVertical: 24,
+        paddingVertical: spacing.xl,
         gap: 16,
     },
     quickConnectLabel: {
-        fontSize: 15,
-        color: '#888',
+        ...typography.body,
+        color: onDark.mutedText,
         textAlign: 'center',
     },
     quickConnectCode: {
-        fontSize: 48,
+        ...typography.hero,
         fontWeight: '700',
-        color: '#fff',
+        color: onDark.text,
         letterSpacing: 8,
     },
     quickConnectWaiting: {
@@ -403,34 +419,31 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     quickConnectWaitingText: {
-        fontSize: 14,
-        color: '#888',
+        ...typography.rowSubtitle,
+        color: onDark.mutedText,
     },
     quickConnectHint: {
-        fontSize: 13,
-        color: '#555',
+        ...typography.caption,
+        color: onDark.mutedText,
         textAlign: 'center',
-        lineHeight: 18,
-        paddingHorizontal: 12,
+        paddingHorizontal: spacing.md,
     },
     // Buttons
     nextButton: {
-        backgroundColor: '#fff',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.text,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
     nextButtonDisabled: { opacity: 0.6 },
-    nextButtonText: { color: '#000', fontSize: 16, fontWeight: '600' },
+    nextButtonText: { ...typography.sheetTitle, color: '#000' },
     backButton: {
-        backgroundColor: '#333',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.border,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
-    backButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+    backButtonText: { ...typography.sheetTitle, color: onDark.text },
 });

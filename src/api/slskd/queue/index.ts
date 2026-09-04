@@ -1,15 +1,25 @@
 import { createSlskdClient, type SlskdConfig } from '../client';
+import { parseDirectory } from './directoryName';
 
 export interface SlskdQueueRecord {
   id: string;
+  /** The peer serving the files; shown when the path reveals no artist. */
   username: string;
   title: string;
+  /** Read from the remote path, so empty when its layout reveals no artist. */
   artistName: string;
   state: string;
   size: number;
   sizeleft: number;
   percentComplete: number;
   fileCount: number;
+  /** slskd file ids in this grouping — needed to cancel individual transfers. */
+  fileIds: string[];
+  /**
+   * Best-effort peer upload speed for the transfer, in bytes/sec. Averaged over
+   * this directory's in-progress files; 0 when nothing is currently downloading.
+   */
+  averageSpeed: number;
 }
 
 type Transfer = {
@@ -23,6 +33,7 @@ type Transfer = {
       size: number;
       bytesTransferred?: number;
       percentComplete?: number;
+      averageSpeed?: number;
     }[];
   }[];
 };
@@ -42,27 +53,41 @@ function groupDownloadsByDirectory(transfers: Transfer[]): SlskdQueueRecord[] {
       if (files.length === 0) continue;
       const dir = (d.directory ?? '').trim() || 'Unknown';
       const id = `${t.username}::${dir}`;
+      const parsed = parseDirectory(dir);
       let size = 0;
       let sizeleft = 0;
       let hasActive = false;
+      let speedSum = 0;
+      let speedCount = 0;
+      const fileIds: string[] = [];
       for (const f of files) {
         const s = f.size ?? 0;
         const x = f.bytesTransferred ?? 0;
         size += s;
         sizeleft += Math.max(0, s - x);
-        if ((f.state ?? '').toLowerCase() !== 'completed') hasActive = true;
+        const state = (f.state ?? '').toLowerCase();
+        if (!state.includes('completed')) hasActive = true;
+        // Only in-flight files contribute a speed; a queued file reports 0 and
+        // would drag the average toward nothing.
+        if (state.includes('inprogress') && (f.averageSpeed ?? 0) > 0) {
+          speedSum += f.averageSpeed ?? 0;
+          speedCount++;
+        }
+        if (f.id) fileIds.push(f.id);
       }
       const percent = size > 0 ? Math.round(((size - sizeleft) / size) * 100) : 0;
       out.push({
         id,
         username: t.username,
-        title: basename(dir),
-        artistName: t.username,
+        title: parsed.albumTitle || basename(dir),
+        artistName: parsed.artistName ?? '',
         state: hasActive ? 'Downloading' : 'Completed',
         size,
         sizeleft,
         percentComplete: percent,
         fileCount: files.length,
+        fileIds,
+        averageSpeed: speedCount > 0 ? Math.round(speedSum / speedCount) : 0,
       });
     }
   }
@@ -94,4 +119,36 @@ export async function fetchQueueWithDiff(
   const currentQueue = await fetchQueue(config);
   const finishedItems = detectFinishedQueueItems(previousQueue, currentQueue);
   return { currentQueue, finishedItems };
+}
+
+/**
+ * Cancels every file in a grouped transfer and removes the record from slskd,
+ * so a cancelled item disappears rather than sticking around as a paused row.
+ * A downloading file is cancelled first with `?remove=false`, then the record
+ * is dropped with `?remove=true` — slskd rejects removing a running transfer.
+ */
+export async function cancelQueueItem(
+  config: SlskdConfig,
+  record: Pick<SlskdQueueRecord, 'username' | 'fileIds'>
+): Promise<void> {
+  if (!record.username || record.fileIds.length === 0) return;
+  const client = createSlskdClient(config);
+  const encodedUser = encodeURIComponent(record.username);
+  await Promise.all(
+    record.fileIds.map(async (fileId) => {
+      const encodedId = encodeURIComponent(fileId);
+      try {
+        await client.request(
+          `/transfers/downloads/${encodedUser}/${encodedId}?remove=false`,
+          { method: 'DELETE' }
+        );
+      } catch {
+        // A file that already finished can't be cancelled — proceed to remove.
+      }
+      await client.request(
+        `/transfers/downloads/${encodedUser}/${encodedId}?remove=true`,
+        { method: 'DELETE' }
+      );
+    })
+  );
 }

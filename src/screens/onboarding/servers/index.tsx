@@ -1,12 +1,11 @@
 import React from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    Platform,
-    FlatList,
-    Alert,
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  FlatList,
+  Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -17,16 +16,21 @@ import {
     setActiveServer,
     removeServer,
 } from '@/utils/redux/slices/serversSlice';
+import { clearOfflineMutationsForServer } from '@/utils/redux/slices/offlineMutationsSlice';
 import { Ellipsis } from 'lucide-react-native';
 
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
+import Touchable from '@/components/Touchable';
+import { spacing, typography, onDark } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export default function Servers() {
     const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch();
+    const rad = useRadius();
 
     const servers = useSelector((state: RootState) => state.servers.servers);
     const activeServerId = useSelector(
@@ -36,12 +40,12 @@ export default function Servers() {
     const handleSelectServer = (id: string) => {
         if (id === activeServerId) {
             dispatch(setActiveServer(id));
-            router.replace('/(home)/(tabs)' as never);
+            router.replace('/(home)/(tabs)');
             return;
         }
 
         dispatch(setActiveServer(id));
-        router.replace('/(home)/(tabs)' as never);
+        router.replace('/(home)/(tabs)');
     };
 
     const handleAddServer = () => {
@@ -57,7 +61,14 @@ export default function Servers() {
                 {
                     text: t('common.delete'),
                     style: 'destructive',
-                    onPress: () => dispatch(removeServer(id)),
+                    onPress: () => {
+                        // Otherwise these become permanently invisible and
+                        // permanently un-retryable: PendingOfflineChanges only
+                        // ever shows entries for the current activeServerId,
+                        // which this server can never be again.
+                        dispatch(clearOfflineMutationsForServer(id));
+                        dispatch(removeServer(id));
+                    },
                 },
             ]
         );
@@ -68,11 +79,10 @@ export default function Servers() {
         const icon = SERVER_PROVIDERS[item.type]?.icon;
 
         return (
-            <View style={styles.serverCard}>
-                <TouchableOpacity
+            <View style={[styles.serverCard, { borderRadius: rad.card }]}>
+                <Touchable
                     style={styles.serverInfo}
                     onPress={() => handleSelectServer(item.id)}
-                    activeOpacity={0.75}
                 >
                     <Image
                         source={icon}
@@ -92,7 +102,7 @@ export default function Servers() {
                             </Text>
 
                             {isActive && (
-                                <View style={styles.activeBadge}>
+                                <View style={[styles.activeBadge, { borderRadius: rad.pill }]}>
                                     <Text style={styles.activeBadgeText}>
                                         {t('onboarding.servers.active')}
                                     </Text>
@@ -100,15 +110,15 @@ export default function Servers() {
                             )}
                         </View>
                     </View>
-                </TouchableOpacity>
+                </Touchable>
 
-                <TouchableOpacity
-                    style={styles.menuButton}
+                <Touchable
+                    style={[styles.menuButton, { borderRadius: rad.md }]}
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <Ellipsis size={18} color="#888" />
-                </TouchableOpacity>
+                    <Ellipsis size={18} color={onDark.mutedText} />
+                </Touchable>
             </View>
         );
     };
@@ -131,22 +141,22 @@ export default function Servers() {
                         </Text>
                     }
                     contentContainerStyle={{
-                        paddingTop: 20,
-                        paddingBottom: 20,
+                        paddingTop: spacing.roomy,
+                        paddingBottom: spacing.roomy,
                     }}
                 />
             </View>
 
             <View style={styles.bottomContent}>
-                <TouchableOpacity
+                <Touchable
                     style={[
                         styles.addButton,
+                        { borderRadius: rad.pill },
                     ]}
-                    activeOpacity={0.85}
                     onPress={handleAddServer}
                 >
                     <Text style={styles.addButtonText}>{t('onboarding.servers.add')}</Text>
-                </TouchableOpacity>
+                </Touchable>
             </View>
         </SafeAreaView>
     );
@@ -155,47 +165,45 @@ export default function Servers() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
-        paddingHorizontal: 20,
+        backgroundColor: onDark.background,
+        paddingHorizontal: spacing.roomy,
         justifyContent: 'space-between',
     },
     content: {
         flex: 1,
-        paddingTop: 30,
+        paddingTop: spacing.xxl,
     },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 8,
+        ...typography.display,
+        color: onDark.text,
+        marginBottom: spacing.sm,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#aaa',
+        ...typography.body,
+        color: onDark.subtext,
     },
 
     serverCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#111',
-        borderRadius: 14,
-        paddingHorizontal: 14,
-        paddingVertical: 14,
-        marginBottom: 10,
+        backgroundColor: onDark.surface,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.md,
+        marginBottom: spacing.controlGap,
     },
 
     serverInfo: {
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
-        paddingRight: 12,
+        paddingRight: spacing.md,
     },
 
     serverIcon: {
         width: 36,
         height: 36,
-        marginRight: 12,
+        marginRight: spacing.md,
     },
 
     textContainer: {
@@ -203,9 +211,9 @@ const styles = StyleSheet.create({
     },
 
     serverName: {
-        fontSize: 16,
-        color: '#fff',
-        marginBottom: 4,
+        ...typography.body,
+        color: onDark.text,
+        marginBottom: spacing.xs,
     },
 
     subRow: {
@@ -215,33 +223,31 @@ const styles = StyleSheet.create({
     },
 
     serverSubtext: {
-        fontSize: 13,
-        color: '#888',
+        ...typography.caption,
+        color: onDark.mutedText,
     },
 
     activeBadge: {
         backgroundColor: '#1f6feb',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 999,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: spacing.xxs,
     },
 
     activeBadgeText: {
-        fontSize: 11,
+        ...typography.micro,
         fontWeight: '600',
-        color: '#fff',
+        color: onDark.text,
     },
 
     menuButton: {
-        padding: 6,
-        borderRadius: 8,
+        padding: spacing.tight,
     },
 
     emptyText: {
+        ...typography.rowSubtitle,
         textAlign: 'center',
-        color: '#777',
-        marginTop: 40,
-        fontSize: 14,
+        color: onDark.mutedText,
+        marginTop: spacing.xxxl,
     },
 
     bottomContent: {
@@ -249,17 +255,15 @@ const styles = StyleSheet.create({
     },
 
     addButton: {
-        backgroundColor: '#fff',
-        paddingVertical: 15,
-        borderRadius: 999,
+        backgroundColor: onDark.text,
+        paddingVertical: spacing.lg,
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginBottom: spacing.md,
     },
 
     addButtonText: {
+        ...typography.sheetTitle,
         color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
     },
 });

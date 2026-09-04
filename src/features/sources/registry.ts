@@ -14,6 +14,7 @@ import {
 } from '@/utils/redux/selectors/settingsSelectors'
 import * as mb from '@/api/musicbrainz'
 import type { CoverSource, ExternalAlbum, ExternalAlbumBase, ExternalArtist } from '@/types'
+import { sourceColor } from '@/constants/design'
 
 export type SourceId = 'deezer' | 'musicbrainz'
 
@@ -50,7 +51,7 @@ function urlFromCover(cover: CoverSource): string | undefined {
 const deezerSource: SourceDefinition = {
   id: 'deezer',
   label: 'Deezer',
-  color: '#A238CA',
+  color: sourceColor.deezer,
 
   async resolveArtist(name) {
     const artist = await resolveDeezerArtistByName(name)

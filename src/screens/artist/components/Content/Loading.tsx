@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { FlashList } from '@shopify/flash-list';
 
 import LoadingArtistHeader from '../Header/Loading';
-import LoadingAlbumRow from '@/components/rows/AlbumRow/Loading';
+import SkeletonListRow from '@/components/SkeletonListRow';
+import { spacing } from '@/constants/design';
 
 const PLACEHOLDER_ROWS = 6;
 
@@ -17,10 +18,10 @@ const LoadingArtistContent: React.FC = () => {
       data={data}
       keyExtractor={(_, index) => `artist-loading-${index}`}
       ListHeaderComponent={<LoadingArtistHeader />}
-      renderItem={({ index }) => <LoadingAlbumRow key={index} />}
+      renderItem={({ index }) => <SkeletonListRow key={index} />}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom: 140,
+        paddingBottom: spacing.scrollClearance,
       }}
     />
   );

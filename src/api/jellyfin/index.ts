@@ -47,7 +47,7 @@ import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
 import { search as searchJellyfin } from "../mediaBrowser/search/search";
 
 export const createJellyfinAdapter = (server: Server): ApiAdapter => {
-  const { serverUrl, auth: providerAuth, basicAuth } = server;
+  const { id: serverId, serverUrl, fallbackUrls, auth: providerAuth, basicAuth } = server;
   const { token, userId } = providerAuth as { token: string; userId: string };
 
   // Support new array format (parentIds) and old single-value format (parentId)
@@ -56,10 +56,10 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
     (providerAuth as any)?.parentId ? [String((providerAuth as any).parentId)] :
     [];
 
-  const client = createJellyfinClient({ serverUrl, token, userId, basicAuth });
+  const client = createJellyfinClient({ serverUrl, serverId, fallbackUrls, token, userId, basicAuth });
 
   const clientFor = (pid: string) =>
-    createJellyfinClient({ serverUrl, token, userId, parentId: pid, basicAuth });
+    createJellyfinClient({ serverUrl, serverId, fallbackUrls, token, userId, parentId: pid, basicAuth });
 
   async function fromParents<T extends { id: string }>(
     fn: (c: ReturnType<typeof createJellyfinClient>) => Promise<T[]>
@@ -159,6 +159,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
       await removePlaylistItems(client, playlistId, [entryId]);
       return { success: true };
     },
+
 
     rename: async (id: string, newName: string) => {
       if (id === FAVORITES_ID) {

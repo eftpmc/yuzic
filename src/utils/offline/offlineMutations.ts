@@ -13,6 +13,10 @@ type OfflineMutationBase = OfflineMutationFailure & {
   createdAt: number;
 };
 
+/** Where a scrobble is submitted. Each is queued separately: one destination
+ * failing must not re-submit to the ones that already accepted the play. */
+export type ScrobbleDestination = 'server' | 'listenbrainz' | 'lastfm';
+
 export type OfflineMutation =
   | (OfflineMutationBase & {
       type: 'starSong';
@@ -35,7 +39,42 @@ export type OfflineMutation =
   | (OfflineMutationBase & {
       type: 'deletePlaylist';
       playlistId: string;
+    })
+  | (OfflineMutationBase & {
+      type: 'scrobble';
+      destination: ScrobbleDestination;
+      songId: string;
+      artist: string;
+      track: string;
+      album?: string;
+      /** Unix ms when playback started. A replayed scrobble keeps this, so a
+       * play submitted hours late is still recorded at the time it happened. */
+      startedAt: number;
+      durationSeconds?: number;
+      listenedSeconds?: number;
     });
+
+/**
+ * Last.fm rejects submissions older than 14 days and ListenBrainz is similarly
+ * bounded, so a scrobble that has waited this long will never be accepted —
+ * retrying it forever only keeps a dead entry in the queue.
+ */
+export const MAX_SCROBBLE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+
+/**
+ * Whether a queued mutation should be discarded instead of retried: a scrobble
+ * too old to be accepted, or one bound for a service the user has since
+ * disconnected.
+ */
+export function shouldDropMutation(
+  mutation: OfflineMutation,
+  now: number,
+  configuredDestinations: Record<ScrobbleDestination, boolean>
+): boolean {
+  if (mutation.type !== 'scrobble') return false;
+  if (now - mutation.startedAt > MAX_SCROBBLE_AGE_MS) return true;
+  return !configuredDestinations[mutation.destination];
+}
 
 export function createOfflineMutationId(
   type: OfflineMutation['type'],
@@ -69,7 +108,67 @@ function sameTarget(a: OfflineMutation, b: OfflineMutation): boolean {
     return a.playlistId === b.playlistId;
   }
 
+  if (a.type === 'scrobble' && b.type === 'scrobble') {
+    // Two plays of the same song are two separate listens, so only an exact
+    // repeat of the same submission collapses — never one play over another.
+    return (
+      a.destination === b.destination &&
+      a.songId === b.songId &&
+      a.startedAt === b.startedAt
+    );
+  }
+
   return false;
+}
+
+export type ScrobbleDetails = {
+  serverId: string;
+  destination: ScrobbleDestination;
+  songId: string;
+  artist: string;
+  track: string;
+  album?: string;
+  /** Unix ms when playback started. */
+  startedAt: number;
+  durationSeconds?: number;
+  listenedSeconds?: number;
+};
+
+/** Builds the queue entry for a scrobble that failed to reach its destination. */
+export function buildScrobbleMutation(
+  details: ScrobbleDetails,
+  now: number = Date.now()
+): Extract<OfflineMutation, { type: 'scrobble' }> {
+  return {
+    id: createOfflineMutationId('scrobble', [
+      details.destination,
+      details.songId,
+      String(details.startedAt),
+    ]),
+    type: 'scrobble',
+    destination: details.destination,
+    serverId: details.serverId,
+    createdAt: now,
+    songId: details.songId,
+    artist: details.artist,
+    track: details.track,
+    album: details.album,
+    startedAt: details.startedAt,
+    durationSeconds:
+      details.durationSeconds && details.durationSeconds > 0
+        ? details.durationSeconds
+        : undefined,
+    listenedSeconds: details.listenedSeconds,
+  };
+}
+
+/**
+ * Whether a mutation changed server-side library state that cached queries
+ * need to refetch. A scrobble does not: it records a play and leaves starred
+ * items and playlists untouched.
+ */
+export function affectsLibraryQueries(mutation: OfflineMutation): boolean {
+  return mutation.type !== 'scrobble';
 }
 
 export function enqueueOfflineMutation(

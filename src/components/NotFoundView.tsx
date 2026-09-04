@@ -1,9 +1,11 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { ChevronLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
+import Touchable from '@/components/Touchable'
+import { spacing, typography } from '@/constants/design'
 
 type Props = {
   message?: string
@@ -16,9 +18,9 @@ export default function NotFoundView({ message = 'Not found' }: Props) {
   return (
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+        <Touchable onPress={() => navigation.goBack()} style={styles.headerButton}>
           <ChevronLeft size={24} color={colors.secondary} />
-        </TouchableOpacity>
+        </Touchable>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -36,12 +38,12 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerButton: {
-    padding: 6,
+    padding: spacing.tight,
   },
   headerSpacer: {
     flex: 1,
@@ -50,11 +52,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 80,
-    paddingHorizontal: 32,
+    paddingBottom: spacing.generous,
+    paddingHorizontal: spacing.xxl,
   },
   message: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
 })

@@ -15,6 +15,8 @@ function normalizeTrack(item: MediaBrowserItem, client: MediaBrowserClient): Son
     albumId: item.AlbumId ?? "",
     cover,
     duration: String(Math.floor((item.RunTimeTicks ?? 0) / 10_000_000)),
+    disc: item.ParentIndexNumber ?? undefined,
+    trackNumber: item.IndexNumber ?? undefined,
     year: item.ProductionYear ?? undefined,
     dateAdded: item.DateCreated ?? undefined,
     serverPlayCount: item.UserData?.PlayCount ?? undefined,
@@ -30,7 +32,7 @@ export async function getTracks(client: MediaBrowserClient): Promise<SongBase[]>
     `?IncludeItemTypes=Audio` +
     `&Recursive=true` +
     `&SortBy=SortName` +
-    `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated,UserData` +
+    `&Fields=RunTimeTicks,ArtistItems,AlbumId,ProductionYear,DateCreated,UserData,IndexNumber,ParentIndexNumber` +
     (client.parentId ? `&ParentId=${encodeURIComponent(client.parentId)}` : "");
 
   const raw = await client.request<MediaBrowserItemsResponse>(path);

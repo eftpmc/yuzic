@@ -3,11 +3,11 @@ import {
   AudioQuality,
   PreferredCodec,
   LibrarySortOrder,
-  LibraryCategory,
   ThemeMode,
   SearchScope,
   AppLanguage
 } from '@/utils/redux/slices/settingsSlice';
+import type { RadiusPreset } from '@/constants/design';
 
 export const selectSettings = (state: RootState) => state.settings;
 
@@ -17,24 +17,25 @@ export const selectThemeMode = (state: RootState): ThemeMode =>
 export const selectThemeColor = (state: RootState): string =>
   state.settings.themeColor;
 
+export const selectRadiusPreset = (state: RootState): RadiusPreset =>
+  (state.settings.radiusPreset as RadiusPreset | undefined) ?? 'default';
+
 export const selectGridColumns = (state: RootState): number =>
   state.settings.gridColumns;
 
 export const selectGridSpacing = (state: RootState): number =>
   state.settings.gridSpacing;
 
-export const selectLibraryGridView =
-  (category: LibraryCategory) =>
-  (state: RootState): boolean =>
-    state.settings.libraryGridViewByCategory[category];
+export const selectIsGridView = (state: RootState): boolean =>
+  state.settings.isGridView;
 
 export const selectPlayingBarAction = (state: RootState) =>
   state.settings.playingBarAction;
 
-export const selectLibrarySortOrder =
-  (category: LibraryCategory) =>
-  (state: RootState): LibrarySortOrder =>
-    state.settings.librarySortOrderByCategory[category];
+export const selectLibrarySortOrder = (
+  state: RootState
+): LibrarySortOrder =>
+  state.settings.librarySortOrder;
 
 export const selectSearchScope = (
   state: RootState
@@ -60,6 +61,21 @@ export const selectShowSleepTimer = (state: RootState): boolean =>
 export const selectShowPlaybackSpeed = (state: RootState): boolean =>
   state.settings.showPlaybackSpeed ?? true;
 
+export const selectShowJumpButtons = (state: RootState): boolean =>
+  state.settings.showJumpButtons ?? false;
+
+export const selectShowVolumeSlider = (state: RootState): boolean =>
+  state.settings.showVolumeSlider ?? false;
+
+export const selectHapticsEnabled = (state: RootState): boolean =>
+  state.settings.hapticsEnabled ?? true;
+
+export const selectRespectReducedMotion = (state: RootState): boolean =>
+  state.settings.respectReducedMotion ?? true;
+
+export const selectAutoplayEnabled = (state: RootState): boolean =>
+  state.settings.autoplayEnabled ?? false;
+
 export const selectShowSourceHeaders = (state: RootState): boolean =>
   state.settings.showSourceHeaders ?? true;
 
@@ -74,6 +90,9 @@ export const selectCellularStreamQuality = (state: RootState): AudioQuality =>
 
 export const selectDownloadQuality = (state: RootState): AudioQuality =>
   state.settings.downloadQuality ?? 'high';
+
+export const selectAutoDownloadNewSongs = (state: RootState): boolean =>
+  state.settings.autoDownloadNewSongs ?? false;
 
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;

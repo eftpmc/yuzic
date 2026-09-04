@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   Text,
   LayoutChangeEvent,
 } from 'react-native';
-import TrackPlayer from '@rntp/player';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -19,11 +17,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePlayingProgress } from '@/contexts/PlayingContext';
+import { usePlayingProgress, usePlayingActions } from '@/contexts/PlayingContext';
 import { useTheme } from '@/hooks/useTheme';
 import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import Touchable from '@/components/Touchable';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -82,6 +82,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     const { t } = useTranslation();
     const { colors } = useTheme();
     const progress = usePlayingProgress();
+    const { seekSong } = usePlayingActions();
     const insets = useSafeAreaInsets();
     const scrollRef = useRef<BottomSheetScrollViewMethods>(null);
     const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
@@ -147,10 +148,10 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         backgroundStyle={{ backgroundColor: colors.card }}
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
-        <View style={[styles.header, { paddingTop: 12 }]}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <View style={[styles.header, { paddingTop: spacing.md }]}>
+          <Touchable onPress={onClose} style={styles.closeButton} hitSlop={hitSlopFor(40)}>
             <ChevronDown size={28} color={colors.secondary} />
-          </TouchableOpacity>
+          </Touchable>
           <Text
             style={[styles.title, { color: colors.secondary }]}
             numberOfLines={1}
@@ -166,8 +167,8 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingHorizontal: 24,
-              paddingTop: 16,
+              paddingHorizontal: spacing.xl,
+              paddingTop: spacing.lg,
               paddingBottom: insets.bottom + 48,
             },
           ]}
@@ -176,11 +177,10 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
         >
           {lines.map((line, index) => (
-            <TouchableOpacity
+            <Touchable
               key={index}
               onLayout={onLineLayout(index)}
-              onPress={() => TrackPlayer.seekTo(line.startMs / 1000)}
-              activeOpacity={0.6}
+              onPress={() => seekSong(line.startMs / 1000)}
             >
               <LyricLine
                 text={line.text}
@@ -188,7 +188,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
                 activeColor={colors.secondary}
                 inactiveColor={colors.subtext}
               />
-            </TouchableOpacity>
+            </Touchable>
           ))}
         </BottomSheetScrollView>
       </BottomSheetModal>
@@ -202,8 +202,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
   },
   closeButton: {
     width: 40,
@@ -212,9 +212,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
+    ...typography.navigationTitle,
     flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
     textAlign: 'center',
   },
   scrollView: {
@@ -224,9 +223,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   line: {
+    ...typography.screenTitle,
     textAlign: 'center',
-    fontSize: 24,
-    marginVertical: 10,
+    marginVertical: spacing.controlGap,
   },
 });
 

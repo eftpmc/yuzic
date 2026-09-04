@@ -1,7 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
+import Touchable from '@/components/Touchable';
+import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export type ButtonSelectItem = {
   id: string;
@@ -18,13 +21,14 @@ type Props = {
 
 const SettingsButtonSelect: React.FC<Props> = ({ items, selected, onSelect, title, caption }) => {
   const { colors } = useTheme();
+  const rad = useRadius();
 
   const buttons = (
     <View style={styles.row}>
       {items.map(item => {
         const active = selected === item.id;
         return (
-          <TouchableOpacity
+          <Touchable
             key={item.id}
             onPress={() => onSelect(item.id)}
             style={[
@@ -32,13 +36,14 @@ const SettingsButtonSelect: React.FC<Props> = ({ items, selected, onSelect, titl
               {
                 backgroundColor: active ? colors.themeColor : colors.muted,
                 borderColor: active ? colors.themeColor : colors.border,
+                borderRadius: rad.md,
               },
             ]}
           >
             {React.cloneElement(item.icon, {
               color: active ? '#fff' : colors.secondary,
             })}
-          </TouchableOpacity>
+          </Touchable>
         );
       })}
     </View>
@@ -67,24 +72,23 @@ export default SettingsButtonSelect;
 
 const styles = StyleSheet.create({
   caption: {
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 16,
-    marginLeft: 4,
+    ...typography.caption,
+    marginBottom: spacing.tight,
+    marginTop: spacing.lg,
+    marginLeft: spacing.xs,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   paddedRow: {
-    padding: 16,
+    padding: spacing.lg,
   },
   row: {
     flexDirection: 'row',
@@ -93,7 +97,6 @@ const styles = StyleSheet.create({
   button: {
     width: 48,
     height: 40,
-    borderRadius: 8,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

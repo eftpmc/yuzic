@@ -6,13 +6,8 @@ import { selectWifiStreamQuality, selectCellularStreamQuality } from '@/utils/re
 import { setWifiStreamQuality, setCellularStreamQuality, AudioQuality } from '@/utils/redux/slices/settingsSlice';
 import SettingsSelectCard from '../../components/SettingsSelectCard';
 import { useTheme } from '@/hooks/useTheme';
-
-const QUALITY_OPTIONS = [
-  { key: 'low' as const,      labelKey: 'settings.player.streamingQuality.options.low' },
-  { key: 'medium' as const,   labelKey: 'settings.player.streamingQuality.options.medium' },
-  { key: 'high' as const,     labelKey: 'settings.player.streamingQuality.options.high' },
-  { key: 'original' as const, labelKey: 'settings.player.streamingQuality.options.original' },
-] as const;
+import { DOWNLOAD_QUALITY_OPTIONS } from '@/constants/settings';
+import { spacing, typography } from '@/constants/design';
 
 const StreamingQuality: React.FC = () => {
   const { t } = useTranslation();
@@ -21,7 +16,7 @@ const StreamingQuality: React.FC = () => {
   const wifiQuality = useSelector(selectWifiStreamQuality);
   const cellularQuality = useSelector(selectCellularStreamQuality);
 
-  const items = QUALITY_OPTIONS.map(o => ({ key: o.key, label: t(o.labelKey) }));
+  const items = DOWNLOAD_QUALITY_OPTIONS.map(o => ({ key: o.key, label: t(o.labelKey) }));
 
   return (
     <>
@@ -48,9 +43,8 @@ export default StreamingQuality;
 
 const styles = StyleSheet.create({
   caption: {
-    fontSize: 13,
-    marginTop: 8,
-    marginHorizontal: 4,
-    lineHeight: 18,
+    ...typography.caption,
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.xs,
   },
 });

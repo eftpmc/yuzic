@@ -30,3 +30,94 @@ If you ever need to raise these offset constants (e.g. because a manual/local Fa
 
 - Audio playback goes through `@rntp/player` (the npm-scoped continuation of `react-native-track-player`, now under a commercial license as of v5 — see `node_modules/@rntp/player/package.json`). Keep it reasonably current; v5.0.0 → v5.6.0 fixed real bugs (notably `file://` local-playback support added in 5.2.0).
 - `src/contexts/PlayingContext.tsx` is the central playback state/controls context — most player-related work touches this file.
+
+## UI conventions
+
+These were made consistent across the app in one pass; they drift back easily
+because both halves of each pair look reasonable in isolation.
+
+- **Loading**: skeletons (`components/Skeleton*`, or a screen's own
+  `Loading.tsx`) when a list is loading, so the placeholder holds the shape the
+  list is about to take. `components/SpinningLoaderCircle` everywhere else —
+  inside a control at size 18, for a whole sheet or screen at 26. React
+  Native's `ActivityIndicator` is deliberately unused: it renders differently
+  per platform and doesn't match the lucide icon set the rest of the UI uses.
+  A skeleton is only worth using when it predicts the real layout; an options
+  sheet is a header and a stack of actions, so it keeps a spinner.
+- **Scales**: sizes come from `typography`, corner radii from `radius`, padding
+  and margin from `spacing`, all in `constants/design`, everywhere — `eslint.config.js` fails the build on a
+  literal `fontSize` or `borderRadius` outside that file. A role carries a size
+  and a line height; a weight may be overridden at the call site
+  (`{ ...typography.rowSubtitle, fontWeight: '500' }`), since weight was never
+  the thing that drifted. Adding a role is fine; adding one that differs from an
+  existing role only in size is how the app got to thirteen font sizes and
+  twelve corner radii in the first place. `0` stays a literal — it is the
+  absence of spacing rather than an amount of it. Any scrolling list ends with
+  `spacing.scrollClearance`, which is what keeps its last row clear of the
+  playing bar; four different numbers were doing that job and the short ones
+  didn't.
+- **Tap targets**: a control may be drawn smaller than `controlSize.minimumTarget`
+  — a 34pt toggle beside a 34pt pill is the right drawing — but what the finger
+  has to hit never is. `hitSlopFor(size)` makes up the difference; it returns
+  undefined when none is needed, so it can be spread unconditionally. Seven
+  controls were between 32 and 40pt with nothing padding them out.
+- **Pressing**: `components/Touchable`, never `TouchableOpacity` — the whole app
+  was swapped over in one pass and there is no reason for a second answer to a
+  press to exist. Android gets a ripple bounded to the component, every other
+  platform an opacity dip, from one file so they can't drift apart per screen.
+  `feedback="control"` for a bare icon whose target is bigger than the glyph,
+  `"none"` for a wrapper handling a press on something else's behalf. There is
+  deliberately no `activeOpacity`: seven different values were in use, which is
+  seven answers to a question nobody was asking.
+- **Cover colour**: `features/theme` extracts one accent from a piece of cover
+  art and darkens it. `useCoverAccent` is the hook; `pickAccent` and `darken`
+  are pure and tested, because the extraction library returns a different shape
+  per platform and that choice is the part worth checking. The accent is null
+  until it arrives, so a screen fades it in rather than flashing a placeholder.
+  Do not re-extract colours locally — the cache is shared and bounded.
+- **Home vs Library**: Home is what changes, Library is what's complete. A view
+  that moves on its own — recently added, most played, what you were listening
+  to — is a Home shelf; the stable, exhaustive, sortable list is a Library
+  collection. The same data may appear in both, but never as the same thing
+  twice: Home shows the first handful and its heading leads to Library's full
+  version (`SectionShelfHeader`'s `onSeeAll`), landing on the entity list with
+  the matching sort already applied.
+- **Library entry vs sort order**: an entry row is one of the two things —
+  a kind of thing the library holds (playlists, albums, artists, tracks) or a
+  cross-cutting cut over them that a sort order can't express (genres, which
+  is a hierarchy; downloaded, which is a filter). A time-ordered or play-ordered
+  view of albums is not a row: it is the Albums row with a sort. "Recently
+  added" would have been a row for the same reason "Most played" would be —
+  neither is; both live in the sort sheet, and the changing view of each is
+  the Home shelf.
+- **Library navigation**: the library tab is an index, each row opening its own
+  screen (`screens/library/LibraryCollectionScreen`) — nothing else lives on it.
+  It used to be a row of filter pills, which could only ever show the types it
+  had room for — that is why genres had no way in for so long. Adding a way to
+  browse means adding an entry row, not a pill and not a section. Deep pushes
+  from a library row (a genre, a collection screen, an album from one of them)
+  keep the Library tab lit — `_layout.tsx` remembers the last tab root you
+  visited and holds it until you visit another, so the icon does not jump to
+  Home the moment you leave `/library`.
+- **Library gutter**: horizontal insets in the library come from
+  `screens/library/layout`, never from a literal. A list row and a grid cell
+  each carry an inset of their own, so the list's padding is the difference
+  that lands artwork exactly `spacing.page` from the screen edge in both modes.
+  Anything drawn above the items — a header, the sort row — cancels that
+  padding with a negative margin and keeps `spacing.page`, so all of it lines
+  up on one edge.
+- **Collection actions**: a screen led by artwork uses `DetailHeader`'s centred
+  circle-and-pill pair. A screen without artwork uses
+  `screens/library/CollectionActions` — two square-shouldered halves of the
+  content width, which have to carry the top of the screen on their own.
+- **Translations**: every key added to `locales/en.json` is added to all four
+  locales in the same change; `locales/locales.test.ts` fails otherwise. A
+  missing key falls back to English mid-sentence, so it reads as a bug rather
+  than as an untranslated string.
+- **Home**: sections are grouped into tiers by `features/home/homeLayout` —
+  resume first and unlabelled, then your own library, then external discovery
+  behind its source header. A new section belongs to exactly one tier, and the
+  library tier stays short: it carries what changes on its own, not everything
+  that could be shown. Discovery is off by default (`deezerDiscoveryEnabled`)
+  and absent offline, so the local tiers are all a fresh install has — Home
+  cannot be emptied out on the assumption that discovery will fill it.

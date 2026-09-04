@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useState,
   forwardRef,
   useMemo,
@@ -8,9 +9,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import {
   BottomSheetModal,
@@ -22,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { Playlist, Song } from '@/types';
+import { Playlist, PlaylistBase, Song } from '@/types';
 import { QueryKeys } from '@/enums/queryKeys';
 import { MediaImage } from './MediaImage';
 import { useTheme } from '@/hooks/useTheme';
@@ -38,6 +37,10 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -48,6 +51,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
   ({ selectedSong, onClose }, ref) => {
     const { t } = useTranslation();
     const { colors } = useTheme();
+    const rad = useRadius();
     const isOffline = useIsOffline();
     const themeColor = useSelector(selectThemeColor);
     const insets = useSafeAreaInsets();
@@ -110,29 +114,34 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       const selectedSongId = selectedSong.id;
       setMembershipLoading(true);
 
-      Promise.allSettled(
-        playlists.map(playlist =>
-          queryClient.fetchQuery({
-            queryKey: [QueryKeys.Playlist, activeServer.id, playlist.id],
-            queryFn: () => api.playlists.get(playlist.id),
-            staleTime: staleTime.playlists,
-          })
-        )
-      )
-        .then(results => {
-          if (cancelled) return;
-          const hydratedIds = new Set<string>();
-          results.forEach((result, index) => {
-            if (
-              result.status === 'fulfilled' &&
-              result.value.songs.some(song => song.id === selectedSongId)
-            ) {
-              hydratedIds.add(playlists[index].id);
-            }
-          });
-          setSelectedIds(hydratedIds);
-          setBaseSelectedIds(hydratedIds);
-        })
+      const hydrateMembership = async () => {
+        const results: Playlist[] = [];
+        for (let start = 0; start < playlists.length; start += 3) {
+          const batch = await Promise.all(
+            playlists.slice(start, start + 3).map(playlist =>
+              queryClient.fetchQuery<Playlist>({
+                queryKey: [QueryKeys.Playlist, activeServer.id, playlist.id],
+                queryFn: () => api.playlists.get(playlist.id),
+                staleTime: staleTime.playlists,
+              })
+            )
+          );
+          results.push(...batch);
+        }
+
+        if (cancelled) return;
+        const hydratedIds = new Set<string>();
+        results.forEach((result, index) => {
+          if (result.songs.some(song => song.id === selectedSongId)) {
+            hydratedIds.add(playlists[index].id);
+          }
+        });
+        setSelectedIds(hydratedIds);
+        setBaseSelectedIds(hydratedIds);
+      };
+
+      void hydrateMembership()
+        .catch(() => {})
         .finally(() => {
           if (!cancelled) setMembershipLoading(false);
         });
@@ -142,7 +151,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       };
     }, [activeServer?.id, api, isSheetOpen, playlists, queryClient, selectedSong]);
 
-    const togglePlaylist = (id: string) => {
+    const togglePlaylist = useCallback((id: string) => {
       if (membershipLoading) return;
       setSelectedIds(prev => {
         const next = new Set(prev);
@@ -153,7 +162,35 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         }
         return next;
       });
-    };
+    }, [membershipLoading]);
+
+    const renderPlaylistItem = useCallback(({ item }: { item: PlaylistBase }) => {
+      const isChecked = selectedIds.has(item.id);
+
+      return (
+        <Touchable
+          style={styles.option}
+          disabled={membershipLoading}
+          onPress={() => togglePlaylist(item.id)}
+        >
+          <MediaImage
+            cover={item.cover ?? { kind: 'none' }}
+            size="thumb"
+            style={styles.playlistCover}
+          />
+
+          <Text style={[styles.optionText, { color: colors.secondary }]}>
+            {item.title}
+          </Text>
+
+          <Check
+            size={24}
+            color={themeColor}
+            style={{ opacity: isChecked ? 1 : 0 }}
+          />
+        </Touchable>
+      );
+    }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor]);
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
@@ -213,19 +250,20 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         stackBehavior="push"
         handleComponent={null}
         onChange={(index) => setIsSheetOpen(index >= 0)}
-        backgroundStyle={{ backgroundColor: colors.muted }}
+        backgroundStyle={{ backgroundColor: colors.card }}
       >
         <View
           style={[
             styles.headerContainer,
             {
               backgroundColor: colors.card,
+              borderBottomColor: colors.border,
             },
           ]}
         >
-          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+          <Touchable onPress={onClose} style={styles.cancelButton} hitSlop={hitSlopFor(32)}>
             <X size={20} color={colors.secondary} strokeWidth={2.5} />
-          </TouchableOpacity>
+          </Touchable>
 
           <Text style={[styles.headerTitle, { color: colors.secondary }]}>
             {t('playlistList.title')}
@@ -233,7 +271,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         </View>
 
         <View style={styles.content}>
-          <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
             <Search size={20} color={colors.placeholder} />
             <TextInput
               style={[styles.searchInput, { color: colors.secondary }]}
@@ -246,48 +284,23 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
           <View style={styles.createContainer}>
             <TextInput
-              style={[styles.newPlaylistInput, { backgroundColor: colors.card, color: colors.secondary }]}
+              style={[styles.newPlaylistInput, { backgroundColor: colors.muted, color: colors.secondary, borderRadius: rad.md }]}
               placeholder={t('playlistList.newPlaceholder')}
               placeholderTextColor={colors.placeholder}
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
-            <TouchableOpacity onPress={handleCreatePlaylist}>
+            <Touchable onPress={handleCreatePlaylist}>
               <Plus size={26} color={colors.secondary} />
-            </TouchableOpacity>
+            </Touchable>
           </View>
 
           <BottomSheetFlatList
             data={filteredPlaylists}
             keyExtractor={item => item.id}
-            contentContainerStyle={{ paddingBottom: 120 }}
-            renderItem={({ item }) => {
-              const isChecked = selectedIds.has(item.id);
-
-              return (
-                <TouchableOpacity
-                  style={styles.option}
-                  disabled={membershipLoading}
-                  onPress={() => togglePlaylist(item.id)}
-                >
-                  <MediaImage
-                    cover={item.cover ?? { kind: 'none' }}
-                    size="thumb"
-                    style={styles.playlistCover}
-                  />
-
-                  <Text style={[styles.optionText, { color: colors.secondary }]}>
-                    {item.title}
-                  </Text>
-
-                  <Check
-                    size={24}
-                    color={themeColor}
-                    style={{ opacity: isChecked ? 1 : 0 }}
-                  />
-                </TouchableOpacity>
-              );
-            }}
+            contentContainerStyle={{ paddingBottom: spacing.scrollClearance }}
+            extraData={selectedIds}
+            renderItem={renderPlaylistItem}
           />
         </View>
 
@@ -297,21 +310,21 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             { paddingBottom: insets.bottom + 12 },
           ]}
         >
-          <TouchableOpacity
+          <Touchable
             style={[
               styles.doneButton,
-              { backgroundColor: themeColor },
+              { backgroundColor: themeColor, borderRadius: rad.card },
               membershipLoading && styles.doneButtonDisabled,
             ]}
             disabled={membershipLoading}
             onPress={handleDone}
           >
             {membershipLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <SpinningLoaderCircle size={18} color="#fff" />
             ) : (
               <Text style={styles.doneButtonText}>{t('common.done')}</Text>
             )}
-          </TouchableOpacity>
+          </Touchable>
         </View>
       </BottomSheetModal>
     );
@@ -324,11 +337,12 @@ export default PlaylistList;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   cancelButton: {
     position: 'absolute',
@@ -339,68 +353,63 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '500',
+    ...typography.rowTitle,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: spacing.lg,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 16,
+    padding: spacing.controlGap,
+    marginBottom: spacing.lg,
   },
   searchInput: {
+    ...typography.body,
     flex: 1,
-    marginLeft: 8,
-    fontSize: 16,
+    marginLeft: spacing.sm,
   },
   createContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   newPlaylistInput: {
+    ...typography.body,
     flex: 1,
-    borderRadius: 10,
-    padding: 10,
-    fontSize: 16,
-    marginRight: 8,
+    padding: spacing.controlGap,
+    marginRight: spacing.sm,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.controlGap,
   },
   playlistCover: {
     width: 48,
     height: 48,
-    borderRadius: 6,
-    marginRight: 12,
+    borderRadius: radius.sm,
+    marginRight: spacing.md,
   },
   optionText: {
+    ...typography.body,
     flex: 1,
-    fontSize: 16,
   },
   doneWrapper: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
     backgroundColor: 'transparent',
   },
   doneButton: {
-    borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   doneButtonDisabled: {
     opacity: 0.7,
   },
   doneButtonText: {
-    fontSize: 17,
-    fontWeight: '500',
+    ...typography.rowTitle,
     color: '#fff',
   },
 });

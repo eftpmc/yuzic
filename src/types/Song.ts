@@ -12,6 +12,10 @@ export interface SongBase {
     albumId: string;
     /** Album title — populated from server response, used for lock screen Now Playing display. */
     albumTitle?: string;
+    /** Disc number; omitted when not available. */
+    disc?: number;
+    /** Track number; omitted when not available. */
+    trackNumber?: number;
     year?: number;
     dateAdded?: string;
     /** Server-reported play count — populated during sync, extracted into serverSongPlays Redux state. */
@@ -38,10 +42,6 @@ export interface Song extends SongBase {
     mimeType?: string;
     /** Release date; omitted when not available. */
     dateReleased?: string;
-    /** Disc number; omitted when not available. */
-    disc?: number;
-    /** Track number; omitted when not available. */
-    trackNumber?: number;
     /** Date added to library; omitted when not available. */
     dateAdded?: string;
     /** BPM; omitted when not available. */

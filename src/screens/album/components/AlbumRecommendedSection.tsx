@@ -16,16 +16,18 @@ import { QueryKeys } from '@/enums/queryKeys'
 import { STALE_DEEZER_DISCOVERY } from '@/features/home/constants'
 import MediaTile from '@/screens/home/components/MediaTile'
 import type { ExternalAlbumBase } from '@/types'
-
-const H_PADDING = 16
-const TILE_GAP = 12
-const VISIBLE_TILES = 2.5
-const RELATED_LIMIT = 30
-const TARGET_ALBUMS = 8
+import {
+  ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+  ALBUM_RECOMMENDATION_TILE_GAP,
+  ALBUM_RECOMMENDATION_VISIBLE_TILES,
+  ALBUM_RECOMMENDATION_RELATED_LIMIT,
+  ALBUM_RECOMMENDATION_TARGET_ALBUMS,
+} from '@/constants/album';
+import { sourceColor, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
   artistName: string
-  artistId: string
   excludeAlbumId: string
 }
 
@@ -35,21 +37,22 @@ async function fetchRelatedAlbums(
 ): Promise<ExternalAlbumBase[]> {
   const seed = await deezer.resolveDeezerArtistByName(artistName)
   if (!seed) return []
-  const related = await deezer.getDeezerRelatedArtists(seed.id, RELATED_LIMIT)
+  const related = await deezer.getDeezerRelatedArtists(seed.id, ALBUM_RECOMMENDATION_RELATED_LIMIT)
   const fresh = related.filter(a => !libraryArtistNames.has(a.name.toLowerCase()))
-  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: TARGET_ALBUMS })
+  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: ALBUM_RECOMMENDATION_TARGET_ALBUMS })
 }
 
-export default function AlbumRecommendedSection({ artistName, artistId, excludeAlbumId }: Props) {
+export default function AlbumRecommendedSection({ artistName, excludeAlbumId }: Props) {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { width: screenWidth } = useWindowDimensions()
   const enabled = useDeezerAlbumRecommendationsEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const { artists } = useArtists()
   const { navigateToAlbum } = useMatchedNavigation()
 
-  const tileWidth = (screenWidth - H_PADDING * 2 - TILE_GAP * 2) / VISIBLE_TILES
+  const tileWidth = (screenWidth - ALBUM_RECOMMENDATION_HORIZONTAL_PADDING * 2 - ALBUM_RECOMMENDATION_TILE_GAP * 2) / ALBUM_RECOMMENDATION_VISIBLE_TILES
 
   const libraryArtistNames = useMemo(
     () => new Set(artists.map(a => a.name.toLowerCase())),
@@ -74,7 +77,7 @@ export default function AlbumRecommendedSection({ artistName, artistId, excludeA
     <View style={styles.container}>
       <View style={styles.titleRow}>
         {showSourceHeaders && (
-          <View style={[styles.badge, { backgroundColor: '#A238CA' }]}>
+          <View style={[styles.badge, { backgroundColor: sourceColor.deezer, borderRadius: rad.pill }]}>
             <Text style={styles.badgeLetter}>D</Text>
           </View>
         )}
@@ -106,34 +109,32 @@ export default function AlbumRecommendedSection({ artistName, artistId, excludeA
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 24,
-    paddingBottom: 8,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.sm,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: H_PADDING,
-    marginBottom: 12,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+    marginBottom: spacing.md,
   },
   badge: {
     width: 20,
     height: 20,
-    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeLetter: {
-    fontSize: 11,
+    ...typography.micro,
     fontWeight: '600',
     color: '#fff',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.sectionTitle,
   },
   scroll: {
-    paddingHorizontal: H_PADDING,
-    gap: TILE_GAP,
+    paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
+    gap: ALBUM_RECOMMENDATION_TILE_GAP,
   },
 })

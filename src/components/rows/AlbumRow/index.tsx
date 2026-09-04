@@ -1,26 +1,30 @@
 import React, { memo, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
 
 import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import { MediaImage } from '@/components/MediaImage';
+import IconActionButton from '@/components/IconActionButton';
+import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
+import { spacing } from '@/constants/design';
 
 type Props = {
   album: AlbumBase;
   onPress?: (album: AlbumBase) => void;
+  /** Replaces the album's own subtext line, e.g. the release year in the
+   * artist screen's chronological discography. */
+  subtextOverride?: string;
 };
 
 const AlbumRow: React.FC<Props> = ({
   album,
   onPress,
+  subtextOverride,
 }) => {
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
@@ -33,48 +37,21 @@ const AlbumRow: React.FC<Props> = ({
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.albumItem}>
-        <TouchableOpacity
-          style={styles.albumContent}
-          onPress={handlePress}
-        >
-          <MediaImage
-            cover={album.cover}
-            size="grid"
-            style={styles.cover}
-          />
-
-          <View style={styles.albumTextContainer}>
-            <View style={styles.titleRow}>
-              <Text
-                numberOfLines={1}
-                style={[styles.albumTitle, { color: colors.secondary }]}
-              >
-                {album.title}
-              </Text>
-            </View>
-
-            <Text
-              numberOfLines={1}
-              style={[styles.albumSubtext, { color: colors.subtext }]}
-            >
-              {album.subtext}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.optionsContainer}>
-          <TouchableOpacity
+      <MediaListRow
+        title={album.title}
+        subtitle={subtextOverride ?? album.subtext}
+        cover={album.cover}
+        onPress={handlePress}
+        trailing={
+          <IconActionButton
+            icon={<Ellipsis size={24} color={colors.secondary} />}
             onPress={handleOptionsPress}
-            style={styles.optionButton}
-          >
-            <Ellipsis
-              size={24}
-              color={colors.secondary}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+            accessibilityLabel="Album options"
+            size="compact"
+          />
+        }
+        style={styles.row}
+      />
 
       <AlbumOptions
         ref={optionsSheetRef}
@@ -89,44 +66,9 @@ export default memo(AlbumRow);
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
-  },
-  cover: {
-    width: 64,
-    height: 64,
-    borderRadius: 6,
-  },
-  albumItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  albumContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
   },
-  albumTextContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  albumTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  albumSubtext: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  optionButton: {
-    padding: 8,
+  row: {
+    paddingHorizontal: spacing.lg,
   },
 });
