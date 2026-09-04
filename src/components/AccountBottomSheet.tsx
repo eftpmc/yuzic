@@ -47,7 +47,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
 
   const handleSettings = () => {
     close();
-    router.push('/settings');
+    router.push('/(home)/settings');
   };
 
   const handleScan = async () => {

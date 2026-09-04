@@ -160,7 +160,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         if (artistId) {
             onClose();
             router.push({
-                pathname: '/artistView',
+                pathname: '/(home)/artistView',
                 params: { id: artistId },
             });
         }

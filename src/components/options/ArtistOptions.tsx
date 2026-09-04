@@ -125,7 +125,7 @@ const ArtistOptions = forwardRef<
   const handleGoToArtist = () => {
     if (!artist) return;
     close();
-    router.push({ pathname: '/artistView', params: { id: artist.id } });
+    router.push({ pathname: '/(home)/artistView', params: { id: artist.id } });
   };
 
   // Recovery path for fuzzy-match false positives: local library matching
@@ -139,7 +139,7 @@ const ArtistOptions = forwardRef<
     if (!artist) return;
     close();
     router.push({
-      pathname: '/artistView',
+      pathname: '/(home)/artistView',
       params: {
         forceExternal: 'true',
         mbid: artist.mbid ?? undefined,

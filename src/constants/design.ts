@@ -13,12 +13,12 @@ export const spacing = {
   controlGap: 10,
   inlineGap: 8,
   /**
-   * Bottom breathing room for scrolling lists. Used to be 180 when the tab
-   * bar + playing bar were a floating overlay screens had to reserve room
-   * for — now that the tab bar is a real docked react-navigation tabBar,
-   * screens naturally end at its top edge and this is just visual padding.
+   * Bottom padding for any scrolling list, so its last row clears the docked
+   * PlayingBar + tab-bar overlay. The overlay is absolute-positioned above
+   * the Stack — screens don't see it in layout, so they must reserve room
+   * or their last row hides behind it.
    */
-  scrollClearance: 24,
+  scrollClearance: 180,
   xxs: 2,
   xs: 4,
   tight: 6,

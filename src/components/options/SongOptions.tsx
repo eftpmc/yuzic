@@ -202,13 +202,13 @@ const SongOptions = forwardRef<
     const handleGoToAlbum = () => {
       close();
       onNavigate?.();
-      router.push({ pathname: '/albumView', params: { id: selectedSong.albumId } });
+      router.push({ pathname: '/(home)/albumView', params: { id: selectedSong.albumId } });
     };
 
     const handleGoToArtist = () => {
       close();
       onNavigate?.();
-      router.push({ pathname: '/artistView', params: { id: selectedSong.artistId } });
+      router.push({ pathname: '/(home)/artistView', params: { id: selectedSong.artistId } });
     };
 
     const handleInstantMix = async () => {
@@ -235,7 +235,7 @@ const SongOptions = forwardRef<
           defaultValue: `Playlist created with ${result.trackCount} tracks`,
         }));
         close();
-        router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
+        router.push({ pathname: '/(home)/playlistView', params: { id: result.playlistId } });
       } catch {
         toast.error(t('songOptions.toasts.playlistGenerationFailed', 'Could not generate playlist'));
       } finally {
