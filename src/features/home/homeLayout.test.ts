@@ -15,7 +15,7 @@ const discovery = (overrides: Partial<Parameters<typeof buildDiscoverySections>[
 
 describe('buildResumeSections', () => {
   it('leads with what you were listening to', () => {
-    expect(buildResumeSections().map(s => s.type)).toEqual(['quickPicks', 'recentlyPlayed'])
+    expect(buildResumeSections().map(s => s.type)).toEqual(['quickPicks', 'continuePlaying', 'recentlyPlayed'])
   })
 
   it('includes quick picks, which used to render outside the layout', () => {
