@@ -59,6 +59,17 @@ import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { useQueueSync } from '@/hooks/useQueueSync';
+import { usePlaybackPersistence } from '@/hooks/usePlaybackPersistence';
+import {
+  selectPersistedPlaybackActiveServerId,
+  selectPersistedPlaybackCurrentIndex,
+  selectPersistedPlaybackPositionMs,
+  selectPersistedPlaybackQueue,
+  selectPersistedPlaybackRepeatMode,
+  selectPersistedPlaybackShuffleMode,
+} from '@/utils/redux/selectors/playbackSelectors';
+import { selectActiveServerId as selectActiveServerIdSel } from '@/utils/redux/selectors/serversSelectors';
+import { selectLibraryTracks } from '@/utils/redux/selectors/librarySelectors';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
 
@@ -255,25 +266,110 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const queueSyncRef = useRef(queueSync);
   useEffect(() => { queueSyncRef.current = queueSync; }, [queueSync]);
 
+  const persistence = usePlaybackPersistence();
+  const persistenceRef = useRef(persistence);
+  useEffect(() => { persistenceRef.current = persistence; }, [persistence]);
+
+  // Auto-restore persisted playback on first mount for the active server.
+  // This is what makes "the app remembers what I was doing" true on every
+  // provider, not just Navidrome — the slice is our source of truth, and
+  // the server-side queue mirror in useQueueSync is a secondary path used
+  // only when local is empty (see ResumeQueueBanner).
+  const persistedQueueIds = useSelector(selectPersistedPlaybackQueue);
+  const persistedCurrentIndex = useSelector(selectPersistedPlaybackCurrentIndex);
+  const persistedPositionMs = useSelector(selectPersistedPlaybackPositionMs);
+  const persistedRepeatMode = useSelector(selectPersistedPlaybackRepeatMode);
+  const persistedShuffleMode = useSelector(selectPersistedPlaybackShuffleMode);
+  const persistedServerIdForPlayback = useSelector(selectPersistedPlaybackActiveServerId);
+  const currentServerId = useSelector(selectActiveServerIdSel);
+  const libraryTracks = useSelector(selectLibraryTracks);
+  const hasAutoRestoredRef = useRef(false);
+  useEffect(() => {
+    if (hasAutoRestoredRef.current) return;
+    if (!currentServerId || persistedServerIdForPlayback !== currentServerId) return;
+    if (persistedQueueIds.length === 0) return;
+    if (queueRef.current.length > 0) return; // Something already playing — don't ambush.
+    if (libraryTracks.length === 0) return; // Wait for the library to hydrate.
+
+    const byId = new Map(libraryTracks.map((t) => [t.id, t as unknown as Song]));
+    const restored = persistedQueueIds
+      .map((id) => byId.get(id))
+      .filter((s): s is Song => Boolean(s))
+      .map((s) => ({ ...s, streamUrl: '' })); // playSongs will re-derive.
+    if (restored.length === 0) {
+      hasAutoRestoredRef.current = true;
+      return;
+    }
+    hasAutoRestoredRef.current = true;
+
+    const idx = Math.min(persistedCurrentIndex, restored.length - 1);
+    // Restore modes before loading the queue — TrackPlayer.setRepeatMode
+    // inside loadQueue reads from repeatModeRef, which follows setState.
+    setRepeatMode(persistedRepeatMode);
+    setShuffleMode(persistedShuffleMode);
+    queueRef.current = restored;
+    queueSegmentsRef.current = [{
+      startIndex: 0,
+      length: restored.length,
+      source: { kind: 'user', contextId: 'restored', contextType: 'adhoc' },
+    }];
+    currentIndexRef.current = idx;
+    setCurrentIndex(idx);
+    currentSongRef.current = restored[idx];
+    setCurrentSong(restored[idx]);
+    // Load paused at the persisted position — the user didn't ask us to
+    // start playing on cold boot, they asked us to remember where they were.
+    void loadQueueRef.current(restored, idx, false, Math.floor(persistedPositionMs / 1000));
+  }, [
+    currentServerId,
+    persistedServerIdForPlayback,
+    persistedQueueIds,
+    persistedCurrentIndex,
+    persistedPositionMs,
+    persistedRepeatMode,
+    persistedShuffleMode,
+    libraryTracks,
+  ]);
+  const loadQueueRef = useRef<(songs: Song[], startIndex: number, play?: boolean, seek?: number) => Promise<void>>(async () => {});
+
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
 
   // Session heartbeat for mediaBrowser servers. Jellyfin will drop the session
   // (and never fire the Stopped event the Last.fm plugin scrobbles on) if it
   // stops seeing progress reports. 10s is well inside its ~30s idle window.
+  //
+  // The same tick also persists the current playback position so a kill or
+  // background termination doesn't lose more than ~10s of resume precision.
+  // The persistence hook throttles further; this loop is the writer.
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
       const song = currentSongRef.current;
       if (!song) return;
-      const positionMs = Math.floor(TrackPlayer.getProgress().position * 1000);
-      reportPlaybackProgress(song, positionMs, false);
+      const positionSeconds = TrackPlayer.getProgress().position;
+      reportPlaybackProgress(song, Math.floor(positionSeconds * 1000), false);
+      persistenceRef.current.persistPosition(positionSeconds);
     }, 10_000);
     return () => clearInterval(interval);
   }, [isPlaying, reportPlaybackProgress]);
-  useEffect(() => { repeatModeRef.current = repeatMode; }, [repeatMode]);
-  useEffect(() => { shuffleModeRef.current = shuffleMode; }, [shuffleMode]);
-  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  useEffect(() => {
+    repeatModeRef.current = repeatMode;
+    persistenceRef.current.persistRepeatMode(repeatMode);
+  }, [repeatMode]);
+  useEffect(() => {
+    shuffleModeRef.current = shuffleMode;
+    persistenceRef.current.persistShuffleMode(shuffleMode);
+  }, [shuffleMode]);
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    // On pause, force-persist so kill-during-pause preserves the paused-at
+    // position rather than losing up to the throttle window.
+    if (!isPlaying && currentSongRef.current) {
+      const positionSeconds = TrackPlayer.getProgress().position;
+      persistenceRef.current.persistPosition(positionSeconds, { force: true });
+    }
+  }, [isPlaying]);
   useEffect(() => { autoplayEnabledRef.current = autoplayEnabled; }, [autoplayEnabled]);
 
   // AudioMuse-AI first when configured, native similar-songs as fallback —
@@ -327,6 +423,19 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
+
+  // Every queue mutation (playSong, playSongs, playSongInCollection, autoplay
+  // fill, smart-shuffle inject, clear) calls bumpQueue immediately after. Rather
+  // than sprinkle persistence calls at each site, mirror bumpQueue → persist here.
+  useEffect(() => {
+    if (queueVersion === 0) return; // Skip the initial state.
+    persistenceRef.current.persistQueue({
+      queue: queueRef.current,
+      currentIndex: currentIndexRef.current,
+      repeatMode: repeatModeRef.current,
+      shuffleMode: shuffleModeRef.current,
+    });
+  }, [queueVersion]);
 
   const clearPlaybackState = useCallback(() => {
     queueRef.current = [];
@@ -503,6 +612,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     currentSongRef.current = songFromQueue;
     setCurrentSong(songFromQueue);
 
+    // Persist the pointer move — the queue itself doesn't change every track,
+    // only the current index does, so this is the frequent write.
+    persistenceRef.current.persistCurrentIndex(newIndex);
+
     // Auto-resume for tracks that earn a bookmark (long-form + podcast).
     // Only seek when the player is still at the top of the track — a user
     // who already advanced past zero is where they want to be.
@@ -563,6 +676,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (seekToPosition !== undefined && seekToPosition > 0) TrackPlayer.seekTo(seekToPosition);
     if (play) TrackPlayer.play();
   }, [resetLastScrobbled]);
+  useEffect(() => { loadQueueRef.current = loadQueue; }, [loadQueue]);
 
   // Autoplay: fetches more tracks once the queue is running low, regardless
   // of shuffle mode. Independent of Smart Shuffle — see injectSmartShuffleTracks.

@@ -16,6 +16,8 @@ export interface MediaBrowserImageTags {
 export interface MediaBrowserUserData {
   PlayCount?: number;
   LastPlayedDate?: string;
+  /** 100ns ticks — the resume position the "Continue Watching" surface reads. */
+  PlaybackPositionTicks?: number;
 }
 
 export interface MediaBrowserMediaStream {

@@ -1,28 +1,33 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useApi } from '@/api';
 import type { Song } from '@/types';
-import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { selectResumeLongTracksEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { selectPersistedPlaybackBookmarks } from '@/utils/redux/selectors/playbackSelectors';
+import {
+  seedPlaybackBookmarks,
+  setPlaybackBookmark,
+} from '@/utils/redux/slices/playbackSlice';
 import { isPodcastEpisode } from '@/utils/playback/contentKind';
 
 /**
- * A track earns a resume bookmark if it's long-form: an audiobook, a
- * multi-hour DJ set, a podcast episode. Anything under this length can be
- * safely restarted from the top when you come back to it — auto-seeking to
- * 2:30 in a 3:15 pop song feels broken, not helpful.
+ * Bookmarks in yuzic:
+ *
+ *   - Local (Redux, persisted): the source of truth. A per-track resume
+ *     position that survives kill/relaunch on any provider, always.
+ *   - Server (optional mirror): Navidrome exposes bookmarks natively;
+ *     Jellyfin/Emby carry the same concept as `UserData.PlaybackPositionTicks`
+ *     on any item. Where the server has one, we seed the local map on
+ *     connect and push writes so cross-device resume works.
+ *
+ * When the "Resume long tracks" toggle is off, none of this runs — no fetch,
+ * no seeding, no write, no seek.
  */
+
 const BOOKMARK_MIN_DURATION_SECONDS = 20 * 60;
-
-/** Below this fraction of the track we don't bother saving — the user hardly
- * started it, and restarting from zero is fine. */
 const BOOKMARK_MIN_PROGRESS = 0.02;
-
-/** Above this fraction we treat the track as finished and clear any existing
- * bookmark rather than saving one right before the end. */
 const BOOKMARK_MAX_PROGRESS = 0.97;
 
 function isBookmarkable(song: Song | null | undefined): boolean {
@@ -32,77 +37,70 @@ function isBookmarkable(song: Song | null | undefined): boolean {
   return duration >= BOOKMARK_MIN_DURATION_SECONDS;
 }
 
-/**
- * Reads / writes bookmarks against whichever server is active. The list is
- * fetched once on connect and cached; lookups are O(1) against that map, so
- * asking "does this track have a resume point" per song load is cheap.
- *
- * Only tracks that pass isBookmarkable ever save — a 3-minute pop song
- * doesn't get a bookmark for pausing halfway through.
- */
 export function useBookmarkManager() {
   const api = useApi();
+  const dispatch = useDispatch();
   const serverId = useSelector(selectActiveServerId);
-  const queryClient = useQueryClient();
   const enabled = useSelector(selectResumeLongTracksEnabled);
+  const bookmarksMap = useSelector(selectPersistedPlaybackBookmarks);
 
-  // "Supported" also means "wanted" — an off toggle turns the manager into a
-  // no-op end-to-end (no fetch, no writes, no seeks) rather than only muting
-  // the seek.
-  const supported = Boolean(api.bookmarks) && enabled;
+  // Fast, always-up-to-date snapshot for the read hot path (song load). The
+  // subscribed selector alone would re-render every consumer on every write;
+  // a ref updated inside an effect stays free.
+  const bookmarksRef = useRef<Record<string, number>>({});
+  useEffect(() => { bookmarksRef.current = bookmarksMap; }, [bookmarksMap]);
 
-  const bookmarksQuery = useQuery({
-    queryKey: [QueryKeys.Bookmarks, serverId ?? ''],
-    queryFn: async () => (await api.bookmarks!.list()) ?? [],
-    enabled: supported && Boolean(serverId),
-    staleTime: 1000 * 60 * 30,
-  });
+  const supportsServer = Boolean(api.bookmarks);
 
-  const bookmarksMapRef = useRef<Map<string, number>>(new Map());
+  // Seed the local map from the server once per connect. Server writes we
+  // made while offline aren't reflected here yet — but seedPlaybackBookmarks
+  // merges rather than replaces, so anything local stays.
   useEffect(() => {
-    const next = new Map<string, number>();
-    for (const b of bookmarksQuery.data ?? []) next.set(b.songId, b.positionMs);
-    bookmarksMapRef.current = next;
-  }, [bookmarksQuery.data]);
+    if (!enabled || !supportsServer || !serverId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = (await api.bookmarks!.list()) ?? [];
+        if (cancelled || rows.length === 0) return;
+        const seed: Record<string, number> = {};
+        for (const b of rows) seed[b.songId] = b.positionMs;
+        dispatch(seedPlaybackBookmarks(seed));
+      } catch {
+        // Seeding is best-effort — a failed connect leaves local as-is.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [api.bookmarks, dispatch, enabled, serverId, supportsServer]);
 
-  /** Returns the resume position in seconds, or null if none / not supported. */
   const getResumePosition = useCallback((songId: string): number | null => {
-    const ms = bookmarksMapRef.current.get(songId);
+    if (!enabled) return null;
+    const ms = bookmarksRef.current[songId];
     return typeof ms === 'number' && ms > 0 ? Math.floor(ms / 1000) : null;
-  }, []);
+  }, [enabled]);
 
   const saveOrClear = useCallback(async (song: Song | null | undefined, positionSeconds: number) => {
-    if (!supported || !api.bookmarks || !song) return;
+    if (!enabled || !song) return;
     if (!isBookmarkable(song)) return;
 
     const duration = Number(song.duration) || 0;
     const progress = duration > 0 ? positionSeconds / duration : 0;
 
-    try {
-      if (progress <= BOOKMARK_MIN_PROGRESS || progress >= BOOKMARK_MAX_PROGRESS) {
-        // Too early → not worth saving. Too late → treat as finished and
-        // clear any prior bookmark so the next listen starts from the top.
-        if (bookmarksMapRef.current.has(song.id)) {
-          await api.bookmarks.remove(song.id);
-          bookmarksMapRef.current.delete(song.id);
-        }
-      } else {
-        await api.bookmarks.create({
-          songId: song.id,
-          positionMs: Math.floor(positionSeconds * 1000),
-        });
-        bookmarksMapRef.current.set(song.id, Math.floor(positionSeconds * 1000));
+    // Too early → don't bother; too late → treat as finished and clear.
+    if (progress <= BOOKMARK_MIN_PROGRESS || progress >= BOOKMARK_MAX_PROGRESS) {
+      if (bookmarksRef.current[song.id]) {
+        dispatch(setPlaybackBookmark({ songId: song.id, positionMs: null }));
+        if (supportsServer) api.bookmarks!.remove(song.id).catch(() => {});
       }
-      // Invalidate lazily — the local map is already up to date, and the
-      // periodic refetch will reconcile with any other client's changes.
-      void queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Bookmarks, serverId ?? ''],
-        refetchType: 'none',
-      });
-    } catch {
-      // Bookmark writes are best-effort; a save failing doesn't break playback.
+      return;
     }
-  }, [api.bookmarks, queryClient, serverId, supported]);
 
-  return { supported, getResumePosition, saveOrClear };
+    const positionMs = Math.floor(positionSeconds * 1000);
+    dispatch(setPlaybackBookmark({ songId: song.id, positionMs }));
+
+    if (supportsServer) {
+      api.bookmarks!.create({ songId: song.id, positionMs }).catch(() => {});
+    }
+  }, [api.bookmarks, dispatch, enabled, supportsServer]);
+
+  return { supported: enabled, getResumePosition, saveOrClear };
 }

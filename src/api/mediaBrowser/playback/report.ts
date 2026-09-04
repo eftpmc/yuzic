@@ -60,3 +60,15 @@ export async function reportPlaybackStop(
     }),
   });
 }
+
+/**
+ * Clears the server-side resume position by sending a Stopped event at
+ * position 0. Used when a track finishes (or the app decides it's finished)
+ * so the "Continue Watching" surface stops offering to resume it.
+ */
+export async function clearPlaybackPosition(
+  client: MediaBrowserClient,
+  itemId: string
+): Promise<void> {
+  await reportPlaybackStop(client, itemId, 0);
+}

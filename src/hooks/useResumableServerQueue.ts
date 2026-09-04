@@ -6,6 +6,7 @@ import type { ServerPlayQueue } from '@/api/types';
 import type { Song } from '@/types';
 import { selectLibraryTracks } from '@/utils/redux/selectors/librarySelectors';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { selectPersistedPlaybackQueue } from '@/utils/redux/selectors/playbackSelectors';
 import { usePlayingActions, usePlayingState } from '@/contexts/PlayingContext';
 
 /**
@@ -27,15 +28,18 @@ function isStale(queue: ServerPlayQueue | null): boolean {
 }
 
 /**
- * Checks whether the server has a queue this session hasn't yet started or
- * dismissed, and returns a resume/dismiss pair. Only offers a queue when the
- * app's own queue is empty — if the user is already listening, we don't
- * interrupt with a "resume something else?" prompt.
+ * Fallback path for cold start: if local persisted playback is empty (fresh
+ * install, cleared data, first launch on a new device) AND the server has a
+ * queue to offer, show the banner. When local is present, PlayingContext
+ * auto-restores it silently and this hook never fires — the banner isn't a
+ * general "resume?" prompt, it's the specific "you have nothing locally,
+ * want the server's copy?" prompt.
  */
 export function useResumableServerQueue() {
   const api = useApi();
   const serverId = useSelector(selectActiveServerId);
   const tracks = useSelector(selectLibraryTracks);
+  const persistedQueue = useSelector(selectPersistedPlaybackQueue);
   const { currentSong, isPlaying } = usePlayingState();
   const { playSongs } = usePlayingActions();
 
@@ -47,6 +51,7 @@ export function useResumableServerQueue() {
     async function check() {
       if (!api.queue || !serverId) return;
       if (currentSong || isPlaying) return; // Already listening — don't offer.
+      if (persistedQueue.length > 0) return; // Local memory is the primary source.
       const key = `${DISMISSED_KEY_PREFIX}${serverId}`;
       if (sessionDismissed.has(key)) return;
 
@@ -62,7 +67,7 @@ export function useResumableServerQueue() {
     }
     void check();
     return () => { cancelled = true; };
-  }, [api.queue, serverId, currentSong, isPlaying]);
+  }, [api.queue, serverId, currentSong, isPlaying, persistedQueue.length]);
 
   const dismiss = useCallback(() => {
     if (serverId) sessionDismissed.add(`${DISMISSED_KEY_PREFIX}${serverId}`);

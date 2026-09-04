@@ -42,7 +42,8 @@ import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "../mediaBrowser/lyrics/getLyricsBySongId";
 import { getSong } from "../mediaBrowser/songs/getSong";
 import { markPlayed } from "../mediaBrowser/songs/markPlayed";
-import { reportPlaybackStart, reportPlaybackProgress, reportPlaybackStop } from "../mediaBrowser/playback/report";
+import { reportPlaybackStart, reportPlaybackProgress, reportPlaybackStop, clearPlaybackPosition } from "../mediaBrowser/playback/report";
+import { getBookmarksFromUserData } from "../mediaBrowser/bookmarks/bookmarks";
 import { getTracks } from "../mediaBrowser/tracks/getTracks";
 import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
 import { getSimilarAlbums, getSimilarArtists } from "../mediaBrowser/similar/getSimilarItems";
@@ -213,6 +214,19 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
     search: async (query: string) => searchJellyfin(client, query),
   };
 
+  // Jellyfin's PlaybackPositionTicks IS the bookmark. Reading pulls every
+  // Audio item that has one (Filters=IsResumable); the write side is
+  // already handled by the Playing/Progress + Playing/Stopped events we
+  // fire from the player. The create() and remove() paths here fire an
+  // idempotent Stopped so the local action goes cross-device without
+  // waiting for the next real progress tick.
+  const bookmarks = {
+    list: async () => getBookmarksFromUserData(client),
+    create: async (input: { songId: string; positionMs: number }) =>
+      reportPlaybackStop(client, input.songId, input.positionMs),
+    remove: async (songId: string) => clearPlaybackPosition(client, songId),
+  };
+
   return {
     auth,
     albums,
@@ -224,6 +238,7 @@ export const createJellyfinAdapter = (server: Server): ApiAdapter => {
     tracks,
     similar,
     lyrics,
-    search
+    search,
+    bookmarks,
   };
 };

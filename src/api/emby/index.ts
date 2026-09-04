@@ -42,7 +42,8 @@ import { FAVORITES_ID } from "@/constants/favorites";
 import { getLyricsBySongId } from "../mediaBrowser/lyrics/getLyricsBySongId";
 import { getSong } from "../mediaBrowser/songs/getSong";
 import { markPlayed } from "../mediaBrowser/songs/markPlayed";
-import { reportPlaybackStart, reportPlaybackProgress, reportPlaybackStop } from "../mediaBrowser/playback/report";
+import { reportPlaybackStart, reportPlaybackProgress, reportPlaybackStop, clearPlaybackPosition } from "../mediaBrowser/playback/report";
+import { getBookmarksFromUserData } from "../mediaBrowser/bookmarks/bookmarks";
 import { getTracks } from "../mediaBrowser/tracks/getTracks";
 import { getInstantMix } from "../mediaBrowser/instantMix/getInstantMix";
 import { getSimilarAlbums, getSimilarArtists } from "../mediaBrowser/similar/getSimilarItems";
@@ -212,6 +213,14 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
     search: async (query: string) => searchEmby(client, query),
   };
 
+  // Same shape as Jellyfin — see the note in api/jellyfin/index.ts.
+  const bookmarks = {
+    list: async () => getBookmarksFromUserData(client),
+    create: async (input: { songId: string; positionMs: number }) =>
+      reportPlaybackStop(client, input.songId, input.positionMs),
+    remove: async (songId: string) => clearPlaybackPosition(client, songId),
+  };
+
   return {
     auth,
     albums,
@@ -223,6 +232,7 @@ export const createEmbyAdapter = (server: Server): ApiAdapter => {
     tracks,
     similar,
     lyrics,
-    search
+    search,
+    bookmarks,
   };
 };
