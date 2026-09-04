@@ -160,6 +160,45 @@ export interface SubsonicResponseBody {
     entry?: Array<{ id?: string }>;
   };
   randomSongs?: { song?: SubsonicSong[] };
+  podcasts?: {
+    channel?: Array<{
+      id?: string;
+      url?: string;
+      title?: string;
+      description?: string;
+      coverArt?: string;
+      originalImageUrl?: string;
+      status?: string;
+      errorMessage?: string;
+      episode?: Array<{
+        id?: string;
+        streamId?: string;
+        channelId?: string;
+        title?: string;
+        description?: string;
+        publishDate?: string;
+        status?: string;
+        duration?: number;
+        coverArt?: string;
+        contentType?: string;
+        bitRate?: number;
+        path?: string;
+      }>;
+    }>;
+  };
+  newestPodcasts?: {
+    episode?: Array<{
+      id?: string;
+      streamId?: string;
+      channelId?: string;
+      title?: string;
+      description?: string;
+      publishDate?: string;
+      status?: string;
+      duration?: number;
+      coverArt?: string;
+    }>;
+  };
   nowPlaying?: {
     entry?: Array<
       SubsonicSong & { username?: string; minutesAgo?: number }

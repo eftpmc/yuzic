@@ -24,6 +24,7 @@ export enum QueryKeys {
 	ServerRandom = 'server-random-shelf',
 	ServerNowPlaying = 'server-now-playing',
 	LbSimilarForYou = 'lb-similar-for-you',
+	Podcasts = 'server-podcasts',
 	ExploreGenreRow = 'explore-genre-row',
 	ExternalAlbumPreviews = 'external-album-previews',
 	LidarrQueue = 'lidarr-queue',

@@ -8,6 +8,7 @@ import {
   Download,
   ListMusic,
   Music2,
+  Podcast,
   Radio,
   Tags,
   Users,
@@ -91,6 +92,14 @@ const LibraryEntryRows: React.FC = () => {
       labelKey: 'library.radio.title',
       icon: <Radio size={size} color={color} />,
       onPress: () => navigation.push('radio'),
+    })
+  }
+  if (api.podcasts) {
+    browseEntries.push({
+      key: 'podcasts',
+      labelKey: 'library.podcasts.title',
+      icon: <Podcast size={size} color={color} />,
+      onPress: () => navigation.push('podcasts'),
     })
   }
 
@@ -195,6 +204,7 @@ const COUNT_KEY: Record<LibraryEntryKey, string> = {
   genres: 'library.count.genres',
   downloaded: 'library.count.items',
   radio: 'library.count.stations',
+  podcasts: 'library.count.podcasts',
 }
 
 export default LibraryEntryRows

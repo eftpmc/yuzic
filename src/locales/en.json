@@ -520,10 +520,15 @@
       "tracks_one": "{{count}} song",
       "tracks_other": "{{count}} songs",
       "stations_one": "{{count}} station",
-      "stations_other": "{{count}} stations"
+      "stations_other": "{{count}} stations",
+      "podcasts_one": "{{count}} podcast",
+      "podcasts_other": "{{count}} podcasts"
     },
     "radio": {
       "title": "Radio Stations"
+    },
+    "podcasts": {
+      "title": "Podcasts"
     }
   },
   "home": {
@@ -910,5 +915,21 @@
       "streamUrl": "Stream URL",
       "homepage": "Homepage (optional)"
     }
+  },
+  "podcasts": {
+    "title": "Podcasts",
+    "empty": "No podcasts yet. Add one to start listening.",
+    "add": "Add podcast",
+    "addTitle": "Subscribe to a podcast",
+    "addHelp": "Paste the RSS feed URL for the show.",
+    "refresh": "Refresh",
+    "subscribeFailed": "Could not subscribe to that feed",
+    "unsubscribeTitle": "Unsubscribe?",
+    "unsubscribeBody": "Stop following \"{{title}}\"?",
+    "channelEmpty": "No episodes yet — try refreshing.",
+    "notFound": "Podcast not found.",
+    "play": "Play episode",
+    "download": "Download episode",
+    "downloadStarted": "Download started"
   }
 }

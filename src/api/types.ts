@@ -80,6 +80,46 @@ export interface ApiAdapter {
   queue?: QueueApi;
   /** Home-shelf discovery reads (random songs / who else is listening). */
   discovery?: DiscoveryApi;
+  /** Podcast channels + episodes managed by the server. */
+  podcasts?: PodcastsApi;
+}
+
+export type PodcastEpisodeStatus = 'new' | 'downloading' | 'completed' | 'skipped' | 'error';
+
+export type PodcastEpisode = {
+  id: string;
+  streamId: string | null;
+  channelId: string;
+  title: string;
+  description?: string;
+  publishDate?: string;
+  status: PodcastEpisodeStatus;
+  /** Present only when the episode is downloaded and playable — the app
+   * routes playback through buildStreamUrl(playableStreamId). */
+  playableStreamId: string | null;
+  durationSeconds?: number;
+  coverArt?: string;
+};
+
+export type PodcastChannel = {
+  id: string;
+  url: string;
+  title: string;
+  description?: string;
+  coverArt?: string;
+  status: string;
+  errorMessage?: string;
+  episodes: PodcastEpisode[];
+};
+
+export interface PodcastsApi {
+  list(includeEpisodes?: boolean): Promise<PodcastChannel[]>;
+  newestEpisodes(count?: number): Promise<PodcastEpisode[]>;
+  subscribe(rssUrl: string): Promise<void>;
+  unsubscribe(channelId: string): Promise<void>;
+  deleteEpisode(episodeId: string): Promise<void>;
+  downloadEpisode(episodeId: string): Promise<void>;
+  refreshAll(): Promise<void>;
 }
 
 export type NowPlayingEntry = {

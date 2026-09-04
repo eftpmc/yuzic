@@ -70,6 +70,15 @@ import {
 import { getPlayQueue, savePlayQueue } from "./queue/getPlayQueue";
 import { getRandomSongs } from "./discovery/random";
 import { getNowPlaying } from "./discovery/nowPlaying";
+import {
+  getPodcasts,
+  getNewestPodcasts,
+  createPodcastChannel,
+  deletePodcastChannel,
+  deletePodcastEpisode,
+  downloadPodcastEpisode,
+  refreshPodcasts,
+} from "./podcasts/getPodcasts";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -282,6 +291,16 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     getNowPlaying: async () => getNowPlaying(client),
   };
 
+  const podcasts = {
+    list: async (includeEpisodes?: boolean) => getPodcasts(client, { includeEpisodes }),
+    newestEpisodes: async (count?: number) => getNewestPodcasts(client, count),
+    subscribe: async (rssUrl: string) => createPodcastChannel(client, rssUrl),
+    unsubscribe: async (channelId: string) => deletePodcastChannel(client, channelId),
+    deleteEpisode: async (episodeId: string) => deletePodcastEpisode(client, episodeId),
+    downloadEpisode: async (episodeId: string) => downloadPodcastEpisode(client, episodeId),
+    refreshAll: async () => refreshPodcasts(client),
+  };
+
   return {
     auth,
     albums,
@@ -299,5 +318,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     bookmarks,
     queue,
     discovery,
+    podcasts,
   };
 };
