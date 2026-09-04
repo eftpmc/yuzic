@@ -131,6 +131,13 @@ export interface AlbumsApi {
 export interface ArtistsApi {
   list(): Promise<Artist[]>;
   get(id: string): Promise<Artist>;
+  /**
+   * Server-derived "top songs" for one artist — Subsonic's getTopSongs uses
+   * Last.fm playcount rankings, Jellyfin/Emby fall back to per-user play
+   * count. Distinct from the app's own MostPlayed section (that reads local
+   * stats), which is only useful once the user has played anything.
+   */
+  getTopSongs?(artistName: string, limit?: number): Promise<Song[]>;
 }
 
 export interface GenresApi {

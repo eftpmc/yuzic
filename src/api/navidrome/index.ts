@@ -61,6 +61,7 @@ import {
   deleteShare,
   updateShare,
 } from "./shares/getShares";
+import { getTopSongs } from "./artists/getTopSongs";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -138,6 +139,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
       if (!artist) throw new Error("Artist not found");
       return artist;
     },
+    getTopSongs: async (artistName, limit) => getTopSongs(client, artistName, limit),
   };
 
   const genres: GenresApi = {
