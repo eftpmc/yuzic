@@ -118,7 +118,13 @@ export function DownloadersQueueProvider({ children }: { children: ReactNode }) 
   // Clean up snapshots for downloaders that got disconnected.
   useEffect(() => {
     const connectedIds = new Set(connectedStates.map((s) => s.def.id));
-    setQueues((prev) => prev.filter((q) => connectedIds.has(q.id)));
+    // Return `prev` untouched when nothing was dropped: `filter` always
+    // allocates, and a new array here re-runs this effect via the state
+    // update it causes.
+    setQueues((prev) => {
+      const next = prev.filter((q) => connectedIds.has(q.id));
+      return next.length === prev.length ? prev : next;
+    });
     for (const id of Array.from(previousQueuesRef.current.keys())) {
       if (!connectedIds.has(id)) previousQueuesRef.current.delete(id);
     }

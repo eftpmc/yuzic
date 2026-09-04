@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import type { Href } from 'expo-router'
 import * as lidarr from '@/api/lidarr'
@@ -109,7 +110,10 @@ export type DownloaderState = {
 
 export function useDownloaderStates(): DownloaderState[] {
   const entry = useSelector(selectDownloadersForActiveServer)
-  return ALL_DOWNLOADERS.map((def) => {
+  // Memoized on `entry`: callers use the returned array as an effect
+  // dependency, and a fresh array every render turns those effects into
+  // render loops.
+  return useMemo(() => ALL_DOWNLOADERS.map((def) => {
     const connection = entry[def.id]
     return {
       def,
@@ -123,7 +127,7 @@ export function useDownloaderStates(): DownloaderState[] {
       },
       isConnected: connection?.isAuthenticated === true,
     }
-  })
+  }), [entry])
 }
 
 export function useAnyDownloaderConnected(): boolean {
