@@ -8,10 +8,12 @@ import {
   Download,
   ListMusic,
   Music2,
+  Radio,
   Tags,
   Users,
 } from 'lucide-react-native'
 
+import { useApi } from '@/api'
 import { useTheme } from '@/hooks/useTheme'
 import { spacing, typography } from '@/constants/design'
 import CoverMosaic from './CoverMosaic'
@@ -59,12 +61,38 @@ const LibraryEntryRows: React.FC = () => {
   const { t } = useTranslation()
   const { colors } = useTheme()
   const summary = useLibrarySummary()
+  const api = useApi()
 
   const openCollection = (type: LibraryCollectionType) =>
     navigation.push('libraryCollectionView', { type })
 
   const size = 20
   const color = colors.subtext
+
+  // Provider-only surfaces stay out of the list on servers that can't back
+  // them — a Jellyfin user should never see a Radio row that goes nowhere.
+  const browseEntries: Entry[] = [
+    {
+      key: 'genres',
+      labelKey: 'library.genres.title',
+      icon: <Tags size={size} color={color} />,
+      onPress: () => navigation.push('genresView'),
+    },
+    {
+      key: 'downloaded',
+      labelKey: 'home.filters.downloaded',
+      icon: <Download size={size} color={color} />,
+      onPress: () => openCollection('downloaded'),
+    },
+  ]
+  if (api.radio) {
+    browseEntries.push({
+      key: 'radio',
+      labelKey: 'library.radio.title',
+      icon: <Radio size={size} color={color} />,
+      onPress: () => navigation.push('radio'),
+    })
+  }
 
   const sections: Section[] = [
     {
@@ -100,20 +128,7 @@ const LibraryEntryRows: React.FC = () => {
     {
       key: 'browse',
       labelKey: 'library.sections.browse',
-      entries: [
-        {
-          key: 'genres',
-          labelKey: 'library.genres.title',
-          icon: <Tags size={size} color={color} />,
-          onPress: () => navigation.push('genresView'),
-        },
-        {
-          key: 'downloaded',
-          labelKey: 'home.filters.downloaded',
-          icon: <Download size={size} color={color} />,
-          onPress: () => openCollection('downloaded'),
-        },
-      ],
+      entries: browseEntries,
     },
   ]
 
@@ -179,6 +194,7 @@ const COUNT_KEY: Record<LibraryEntryKey, string> = {
   tracks: 'library.count.tracks',
   genres: 'library.count.genres',
   downloaded: 'library.count.items',
+  radio: 'library.count.stations',
 }
 
 export default LibraryEntryRows

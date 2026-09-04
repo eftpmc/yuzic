@@ -505,6 +505,11 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const resolvePlayableSong = useCallback((song: Song): Song => {
     if (song.isPreview) return song;
+    // A radio station's streamUrl is an external URL the server doesn't own —
+    // rebuilding it through api.songs.buildStreamUrl would send the client to
+    // a broken /rest/stream endpoint. Same for podcast episodes when they
+    // carry their own resolved URL. Leave the song as-is.
+    if (song.contentKind === 'liveStream' || song.contentKind === 'podcastEpisode') return song;
     const localPath = getLocalPath(song.id);
     if (localPath) return { ...song, streamUrl: localPath };
     const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);

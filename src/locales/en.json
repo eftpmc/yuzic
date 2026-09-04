@@ -415,7 +415,9 @@
       "restart": "Restart"
     },
     "serverUnreachableBanner": "Can't reach your server — showing local library data",
-    "searchPlaceholder": "Search…"
+    "searchPlaceholder": "Search…",
+    "save": "Save",
+    "saving": "Saving…"
   },
   "onboarding": {
     "home": {
@@ -516,7 +518,12 @@
       "playlists_one": "{{count}} playlist",
       "playlists_other": "{{count}} playlists",
       "tracks_one": "{{count}} song",
-      "tracks_other": "{{count}} songs"
+      "tracks_other": "{{count}} songs",
+      "stations_one": "{{count}} station",
+      "stations_other": "{{count}} stations"
+    },
+    "radio": {
+      "title": "Radio Stations"
     }
   },
   "home": {
@@ -885,5 +892,19 @@
   },
   "externalSourcePicker": {
     "empty": "No sources could resolve this item."
+  },
+  "radio": {
+    "title": "Radio",
+    "empty": "No radio stations yet. Add one to get started.",
+    "add": "Add station",
+    "addTitle": "Add station",
+    "editTitle": "Edit station",
+    "deleteTitle": "Delete station?",
+    "deleteBody": "Remove \"{{name}}\"?",
+    "field": {
+      "name": "Name",
+      "streamUrl": "Stream URL",
+      "homepage": "Homepage (optional)"
+    }
   }
 }

@@ -66,6 +66,26 @@ export interface ApiAdapter {
   similar: SimilarApi;
   lyrics: LyricsApi;
   search: SearchApi;
+  /**
+   * User-managed internet radio stations. Only implemented for servers that
+   * expose it (Subsonic/Navidrome); UI checks presence rather than provider
+   * name so a future adapter can opt in without touching the caller.
+   */
+  radio?: RadioApi;
+}
+
+export type InternetRadioStation = {
+  id: string;
+  name: string;
+  streamUrl: string;
+  homepageUrl?: string;
+};
+
+export interface RadioApi {
+  list(): Promise<InternetRadioStation[]>;
+  create(input: { name: string; streamUrl: string; homepageUrl?: string }): Promise<void>;
+  update(input: { id: string; name: string; streamUrl: string; homepageUrl?: string }): Promise<void>;
+  remove(id: string): Promise<void>;
 }
 
 export interface AuthApi {

@@ -192,6 +192,7 @@ export default function HomeLayout() {
                 <Stack.Screen name="libraryCollectionView" options={{ headerShown: false }} />
                 <Stack.Screen name="genresView" options={{ headerShown: false }} />
                 <Stack.Screen name="genreView" options={{ headerShown: false }} />
+                <Stack.Screen name="radio" options={{ headerShown: false }} />
             </Stack>
 
             <View

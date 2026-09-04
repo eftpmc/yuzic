@@ -49,6 +49,12 @@ import { scrobble } from "./songs/scrobble";
 import { getTracks } from "./tracks/getTracks";
 import { getSimilarSongs } from "./similar/getSimilarSongs";
 import { getSimilarArtists as getNavidromeSimilarArtists } from "./similar/getSimilarArtists";
+import {
+  getInternetRadioStations,
+  createInternetRadioStation,
+  updateInternetRadioStation,
+  deleteInternetRadioStation,
+} from "./radio/getInternetRadioStations";
 
 import { search as searchNavidrome } from "./search/search";
 
@@ -223,6 +229,15 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     search: async (query: string) => searchNavidrome(client, query),
   };
 
+  const radio = {
+    list: async () => getInternetRadioStations(client),
+    create: async (input: { name: string; streamUrl: string; homepageUrl?: string }) =>
+      createInternetRadioStation(client, input),
+    update: async (input: { id: string; name: string; streamUrl: string; homepageUrl?: string }) =>
+      updateInternetRadioStation(client, input),
+    remove: async (id: string) => deleteInternetRadioStation(client, id),
+  };
+
   return {
     auth,
     albums,
@@ -234,6 +249,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     tracks,
     similar,
     lyrics,
-    search
+    search,
+    radio,
   };
 };
