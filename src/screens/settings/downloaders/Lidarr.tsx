@@ -1,13 +1,18 @@
 import React, { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react-native';
 
 import * as lidarr from '@/api/lidarr';
 import type { LidarrQueueRecord } from '@/api/lidarr';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
+import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import Touchable from '@/components/Touchable';
+import { hitSlopFor, statusColor } from '@/constants/design';
 import DownloaderSettingsScreen, {
   downloaderQueueStyles as styles,
+  type RowCancelHelpers,
 } from './DownloaderSettingsScreen';
 
 const LidarrView: React.FC = () => {
@@ -17,7 +22,7 @@ const LidarrView: React.FC = () => {
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
   const renderItem = useCallback(
-    (item: LidarrQueueRecord) => {
+    (item: LidarrQueueRecord, cancel: RowCancelHelpers) => {
       const percent = Math.min(100, item.percentComplete ?? 0);
       const meta =
         item.trackCount > 0
@@ -25,6 +30,7 @@ const LidarrView: React.FC = () => {
           : '';
       const hasWarnings = item.statusMessages?.length > 0;
       const isExpanded = expandedItemId === item.id;
+      const title = item.albumTitle || t('settings.downloaders.unknownAlbum');
 
       return (
         <Pressable
@@ -34,13 +40,33 @@ const LidarrView: React.FC = () => {
           <View style={styles.itemHeader}>
             <View style={styles.itemMain}>
               <Text style={[styles.itemTitle, { color: colors.secondary }]} numberOfLines={1}>
-                {item.albumTitle || t('settings.downloaders.unknownAlbum')}
+                {title}
               </Text>
               <Text style={[styles.itemSub, { color: colors.subtext }]} numberOfLines={1}>
                 {[item.artistName, meta].filter(Boolean).join(' · ')}
               </Text>
             </View>
-            <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
+            <View style={styles.headerTrailing}>
+              <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
+              {cancel.requestCancel && (
+                cancel.isCancelling ? (
+                  <View style={styles.cancelButton}>
+                    <SpinningLoaderCircle size={18} color={colors.subtext} />
+                  </View>
+                ) : (
+                  <Touchable
+                    feedback="control"
+                    style={styles.cancelButton}
+                    hitSlop={hitSlopFor(24)}
+                    onPress={() => cancel.requestCancel!(title)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('settings.downloaders.cancelAria', { title })}
+                  >
+                    <X size={18} color={statusColor.destructive} />
+                  </Touchable>
+                )
+              )}
+            </View>
           </View>
           <View style={[styles.progressTrack, { backgroundColor: colors.border, borderRadius: rad.pill }]}>
             <View
@@ -62,7 +88,7 @@ const LidarrView: React.FC = () => {
         </Pressable>
       );
     },
-    [colors, expandedItemId, t]
+    [colors, expandedItemId, rad.pill, t]
   );
 
   return (
@@ -70,6 +96,7 @@ const LidarrView: React.FC = () => {
       id="lidarr"
       testConnection={lidarr.testConnection}
       fetchQueueWithDiff={lidarr.fetchQueueWithDiff}
+      cancelQueueItem={lidarr.cancelQueueItem}
       renderItem={renderItem}
       onDisconnected={() => setExpandedItemId(null)}
     />

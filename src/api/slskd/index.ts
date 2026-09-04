@@ -3,6 +3,7 @@ export {
   fetchQueue,
   fetchQueueWithDiff,
   detectFinishedQueueItems,
+  cancelQueueItem,
 } from './queue';
 export type { SlskdQueueRecord } from './queue';
 export { downloadAlbum, downloadTrack } from './downloads';

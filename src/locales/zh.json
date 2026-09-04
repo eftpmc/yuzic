@@ -292,6 +292,13 @@
       "tracks_other": "曲目",
       "files": "文件",
       "files_other": "文件",
+      "speed": "{{rate}}/秒",
+      "cancelTitle": "取消下载",
+      "cancelBody": "取消“{{title}}”？",
+      "cancelConfirm": "取消下载",
+      "cancelAria": "取消 {{title}}",
+      "cancelled": "已取消下载。",
+      "cancelFailed": "无法取消该下载。",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"

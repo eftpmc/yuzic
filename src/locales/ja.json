@@ -292,6 +292,13 @@
       "tracks_other": "トラック",
       "files": "ファイル",
       "files_other": "ファイル",
+      "speed": "{{rate}}/秒",
+      "cancelTitle": "ダウンロードをキャンセル",
+      "cancelBody": "「{{title}}」をキャンセルしますか？",
+      "cancelConfirm": "キャンセルする",
+      "cancelAria": "{{title}} をキャンセル",
+      "cancelled": "ダウンロードをキャンセルしました。",
+      "cancelFailed": "ダウンロードをキャンセルできませんでした。",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"

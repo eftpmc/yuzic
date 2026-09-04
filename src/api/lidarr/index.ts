@@ -35,5 +35,6 @@ export {
   fetchQueue,
   fetchQueueWithDiff,
   detectFinishedQueueItems,
+  cancelQueueItem,
 } from './queue';
-export type { LidarrQueueRecord } from './queue';
+export type { LidarrQueueRecord, CancelQueueOptions } from './queue';

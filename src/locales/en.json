@@ -318,6 +318,13 @@
       "tracks_other": "tracks",
       "files": "file",
       "files_other": "files",
+      "speed": "{{rate}}/s",
+      "cancelTitle": "Cancel download",
+      "cancelBody": "Cancel “{{title}}”?",
+      "cancelConfirm": "Cancel download",
+      "cancelAria": "Cancel {{title}}",
+      "cancelled": "Download cancelled.",
+      "cancelFailed": "Couldn't cancel that download.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"

@@ -293,6 +293,13 @@
       "tracks_other": "pistes",
       "files": "fichier",
       "files_other": "fichiers",
+      "speed": "{{rate}}/s",
+      "cancelTitle": "Annuler le téléchargement",
+      "cancelBody": "Annuler « {{title}} » ?",
+      "cancelConfirm": "Annuler le téléchargement",
+      "cancelAria": "Annuler {{title}}",
+      "cancelled": "Téléchargement annulé.",
+      "cancelFailed": "Impossible d'annuler ce téléchargement.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
         "slskd": "http://slskd:5030"

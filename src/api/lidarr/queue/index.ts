@@ -29,6 +29,8 @@ export type LidarrQueueRecord = {
   status?: string;
   trackedDownloadState?: string;
   statusMessages: { title: string }[];
+  /** Raw Lidarr queue IDs grouped under this row — needed to cancel/remove. */
+  rawIds: number[];
 };
 
 export type LidarrQueueResponse = {
@@ -74,6 +76,7 @@ function groupByAlbum(records: LidarrQueueRecordRaw[]): LidarrQueueRecord[] {
       status: first.status,
       trackedDownloadState: first.trackedDownloadState,
       statusMessages,
+      rawIds: arr.map(r => r.id),
     });
   }
   return out;
@@ -109,4 +112,39 @@ export async function fetchQueueWithDiff(
   const currentQueue = await fetchQueue(config);
   const finishedItems = detectFinishedQueueItems(previousQueue, currentQueue);
   return { currentQueue, finishedItems };
+}
+
+export type CancelQueueOptions = {
+  /** Also tell the download client (Sabnzbd/Transmission/etc.) to drop it. */
+  removeFromClient?: boolean;
+  /**
+   * Add the release to Lidarr's blocklist so its next search picks a different
+   * one. On by default because that is what "cancel — this one is bad" means;
+   * pass false to just drop the queue entry.
+   */
+  blocklist?: boolean;
+};
+
+/**
+ * Cancels every raw Lidarr queue id grouped under one album row. Errors from
+ * one id do not stop the others — a partial cancel is still progress.
+ */
+export async function cancelQueueItem(
+  config: LidarrConfig,
+  record: Pick<LidarrQueueRecord, 'rawIds'>,
+  { removeFromClient = true, blocklist = true }: CancelQueueOptions = {}
+): Promise<void> {
+  if (record.rawIds.length === 0) return;
+  const client = createLidarrClient(config);
+  const query = `removeFromClient=${removeFromClient ? 'true' : 'false'}&blocklist=${blocklist ? 'true' : 'false'}`;
+  const results = await Promise.allSettled(
+    record.rawIds.map((id) =>
+      client.request(`/queue/${id}?${query}`, { method: 'DELETE' })
+    )
+  );
+  // If none of the deletes worked at all, treat that as failure so the caller
+  // can surface an error rather than silently leaving the row on-screen.
+  if (results.every((r) => r.status === 'rejected')) {
+    throw new Error('cancel failed');
+  }
 }
