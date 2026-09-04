@@ -28,7 +28,27 @@ const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
     scope === 'client+external' ? 'client' :
     scope === 'server+external' ? 'server' :
     scope ?? 'server';
-  return Promise.resolve({ ...state, syncOnAppStart: true, searchScope: migratedScope });
+
+  // v3 strips the sub-toggle fields the consolidation pass retired
+  // (now-playing follows scrobble, Deezer sub-features follow discovery).
+  // Leaving them in the persisted payload keeps the redux state carrying
+  // dead keys forever, and any code that later resurrects a `deezerSamples-
+  // Enabled` field for a different purpose would read a stale value.
+  const {
+    serverNowPlayingEnabled: _snp,
+    deezerTopTracksEnabled: _dtt,
+    deezerSimilarArtistsEnabled: _dsa,
+    deezerAlbumRecommendationsEnabled: _dar,
+    deezerSamplesEnabled: _ds,
+    deezerPlaylistRecommendationsEnabled: _dpr,
+    ...cleaned
+  } = state ?? {};
+
+  return Promise.resolve({
+    ...cleaned,
+    syncOnAppStart: true,
+    searchScope: migratedScope,
+  });
 };
 
 // v1 gave history entries a shape (query vs. opened entity); before that each
@@ -50,10 +70,29 @@ const audiomusePersistConfig = { key: 'audiomuse', storage };
 const settingsPersistConfig = {
   key: 'settings',
   storage,
-  version: 2,
+  version: 3,
   migrate: settingsMigrate,
 };
-const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
+// Strips the per-server nowPlayingEnabled key the consolidation pass
+// retired — same reasoning as the settings v3 migration.
+const listenbrainzMigrate = (state: any, currentVersion: number): Promise<any> => {
+  if (state?._persist?.version === currentVersion) return Promise.resolve(state);
+  const byServer = state?.byServer;
+  if (!byServer) return Promise.resolve(state);
+  const cleaned: Record<string, any> = {};
+  for (const [serverId, entry] of Object.entries(byServer)) {
+    const { nowPlayingEnabled: _np, ...rest } = (entry as any) ?? {};
+    cleaned[serverId] = rest;
+  }
+  return Promise.resolve({ ...state, byServer: cleaned });
+};
+
+const listenbrainzPersistConfig = {
+  key: 'listenbrainz',
+  storage,
+  version: 1,
+  migrate: listenbrainzMigrate,
+};
 // Playback is written on every track change and (throttled) every few seconds
 // during play; a wipe on version bump is fine — the loss is at most whatever
 // was mid-play when the app got the update.
