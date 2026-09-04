@@ -96,7 +96,7 @@ const listenbrainzPersistConfig = {
 // Playback is written on every track change and (throttled) every few seconds
 // during play; a wipe on version bump is fine — the loss is at most whatever
 // was mid-play when the app got the update.
-const playbackPersistConfig = { key: 'playback', storage };
+const playbackPersistConfig = { key: 'playback', storage, throttle: 3000 };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
 const searchHistoryPersistConfig = {
   key: 'searchHistory',
@@ -105,23 +105,38 @@ const searchHistoryPersistConfig = {
   migrate: searchHistoryMigrate,
 };
 
+// Persist throttling. redux-persist writes on every dispatched action that
+// mutates the slice; for slices that carry thousands of entries (library) or
+// change on every second (playback), that's a JSON.stringify + MMKV write per
+// action — measurable on cold-boot and playback. Throttling batches writes
+// without changing any consumer's behavior.
+//
+//   library / libraryStarred: 1s — sync writes update every album/track in a
+//     single tick, so 1s covers a full sync.
+//   playback: 3s — the position tick is throttled inside
+//     usePlaybackPersistence to ~5s, but the queue slice also gets rewrites
+//     from track advances; 3s catches both without piling up.
+//   stats: 1s — an incrementPlay dispatch happens once per track change.
 const statsPersistConfig = {
   key: 'stats',
   storage,
   version: 3,
   migrate: resetMigrate,
+  throttle: 1000,
 };
 const libraryPersistConfig = {
   key: 'library',
   storage,
   version: 2,
   migrate: resetMigrate,
+  throttle: 1000,
 };
 // Kept separate from libraryPersistConfig: starred toggles on every heart tap and
 // must not re-serialize/re-write the full albums/artists/tracks catalog each time.
 const libraryStarredPersistConfig = {
   key: 'libraryStarred',
   storage,
+  throttle: 1000,
 };
 
 export const rootReducer = combineReducers({
