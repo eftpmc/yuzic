@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
@@ -9,7 +10,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { QueryKeys } from '@/enums/queryKeys';
-import { getDayKey } from '@/features/home/hooks/useDailyLayout';
+import { getDayKey, getDailySeed, seededShuffle } from '@/features/home/hooks/useDailyLayout';
+import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors';
 import {
   SECTION_H_PADDING as H_PADDING,
   SECTION_GRID_GAP,
@@ -34,7 +36,18 @@ export default function ServerRandomSection({ refreshKey = 0 }: Props) {
   const api = useApi();
   const { playSongs } = usePlayingActions();
   const { width: screenWidth } = useWindowDimensions();
+  const genres = useSelector(selectLibraryGenres);
   const dayKey = getDayKey();
+
+  // Genre-of-the-day rotation: pick one library genre from the daily
+  // shuffled order and use it as the seed for the random draw. Turns a
+  // pure-dice shelf into a themed one that reads differently each day
+  // ("today's Ambient", "today's Post-punk") without any user config.
+  const themeGenre = useMemo(() => {
+    if (!genres || genres.length === 0) return null;
+    const seed = getDailySeed(`${dayKey}:${refreshKey}`);
+    return seededShuffle(genres, seed)[0] ?? null;
+  }, [dayKey, refreshKey, genres]);
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
@@ -42,8 +55,11 @@ export default function ServerRandomSection({ refreshKey = 0 }: Props) {
   );
 
   const query = useQuery<Song[]>({
-    queryKey: [QueryKeys.ServerRandom, dayKey, refreshKey],
-    queryFn: async () => (await api.discovery?.getRandomSongs({ size: 12 })) ?? [],
+    queryKey: [QueryKeys.ServerRandom, dayKey, refreshKey, themeGenre ?? ''],
+    queryFn: async () => (await api.discovery?.getRandomSongs({
+      size: 12,
+      ...(themeGenre ? { genre: themeGenre } : {}),
+    })) ?? [],
     enabled: Boolean(api.discovery),
     staleTime: 1000 * 60 * 60 * 4,
   });
@@ -71,7 +87,12 @@ export default function ServerRandomSection({ refreshKey = 0 }: Props) {
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
-        {t('explore.sections.serverRandom', 'Surprise me')}
+        {themeGenre
+          ? t('explore.sections.serverRandomThemed', {
+              genre: themeGenre,
+              defaultValue: `Today's ${themeGenre}`,
+            })
+          : t('explore.sections.serverRandom', 'Surprise me')}
       </Text>
       {query.isLoading ? (
         <SkeletonTiles
