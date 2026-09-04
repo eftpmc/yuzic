@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Disc3,
   Download,
+  Link2,
   ListMusic,
   Music2,
   Podcast,
@@ -100,6 +101,14 @@ const LibraryEntryRows: React.FC = () => {
       labelKey: 'library.podcasts.title',
       icon: <Podcast size={size} color={color} />,
       onPress: () => navigation.push('podcasts'),
+    })
+  }
+  if (api.shares) {
+    browseEntries.push({
+      key: 'shares',
+      labelKey: 'library.shares.title',
+      icon: <Link2 size={size} color={color} />,
+      onPress: () => navigation.push('shares'),
     })
   }
 
@@ -205,6 +214,7 @@ const COUNT_KEY: Record<LibraryEntryKey, string> = {
   downloaded: 'library.count.items',
   radio: 'library.count.stations',
   podcasts: 'library.count.podcasts',
+  shares: 'library.count.shares',
 }
 
 export default LibraryEntryRows

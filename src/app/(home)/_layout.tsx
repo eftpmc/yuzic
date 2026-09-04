@@ -195,6 +195,7 @@ export default function HomeLayout() {
                 <Stack.Screen name="radio" options={{ headerShown: false }} />
                 <Stack.Screen name="podcasts" options={{ headerShown: false }} />
                 <Stack.Screen name="podcastChannel" options={{ headerShown: false }} />
+                <Stack.Screen name="shares" options={{ headerShown: false }} />
             </Stack>
 
             <View

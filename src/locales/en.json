@@ -424,7 +424,8 @@
     "serverUnreachableBanner": "Can't reach your server — showing local library data",
     "searchPlaceholder": "Search…",
     "save": "Save",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "dismiss": "Dismiss"
   },
   "onboarding": {
     "home": {
@@ -529,13 +530,18 @@
       "stations_one": "{{count}} station",
       "stations_other": "{{count}} stations",
       "podcasts_one": "{{count}} podcast",
-      "podcasts_other": "{{count}} podcasts"
+      "podcasts_other": "{{count}} podcasts",
+      "shares_one": "{{count}} shared link",
+      "shares_other": "{{count}} shared links"
     },
     "radio": {
       "title": "Radio Stations"
     },
     "podcasts": {
       "title": "Podcasts"
+    },
+    "shares": {
+      "title": "Shared links"
     }
   },
   "home": {
@@ -942,5 +948,19 @@
     "play": "Play episode",
     "download": "Download episode",
     "downloadStarted": "Download started"
+  },
+  "shares": {
+    "title": "Shared links",
+    "empty": "You haven’t shared anything yet. Use the Share option on an album or playlist to create a link.",
+    "linkCopied": "Link copied",
+    "copy": "Copy link",
+    "share": "Share",
+    "deleteTitle": "Revoke share?",
+    "deleteBody": "The link will stop working immediately.",
+    "neverExpires": "Never expires",
+    "expired": "Expired",
+    "expiresOn": "Expires {{date}}",
+    "visits_one": "{{count}} visit",
+    "visits_other": "{{count}} visits"
   }
 }

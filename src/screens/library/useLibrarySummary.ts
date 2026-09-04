@@ -19,6 +19,7 @@ export type LibraryEntryKey =
   | 'downloaded'
   | 'radio'
   | 'podcasts'
+  | 'shares'
 
 export type LibraryEntrySummary = {
   /** How much sits behind the entry point. */
@@ -116,6 +117,7 @@ export function useLibrarySummary(): Record<LibraryEntryKey, LibraryEntrySummary
       // isn't worth the request. The screen itself fetches on open.
       radio: { count: undefined, covers: [] },
       podcasts: { count: undefined, covers: [] },
+      shares: { count: undefined, covers: [] },
     }
   }, [albums, artists, playlists, tracks, genres, getAllDownloadedCollections])
 }
