@@ -7,7 +7,6 @@ import downloadersReducer from './slices/downloadersSlice';
 import audiomuseReducer from './slices/audiomuseSlice';
 import settingsReducer from './slices/settingsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
-import lastfmReducer from './slices/lastfmSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
 import libraryStarredReducer from './slices/libraryStarredSlice';
@@ -54,7 +53,6 @@ const settingsPersistConfig = {
   migrate: settingsMigrate,
 };
 const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
-const lastfmPersistConfig = { key: 'lastfm', storage };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
 const searchHistoryPersistConfig = {
   key: 'searchHistory',
@@ -88,7 +86,6 @@ export const rootReducer = combineReducers({
     audiomuse: audiomuseReducer,
     settings: settingsReducer,
     listenbrainz: listenbrainzReducer,
-    lastfm: lastfmReducer,
     stats: statsReducer,
     library: libraryReducer,
     libraryStarred: libraryStarredReducer,
@@ -102,7 +99,6 @@ const persistedReducer = combineReducers({
     audiomuse: persistReducer(audiomusePersistConfig, audiomuseReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
-    lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),
     libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),

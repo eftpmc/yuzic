@@ -15,7 +15,7 @@ type OfflineMutationBase = OfflineMutationFailure & {
 
 /** Where a scrobble is submitted. Each is queued separately: one destination
  * failing must not re-submit to the ones that already accepted the play. */
-export type ScrobbleDestination = 'server' | 'listenbrainz' | 'lastfm';
+export type ScrobbleDestination = 'server' | 'listenbrainz';
 
 export type OfflineMutation =
   | (OfflineMutationBase & {
@@ -55,9 +55,9 @@ export type OfflineMutation =
     });
 
 /**
- * Last.fm rejects submissions older than 14 days and ListenBrainz is similarly
- * bounded, so a scrobble that has waited this long will never be accepted —
- * retrying it forever only keeps a dead entry in the queue.
+ * ListenBrainz and Subsonic servers reject submissions older than 14 days, so
+ * a scrobble that has waited this long will never be accepted — retrying it
+ * forever only keeps a dead entry in the queue.
  */
 export const MAX_SCROBBLE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 

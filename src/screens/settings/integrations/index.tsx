@@ -8,7 +8,6 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
 import { selectListenBrainzAuthenticated } from '@/utils/redux/selectors/listenbrainzSelectors';
-import { selectLastFmAuthenticated } from '@/utils/redux/selectors/lastfmSelectors';
 import { selectAnyDeezerEnabled, selectMusicbrainzExternalEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { selectAudiomuseEnabled } from '@/utils/redux/selectors/audiomuseSelectors';
 
@@ -16,7 +15,6 @@ const IntegrationsView: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const isLbConnected = useSelector(selectListenBrainzAuthenticated);
-  const isLfmConnected = useSelector(selectLastFmAuthenticated);
   const isDeezerEnabled = useSelector(selectAnyDeezerEnabled);
   const isMusicbrainzEnabled = useSelector(selectMusicbrainzExternalEnabled);
   const isAudiomuseEnabled = useSelector(selectAudiomuseEnabled);
@@ -34,12 +32,6 @@ const IntegrationsView: React.FC = () => {
           label="MusicBrainz"
           status={isMusicbrainzEnabled ? 'enabled' : 'disabled'}
           onPress={() => router.push('/settings/musicbrainzView')}
-        />
-        <SettingsDivider />
-        <SettingsRow
-          label="Last.fm"
-          status={isLfmConnected ? 'connected' : 'disconnected'}
-          onPress={() => router.push('/settings/lastfmView')}
         />
         <SettingsDivider />
         <SettingsRow

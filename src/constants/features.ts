@@ -22,10 +22,8 @@ export const HOME_SECTION_EMPTY_HORIZONTAL_PADDING = 12;
 
 export const ARTIST_INITIAL_RELEASE_ROWS = 3;
 export { sourceColor } from './design';
-import { sourceColor, statusColor } from './design';
+import { statusColor } from './design';
 
-/** @deprecated Use `sourceColor.lastfm` from constants/design.ts. */
-export const LASTFM_BRAND_COLOR = sourceColor.lastfm;
 export const ONBOARDING_QUICK_CONNECT_TIMEOUT_MS = 10 * 60 * 1000;
 
 export const PLAYING_ARTIST_CARD_HEIGHT = 280;

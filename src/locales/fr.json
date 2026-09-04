@@ -401,31 +401,6 @@
           "body": "La découverte se synchronise lorsque vous vous connectez à un serveur. Actualiser dans Découverte ne fait que mélanger le contenu déjà chargé sans récupérer de nouvelles données. En cas d'échec, un message s'affiche et vous pouvez appuyer sur « Réessayer »."
         }
       }
-    },
-    "lastfm": {
-      "title": "Last.fm",
-      "apiKey": "Clé API",
-      "apiSecret": "Secret API",
-      "apiKeyPlaceholder": "Votre clé API Last.fm",
-      "apiSecretPlaceholder": "Votre secret API Last.fm",
-      "connectedAs": "Connecté en tant que",
-      "notConnected": "Non connecté",
-      "connectWithLastfm": "Se connecter avec Last.fm",
-      "iAuthorized": "J'ai autorisé — obtenir la session",
-      "helperText": "Saisissez votre clé et votre secret API Last.fm, puis appuyez sur Connecter pour autoriser. Vos morceaux seront scrobblés automatiquement. Obtenez vos identifiants API sur last.fm/api/account/create.",
-      "disconnect": "Déconnecter",
-      "missingCredentials": "Saisissez d'abord la clé et le secret API.",
-      "credentialsTitle": "Identifiants",
-      "credentialsHelper": "Créez une application sur last.fm/api/account/create pour obtenir ces clés.",
-      "pendingInstruction": "Une fenêtre de navigateur s'est ouverte — autorisez yuzic, puis appuyez ci-dessous.",
-      "scrobble": "Scrobbler",
-      "nowPlaying": "En cours de lecture",
-      "connectFailed": "Échec de la récupération du jeton Last.fm.",
-      "sessionFailed": "Échec de la récupération de la session. Vérifiez que vous avez autorisé l'application.",
-      "connectionSuccessful": "Connecté en tant que {{username}}.",
-      "disconnected": "Déconnecté de Last.fm.",
-      "similarArtists": "Artistes similaires",
-      "similarArtistsDescription": "Affiche des artistes similaires sur les pages artiste grâce aux données Last.fm."
     }
   },
   "common": {

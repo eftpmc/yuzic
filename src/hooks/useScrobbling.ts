@@ -8,7 +8,6 @@ import {
 } from '@/utils/offline/offlineMutations';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
-import * as lastfm from '@/api/lastfm';
 import * as navidromeScrobble from '@/api/navidrome/scrobble';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
@@ -16,11 +15,6 @@ import {
   selectListenBrainzScrobbleEnabled,
   selectListenBrainzNowPlayingEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
-import {
-  selectLastFmConfig,
-  selectLastFmScrobbleEnabled,
-  selectLastFmNowPlayingEnabled,
-} from '@/utils/redux/selectors/lastfmSelectors';
 import {
   selectServerScrobbleEnabled,
   selectServerNowPlayingEnabled,
@@ -40,9 +34,6 @@ export function useScrobbling() {
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
   const lbScrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
   const lbNowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
-  const lastFmConfig = useSelector(selectLastFmConfig);
-  const lastFmScrobbleEnabled = useSelector(selectLastFmScrobbleEnabled);
-  const lastFmNowPlayingEnabled = useSelector(selectLastFmNowPlayingEnabled);
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
 
@@ -54,8 +45,11 @@ export function useScrobbling() {
 
   /**
    * Parks a failed scrobble in the offline queue instead of dropping it. Each
-   * destination is queued on its own, so a Last.fm outage never re-submits to
-   * ListenBrainz, which already accepted the play.
+   * destination is queued on its own, so a ListenBrainz outage never
+   * re-submits to the server, which already accepted the play. Last.fm is
+   * not a destination yuzic owns — the media server (Navidrome/Jellyfin/Emby)
+   * forwards scrobbles to Last.fm when a user has configured that on the
+   * server side.
    */
   const queueScrobble = useCallback((
     destination: ScrobbleDestination,
@@ -139,21 +133,7 @@ export function useScrobbling() {
         queueScrobble('listenbrainz', song, opts.startTime, songDuration, opts.listenedSeconds);
       }
     }
-
-    if (lastFmConfig && lastFmScrobbleEnabled) {
-      try {
-        await lastfm.submitScrobble(lastFmConfig, {
-          artist: song.artist,
-          track: song.title,
-          timestamp: Math.floor(opts.startTime / 1000),
-          duration: songDuration > 0 ? songDuration : undefined,
-          album: song.albumTitle,
-        });
-      } catch {
-        queueScrobble('lastfm', song, opts.startTime, songDuration, opts.listenedSeconds);
-      }
-    }
-  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, lastFmConfig, lastFmScrobbleEnabled, dispatch, api, queueScrobble]);
+  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, dispatch, api, queueScrobble]);
 
   const submitNowPlaying = useCallback((song: Song) => {
     const songDuration = Number(song.duration) || undefined;
@@ -181,15 +161,7 @@ export function useScrobbling() {
         album: song.albumTitle,
       }).catch(() => {});
     }
-    if (lastFmConfig && lastFmNowPlayingEnabled) {
-      lastfm.updateNowPlaying(lastFmConfig, {
-        artist: song.artist,
-        track: song.title,
-        duration: songDuration,
-        album: song.albumTitle,
-      }).catch(() => {});
-    }
-  }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled, lastFmConfig, lastFmNowPlayingEnabled]);
+  }, [activeServer, serverNowPlayingEnabled, listenBrainzConfig, lbNowPlayingEnabled]);
 
   return { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled };
 }

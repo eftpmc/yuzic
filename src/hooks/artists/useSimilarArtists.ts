@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
 
 import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists'
-import { selectLastFmApiKey } from '@/utils/redux/selectors/lastfmSelectors'
+import { LASTFM_API_KEY } from '@/constants/keys'
 import { QueryKeys } from '@/enums/queryKeys'
 import type { ExternalArtistBase } from '@/types'
 
@@ -16,12 +15,11 @@ export type SimilarArtistsInput = {
 }
 
 async function fetchLastFmSimilarArtists(
-  apiKey: string,
   name: string,
   excludeName: string | undefined,
   limit: number
 ): Promise<ExternalArtistBase[]> {
-  const candidates = await getLastFmSimilarArtists(apiKey, name, limit * 3)
+  const candidates = await getLastFmSimilarArtists(LASTFM_API_KEY, name, limit * 3)
   if (!candidates.length) return []
 
   const normalizedExclude = excludeName?.trim().toLowerCase()
@@ -46,8 +44,6 @@ async function fetchLastFmSimilarArtists(
 }
 
 export function useSimilarArtists(input: SimilarArtistsInput) {
-  const apiKey = useSelector(selectLastFmApiKey)
-
   const queryKey = useMemo(
     () => [QueryKeys.ExploreSimilarArtists, input.mbid ?? input.name ?? '', input.limit ?? 8],
     [input.limit, input.mbid, input.name]
@@ -55,11 +51,10 @@ export function useSimilarArtists(input: SimilarArtistsInput) {
 
   return useQuery({
     queryKey,
-    queryFn: () => fetchLastFmSimilarArtists(apiKey, input.name!, input.excludeName ?? undefined, input.limit ?? 8),
-    // Requires the user's own Last.fm api_key; if they haven't entered one,
-    // this hook stays quiet (returns nothing) instead of calling out to a
-    // proxy on their behalf.
-    enabled: (input.enabled ?? true) && Boolean(input.name) && Boolean(apiKey),
+    queryFn: () => fetchLastFmSimilarArtists(input.name!, input.excludeName ?? undefined, input.limit ?? 8),
+    // Backed by the bundled Last.fm api_key; if the build doesn't have one,
+    // this returns nothing rather than firing a doomed request.
+    enabled: (input.enabled ?? true) && Boolean(input.name) && Boolean(LASTFM_API_KEY),
     staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
   })

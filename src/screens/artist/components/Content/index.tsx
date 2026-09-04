@@ -27,7 +27,6 @@ import { findArtistsWithSharedGenres, type LocalArtistSummary } from './localSim
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import { useDeezerSimilarArtistsEnabled, useDeezerTopTracksEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import { useSelector } from 'react-redux'
-import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
 import Touchable from '@/components/Touchable'
@@ -111,7 +110,6 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
 
   const { navigateToArtist } = useMatchedNavigation()
   const deezerEnabled = useDeezerSimilarArtistsEnabled()
-  const lastfmEnabled = useSelector(selectLastFmSimilarArtistsEnabled)
   const libraryAlbums = useSelector(selectLibraryAlbums)
 
   const { similarArtists: deezerSimilar } = useArtistTopTracks({
@@ -120,12 +118,14 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
     enabled: deezerEnabled,
   })
 
+  // The Last.fm read path uses the bundled api_key; if the build has one,
+  // the hook returns results and this section renders. If it doesn't, the
+  // hook stays disabled and this branch is silently skipped.
   const { data: lastfmSimilar = [] } = useSimilarArtists({
     mbid: artist.mbid,
     name: artist.name,
     excludeName: artist.name,
     limit: 8,
-    enabled: lastfmEnabled,
   })
 
   const localSimilar = useMemo(
@@ -151,7 +151,7 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
           onPressItem={item => navigateToArtist(item)}
         />
       )}
-      {lastfmEnabled && lastfmSimilar.length > 0 && (
+      {lastfmSimilar.length > 0 && (
         <SimilarArtistsSubSection
           data={lastfmSimilar}
           itemSize={itemSize}

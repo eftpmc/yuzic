@@ -400,31 +400,6 @@
           "body": "サーバーに接続するとディスカバリーは同期されます。ディスカバリーでの更新は読み込済みデータのシャッフルのみで再取得は行いません。失敗した場合はメッセージが表示され、「再試行」をタップできます。"
         }
       }
-    },
-    "lastfm": {
-      "title": "Last.fm",
-      "apiKey": "APIキー",
-      "apiSecret": "APIシークレット",
-      "apiKeyPlaceholder": "Last.fmのAPIキー",
-      "apiSecretPlaceholder": "Last.fmのAPIシークレット",
-      "connectedAs": "接続中のアカウント",
-      "notConnected": "未接続",
-      "connectWithLastfm": "Last.fmと連携",
-      "iAuthorized": "承認しました — セッションを取得",
-      "helperText": "Last.fmのAPIキーとシークレットを入力し、連携をタップして承認してください。再生した曲は自動的にスクロブルされます。APIキーは last.fm/api/account/create で取得できます。",
-      "disconnect": "連携を解除",
-      "missingCredentials": "先にAPIキーとシークレットを入力してください。",
-      "credentialsTitle": "認証情報",
-      "credentialsHelper": "last.fm/api/account/create でアプリを作成してこれらのキーを取得してください。",
-      "pendingInstruction": "ブラウザが開きました — yuzicを承認してから下をタップしてください。",
-      "scrobble": "スクロブル",
-      "nowPlaying": "再生中",
-      "connectFailed": "Last.fmからトークンを取得できませんでした。",
-      "sessionFailed": "セッションを取得できませんでした。アプリを承認したか確認してください。",
-      "connectionSuccessful": "{{username}} として接続しました。",
-      "disconnected": "Last.fmとの連携を解除しました。",
-      "similarArtists": "類似アーティスト",
-      "similarArtistsDescription": "Last.fmのデータを使ってアーティストページに類似アーティストを表示します。"
     }
   },
   "common": {
