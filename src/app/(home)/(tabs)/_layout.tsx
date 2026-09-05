@@ -98,15 +98,15 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     // One surface, edge to edge. The now-playing row and the tab row are two
-    // rows of the same dock rather than a card parked on a slab. A hairline
-    // along the top separates it from the content; the playing bar's own
-    // progress rule, now edge to edge, separates the two rows.
+    // rows of the same dock rather than a card parked on a slab. The dock sits
+    // a step above the page on the app's raised-surface colour, which is what
+    // marks where content ends — a drawn hairline on top of a tonal change
+    // would be saying the same thing twice.
     <View
       style={[
         styles.panel,
         {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
+          backgroundColor: colors.card,
           paddingBottom: Math.max(insets.bottom, 8),
         },
       ]}
@@ -176,7 +176,6 @@ const styles = StyleSheet.create({
     // No absolute positioning: react-navigation lays this out itself and
     // measures it for tab-bar-inset. Screens above get the room reserved
     // via tabBarHeight without us duplicating the math.
-    borderTopWidth: StyleSheet.hairlineWidth,
   },
   tabRow: {
     flexDirection: 'row',
