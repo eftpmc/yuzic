@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useEffect } from 'react';
-import { spacing, statusColor } from '@/constants/design';
+import { spacing, statusColor, typography } from '@/constants/design';
 import {
+  Text,
   View,
   StyleSheet,
 } from 'react-native';
@@ -46,6 +47,20 @@ const SongRow: React.FC<Props> = ({
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
 
+  /**
+   * The track's position on the record.
+   *
+   * Only on the album variant, which is the only place the running order is
+   * the point — in a playlist or a search result the number would be the
+   * song's position on some other record entirely, which is worse than no
+   * number at all. Null when the server didn't tag one, rather than a
+   * guessed index: a gap in the numbering is information, and a made-up "7"
+   * beside a track the server calls untracked is not.
+   */
+  const trackNumber = isAlbumCompact && typeof song.trackNumber === 'number' && song.trackNumber > 0
+    ? song.trackNumber
+    : null;
+
   const heartOpacity = useSharedValue(isFavorite ? 1 : 0);
   useEffect(() => {
     heartOpacity.value = withTiming(isFavorite ? 1 : 0, { duration: 200 });
@@ -77,6 +92,15 @@ const SongRow: React.FC<Props> = ({
         showCover={!isAlbumCompact}
         variant="compact"
         rowStyle={isAlbumCompact ? styles.mediaRowAlbumCompact : undefined}
+        leading={trackNumber !== null ? (
+          <Text
+            style={[styles.trackNumber, { color: colors.subtext }]}
+            numberOfLines={1}
+            allowFontScaling={false}
+          >
+            {trackNumber}
+          </Text>
+        ) : undefined}
         trailing={
           <View style={styles.rowRight}>
             <Animated.View style={heartStyle}>
@@ -103,6 +127,16 @@ const SongRow: React.FC<Props> = ({
 const styles = StyleSheet.create({
   mediaRowAlbumCompact: {
     paddingVertical: spacing.md,
+  },
+  trackNumber: {
+    ...typography.rowSubtitle,
+    // Fixed width and right-aligned so the titles form a straight edge whether
+    // the record has nine tracks or nineteen. Tabular figures keep "11" the
+    // same width as "17", which proportional digits do not.
+    width: 24,
+    marginRight: spacing.md,
+    textAlign: 'right',
+    fontVariant: ['tabular-nums'],
   },
   rowRight: {
     flexDirection: 'row',

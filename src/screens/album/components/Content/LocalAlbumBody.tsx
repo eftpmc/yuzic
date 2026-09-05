@@ -56,8 +56,17 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
     return artistAlbums.filter(a => a.id !== album.id);
   }, [artistAlbums, album.id]);
 
-  const footer = useMemo(() => {
+  /**
+   * How long the record is, above the record rather than below it.
+   *
+   * This used to sit at the end of the footer, under the last track and the
+   * "more by" shelf — so "49 min" was only readable by someone who had already
+   * scrolled past every song. It answers a question asked before pressing
+   * play, not after, which puts it beside the play button.
+   */
+  const stats = useMemo(() => {
     const songs = album.songs ?? [];
+    if (songsLoading || songs.length === 0) return null;
     const totalSec = songs.reduce((acc, s) => acc + (Number(s.duration) || 0), 0);
     const hrs = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
@@ -67,12 +76,17 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
     const songLabel = t(songs.length === 1 ? 'common.song' : 'common.songs');
     const playLabel = t(albumPlayCount === 1 ? 'album.play' : 'album.plays');
     return (
+      <View style={styles.statsHeader}>
+        <Text style={[styles.statsText, { color: colors.subtext }]}>
+          {songs.length} {songLabel} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${playLabel}` : ''}
+        </Text>
+      </View>
+    );
+  }, [album.songs, songsLoading, albumPlayCount, colors, t]);
+
+  const footer = useMemo(() => {
+    return (
       <View>
-        <View style={styles.statsFooter}>
-          <Text style={[styles.statsText, { color: colors.subtext }]}>
-            {songs.length} {songLabel} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${playLabel}` : ''}
-          </Text>
-        </View>
         {moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
             <Text style={[styles.moreSectionTitle, { color: colors.secondary }]}>
@@ -105,7 +119,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
         )}
       </View>
     );
-  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation, t, rad.card]);
+  }, [album.artist, album.id, colors, moreAlbums, tileWidth, navigation, t, rad.card]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -176,7 +190,12 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
           (layout as { size?: number }).size =
             item.type === 'disc-header' ? ALBUM_DISC_HEADER_HEIGHT : ALBUM_ESTIMATED_ROW_HEIGHT;
         }}
-        ListHeaderComponent={<AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />}
+        ListHeaderComponent={
+          <>
+            <AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />
+            {stats}
+          </>
+        }
         ListFooterComponent={footer}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
         showsVerticalScrollIndicator={false}
@@ -195,10 +214,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  statsFooter: {
+  statsHeader: {
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
   statsText: {
     ...typography.caption,
