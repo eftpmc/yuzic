@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   TextInput,
@@ -7,8 +7,8 @@ import {
   ScrollView,
   Text,
 } from 'react-native';
-import { CloudOff, Ellipsis, X } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { CloudOff, Ellipsis, Search as SearchIcon, X } from 'lucide-react-native';
+import { useFocusEffect, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
@@ -55,6 +55,8 @@ import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
   const { openSongOptions } = useSongActionSheets();
   const navigation = useNavigation<any>();
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
@@ -78,6 +80,31 @@ const Search = () => {
   const { searchResults, handleSearchWithFilters, clearSearch, isLoading, hasError } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * Open the keyboard when the tab is opened with nothing typed.
+   *
+   * Arriving at Search means intending to type, and the tab used to land on a
+   * field the user then had to reach up and tap. Focusing it also means the
+   * space below is covered by the keyboard rather than sitting empty — which
+   * is what the screen with no search history is, and what an empty state
+   * would otherwise have had to fill.
+   *
+   * Gated on an empty query so this is the *idle* screen's behaviour, not the
+   * tab's: coming back from an album opened out of the results should return
+   * to those results, not throw a keyboard over them. Deferred a frame because
+   * focusing mid-transition drops the keyboard on both platforms.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      if (query.trim() !== '') return;
+      const frame = requestAnimationFrame(() => searchInputRef.current?.focus());
+      return () => cancelAnimationFrame(frame);
+      // Intentionally not reacting to `query`: this fires on focus, and
+      // re-running it as the user types would fight the keyboard.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
 
   useEffect(() => {
     return () => {
@@ -354,6 +381,7 @@ const Search = () => {
       />
       <View style={styles.headerRow}>
         <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
+          <SearchIcon size={18} color={colors.placeholder} style={styles.searchIcon} />
           <TextInput
             accessibilityLabel="Search input"
             testID="search-input"
@@ -365,6 +393,15 @@ const Search = () => {
             onChangeText={onSearchChange}
             returnKeyType="search"
             onSubmitEditing={onSearchSubmit}
+            // A library is full of names iOS has never seen — `pornophonique`,
+            // `netBloc`, `Ugress`. Left to its defaults the field capitalises
+            // the first letter and autocorrects the rest into English words,
+            // so the query that reaches the server is not the one that was
+            // typed. None of the three helps when the target is a proper noun.
+            autoCorrect={false}
+            autoCapitalize="none"
+            spellCheck={false}
+            clearButtonMode="never"
           />
           {query !== '' && (
             <Touchable
@@ -388,6 +425,7 @@ const Search = () => {
       )}
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollClearance }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -466,6 +504,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
+  },
+  searchIcon: {
+    marginRight: spacing.sm,
   },
   searchInput: {
     ...typography.body,
