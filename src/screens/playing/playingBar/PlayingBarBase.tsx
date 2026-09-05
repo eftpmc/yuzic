@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, memo, useState } from 'react';
-import { BackHandler, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { BackHandler, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Music, Play, Pause } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import ImageColors from 'react-native-image-colors';
@@ -45,7 +44,7 @@ const ProgressBarStrip = memo(({
 }: {
   fallbackDuration: number;
   themeColor: string;
-  containerStyle: ViewStyle;
+  containerStyle: StyleProp<ViewStyle>;
 }) => {
   const { position, duration } = usePlayingProgress();
   const effectiveDuration = duration > 0 ? duration : fallbackDuration;
@@ -70,21 +69,14 @@ ProgressBarStrip.displayName = 'ProgressBarStrip';
 
 const variantStyles = {
   ios: {
-    blurIntensity: 100,
-    wrapper: {
-      marginHorizontal: spacing.md,
-      marginTop: spacing.md,
-      marginBottom: 0,
-      overflow: 'hidden' as const,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 10,
-    },
+    // No margins, radius or shadow: the bar is the top row of the tab dock,
+    // not a card resting on it. The dock owns the surface and the hairline.
+    wrapper: {},
     container: {
       flexDirection: 'column' as const,
       padding: spacing.sm,
       paddingBottom: 0,
-      paddingHorizontal: spacing.md,
+      paddingHorizontal: spacing.page,
     },
     topRowWrapper: {
       height: 40,
@@ -106,8 +98,13 @@ const variantStyles = {
       ...typography.caption,
     },
     progressBarContainer: {
-      height: 3,
-      marginTop: spacing.tight,
+      // Edge to edge: this is the rule between the now-playing row and the
+      // tabs, so it cancels the container's page padding rather than sitting
+      // inset like a widget's own progress bar.
+      height: 2,
+      marginTop: spacing.sm,
+      marginHorizontal: -spacing.page,
+      borderRadius: 0,
     },
     playPauseButton: {
       padding: spacing.sm,
@@ -127,22 +124,12 @@ const variantStyles = {
     placeholderIconSize: 32,
   },
   android: {
-    blurIntensity: 0,
-    wrapper: {
-      marginHorizontal: spacing.md,
-      marginTop: spacing.md,
-      marginBottom: 0,
-      overflow: 'hidden' as const,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 10,
-      elevation: 4,
-    },
+    wrapper: {},
     container: {
       flexDirection: 'column' as const,
       padding: spacing.sm,
       paddingBottom: 0,
-      paddingHorizontal: spacing.md,
+      paddingHorizontal: spacing.page,
     },
     topRowWrapper: {
       height: 40,
@@ -164,8 +151,13 @@ const variantStyles = {
       ...typography.caption,
     },
     progressBarContainer: {
-      height: 3,
-      marginTop: spacing.tight,
+      // Edge to edge: this is the rule between the now-playing row and the
+      // tabs, so it cancels the container's page padding rather than sitting
+      // inset like a widget's own progress bar.
+      height: 2,
+      marginTop: spacing.sm,
+      marginHorizontal: -spacing.page,
+      borderRadius: 0,
     },
     playPauseButton: {
       padding: spacing.sm,
@@ -186,7 +178,7 @@ const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE
 
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
@@ -274,12 +266,6 @@ export default function PlayingBarBase({ variant }: Props) {
     setCurrentGradient(nextGradient);
   }, [nextGradient]);
 
-  const androidSurfaceStyle = {
-    backgroundColor: isDarkMode ? 'rgba(24,24,24,0.96)' : 'rgba(255,255,255,0.96)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-  };
-
   const content = (
     <View style={[styles.topRow, stylesForVariant.topRow]}>
       {currentSong?.cover ? (
@@ -362,7 +348,10 @@ export default function PlayingBarBase({ variant }: Props) {
         <ProgressBarStrip
           fallbackDuration={Number(currentSong?.duration) || 1}
           themeColor={themeColor}
-          containerStyle={stylesForVariant.progressBarContainer}
+          containerStyle={[
+            stylesForVariant.progressBarContainer,
+            { backgroundColor: colors.border },
+          ]}
         />
       )}
     </>
@@ -376,20 +365,8 @@ export default function PlayingBarBase({ variant }: Props) {
         testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
         onPress={handleExpand}
       >
-        <View style={[styles.wrapper, stylesForVariant.wrapper, { borderRadius: rad.card }]}>
-          {variant === 'android' ? (
-            <View style={[styles.container, stylesForVariant.container, { borderRadius: rad.card }, androidSurfaceStyle]}>
-              {barContent}
-            </View>
-          ) : (
-            <BlurView
-              intensity={stylesForVariant.blurIntensity}
-              tint={isDarkMode ? 'dark' : 'light'}
-              style={[styles.container, stylesForVariant.container, { borderRadius: rad.card }]}
-            >
-              {barContent}
-            </BlurView>
-          )}
+        <View style={[styles.wrapper, stylesForVariant.wrapper]}>
+          <View style={[styles.container, stylesForVariant.container]}>{barContent}</View>
         </View>
       </Touchable>
 

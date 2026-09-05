@@ -112,7 +112,20 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
   };
 
   return (
-    <View style={[styles.panel, { backgroundColor: colors.background, paddingBottom: Math.max(insets.bottom, 8) }]}>
+    // One surface, edge to edge. The now-playing row and the tab row are two
+    // rows of the same dock rather than a card parked on a slab. A hairline
+    // along the top separates it from the content; the playing bar's own
+    // progress rule, now edge to edge, separates the two rows.
+    <View
+      style={[
+        styles.panel,
+        {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          paddingBottom: Math.max(insets.bottom, 8),
+        },
+      ]}
+    >
       <PlayingBar />
       <View style={styles.tabRow}>
         <TabButton
@@ -175,6 +188,7 @@ const styles = StyleSheet.create({
     // No absolute positioning: react-navigation lays this out itself and
     // measures it for tab-bar-inset. Screens above get the room reserved
     // via tabBarHeight without us duplicating the math.
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   tabRow: {
     flexDirection: 'row',
