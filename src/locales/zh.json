@@ -123,7 +123,31 @@
         }
       },
       "translucentDock": "半透明底栏",
-      "translucentDockSubtext": "让标签栏浮于页面之上，内容从其下方滚动。"
+      "translucentDockSubtext": "让标签栏浮于页面之上，内容从其下方滚动。",
+      "coverAccent": "取色自封面",
+      "coverAccentSubtext": "用封面上的颜色为专辑、艺人和播放器页面着色。",
+      "listDensity": {
+        "info": "列表中各行之间留出的间距。",
+        "compact": {
+          "label": "紧凑",
+          "subtext": "行距更小，一屏显示更多内容。"
+        },
+        "default": {
+          "label": "默认",
+          "subtext": "应用的常规间距。"
+        },
+        "spacious": {
+          "label": "宽松",
+          "subtext": "一屏显示更少，但更容易看清每一行。"
+        }
+      },
+      "homeSources": "首页栏目",
+      "homeSourcesServer": "来自服务器",
+      "homeSourcesServerSubtext": "显示服务器的随机栏目和正在播放。",
+      "homeSourcesListenbrainz": "ListenBrainz",
+      "homeSourcesListenbrainzSubtext": "显示 ListenBrainz 的相似艺人栏目。",
+      "homeSourcesDeezer": "Deezer",
+      "homeSourcesDeezerSubtext": "显示 Deezer 的发现栏目（排行榜、热门单曲、相似艺人）。"
     },
     "library": {
       "title": "媒体库",

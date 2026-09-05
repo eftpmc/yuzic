@@ -39,7 +39,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type PlaylistListProps = {
@@ -176,7 +176,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           <MediaImage
             cover={item.cover ?? { kind: 'none' }}
             size="thumb"
-            style={styles.playlistCover}
+            style={[styles.playlistCover, { borderRadius: rad.thumb }]}
           />
 
           <Text style={[styles.optionText, { color: colors.secondary }]}>
@@ -190,7 +190,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           />
         </Touchable>
       );
-    }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor]);
+    }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor, rad.thumb]);
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
@@ -389,7 +389,6 @@ const styles = StyleSheet.create({
   playlistCover: {
     width: 48,
     height: 48,
-    borderRadius: radius.sm,
     marginRight: spacing.md,
   },
   optionText: {

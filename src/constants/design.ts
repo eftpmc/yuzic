@@ -107,15 +107,15 @@ export const stateLayer = {
  * Literal `borderRadius` ran to twelve distinct values — 2, 4, 5, 6, 8, 10, 11,
  * 12, 14, 16, 24, 60 — which is one per developer-day rather than a decision.
  *
- * These are the **default** values, always static. Small structural nudges
- * (`xs`/`sm`/`thumb`) are left this way on purpose — they don't drive the app's
- * shape and shouldn't jitter as the user tries presets. The scale below is
- * what an untouched preset renders.
+ * These are the **default** values, always static. The structural nudges
+ * (`xs`/`sm`) are left this way on purpose — they round the corner of a
+ * progress fill or a pressed row highlight, which is not shape the user is
+ * choosing when they pick a preset.
  *
- * User-facing shape (album covers, playing bar, player controls, library
- * tiles, buttons) reads its corners from {@link useRadius} instead, which
- * scales the same base numbers by whichever preset the user picked. This is
- * what {@link RadiusPreset} controls — it never reaches back to change these
+ * User-facing shape (album covers, row artwork, playing bar, player controls,
+ * library tiles, buttons) reads its corners from {@link useRadius} instead,
+ * which scales the same base numbers by whichever preset the user picked. This
+ * is what {@link RadiusPreset} controls — it never reaches back to change these
  * defaults, so anything unmigrated stays at "default" regardless of preset.
  */
 export type RadiusPreset = 'sharp' | 'default' | 'rounded';
@@ -126,6 +126,10 @@ export const radius = {
   none: 0,
   xs: 4,
   sm: 6,
+  /** Artwork in a row — the thumbnail beside a track, a playlist, a search
+   * result. The single most repeated shape in the app, so it scales with the
+   * preset (via {@link useRadius}) rather than holding still while the cards
+   * around it move. */
   thumb: 6,
   md: 8,
   card: 12,
@@ -222,11 +226,41 @@ export function hitSlopFor(size: number) {
   return { top: pad, bottom: pad, left: pad, right: pad };
 }
 
-export const rowDensity = {
-  compact: { paddingVertical: 8, marginBottom: 0 },
-  standard: { paddingVertical: 10, marginBottom: 16 },
-  spacious: { paddingVertical: 13, marginBottom: 16 },
-} as const;
+/**
+ * The vertical rhythm of a list row — how much air it has above and below.
+ *
+ * This is the user's choice rather than a per-screen one, which is why it
+ * replaced the old fixed `rowDensity` scale: that had three densities a screen
+ * picked from and two of the three were never picked. The three roles here are
+ * the three shapes a row actually comes in, and each moves one step of the
+ * spacing scale per density, so the whole app loosens or tightens together
+ * instead of one list changing while the next holds still.
+ *
+ * Only the rhythm moves. Artwork and type stay the size they are at every
+ * density — a "compact" list that also shrank the covers would be a different
+ * design rather than a denser one.
+ *
+ * The `default` column is what every list rendered before the setting existed,
+ * so an untouched install does not move.
+ */
+export type ListDensity = 'compact' | 'default' | 'spacious';
+
+export const listDensity: Record<
+  ListDensity,
+  {
+    /** Gap below a row that stands on its own — an album, artist or playlist. */
+    rowGap: number;
+    /** Padding inside a compact row, which sits flush against the next one. */
+    rowPadding: number;
+    /** Padding inside a track row, which is compact but carries a whole
+     *  record's worth of them and needs the extra step. */
+    trackRowPadding: number;
+  }
+> = {
+  compact: { rowGap: spacing.sm, rowPadding: spacing.xs, trackRowPadding: spacing.sm },
+  default: { rowGap: spacing.lg, rowPadding: spacing.sm, trackRowPadding: spacing.md },
+  spacious: { rowGap: spacing.xl, rowPadding: spacing.md, trackRowPadding: spacing.roomy },
+};
 
 export type SemanticThemeColors = {
   themeColor: string;

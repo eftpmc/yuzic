@@ -74,7 +74,18 @@ because both halves of each pair look reasonable in isolation.
   are pure and tested, because the extraction library returns a different shape
   per platform and that choice is the part worth checking. The accent is null
   until it arrives, so a screen fades it in rather than flashing a placeholder.
-  Do not re-extract colours locally — the cache is shared and bounded.
+  Do not re-extract colours locally — the cache is shared and bounded. Null is
+  also what the hook returns when the user has turned cover tinting off, so no
+  call site needs a branch for the setting.
+- **Appearance settings**: the scales a user can move — corner radius
+  (`useRadius`) and list density (`useListDensity`) — are read through a hook,
+  never imported statically, or the surface silently opts out of the setting
+  and the preset reads as half-applied. Every one of them falls back in its
+  selector rather than reading straight off the persisted settings blob: a user
+  upgrading has one written before the key existed, and `undefined` reaches the
+  style as a broken layout rather than as a default. Under the `default` option
+  each hook returns exactly the number the app used before the setting existed,
+  so adding one moves nothing until the user asks it to.
 - **Home vs Library**: Home is what changes, Library is what's complete. A view
   that moves on its own — recently added, most played, what you were listening
   to — is a Home shelf; the stable, exhaustive, sortable list is a Library

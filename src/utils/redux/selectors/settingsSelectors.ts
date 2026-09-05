@@ -9,7 +9,7 @@ import {
   LibraryViewKey,
   LIBRARY_VIEW_DEFAULTS,
 } from '@/utils/redux/slices/settingsSlice';
-import type { RadiusPreset } from '@/constants/design';
+import type { ListDensity, RadiusPreset } from '@/constants/design';
 
 export const selectSettings = (state: RootState) => state.settings;
 
@@ -21,6 +21,14 @@ export const selectThemeColor = (state: RootState): string =>
 
 export const selectRadiusPreset = (state: RootState): RadiusPreset =>
   (state.settings.radiusPreset as RadiusPreset | undefined) ?? 'default';
+
+/** Falls back rather than reading straight through, because a user upgrading
+ *  has a persisted settings object written before this key existed. */
+export const selectListDensity = (state: RootState): ListDensity =>
+  (state.settings.listDensity as ListDensity | undefined) ?? 'default';
+
+export const selectCoverAccentEnabled = (state: RootState): boolean =>
+  state.settings.coverAccentEnabled ?? true;
 
 export const selectGridColumns = (state: RootState): number =>
   state.settings.gridColumns;

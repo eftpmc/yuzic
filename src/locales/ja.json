@@ -123,7 +123,31 @@
         }
       },
       "translucentDock": "半透明のドック",
-      "translucentDockSubtext": "タブバーをページの上に浮かせ、コンテンツがその下をスクロールするようにします。"
+      "translucentDockSubtext": "タブバーをページの上に浮かせ、コンテンツがその下をスクロールするようにします。",
+      "coverAccent": "アートワークから配色",
+      "coverAccentSubtext": "アルバム・アーティスト・プレイヤー画面をカバーから取った色で染めます。",
+      "listDensity": {
+        "info": "リストの行と行のあいだの間隔です。",
+        "compact": {
+          "label": "コンパクト",
+          "subtext": "行の間隔を詰めて、より多くの行を表示します。"
+        },
+        "default": {
+          "label": "標準",
+          "subtext": "アプリの通常の間隔です。"
+        },
+        "spacious": {
+          "label": "ゆったり",
+          "subtext": "表示される行は減りますが、1行ずつ選びやすくなります。"
+        }
+      },
+      "homeSources": "ホームの棚",
+      "homeSourcesServer": "サーバー",
+      "homeSourcesServerSubtext": "サーバーのランダムな棚と再生中を表示します。",
+      "homeSourcesListenbrainz": "ListenBrainz",
+      "homeSourcesListenbrainzSubtext": "ListenBrainz の類似アーティストの棚を表示します。",
+      "homeSourcesDeezer": "Deezer",
+      "homeSourcesDeezerSubtext": "Deezer のディスカバリー棚（チャート、人気曲、類似アーティスト）を表示します。"
     },
     "library": {
       "title": "ライブラリ",

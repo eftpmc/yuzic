@@ -8,7 +8,9 @@ import {
 } from 'react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, radius, rowDensity, spacing, typography } from '@/constants/design';
+import { controlSize, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
+import { useListDensity } from '@/hooks/useListDensity';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
 
@@ -46,11 +48,21 @@ export default function MediaListRow({
   style,
 }: Props) {
   const { colors } = useTheme();
+  const rad = useRadius();
+  const density = useListDensity();
   const isCompact = variant === 'compact';
 
   return (
     <View style={[styles.wrapper, style]}>
-      <View style={[styles.row, isCompact && styles.compactRow, rowStyle]}>
+      <View
+        style={[
+          styles.row,
+          isCompact
+            ? { paddingVertical: density.rowPadding }
+            : { marginBottom: density.rowGap },
+          rowStyle,
+        ]}
+      >
         <Touchable
           accessibilityRole={onPress ? 'button' : undefined}
           accessibilityLabel={onPress ? title : undefined}
@@ -66,6 +78,7 @@ export default function MediaListRow({
               size={isCompact ? 'thumb' : 'grid'}
               style={[
                 styles.cover,
+                { borderRadius: rad.thumb },
                 isCompact && styles.compactCover,
                 roundedCover && (isCompact ? styles.compactCoverRounded : styles.coverRounded),
               ]}
@@ -112,9 +125,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.rowGap,
-    marginBottom: spacing.lg,
   },
-  compactRow: rowDensity.compact,
   content: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -123,7 +134,6 @@ const styles = StyleSheet.create({
   cover: {
     width: controlSize.mediaRowArt,
     height: controlSize.mediaRowArt,
-    borderRadius: radius.thumb,
   },
   compactCover: {
     width: controlSize.compactMediaRowArt,

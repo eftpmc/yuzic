@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useEffect } from 'react';
 import { spacing, statusColor, typography } from '@/constants/design';
+import { useListDensity } from '@/hooks/useListDensity';
 import {
   Text,
   View,
@@ -44,6 +45,7 @@ const SongRow: React.FC<Props> = ({
   const { playSongInCollection } = usePlayingActions();
   const { openSongOptions } = useSongActionSheets();
   const { isTrackDownloaded } = useDownloadState();
+  const density = useListDensity();
   const isAlbumCompact = variant === 'albumCompact';
   const downloaded = isTrackDownloaded(song.id);
 
@@ -91,7 +93,7 @@ const SongRow: React.FC<Props> = ({
         disabled={!onPress && !collection}
         showCover={!isAlbumCompact}
         variant="compact"
-        rowStyle={isAlbumCompact ? styles.mediaRowAlbumCompact : undefined}
+        rowStyle={isAlbumCompact ? { paddingVertical: density.trackRowPadding } : undefined}
         leading={trackNumber !== null ? (
           <Text
             style={[styles.trackNumber, { color: colors.subtext }]}
@@ -125,9 +127,6 @@ const SongRow: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  mediaRowAlbumCompact: {
-    paddingVertical: spacing.md,
-  },
   trackNumber: {
     ...typography.rowSubtitle,
     // Fixed width and right-aligned so the titles form a straight edge whether

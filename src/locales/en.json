@@ -119,7 +119,31 @@
         }
       },
       "translucentDock": "Translucent dock",
-      "translucentDockSubtext": "Float the tab bar over the page so content scrolls under it."
+      "translucentDockSubtext": "Float the tab bar over the page so content scrolls under it.",
+      "coverAccent": "Colour from artwork",
+      "coverAccentSubtext": "Tint album, artist, and player screens with a shade taken from the cover.",
+      "listDensity": {
+        "info": "How much space sits between rows in a list.",
+        "compact": {
+          "label": "Compact",
+          "subtext": "More rows on screen, less air between them."
+        },
+        "default": {
+          "label": "Default",
+          "subtext": "The app's usual spacing."
+        },
+        "spacious": {
+          "label": "Spacious",
+          "subtext": "Fewer rows on screen, easier to pick one out."
+        }
+      },
+      "homeSources": "Home shelves",
+      "homeSourcesServer": "On your server",
+      "homeSourcesServerSubtext": "Show random shelves and now-playing from your server.",
+      "homeSourcesListenbrainz": "ListenBrainz",
+      "homeSourcesListenbrainzSubtext": "Show ListenBrainz similar-artist shelves.",
+      "homeSourcesDeezer": "Deezer",
+      "homeSourcesDeezerSubtext": "Show Deezer discovery shelves (charts, top tracks, similar artists)."
     },
     "library": {
       "title": "Library",

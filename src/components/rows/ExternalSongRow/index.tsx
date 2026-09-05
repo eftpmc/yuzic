@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme';
 import MediaListRow from '@/components/MediaListRow';
 import ExternalSongOptions from '@/components/options/ExternalSongOptions';
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled';
+import { useListDensity } from '@/hooks/useListDensity';
 
 type Props = {
   song: ExternalSong;
@@ -32,6 +33,7 @@ const ExternalSongRow: React.FC<Props> = ({
   const { colors } = useTheme();
   const { t } = useTranslation();
   const samplesEnabled = useDeezerDiscoveryEnabled();
+  const density = useListDensity();
   const hasPreview = !!previewUrl;
 
   const handlePress = useCallback(() => {
@@ -50,7 +52,7 @@ const ExternalSongRow: React.FC<Props> = ({
       onPress={handlePress}
       showCover={false}
       variant="compact"
-      rowStyle={styles.row}
+      rowStyle={{ paddingVertical: density.trackRowPadding }}
       trailing={
         <View style={styles.rowRight}>
           {hasPreview && (
@@ -71,9 +73,6 @@ const ExternalSongRow: React.FC<Props> = ({
 export default memo(ExternalSongRow);
 
 const styles = StyleSheet.create({
-  row: {
-    paddingVertical: spacing.md,
-  },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',

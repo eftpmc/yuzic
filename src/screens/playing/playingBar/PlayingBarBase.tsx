@@ -19,6 +19,7 @@ import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 import { useTheme } from '@/hooks/useTheme';
 import { buildCover } from '@/utils/builders/buildCover';
 import {
+  selectCoverAccentEnabled,
   selectPlayingBarAction,
   selectThemeColor,
 } from '@/utils/redux/selectors/settingsSelectors';
@@ -184,12 +185,17 @@ const variantStyles = {
 
 const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE_MAX);
 
+/** What the player fades to with no accent to show — extraction failed, or the
+ *  user turned cover tinting off. */
+const NEUTRAL_GRADIENT: [string, string] = ['#121212', '#000'];
+
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
+  const coverAccentEnabled = useSelector(selectCoverAccentEnabled);
 
   const { currentSong, isPlaying, isBuffering } = usePlayingState();
   const { pauseSong, resumeSong } = usePlayingActions();
@@ -243,17 +249,24 @@ export default function PlayingBarBase({ variant }: Props) {
       gradientCache.set(uri, gradient);
       setNextGradient(gradient);
     } catch {
-      setNextGradient(['#121212', '#000']);
+      setNextGradient(NEUTRAL_GRADIENT);
     }
   }, []);
 
   useEffect(() => {
+    // With cover tinting off the bar and player keep the neutral dark they
+    // already fall back to when extraction fails, so there is one "no accent"
+    // look rather than two.
+    if (!coverAccentEnabled) {
+      setNextGradient(NEUTRAL_GRADIENT);
+      return;
+    }
     if (!currentSong?.cover) return;
     const uri =
       buildCover(currentSong.cover, 'detail') ??
       buildCover({ kind: 'none' }, 'detail');
     if (uri) extractColors(uri);
-  }, [currentSong?.cover, currentSong?.id, extractColors]);
+  }, [coverAccentEnabled, currentSong?.cover, currentSong?.id, extractColors]);
 
   const handlePlayPause = async () => {
     if (!currentSong) return;

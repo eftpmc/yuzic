@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { radius, sourceColor, spacing, statusColor, typography } from '@/constants/design'
+import { sourceColor, spacing, statusColor, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
@@ -225,6 +225,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   const navigation = useNavigation<any>()
   const { navigateToAlbum } = useMatchedNavigation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
@@ -397,7 +398,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
             }
           }}
         >
-          <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
+          <View style={[styles.showMoreIcon, { backgroundColor: colors.card, borderRadius: rad.thumb }]}>
             {isUnowned
               ? <Globe size={18} color={colors.secondary} />
               : <Ellipsis size={18} color={colors.secondary} />
@@ -427,7 +428,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         subtextOverride={releaseYearLabel(item.album) ?? undefined}
       />
     )
-  }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, setShowUnownedAlbums, setShowUnownedSingles, t])
+  }, [colors, rad.thumb, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, setShowUnownedAlbums, setShowUnownedSingles, t])
 
   return (
     <DetailScreen bar={<ArtistHeaderBar localArtist={localArtist} externalArtist={externalArtist} />}>
@@ -548,7 +549,6 @@ const styles = StyleSheet.create({
   showMoreIcon: {
     width: 64,
     height: 64,
-    borderRadius: radius.sm,
     marginRight: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',

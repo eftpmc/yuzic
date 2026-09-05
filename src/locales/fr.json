@@ -123,7 +123,31 @@
         }
       },
       "translucentDock": "Barre translucide",
-      "translucentDockSubtext": "Fait flotter la barre d’onglets au-dessus de la page pour que le contenu défile dessous."
+      "translucentDockSubtext": "Fait flotter la barre d’onglets au-dessus de la page pour que le contenu défile dessous.",
+      "coverAccent": "Couleur de la pochette",
+      "coverAccentSubtext": "Teinte les écrans d'album, d'artiste et du lecteur avec une nuance prise sur la pochette.",
+      "listDensity": {
+        "info": "L'espace laissé entre les lignes d'une liste.",
+        "compact": {
+          "label": "Compact",
+          "subtext": "Plus de lignes à l'écran, moins d'espace entre elles."
+        },
+        "default": {
+          "label": "Par défaut",
+          "subtext": "L'espacement habituel de l'application."
+        },
+        "spacious": {
+          "label": "Aéré",
+          "subtext": "Moins de lignes à l'écran, plus faciles à distinguer."
+        }
+      },
+      "homeSources": "Rayons de l'accueil",
+      "homeSourcesServer": "Sur votre serveur",
+      "homeSourcesServerSubtext": "Afficher les rayons aléatoires et les écoutes en cours de votre serveur.",
+      "homeSourcesListenbrainz": "ListenBrainz",
+      "homeSourcesListenbrainzSubtext": "Afficher les rayons d'artistes similaires de ListenBrainz.",
+      "homeSourcesDeezer": "Deezer",
+      "homeSourcesDeezerSubtext": "Afficher les rayons de découverte Deezer (classements, titres phares, artistes similaires)."
     },
     "library": {
       "title": "Bibliothèque",

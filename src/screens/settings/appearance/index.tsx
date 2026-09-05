@@ -10,12 +10,14 @@ import { PlayingBarActionSelector } from './components/PlayingBarActionSelector'
 import { LanguageSelector } from './components/LanguageSelector';
 import { GridColumns } from './components/GridColumns';
 import { RadiusPresetSelector } from './components/RadiusPresetSelector';
+import { ListDensitySelector } from './components/ListDensitySelector';
 import {
   selectShowQualityBadge,
   selectShowSourceHeaders,
   selectHapticsEnabled,
   selectTranslucentDock,
   selectRespectReducedMotion,
+  selectCoverAccentEnabled,
   selectHomeServerSectionsEnabled,
   selectHomeListenbrainzSectionsEnabled,
   selectDeezerDiscoveryEnabled,
@@ -26,6 +28,7 @@ import {
   setHapticsEnabled,
   setTranslucentDock,
   setRespectReducedMotion,
+  setCoverAccentEnabled,
   setHomeServerSectionsEnabled,
   setHomeListenbrainzSectionsEnabled,
   setDeezerDiscoveryEnabled,
@@ -39,6 +42,7 @@ const AppearanceSettings: React.FC = () => {
   const hapticsEnabled = useSelector(selectHapticsEnabled);
   const translucentDock = useSelector(selectTranslucentDock);
   const respectReducedMotion = useSelector(selectRespectReducedMotion);
+  const coverAccentEnabled = useSelector(selectCoverAccentEnabled);
   const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled);
   const homeListenbrainzEnabled = useSelector(selectHomeListenbrainzSectionsEnabled);
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
@@ -47,6 +51,7 @@ const AppearanceSettings: React.FC = () => {
   const toggleSourceHeaders = useCallback((v: boolean) => { dispatch(setShowSourceHeaders(v)); }, [dispatch]);
   const toggleHaptics = useCallback((v: boolean) => { dispatch(setHapticsEnabled(v)); }, [dispatch]);
   const toggleReducedMotion = useCallback((v: boolean) => { dispatch(setRespectReducedMotion(v)); }, [dispatch]);
+  const toggleCoverAccent = useCallback((v: boolean) => { dispatch(setCoverAccentEnabled(v)); }, [dispatch]);
   const toggleHomeServer = useCallback((v: boolean) => { dispatch(setHomeServerSectionsEnabled(v)); }, [dispatch]);
   const toggleHomeListenbrainz = useCallback((v: boolean) => { dispatch(setHomeListenbrainzSectionsEnabled(v)); }, [dispatch]);
   const toggleHomeDeezer = useCallback((v: boolean) => { dispatch(setDeezerDiscoveryEnabled(v)); }, [dispatch]);
@@ -80,6 +85,13 @@ const AppearanceSettings: React.FC = () => {
     onValueChange: toggleQualityBadge,
   }], [t, showQualityBadge, toggleQualityBadge]);
 
+  const coverAccentItems = useMemo(() => [{
+    label: t('settings.appearance.coverAccent'),
+    subtext: t('settings.appearance.coverAccentSubtext'),
+    value: coverAccentEnabled,
+    onValueChange: toggleCoverAccent,
+  }], [t, coverAccentEnabled, toggleCoverAccent]);
+
   const sourceHeaderItems = useMemo(() => [{
     label: t('settings.appearance.showSourceHeaders'),
     subtext: t('settings.appearance.showSourceHeadersSubtext'),
@@ -89,20 +101,20 @@ const AppearanceSettings: React.FC = () => {
 
   const homeSourceItems = useMemo(() => [
     {
-      label: t('settings.appearance.homeSourcesServer', 'On your server'),
-      subtext: t('settings.appearance.homeSourcesServerSubtext', 'Show random shelves and now-playing from your server.'),
+      label: t('settings.appearance.homeSourcesServer'),
+      subtext: t('settings.appearance.homeSourcesServerSubtext'),
       value: homeServerEnabled,
       onValueChange: toggleHomeServer,
     },
     {
-      label: t('settings.appearance.homeSourcesListenbrainz', 'ListenBrainz'),
-      subtext: t('settings.appearance.homeSourcesListenbrainzSubtext', 'Show ListenBrainz similar-artist shelves.'),
+      label: t('settings.appearance.homeSourcesListenbrainz'),
+      subtext: t('settings.appearance.homeSourcesListenbrainzSubtext'),
       value: homeListenbrainzEnabled,
       onValueChange: toggleHomeListenbrainz,
     },
     {
-      label: t('settings.appearance.homeSourcesDeezer', 'Deezer'),
-      subtext: t('settings.appearance.homeSourcesDeezerSubtext', 'Show Deezer discovery shelves (charts, top tracks, similar artists).'),
+      label: t('settings.appearance.homeSourcesDeezer'),
+      subtext: t('settings.appearance.homeSourcesDeezerSubtext'),
       value: deezerEnabled,
       onValueChange: toggleHomeDeezer,
     },
@@ -118,9 +130,11 @@ const AppearanceSettings: React.FC = () => {
       <PlayingBarActionSelector />
       <SettingsCardHeader subtle title={t('settings.appearance.display')} />
       <SettingsToggleGroup items={sourceHeaderItems} />
+      <SettingsToggleGroup items={coverAccentItems} />
       <GridColumns />
       <RadiusPresetSelector />
-      <SettingsCardHeader subtle title={t('settings.appearance.homeSources', 'Home shelves')} />
+      <ListDensitySelector />
+      <SettingsCardHeader subtle title={t('settings.appearance.homeSources')} />
       <SettingsToggleGroup items={homeSourceItems} />
       <SettingsCardHeader subtle title={t('settings.appearance.feel')} />
       <SettingsToggleGroup items={feelItems} />

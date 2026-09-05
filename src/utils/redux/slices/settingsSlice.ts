@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
-import type { RadiusPreset } from '@/constants/design';
+import type { ListDensity, RadiusPreset } from '@/constants/design';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 
@@ -49,6 +49,17 @@ export interface SettingsState {
    * constants/design.ts continues to hold defaults for unmigrated surfaces.
    */
   radiusPreset: RadiusPreset;
+  /**
+   * How much air sits between rows in a list. Live-reactive the same way the
+   * radius preset is — rows read it through `useListDensity()`.
+   */
+  listDensity: ListDensity;
+  /**
+   * Tint a detail screen with a colour taken from its cover art. On by
+   * default: it is most of what makes an album page look like that album.
+   * Off gives every screen the flat theme background instead.
+   */
+  coverAccentEnabled: boolean;
   gridColumns: number;
   gridSpacing: number;
   isGridView: boolean;
@@ -140,6 +151,8 @@ const initialState: SettingsState = {
   themeMode: 'system',
   themeColor: '#ff7f7f',
   radiusPreset: 'default',
+  listDensity: 'default',
+  coverAccentEnabled: true,
   gridColumns: 3,
   gridSpacing: 8,
   isGridView: true,
@@ -203,6 +216,12 @@ const settingsSlice = createSlice({
     },
     setRadiusPreset(state, action: PayloadAction<RadiusPreset>) {
       state.radiusPreset = action.payload;
+    },
+    setListDensity(state, action: PayloadAction<ListDensity>) {
+      state.listDensity = action.payload;
+    },
+    setCoverAccentEnabled(state, action: PayloadAction<boolean>) {
+      state.coverAccentEnabled = action.payload;
     },
     setGridColumns(state, action: PayloadAction<number>) {
       state.gridColumns = action.payload;
@@ -343,6 +362,8 @@ export const {
   setThemeMode,
   setThemeColor,
   setRadiusPreset,
+  setListDensity,
+  setCoverAccentEnabled,
   setGridColumns,
   setGridSpacing,
   setIsGridView,

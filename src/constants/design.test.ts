@@ -1,4 +1,11 @@
-import { controlSize, hitSlopFor, radius, scaleRadius } from './design'
+import {
+  controlSize,
+  hitSlopFor,
+  listDensity,
+  radius,
+  scaleRadius,
+  type ListDensity,
+} from './design'
 
 describe('hitSlopFor', () => {
   it('makes up the difference on a control drawn below the minimum', () => {
@@ -49,7 +56,47 @@ describe('scaleRadius', () => {
     expect(scaleRadius(radius.card, 'default')).toBe(radius.card)
   })
 
+  it('moves row artwork with the preset', () => {
+    // `thumb` is the cover beside a track, a playlist, a search result — the
+    // most repeated shape in the app. It held still while the cards around it
+    // moved, which read as the preset half-applying.
+    expect(scaleRadius(radius.thumb, 'sharp')).toBeLessThan(radius.thumb)
+    expect(scaleRadius(radius.thumb, 'rounded')).toBeGreaterThan(radius.thumb)
+    expect(scaleRadius(radius.thumb, 'default')).toBe(radius.thumb)
+  })
+
   it('rounds the rounded preset larger than the default', () => {
     expect(scaleRadius(radius.card, 'rounded')).toBeGreaterThan(radius.card)
+  })
+})
+
+describe('listDensity', () => {
+  const order: ListDensity[] = ['compact', 'default', 'spacious']
+  const roles = ['rowGap', 'rowPadding', 'trackRowPadding'] as const
+
+  it.each(roles)('gets roomier in the direction the labels promise: %s', role => {
+    const steps = order.map(density => listDensity[density][role])
+    expect(steps).toEqual([...steps].sort((a, b) => a - b))
+    // Not merely non-decreasing: three names that render the same list twice
+    // would be three answers to a question the user thinks they answered.
+    expect(new Set(steps).size).toBe(order.length)
+  })
+
+  it('leaves a row its air even at the tightest setting', () => {
+    // Zero would run one row's artwork into the next, which reads as a
+    // rendering bug rather than as a dense list.
+    roles.forEach(role => {
+      expect(listDensity.compact[role]).toBeGreaterThan(0)
+    })
+  })
+
+  it('gives a track row the extra step a whole record needs', () => {
+    // A list of nineteen tracks wants more air per row than a sheet with three
+    // options in it, at every density rather than only at the default.
+    order.forEach(density => {
+      expect(listDensity[density].trackRowPadding).toBeGreaterThan(
+        listDensity[density].rowPadding
+      )
+    })
   })
 })
