@@ -22,6 +22,8 @@ import { Alert, AppState } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { PlayerExpansionProvider } from '@/features/player/PlayerExpansion';
+import PlayerHost from '@/features/player/PlayerHost';
 import { useTheme } from '@/hooks/useTheme';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
@@ -205,11 +207,17 @@ function AppShell() {
               <ErrorBoundary>
               <BottomSheetModalProvider>
                 <SongActionSheetProvider>
+                <PlayerExpansionProvider>
                 <Stack>
                   <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
                   <Stack.Screen name="(home)" options={{ headerShown: false }} />
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                 </Stack>
+
+                {/* Above every screen and the dock, below the sheet portal:
+                  * the player covers the app, and the option sheets it opens
+                  * still come up over the player. */}
+                <PlayerHost />
 
                 <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
@@ -237,6 +245,7 @@ function AppShell() {
                     },
                   }}
                 />
+                </PlayerExpansionProvider>
                 </SongActionSheetProvider>
               </BottomSheetModalProvider>
               </ErrorBoundary>

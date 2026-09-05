@@ -1,25 +1,32 @@
-import React, { useCallback, useEffect, memo, useState } from 'react';
-import { BackHandler, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import React, { useCallback, useEffect, memo, useMemo, useRef } from 'react';
+import { StyleProp, StyleSheet, Text, View, ViewStyle, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Music, Play, Pause } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import ImageColors from 'react-native-image-colors';
-import { createAccentCache, darken, pickAccent } from '@/features/theme/coverAccent';
-import { PLAYING_GRADIENT_CACHE_MAX } from '@/constants/features';
 
 import PlaylistList from '@/components/PlaylistList';
 import OutputDeviceSheet from '@/screens/playing/components/OutputDeviceSheet';
 import { MediaImage } from '@/components/MediaImage';
 import { usePlayingState, usePlayingActions, usePlayingProgress } from '@/contexts/PlayingContext';
 import { hasFiniteDuration } from '@/utils/playback/contentKind';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
-import PlayingScreen from '@/screens/playing';
-import PlayingBackground from '@/screens/playing/components/PlayingBackground';
-import { useTheme } from '@/hooks/useTheme';
-import { buildCover } from '@/utils/builders/buildCover';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  runOnJS,
+  Easing,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import {
-  selectCoverAccentEnabled,
+  CLOSED_EPSILON,
+  PLAYER_SPRING,
+  usePlayerExpansion,
+} from '@/features/player/PlayerExpansion';
+import { useTheme } from '@/hooks/useTheme';
+import {
   selectPlayingBarAction,
   selectThemeColor,
 } from '@/utils/redux/selectors/settingsSelectors';
@@ -29,7 +36,6 @@ import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { onDark, radius, spacing, typography } from '@/constants/design';
-import { useRadius } from '@/hooks/useRadius';
 
 type Variant = 'ios' | 'android';
 
@@ -183,37 +189,29 @@ const variantStyles = {
   },
 };
 
-const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE_MAX);
-
-/** What the player fades to with no accent to show — extraction failed, or the
- *  user turned cover tinting off. */
-const NEUTRAL_GRADIENT: [string, string] = ['#121212', '#000'];
+/**
+ * How far up the bar has to be dragged to count as a full open, and how fast a
+ * flick has to be to count regardless of distance. A short sharp flick is how
+ * most people open a player; a slow drag past a third of the screen is the
+ * other way, and anything less falls back to the dock.
+ */
+const OPEN_AT = 0.3;
+const OPEN_VELOCITY = -700;
 
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
   const actionMode = useSelector(selectPlayingBarAction);
-  const coverAccentEnabled = useSelector(selectCoverAccentEnabled);
+  const { height } = useWindowDimensions();
 
   const { currentSong, isPlaying, isBuffering } = usePlayingState();
   const { pauseSong, resumeSong } = usePlayingActions();
+  const { expansion, barCover, expand, prepare } = usePlayerExpansion();
 
   const stylesForVariant = variantStyles[variant];
-  const bottomSheetRef = useSheetRef();
   const playlistSheetRef = useSheetRef();
   const castSheetRef = useSheetRef();
-  const [isPlayerSheetOpen, setIsPlayerSheetOpen] = useState(false);
-  // Gate the full-screen player tree behind first open. The tree used to be
-  // mounted the entire time a song was playing so opening it was cheap on the
-  // second try — the cost was renderin' the album cover, lyrics fetch, useAlbum
-  // query, and every optional card (sleep timer, playback speed, volume, about
-  // the artist) constantly in the background whether the user ever opened the
-  // player or not. Mount on first present() instead: opens are still cheap
-  // after the first (the tree stays mounted for the session), and nothing pays
-  // the cost of a player screen no one has looked at.
-  const [hasBeenOpened, setHasBeenOpened] = useState(false);
 
   const primaryAction = usePlayingBarAction(actionMode, {
     presentAddToPlaylist: () => {
@@ -222,51 +220,16 @@ export default function PlayingBarBase({ variant }: Props) {
     presentCast: () => castSheetRef.current?.present(),
   });
 
-  // Android's hardware back button isn't intercepted by the bottom sheet on its
-  // own (it renders in a Portal, not a native Modal) — without this it falls
-  // through to whatever screen is underneath instead of minimizing the player.
-  useEffect(() => {
-    if (!isPlayerSheetOpen) return;
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      bottomSheetRef.current?.close();
-      return true;
+  // Where the thumbnail sits on screen, so the player knows where to fly the
+  // cover from. Measured rather than computed: the dock changes height with
+  // the safe area and with the translucent setting, and a hardcoded rect would
+  // be wrong on exactly the devices hardest to check.
+  const coverRef = useRef<View>(null);
+  const measureCover = useCallback(() => {
+    coverRef.current?.measureInWindow((x, y, width) => {
+      if (width > 0) barCover.value = { x, y, size: width };
     });
-    return () => subscription.remove();
-  }, [isPlayerSheetOpen, bottomSheetRef]);
-
-  const [currentGradient, setCurrentGradient] = useState<[string, string]>(['#000', '#000']);
-  const [nextGradient, setNextGradient] = useState<[string, string]>(['#000', '#000']);
-
-  const extractColors = useCallback(async (uri: string) => {
-    const cached = gradientCache.get(uri);
-    if (cached) {
-      setNextGradient(cached);
-      return;
-    }
-    try {
-      const result = await ImageColors.getColors(uri, { fallback: '#121212' });
-      const gradient: [string, string] = [darken(pickAccent(result, '#121212')), '#000'];
-      gradientCache.set(uri, gradient);
-      setNextGradient(gradient);
-    } catch {
-      setNextGradient(NEUTRAL_GRADIENT);
-    }
-  }, []);
-
-  useEffect(() => {
-    // With cover tinting off the bar and player keep the neutral dark they
-    // already fall back to when extraction fails, so there is one "no accent"
-    // look rather than two.
-    if (!coverAccentEnabled) {
-      setNextGradient(NEUTRAL_GRADIENT);
-      return;
-    }
-    if (!currentSong?.cover) return;
-    const uri =
-      buildCover(currentSong.cover, 'detail') ??
-      buildCover({ kind: 'none' }, 'detail');
-    if (uri) extractColors(uri);
-  }, [coverAccentEnabled, currentSong?.cover, currentSong?.id, extractColors]);
+  }, [barCover]);
 
   const handlePlayPause = async () => {
     if (!currentSong) return;
@@ -279,38 +242,68 @@ export default function PlayingBarBase({ variant }: Props) {
 
   const handleExpand = () => {
     if (!currentSong) return;
-    // `present()` only does anything the first time: it mounts the sheet.
-    // Afterwards the sheet is still mounted (see `enableDismissOnClose`) and
-    // sitting at index -1, where presenting it again is a no-op — it has to be
-    // snapped back open instead.
-    if (hasBeenOpened) {
-      bottomSheetRef.current?.expand();
-      return;
-    }
-    setHasBeenOpened(true);
-    bottomSheetRef.current?.present();
+    measureCover();
+    expand();
   };
 
-  const handleFadeComplete = useCallback(() => {
-    setCurrentGradient(nextGradient);
-  }, [nextGradient]);
+  // Dragging the bar upward moves the player itself rather than starting an
+  // animation and watching it play: `expansion` follows the finger, and only
+  // the release is animated. `onBegin` builds the player screen at touch-down
+  // so the tree is ready before the drag has travelled far enough to show it.
+  const dragToOpen = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(currentSong != null)
+        .activeOffsetY([-10, 10])
+        .failOffsetX([-24, 24])
+        .onBegin(() => {
+          runOnJS(prepare)();
+          runOnJS(measureCover)();
+        })
+        .onUpdate(event => {
+          expansion.value = Math.min(1, Math.max(0, -event.translationY / height));
+        })
+        .onEnd(event => {
+          const opening = expansion.value > OPEN_AT || event.velocityY < OPEN_VELOCITY;
+          expansion.value = withSpring(opening ? 1 : 0, PLAYER_SPRING);
+        }),
+    [currentSong, expansion, height, measureCover, prepare],
+  );
+
+  // The bar's own contents step aside early in the travel, leaving the cover
+  // to make the journey on its own.
+  const barFadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(expansion.value, [0, 0.25], [1, 0], Extrapolation.CLAMP),
+  }));
+
+  // The thumbnail is handed over to the player host the moment the journey
+  // starts, so there is one piece of cover art in the air rather than two.
+  const coverHandoffStyle = useAnimatedStyle(() => ({
+    opacity: expansion.value > CLOSED_EPSILON ? 0 : 1,
+  }));
 
   const content = (
     <View style={[styles.topRow, stylesForVariant.topRow]}>
-      {currentSong?.cover ? (
-        <MediaImage
-          cover={currentSong.cover}
-          size="thumb"
-          style={[styles.coverArt, stylesForVariant.coverArt]}
-        />
-      ) : (
-        <View style={[styles.coverArt, stylesForVariant.coverArt, styles.iconPlaceholder]}>
-          <Music
-            size={stylesForVariant.placeholderIconSize}
-            color={colors.secondary}
+      <Animated.View
+        ref={coverRef}
+        onLayout={measureCover}
+        style={[styles.coverArt, stylesForVariant.coverArt, coverHandoffStyle]}
+      >
+        {currentSong?.cover ? (
+          <MediaImage
+            cover={currentSong.cover}
+            size="thumb"
+            style={styles.coverFill}
           />
-        </View>
-      )}
+        ) : (
+          <View style={[styles.coverFill, styles.iconPlaceholder]}>
+            <Music
+              size={stylesForVariant.placeholderIconSize}
+              color={colors.secondary}
+            />
+          </View>
+        )}
+      </Animated.View>
 
       <View style={styles.details}>
         <Text
@@ -391,49 +384,21 @@ export default function PlayingBarBase({ variant }: Props) {
 
   return (
     <>
-      <Touchable
-        accessibilityLabel={currentSong ? 'Now playing bar' : 'No song playing'}
-        accessibilityRole="button"
-        testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
-        onPress={handleExpand}
-      >
-        <View style={[styles.wrapper, stylesForVariant.wrapper]}>
-          <View style={[styles.container, stylesForVariant.container]}>{barContent}</View>
-        </View>
-      </Touchable>
-
-      <BottomSheetModal
-        ref={bottomSheetRef}
-        // The library defaults accessible=true on the sheet container, which
-        // collapses everything inside into a single opaque a11y element on
-        // iOS — VoiceOver can't reach the player controls and E2E tests
-        // can't see their testIDs.
-        accessible={false}
-        snapPoints={['100%']}
-        enableDynamicSizing={false}
-        enablePanDownToClose
-        // Closing a modal sheet unmounts its children by default, so every
-        // single open re-mounted the whole player — cover, controls, the
-        // optional cards and four nested sheets — as ~140ms of blocking JS
-        // racing the present animation. That is the lag on opening the player.
-        // Closing hides it now instead; combined with the `hasBeenOpened` gate
-        // above, the tree is built once per session and never again.
-        enableDismissOnClose={false}
-        onChange={(index) => setIsPlayerSheetOpen(index >= 0)}
-        backgroundStyle={{ backgroundColor: 'transparent' }}
-        backgroundComponent={props => (
-          <PlayingBackground
-            {...props}
-            current={currentGradient}
-            next={nextGradient}
-            onFadeComplete={handleFadeComplete}
-          />
-        )}
-      >
-        {hasBeenOpened
-          ? <PlayingScreen onClose={() => bottomSheetRef.current?.close()} />
-          : null}
-      </BottomSheetModal>
+      <GestureDetector gesture={dragToOpen}>
+        <Animated.View style={barFadeStyle}>
+          <Touchable
+            accessibilityLabel={currentSong ? 'Now playing bar' : 'No song playing'}
+            accessibilityRole="button"
+            testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
+            onPressIn={prepare}
+            onPress={handleExpand}
+          >
+            <View style={[styles.wrapper, stylesForVariant.wrapper]}>
+              <View style={[styles.container, stylesForVariant.container]}>{barContent}</View>
+            </View>
+          </Touchable>
+        </Animated.View>
+      </GestureDetector>
 
       <PlaylistList
         ref={playlistSheetRef}
@@ -453,8 +418,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  coverFill: {
+    width: '100%',
+    height: '100%',
+  },
   coverArt: {
     borderRadius: radius.sm,
+    // The artwork fills this slot now rather than being it, so the slot has to
+    // do the clipping — it is what the player measures and hands over.
+    overflow: 'hidden',
   },
   details: {
     flex: 1,

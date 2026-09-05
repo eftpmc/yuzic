@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -16,12 +16,15 @@ import Queue from './components/Queue';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
+    useAnimatedScrollHandler,
     withTiming,
+    withSpring,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { PLAYER_SPRING, usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
 import { useAlbum } from '@/hooks/albums';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import PlaylistList from '@/components/PlaylistList';
 import PlayingMain from './components/PlayingMain';
 import Controls from './components/Controls';
@@ -114,6 +117,12 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const lyricsSheetRef = useSheetRef();
     const outputDeviceSheetRef = useSheetRef();
 
+    const { expansion, scrollY } = usePlayerExpansion();
+
+    const handleScroll = useAnimatedScrollHandler(event => {
+        scrollY.value = event.contentOffset.y;
+    });
+
     const [mode, setMode] = useState<PlayingViewMode>("player");
     // The queue is a whole draggable list — a gesture handler and a reanimated
     // context per row — and it used to mount with the player whether or not
@@ -135,6 +144,32 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const layoutWidth = width - 24;
     const contentWidth = isTablet ? 500 : width - 48;
     const playerMinHeight = height - insets.top - insets.bottom;
+
+    // Dragging the player down puts it back in the dock, but the same finger
+    // on the same surface also scrolls the cards below the fold. The list wins
+    // whenever it has somewhere to go: only a downward drag from the very top
+    // moves the player, which is the rule every music app's player follows and
+    // the one thumbs already expect.
+    const dragToClose = useMemo(
+        () =>
+            Gesture.Simultaneous(
+                Gesture.Pan()
+                    .onUpdate(event => {
+                        if (scrollY.value > 0 || event.translationY <= 0) return;
+                        expansion.value = Math.max(0, Math.min(1, 1 - event.translationY / height));
+                    })
+                    .onEnd(event => {
+                        if (expansion.value >= 1) return;
+                        const closing = expansion.value < 0.75 || event.velocityY > 700;
+                        expansion.value = withSpring(closing ? 0 : 1, PLAYER_SPRING);
+                    }),
+                // Hands the scroll view's own gesture to RNGH so the two are
+                // siblings that may both run, rather than the pan swallowing
+                // every touch before the list ever sees it.
+                Gesture.Native(),
+            ),
+        [expansion, height, scrollY],
+    );
 
     useEffect(() => {
         if (!currentSong?.id) return;
@@ -214,7 +249,14 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         style={[playerStyle, { flex: 1, width: '100%' }]}
                         pointerEvents={mode === "player" ? 'auto' : 'none'}
                     >
-                        <BottomSheetScrollView
+                        <GestureDetector gesture={dragToClose}>
+                        <Animated.ScrollView
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
+                            // An iOS rubber-band at the top would be competing
+                            // with the drag that collapses the player, and the
+                            // two together read as neither working.
+                            bounces={false}
                             style={styles.scrollView}
                             contentContainerStyle={[
                                 styles.scrollContent,
@@ -304,7 +346,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 contentWidth={contentWidth}
                                 onPress={artistId ? navigateToArtist : undefined}
                             />
-                        </BottomSheetScrollView>
+                        </Animated.ScrollView>
+                        </GestureDetector>
                     </Animated.View>
 
                 </View>

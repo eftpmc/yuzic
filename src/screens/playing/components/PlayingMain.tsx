@@ -1,19 +1,18 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
 } from 'react-native';
-import TurboImage from 'react-native-turbo-image';
+import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 
 import { usePlayingState, usePlayingProgress, usePlayingActions } from '@/contexts/PlayingContext';
 import { SeekableProgressBar } from './SeekableProgressBar';
 import { useSelector } from 'react-redux';
 import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelectors';
 import { hasFiniteDuration } from '@/utils/playback/contentKind';
-import { buildCover } from '@/utils/builders/buildCover';
-import { CoverSource } from '@/types';
 import { CirclePlus } from 'lucide-react-native';
+import { usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import Touchable from '@/components/Touchable';
 import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -74,6 +73,30 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   const { currentSong } = usePlayingState();
   const rad = useRadius();
   const showQualityBadge = useSelector(selectShowQualityBadge);
+  const { expansion, fullCover, scrollY } = usePlayerExpansion();
+
+  // The cover itself is drawn by the player host, one layer up, so a single
+  // image can travel between here and the playing bar instead of one being
+  // swapped for another. What is left here is the hole it lands in, and the
+  // job of telling the host where that hole is.
+  const coverSlotRef = useRef<View>(null);
+  const measureCoverSlot = useCallback(() => {
+    coverSlotRef.current?.measureInWindow((x, y, slotWidth) => {
+      if (slotWidth > 0) fullCover.value = { x, y, size: slotWidth };
+    });
+  }, [fullCover]);
+
+  // Re-measure once the player has settled open: the lyrics preview and the
+  // optional cards arrive after the first layout and can move this. Only from
+  // the top, so the stored rect always means "where the slot sits unscrolled"
+  // — which is the assumption the host's scroll correction is built on.
+  useAnimatedReaction(
+    () => expansion.value >= 1 && scrollY.value <= 0,
+    (settled, wasSettled) => {
+      if (settled && settled !== wasSettled) runOnJS(measureCoverSlot)();
+    },
+    [measureCoverSlot],
+  );
 
   if (!currentSong) {
     return null;
@@ -90,23 +113,17 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
     return parts.join(' · ') || null;
   })();
 
-  const coverUri =
-    buildCover(currentSong.cover, 'detail') ??
-    buildCover({ kind: 'none' } as CoverSource, 'detail');
-
   return (
     <View style={[styles.root, { width }]}>
-      {coverUri ? (
-        <TurboImage
-          source={{ uri: coverUri }}
-          style={[styles.cover, { width, height: width, borderRadius: rad.card }]}
-          resizeMode="cover"
-          cachePolicy="dataCache"
-          fadeDuration={300}
-        />
-      ) : (
-        <View style={[styles.cover, { width, height: width, borderRadius: rad.card }]} />
-      )}
+      <View
+        ref={coverSlotRef}
+        onLayout={measureCoverSlot}
+        // Keeps its surface colour rather than going transparent: the
+        // travelling cover lands exactly on top of it, and a song whose
+        // artwork will not load still has the plain square it always had
+        // instead of a hole where the cover should be.
+        style={[styles.cover, { width, height: width, borderRadius: rad.card }]}
+      />
 
       <View style={styles.titleRow}>
         <View style={styles.textContainer}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { StyleSheet } from "react-native";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -8,9 +8,10 @@ import Animated, {
   runOnJS,
   Easing,
 } from "react-native-reanimated";
-import { BottomSheetBackgroundProps } from "@gorhom/bottom-sheet";
-
-type Props = BottomSheetBackgroundProps & {
+// Not a bottom-sheet background any more: the player owns its own surface, so
+// this takes a plain style rather than the props a sheet used to hand it.
+type Props = {
+  style?: StyleProp<ViewStyle>;
   current: [string, string];
   next: [string, string];
   onFadeComplete: () => void;
