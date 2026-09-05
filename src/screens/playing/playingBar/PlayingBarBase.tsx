@@ -74,6 +74,9 @@ const variantStyles = {
     wrapper: {},
     container: {
       flexDirection: 'column' as const,
+      // Equal above the row and below it — the artwork was 2pt inside a 52pt
+      // row with 12pt over it and 8pt under, which read as the whole bar
+      // sitting slightly high.
       paddingTop: spacing.md,
       paddingBottom: 0,
       paddingHorizontal: spacing.page,
@@ -82,12 +85,12 @@ const variantStyles = {
       justifyContent: 'center' as const,
     },
     topRow: {
-      minHeight: 52,
+      minHeight: 44,
       paddingRight: 0,
     },
     coverArt: {
-      width: 48,
-      height: 48,
+      width: 40,
+      height: 40,
       marginRight: spacing.md,
     },
     // The title was `caption` like the artist under it, so the two read as
@@ -104,18 +107,16 @@ const variantStyles = {
       // tabs, so it cancels the container's page padding rather than sitting
       // inset like a widget's own progress bar.
       height: 2,
-      marginTop: spacing.sm,
+      marginTop: spacing.md,
       marginHorizontal: -spacing.page,
       borderRadius: radius.none,
     },
     playPauseButton: {
-      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      marginRight: spacing.xs,
+      marginRight: spacing.roomy,
     },
     actionButton: {
-      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
@@ -125,6 +126,9 @@ const variantStyles = {
     wrapper: {},
     container: {
       flexDirection: 'column' as const,
+      // Equal above the row and below it — the artwork was 2pt inside a 52pt
+      // row with 12pt over it and 8pt under, which read as the whole bar
+      // sitting slightly high.
       paddingTop: spacing.md,
       paddingBottom: 0,
       paddingHorizontal: spacing.page,
@@ -133,12 +137,12 @@ const variantStyles = {
       justifyContent: 'center' as const,
     },
     topRow: {
-      minHeight: 52,
+      minHeight: 44,
       paddingRight: 0,
     },
     coverArt: {
-      width: 48,
-      height: 48,
+      width: 40,
+      height: 40,
       marginRight: spacing.md,
     },
     // The title was `caption` like the artist under it, so the two read as
@@ -155,18 +159,16 @@ const variantStyles = {
       // tabs, so it cancels the container's page padding rather than sitting
       // inset like a widget's own progress bar.
       height: 2,
-      marginTop: spacing.sm,
+      marginTop: spacing.md,
       marginHorizontal: -spacing.page,
       borderRadius: radius.none,
     },
     playPauseButton: {
-      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      marginRight: spacing.xs,
+      marginRight: spacing.roomy,
     },
     actionButton: {
-      padding: spacing.sm,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
@@ -313,13 +315,13 @@ export default function PlayingBarBase({ variant }: Props) {
           testID="playing-bar-play-pause"
           style={[styles.playPauseButton, stylesForVariant.playPauseButton]}
           onPress={handlePlayPause}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           {isBuffering
-            ? <SpinningLoaderCircle size={22} color={colors.secondary} />
+            ? <SpinningLoaderCircle size={20} color={colors.secondary} />
             : isPlaying
-              ? <Pause size={26} color={colors.secondary} fill={colors.secondary} />
-              : <Play size={26} color={colors.secondary} fill={colors.secondary} />
+              ? <Pause size={24} color={colors.secondary} fill={colors.secondary} />
+              : <Play size={24} color={colors.secondary} fill={colors.secondary} />
           }
         </Touchable>
       )}
@@ -331,7 +333,7 @@ export default function PlayingBarBase({ variant }: Props) {
         <Touchable
           style={[styles.actionButton, stylesForVariant.actionButton]}
           onPress={primaryAction.onPress}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           {primaryAction.icon}
         </Touchable>
@@ -443,7 +445,6 @@ const styles = StyleSheet.create({
   },
   playPauseButton: {},
   actionButton: {
-    marginLeft: spacing.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },

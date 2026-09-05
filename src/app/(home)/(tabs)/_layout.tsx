@@ -5,15 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { Home, Library, Search } from 'lucide-react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import Touchable from '@/components/Touchable';
 import { useTheme } from '@/hooks/useTheme';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { radius, spacing } from '@/constants/design';
+import { spacing } from '@/constants/design';
 
 /**
  * The tab bar is a real react-navigation bottom tab bar now: the tab-tracking
@@ -33,6 +31,12 @@ import { radius, spacing } from '@/constants/design';
 // when tabs are added or reordered.
 export const unstable_settings = { anchor: '(home)' };
 
+/** Active and inactive icon weights. The active tab is the theme colour at a
+ * heavier stroke, so it differs in shape as well as hue — colour on its own
+ * would be the only thing distinguishing it. */
+const STROKE_ACTIVE = 2.4;
+const STROKE_INACTIVE = 1.75;
+
 function TabButton({
   onPress,
   active,
@@ -40,7 +44,6 @@ function TabButton({
   testID,
   activeColor,
   inactiveColor,
-  activeIndicatorBg,
   children,
 }: {
   onPress: () => void;
@@ -49,49 +52,34 @@ function TabButton({
   testID: string;
   activeColor: string;
   inactiveColor: string;
-  activeIndicatorBg: string;
-  children: (color: string) => React.ReactNode;
+  children: (color: string, strokeWidth: number) => React.ReactNode;
 }) {
-  const reduced = useReducedMotion();
-  const opacity = useSharedValue(active ? 1 : 0);
-
-  React.useEffect(() => {
-    opacity.value = reduced
-      ? (active ? 1 : 0)
-      : withTiming(active ? 1 : 0, { duration: 200 });
-  }, [active, opacity, reduced]);
-
-  const indicatorStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-
   return (
     <Touchable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
       testID={testID}
       style={styles.tab}
       onPress={onPress}
       feedback="control"
     >
-      {children(active ? activeColor : inactiveColor)}
-      {/* A tinted block behind the icon read as a smudge against the dark
-          dock. The lit icon already says which tab you are on; the dot just
-          confirms it. */}
-      <Animated.View
-        style={[styles.activeDot, { backgroundColor: activeColor }, indicatorStyle]}
-      />
+      {children(
+        active ? activeColor : inactiveColor,
+        active ? STROKE_ACTIVE : STROKE_INACTIVE
+      )}
     </Touchable>
   );
 }
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { isDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const themeColor = useSelector(selectThemeColor);
   const { t } = useTranslation();
 
   const activeColor = themeColor;
   const inactiveColor = colors.subtext;
-  const activeIndicatorBg = isDarkMode ? `${themeColor}28` : `${themeColor}18`;
 
   // Each tab is a Stack group — `(home)`, `(search)`, `(library)`.
   const focusedRouteName = state.routes[state.index]?.name;
@@ -132,9 +120,10 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           testID="home-tab"
           activeColor={activeColor}
           inactiveColor={inactiveColor}
-          activeIndicatorBg={activeIndicatorBg}
         >
-          {color => <Home size={24} color={color} />}
+          {(color, strokeWidth) => (
+            <Home size={24} color={color} strokeWidth={strokeWidth} />
+          )}
         </TabButton>
         <TabButton
           onPress={() => go('(search)')}
@@ -143,9 +132,10 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           testID="search-tab"
           activeColor={activeColor}
           inactiveColor={inactiveColor}
-          activeIndicatorBg={activeIndicatorBg}
         >
-          {color => <Search size={24} color={color} />}
+          {(color, strokeWidth) => (
+            <Search size={24} color={color} strokeWidth={strokeWidth} />
+          )}
         </TabButton>
         <TabButton
           onPress={() => go('(library)')}
@@ -154,9 +144,10 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           testID="library-tab"
           activeColor={activeColor}
           inactiveColor={inactiveColor}
-          activeIndicatorBg={activeIndicatorBg}
         >
-          {color => <Library size={24} color={color} />}
+          {(color, strokeWidth) => (
+            <Library size={24} color={color} strokeWidth={strokeWidth} />
+          )}
         </TabButton>
       </View>
     </View>
@@ -194,13 +185,7 @@ const styles = StyleSheet.create({
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.tight,
+    paddingVertical: spacing.sm,
     justifyContent: 'center',
-    gap: spacing.tight,
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: radius.pill,
   },
 });
