@@ -16,6 +16,7 @@ import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
 import Animated, {
     useSharedValue,
+    type SharedValue,
     useAnimatedStyle,
     useAnimatedScrollHandler,
     withTiming,
@@ -69,14 +70,24 @@ const LyricsPreviewCardResolver: React.FC<{
     );
 };
 
-const usePlayingTransitions = (mode: PlayingViewMode) => {
+const MODE_FADE_MS = 300;
+
+const usePlayingTransitions = (
+    mode: PlayingViewMode,
+    coverVisibility: SharedValue<number>,
+) => {
     const playerOpacity = useSharedValue(1);
     const queueOpacity = useSharedValue(0);
 
     useEffect(() => {
-        playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: 300 });
-        queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: 300 });
-    }, [mode, playerOpacity, queueOpacity]);
+        playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: MODE_FADE_MS });
+        queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: MODE_FADE_MS });
+        // The cover art is not ours to fade — the host draws it above this
+        // screen so it can travel to and from the bar — so it is told to go
+        // with the player it belongs to. Without this it stayed put: a
+        // full-width square of artwork sitting on top of the queue.
+        coverVisibility.value = withTiming(mode === "player" ? 1 : 0, { duration: MODE_FADE_MS });
+    }, [mode, playerOpacity, queueOpacity, coverVisibility]);
 
     const playerStyle = useAnimatedStyle(() => ({
         opacity: playerOpacity.value,
@@ -119,7 +130,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const lyricsSheetRef = useSheetRef();
     const outputDeviceSheetRef = useSheetRef();
 
-    const { expansion, scrollY } = usePlayerExpansion();
+    const { expansion, scrollY, coverVisibility, isOpen } = usePlayerExpansion();
 
     const handleScroll = useAnimatedScrollHandler(event => {
         scrollY.value = event.contentOffset.y;
@@ -134,7 +145,19 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     // costs nothing.
     const [queueMounted, setQueueMounted] = useState(false);
     const { playerStyle, queueStyle } =
-        usePlayingTransitions(mode);
+        usePlayingTransitions(mode, coverVisibility);
+
+    // The player screen is kept mounted between openings, so without this the
+    // next tap on the bar would reopen it on whatever was last on screen —
+    // the queue, with its cover hidden, which is not what tapping the artwork
+    // in the dock asks for. Snap rather than fade: by the time the player is
+    // closed the cover is already undrawn, and it has to be back before the
+    // next drag lifts it out of the bar.
+    useEffect(() => {
+        if (isOpen) return;
+        setMode("player");
+        coverVisibility.value = 1;
+    }, [isOpen, coverVisibility]);
 
     const changeMode = useCallback((next: PlayingViewMode) => {
         if (next === "queue") setQueueMounted(true);

@@ -40,7 +40,7 @@ const NEUTRAL_GRADIENT: [string, string] = ['#121212', '#000'];
  * the other. They are one surface now, at a position the finger can hold.
  */
 export default function PlayerHost() {
-  const { expansion, barCover, fullCover, scrollY, isOpen, hasOpened, collapse } =
+  const { expansion, barCover, fullCover, scrollY, coverVisibility, isOpen, hasOpened, collapse } =
     usePlayerExpansion();
   const { height, width } = useWindowDimensions();
   // The travelling cover is laid out once at a fixed size and only ever
@@ -150,7 +150,10 @@ export default function PlayerHost() {
     const toY = to.y - scrollY.value;
 
     return {
-      opacity: ready ? 1 : 0,
+      // `ready` is about the handover; coverVisibility is about whether the
+      // screen underneath is showing the player at all. The queue is a list
+      // that wants the whole screen, so the cover steps out of its way.
+      opacity: ready ? coverVisibility.value : 0,
       borderRadius: interpolate(e, [0, 1], [barRadius, cardRadius], Extrapolation.CLAMP) / scale,
       transform: [
         { translateX: interpolate(e, [0, 1], [from.x, to.x], Extrapolation.CLAMP) },

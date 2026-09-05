@@ -79,6 +79,17 @@ type PlayerExpansionValue = {
    *  gesture reads this to know whether the finger should move the player or
    *  the list under it. */
   scrollY: SharedValue<number>;
+  /**
+   * How visible the travelling cover should be, on top of wherever the
+   * handover has put it.
+   *
+   * The cover is drawn by the host, above the player screen, so the screen
+   * cannot fade it with its own contents — and swapping the player for the
+   * queue left a full-width square of artwork sitting over the list. The
+   * screen writes this on its way in and out of the queue; the host multiplies
+   * it into the cover's opacity.
+   */
+  coverVisibility: SharedValue<number>;
   expand: () => void;
   collapse: () => void;
   /** True from the moment the player starts opening until it is fully closed.
@@ -105,6 +116,7 @@ export const PlayerExpansionProvider: React.FC<{ children: ReactNode }> = ({ chi
   const barCover = useSharedValue<CoverRect>(EMPTY_COVER_RECT);
   const fullCover = useSharedValue<CoverRect>(EMPTY_COVER_RECT);
   const scrollY = useSharedValue(0);
+  const coverVisibility = useSharedValue(1);
 
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -137,13 +149,14 @@ export const PlayerExpansionProvider: React.FC<{ children: ReactNode }> = ({ chi
       barCover,
       fullCover,
       scrollY,
+      coverVisibility,
       expand,
       collapse,
       isOpen,
       hasOpened,
       prepare,
     }),
-    [expansion, barCover, fullCover, scrollY, expand, collapse, isOpen, hasOpened, prepare],
+    [expansion, barCover, fullCover, scrollY, coverVisibility, expand, collapse, isOpen, hasOpened, prepare],
   );
 
   return (
