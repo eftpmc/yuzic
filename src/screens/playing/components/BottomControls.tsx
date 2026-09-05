@@ -41,7 +41,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    // Pinned to opposite edges, these two read as a pair of glyphs that got
+    // left behind rather than as a row of controls — the gap between them is
+    // most of the screen and holds nothing. Centred as a cluster they read as
+    // what they are: the player's two secondary destinations, one step below
+    // the transport row above them.
+    justifyContent: 'center',
+    gap: spacing.generous,
     flex: 1,
   },
   leftButton: {

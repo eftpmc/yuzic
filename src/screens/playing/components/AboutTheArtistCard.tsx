@@ -62,6 +62,10 @@ export default function AboutTheArtistCard({
         </Text>
       </View>
 
+      {/* The chip over the image already says "Artist"; repeating it under the
+          name said the same word twice about the same person, and spent the
+          only line that could have carried something specific. When the caller
+          has nothing to put there the line is dropped rather than filled. */}
       <View style={styles.textContainer}>
         <Text
           style={styles.title}
@@ -69,12 +73,14 @@ export default function AboutTheArtistCard({
         >
           {artistName}
         </Text>
-        <Text
-          style={styles.subtext}
-          numberOfLines={1}
-        >
-          {subtext ?? t('playing.aboutArtist.subtext')}
-        </Text>
+        {subtext ? (
+          <Text
+            style={styles.subtext}
+            numberOfLines={1}
+          >
+            {subtext}
+          </Text>
+        ) : null}
       </View>
     </View>
   );

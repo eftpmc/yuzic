@@ -56,6 +56,18 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
 
 type ToggleBadge = 'none' | 'dot' | 'sparkle';
 
+/**
+ * Shuffle and repeat, on and off.
+ *
+ * Both used to draw at full white in either state, so the only thing saying
+ * shuffle was on was the 4pt dot under the icon — which is a confirmation of a
+ * signal, not a signal. Dimming the off state gives the icon itself something
+ * to say, and leaves the dot doing the job it is good at.
+ */
+function toggleColor(active: boolean): string {
+  return active ? onDark.text : onDark.subtext;
+}
+
 function ToggleButton({
   badge,
   onPress,
@@ -128,7 +140,7 @@ const Controls: React.FC = () => {
         badge={shuffleMode === 'smart' ? 'sparkle' : shuffleMode === 'shuffle' ? 'dot' : 'none'}
         onPress={handleShuffle}
       >
-        <Shuffle size={23} color={onDark.text} />
+        <Shuffle size={23} color={toggleColor(shuffleMode !== 'off')} />
       </ToggleButton>
 
       <Touchable onPress={handleSkipPrev} hitSlop={HIT_SLOP}>
@@ -147,8 +159,8 @@ const Controls: React.FC = () => {
 
       <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={handleRepeat}>
         {repeatMode === 'one'
-          ? <Repeat1 size={23} color={onDark.text} />
-          : <Repeat size={23} color={onDark.text} />
+          ? <Repeat1 size={23} color={toggleColor(true)} />
+          : <Repeat size={23} color={toggleColor(repeatMode !== 'off')} />
         }
       </ToggleButton>
     </View>

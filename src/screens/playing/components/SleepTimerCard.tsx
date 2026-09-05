@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
 import TrackPlayer from '@rntp/player';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { mmkv } from '@/utils/mmkvStorage';
@@ -23,6 +24,7 @@ function formatCountdown(seconds: number): string {
 type Props = { contentWidth: number };
 
 export default function SleepTimerCard({ contentWidth }: Props) {
+  const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
   const rad = useRadius();
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -122,13 +124,17 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           fill={isActive ? themeColor : 'transparent'}
         />
         <Text style={[styles.label, isActive && { color: themeColor }]}>
-          Sleep Timer
+          {t('playing.sleepTimer.title')}
         </Text>
       </View>
 
-      {/* Countdown */}
+      {/* Countdown. An em dash is not a state — it left the card's largest
+          element saying nothing at all, on the one visit where the reader has
+          not set a timer yet and most needs to be told so. */}
       <Text style={[styles.bigValue, isActive && { color: onDark.text }]}>
-        {remainingSeconds === null ? '—' : formatCountdown(remainingSeconds)}
+        {remainingSeconds === null
+          ? t('playing.sleepTimer.off')
+          : formatCountdown(remainingSeconds)}
       </Text>
 
       {/* Controls */}
@@ -145,7 +151,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           ]}
         >
           <Text style={[styles.offLabel, !isActive && { opacity: 0.35 }]}>
-            Off
+            {t('playing.sleepTimer.cancel')}
           </Text>
         </Touchable>
 
@@ -156,7 +162,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
             style={[styles.incrButton, { borderRadius: rad.card }]}
           >
             <Text style={styles.incrLabel}>
-              +{min}m
+              {t('playing.sleepTimer.addMinutes', { count: min })}
             </Text>
           </Touchable>
         ))}
