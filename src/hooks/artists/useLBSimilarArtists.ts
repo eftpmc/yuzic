@@ -1,20 +1,23 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
 
 import { getLBSimilarArtists } from '@/api/listenbrainz';
 import { QueryKeys } from '@/enums/queryKeys';
+import { selectListenbrainzDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import type { ExternalArtistBase } from '@/types';
 
 /**
  * Similar-artists from ListenBrainz's public session-based graph. Keyed on
- * MBID (no user auth required) so the shelf works even before a user connects
- * their LB account. Skipped when the seed artist has no MBID — LB has nothing
- * to match on.
+ * MBID (no user auth required), so connecting an account is not what turns it
+ * on — the ListenBrainz discovery setting is, and it is off until the user
+ * asks. Skipped when the seed artist has no MBID: LB has nothing to match on.
  */
 export function useLBSimilarArtists(
   seed: { mbid?: string | null; excludeName?: string } | null,
   limit = 12
 ) {
+  const discoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
   const mbid = seed?.mbid ?? null;
   const excludeName = seed?.excludeName?.trim().toLowerCase();
 
@@ -37,7 +40,7 @@ export function useLBSimilarArtists(
           externalIds: { mbid: a.artistMbid },
         }));
     },
-    enabled: Boolean(mbid),
+    enabled: discoveryEnabled && Boolean(mbid),
     staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
   });

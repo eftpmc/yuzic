@@ -311,7 +311,9 @@
       "credentialsTitle": "Identifiants",
       "credentialsHelper": "Votre nom d'utilisateur et votre jeton depuis listenbrainz.org/profile.",
       "scrobble": "Scrobbler",
-      "nowPlaying": "En cours de lecture"
+      "nowPlaying": "En cours de lecture",
+      "discovery": "Découverte",
+      "discoveryDescription": "Utilise le graphe public d'artistes similaires de ListenBrainz sur l'accueil et les pages d'artiste. Aucun compte requis — les artistes que vous écoutez sont envoyés à ListenBrainz pour trouver des correspondances."
     },
     "downloaders": {
       "title": "Téléchargements",
@@ -374,6 +376,10 @@
     "musicbrainz": {
       "external": "Données externes d'artiste et d'album",
       "externalDescription": "Complète les pages d'artiste et d'album avec les données MusicBrainz lorsqu'elles ne sont pas dans votre bibliothèque. Aucun compte requis."
+    },
+    "lastfm": {
+      "enable": "Données d'artiste et de recommandation",
+      "enableDescription": "Utilise Last.fm pour trouver des artistes similaires et alimenter les recommandations de playlists. Aucun compte requis — les noms d'artistes sont envoyés à Last.fm pour la recherche."
     },
     "deezer": {
       "discovery": "Découverte",

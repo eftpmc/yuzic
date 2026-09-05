@@ -307,11 +307,17 @@
       "connectFailed": "Failed to connect to ListenBrainz.",
       "disconnected": "Disconnected from ListenBrainz.",
       "scrobble": "Scrobble",
-      "nowPlaying": "Now Playing"
+      "nowPlaying": "Now Playing",
+      "discovery": "Discovery",
+      "discoveryDescription": "Use ListenBrainz's public similar-artist graph on Home and artist pages. No account required — the artists you listen to are sent to ListenBrainz to find matches."
     },
     "musicbrainz": {
       "external": "External Artist & Album Data",
       "externalDescription": "Fill in artist and album pages with MusicBrainz data when they're not in your library. No account required."
+    },
+    "lastfm": {
+      "enable": "Artist & Recommendation Data",
+      "enableDescription": "Use Last.fm to find similar artists and to seed playlist recommendations. No account required — artist names are sent to Last.fm to look them up."
     },
     "downloaders": {
       "title": "Downloaders",

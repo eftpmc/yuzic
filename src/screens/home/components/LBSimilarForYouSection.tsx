@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { useArtistMbid } from '@/hooks/artists';
 import { selectLibraryArtists } from '@/utils/redux/selectors/librarySelectors';
+import { selectListenbrainzDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import {
   SECTION_H_PADDING as H_PADDING,
   SECTION_GRID_GAP,
@@ -32,9 +33,13 @@ type Props = {
 
 /**
  * "Artists similar to <one you love>" from ListenBrainz's public graph —
- * MBID-keyed, no auth required. Cheap: one round-trip, and the seed comes
- * from the local library so the whole thing works before the user connects
- * anything.
+ * MBID-keyed, no auth required, so what turns it on is the ListenBrainz
+ * discovery setting rather than a connected account. Cheap: one round-trip,
+ * and the seed comes from the local library.
+ *
+ * Home already withholds the whole ListenBrainz group when that setting is
+ * off; the check is repeated here so the shelf cannot call out from anywhere
+ * else it gets mounted.
  */
 export default function LBSimilarForYouSection({ sectionKey, artistName, refreshKey = 0 }: Props) {
   const { t } = useTranslation();
@@ -42,6 +47,7 @@ export default function LBSimilarForYouSection({ sectionKey, artistName, refresh
   const { width: screenWidth } = useWindowDimensions();
   const { navigateToArtist } = useMatchedNavigation();
   const libraryArtists = useSelector(selectLibraryArtists);
+  const discoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
 
   const seed = useMemo(
     () => libraryArtists.find((a) => a.name === artistName) ?? null,
@@ -50,7 +56,12 @@ export default function LBSimilarForYouSection({ sectionKey, artistName, refresh
   // Subsonic servers don't carry MusicBrainz ids, so the library mbid is null
   // for everyone not on Jellyfin/Emby and this shelf never rendered for them.
   // Looking the seed up by name is what makes it work on any server.
-  const { mbid: seedMbid, isResolving } = useArtistMbid(artistName, seed?.mbid);
+  // The name-to-MBID lookup is MusicBrainz's own call and carries its own
+  // setting inside the hook, so on a Subsonic server with MusicBrainz off
+  // there is no seed and this shelf stays away.
+  const { mbid: seedMbid, isResolving } = useArtistMbid(artistName, seed?.mbid, {
+    enabled: discoveryEnabled,
+  });
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
@@ -70,13 +81,14 @@ export default function LBSimilarForYouSection({ sectionKey, artistName, refresh
         externalIds: { mbid: a.artistMbid },
       }));
     },
-    enabled: Boolean(seedMbid),
+    enabled: discoveryEnabled && Boolean(seedMbid),
     staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
   });
 
   const data = query.data ?? [];
-  const isLoading = isResolving || (Boolean(seedMbid) && query.isLoading);
+  const isLoading =
+    discoveryEnabled && (isResolving || (Boolean(seedMbid) && query.isLoading));
   const hasContent = isLoading || data.length > 0;
 
   useSourceSectionPresence(sectionKey, hasContent);

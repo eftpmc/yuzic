@@ -10,7 +10,7 @@ import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnable
 import {
   selectShowSourceHeaders,
   selectHomeServerSectionsEnabled,
-  selectHomeListenbrainzSectionsEnabled,
+  selectListenbrainzDiscoveryEnabled,
 } from '@/utils/redux/selectors/settingsSelectors'
 
 import QuickPicksSection from './components/QuickPicksSection'
@@ -82,7 +82,7 @@ export default function Home() {
   const deezerEnabled = useDeezerDiscoveryEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled)
-  const homeListenbrainzEnabled = useSelector(selectHomeListenbrainzSectionsEnabled)
+  const listenbrainzDiscoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled)
   const api = useApi()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -124,7 +124,10 @@ export default function Home() {
 
   // Server discovery is on whenever the adapter provides it — no per-user
   // toggle, matching how radio and shares appear only where the server can
-  // back them. ListenBrainz too: MBID-keyed and free.
+  // back them. Everything that leaves the device for a third party — Deezer,
+  // ListenBrainz — waits for its own integration setting first; the Home
+  // toggles below only decide whether an already-permitted source gets a
+  // shelf here.
   const activeSources = [
     {
       id: 'server',
@@ -143,7 +146,7 @@ export default function Home() {
       color: sourceColor.listenbrainz,
       letter: 'B',
       sections: listenbrainz,
-      enabled: homeListenbrainzEnabled,
+      enabled: listenbrainzDiscoveryEnabled,
     },
     { id: 'deezer', label: 'Deezer', color: sourceColor.deezer, letter: 'D', sections: deezer, enabled: deezerEnabled },
   ]

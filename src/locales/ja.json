@@ -310,7 +310,9 @@
       "credentialsTitle": "認証情報",
       "credentialsHelper": "listenbrainz.org/profile のユーザー名とユーザートークン。",
       "scrobble": "スクロブル",
-      "nowPlaying": "再生中"
+      "nowPlaying": "再生中",
+      "discovery": "ディスカバリー",
+      "discoveryDescription": "ホームやアーティストページで ListenBrainz の公開類似アーティストデータを使います。アカウント不要 — 照合のため、聴いているアーティスト名が ListenBrainz に送信されます。"
     },
     "downloaders": {
       "title": "ダウンローダー",
@@ -373,6 +375,10 @@
     "musicbrainz": {
       "external": "外部アーティスト・アルバムデータ",
       "externalDescription": "ライブラリにないアーティストやアルバムのページを MusicBrainz のデータで補完します。アカウント不要。"
+    },
+    "lastfm": {
+      "enable": "アーティスト・おすすめデータ",
+      "enableDescription": "Last.fm を使って類似アーティストを探し、プレイリストのおすすめの起点にします。アカウント不要 — 検索のためアーティスト名が Last.fm に送信されます。"
     },
     "deezer": {
       "discovery": "ディスカバリー",

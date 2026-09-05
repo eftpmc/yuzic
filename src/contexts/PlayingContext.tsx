@@ -308,7 +308,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
     hasAutoRestoredRef.current = true;
 
-    const idx = Math.min(persistedCurrentIndex, restored.length - 1);
+    // The filter above can drop tracks the library no longer has, which moves
+    // every song after them one slot up. Find the remembered song by id and
+    // follow it; the positional fallback is only for the case where the song
+    // itself is one of the ones that went missing.
+    const persistedCurrentId = persistedQueueIds[persistedCurrentIndex];
+    const foundIdx = persistedCurrentId
+      ? restored.findIndex((s) => s.id === persistedCurrentId)
+      : -1;
+    const idx = foundIdx >= 0
+      ? foundIdx
+      : Math.min(persistedCurrentIndex, restored.length - 1);
     // Restore modes before loading the queue — TrackPlayer.setRepeatMode
     // inside loadQueue reads from repeatModeRef, which follows setState.
     setRepeatMode(persistedRepeatMode);

@@ -109,6 +109,32 @@ describe('usePlaybackPersistence', () => {
     expect(state.currentIndex).toBe(1)
   })
 
+  it('re-finds the current index after filtering shifts the queue', async () => {
+    const store = makeStore({ activeServerId: 'server-A' })
+    const { result } = await renderHook(() => usePlaybackPersistence(), { wrapper: wrapperFor(store) })
+
+    // The dropped item sits *before* the current song, so every clamp-based
+    // index lands one track too far down the list.
+    await act(async () => {
+      result.current.persistQueue({
+        queue: [
+          song('radio-1', 'liveStream'),
+          song('s1'),
+          song('s2'),
+          song('s3'),
+          song('s4'),
+        ],
+        currentIndex: 2,
+        repeatMode: 'off',
+        shuffleMode: 'off',
+      })
+    })
+
+    const state = store.getState().playback
+    expect(state.queueSongIds).toEqual(['s1', 's2', 's3', 's4'])
+    expect(state.queueSongIds[state.currentIndex]).toBe('s2')
+  })
+
   it('throttles persistPosition writes and honors force', async () => {
     const store = makeStore({ activeServerId: 'server-A' })
     const { result } = await renderHook(() => usePlaybackPersistence(), { wrapper: wrapperFor(store) })

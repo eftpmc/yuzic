@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSelector } from 'react-redux'
 
 import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists'
 import { LASTFM_API_KEY } from '@/constants/keys'
 import { QueryKeys } from '@/enums/queryKeys'
+import { selectLastfmEnabled } from '@/utils/redux/selectors/settingsSelectors'
 import type { ExternalArtistBase } from '@/types'
 
 export type SimilarArtistsInput = {
@@ -44,6 +46,7 @@ async function fetchLastFmSimilarArtists(
 }
 
 export function useSimilarArtists(input: SimilarArtistsInput) {
+  const lastfmEnabled = useSelector(selectLastfmEnabled)
   const queryKey = useMemo(
     () => [QueryKeys.ExploreSimilarArtists, input.mbid ?? input.name ?? '', input.limit ?? 8],
     [input.limit, input.mbid, input.name]
@@ -52,9 +55,14 @@ export function useSimilarArtists(input: SimilarArtistsInput) {
   return useQuery({
     queryKey,
     queryFn: () => fetchLastFmSimilarArtists(input.name!, input.excludeName ?? undefined, input.limit ?? 8),
-    // Backed by the bundled Last.fm api_key; if the build doesn't have one,
-    // this returns nothing rather than firing a doomed request.
-    enabled: (input.enabled ?? true) && Boolean(input.name) && Boolean(LASTFM_API_KEY),
+    // Two gates, both required: the user has to have turned Last.fm on, and
+    // the build has to carry an api_key. Without the key this returns nothing
+    // rather than firing a doomed request.
+    enabled:
+      lastfmEnabled &&
+      (input.enabled ?? true) &&
+      Boolean(input.name) &&
+      Boolean(LASTFM_API_KEY),
     staleTime: 1000 * 60 * 60 * 24,
     networkMode: 'online',
   })

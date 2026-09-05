@@ -19,7 +19,7 @@ import {
   selectRespectReducedMotion,
   selectCoverAccentEnabled,
   selectHomeServerSectionsEnabled,
-  selectHomeListenbrainzSectionsEnabled,
+  selectListenbrainzDiscoveryEnabled,
   selectDeezerDiscoveryEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
@@ -30,7 +30,7 @@ import {
   setRespectReducedMotion,
   setCoverAccentEnabled,
   setHomeServerSectionsEnabled,
-  setHomeListenbrainzSectionsEnabled,
+  setListenbrainzDiscoveryEnabled,
   setDeezerDiscoveryEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
@@ -44,7 +44,7 @@ const AppearanceSettings: React.FC = () => {
   const respectReducedMotion = useSelector(selectRespectReducedMotion);
   const coverAccentEnabled = useSelector(selectCoverAccentEnabled);
   const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled);
-  const homeListenbrainzEnabled = useSelector(selectHomeListenbrainzSectionsEnabled);
+  const homeListenbrainzEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
 
   const toggleQualityBadge = useCallback((v: boolean) => { dispatch(setShowQualityBadge(v)); }, [dispatch]);
@@ -53,7 +53,11 @@ const AppearanceSettings: React.FC = () => {
   const toggleReducedMotion = useCallback((v: boolean) => { dispatch(setRespectReducedMotion(v)); }, [dispatch]);
   const toggleCoverAccent = useCallback((v: boolean) => { dispatch(setCoverAccentEnabled(v)); }, [dispatch]);
   const toggleHomeServer = useCallback((v: boolean) => { dispatch(setHomeServerSectionsEnabled(v)); }, [dispatch]);
-  const toggleHomeListenbrainz = useCallback((v: boolean) => { dispatch(setHomeListenbrainzSectionsEnabled(v)); }, [dispatch]);
+  // Same lever the Integrations screen shows, on purpose: a shelf that
+  // appears here is a call to ListenBrainz, so there is one switch for both
+  // rather than a display toggle that can sit on while the source is off —
+  // which is how the Deezer row beside it already behaves.
+  const toggleHomeListenbrainz = useCallback((v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
   const toggleHomeDeezer = useCallback((v: boolean) => { dispatch(setDeezerDiscoveryEnabled(v)); }, [dispatch]);
   const toggleTranslucentDock = useCallback((v: boolean) => { dispatch(setTranslucentDock(v)); }, [dispatch]);
 

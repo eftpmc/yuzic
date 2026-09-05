@@ -115,18 +115,27 @@ export interface SettingsState {
   deezerSearchEnabled: boolean;
   deezerExternalEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
+  /**
+   * ListenBrainz's public similar-artist graph (Home shelf, artist page).
+   * Needs no account, but it is still a third-party service being told which
+   * artists this user listens to, so it waits to be asked for like every
+   * other external source rather than being on because it happens to be free.
+   */
+  listenbrainzDiscoveryEnabled: boolean;
+  /** Last.fm read-only metadata (similar artists, recommendation seeds). */
+  lastfmEnabled: boolean;
 
   /* Privacy / behavior opt-outs. */
   queueSyncEnabled: boolean;
   serverNowPlayingShelfEnabled: boolean;
   resumeLongTracksEnabled: boolean;
 
-  /* Home discovery source visibility. Each family (server, ListenBrainz,
-   * Deezer) has its own toggle so users choose which shelves appear —
-   * Deezer's is the existing deezerDiscoveryEnabled since that setting
-   * already governs whether we call Deezer at all. */
+  /* Home discovery source visibility. The server tier gets its own toggle
+   * because nothing else governs it; the two external families are steered by
+   * the integration settings that decide whether we may call them at all
+   * (deezerDiscoveryEnabled, listenbrainzDiscoveryEnabled) rather than by a
+   * second switch that could sit on while the first one is off. */
   homeServerSectionsEnabled: boolean;
-  homeListenbrainzSectionsEnabled: boolean;
 
   /* Player controls */
   showSleepTimer: boolean;
@@ -179,6 +188,8 @@ const initialState: SettingsState = {
   deezerSearchEnabled: false,
   deezerExternalEnabled: false,
   musicbrainzExternalEnabled: false,
+  listenbrainzDiscoveryEnabled: false,
+  lastfmEnabled: false,
 
   // Default-on: cross-device continuity and resume are what the user
   // asked for by pausing an audiobook or opening the app on a tablet.
@@ -188,7 +199,6 @@ const initialState: SettingsState = {
   resumeLongTracksEnabled: true,
 
   homeServerSectionsEnabled: true,
-  homeListenbrainzSectionsEnabled: true,
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
@@ -305,6 +315,12 @@ const settingsSlice = createSlice({
     setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
       state.musicbrainzExternalEnabled = action.payload;
     },
+    setListenbrainzDiscoveryEnabled(state, action: PayloadAction<boolean>) {
+      state.listenbrainzDiscoveryEnabled = action.payload;
+    },
+    setLastfmEnabled(state, action: PayloadAction<boolean>) {
+      state.lastfmEnabled = action.payload;
+    },
 
     setQueueSyncEnabled(state, action: PayloadAction<boolean>) {
       state.queueSyncEnabled = action.payload;
@@ -317,9 +333,6 @@ const settingsSlice = createSlice({
     },
     setHomeServerSectionsEnabled(state, action: PayloadAction<boolean>) {
       state.homeServerSectionsEnabled = action.payload;
-    },
-    setHomeListenbrainzSectionsEnabled(state, action: PayloadAction<boolean>) {
-      state.homeListenbrainzSectionsEnabled = action.payload;
     },
 
     setShowSleepTimer(state, action: PayloadAction<boolean>) {
@@ -385,11 +398,12 @@ export const {
   setDeezerSearchEnabled,
   setDeezerExternalEnabled,
   setMusicbrainzExternalEnabled,
+  setListenbrainzDiscoveryEnabled,
+  setLastfmEnabled,
   setQueueSyncEnabled,
   setServerNowPlayingShelfEnabled,
   setResumeLongTracksEnabled,
   setHomeServerSectionsEnabled,
-  setHomeListenbrainzSectionsEnabled,
   setShowSleepTimer,
   setShowJumpButtons,
   setShowVolumeSlider,

@@ -310,7 +310,9 @@
       "credentialsTitle": "凭据",
       "credentialsHelper": "来自 listenbrainz.org/profile 的用户名和用户令牌。",
       "scrobble": "记录播放",
-      "nowPlaying": "正在播放"
+      "nowPlaying": "正在播放",
+      "discovery": "发现",
+      "discoveryDescription": "在主页和艺术家页面使用 ListenBrainz 的公开相似艺术家数据。无需账号 — 为了匹配，你收听的艺术家会被发送至 ListenBrainz。"
     },
     "downloaders": {
       "title": "下载管理",
@@ -373,6 +375,10 @@
     "musicbrainz": {
       "external": "外部艺术家和专辑数据",
       "externalDescription": "当艺术家或专辑不在您的音乐库中时，用 MusicBrainz 数据补全其页面。无需账号。"
+    },
+    "lastfm": {
+      "enable": "艺术家与推荐数据",
+      "enableDescription": "使用 Last.fm 查找相似艺术家，并为播放列表推荐提供起点。无需账号 — 艺术家名称会被发送至 Last.fm 进行查询。"
     },
     "deezer": {
       "discovery": "发现",

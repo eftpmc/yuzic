@@ -21,6 +21,7 @@ import { useApi } from '@/api';
 import {
   selectShowSourceHeaders,
   selectDeezerDiscoveryEnabled,
+  selectLastfmEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   selectIsAudiomuseConfigured,
@@ -340,6 +341,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
+  const lastfmEnabled = useSelector(selectLastfmEnabled);
   const hasDownloader = useAnyDownloaderConnected();
   const downloadSheetRef = useSheetRef();
   const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
@@ -362,10 +364,16 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const externalQuery = useQuery({
     queryKey: externalQueryKey,
     queryFn: () => fetchExternalRecs(playlistArtistNames),
-    // Deezer discovery gives us the top-tracks fetch. Last.fm's bundled key
-    // expands seed artists into similar ones; without a key the section has
-    // nothing to expand, so it stays hidden.
-    enabled: deezerEnabled && !isOffline && playlistArtistNames.length > 0 && Boolean(LASTFM_API_KEY),
+    // This row is two services in a trench coat: Last.fm expands the seed
+    // artists into similar ones, Deezer turns those into playable tracks. It
+    // needs both to have been turned on — plus a bundled Last.fm key to
+    // expand with — so it asks for all three before calling anyone.
+    enabled:
+      deezerEnabled &&
+      lastfmEnabled &&
+      !isOffline &&
+      playlistArtistNames.length > 0 &&
+      Boolean(LASTFM_API_KEY),
     staleTime: 1000 * 60 * 60 * 6,
     networkMode: 'online',
   });
@@ -393,7 +401,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
     }
   }, [downloadSheetRef, hasDownloader, t]);
 
-  if (!deezerEnabled || isOffline || playlistArtistNames.length === 0 || !LASTFM_API_KEY) return null;
+  if (!deezerEnabled || !lastfmEnabled || isOffline || playlistArtistNames.length === 0 || !LASTFM_API_KEY) return null;
 
   return (
     <View style={styles.section}>

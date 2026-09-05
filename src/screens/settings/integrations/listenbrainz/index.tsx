@@ -14,6 +14,8 @@ import {
   selectListenBrainzConfig,
   selectListenBrainzScrobbleEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
+import { selectListenbrainzDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { setListenbrainzDiscoveryEnabled } from '@/utils/redux/slices/settingsSlice';
 import {
   setUsername,
   setToken,
@@ -35,8 +37,18 @@ const ListenBrainzView: React.FC = () => {
   const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
   const config = useSelector(selectListenBrainzConfig);
   const scrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
+  const discoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+  const toggleDiscovery = useCallback((v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
+
+  // Discovery reads the public similar-artist graph, which takes no account —
+  // so it sits above the credentials rather than inside the connected-only
+  // block, and it is off until it is switched on like every other source that
+  // talks to somebody else's server.
+  const discoveryItems = useMemo(() => [
+    { label: t('settings.listenBrainz.discovery'), subtext: t('settings.listenBrainz.discoveryDescription'), value: discoveryEnabled, onValueChange: toggleDiscovery },
+  ], [t, discoveryEnabled, toggleDiscovery]);
 
   // Now-playing follows scrobble; see the note in settingsSelectors.
   const scrobbleItems = useMemo(() => [
@@ -108,6 +120,8 @@ const ListenBrainzView: React.FC = () => {
 
   return (
     <SettingsScreen title={t('settings.listenBrainz.title')}>
+      <SettingsToggleGroup items={discoveryItems} />
+
       <SettingsAuthCard
         fields={[
           { label: t('settings.listenBrainz.username'), value: username, onChangeText: v => dispatch(setUsername({ serverId, value: v.trim() })), placeholder: t('settings.listenBrainz.usernamePlaceholder') },

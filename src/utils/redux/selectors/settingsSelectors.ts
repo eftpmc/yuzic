@@ -145,6 +145,13 @@ export const selectDeezerExternalEnabled = (state: RootState): boolean =>
 export const selectMusicbrainzExternalEnabled = (state: RootState): boolean =>
   state.settings.musicbrainzExternalEnabled ?? false;
 
+/** Off until asked for: see the note on the field in settingsSlice. */
+export const selectListenbrainzDiscoveryEnabled = (state: RootState): boolean =>
+  state.settings.listenbrainzDiscoveryEnabled ?? false;
+
+export const selectLastfmEnabled = (state: RootState): boolean =>
+  state.settings.lastfmEnabled ?? false;
+
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||
@@ -162,6 +169,3 @@ export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
 
 export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
   state.settings.homeServerSectionsEnabled ?? true;
-
-export const selectHomeListenbrainzSectionsEnabled = (state: RootState): boolean =>
-  state.settings.homeListenbrainzSectionsEnabled ?? true;

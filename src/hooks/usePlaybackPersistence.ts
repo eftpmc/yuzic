@@ -61,10 +61,18 @@ export function usePlaybackPersistence() {
     const ids = args.queue
       .filter((s) => (s.contentKind ?? 'song') === 'song')
       .map((s) => s.id);
+    // Dropping those items shifts everything after them, so the index has to
+    // be re-found rather than clamped: the current song's own id is what says
+    // where it ended up. It has no place in the saved list only when it is
+    // itself one of the dropped kinds, and then the clamp is all there is.
+    const currentId = args.queue[args.currentIndex]?.id;
+    const mappedIndex = currentId ? ids.indexOf(currentId) : -1;
     dispatch(setPlaybackQueue({
       activeServerId,
       queueSongIds: ids,
-      currentIndex: Math.min(args.currentIndex, Math.max(0, ids.length - 1)),
+      currentIndex: mappedIndex >= 0
+        ? mappedIndex
+        : Math.min(args.currentIndex, Math.max(0, ids.length - 1)),
       repeatMode: args.repeatMode,
       shuffleMode: args.shuffleMode,
     }));
