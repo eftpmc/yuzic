@@ -695,8 +695,13 @@
       "title": "歌词"
     },
     "aboutArtist": {
-      "header": "歌手",
-      "subtext": "歌手"
+      "header": "歌手"
+    },
+    "sleepTimer": {
+      "title": "睡眠定时器",
+      "off": "关闭",
+      "cancel": "关闭",
+      "addMinutes_other": "+{{count}}分钟"
     },
     "bar": {
       "noSong": "当前无播放曲目",

@@ -696,8 +696,14 @@
       "title": "Paroles"
     },
     "aboutArtist": {
-      "header": "Artiste",
-      "subtext": "Artiste"
+      "header": "Artiste"
+    },
+    "sleepTimer": {
+      "title": "Minuteur de veille",
+      "off": "Désactivé",
+      "cancel": "Arrêter",
+      "addMinutes_one": "+{{count}} min",
+      "addMinutes_other": "+{{count}} min"
     },
     "bar": {
       "noSong": "Aucun morceau en lecture",

@@ -695,8 +695,13 @@
       "title": "歌詞"
     },
     "aboutArtist": {
-      "header": "アーティスト",
-      "subtext": "アーティスト"
+      "header": "アーティスト"
+    },
+    "sleepTimer": {
+      "title": "スリープタイマー",
+      "off": "オフ",
+      "cancel": "オフ",
+      "addMinutes_other": "+{{count}}分"
     },
     "bar": {
       "noSong": "再生中の曲はありません",

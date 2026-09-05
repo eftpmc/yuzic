@@ -539,7 +539,7 @@
       "episodes_other": "{{count}} episodes"
     },
     "radio": {
-      "title": "Radio Stations"
+      "title": "Radio stations"
     },
     "podcasts": {
       "title": "Podcasts"
@@ -562,14 +562,14 @@
       "mostRecent": "Most Recent",
       "mostPlayed": "Most Played",
       "releaseYear": "Release Year",
-      "recentlyAdded": "Recently Added"
+      "recentlyAdded": "Recently added"
     },
     "sortSheet": {
       "title": "Sort by"
     },
     "account": {
       "settings": "Settings",
-      "triggerScan": "Trigger Scan",
+      "triggerScan": "Scan library",
       "signOut": "Sign Out",
       "scanTriggered": "Scan triggered.",
       "scanFailed": "Could not trigger scan.",
@@ -582,7 +582,7 @@
     "placeholder": "Search for music, artists, or playlists...",
     "noResults": "No results found",
     "searchError": "Couldn't reach the server — results may be incomplete",
-    "recentSearches": "Recent Searches",
+    "recentSearches": "Recent searches",
     "clearRecent": "Clear",
     "removeRecentSearch": "Remove \"{{query}}\" from recent searches",
     "recentlyOpened": "Recently opened",
@@ -653,8 +653,14 @@
       "title": "Lyrics"
     },
     "aboutArtist": {
-      "header": "Artist",
-      "subtext": "Artist"
+      "header": "Artist"
+    },
+    "sleepTimer": {
+      "title": "Sleep timer",
+      "off": "Off",
+      "cancel": "Off",
+      "addMinutes_one": "+{{count}}m",
+      "addMinutes_other": "+{{count}}m"
     },
     "bar": {
       "noSong": "No song playing",
