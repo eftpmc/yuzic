@@ -200,7 +200,7 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
         ) : null}
       </Animated.View>
 
-      {rightAction ?? <View style={[styles.headerButton, { borderRadius: rad.pill }]} />}
+      {rightAction ?? <View style={[styles.headerButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]} />}
     </View>
   );
 }
@@ -344,9 +344,14 @@ type DetailCircleActionProps = {
 
 export function DetailCircleAction({ children, onPress, disabled, style, accessibilityLabel }: DetailCircleActionProps) {
   const { colors } = useTheme();
+  const rad = useRadius();
   return (
     <Touchable
-      style={[styles.secondaryButton, { backgroundColor: colors.card }, style]}
+      style={[
+        styles.secondaryButton,
+        { backgroundColor: colors.card, borderRadius: rad.pillFor(controlSize.detailSecondary) },
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
@@ -371,7 +376,11 @@ export function DetailPlayAction({ children, onPress, disabled, style, accessibi
   const rad = useRadius();
   return (
     <Touchable
-      style={[styles.playButton, { backgroundColor: colors.themeColor, borderRadius: rad.pill }, style]}
+      style={[
+        styles.playButton,
+        { backgroundColor: colors.themeColor, borderRadius: rad.pillFor(controlSize.detailPrimaryHeight) },
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
@@ -410,7 +419,11 @@ function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: Bar
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={[styles.headerButton, { borderRadius: rad.pill }, scrim ? { backgroundColor: scrim } : null]}
+      style={[
+        styles.headerButton,
+        { borderRadius: rad.pillFor(controlSize.iconCompact) },
+        scrim ? { backgroundColor: scrim } : null,
+      ]}
       feedback="control"
       hitSlop={8}
     >
@@ -541,7 +554,6 @@ const styles = StyleSheet.create({
   secondaryButton: {
     width: controlSize.detailSecondary,
     height: controlSize.detailSecondary,
-    borderRadius: controlSize.detailSecondary / 2,
     justifyContent: 'center',
     alignItems: 'center',
   },

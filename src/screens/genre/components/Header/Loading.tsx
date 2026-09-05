@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing } from '@/constants/design';
+import { controlSize, spacing } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LoadingGenreHeader: React.FC = () => {
@@ -24,9 +24,9 @@ const LoadingGenreHeader: React.FC = () => {
       </View>
 
       <View style={styles.buttonRow}>
-        <Skeleton width={40} height={40} radius={20} colorMode={colorMode} />
-        <Skeleton width={112} height={48} radius={rad.pill} colorMode={colorMode} />
-        <Skeleton width={40} height={40} radius={20} colorMode={colorMode} />
+        <Skeleton width={40} height={40} radius={rad.pillFor(controlSize.detailSecondary)} colorMode={colorMode} />
+        <Skeleton width={112} height={48} radius={rad.pillFor(controlSize.detailPrimaryHeight)} colorMode={colorMode} />
+        <Skeleton width={40} height={40} radius={rad.pillFor(controlSize.detailSecondary)} colorMode={colorMode} />
       </View>
     </>
   );

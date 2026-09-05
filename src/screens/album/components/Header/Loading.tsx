@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing } from '@/constants/design';
+import { controlSize, spacing } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LoadingAlbumHeader: React.FC = () => {
@@ -83,19 +83,19 @@ const LoadingAlbumHeader: React.FC = () => {
                     <Skeleton
                         width={40}
                         height={40}
-                        radius={20}
+                        radius={rad.pillFor(controlSize.detailSecondary)}
                         colorMode={colorMode}
                     />
                     <Skeleton
                         width={112}
                         height={48}
-                        radius={rad.pill}
+                        radius={rad.pillFor(controlSize.detailPrimaryHeight)}
                         colorMode={colorMode}
                     />
                     <Skeleton
                         width={40}
                         height={40}
-                        radius={20}
+                        radius={rad.pillFor(controlSize.detailSecondary)}
                         colorMode={colorMode}
                     />
                 </View>

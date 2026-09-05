@@ -80,7 +80,13 @@ because both halves of each pair look reasonable in isolation.
 - **Appearance settings**: the scales a user can move — corner radius
   (`useRadius`) and list density (`useListDensity`) — are read through a hook,
   never imported statically, or the surface silently opts out of the setting
-  and the preset reads as half-applied. Every one of them falls back in its
+  and the preset reads as half-applied. A round control is the trap here:
+  `radius.pill` is for the things whose roundness is what they *are* (an
+  avatar, a status dot, a radio fill, a progress track, an artist's photo) and
+  stays round at every preset, while a **control** merely drawn as a pill or a
+  circle — a play button, a button on a detail bar — uses `rad.pillFor(height)`
+  and squares off with the cards under `sharp`. `size / 2` written out as a
+  literal is the same mistake in a second spelling. Every one of them falls back in its
   selector rather than reading straight off the persisted settings blob: a user
   upgrading has one written before the key existed, and `undefined` reaches the
   style as a broken layout rather than as a default. Under the `default` option

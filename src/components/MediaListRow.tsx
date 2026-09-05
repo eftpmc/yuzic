@@ -139,6 +139,9 @@ const styles = StyleSheet.create({
     width: controlSize.compactMediaRowArt,
     height: controlSize.compactMediaRowArt,
   },
+  // An artist's photo, and round at every preset on purpose: the circle is how
+  // you tell an artist from an album at a glance, so it is identity rather than
+  // shape the radius preset gets to move. Deliberately not `rad.pillFor`.
   coverRounded: {
     borderRadius: controlSize.mediaRowArt / 2,
   },

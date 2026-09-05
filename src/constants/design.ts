@@ -208,6 +208,9 @@ export const controlSize = {
   detailSecondary: 40,
   detailPrimaryWidth: 112,
   detailPrimaryHeight: 48,
+  /** The full-screen player's play button — the biggest control in the app,
+   *  and the one a thumb finds without looking. */
+  playerPrimary: 68,
   mediaRowArt: 64,
   compactMediaRowArt: 44,
   topBarHeight: 52,

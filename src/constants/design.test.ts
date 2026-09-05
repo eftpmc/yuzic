@@ -5,6 +5,7 @@ import {
   radius,
   scaleRadius,
   type ListDensity,
+  type RadiusPreset,
 } from './design'
 
 describe('hitSlopFor', () => {
@@ -45,11 +46,42 @@ describe('scaleRadius', () => {
     expect(scaleRadius(radius.xs, 'sharp')).toBeGreaterThanOrEqual(1)
   })
 
-  it('keeps pill radii pill under every preset', () => {
-    // A circular play button turning into a square is a bug, not a preset.
+  it('keeps the pill token pill under every preset', () => {
+    // `radius.pill` is now only for the things whose roundness is what they
+    // *are* — an avatar, a status dot, a progress track. A squared status dot
+    // is a different component, not a sharper one. Controls that merely happen
+    // to be drawn round scale through `pillFor` instead.
     expect(scaleRadius(radius.pill, 'sharp')).toBe(radius.pill)
     expect(scaleRadius(radius.pill, 'default')).toBe(radius.pill)
     expect(scaleRadius(radius.pill, 'rounded')).toBe(radius.pill)
+  })
+
+  describe('a control drawn as a pill, scaled by half its height', () => {
+    // What `pillFor(size)` computes. The detail screens' play pill is 48 tall
+    // and the circles beside it are 40.
+    const pillFor = (size: number, preset: RadiusPreset) => scaleRadius(size / 2, preset)
+
+    it.each([controlSize.detailPrimaryHeight, controlSize.detailSecondary, controlSize.playerPrimary])(
+      'stays exactly round at the default preset: %ipt',
+      size => {
+        expect(pillFor(size, 'default')).toBe(size / 2)
+      },
+    )
+
+    it('stays round under rounded, where React Native clamps at half', () => {
+      // Overshooting half is not a bug — RN clamps borderRadius to half the
+      // shorter side, so the button is still a pill rather than a broken one.
+      const size = controlSize.detailPrimaryHeight
+      expect(pillFor(size, 'rounded')).toBeGreaterThanOrEqual(size / 2)
+    })
+
+    it('squares off under sharp, along with the cards around it', () => {
+      // The whole point: a play button that stayed a perfect circle while every
+      // surface behind it went near-square read as the preset half-applying.
+      const size = controlSize.detailPrimaryHeight
+      expect(pillFor(size, 'sharp')).toBeLessThan(size / 2)
+      expect(pillFor(size, 'sharp')).toBeGreaterThan(0)
+    })
   })
 
   it('leaves the default preset at the base value', () => {

@@ -18,7 +18,7 @@ import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors
 import { canJumpWithin } from '@/utils/playback/contentKind';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
+import { controlSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import haptics from '@/utils/haptics';
@@ -42,7 +42,7 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
       onPress={onPress}
       onPressIn={() => { if (!reduced) scale.value = withTiming(0.91, { duration: 80 }); }}
       onPressOut={() => { if (!reduced) scale.value = withTiming(1, { duration: 150 }); }}
-      style={[styles.playButton, { borderRadius: rad.pill }, animStyle]}
+      style={[styles.playButton, { borderRadius: rad.pillFor(controlSize.playerPrimary) }, animStyle]}
     >
       {isBuffering
         ? <SpinningLoaderCircle size={18} color="#000" />
@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   playButton: {
-    width: 68,
-    height: 68,
+    width: controlSize.playerPrimary,
+    height: controlSize.playerPrimary,
     backgroundColor: onDark.text,
     alignItems: 'center',
     justifyContent: 'center',
