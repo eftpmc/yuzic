@@ -190,8 +190,8 @@
         "discardBody": "这会移除当前服务器的待同步更改。本地媒体库将在下次同步时刷新。"
       },
       "downloads": {
-        "title": "下载管理",
-        "detailsTitle": "下载详情",
+        "title": "离线下载",
+        "detailsTitle": "离线下载",
         "moreInfo": "更多信息",
         "clearTitle": "清空下载内容？",
         "clearBody": "此操作将删除设备上所有已下载的曲目。",
@@ -1182,7 +1182,7 @@
     "library": "音乐库"
   },
   "downloads": {
-    "title": "下载",
+    "title": "下载队列",
     "noDownloaders": "未连接下载器。请在设置中添加。"
   }
 }

@@ -186,8 +186,8 @@
         "discardBody": "This removes pending changes for the current server. Your local library will refresh on the next sync."
       },
       "downloads": {
-        "title": "Downloads",
-        "detailsTitle": "Download Details",
+        "title": "Offline downloads",
+        "detailsTitle": "Offline downloads",
         "moreInfo": "More info",
         "clearTitle": "Clear downloads?",
         "clearBody": "This will remove all downloaded songs from your device.",
@@ -1125,7 +1125,7 @@
     "library": "Library"
   },
   "downloads": {
-    "title": "Downloads",
+    "title": "Download queue",
     "noDownloaders": "No downloaders connected. Add one in Settings."
   }
 }

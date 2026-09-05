@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { useTheme } from '@/hooks/useTheme';
 import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
@@ -26,6 +27,10 @@ export default function Settings() {
     const { t } = useTranslation();
     const router = useRouter();
     const activeServer = useSelector(selectActiveServer);
+    // The queue screen has nothing to show without a downloader behind it —
+    // the row led to "No downloaders connected. Add one in Settings", from
+    // Settings, one row below the place that adds one.
+    const hasDownloader = useAnyDownloaderConnected();
 
     const { colors } = useTheme();
     const rad = useRadius();
@@ -120,12 +125,16 @@ export default function Settings() {
                         leftIcon={<Download size={22} color={colors.secondary} />}
                         onPress={() => router.push('/settings/downloadersView')}
                     />
-                    <SettingsDivider />
-                    <SettingsRow
-                        label={t('downloads.title')}
-                        leftIcon={<CloudDownload size={22} color={colors.secondary} />}
-                        onPress={() => router.push('/downloadsView')}
-                    />
+                    {hasDownloader && (
+                        <>
+                            <SettingsDivider />
+                            <SettingsRow
+                                label={t('downloads.title')}
+                                leftIcon={<CloudDownload size={22} color={colors.secondary} />}
+                                onPress={() => router.push('/downloadsView')}
+                            />
+                        </>
+                    )}
                 </SettingsCard>
 
                 {/* About */}

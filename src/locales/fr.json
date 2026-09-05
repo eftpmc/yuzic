@@ -190,8 +190,8 @@
         "discardBody": "Cela supprimera les modifications en attente pour le serveur actuel. Votre bibliothèque locale sera actualisée lors de la prochaine synchronisation."
       },
       "downloads": {
-        "title": "Téléchargements",
-        "detailsTitle": "Détails des téléchargements",
+        "title": "Téléchargements hors ligne",
+        "detailsTitle": "Téléchargements hors ligne",
         "moreInfo": "Plus d'infos",
         "clearTitle": "Effacer les téléchargements ?",
         "clearBody": "Cela supprimera tous les morceaux téléchargés de votre appareil.",
@@ -1186,7 +1186,7 @@
     "library": "Bibliothèque"
   },
   "downloads": {
-    "title": "Téléchargements",
+    "title": "File d'attente de téléchargement",
     "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages."
   }
 }
