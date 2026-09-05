@@ -26,6 +26,12 @@ const SettingsScreen: React.FC<Props> = ({
 
   return (
     <SafeAreaView
+      // Top only, like every other screen. The default is all four edges, and
+      // the bottom one paints the home-indicator inset as a dead black band
+      // between the last card and the playing bar — the dock is a real docked
+      // tabBar that already owns that space, so claiming it twice just leaves
+      // a strip of background no content can reach.
+      edges={['top']}
       style={[
         styles.container,
         { backgroundColor: colors.background },
