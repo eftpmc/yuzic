@@ -27,6 +27,13 @@ import { spacing } from '@/constants/design';
  * from a tab (an album, artist, settings) will hide both together, which
  * matches how every other music app treats its detail views.
  */
+// The tab you land on when something navigates to `(tabs)` as a whole.
+// Without this, expo-router infers the anchor by looking for a child whose
+// route matches the group name — `(tabs)` has no such child, so the landing
+// tab was decided by declaration order. Naming it keeps that from shifting
+// when tabs are added or reordered.
+export const unstable_settings = { anchor: '(home)' };
+
 function TabButton({
   onPress,
   active,

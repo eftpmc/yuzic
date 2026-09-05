@@ -31,7 +31,7 @@ export default function Home() {
     const isAuthenticated = activeServer?.isAuthenticated;
 
     if (isAuthenticated) {
-        return <Redirect href="/(home)/(tabs)" />;
+        return <Redirect href="/(home)/(tabs)/(home)" />;
     }
 
     if (hasSeenGetStarted) {

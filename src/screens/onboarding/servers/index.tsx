@@ -40,12 +40,12 @@ export default function Servers() {
     const handleSelectServer = (id: string) => {
         if (id === activeServerId) {
             dispatch(setActiveServer(id));
-            router.replace('/(tabs)');
+            router.replace('/(home)/(tabs)/(home)');
             return;
         }
 
         dispatch(setActiveServer(id));
-        router.replace('/(tabs)');
+        router.replace('/(home)/(tabs)/(home)');
     };
 
     const handleAddServer = () => {

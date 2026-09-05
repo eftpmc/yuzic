@@ -85,7 +85,7 @@ export default function LibrariesOnboarding() {
       id: server.id,
       patch: { auth: { ...server.auth, ...authPatch } as any },
     }));
-    router.replace('/(tabs)');
+    router.replace('/(home)/(tabs)/(home)');
   };
 
   return (

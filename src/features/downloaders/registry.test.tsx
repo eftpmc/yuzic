@@ -20,9 +20,11 @@ function makeStore() {
 }
 
 function wrapper(store: ReturnType<typeof makeStore>) {
-  return ({ children }: { children: ReactNode }) => (
+  const Wrapper = ({ children }: { children: ReactNode }) => (
     <Provider store={store}>{children}</Provider>
   );
+  Wrapper.displayName = 'TestStoreWrapper';
+  return Wrapper;
 }
 
 describe('useDownloaderStates', () => {

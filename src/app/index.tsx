@@ -13,7 +13,7 @@ export default function Index() {
     !!activeServer?.isAuthenticated && !!activeServer?.serverUrl;
 
   if (hasAuthenticatedServer) {
-    return <Redirect href="/(home)/(tabs)" />;
+    return <Redirect href="/(home)/(tabs)/(home)" />;
   }
 
   if (!activeServer) {
