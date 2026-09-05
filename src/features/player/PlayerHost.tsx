@@ -19,7 +19,7 @@ import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 import { radius } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
-import { CLOSED_EPSILON, usePlayerExpansion } from './PlayerExpansion';
+import { coverHandedOver, usePlayerExpansion } from './PlayerExpansion';
 
 const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE_MAX);
 
@@ -126,8 +126,21 @@ export default function PlayerHost() {
     // it saw first, so a short-circuit that returned only `opacity` left the
     // transform below permanently unapplied — the cover was positioned, sized
     // and simply never drawn.
-    const ready = from.size > 0 && to.size > 0 && e > CLOSED_EPSILON;
-    const size = interpolate(e, [0, 1], [from.size, to.size], Extrapolation.CLAMP);
+    const ready = coverHandedOver(e, from, to);
+
+    // The eye reads a square by its area, not by its edge, and interpolating
+    // the edge linearly makes the growth accelerate: halfway up the drag the
+    // cover has taken barely a quarter of the area it will end up covering, so
+    // most of the growth happens in the last third and the artwork appears to
+    // run away from the finger near the top. Interpolating the area and taking
+    // the root back out spends the growth evenly across the travel.
+    const area = interpolate(
+      e,
+      [0, 1],
+      [from.size * from.size, to.size * to.size],
+      Extrapolation.CLAMP
+    );
+    const size = Math.sqrt(area);
     const scale = ready ? size / REFERENCE_SIZE : 1;
 
     // The slot is measured with the player scrolled to the top, which is where

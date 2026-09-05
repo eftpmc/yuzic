@@ -47,6 +47,27 @@ export const PLAYER_SPRING: WithSpringConfig = {
  *  through 0.0001 doesn't flicker the handover. */
 export const CLOSED_EPSILON = 0.001;
 
+/**
+ * Whether the host has taken the cover over from the bar.
+ *
+ * Both ends of the handover have to agree about this exactly, and they used to
+ * decide it separately: the bar dropped its thumbnail as soon as `expansion`
+ * left zero, while the host would only draw the travelling cover once *both*
+ * slots had been measured. On the very first drag the player screen has only
+ * just been mounted by `prepare`, so its slot is still unmeasured for a frame
+ * or two — and in that window the bar had already let go of a cover the host
+ * could not yet draw, leaving the artwork missing at the exact moment the
+ * gesture starts. One worklet, read by both sides, so there is no window.
+ */
+export function coverHandedOver(
+  expansion: number,
+  bar: CoverRect,
+  full: CoverRect,
+): boolean {
+  'worklet';
+  return expansion > CLOSED_EPSILON && bar.size > 0 && full.size > 0;
+}
+
 type PlayerExpansionValue = {
   /** 0 = collapsed to the bar, 1 = full screen. */
   expansion: SharedValue<number>;

@@ -21,8 +21,8 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import {
-  CLOSED_EPSILON,
   PLAYER_SPRING,
+  coverHandedOver,
   usePlayerExpansion,
 } from '@/features/player/PlayerExpansion';
 import { useTheme } from '@/hooks/useTheme';
@@ -207,7 +207,7 @@ export default function PlayingBarBase({ variant }: Props) {
 
   const { currentSong, isPlaying, isBuffering } = usePlayingState();
   const { pauseSong, resumeSong } = usePlayingActions();
-  const { expansion, barCover, expand, prepare } = usePlayerExpansion();
+  const { expansion, barCover, fullCover, expand, prepare } = usePlayerExpansion();
 
   const stylesForVariant = variantStyles[variant];
   const playlistSheetRef = useSheetRef();
@@ -276,10 +276,11 @@ export default function PlayingBarBase({ variant }: Props) {
     opacity: interpolate(expansion.value, [0, 0.25], [1, 0], Extrapolation.CLAMP),
   }));
 
-  // The thumbnail is handed over to the player host the moment the journey
-  // starts, so there is one piece of cover art in the air rather than two.
+  // The thumbnail is handed over to the player host as soon as the host can
+  // actually draw it, so there is one piece of cover art in the air rather
+  // than two — or, as there used to be on the first drag of a session, none.
   const coverHandoffStyle = useAnimatedStyle(() => ({
-    opacity: expansion.value > CLOSED_EPSILON ? 0 : 1,
+    opacity: coverHandedOver(expansion.value, barCover.value, fullCover.value) ? 0 : 1,
   }));
 
   const content = (
