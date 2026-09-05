@@ -8,7 +8,7 @@ import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer'
 import TopTrackRow from '@/components/rows/TopTrackRow'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { sourceColor, spacing, typography } from '@/constants/design'
+import { controlSize, sourceColor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
@@ -63,7 +63,7 @@ export default function PopularOnDeezerSection({ topTracks, artistId, artistName
       {allTracks.length > 5 && (
         <View style={styles.toggleRow}>
           <Touchable
-            style={[styles.toggleButton, { backgroundColor: colors.card, borderRadius: rad.pill }]}
+            style={[styles.toggleButton, { backgroundColor: colors.card, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
             onPress={() => setShowAll(v => !v)}
           >
             <Text style={[styles.toggleText, { color: colors.secondary }]}>

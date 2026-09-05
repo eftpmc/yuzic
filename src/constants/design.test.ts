@@ -104,7 +104,7 @@ describe('scaleRadius', () => {
 
 describe('listDensity', () => {
   const order: ListDensity[] = ['compact', 'default', 'spacious']
-  const roles = ['rowGap', 'rowPadding', 'trackRowPadding'] as const
+  const roles = ['rowGap', 'rowPadding', 'trackRowPadding', 'libraryRowPadding'] as const
 
   it.each(roles)('gets roomier in the direction the labels promise: %s', role => {
     const steps = order.map(density => listDensity[density][role])
@@ -119,6 +119,17 @@ describe('listDensity', () => {
     // rendering bug rather than as a dense list.
     roles.forEach(role => {
       expect(listDensity.compact[role]).toBeGreaterThan(0)
+    })
+  })
+
+  it('keeps the library tighter than the rest of the app at every density', () => {
+    // The library draws 52pt artwork where a media row draws 64, so its rows
+    // are meant to sit closer. Folding it onto `rowPadding` would have
+    // loosened every collection list the moment the setting shipped.
+    order.forEach(density => {
+      expect(listDensity[density].libraryRowPadding).toBeLessThanOrEqual(
+        listDensity[density].trackRowPadding
+      )
     })
   })
 

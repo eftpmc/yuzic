@@ -206,6 +206,10 @@ export const controlSize = {
   iconDefault: 44,
   iconCompact: 36,
   detailSecondary: 40,
+  /** A control that sits inline with text — the library's sort pill and the
+   *  toggle beside it, a recent-search chip. 34pt drawn, padded out to the
+   *  minimum tap target by `hitSlopFor`. */
+  inlineControl: 34,
   detailPrimaryWidth: 112,
   detailPrimaryHeight: 48,
   /** The full-screen player's play button — the biggest control in the app,
@@ -258,11 +262,32 @@ export const listDensity: Record<
     /** Padding inside a track row, which is compact but carries a whole
      *  record's worth of them and needs the extra step. */
     trackRowPadding: number;
+    /** Padding inside a library row. Its own role because the library draws
+     *  tighter than the rest of the app on purpose — 52pt artwork rather than
+     *  64pt, so a collection of five hundred stays scannable. Folding it into
+     *  `rowPadding` would have loosened every library list by two points the
+     *  moment the setting shipped. */
+    libraryRowPadding: number;
   }
 > = {
-  compact: { rowGap: spacing.sm, rowPadding: spacing.xs, trackRowPadding: spacing.sm },
-  default: { rowGap: spacing.lg, rowPadding: spacing.sm, trackRowPadding: spacing.md },
-  spacious: { rowGap: spacing.xl, rowPadding: spacing.md, trackRowPadding: spacing.roomy },
+  compact: {
+    rowGap: spacing.sm,
+    rowPadding: spacing.xs,
+    trackRowPadding: spacing.sm,
+    libraryRowPadding: spacing.xs,
+  },
+  default: {
+    rowGap: spacing.lg,
+    rowPadding: spacing.sm,
+    trackRowPadding: spacing.md,
+    libraryRowPadding: spacing.tight,
+  },
+  spacious: {
+    rowGap: spacing.xl,
+    rowPadding: spacing.md,
+    trackRowPadding: spacing.roomy,
+    libraryRowPadding: spacing.controlGap,
+  },
 };
 
 export type SemanticThemeColors = {

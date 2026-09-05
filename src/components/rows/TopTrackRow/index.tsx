@@ -9,6 +9,10 @@ import Touchable from '@/components/Touchable'
 import { typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 
+/** The preview affordance on an external top-track row, drawn small on purpose
+ *  — it sits inside a row rather than beside one. `hitSlopFor` pads it out. */
+const PREVIEW_BUTTON_SIZE = 28
+
 type Props = {
   song: ExternalSong
   index: number
@@ -36,7 +40,7 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
       trailing={
         song.previewUrl ? (
           <Touchable
-            style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pill }]}
+            style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pillFor(PREVIEW_BUTTON_SIZE) }]}
             onPress={onPress}
             disabled={!onPress}
             hitSlop={8}
@@ -58,8 +62,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   previewButton: {
-    width: 28,
-    height: 28,
+    width: PREVIEW_BUTTON_SIZE,
+    height: PREVIEW_BUTTON_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
   },

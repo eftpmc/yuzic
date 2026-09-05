@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { hitSlopFor, spacing, typography } from '@/constants/design'
+import { controlSize, hitSlopFor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import {
   selectLibraryViewMode,
@@ -150,7 +150,7 @@ const LibraryList: React.FC<Props> = ({
             {header}
             <View style={styles.sortRow}>
               <Touchable
-                style={[styles.sortButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
+                style={[styles.sortButton, { backgroundColor: colors.muted, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
                 onPress={() => sortSheetRef.current?.present()}
                 accessibilityRole="button"
               >
@@ -160,8 +160,8 @@ const LibraryList: React.FC<Props> = ({
                 </Text>
               </Touchable>
               <Touchable
-                style={[styles.gridButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
-                hitSlop={hitSlopFor(34)}
+                style={[styles.gridButton, { backgroundColor: colors.muted, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
+                hitSlop={hitSlopFor(controlSize.inlineControl)}
                 onPress={() => dispatch(
                   collection
                     ? setLibraryViewMode({ collection, isGridView: !isGridView })
@@ -215,8 +215,8 @@ const styles = StyleSheet.create({
   },
   sortLabel: { ...typography.caption },
   gridButton: {
-    width: 34,
-    height: 34,
+    width: controlSize.inlineControl,
+    height: controlSize.inlineControl,
     alignItems: 'center',
     justifyContent: 'center',
   },

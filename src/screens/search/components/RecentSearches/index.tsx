@@ -7,7 +7,7 @@ import MediaListRow from '@/components/MediaListRow';
 import IconActionButton from '@/components/IconActionButton';
 import { useTheme } from '@/hooks/useTheme';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
-import { spacing, typography } from '@/constants/design';
+import { controlSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   searchHistoryEntryKey,
@@ -59,7 +59,7 @@ export default function RecentSearches({
             <View
               key={searchHistoryEntryKey(entry)}
               testID="search-recent-chip"
-              style={[styles.chip, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
+              style={[styles.chip, { backgroundColor: colors.muted, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
             >
               <Touchable
                 style={styles.chipMain}
