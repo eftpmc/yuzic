@@ -121,6 +121,9 @@ export const stateLayer = {
 export type RadiusPreset = 'sharp' | 'default' | 'rounded';
 
 export const radius = {
+  /** Square by intent — a rule that spans the full width of a surface, where
+   * rounded ends would read as a detached bar rather than an edge. */
+  none: 0,
   xs: 4,
   sm: 6,
   thumb: 6,

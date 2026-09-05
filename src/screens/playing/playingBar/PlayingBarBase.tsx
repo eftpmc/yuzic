@@ -74,25 +74,27 @@ const variantStyles = {
     wrapper: {},
     container: {
       flexDirection: 'column' as const,
-      padding: spacing.sm,
+      paddingTop: spacing.md,
       paddingBottom: 0,
       paddingHorizontal: spacing.page,
     },
     topRowWrapper: {
-      height: 40,
       justifyContent: 'center' as const,
     },
     topRow: {
-      minHeight: 40,
-      paddingRight: spacing.xs,
+      minHeight: 52,
+      paddingRight: 0,
     },
     coverArt: {
-      width: 42,
-      height: 42,
-      marginRight: spacing.controlGap,
+      width: 48,
+      height: 48,
+      marginRight: spacing.md,
     },
+    // The title was `caption` like the artist under it, so the two read as
+    // one block of small text with no hierarchy. It is the loudest thing in
+    // the row now, with the artist staying quiet beneath.
     title: {
-      ...typography.caption,
+      ...typography.compactRowTitle,
     },
     artist: {
       ...typography.caption,
@@ -104,7 +106,7 @@ const variantStyles = {
       height: 2,
       marginTop: spacing.sm,
       marginHorizontal: -spacing.page,
-      borderRadius: 0,
+      borderRadius: radius.none,
     },
     playPauseButton: {
       padding: spacing.sm,
@@ -112,14 +114,10 @@ const variantStyles = {
       alignItems: 'center' as const,
       marginRight: spacing.xs,
     },
-    fabButton: {
-      width: 38,
-      height: 38,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 3,
-      elevation: 4,
+    actionButton: {
+      padding: spacing.sm,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
     },
     placeholderIconSize: 32,
   },
@@ -127,25 +125,27 @@ const variantStyles = {
     wrapper: {},
     container: {
       flexDirection: 'column' as const,
-      padding: spacing.sm,
+      paddingTop: spacing.md,
       paddingBottom: 0,
       paddingHorizontal: spacing.page,
     },
     topRowWrapper: {
-      height: 40,
       justifyContent: 'center' as const,
     },
     topRow: {
-      minHeight: 40,
-      paddingRight: spacing.xs,
+      minHeight: 52,
+      paddingRight: 0,
     },
     coverArt: {
-      width: 42,
-      height: 42,
-      marginRight: spacing.controlGap,
+      width: 48,
+      height: 48,
+      marginRight: spacing.md,
     },
+    // The title was `caption` like the artist under it, so the two read as
+    // one block of small text with no hierarchy. It is the loudest thing in
+    // the row now, with the artist staying quiet beneath.
     title: {
-      ...typography.caption,
+      ...typography.compactRowTitle,
     },
     artist: {
       ...typography.caption,
@@ -157,7 +157,7 @@ const variantStyles = {
       height: 2,
       marginTop: spacing.sm,
       marginHorizontal: -spacing.page,
-      borderRadius: 0,
+      borderRadius: radius.none,
     },
     playPauseButton: {
       padding: spacing.sm,
@@ -165,10 +165,10 @@ const variantStyles = {
       alignItems: 'center' as const,
       marginRight: spacing.xs,
     },
-    fabButton: {
-      width: 38,
-      height: 38,
-      elevation: 4,
+    actionButton: {
+      padding: spacing.sm,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
     },
     placeholderIconSize: 32,
   },
@@ -316,17 +316,20 @@ export default function PlayingBarBase({ variant }: Props) {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {isBuffering
-            ? <SpinningLoaderCircle size={18} color={colors.secondary} />
+            ? <SpinningLoaderCircle size={22} color={colors.secondary} />
             : isPlaying
-              ? <Pause size={20} color={colors.secondary} fill={colors.secondary} />
-              : <Play size={20} color={colors.secondary} fill={colors.secondary} />
+              ? <Pause size={26} color={colors.secondary} fill={colors.secondary} />
+              : <Play size={26} color={colors.secondary} fill={colors.secondary} />
           }
         </Touchable>
       )}
 
+      {/* A filled accent disc here made the contextual action the loudest
+          thing in the dock while play/pause was a bare glyph beside it. Both
+          are plain now, separated by size and colour instead. */}
       {primaryAction && (
         <Touchable
-          style={[styles.fabButton, stylesForVariant.fabButton, { backgroundColor: themeColor, borderRadius: rad.pill }]}
+          style={[styles.actionButton, stylesForVariant.actionButton]}
           onPress={primaryAction.onPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -439,8 +442,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   playPauseButton: {},
-  fabButton: {
-    marginLeft: spacing.md,
+  actionButton: {
+    marginLeft: spacing.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },

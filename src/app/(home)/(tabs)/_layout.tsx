@@ -11,10 +11,9 @@ import { useTranslation } from 'react-i18next';
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import Touchable from '@/components/Touchable';
 import { useTheme } from '@/hooks/useTheme';
-import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { spacing } from '@/constants/design';
+import { radius, spacing } from '@/constants/design';
 
 /**
  * The tab bar is a real react-navigation bottom tab bar now: the tab-tracking
@@ -53,7 +52,6 @@ function TabButton({
   activeIndicatorBg: string;
   children: (color: string) => React.ReactNode;
 }) {
-  const rad = useRadius();
   const reduced = useReducedMotion();
   const opacity = useSharedValue(active ? 1 : 0);
 
@@ -74,14 +72,13 @@ function TabButton({
       onPress={onPress}
       feedback="control"
     >
-      <Animated.View
-        style={[
-          styles.activeIndicator,
-          { backgroundColor: activeIndicatorBg, borderRadius: rad.md },
-          indicatorStyle,
-        ]}
-      />
       {children(active ? activeColor : inactiveColor)}
+      {/* A tinted block behind the icon read as a smudge against the dark
+          dock. The lit icon already says which tab you are on; the dot just
+          confirms it. */}
+      <Animated.View
+        style={[styles.activeDot, { backgroundColor: activeColor }, indicatorStyle]}
+      />
     </Touchable>
   );
 }
@@ -197,13 +194,13 @@ const styles = StyleSheet.create({
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.tight,
     justifyContent: 'center',
+    gap: spacing.tight,
   },
-  activeIndicator: {
-    position: 'absolute',
-    width: 64,
-    height: 36,
-    alignSelf: 'center',
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: radius.pill,
   },
 });
