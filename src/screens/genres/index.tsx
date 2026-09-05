@@ -15,10 +15,12 @@ import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import { buildGenreRows, type GenreRow } from '@/utils/library/genreList'
 import LoadingGenreList from './Loading'
 import Touchable from '@/components/Touchable'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 const GenresScreen: React.FC = () => {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
+  const scrollClearance = useScrollClearance()
   const { colors } = useTheme()
   const { albums, isLoading } = useAlbums()
   const genres = useSelector(selectLibraryGenres)
@@ -70,7 +72,7 @@ const GenresScreen: React.FC = () => {
           data={rows}
           keyExtractor={item => item.genre}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: scrollClearance }]}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -82,7 +84,7 @@ export default GenresScreen
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  list: { paddingTop: spacing.sm, paddingBottom: spacing.scrollClearance },
+  list: { paddingTop: spacing.sm },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

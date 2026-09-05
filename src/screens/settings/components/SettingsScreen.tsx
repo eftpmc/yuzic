@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import Header from './Header';
 import { spacing } from '@/constants/design';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 type Props = {
   title: string;
@@ -21,6 +22,7 @@ const SettingsScreen: React.FC<Props> = ({
   scrollContentStyle,
 }) => {
   const { colors } = useTheme();
+  const scrollClearance = useScrollClearance();
 
   return (
     <SafeAreaView
@@ -31,7 +33,13 @@ const SettingsScreen: React.FC<Props> = ({
       ]}
     >
       <Header title={title} onBackPress={onBackPress} rightAction={rightAction} />
-      <ScrollView contentContainerStyle={[styles.scrollContent, scrollContentStyle]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: scrollClearance },
+          scrollContentStyle,
+        ]}
+      >
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -44,6 +52,5 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: {
     padding: spacing.lg,
-    paddingBottom: spacing.scrollClearance,
   },
 });

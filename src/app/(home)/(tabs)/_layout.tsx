@@ -1,16 +1,18 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, View, Platform, type LayoutChangeEvent } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { Home, Library, Search } from 'lucide-react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BottomTabBarHeightCallbackContext } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 
 import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import Touchable from '@/components/Touchable';
 import { useTheme } from '@/hooks/useTheme';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeColor, selectTranslucentDock } from '@/utils/redux/selectors/settingsSelectors';
 import { spacing } from '@/constants/design';
 
 /**
@@ -34,6 +36,9 @@ export const unstable_settings = { anchor: '(home)' };
 /** Active and inactive icon weights. The active tab is the theme colour at a
  * heavier stroke, so it differs in shape as well as hue — colour on its own
  * would be the only thing distinguishing it. */
+/** Enough to read as glass without turning the tabs into mush over busy art. */
+const DOCK_BLUR_INTENSITY = 60;
+
 const STROKE_ACTIVE = 2.4;
 const STROKE_INACTIVE = 1.75;
 
@@ -74,9 +79,20 @@ function TabButton({
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const themeColor = useSelector(selectThemeColor);
+  const translucent = useSelector(selectTranslucentDock);
   const { t } = useTranslation();
+
+  // react-navigation only measures the tab bar it renders itself. A custom one
+  // has to report its own height, or every consumer of
+  // BottomTabBarHeightContext gets the library's estimate for a plain tab row
+  // — which is nothing like this dock, since it carries the playing bar too.
+  const onHeightChange = React.useContext(BottomTabBarHeightCallbackContext);
+  const handleLayout = React.useCallback(
+    (e: LayoutChangeEvent) => onHeightChange?.(e.nativeEvent.layout.height),
+    [onHeightChange]
+  );
 
   const activeColor = themeColor;
   const inactiveColor = colors.subtext;
@@ -96,21 +112,8 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
     }
   };
 
-  return (
-    // One surface, edge to edge. The now-playing row and the tab row are two
-    // rows of the same dock rather than a card parked on a slab. The dock sits
-    // a step above the page on the app's raised-surface colour, which is what
-    // marks where content ends — a drawn hairline on top of a tonal change
-    // would be saying the same thing twice.
-    <View
-      style={[
-        styles.panel,
-        {
-          backgroundColor: colors.card,
-          paddingBottom: Math.max(insets.bottom, 8),
-        },
-      ]}
-    >
+  const rows = (
+    <>
       <PlayingBar />
       <View style={styles.tabRow}>
         <TabButton
@@ -150,6 +153,39 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           )}
         </TabButton>
       </View>
+    </>
+  );
+
+  const padding = { paddingBottom: Math.max(insets.bottom, 8) };
+
+  // One surface, edge to edge. The now-playing row and the tab row are two
+  // rows of the same dock rather than a card parked on a slab. The dock sits
+  // a step above the page on the app's raised-surface colour, which is what
+  // marks where content ends — a drawn hairline on top of a tonal change
+  // would be saying the same thing twice.
+  //
+  // Translucent turns that surface into real glass: the navigator positions
+  // the bar absolutely so content runs under it, and the blur has something
+  // to blur. Screens reserve the height themselves via useScrollClearance.
+  if (translucent) {
+    return (
+      <BlurView
+        onLayout={handleLayout}
+        intensity={DOCK_BLUR_INTENSITY}
+        tint={isDarkMode ? 'dark' : 'light'}
+        style={[styles.panel, styles.floating, padding]}
+      >
+        {rows}
+      </BlurView>
+    );
+  }
+
+  return (
+    <View
+      onLayout={handleLayout}
+      style={[styles.panel, padding, { backgroundColor: colors.card }]}
+    >
+      {rows}
     </View>
   );
 }
@@ -173,9 +209,17 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   panel: {
-    // No absolute positioning: react-navigation lays this out itself and
-    // measures it for tab-bar-inset. Screens above get the room reserved
-    // via tabBarHeight without us duplicating the math.
+    // In flow by default: react-navigation sizes the screens above it, so
+    // they end at the dock's top edge without us duplicating the math.
+  },
+  floating: {
+    // Taking the dock out of flow is what puts content behind the glass. The
+    // slot react-navigation renders us into collapses to nothing, screens get
+    // the full height, and the clearance hook gives their lists the room back.
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   tabRow: {
     flexDirection: 'row',

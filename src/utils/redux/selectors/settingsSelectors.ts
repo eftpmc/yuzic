@@ -73,6 +73,9 @@ export const selectHapticsEnabled = (state: RootState): boolean =>
 export const selectRespectReducedMotion = (state: RootState): boolean =>
   state.settings.respectReducedMotion ?? true;
 
+export const selectTranslucentDock = (state: RootState): boolean =>
+  state.settings.translucentDock ?? false;
+
 export const selectAutoplayEnabled = (state: RootState): boolean =>
   state.settings.autoplayEnabled ?? false;
 

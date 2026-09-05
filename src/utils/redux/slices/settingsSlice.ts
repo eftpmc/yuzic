@@ -81,6 +81,10 @@ export interface SettingsState {
   showVolumeSlider: boolean;
   autoplayEnabled: boolean;
   hapticsEnabled: boolean;
+  /** Float the tab dock over the content behind a blur instead of having it
+   * take layout space. Off by default: it only shows on screens long enough
+   * to scroll under the dock, and it costs every list a taller bottom inset. */
+  translucentDock: boolean;
   /** When true, respect the system's reduce-motion setting; when false, always animate. */
   respectReducedMotion: boolean;
 
@@ -135,6 +139,7 @@ const initialState: SettingsState = {
   showVolumeSlider: false,
   autoplayEnabled: false,
   hapticsEnabled: true,
+  translucentDock: false,
   respectReducedMotion: true,
 
   lastSyncedAt: null,
@@ -260,6 +265,9 @@ const settingsSlice = createSlice({
     setHapticsEnabled(state, action: PayloadAction<boolean>) {
       state.hapticsEnabled = action.payload;
     },
+    setTranslucentDock(state, action: PayloadAction<boolean>) {
+      state.translucentDock = action.payload;
+    },
     setRespectReducedMotion(state, action: PayloadAction<boolean>) {
       state.respectReducedMotion = action.payload;
     },
@@ -311,6 +319,7 @@ export const {
   setShowJumpButtons,
   setShowVolumeSlider,
   setHapticsEnabled,
+  setTranslucentDock,
   setRespectReducedMotion,
   setShowPlaybackSpeed,
   setAutoplayEnabled,

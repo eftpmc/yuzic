@@ -121,7 +121,9 @@
           "label": "Arrondi",
           "subtext": "Coins plus doux et plus arrondis."
         }
-      }
+      },
+      "translucentDock": "Barre translucide",
+      "translucentDockSubtext": "Fait flotter la barre d’onglets au-dessus de la page pour que le contenu défile dessous."
     },
     "library": {
       "title": "Bibliothèque",

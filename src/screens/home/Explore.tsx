@@ -30,6 +30,7 @@ import { useApi } from '@/api'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 import { sourceColor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
@@ -64,6 +65,7 @@ function renderSection(config: SectionConfig, refreshKey: number) {
 
 export default function Home() {
   const { t } = useTranslation()
+  const scrollClearance = useScrollClearance()
   const { colors } = useTheme()
   const rad = useRadius()
   const [refreshKey, setRefreshKey] = useState(0)
@@ -137,7 +139,7 @@ export default function Home() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingBottom: spacing.scrollClearance }]}
+      contentContainerStyle={[styles.content, { paddingBottom: scrollClearance }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl

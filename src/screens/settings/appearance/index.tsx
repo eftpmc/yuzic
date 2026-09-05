@@ -14,6 +14,7 @@ import {
   selectShowQualityBadge,
   selectShowSourceHeaders,
   selectHapticsEnabled,
+  selectTranslucentDock,
   selectRespectReducedMotion,
   selectHomeServerSectionsEnabled,
   selectHomeListenbrainzSectionsEnabled,
@@ -23,6 +24,7 @@ import {
   setShowQualityBadge,
   setShowSourceHeaders,
   setHapticsEnabled,
+  setTranslucentDock,
   setRespectReducedMotion,
   setHomeServerSectionsEnabled,
   setHomeListenbrainzSectionsEnabled,
@@ -35,6 +37,7 @@ const AppearanceSettings: React.FC = () => {
   const showQualityBadge = useSelector(selectShowQualityBadge);
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const hapticsEnabled = useSelector(selectHapticsEnabled);
+  const translucentDock = useSelector(selectTranslucentDock);
   const respectReducedMotion = useSelector(selectRespectReducedMotion);
   const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled);
   const homeListenbrainzEnabled = useSelector(selectHomeListenbrainzSectionsEnabled);
@@ -47,8 +50,15 @@ const AppearanceSettings: React.FC = () => {
   const toggleHomeServer = useCallback((v: boolean) => { dispatch(setHomeServerSectionsEnabled(v)); }, [dispatch]);
   const toggleHomeListenbrainz = useCallback((v: boolean) => { dispatch(setHomeListenbrainzSectionsEnabled(v)); }, [dispatch]);
   const toggleHomeDeezer = useCallback((v: boolean) => { dispatch(setDeezerDiscoveryEnabled(v)); }, [dispatch]);
+  const toggleTranslucentDock = useCallback((v: boolean) => { dispatch(setTranslucentDock(v)); }, [dispatch]);
 
   const feelItems = useMemo(() => [
+    {
+      label: t('settings.appearance.translucentDock'),
+      subtext: t('settings.appearance.translucentDockSubtext'),
+      value: translucentDock,
+      onValueChange: toggleTranslucentDock,
+    },
     {
       label: t('settings.appearance.haptics'),
       subtext: t('settings.appearance.hapticsSubtext'),
@@ -61,7 +71,7 @@ const AppearanceSettings: React.FC = () => {
       value: respectReducedMotion,
       onValueChange: toggleReducedMotion,
     },
-  ], [t, hapticsEnabled, respectReducedMotion, toggleHaptics, toggleReducedMotion]);
+  ], [t, translucentDock, hapticsEnabled, respectReducedMotion, toggleTranslucentDock, toggleHaptics, toggleReducedMotion]);
 
   const qualityBadgeItems = useMemo(() => [{
     label: t('settings.appearance.showQualityBadge'),

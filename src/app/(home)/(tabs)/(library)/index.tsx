@@ -10,7 +10,7 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
 
 import TabHeader from '@/components/TabHeader'
 import LibraryEntryRows from '@/screens/library/LibraryEntryRows'
-import { spacing } from '@/constants/design'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 /**
  * The library index: one entry point per way of browsing the collection.
@@ -27,6 +27,7 @@ import { spacing } from '@/constants/design'
 export default function LibraryScreen() {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const scrollClearance = useScrollClearance()
   const activeServer = useSelector(selectActiveServer)
   const username = activeServer?.username
   const { openAccountSheet } = useAccountSheet()
@@ -44,7 +45,7 @@ export default function LibraryScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
       >
         <LibraryEntryRows />
@@ -55,5 +56,4 @@ export default function LibraryScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { paddingBottom: spacing.scrollClearance },
 })

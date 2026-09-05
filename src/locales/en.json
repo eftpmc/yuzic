@@ -117,7 +117,9 @@
           "label": "Rounded",
           "subtext": "Softer, more rounded corners."
         }
-      }
+      },
+      "translucentDock": "Translucent dock",
+      "translucentDockSubtext": "Float the tab bar over the page so content scrolls under it."
     },
     "library": {
       "title": "Library",

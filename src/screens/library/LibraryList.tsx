@@ -23,6 +23,7 @@ import SortBottomSheet from './components/SortBottomSheet'
 import { useSheetRef } from '@/utils/useSheetRef'
 import type { LibraryItem, SortOrder } from './librarySort'
 import Touchable from '@/components/Touchable'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 type Props = {
   items: LibraryItem[]
@@ -47,6 +48,7 @@ const LibraryList: React.FC<Props> = ({
   header,
 }) => {
   const { t } = useTranslation()
+  const scrollClearance = useScrollClearance()
   const { colors } = useTheme()
   const rad = useRadius()
   const dispatch = useDispatch()
@@ -151,7 +153,7 @@ const LibraryList: React.FC<Props> = ({
         }
         contentContainerStyle={[
           styles.list,
-          { paddingHorizontal: gutter },
+          { paddingHorizontal: gutter, paddingBottom: scrollClearance },
         ]}
         showsVerticalScrollIndicator={false}
       />
@@ -168,7 +170,7 @@ const LibraryList: React.FC<Props> = ({
 export default LibraryList
 
 const styles = StyleSheet.create({
-  list: { paddingTop: 0, paddingBottom: spacing.scrollClearance },
+  list: { paddingTop: 0 },
   sortRow: {
     flexDirection: 'row',
     alignItems: 'center',

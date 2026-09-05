@@ -121,7 +121,9 @@
           "label": "ラウンド",
           "subtext": "より柔らかく丸い角。"
         }
-      }
+      },
+      "translucentDock": "半透明のドック",
+      "translucentDockSubtext": "タブバーをページの上に浮かせ、コンテンツがその下をスクロールするようにします。"
     },
     "library": {
       "title": "ライブラリ",

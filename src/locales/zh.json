@@ -121,7 +121,9 @@
           "label": "圆润",
           "subtext": "更柔和、更圆润的边角。"
         }
-      }
+      },
+      "translucentDock": "半透明底栏",
+      "translucentDockSubtext": "让标签栏浮于页面之上，内容从其下方滚动。"
     },
     "library": {
       "title": "媒体库",

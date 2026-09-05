@@ -51,6 +51,7 @@ import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
 import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
@@ -58,6 +59,7 @@ const Search = () => {
   const navigation = useNavigation<any>();
   const { navigateToAlbum, navigateToArtist } = useMatchedNavigation();
   const { t } = useTranslation();
+  const scrollClearance = useScrollClearance();
   const { colors } = useTheme();
   const rad = useRadius();
   const dispatch = useDispatch();
@@ -385,7 +387,10 @@ const Search = () => {
         />
       )}
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollClearance }]}
+        keyboardShouldPersistTaps="handled"
+      >
         {query.trim() === ''
           ? (
             <RecentSearches
@@ -478,7 +483,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: spacing.sm,
-    paddingBottom: spacing.scrollClearance,
+    paddingBottom: 0,
   },
   resultBlock: {},
   resultBlockFirst: {
