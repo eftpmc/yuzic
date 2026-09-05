@@ -42,7 +42,6 @@ export default function MostPlayedAlbums() {
     () => navigation.push('libraryCollectionView', {
       type: 'albums',
       sort: 'userplays',
-      titleKey: 'explore.sections.mostPlayed',
     }),
     [navigation]
   );

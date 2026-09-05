@@ -37,7 +37,6 @@ export default function RecentlyAdded() {
     () => navigation.push('libraryCollectionView', {
       type: 'albums',
       sort: 'recentlyAdded',
-      titleKey: 'explore.sections.recentlyAdded',
     }),
     [navigation]
   );

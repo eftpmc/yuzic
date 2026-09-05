@@ -42,25 +42,28 @@ const COUNT_KEY: Record<LibraryCollectionType, string> = {
 }
 
 /**
- * What this screen shows: which slice of the library, ordered how, called what.
+ * What this screen shows: which slice of the library, and ordered how.
  *
- * A caller that wants a time-ordered view — Home's "Recently added" and
- * "Recents" shelves both do — asks for a `sort` rather than for a screen of
- * its own. That is what a sort order is, and the sort control on the list says
- * so once you arrive, which a bespoke screen never did. `titleKey` lets a
- * shelf keep its own name over the list it leads to where the type's name
- * would be a worse fit than the shelf's.
+ * A caller that wants a particular order — Home's "Recently added", "Most
+ * played" and "Recents" shelves all do — asks for a `sort` rather than for a
+ * screen of its own. That is what a sort order is, and the sort control says
+ * so once you arrive, which a bespoke screen never did.
+ *
+ * The title names the slice, never the order. A shelf's own name would be a
+ * promise the list doesn't keep: `userplays` and `recent` order the albums by
+ * play data, they don't filter to what has any, so a screen headed "Most
+ * played" would be listing every album you own — and would still say so after
+ * the reader changed the sort to A–Z.
  */
 type CollectionParams = {
   type?: LibraryCollectionType
   sort?: SortOrder
-  titleKey?: string
 }
 
 const LibraryCollectionScreen: React.FC = () => {
   const route = useRoute<any>()
   const params = (route.params ?? {}) as CollectionParams
-  const { type, sort, titleKey } = params
+  const { type, sort } = params
   const { t } = useTranslation()
   const { colors } = useTheme()
   const sortLabels = useSortLabels()
@@ -72,11 +75,7 @@ const LibraryCollectionScreen: React.FC = () => {
   const { items, isLoading } = useLibraryItems(type ?? null, sortOrder)
   const { playSongs } = usePlayingActions()
 
-  const title = titleKey
-    ? t(titleKey)
-    : type
-      ? t(TITLE_KEY[type])
-      : t('library.title')
+  const title = type ? t(TITLE_KEY[type]) : t('library.title')
 
   // Only a list of tracks is a queue. A screen of albums or artists is a list
   // of collections, each with its own play action already.

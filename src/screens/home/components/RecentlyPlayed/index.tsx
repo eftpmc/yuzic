@@ -121,11 +121,11 @@ export default function RecentlyPlayed() {
   // The shelf stops at twelve. "Most recently played first" is a sort order
   // the library list already has, so the heading leads there rather than to a
   // screen built for this one shelf — the whole library in that order, not
-  // just the dozen that fit.
+  // just the dozen that fit. The list keeps its own name; the sort control is
+  // what says how it is ordered.
   const openAll = useCallback(
     () => navigation.push('libraryCollectionView', {
       sort: 'recent',
-      titleKey: 'explore.sections.recentlyPlayed',
     }),
     [navigation]
   );
