@@ -8,7 +8,7 @@ import { Link2, Share2, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { Share } from '@/api/types';
-import Header from '@/screens/settings/components/Header';
+import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
@@ -50,6 +50,8 @@ export default function SharesScreen() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const shareCount = sharesQuery.data?.length ?? 0;
+
   // The row's primary action reopens the OS share sheet — every platform's
   // sheet has "Copy Link" built in, so keeping a separate Copy row here
   // would duplicate an affordance and require a native clipboard dep the
@@ -88,8 +90,15 @@ export default function SharesScreen() {
   }, [api.shares, queryClient, t]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title={t('shares.title', 'Shared links')} />
+    <SafeAreaView
+      testID="shares-screen"
+      edges={['top']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <DetailHeaderBar
+        title={t('shares.title', 'Shared links')}
+        subtitle={shareCount > 0 ? t('library.count.shares', { count: shareCount }) : undefined}
+      />
       {sharesQuery.isLoading ? (
         <View style={styles.center}>
           <SpinningLoaderCircle size={24} color={colors.subtext} />

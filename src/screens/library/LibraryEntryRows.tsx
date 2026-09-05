@@ -239,7 +239,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
-    paddingVertical: spacing.lg,
+    // A minimum rather than padding alone: rows with a count are two lines
+    // and rows without are one, so padding by itself made a 15pt height
+    // difference between neighbours and left the dividers unevenly spaced.
+    // The floor clears the art with room to breathe, so every row matches
+    // whether or not it has a subtitle.
+    minHeight: MOSAIC_SIZE + spacing.sm * 2,
+    paddingVertical: spacing.sm,
   },
   labels: { flexShrink: 1, minWidth: 0, gap: spacing.xxs },
   count: { ...typography.caption },

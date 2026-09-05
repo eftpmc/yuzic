@@ -15,7 +15,7 @@ import { Plus, Radio as RadioIcon, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { InternetRadioStation } from '@/api/types';
-import Header from '@/screens/settings/components/Header';
+import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { onDark, spacing, typography } from '@/constants/design';
@@ -78,10 +78,19 @@ export default function RadioScreen() {
     await queryClient.invalidateQueries({ queryKey: ['radio-stations'] });
   }, [queryClient]);
 
+  const stationCount = stationsQuery.data?.length ?? 0;
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header
+    <SafeAreaView
+      testID="radio-screen"
+      edges={['top']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <DetailHeaderBar
         title={t('radio.title', 'Radio')}
+        subtitle={
+          stationCount > 0 ? t('library.count.stations', { count: stationCount }) : undefined
+        }
         rightAction={
           <Touchable
             onPress={() => setEditing({ mode: 'add' })}

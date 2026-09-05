@@ -532,7 +532,9 @@
       "podcasts_one": "{{count}} podcast",
       "podcasts_other": "{{count}} podcasts",
       "shares_one": "{{count}} shared link",
-      "shares_other": "{{count}} shared links"
+      "shares_other": "{{count}} shared links",
+      "episodes_one": "{{count}} episode",
+      "episodes_other": "{{count}} episodes"
     },
     "radio": {
       "title": "Radio Stations"

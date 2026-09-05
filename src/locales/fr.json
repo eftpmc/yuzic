@@ -546,7 +546,9 @@
       "playlists_one": "{{count}} playlist",
       "playlists_other": "{{count}} playlists",
       "tracks_one": "{{count}} titre",
-      "tracks_other": "{{count}} titres"
+      "tracks_other": "{{count}} titres",
+      "episodes_one": "{{count}} épisode",
+      "episodes_other": "{{count}} épisodes"
     }
   },
   "home": {

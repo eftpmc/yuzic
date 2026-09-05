@@ -545,7 +545,9 @@
       "playlists_one": "{{count}} 个播放列表",
       "playlists_other": "{{count}} 个播放列表",
       "tracks_one": "{{count}} 首歌曲",
-      "tracks_other": "{{count}} 首歌曲"
+      "tracks_other": "{{count}} 首歌曲",
+      "episodes_one": "{{count}} 集",
+      "episodes_other": "{{count}} 集"
     }
   },
   "home": {

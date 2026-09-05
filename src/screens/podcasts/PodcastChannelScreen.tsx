@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -9,7 +9,7 @@ import { ArrowDownCircle, CheckCircle, Play } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { PodcastChannel, PodcastEpisode } from '@/api/types';
-import Header from '@/screens/settings/components/Header';
+import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
@@ -39,7 +39,6 @@ export default function PodcastChannelScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const api = useApi();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const { channelId } = useLocalSearchParams<{ channelId: string }>();
   const { playSong } = usePlayingActions();
@@ -79,10 +78,18 @@ export default function PodcastChannelScreen() {
   }, [api.podcasts, queryClient, t]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header
+    <SafeAreaView
+      testID="podcast-channel-screen"
+      edges={['top']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <DetailHeaderBar
         title={channel?.title ?? t('podcasts.title', 'Podcast')}
-        onBackPress={() => router.back()}
+        subtitle={
+          channel && channel.episodes.length > 0
+            ? t('library.count.episodes', { count: channel.episodes.length })
+            : undefined
+        }
       />
       {channelsQuery.isLoading ? (
         <View style={styles.center}>

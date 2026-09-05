@@ -545,7 +545,9 @@
       "playlists_one": "{{count}} 件のプレイリスト",
       "playlists_other": "{{count}} 件のプレイリスト",
       "tracks_one": "{{count}} 曲",
-      "tracks_other": "{{count}} 曲"
+      "tracks_other": "{{count}} 曲",
+      "episodes_one": "{{count}} 本のエピソード",
+      "episodes_other": "{{count}} 本のエピソード"
     }
   },
   "home": {

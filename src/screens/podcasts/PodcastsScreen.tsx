@@ -18,7 +18,7 @@ import { Plus, Podcast as PodcastIcon, RefreshCw, Trash2 } from 'lucide-react-na
 
 import { useApi } from '@/api';
 import type { PodcastChannel } from '@/api/types';
-import Header from '@/screens/settings/components/Header';
+import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
@@ -62,6 +62,8 @@ export default function PodcastsScreen() {
     }
   }, [api.podcasts, queryClient, t]);
 
+  const channelCount = channelsQuery.data?.length ?? 0;
+
   const handleDelete = useCallback((channel: PodcastChannel) => {
     Alert.alert(
       t('podcasts.unsubscribeTitle', 'Unsubscribe?'),
@@ -85,9 +87,16 @@ export default function PodcastsScreen() {
   }, [api.podcasts, queryClient, t]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header
+    <SafeAreaView
+      testID="podcasts-screen"
+      edges={['top']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <DetailHeaderBar
         title={t('podcasts.title', 'Podcasts')}
+        subtitle={
+          channelCount > 0 ? t('library.count.podcasts', { count: channelCount }) : undefined
+        }
         rightAction={
           <View style={styles.headerActions}>
             <Touchable
