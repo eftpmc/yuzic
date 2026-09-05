@@ -17,6 +17,7 @@ export const PlayingBarActionSelector: React.FC = () => {
       items={PLAYING_BAR_ACTIONS.map(action => ({
         id: action.id,
         icon: action.icon as React.ReactElement<{ color?: string }>,
+        label: t(`settings.appearance.playingBarAction.actions.${action.id}`),
       }))}
       selected={selected}
       onSelect={id => dispatch(setPlayingBarAction(id as PlayingBarAction))}

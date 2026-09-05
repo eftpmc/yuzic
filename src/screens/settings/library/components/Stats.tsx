@@ -83,7 +83,7 @@ const Stats: React.FC = () => {
       <SettingsToggleGroup
         items={[{
           label: t('settings.library.stats.syncOnAppStart'),
-          subtext: t('settings.library.stats.syncOnAppStartSubtext', { defaultValue: 'Automatically sync your library each time you open the app' }),
+          subtext: t('settings.library.stats.syncOnAppStartSubtext'),
           value: syncOnAppStart,
           onValueChange: v => { dispatch(setSyncOnAppStart(v)); },
         }]}

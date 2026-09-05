@@ -23,6 +23,7 @@ export const ThemeModeSelector: React.FC = () => {
       items={OPTIONS.map(o => ({
         id: o.id,
         icon: o.icon,
+        label: t(`settings.appearance.theme.${o.id}`),
       }))}
       selected={themeMode}
       onSelect={id => dispatch(setThemeMode(id as ThemeMode))}

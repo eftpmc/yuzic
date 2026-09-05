@@ -82,11 +82,13 @@ export const AlbumHeaderBar: React.FC<Props> = ({ localAlbum, externalAlbum }) =
 };
 
 function LocalOptionsButton({ album }: { album: Album }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
   return (
     <>
       <DetailHeaderIconButton
+        accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => optionsSheetRef.current?.present()}
       >
         <Ellipsis size={24} color={colors.secondary} />
@@ -214,6 +216,7 @@ function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
 }
 
 function LocalActionRow({ album }: { album: Album }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
   const { downloadAlbumById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
@@ -260,19 +263,23 @@ function LocalActionRow({ album }: { album: Album }) {
 
   return (
     <DetailActionRow>
-      <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle album">
+      <DetailCircleAction onPress={handleShuffle} accessibilityLabel={t('a11y.detail.shuffle')}>
         <Shuffle size={18} color={colors.secondary} />
       </DetailCircleAction>
 
-      <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play album">
+      <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
         <Play size={20} color="#fff" fill="#fff" />
       </DetailPlayAction>
 
       <DetailCircleAction
         onPress={() => void toggleDownload()}
-        accessibilityLabel={
-          isAlbumDownloading ? 'Cancel download' : isAlbumDownloaded ? 'Downloaded' : 'Download album'
-        }
+        accessibilityLabel={t(
+          isAlbumDownloading
+            ? 'a11y.detail.cancelDownload'
+            : isAlbumDownloaded
+              ? 'a11y.detail.downloaded'
+              : 'a11y.detail.download'
+        )}
       >
         {isAlbumDownloading ? (
           <DownloadProgressRing progress={downloadFraction} size={18} />
@@ -289,6 +296,7 @@ function LocalActionRow({ album }: { album: Album }) {
 }
 
 function ExternalActionRow({ album }: { album: ExternalAlbum }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const canDownload = useAnyDownloaderConnected();
   const { playSongInCollection } = usePlayingActions();
@@ -329,7 +337,7 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         <DetailPlayAction
           onPress={handleDownload}
           disabled={!canDownload || albumStatus.kind !== 'none'}
-          accessibilityLabel="Download album to server"
+          accessibilityLabel={t('a11y.detail.downloadToServer')}
         >
           <CloudDownload
             size={20}
@@ -338,7 +346,7 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         </DetailPlayAction>
 
         {previewSongs.length > 0 && (
-          <DetailCircleAction onPress={handlePlay} accessibilityLabel="Play preview">
+          <DetailCircleAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.playPreview')}>
             <Play size={18} color={colors.secondary} fill={colors.secondary} />
           </DetailCircleAction>
         )}

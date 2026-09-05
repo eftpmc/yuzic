@@ -5,6 +5,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 import { usePlayingState, usePlayingProgress, usePlayingActions } from '@/contexts/PlayingContext';
 import { SeekableProgressBar } from './SeekableProgressBar';
@@ -70,6 +71,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressOptions,
   onPressAdd
 }) => {
+  const { t } = useTranslation();
   const { currentSong } = usePlayingState();
   const rad = useRadius();
   const showQualityBadge = useSelector(selectShowQualityBadge);
@@ -132,7 +134,11 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           </Text>
 
           {currentSong.artist && (
-            <Touchable onPress={onPressArtist}>
+            <Touchable
+              accessibilityRole="link"
+              accessibilityHint={t('a11y.player.goToArtist')}
+              onPress={onPressArtist}
+            >
               <Text style={styles.artist} numberOfLines={1}>
                 {currentSong.artist}
               </Text>
@@ -142,6 +148,8 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 
         <View>
           <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.player.addToPlaylist')}
           onPress={onPressAdd}
           style={styles.optionsButton}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

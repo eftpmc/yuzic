@@ -64,6 +64,9 @@
       "title": "外观",
       "theme": {
         "title": "主题",
+        "light": "浅色",
+        "dark": "深色",
+        "system": "跟随系统",
         "subtitle": "浅色、深色或跟随系统"
       },
       "color": {
@@ -77,7 +80,8 @@
           "skip": "跳过",
           "favorite": "收藏",
           "randomAlbum": "随机",
-          "addToPlaylist": "添加"
+          "addToPlaylist": "添加",
+          "cast": "投放"
         }
       },
       "columns": {
@@ -171,7 +175,8 @@
         "daysAgo": "{{count}} 天前",
         "daysAgo_other": "{{count}} 天前",
         "lastSynced": "上次同步",
-        "syncOnAppStart": "启动时同步"
+        "syncOnAppStart": "启动时同步",
+        "syncOnAppStartSubtext": "每次打开应用时自动同步你的音乐库"
       },
       "offlineChanges": {
         "title": "待同步的离线更改",
@@ -631,6 +636,23 @@
       "scanFailed": "无法扫描。",
       "signOutFailed": "无法正常退出登录。",
       "downloadCleanupFailed": "退出登录时，无法清空下载内容。"
+    },
+    "displaySheet": {
+      "title": "显示",
+      "list": "列表",
+      "grid": "网格",
+      "columns": "列数"
+    },
+    "downloadsBanner": {
+      "open": "打开下载",
+      "summaryItem": "{{label}} 上 {{count}} 个",
+      "title_other": "{{count}} 个下载进行中"
+    },
+    "resumeBanner": {
+      "title": "从上次的位置继续",
+      "resumeLabel": "从上次的位置继续",
+      "fromDevice": "在 {{device}} 上",
+      "subtitle_other": "{{from}}已排队 {{count}} 首"
     }
   },
   "search": {
@@ -697,7 +719,8 @@
       "serverRandom": "随便听听",
       "serverRandomThemed": "今日{{genre}}",
       "serverNowPlaying": "服务器上正在播放",
-      "lbSimilarForYou": "因为你喜欢 {{artist}}"
+      "lbSimilarForYou": "因为你喜欢 {{artist}}",
+      "continuePlaying": "继续播放"
     },
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",
@@ -1065,5 +1088,95 @@
     "play": "播放单集",
     "download": "下载单集",
     "downloadStarted": "已开始下载"
+  },
+  "a11y": {
+    "detail": {
+      "play": "播放",
+      "shuffle": "随机播放",
+      "playPreview": "播放试听",
+      "downloadToServer": "下载到你的服务器",
+      "download": "下载",
+      "cancelDownload": "取消下载",
+      "downloaded": "已下载",
+      "downloading": "下载中"
+    },
+    "rows": {
+      "options": "{{title}}的选项"
+    },
+    "searchInput": "搜索",
+    "queueBackToPlayer": "返回播放器",
+    "scanForDevices": "扫描设备",
+    "dismissNotification": "关闭通知",
+    "account": "账户",
+    "common": {
+      "back": "返回",
+      "close": "关闭",
+      "moreOptions": "更多选项",
+      "clearSearch": "清除搜索",
+      "checkConnection": "检查连接"
+    },
+    "player": {
+      "close": "关闭播放器",
+      "songOptions": "歌曲选项",
+      "addToPlaylist": "添加到播放列表",
+      "previous": "上一首",
+      "next": "下一首",
+      "play": "播放",
+      "pause": "暂停",
+      "jumpBack": "后退 {{seconds}} 秒",
+      "jumpForward": "前进 {{seconds}} 秒",
+      "shuffle": "随机播放",
+      "shuffleMode": {
+        "off": "关闭",
+        "shuffle": "开启",
+        "smart": "智能随机播放"
+      },
+      "repeat": "循环播放",
+      "repeatMode": {
+        "off": "关闭",
+        "all": "全部循环",
+        "one": "单曲循环"
+      },
+      "outputDevice": "输出设备",
+      "queue": "播放队列",
+      "lyrics": "歌词",
+      "seekToLyric": "从这一行开始播放",
+      "aboutArtist": "关于歌手",
+      "goToArtist": "前往歌手页面",
+      "nowPlayingBar": "正在播放",
+      "noSongPlaying": "没有正在播放的歌曲"
+    },
+    "search": {
+      "clear": "清除搜索"
+    },
+    "playlist": {
+      "addSong": "将{{title}}添加到此播放列表",
+      "songAdded": "{{title}}已添加",
+      "downloadSong": "下载{{title}}",
+      "create": "创建播放列表"
+    },
+    "selection": {
+      "randomize": "随机选择一个"
+    },
+    "settings": {
+      "themeColor": "主题色 {{color}}",
+      "clearProviderDownloads": "删除所有 {{provider}} 下载",
+      "removeDownload": "移除下载 {{title}}"
+    },
+    "onboarding": {
+      "serverOptions": "{{url}}的选项"
+    },
+    "topTrack": {
+      "playPreview": "播放{{title}}的试听"
+    }
+  },
+  "tabs": {
+    "home": "主页",
+    "search": "搜索",
+    "library": "音乐库"
+  },
+  "downloads": {
+    "title": "下载",
+    "noDownloaders": "未连接下载器。请在设置中添加。"
   }
 }

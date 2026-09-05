@@ -27,10 +27,13 @@ export const ThemeColor: React.FC = () => {
         {t('settings.appearance.color.info')}
       </Text>
       <SettingsCard style={styles.card}>
-        <View style={styles.presets}>
+        <View style={styles.presets} accessibilityRole="radiogroup">
           {THEME_PRESET_COLORS.map(color => (
             <Touchable
               key={color}
+              accessibilityRole="radio"
+              accessibilityLabel={t('a11y.settings.themeColor', { color })}
+              accessibilityState={{ selected: themeColor === color, checked: themeColor === color }}
               onPress={() => dispatch(setThemeColor(color))}
               style={[
                 styles.preset,

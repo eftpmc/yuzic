@@ -64,6 +64,9 @@
       "title": "Apparence",
       "theme": {
         "title": "Thème",
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système",
         "subtitle": "Clair, sombre ou système"
       },
       "color": {
@@ -77,7 +80,8 @@
           "skip": "Suivant",
           "favorite": "Favori",
           "randomAlbum": "Aléatoire",
-          "addToPlaylist": "Ajouter"
+          "addToPlaylist": "Ajouter",
+          "cast": "Diffuser"
         }
       },
       "columns": {
@@ -171,7 +175,8 @@
         "daysAgo": "Il y a {{count}} jour",
         "daysAgo_other": "Il y a {{count}} jours",
         "lastSynced": "Dernière synchro",
-        "syncOnAppStart": "Synchroniser au démarrage"
+        "syncOnAppStart": "Synchroniser au démarrage",
+        "syncOnAppStartSubtext": "Synchroniser automatiquement votre bibliothèque à chaque ouverture de l'app"
       },
       "offlineChanges": {
         "title": "Modifications hors ligne en attente",
@@ -632,6 +637,25 @@
       "scanFailed": "Impossible de lancer l'analyse.",
       "signOutFailed": "Impossible de se déconnecter correctement.",
       "downloadCleanupFailed": "Impossible d'effacer les téléchargements pendant la déconnexion."
+    },
+    "displaySheet": {
+      "title": "Affichage",
+      "list": "Liste",
+      "grid": "Grille",
+      "columns": "Colonnes"
+    },
+    "downloadsBanner": {
+      "open": "Ouvrir les téléchargements",
+      "summaryItem": "{{count}} sur {{label}}",
+      "title_one": "{{count}} téléchargement en cours",
+      "title_other": "{{count}} téléchargements en cours"
+    },
+    "resumeBanner": {
+      "title": "Reprendre où vous en étiez",
+      "resumeLabel": "Reprendre où vous en étiez",
+      "fromDevice": "sur {{device}}",
+      "subtitle_one": "{{count}} morceau en file {{from}}",
+      "subtitle_other": "{{count}} morceaux en file {{from}}"
     }
   },
   "search": {
@@ -698,7 +722,8 @@
       "serverRandom": "Surprenez-moi",
       "serverRandomThemed": "{{genre}} du jour",
       "serverNowPlaying": "En écoute sur votre serveur",
-      "lbSimilarForYou": "Parce que vous aimez {{artist}}"
+      "lbSimilarForYou": "Parce que vous aimez {{artist}}",
+      "continuePlaying": "Reprendre"
     },
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",
@@ -1067,5 +1092,95 @@
     "play": "Lire l’épisode",
     "download": "Télécharger l’épisode",
     "downloadStarted": "Téléchargement démarré"
+  },
+  "a11y": {
+    "detail": {
+      "play": "Lecture",
+      "shuffle": "Lecture aléatoire",
+      "playPreview": "Écouter l'extrait",
+      "downloadToServer": "Télécharger sur votre serveur",
+      "download": "Télécharger",
+      "cancelDownload": "Annuler le téléchargement",
+      "downloaded": "Téléchargé",
+      "downloading": "Téléchargement en cours"
+    },
+    "rows": {
+      "options": "Options pour {{title}}"
+    },
+    "searchInput": "Rechercher",
+    "queueBackToPlayer": "Retour au lecteur",
+    "scanForDevices": "Rechercher des appareils",
+    "dismissNotification": "Ignorer la notification",
+    "account": "Compte",
+    "common": {
+      "back": "Retour",
+      "close": "Fermer",
+      "moreOptions": "Plus d'options",
+      "clearSearch": "Effacer la recherche",
+      "checkConnection": "Vérifier la connexion"
+    },
+    "player": {
+      "close": "Fermer le lecteur",
+      "songOptions": "Options du morceau",
+      "addToPlaylist": "Ajouter à une playlist",
+      "previous": "Morceau précédent",
+      "next": "Morceau suivant",
+      "play": "Lecture",
+      "pause": "Pause",
+      "jumpBack": "Reculer de {{seconds}} secondes",
+      "jumpForward": "Avancer de {{seconds}} secondes",
+      "shuffle": "Lecture aléatoire",
+      "shuffleMode": {
+        "off": "Désactivée",
+        "shuffle": "Activée",
+        "smart": "Aléatoire intelligent"
+      },
+      "repeat": "Répétition",
+      "repeatMode": {
+        "off": "Désactivée",
+        "all": "Répéter tout",
+        "one": "Répéter le morceau"
+      },
+      "outputDevice": "Périphérique de sortie",
+      "queue": "File d'attente",
+      "lyrics": "Paroles",
+      "seekToLyric": "Lire à partir de cette ligne",
+      "aboutArtist": "À propos de l'artiste",
+      "goToArtist": "Aller à l'artiste",
+      "nowPlayingBar": "Lecture en cours",
+      "noSongPlaying": "Aucun morceau en lecture"
+    },
+    "search": {
+      "clear": "Effacer la recherche"
+    },
+    "playlist": {
+      "addSong": "Ajouter {{title}} à cette playlist",
+      "songAdded": "{{title}} déjà ajouté",
+      "downloadSong": "Télécharger {{title}}",
+      "create": "Créer une playlist"
+    },
+    "selection": {
+      "randomize": "En choisir un au hasard"
+    },
+    "settings": {
+      "themeColor": "Couleur du thème {{color}}",
+      "clearProviderDownloads": "Supprimer tous les téléchargements {{provider}}",
+      "removeDownload": "Supprimer le téléchargement {{title}}"
+    },
+    "onboarding": {
+      "serverOptions": "Options pour {{url}}"
+    },
+    "topTrack": {
+      "playPreview": "Écouter un extrait de {{title}}"
+    }
+  },
+  "tabs": {
+    "home": "Accueil",
+    "search": "Recherche",
+    "library": "Bibliothèque"
+  },
+  "downloads": {
+    "title": "Téléchargements",
+    "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages."
   }
 }

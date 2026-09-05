@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectShowSleepTimer, selectShowPlaybackSpeed, selectShowVolumeSlider } from '@/utils/redux/selectors/settingsSelectors';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
@@ -104,6 +105,7 @@ const usePlayingTransitions = (mode: PlayingViewMode) => {
 const PlayingScreen: React.FC<PlayingScreenProps> = ({
     onClose,
 }) => {
+    const { t } = useTranslation();
     const router = useRouter();
     const { currentSong } = usePlayingState();
     const api = useApi();
@@ -269,7 +271,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     <Touchable
                                         testID="playing-close"
                                         accessibilityRole="button"
-                                        accessibilityLabel="Close player"
+                                        accessibilityLabel={t('a11y.player.close')}
                                         onPress={onClose}
                                         style={styles.headerButton}
                                         hitSlop={hitSlopFor(40)}
@@ -278,6 +280,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     </Touchable>
 
                                     <Touchable
+                                        accessibilityRole="button"
+                                        accessibilityLabel={t('a11y.player.songOptions')}
                                         onPress={() => songOptionsRef.current?.present()}
                                         style={styles.headerButton}
                                         hitSlop={hitSlopFor(40)}

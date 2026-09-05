@@ -4,6 +4,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { PlaylistBase } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,6 +20,7 @@ type Props = {
 };
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
 
@@ -39,7 +41,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
           <IconActionButton
             icon={<Ellipsis size={24} color={colors.secondary} />}
             onPress={handleOptionsPress}
-            accessibilityLabel="Playlist options"
+            accessibilityLabel={t('a11y.rows.options', { title: playlist.title })}
             size="compact"
           />
         }

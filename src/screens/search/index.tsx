@@ -291,7 +291,7 @@ const Search = () => {
             <IconActionButton
               icon={<Ellipsis size={24} color={colors.secondary} />}
               onPress={() => { void handleSongOptions(result); }}
-              accessibilityLabel={`Search result song ${result.title} options`}
+              accessibilityLabel={t('a11y.rows.options', { title: result.title })}
               size="compact"
             />
           }
@@ -383,7 +383,7 @@ const Search = () => {
         <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
           <SearchIcon size={18} color={colors.placeholder} style={styles.searchIcon} />
           <TextInput
-            accessibilityLabel="Search input"
+            accessibilityLabel={t('a11y.searchInput')}
             testID="search-input"
             ref={searchInputRef}
             style={[styles.searchInput, { color: colors.secondary }]}
@@ -405,6 +405,8 @@ const Search = () => {
           />
           {query !== '' && (
             <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.search.clear')}
               style={styles.clearButton}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >

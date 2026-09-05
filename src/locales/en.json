@@ -60,6 +60,9 @@
       "title": "Appearance",
       "theme": {
         "title": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
         "subtitle": "Light, dark, or system"
       },
       "color": {
@@ -73,7 +76,8 @@
           "skip": "Skip",
           "favorite": "Favorite",
           "randomAlbum": "Random",
-          "addToPlaylist": "Add"
+          "addToPlaylist": "Add",
+          "cast": "Cast"
         }
       },
       "columns": {
@@ -167,7 +171,8 @@
         "daysAgo": "{{count}} day ago",
         "daysAgo_other": "{{count}} days ago",
         "lastSynced": "Last synced",
-        "syncOnAppStart": "Sync on app start"
+        "syncOnAppStart": "Sync on app start",
+        "syncOnAppStartSubtext": "Automatically sync your library each time you open the app"
       },
       "offlineChanges": {
         "title": "Pending offline changes",
@@ -599,6 +604,25 @@
       "scanFailed": "Could not trigger scan.",
       "signOutFailed": "Could not sign out cleanly.",
       "downloadCleanupFailed": "Couldn't clear downloads while signing out."
+    },
+    "displaySheet": {
+      "title": "Display",
+      "list": "List",
+      "grid": "Grid",
+      "columns": "Columns"
+    },
+    "downloadsBanner": {
+      "open": "Open downloads",
+      "summaryItem": "{{count}} on {{label}}",
+      "title_one": "{{count}} download in progress",
+      "title_other": "{{count}} downloads in progress"
+    },
+    "resumeBanner": {
+      "title": "Resume where you left off",
+      "resumeLabel": "Resume where you left off",
+      "fromDevice": "on {{device}}",
+      "subtitle_one": "{{count}} track queued {{from}}",
+      "subtitle_other": "{{count}} tracks queued {{from}}"
     }
   },
   "search": {
@@ -658,7 +682,8 @@
       "serverRandom": "Surprise me",
       "serverRandomThemed": "Today's {{genre}}",
       "serverNowPlaying": "Playing on your server",
-      "lbSimilarForYou": "Because you like {{artist}}"
+      "lbSimilarForYou": "Because you like {{artist}}",
+      "continuePlaying": "Pick back up"
     },
     "empty": {
       "recentlyAdded": "No albums in your library yet"
@@ -1006,5 +1031,95 @@
     "expiresOn": "Expires {{date}}",
     "visits_one": "{{count}} visit",
     "visits_other": "{{count}} visits"
+  },
+  "a11y": {
+    "detail": {
+      "play": "Play",
+      "shuffle": "Shuffle",
+      "playPreview": "Play preview",
+      "downloadToServer": "Download to your server",
+      "download": "Download",
+      "cancelDownload": "Cancel download",
+      "downloaded": "Downloaded",
+      "downloading": "Downloading"
+    },
+    "rows": {
+      "options": "Options for {{title}}"
+    },
+    "searchInput": "Search",
+    "queueBackToPlayer": "Back to the player",
+    "scanForDevices": "Scan for devices",
+    "dismissNotification": "Dismiss notification",
+    "account": "Account",
+    "common": {
+      "back": "Back",
+      "close": "Close",
+      "moreOptions": "More options",
+      "clearSearch": "Clear search",
+      "checkConnection": "Check connection"
+    },
+    "player": {
+      "close": "Close player",
+      "songOptions": "Song options",
+      "addToPlaylist": "Add to playlist",
+      "previous": "Previous track",
+      "next": "Next track",
+      "play": "Play",
+      "pause": "Pause",
+      "jumpBack": "Jump back {{seconds}} seconds",
+      "jumpForward": "Jump forward {{seconds}} seconds",
+      "shuffle": "Shuffle",
+      "shuffleMode": {
+        "off": "Off",
+        "shuffle": "On",
+        "smart": "Smart shuffle"
+      },
+      "repeat": "Repeat",
+      "repeatMode": {
+        "off": "Off",
+        "all": "Repeat all",
+        "one": "Repeat one track"
+      },
+      "outputDevice": "Output device",
+      "queue": "Queue",
+      "lyrics": "Lyrics",
+      "seekToLyric": "Play from this line",
+      "aboutArtist": "About the artist",
+      "goToArtist": "Go to artist",
+      "nowPlayingBar": "Now playing",
+      "noSongPlaying": "No song playing"
+    },
+    "search": {
+      "clear": "Clear search"
+    },
+    "playlist": {
+      "addSong": "Add {{title}} to this playlist",
+      "songAdded": "{{title}} already added",
+      "downloadSong": "Download {{title}}",
+      "create": "Create playlist"
+    },
+    "selection": {
+      "randomize": "Pick one at random"
+    },
+    "settings": {
+      "themeColor": "Theme colour {{color}}",
+      "clearProviderDownloads": "Delete all {{provider}} downloads",
+      "removeDownload": "Remove download {{title}}"
+    },
+    "onboarding": {
+      "serverOptions": "Options for {{url}}"
+    },
+    "topTrack": {
+      "playPreview": "Play a preview of {{title}}"
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "library": "Library"
+  },
+  "downloads": {
+    "title": "Downloads",
+    "noDownloaders": "No downloaders connected. Add one in Settings."
   }
 }

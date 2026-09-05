@@ -149,7 +149,13 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
         handleIndicatorStyle={{ backgroundColor: colors.border }}
       >
         <View style={[styles.header, { paddingTop: spacing.md }]}>
-          <Touchable onPress={onClose} style={styles.closeButton} hitSlop={hitSlopFor(40)}>
+          <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.common.close')}
+            onPress={onClose}
+            style={styles.closeButton}
+            hitSlop={hitSlopFor(40)}
+          >
             <ChevronDown size={28} color={colors.secondary} />
           </Touchable>
           <Text
@@ -179,6 +185,9 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           {lines.map((line, index) => (
             <Touchable
               key={index}
+              accessibilityRole="button"
+              accessibilityLabel={line.text}
+              accessibilityHint={t('a11y.player.seekToLyric')}
               onLayout={onLineLayout(index)}
               onPress={() => seekSong(line.startMs / 1000)}
             >

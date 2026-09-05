@@ -84,7 +84,7 @@ export default function ContinuePlayingSection() {
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
-        {t('explore.sections.continuePlaying', 'Pick back up')}
+        {t('explore.sections.continuePlaying')}
       </Text>
       <FlashList
         horizontal

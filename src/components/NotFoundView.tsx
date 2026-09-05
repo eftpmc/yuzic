@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { ChevronLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
 import Touchable from '@/components/Touchable'
@@ -12,13 +13,19 @@ type Props = {
 }
 
 export default function NotFoundView({ message = 'Not found' }: Props) {
+  const { t } = useTranslation()
   const navigation = useNavigation<any>()
   const { colors } = useTheme()
 
   return (
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
-        <Touchable onPress={() => navigation.goBack()} style={styles.headerButton}>
+        <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.common.back')}
+          onPress={() => navigation.goBack()}
+          style={styles.headerButton}
+        >
           <ChevronLeft size={24} color={colors.secondary} />
         </Touchable>
         <View style={styles.headerSpacer} />

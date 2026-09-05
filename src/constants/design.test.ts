@@ -4,6 +4,7 @@ import {
   listDensity,
   radius,
   scaleRadius,
+  withScaledLeading,
   type ListDensity,
   type RadiusPreset,
 } from './design'
@@ -141,5 +142,47 @@ describe('listDensity', () => {
         listDensity[density].rowPadding
       )
     })
+  })
+})
+
+describe('withScaledLeading', () => {
+  // A role of each shape: one with a weight to carry through, one without.
+  const scale = {
+    title: { fontSize: 20, lineHeight: 25, fontWeight: '600' as const },
+    body: { fontSize: 16, lineHeight: 21 },
+  }
+
+  it('leaves the scale exactly alone at the default text size', () => {
+    expect(withScaledLeading(scale, 1)).toEqual(scale)
+  })
+
+  it('grows the leading by the factor the platform grows the size by', () => {
+    // The bug this exists for: at 3x a 20/25 role renders at 60pt inside a
+    // 25pt line and is sliced off top and bottom. It needs a 75pt line.
+    expect(withScaledLeading(scale, 3).title.lineHeight).toBe(75)
+    expect(withScaledLeading(scale, 3).body.lineHeight).toBe(63)
+  })
+
+  it('never touches fontSize — React Native applies the scale to that itself', () => {
+    // Pre-scaling the size here as well would double it.
+    const scaled = withScaledLeading(scale, 2)
+    expect(scaled.title.fontSize).toBe(20)
+    expect(scaled.body.fontSize).toBe(16)
+  })
+
+  it('carries the rest of a role through untouched', () => {
+    expect(withScaledLeading(scale, 2).title.fontWeight).toBe('600')
+  })
+
+  it('rounds to whole points, since a fractional line is a blurry one', () => {
+    expect(withScaledLeading(scale, 1.15).title.lineHeight).toBe(29)
+  })
+
+  it('follows the smaller text sizes down too', () => {
+    expect(withScaledLeading(scale, 0.8).title.lineHeight).toBe(20)
+  })
+
+  it('keeps every role in the scale', () => {
+    expect(Object.keys(withScaledLeading(scale, 2))).toEqual(Object.keys(scale))
   })
 })

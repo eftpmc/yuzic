@@ -36,22 +36,18 @@ export function DownloadsInProgressBanner() {
     .map((q) => t('home.downloadsBanner.summaryItem', {
       label: q.label,
       count: q.count,
-      defaultValue: `${q.count} on ${q.label}`,
     }))
     .join(' · ');
 
   return (
     <View style={[styles.container, { backgroundColor: colors.muted, borderRadius: rad.card }]}>
-      <Touchable style={styles.body} onPress={handleOpen} accessibilityLabel={t('home.downloadsBanner.open', 'Open downloads')}>
+      <Touchable style={styles.body} onPress={handleOpen} accessibilityLabel={t('home.downloadsBanner.open')}>
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
           <SpinningLoaderCircle size={14} color="#000" />
         </View>
         <View style={styles.text}>
           <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
-            {t('home.downloadsBanner.title', {
-              count: totalInFlight,
-              defaultValue: `{{count}} downloads in progress`,
-            })}
+            {t('home.downloadsBanner.title', { count: totalInFlight })}
           </Text>
           <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>
             {summary}

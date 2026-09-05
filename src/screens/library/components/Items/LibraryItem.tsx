@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
@@ -42,6 +43,7 @@ const LibraryItem: React.FC<Props> = ({
   onLongPress,
   testID,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
   const density = useListDensity();
@@ -84,7 +86,13 @@ const LibraryItem: React.FC<Props> = ({
       </View>
 
       {!isGridView && (
-        <Touchable onPress={onLongPress} hitSlop={10} feedback="control">
+        <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.rows.options', { title })}
+          onPress={onLongPress}
+          hitSlop={10}
+          feedback="control"
+        >
           <Ellipsis size={18} color={colors.subtext} />
         </Touchable>
       )}

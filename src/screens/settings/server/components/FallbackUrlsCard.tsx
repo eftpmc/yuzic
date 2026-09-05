@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Plus, X } from 'lucide-react-native';
@@ -11,6 +11,7 @@ import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
+import Touchable from '@/components/Touchable';
 import SettingsDivider from '../../components/SettingsDivider';
 import type { Server } from '@/types';
 
@@ -81,13 +82,14 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
               >
                 {url}
               </Text>
-              <TouchableOpacity
+              <Touchable
+                accessibilityRole="button"
                 accessibilityLabel={t('settings.server.fallbackUrls.removeAria', { url })}
                 onPress={() => handleRemove(index)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <X size={18} color={colors.subtext} />
-              </TouchableOpacity>
+              </Touchable>
             </View>
             {index < urls.length - 1 && <SettingsDivider />}
           </React.Fragment>
@@ -109,13 +111,14 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
               { borderColor: colors.border, backgroundColor: colors.muted, color: colors.text, borderRadius: rad.md },
             ]}
           />
-          <TouchableOpacity
+          <Touchable
+            accessibilityRole="button"
             accessibilityLabel={t('settings.server.fallbackUrls.addAria')}
             onPress={handleAdd}
             style={[styles.addButton, { backgroundColor: colors.muted, borderRadius: rad.md }]}
           >
             <Plus size={18} color={colors.secondary} />
-          </TouchableOpacity>
+          </Touchable>
         </View>
         {error && (
           <Text style={[styles.error, { color: '#e57373' }]}>{error}</Text>

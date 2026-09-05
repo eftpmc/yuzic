@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect } from 'react';
-import { spacing, statusColor, typography } from '@/constants/design';
+import { fontScaleCap, spacing, statusColor, typography } from '@/constants/design';
 import { useListDensity } from '@/hooks/useListDensity';
 import {
   Text,
@@ -98,7 +98,7 @@ const SongRow: React.FC<Props> = ({
           <Text
             style={[styles.trackNumber, { color: colors.subtext }]}
             numberOfLines={1}
-            allowFontScaling={false}
+            maxFontSizeMultiplier={fontScaleCap.glyph}
           >
             {trackNumber}
           </Text>
@@ -115,7 +115,7 @@ const SongRow: React.FC<Props> = ({
               onPress={openOptions}
               hitSlop={10}
               accessibilityRole="button"
-              accessibilityLabel="Song options"
+              accessibilityLabel={t('a11y.rows.options', { title: song.title })}
             >
               <Ellipsis size={18} color={colors.secondary} />
             </Touchable>

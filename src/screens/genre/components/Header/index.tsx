@@ -178,7 +178,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
             <Touchable
               testID="detail-back-button"
               accessibilityRole="button"
-              accessibilityLabel="Go back"
+              accessibilityLabel={t('a11y.common.back')}
               style={[styles.backButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]}
               onPress={() => navigation.goBack()}
             >
@@ -202,7 +202,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           onPress={() => { void play(true) }}
           disabled={songsLoading}
           style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-          accessibilityLabel="Shuffle genre"
+          accessibilityLabel={t('a11y.detail.shuffle')}
         >
           {songsLoading ? (
             <SpinningLoaderCircle size={18} color={colors.secondary} />
@@ -214,7 +214,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
         <DetailPlayAction
           onPress={() => { void play(false) }}
           disabled={songsLoading}
-          accessibilityLabel="Play genre"
+          accessibilityLabel={t('a11y.detail.play')}
         >
           {songsLoading ? (
             <SpinningLoaderCircle size={18} color="#fff" />
@@ -227,13 +227,13 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           onPress={() => { void handleDownloadAll() }}
           disabled={isDownloadingAll || isDownloading}
           style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-          accessibilityLabel={
+          accessibilityLabel={t(
             isDownloadingAll || isDownloading
-              ? 'Downloading genre'
+              ? 'a11y.detail.downloading'
               : isFullyDownloaded
-                ? 'Downloaded'
-                : 'Download all genre songs'
-          }
+                ? 'a11y.detail.downloaded'
+                : 'a11y.detail.download'
+          )}
         >
           {isDownloadingAll || isDownloading ? (
             <SpinningLoaderCircle size={18} color={colors.secondary} />
@@ -253,11 +253,15 @@ export const GenreHeaderBar: React.FC<Props> = ({ genre, albums }) => (
 )
 
 function GenreOptionsButton({ genre, albums }: { genre: string; albums: AlbumBase[] }) {
+  const { t } = useTranslation()
   const { colors } = useTheme()
   const optionsSheetRef = useSheetRef()
   return (
     <>
-      <DetailHeaderIconButton onPress={() => optionsSheetRef.current?.present()}>
+      <DetailHeaderIconButton
+        accessibilityLabel={t('a11y.common.moreOptions')}
+        onPress={() => optionsSheetRef.current?.present()}
+      >
         <Ellipsis size={24} color={colors.secondary} />
       </DetailHeaderIconButton>
       <GenreOptions ref={optionsSheetRef} genre={genre} albums={albums} />

@@ -10,6 +10,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { LyricsResult } from '@/api/types';
 import Touchable from '@/components/Touchable';
 import { onDark, spacing, typography } from '@/constants/design';
@@ -74,6 +75,7 @@ export default function LyricsPreviewCard({
   contentWidth,
   onPress,
 }: Props) {
+  const { t } = useTranslation();
   const rad = useRadius();
   const scrollRef = useRef<ScrollView>(null);
   const lineLayouts = useRef<Record<number, { y: number; height: number }>>({});
@@ -126,6 +128,8 @@ export default function LyricsPreviewCard({
 
   return (
     <Touchable
+      accessibilityRole="button"
+      accessibilityLabel={t('a11y.player.lyrics')}
       style={[styles.card, { width: contentWidth, height: CARD_HEIGHT, borderRadius: rad.panel }]}
       onPress={onPress}
     >

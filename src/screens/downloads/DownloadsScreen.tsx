@@ -34,11 +34,11 @@ const DownloadsScreen: React.FC = () => {
   const slskdRenderItem = useSlskdRenderItem();
 
   return (
-    <SettingsScreen title={t('downloads.title', 'Downloads')}>
+    <SettingsScreen title={t('downloads.title')}>
       {connected.length === 0 && (
         <SettingsCard>
           <Text style={[styles.empty, { color: colors.subtext }]}>
-            {t('downloads.noDownloaders', 'No downloaders connected. Add one in Settings.')}
+            {t('downloads.noDownloaders')}
           </Text>
         </SettingsCard>
       )}

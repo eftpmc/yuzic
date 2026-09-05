@@ -158,7 +158,12 @@ const DownloadsInfoScreen: React.FC = () => {
                 {showSectionHeader && (
                   <View style={styles.providerHeader}>
                     <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
-                    <Touchable onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
+                    <Touchable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('a11y.settings.clearProviderDownloads', { provider: sectionTitle })}
+                      onPress={() => confirmClearProvider(item)}
+                      style={styles.providerDelete}
+                    >
                       <Trash2 size={16} color={colors.subtext} />
                     </Touchable>
                   </View>
@@ -183,6 +188,8 @@ const DownloadsInfoScreen: React.FC = () => {
                     </View>
                   </View>
                   <Touchable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('a11y.settings.removeDownload', { title: item.title })}
                     style={[styles.removeButton, removingId === item.id && styles.disabled]}
                     hitSlop={hitSlopFor(32)}
                     onPress={() => confirmRemove(item)}

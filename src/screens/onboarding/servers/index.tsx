@@ -113,6 +113,8 @@ export default function Servers() {
                 </Touchable>
 
                 <Touchable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('a11y.onboarding.serverOptions', { url: item.serverUrl })}
                     style={[styles.menuButton, { borderRadius: rad.md }]}
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}

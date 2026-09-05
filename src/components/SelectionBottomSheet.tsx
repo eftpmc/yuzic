@@ -82,7 +82,13 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
             returnKeyType="done"
             onSubmitEditing={handleSubmit}
           />
-          <Touchable onPress={onRandomize} style={styles.shuffleButton} hitSlop={8}>
+          <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.selection.randomize')}
+            onPress={onRandomize}
+            style={styles.shuffleButton}
+            hitSlop={8}
+          >
             <Dices size={18} color={colors.subtext} />
           </Touchable>
         </View>

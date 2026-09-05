@@ -72,6 +72,8 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   return (
     <>
       <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => bottomSheetRef.current?.present()}
         hitSlop={10}
       >

@@ -64,6 +64,9 @@
       "title": "外観",
       "theme": {
         "title": "テーマ",
+        "light": "ライト",
+        "dark": "ダーク",
+        "system": "システム",
         "subtitle": "ライト／ダーク／システム"
       },
       "color": {
@@ -77,7 +80,8 @@
           "skip": "スキップ",
           "favorite": "お気に入り",
           "randomAlbum": "ランダム",
-          "addToPlaylist": "追加"
+          "addToPlaylist": "追加",
+          "cast": "キャスト"
         }
       },
       "columns": {
@@ -171,7 +175,8 @@
         "daysAgo": "{{count}} 日前",
         "daysAgo_other": "{{count}} 日前",
         "lastSynced": "最終同期",
-        "syncOnAppStart": "起動時に同期"
+        "syncOnAppStart": "起動時に同期",
+        "syncOnAppStartSubtext": "アプリを開くたびにライブラリを自動的に同期します"
       },
       "offlineChanges": {
         "title": "保留中のオフライン変更",
@@ -631,6 +636,23 @@
       "scanFailed": "スキャンを開始できませんでした。",
       "signOutFailed": "サインアウトできませんでした。",
       "downloadCleanupFailed": "サインアウト中にダウンロードを削除できませんでした。"
+    },
+    "displaySheet": {
+      "title": "表示",
+      "list": "リスト",
+      "grid": "グリッド",
+      "columns": "列数"
+    },
+    "downloadsBanner": {
+      "open": "ダウンロードを開く",
+      "summaryItem": "{{label}}に{{count}}件",
+      "title_other": "{{count}}件のダウンロード中"
+    },
+    "resumeBanner": {
+      "title": "続きから再生",
+      "resumeLabel": "続きから再生",
+      "fromDevice": "{{device}}で",
+      "subtitle_other": "{{from}}{{count}}曲がキューにあります"
     }
   },
   "search": {
@@ -697,7 +719,8 @@
       "serverRandom": "おまかせ",
       "serverRandomThemed": "今日の{{genre}}",
       "serverNowPlaying": "サーバーで再生中",
-      "lbSimilarForYou": "{{artist}} が好きなあなたへ"
+      "lbSimilarForYou": "{{artist}} が好きなあなたへ",
+      "continuePlaying": "続きから"
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",
@@ -1065,5 +1088,95 @@
     "play": "エピソードを再生",
     "download": "エピソードをダウンロード",
     "downloadStarted": "ダウンロードを開始しました"
+  },
+  "a11y": {
+    "detail": {
+      "play": "再生",
+      "shuffle": "シャッフル",
+      "playPreview": "試聴を再生",
+      "downloadToServer": "サーバーにダウンロード",
+      "download": "ダウンロード",
+      "cancelDownload": "ダウンロードをキャンセル",
+      "downloaded": "ダウンロード済み",
+      "downloading": "ダウンロード中"
+    },
+    "rows": {
+      "options": "{{title}}のオプション"
+    },
+    "searchInput": "検索",
+    "queueBackToPlayer": "プレーヤーに戻る",
+    "scanForDevices": "デバイスを検索",
+    "dismissNotification": "通知を閉じる",
+    "account": "アカウント",
+    "common": {
+      "back": "戻る",
+      "close": "閉じる",
+      "moreOptions": "その他のオプション",
+      "clearSearch": "検索をクリア",
+      "checkConnection": "接続を確認"
+    },
+    "player": {
+      "close": "プレーヤーを閉じる",
+      "songOptions": "曲のオプション",
+      "addToPlaylist": "プレイリストに追加",
+      "previous": "前の曲",
+      "next": "次の曲",
+      "play": "再生",
+      "pause": "一時停止",
+      "jumpBack": "{{seconds}}秒戻る",
+      "jumpForward": "{{seconds}}秒進む",
+      "shuffle": "シャッフル",
+      "shuffleMode": {
+        "off": "オフ",
+        "shuffle": "オン",
+        "smart": "スマートシャッフル"
+      },
+      "repeat": "リピート",
+      "repeatMode": {
+        "off": "オフ",
+        "all": "全曲リピート",
+        "one": "1曲リピート"
+      },
+      "outputDevice": "出力デバイス",
+      "queue": "再生キュー",
+      "lyrics": "歌詞",
+      "seekToLyric": "この行から再生",
+      "aboutArtist": "アーティストについて",
+      "goToArtist": "アーティストへ移動",
+      "nowPlayingBar": "再生中",
+      "noSongPlaying": "再生中の曲はありません"
+    },
+    "search": {
+      "clear": "検索をクリア"
+    },
+    "playlist": {
+      "addSong": "{{title}}をこのプレイリストに追加",
+      "songAdded": "{{title}}は追加済み",
+      "downloadSong": "{{title}}をダウンロード",
+      "create": "プレイリストを作成"
+    },
+    "selection": {
+      "randomize": "ランダムに選ぶ"
+    },
+    "settings": {
+      "themeColor": "テーマカラー {{color}}",
+      "clearProviderDownloads": "{{provider}}のダウンロードをすべて削除",
+      "removeDownload": "ダウンロード{{title}}を削除"
+    },
+    "onboarding": {
+      "serverOptions": "{{url}}のオプション"
+    },
+    "topTrack": {
+      "playPreview": "{{title}}の試聴を再生"
+    }
+  },
+  "tabs": {
+    "home": "ホーム",
+    "search": "検索",
+    "library": "ライブラリ"
+  },
+  "downloads": {
+    "title": "ダウンロード",
+    "noDownloaders": "ダウンローダーが接続されていません。設定から追加してください。"
   }
 }

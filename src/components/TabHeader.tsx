@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { fontScaleCap, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 /** Header shared by the Home, Library and Search tabs: screen title plus the
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export default function TabHeader({ title, username, onAccountPress }: Props) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
@@ -26,13 +28,13 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
 
       <View style={styles.actions}>
         <Touchable
-          accessibilityLabel="Account"
+          accessibilityLabel={t('a11y.account')}
           accessibilityRole="button"
           style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}
           onPress={onAccountPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.avatarText}>
+          <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>
             {username?.[0]?.toUpperCase() ?? '?'}
           </Text>
         </Touchable>

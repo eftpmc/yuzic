@@ -90,7 +90,10 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
         title={playlist.title}
         cover={playlist.cover}
         rightAction={
-          <DetailHeaderIconButton onPress={onOptions ?? (() => optionsSheetRef.current?.present())}>
+          <DetailHeaderIconButton
+            accessibilityLabel={t('a11y.common.moreOptions')}
+            onPress={onOptions ?? (() => optionsSheetRef.current?.present())}
+          >
             <Ellipsis size={24} color={colors.secondary} />
           </DetailHeaderIconButton>
         }
@@ -106,19 +109,23 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
         }
         actions={
           <DetailActionRow style={{ marginBottom: spacing.lg }}>
-            <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle playlist">
+            <DetailCircleAction onPress={handleShuffle} accessibilityLabel={t('a11y.detail.shuffle')}>
               <Shuffle size={18} color={colors.secondary} />
             </DetailCircleAction>
 
-            <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play playlist">
+            <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
               <Play size={24} color="#fff" fill="#fff" />
             </DetailPlayAction>
 
             <DetailCircleAction
               onPress={() => void toggleDownload()}
-              accessibilityLabel={
-                isPlaylistDownloading ? 'Cancel download' : isPlaylistDownloaded ? 'Downloaded' : 'Download playlist'
-              }
+              accessibilityLabel={t(
+                isPlaylistDownloading
+                  ? 'a11y.detail.cancelDownload'
+                  : isPlaylistDownloaded
+                    ? 'a11y.detail.downloaded'
+                    : 'a11y.detail.download'
+              )}
             >
               {isPlaylistDownloading ? (
                 <DownloadProgressRing progress={downloadFraction} size={18} />
@@ -138,12 +145,16 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
 };
 
 export const PlaylistHeaderBar: React.FC<Props> = ({ playlist, onOptions }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   return (
     <DetailHeaderBar
       title={playlist.title}
       rightAction={
-        <DetailHeaderIconButton onPress={onOptions}>
+        <DetailHeaderIconButton
+          accessibilityLabel={t('a11y.common.moreOptions')}
+          onPress={onOptions}
+        >
           <Ellipsis size={24} color={colors.secondary} />
         </DetailHeaderIconButton>
       }

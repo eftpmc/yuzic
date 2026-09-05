@@ -88,6 +88,8 @@ export default function AboutTheArtistCard({
   if (onPress) {
     return (
       <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={t('a11y.player.aboutArtist')}
         onPress={onPress}
         style={styles.touchable}
       >

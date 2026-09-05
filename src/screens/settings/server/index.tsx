@@ -124,7 +124,12 @@ const ServerSettings: React.FC = () => {
         <SettingsInfoRow
           label={t('settings.server.connectivity')}
           right={
-            <Touchable onPress={ping} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.common.checkConnection')}
+              onPress={ping}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <ConnectivityIndicator isLoading={isLoading} isConnected={!!isAuthenticated} />
             </Touchable>
           }

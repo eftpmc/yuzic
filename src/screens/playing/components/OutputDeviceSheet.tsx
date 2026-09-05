@@ -11,6 +11,7 @@ import { Airplay, Cast, Check, Plus, RotateCcw, Smartphone } from 'lucide-react-
 import IconActionButton from '@/components/IconActionButton';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -28,6 +29,7 @@ const {
 } = Platform.OS === 'ios' ? require('react-airplay') : { AirplayButton: null, useAirplayRoutes: () => [] };
 
 const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
   const themeColor = useSelector(selectThemeColor);
@@ -90,7 +92,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
             icon={<RotateCcw size={16} color={colors.subtext} />}
             onPress={scan}
             loading={isScanning}
-            accessibilityLabel="Scan for devices"
+            accessibilityLabel={t('a11y.scanForDevices')}
             size="compact"
           />
         </View>

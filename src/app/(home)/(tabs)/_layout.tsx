@@ -119,7 +119,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
         <TabButton
           onPress={() => go('(home)')}
           active={focusedRouteName === '(home)'}
-          accessibilityLabel={t('tabs.home', 'Home tab')}
+          accessibilityLabel={t('tabs.home')}
           testID="home-tab"
           activeColor={activeColor}
           inactiveColor={inactiveColor}
@@ -131,7 +131,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
         <TabButton
           onPress={() => go('(search)')}
           active={focusedRouteName === '(search)'}
-          accessibilityLabel={t('tabs.search', 'Search tab')}
+          accessibilityLabel={t('tabs.search')}
           testID="search-tab"
           activeColor={activeColor}
           inactiveColor={inactiveColor}
@@ -143,7 +143,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
         <TabButton
           onPress={() => go('(library)')}
           active={focusedRouteName === '(library)'}
-          accessibilityLabel={t('tabs.library', 'Library tab')}
+          accessibilityLabel={t('tabs.library')}
           testID="library-tab"
           activeColor={activeColor}
           inactiveColor={inactiveColor}

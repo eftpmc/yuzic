@@ -15,7 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -91,7 +91,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
         {/* Profile */}
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}>
-            <Text style={styles.avatarText}>{initial}</Text>
+            <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>{initial}</Text>
           </View>
           <View style={styles.headerInfo}>
             <Text style={[styles.username, { color: colors.secondary }]}>{username}</Text>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    ...typography.navigationTitle,
+    ...cappedTypography.glyph.navigationTitle,
     fontWeight: '700',
     color: '#fff',
   },

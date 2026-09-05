@@ -261,7 +261,13 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             },
           ]}
         >
-          <Touchable onPress={onClose} style={styles.cancelButton} hitSlop={hitSlopFor(32)}>
+          <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.common.close')}
+            onPress={onClose}
+            style={styles.cancelButton}
+            hitSlop={hitSlopFor(32)}
+          >
             <X size={20} color={colors.secondary} strokeWidth={2.5} />
           </Touchable>
 
@@ -290,7 +296,11 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
-            <Touchable onPress={handleCreatePlaylist}>
+            <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.playlist.create')}
+              onPress={handleCreatePlaylist}
+            >
               <Plus size={26} color={colors.secondary} />
             </Touchable>
           </View>

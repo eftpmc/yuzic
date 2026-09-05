@@ -35,7 +35,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { onDark, radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, onDark, radius, spacing, typography } from '@/constants/design';
 
 type Variant = 'ios' | 'android';
 
@@ -107,10 +107,10 @@ const variantStyles = {
     // one block of small text with no hierarchy. It is the loudest thing in
     // the row now, with the artist staying quiet beneath.
     title: {
-      ...typography.compactRowTitle,
+      ...cappedTypography.control.compactRowTitle,
     },
     artist: {
-      ...typography.caption,
+      ...cappedTypography.control.caption,
     },
     progressBarContainer: {
       // Edge to edge: this is the rule between the now-playing row and the
@@ -162,10 +162,10 @@ const variantStyles = {
     // one block of small text with no hierarchy. It is the loudest thing in
     // the row now, with the artist staying quiet beneath.
     title: {
-      ...typography.compactRowTitle,
+      ...cappedTypography.control.compactRowTitle,
     },
     artist: {
-      ...typography.caption,
+      ...cappedTypography.control.caption,
     },
     progressBarContainer: {
       // Edge to edge: this is the rule between the now-playing row and the
@@ -309,6 +309,7 @@ export default function PlayingBarBase({ variant }: Props) {
       <View style={styles.details}>
         <Text
           numberOfLines={1}
+          maxFontSizeMultiplier={fontScaleCap.control}
           style={[
             styles.title,
             stylesForVariant.title,
@@ -319,6 +320,7 @@ export default function PlayingBarBase({ variant }: Props) {
         </Text>
         <Text
           numberOfLines={1}
+          maxFontSizeMultiplier={fontScaleCap.control}
           style={[
             styles.artist,
             stylesForVariant.artist,
@@ -331,7 +333,7 @@ export default function PlayingBarBase({ variant }: Props) {
 
       {currentSong && (
         <Touchable
-          accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+          accessibilityLabel={isPlaying ? t('a11y.player.pause') : t('a11y.player.play')}
           accessibilityRole="button"
           testID="playing-bar-play-pause"
           style={[styles.playPauseButton, stylesForVariant.playPauseButton]}
@@ -352,6 +354,11 @@ export default function PlayingBarBase({ variant }: Props) {
           are plain now, separated by size and colour instead. */}
       {primaryAction && (
         <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={primaryAction.label}
+          accessibilityState={primaryAction.selected === undefined
+            ? undefined
+            : { selected: primaryAction.selected }}
           style={[styles.actionButton, stylesForVariant.actionButton]}
           onPress={primaryAction.onPress}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
@@ -388,7 +395,7 @@ export default function PlayingBarBase({ variant }: Props) {
       <GestureDetector gesture={dragToOpen}>
         <Animated.View style={barFadeStyle}>
           <Touchable
-            accessibilityLabel={currentSong ? 'Now playing bar' : 'No song playing'}
+            accessibilityLabel={currentSong ? t('a11y.player.nowPlayingBar') : t('a11y.player.noSongPlaying')}
             accessibilityRole="button"
             testID={currentSong ? 'playing-bar' : 'playing-bar-empty'}
             onPressIn={prepare}

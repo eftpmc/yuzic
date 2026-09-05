@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
 import { spacing, typography } from '@/constants/design';
@@ -21,6 +22,7 @@ const Header: React.FC<HeaderProps> = ({
     onBackPress,
     rightAction,
 }) => {
+    const { t } = useTranslation();
     const router = useRouter();
     const { colors } = useTheme();
 
@@ -35,6 +37,8 @@ const Header: React.FC<HeaderProps> = ({
     return (
         <View style={styles.container}>
             <Touchable
+                accessibilityRole="button"
+                accessibilityLabel={t('a11y.common.back')}
                 onPress={handleBack}
                 style={styles.backButton}
             >

@@ -165,7 +165,15 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
       onPress={() => void handlePress()}
       variant="compact"
       trailing={
-        <Touchable onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
+        <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t(added ? 'a11y.playlist.songAdded' : 'a11y.playlist.addSong', { title: song.title })}
+          accessibilityState={{ disabled: adding || added }}
+          onPress={() => void handleAdd()}
+          hitSlop={10}
+          style={styles.actionBtn}
+          disabled={adding || added}
+        >
           {added
             ? <CheckCircle size={22} color={colors.placeholder} />
             : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
@@ -185,6 +193,7 @@ type ExternalRowProps = {
 };
 
 const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownload }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { toggle } = usePreviewPlayer();
   const hasPreview = !!song.previewUrl;
@@ -199,6 +208,9 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
       variant="compact"
       trailing={
         <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.playlist.downloadSong', { title: song.title })}
+          accessibilityState={{ disabled: !hasDownloader }}
           onPress={() => hasDownloader && onDownload(song)}
           disabled={!hasDownloader}
           hitSlop={10}

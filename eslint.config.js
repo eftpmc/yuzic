@@ -1,6 +1,10 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
 const expoConfig = require("eslint-config-expo/flat");
+const touchableNeedsLabel = require('./eslint-rules/touchable-needs-label');
+
+/** Rules that are this app's own conventions rather than anyone's preset. */
+const yuzic = { rules: { 'touchable-needs-label': touchableNeedsLabel } };
 
 /**
  * Sizes, corner radii and spacing come from `constants/design`, everywhere.
@@ -39,14 +43,29 @@ module.exports = defineConfig([
   },
   {
     files: SCALED_FILES,
-    ignores: ["src/constants/design.ts"],
+    // The scale file is where the numbers live, and its test has to write a
+    // fixture scale to check the scaling with.
+    ignores: ["src/constants/design.ts", "src/constants/design.test.ts"],
+    plugins: { yuzic },
     rules: {
       "no-restricted-syntax": [
         "error",
         literalStyleValue("fontSize", "typography"),
         literalStyleValue("borderRadius", "radius"),
         ...SPACING_PROPERTIES.map(literalSpacing),
+        // `components/Touchable` is the app's one answer to a press. A second
+        // one drifts back the moment it is importable — a `TouchableOpacity`
+        // had already reappeared in the server settings after the sweep that
+        // removed every other use of it.
+        {
+          selector:
+            "ImportDeclaration[source.value='react-native'] > ImportSpecifier[imported.name='TouchableOpacity']",
+          message:
+            "Use components/Touchable instead of TouchableOpacity. It gives Android a bounded ripple and every other platform an opacity dip, from one file so the two can't drift apart per screen.",
+        },
       ],
+      // A bare glyph says nothing to a screen reader unless it is told to.
+      "yuzic/touchable-needs-label": "error",
     },
   },
 ]);

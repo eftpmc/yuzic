@@ -20,6 +20,7 @@ import {
 import { ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
   FadeIn,
   useAnimatedStyle,
@@ -164,6 +165,7 @@ export function DetailScreen({ bar, children }: DetailScreenProps) {
 }
 
 export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBarProps) {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useTheme();
   const rad = useRadius();
@@ -180,7 +182,7 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
     <View pointerEvents="box-none" style={styles.headerRow}>
       <BarButton
         testID="detail-back-button"
-        accessibilityLabel="Go back"
+        accessibilityLabel={t('a11y.common.back')}
         onPress={() => navigation.goBack()}
         scrim={floating ? (isDarkMode ? SCRIM_DARK : SCRIM_LIGHT) : undefined}
       >
@@ -339,7 +341,7 @@ type DetailCircleActionProps = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 };
 
 export function DetailCircleAction({ children, onPress, disabled, style, accessibilityLabel }: DetailCircleActionProps) {
@@ -368,7 +370,7 @@ type DetailPlayActionProps = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 };
 
 export function DetailPlayAction({ children, onPress, disabled, style, accessibilityLabel }: DetailPlayActionProps) {
@@ -406,7 +408,7 @@ const SCRIM_LIGHT = 'rgba(255, 255, 255, 0.6)';
 type BarButtonProps = {
   children: React.ReactNode;
   onPress?: () => void;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
   testID?: string;
   scrim?: string;
 };
@@ -435,10 +437,10 @@ function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: Bar
 type DetailHeaderIconButtonProps = {
   children: React.ReactNode;
   onPress?: () => void;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 };
 
-export function DetailHeaderIconButton({ children, onPress, accessibilityLabel = 'More options' }: DetailHeaderIconButtonProps) {
+export function DetailHeaderIconButton({ children, onPress, accessibilityLabel }: DetailHeaderIconButtonProps) {
   const { isDarkMode } = useTheme();
   const floating = useContext(DetailScrollContext);
   return (

@@ -44,7 +44,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
             <IconActionButton
               icon={<Ellipsis size={24} color={colors.secondary} />}
               onPress={handleOpenOptions}
-              accessibilityLabel="Artist options"
+              accessibilityLabel={t('a11y.rows.options', { title: artist.name })}
               size="compact"
             />
           }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Cast, ListMusic } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
@@ -20,6 +21,7 @@ type BottomControlsProps = {
 const BUTTON_SIZE = controlSize.playerSecondary;
 
 const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
+  const { t } = useTranslation();
   const { activeDevice } = useCast();
   const rad = useRadius();
   const isCasting = activeDevice != null;
@@ -39,7 +41,7 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
       <Touchable
         testID="playing-output-toggle"
         accessibilityRole="button"
-        accessibilityLabel="Output device"
+        accessibilityLabel={t('a11y.player.outputDevice')}
         accessibilityState={{ selected: isCasting }}
         onPress={onOpenOutputSheet}
         style={buttonStyle(isCasting)}
@@ -51,7 +53,7 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
       <Touchable
         testID="playing-queue-toggle"
         accessibilityRole="button"
-        accessibilityLabel="Toggle queue"
+        accessibilityLabel={t('a11y.player.queue')}
         accessibilityState={{ selected: showingQueue }}
         onPress={() => setMode(showingQueue ? 'player' : 'queue')}
         style={buttonStyle(showingQueue)}

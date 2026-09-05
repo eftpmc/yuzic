@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
@@ -31,6 +32,7 @@ const SettingsAuthCard: React.FC<Props> = ({
   connectivityLabel,
   onConnectivityPress,
 }) => {
+  const { t } = useTranslation();
   const indicator = (
     <ConnectivityIndicator isLoading={isLoading} isConnected={isAuthenticated} />
   );
@@ -45,7 +47,12 @@ const SettingsAuthCard: React.FC<Props> = ({
         label={connectivityLabel}
         right={
           onConnectivityPress ? (
-            <Touchable onPress={onConnectivityPress} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.common.checkConnection')}
+              onPress={onConnectivityPress}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               {indicator}
             </Touchable>
           ) : indicator

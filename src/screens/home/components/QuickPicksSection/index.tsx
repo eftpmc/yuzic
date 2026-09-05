@@ -134,7 +134,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
                   <IconActionButton
                     icon={<Ellipsis size={18} color={colors.secondary} />}
                     onPress={() => { void handleOptions(song); }}
-                    accessibilityLabel={`${song.title} options`}
+                    accessibilityLabel={t('a11y.rows.options', { title: song.title })}
                     size="compact"
                   />
                 }

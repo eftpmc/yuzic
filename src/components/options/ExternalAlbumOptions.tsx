@@ -45,6 +45,8 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
   return (
     <>
       <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={t('a11y.common.moreOptions')}
         style={styles.moreButton}
         onPress={() => bottomSheetRef.current?.present()}
       >

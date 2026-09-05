@@ -40,12 +40,12 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
     const viewOptions = [
       {
         value: false,
-        label: t('home.displaySheet.list', { defaultValue: 'List' }),
+        label: t('home.displaySheet.list'),
         Icon: List,
       },
       {
         value: true,
-        label: t('home.displaySheet.grid', { defaultValue: 'Grid' }),
+        label: t('home.displaySheet.grid'),
         Icon: Grid2x2,
       },
     ];
@@ -62,7 +62,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
       >
         <BottomSheetView style={styles.container}>
           <Text style={[styles.title, { color: colors.secondary }]}>
-            {t('home.displaySheet.title', { defaultValue: 'Display' })}
+            {t('home.displaySheet.title')}
           </Text>
 
           {/* View mode picker rows */}
@@ -112,7 +112,7 @@ const GridSettingsBottomSheet = forwardRef<BottomSheetModal>(
               <View style={styles.sliderRow}>
                 <View style={styles.sliderHeader}>
                   <Text style={[styles.sliderLabel, { color: colors.secondary }]}>
-                    {t('home.displaySheet.columns', { defaultValue: 'Columns' })}
+                    {t('home.displaySheet.columns')}
                   </Text>
                   <View style={[styles.badge, { backgroundColor: themeColor + '22', borderRadius: rad.card }]}>
                     <Text style={[styles.badgeText, { color: themeColor }]}>

@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { StyleSheet, Text } from 'react-native'
 import { Play } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 import MediaListRow from '@/components/MediaListRow'
 import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
@@ -21,6 +22,7 @@ type Props = {
 }
 
 function TopTrackRow({ song, index, artistName, onPress }: Props) {
+  const { t } = useTranslation()
   const { colors } = useTheme()
   const rad = useRadius()
   const duration = formatSongDuration(song.duration)
@@ -40,6 +42,8 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
       trailing={
         song.previewUrl ? (
           <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.topTrack.playPreview', { title: song.title })}
             style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pillFor(PREVIEW_BUTTON_SIZE) }]}
             onPress={onPress}
             disabled={!onPress}

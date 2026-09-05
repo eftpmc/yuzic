@@ -145,7 +145,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
         <Touchable
           testID="queue-back-button"
           accessibilityRole="button"
-          accessibilityLabel="Back to player"
+          accessibilityLabel={t('a11y.queueBackToPlayer')}
           onPress={onBack}
           style={styles.backButton}
         >
@@ -177,6 +177,8 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
 
         <View style={styles.playControls}>
           <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={isPlaying ? t('a11y.player.pause') : t('a11y.player.play')}
             onPress={isPlaying ? pauseSong : resumeSong}
             style={[styles.controlButton, { borderRadius: rad.md }]}
           >
@@ -187,6 +189,8 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           </Touchable>
 
           <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.player.next')}
             onPress={skipToNext}
             style={[styles.controlButton, { borderRadius: rad.md }]}
           >

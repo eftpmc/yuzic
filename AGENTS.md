@@ -61,6 +61,29 @@ because both halves of each pair look reasonable in isolation.
   has to hit never is. `hitSlopFor(size)` makes up the difference; it returns
   undefined when none is needed, so it can be spread unconditionally. Seven
   controls were between 32 and 40pt with nothing padding them out.
+- **Naming controls**: a pressable that draws no text carries an
+  `accessibilityLabel`, from the `a11y.*` namespace in `locales` like any other
+  string — `eslint-rules/touchable-needs-label` fails the build otherwise. One
+  that *does* draw text does not: a screen reader reads the text already, and a
+  label repeating it is a second copy to keep in sync. So the rule looks for
+  readable content in the subtree and only asks where it finds none. 32 controls
+  were silent, including every transport control on the player, and the labels
+  that did exist were hardcoded English — a French UI read aloud in English.
+  A role says what a thing is, never which one, so it is never a substitute for
+  a label: add both. A control with two states says the second through
+  `accessibilityState`, one with more than two through `accessibilityValue` —
+  shuffle cycles through three, and a label that changed with the mode would
+  read as a different button each time.
+- **Text size**: `typography` scales its own leading by the system text size
+  (`withScaledLeading`), because React Native scales `fontSize` and leaves
+  `lineHeight` where it was written — at the accessibility sizes a 20pt role
+  renders at 60pt in a 25pt box and every title in the app is sliced in half.
+  Text inside a control whose height is structural — the playing bar, an avatar
+  disc — takes a `maxFontSizeMultiplier` from `fontScaleCap` **and** its role
+  from the matching `cappedTypography` set. One without the other is the
+  mismatch that turns the bar into half a screen: the cap holds the glyphs but
+  not the line box they sit in. `allowFontScaling={false}` is not the answer to
+  either — it ignores the user's setting outright.
 - **Pressing**: `components/Touchable`, never `TouchableOpacity` — the whole app
   was swapped over in one pass and there is no reason for a second answer to a
   press to exist. Android gets a ripple bounded to the component, every other
@@ -130,7 +153,14 @@ because both halves of each pair look reasonable in isolation.
 - **Translations**: every key added to `locales/en.json` is added to all four
   locales in the same change; `locales/locales.test.ts` fails otherwise. A
   missing key falls back to English mid-sentence, so it reads as a bug rather
-  than as an untranslated string.
+  than as an untranslated string. The same test checks the other direction —
+  every literal key the code passes to `t()` exists in `en.json` — because a
+  string can also go missing by never arriving: seven surfaces (the tab bar,
+  the Downloads screen, the display sheet, both Home banners) shipped their
+  English inline as a `defaultValue` and were never translated into anything,
+  in any locale, which the one-directional check could not see. Put the English
+  in `en.json`, not in a `defaultValue`; keep the latter only for a key built at
+  runtime, where there is nothing static to check.
 - **Home**: sections are grouped into tiers by `features/home/homeLayout` —
   resume first and unlabelled, then your own library, then external discovery
   behind its source header. A new section belongs to exactly one tier, and the

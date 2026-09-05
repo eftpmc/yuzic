@@ -27,7 +27,7 @@ export function ResumeQueueBanner() {
   if (!available) return null;
 
   const from = available.changedBy
-    ? t('home.resumeBanner.fromDevice', { device: available.changedBy, defaultValue: `on ${available.changedBy}` })
+    ? t('home.resumeBanner.fromDevice', { device: available.changedBy })
     : '';
 
   return (
@@ -36,7 +36,7 @@ export function ResumeQueueBanner() {
         style={styles.body}
         onPress={() => void resume()}
         disabled={resuming}
-        accessibilityLabel={t('home.resumeBanner.resumeLabel', 'Resume where you left off')}
+        accessibilityLabel={t('home.resumeBanner.resumeLabel')}
       >
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
           {resuming
@@ -46,12 +46,12 @@ export function ResumeQueueBanner() {
         </View>
         <View style={styles.text}>
           <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
-            {t('home.resumeBanner.title', 'Resume where you left off')}
+            {t('home.resumeBanner.title')}
           </Text>
           <Text style={[styles.subtitle, { color: colors.subtext }]} numberOfLines={1}>
             {t('home.resumeBanner.subtitle', {
               count: available.songIds.length,
-              defaultValue: `{{count}} tracks queued ${from}`,
+              from,
             })}
           </Text>
         </View>

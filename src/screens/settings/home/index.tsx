@@ -19,7 +19,7 @@ import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
-import { radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Settings() {
@@ -58,7 +58,7 @@ export default function Settings() {
                 <SettingsCard style={styles.profileCard}>
                     <View style={styles.profileRow}>
                         <View style={[styles.avatar, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
-                            <Text style={styles.avatarText}>{avatarLetter}</Text>
+                            <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>{avatarLetter}</Text>
                         </View>
                         <View style={styles.profileInfo}>
                             <Text style={[styles.profileName, { color: colors.secondary }]}>
@@ -122,7 +122,7 @@ export default function Settings() {
                     />
                     <SettingsDivider />
                     <SettingsRow
-                        label={t('downloads.title', 'Downloads')}
+                        label={t('downloads.title')}
                         leftIcon={<CloudDownload size={22} color={colors.secondary} />}
                         onPress={() => router.push('/downloadsView')}
                     />
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
         marginRight: spacing.md,
     },
     avatarText: {
-        ...typography.sectionTitle,
+        ...cappedTypography.glyph.sectionTitle,
         fontWeight: '700',
         color: '#fff',
     },

@@ -1,3 +1,6 @@
+import fs from 'fs'
+import path from 'path'
+
 import en from './en.json'
 import fr from './fr.json'
 import ja from './ja.json'
@@ -38,4 +41,44 @@ describe.each(Object.entries(translations))('%s', (_name, translation) => {
     )
     expect(missing).toEqual([])
   })
+})
+
+const SRC = path.join(__dirname, '..')
+
+function sourceFiles(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) return sourceFiles(full)
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [full] : []
+  })
+}
+
+/** `t('some.key'` — literal keys only; a computed one can't be checked here. */
+const T_CALL = /\bt\(\s*['"]([A-Za-z0-9_.]+\.[A-Za-z0-9_.]+)['"]/g
+
+/**
+ * The other direction: a key the code asks for that English does not have.
+ *
+ * i18next answers a missing key with the key itself, or with whatever
+ * `defaultValue` the call site carries — so this fails as a stray
+ * `home.displaySheet.title` on screen, or as English inside a Japanese UI that
+ * no translator was ever shown. Seven surfaces had drifted that way: the tab
+ * bar, the Downloads screen, the display sheet and both Home banners among
+ * them. The test above could not see any of it, since it measures the other
+ * three locales against English and English was missing them too.
+ */
+it('has an English string for every key the app asks for', () => {
+  const known = new Set(leafKeys(en).map(pluralBase))
+  const missing = new Map<string, string>()
+
+  for (const file of sourceFiles(SRC)) {
+    const source = fs.readFileSync(file, 'utf8')
+    for (const [, key] of source.matchAll(T_CALL)) {
+      if (!known.has(pluralBase(key))) {
+        missing.set(key, path.relative(SRC, file))
+      }
+    }
+  }
+
+  expect(Object.fromEntries(missing)).toEqual({})
 })

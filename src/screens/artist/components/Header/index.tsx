@@ -51,6 +51,7 @@ function isAlbumCountText(value?: string | null): boolean {
 }
 
 const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNavigation = true }) => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
   const rad = useRadius();
@@ -114,7 +115,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
             <Touchable
               testID="detail-back-button"
               accessibilityRole="button"
-              accessibilityLabel="Go back"
+              accessibilityLabel={t('a11y.common.back')}
               style={[styles.backButton, { borderRadius: rad.md }]}
               hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
@@ -164,12 +165,13 @@ export const ArtistHeaderBar: React.FC<Props> = ({ localArtist, externalArtist }
 };
 
 function LocalOptionsButton({ artist }: { artist: Artist }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
   return (
     <>
       <DetailHeaderIconButton
-        accessibilityLabel="Artist options"
+        accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => optionsSheetRef.current?.present()}
       >
         <Ellipsis size={24} color={colors.secondary} />
@@ -331,7 +333,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         onPress={() => void playArtist(true)}
         disabled={songsLoading}
         style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-        accessibilityLabel="Shuffle artist"
+        accessibilityLabel={t('a11y.detail.shuffle')}
       >
         {songsLoading ? (
           <SpinningLoaderCircle size={18} color={colors.secondary} />
@@ -343,7 +345,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
       <DetailPlayAction
         onPress={() => void playArtist(false)}
         disabled={songsLoading}
-        accessibilityLabel="Play artist"
+        accessibilityLabel={t('a11y.detail.play')}
       >
         {songsLoading ? (
           <SpinningLoaderCircle size={18} color="#fff" />
@@ -356,13 +358,13 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         onPress={() => void handleDownloadAll()}
         disabled={isDownloadingAll || isArtistDownloading}
         style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-        accessibilityLabel={
+        accessibilityLabel={t(
           isDownloadingAll || isArtistDownloading
-            ? 'Downloading artist'
+            ? 'a11y.detail.downloading'
             : isArtistFullyDownloaded
-              ? 'Downloaded'
-              : 'Download all artist songs'
-        }
+              ? 'a11y.detail.downloaded'
+              : 'a11y.detail.download'
+        )}
       >
         {isDownloadingAll || isArtistDownloading ? (
           <SpinningLoaderCircle size={18} color={colors.secondary} />
