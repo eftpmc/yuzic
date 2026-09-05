@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useIsFetching } from '@tanstack/react-query'
+import { useScrollToTop } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
@@ -67,6 +68,13 @@ function renderSection(config: SectionConfig, refreshKey: number) {
 export default function Home() {
   const { t } = useTranslation()
   const scrollClearance = useScrollClearance()
+
+  // Re-tapping the active tab returns to the top of the feed, the way every
+  // iOS tab bar behaves. React Navigation drives this off the same `tabPress`
+  // the custom tab bar already emits, so the two stay in step.
+  const scrollRef = useRef<ScrollView>(null)
+  useScrollToTop(scrollRef)
+
   const { colors } = useTheme()
   const rad = useRadius()
   const [refreshKey, setRefreshKey] = useState(0)
@@ -142,6 +150,7 @@ export default function Home() {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={[styles.content, { paddingBottom: scrollClearance }]}
       showsVerticalScrollIndicator={false}

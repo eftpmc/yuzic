@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { ScrollView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
+import { useScrollToTop } from '@react-navigation/native'
 
 import { useTheme } from '@/hooks/useTheme'
 import { useAccountSheet } from '@/contexts/AccountSheetContext'
@@ -32,6 +33,9 @@ export default function LibraryScreen() {
   const username = activeServer?.username
   const { openAccountSheet } = useAccountSheet()
 
+  const scrollRef = useRef<ScrollView>(null)
+  useScrollToTop(scrollRef)
+
   return (
     <SafeAreaView
       testID="library-screen"
@@ -45,6 +49,7 @@ export default function LibraryScreen() {
       />
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
       >
