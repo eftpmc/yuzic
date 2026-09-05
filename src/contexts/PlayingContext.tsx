@@ -25,7 +25,8 @@ import { useApi } from '@/api';
 import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
-import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, tagSegment, shiftSegmentsAfterInsert } from './playingQueue';
+import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, segmentAt, tagSegment, shiftSegmentsAfterInsert } from './playingQueue';
+import { isRepeatLoop } from './repeatPlay';
 import { resolvePlaybackErrorAction } from './playbackErrorRecovery';
 import { useDownloadActions } from './DownloadContext';
 import { useCast } from './CastContext';
@@ -251,8 +252,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   // volatile deps, while keeping the callbacks themselves stable for context consumers.
   const scrobbleIfNeededRef = useRef<(
     song: Song | null,
-    opts: { listenedSeconds: number; startTime: number }
+    opts: { listenedSeconds: number; startTime: number; playlistId?: string }
   ) => Promise<void>>(async () => {});
+  const scrobbleOutgoingRef = useRef<(song: Song | null, listenedSeconds: number) => Promise<void>>(
+    async () => {}
+  );
+  /** Position at the previous heartbeat, so a looping track's restart is visible. */
+  const lastTickPositionRef = useRef(0);
   const submitNowPlayingRef = useRef<(song: Song) => void>(() => {});
   const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
   const resolvePlayableSongRef = useRef<(song: Song) => Song>((s) => s);
@@ -332,6 +338,29 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   ]);
   const loadQueueRef = useRef<(songs: Song[], startIndex: number, play?: boolean, seek?: number) => Promise<void>>(async () => {});
 
+  /**
+   * Records the listen that is ending, attributed to the collection it came
+   * from.
+   *
+   * Every caller scrobbles the *outgoing* song, and each does so before moving
+   * the index, so the current index still points at the queue position that
+   * song occupied — which is what carries the playlist tag.
+   */
+  const scrobbleOutgoing = useCallback((song: Song | null, listenedSeconds: number) => {
+    const source = segmentAt(queueSegmentsRef.current, currentIndexRef.current)?.source;
+    const playlistId = source?.kind === 'user' && source.contextType === 'playlist'
+      ? source.contextId
+      : undefined;
+    return scrobbleIfNeededRef.current(song, {
+      listenedSeconds,
+      startTime: scrobbleStartTimeRef.current,
+      playlistId,
+    });
+  }, []);
+  // Stable for the life of the provider, so the effects and queue callbacks
+  // below can reach it without listing it as a dependency.
+  scrobbleOutgoingRef.current = scrobbleOutgoing;
+
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
 
@@ -343,16 +372,40 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   // background termination doesn't lose more than ~10s of resume precision.
   // The persistence hook throttles further; this loop is the writer.
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) {
+      lastTickPositionRef.current = 0;
+      return;
+    }
     const interval = setInterval(() => {
       const song = currentSongRef.current;
       if (!song) return;
-      const positionSeconds = TrackPlayer.getProgress().position;
+      const { position: positionSeconds, duration } = TrackPlayer.getProgress();
+
+      // A track on repeat never changes media item, so nothing else in here
+      // ever sees it finish. Catching the restart is what makes the second
+      // time round count as a second listen instead of being folded into the
+      // first — a track left on repeat used to record exactly one play.
+      const isLooping = repeatModeRef.current === 'one'
+        || (repeatModeRef.current === 'all' && queueRef.current.length === 1);
+      if (isRepeatLoop({
+        isLooping,
+        previousPosition: lastTickPositionRef.current,
+        currentPosition: positionSeconds,
+        duration,
+      })) {
+        // The pass that just ended is its own listen, so the guard against
+        // scrobbling one track twice has to be released for it.
+        resetLastScrobbled();
+        void scrobbleOutgoingRef.current(song, Math.floor(lastTickPositionRef.current));
+        scrobbleStartTimeRef.current = Date.now();
+      }
+      lastTickPositionRef.current = positionSeconds;
+
       reportPlaybackProgress(song, Math.floor(positionSeconds * 1000), false);
       persistenceRef.current.persistPosition(positionSeconds);
     }, 10_000);
     return () => clearInterval(interval);
-  }, [isPlaying, reportPlaybackProgress]);
+  }, [isPlaying, reportPlaybackProgress, resetLastScrobbled]);
   useEffect(() => {
     repeatModeRef.current = repeatMode;
     persistenceRef.current.persistRepeatMode(repeatMode);
@@ -556,10 +609,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const prev = currentSongRef.current;
     if (prev && prev.id !== mediaId) {
       const prevPosition = Math.floor(TrackPlayer.getProgress().position);
-      scrobbleIfNeededRef.current(prev, {
-        listenedSeconds: prevPosition,
-        startTime: scrobbleStartTimeRef.current,
-      });
+      scrobbleOutgoingRef.current(prev, prevPosition);
       // Save a resume bookmark on the way out. isBookmarkable filters this
       // down to long-form tracks and podcasts — a 3-min song leaving mid-way
       // doesn't get one. Fire-and-forget: a save failing must not delay the
@@ -875,10 +925,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [bumpQueue, resolvePlayableSong]);
 
   const skipToNext = useCallback(async () => {
-    await scrobbleIfNeededRef.current(currentSongRef.current, {
-      listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-      startTime: scrobbleStartTimeRef.current,
-    });
+    await scrobbleOutgoingRef.current(
+      currentSongRef.current,
+      Math.floor(TrackPlayer.getProgress().position)
+    );
     const nextIdx = currentIndexRef.current + 1;
     if (nextIdx >= queueRef.current.length && repeatModeRef.current !== 'all') return;
     TrackPlayer.skipToNext();
@@ -886,10 +936,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const skipToPrevious = useCallback(async () => {
-    await scrobbleIfNeededRef.current(currentSongRef.current, {
-      listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-      startTime: scrobbleStartTimeRef.current,
-    });
+    await scrobbleOutgoingRef.current(
+      currentSongRef.current,
+      Math.floor(TrackPlayer.getProgress().position)
+    );
     if (currentIndexRef.current <= 0) return;
     TrackPlayer.skipToIndex(currentIndexRef.current - 1);
     if (isPlayingRef.current) TrackPlayer.play();
@@ -899,10 +949,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const song = queueRef.current[index];
     if (!song) return;
     if (index !== currentIndexRef.current) {
-      await scrobbleIfNeededRef.current(currentSongRef.current, {
-        listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-        startTime: scrobbleStartTimeRef.current,
-      });
+      await scrobbleOutgoingRef.current(
+        currentSongRef.current,
+        Math.floor(TrackPlayer.getProgress().position)
+      );
       scrobbleStartTimeRef.current = Date.now();
     }
     currentIndexRef.current = index;
@@ -1109,10 +1159,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const resetQueue = useCallback(async () => {
-    await scrobbleIfNeededRef.current(currentSongRef.current, {
-      listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-      startTime: scrobbleStartTimeRef.current,
-    });
+    await scrobbleOutgoingRef.current(
+      currentSongRef.current,
+      Math.floor(TrackPlayer.getProgress().position)
+    );
     resetLastScrobbled();
     scrobbleStartTimeRef.current = 0;
     TrackPlayer.pause();

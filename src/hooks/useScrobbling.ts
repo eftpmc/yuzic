@@ -71,9 +71,21 @@ export function useScrobbling() {
     })));
   }, [activeServer, dispatch]);
 
+  /**
+   * Records a finished listen, once it is long enough to count.
+   *
+   * `playlistId` is the collection the queue position came from, when it was a
+   * playlist. A playlist play used to be counted by the playlist screen's own
+   * play button at the moment it was pressed, which meant it was the only way
+   * a playlist ever counted as played — starting one from Home's shelf, an
+   * options sheet or search left its last-played untouched, so a playlist you
+   * played constantly never rose in the shelf ranking by it. Attributing it
+   * here instead makes every entry point count, and only once the listen
+   * actually happened.
+   */
   const scrobbleIfNeeded = useCallback(async (
     song: Song | null,
-    opts: { listenedSeconds: number; startTime: number }
+    opts: { listenedSeconds: number; startTime: number; playlistId?: string }
   ) => {
     if (!song) return;
     // A live radio stream isn't a discrete listen — nothing to record. Podcast
@@ -91,6 +103,7 @@ export function useScrobbling() {
         songId: song.id,
         albumId: song.albumId,
         artistId: song.artistId,
+        playlistId: opts.playlistId,
       }));
     }
 

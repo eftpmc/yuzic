@@ -16,7 +16,7 @@ import {
   setLibraryStarred,
   setLibraryStarredAlbums,
 } from '@/utils/redux/slices/libraryStarredSlice'
-import { setServerAlbumStats, setServerSongStats, clearLocalPlayCounts } from '@/utils/redux/slices/statsSlice'
+import { setServerAlbumStats, setServerSongStats } from '@/utils/redux/slices/statsSlice'
 import { AlbumBase, Artist, PlaylistBase, SongBase, Song } from '@/types'
 import { useApi } from '@/api'
 import { staleTime } from '@/constants/staleTime'
@@ -153,28 +153,34 @@ export function useSync() {
         starred?.songs?.length
       )
 
+      // Server stats go in whenever the collection itself came back, empty list
+      // included: the action replaces this server's entries rather than merging
+      // into them, so an album whose count went to zero, or one that left the
+      // library, stops carrying a number it no longer has. Each entity the
+      // server reports on also drops its local tally, which is what keeps a
+      // listen from being counted twice — and, just as importantly, leaves the
+      // tally alone for everything the server said nothing about.
       if (albums) {
         dispatch(setLibraryAlbums(albums))
-        const serverStats = albums
-          .filter(a => (a.serverPlayCount ?? 0) > 0 || (a.serverLastPlayedAt ?? 0) > 0)
-          .map(a => ({
-            id: a.id,
-            playCount: a.serverPlayCount ?? 0,
-            lastPlayedAt: a.serverLastPlayedAt ?? 0,
-          }))
-        if (serverStats.length > 0) {
-          dispatch(setServerAlbumStats({ serverId, stats: serverStats }))
-        }
+        dispatch(setServerAlbumStats({
+          serverId,
+          stats: albums
+            .filter(a => (a.serverPlayCount ?? 0) > 0 || (a.serverLastPlayedAt ?? 0) > 0)
+            .map(a => ({
+              id: a.id,
+              playCount: a.serverPlayCount ?? 0,
+              lastPlayedAt: a.serverLastPlayedAt ?? 0,
+            })),
+        }))
       }
       if (tracks) {
         dispatch(setLibraryTracks(tracks))
-        const songStats = (tracks as SongBase[])
-          .filter(t => (t.serverPlayCount ?? 0) > 0 || (t.serverLastPlayedAt ?? 0) > 0)
-          .map(t => ({ id: t.id, playCount: t.serverPlayCount ?? 0, lastPlayedAt: t.serverLastPlayedAt }))
-        if (songStats.length > 0) {
-          dispatch(setServerSongStats({ serverId, stats: songStats }))
-        }
-        dispatch(clearLocalPlayCounts({ serverId }))
+        dispatch(setServerSongStats({
+          serverId,
+          stats: (tracks as SongBase[])
+            .filter(t => (t.serverPlayCount ?? 0) > 0 || (t.serverLastPlayedAt ?? 0) > 0)
+            .map(t => ({ id: t.id, playCount: t.serverPlayCount ?? 0, lastPlayedAt: t.serverLastPlayedAt })),
+        }))
       }
       if (artists) dispatch(setLibraryArtists(artists))
       if (playlists) dispatch(setLibraryPlaylists(playlists))
