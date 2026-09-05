@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
-import { View, Text, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { View, ScrollView, useWindowDimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCounts } from '@/utils/redux/selectors/statsSelectors';
 import { useAlbums } from '@/hooks/albums';
-import { useTheme } from '@/hooks/useTheme';
 import AlbumItem from '@/screens/library/components/Items/AlbumItem';
+import SectionShelfHeader from '../SectionShelfHeader';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { sectionStyles, getSectionItemWidth } from '../sectionStyles';
@@ -14,7 +15,7 @@ const MAX_ALBUMS = 10;
 
 export default function MostPlayedAlbums() {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
   const gridItemWidth = getSectionItemWidth(width);
   const albumPlayCounts = useSelector(selectAlbumPlayCounts);
@@ -35,14 +36,28 @@ export default function MostPlayedAlbums() {
   const coversToPrefetch = useMemo(() => itemsToRender.map(a => a.cover), [itemsToRender]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
+  // The shelf stops at ten; "most played first" is a sort order the albums
+  // list already has, so the heading leads there rather than nowhere.
+  const openAll = useCallback(
+    () => navigation.push('libraryCollectionView', {
+      type: 'albums',
+      sort: 'userplays',
+      titleKey: 'explore.sections.mostPlayed',
+    }),
+    [navigation]
+  );
+
   // Hide the section until enough albums have play history to fill it.
   if (itemsToRender.length < MIN_ALBUMS) return null;
 
   return (
     <View style={sectionStyles.container}>
-      <Text style={[sectionStyles.title, { color: colors.secondary }]}>
-        {t('explore.sections.mostPlayed')}
-      </Text>
+      <SectionShelfHeader
+        testID="home-most-played-see-all"
+        title={t('explore.sections.mostPlayed')}
+        seeAllLabel={t('library.seeAll')}
+        onSeeAll={openAll}
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
