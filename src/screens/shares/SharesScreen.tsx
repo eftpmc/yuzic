@@ -12,8 +12,9 @@ import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
-import { useRadius } from '@/hooks/useRadius';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 import { spacing, typography } from '@/constants/design';
+import { QueryKeys } from '@/enums/queryKeys';
 import { shareItem } from '@/utils/share';
 
 function formatDate(value: string | undefined): string {
@@ -39,12 +40,12 @@ function formatExpiry(t: (k: string, opts?: any) => string, value: string | unde
 export default function SharesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const rad = useRadius();
+  const scrollClearance = useScrollClearance();
   const api = useApi();
   const queryClient = useQueryClient();
 
   const sharesQuery = useQuery<Share[]>({
-    queryKey: ['shares'],
+    queryKey: [QueryKeys.Shares],
     queryFn: async () => (await api.shares?.list()) ?? [],
     enabled: Boolean(api.shares),
     staleTime: 1000 * 60 * 5,
@@ -79,7 +80,7 @@ export default function SharesScreen() {
           onPress: async () => {
             try {
               await api.shares?.remove(share.id);
-              await queryClient.invalidateQueries({ queryKey: ['shares'] });
+              await queryClient.invalidateQueries({ queryKey: [QueryKeys.Shares] });
             } catch {
               toast.error(t('common.error.unexpected'));
             }
@@ -101,7 +102,7 @@ export default function SharesScreen() {
       />
       {sharesQuery.isLoading ? (
         <View style={styles.center}>
-          <SpinningLoaderCircle size={24} color={colors.subtext} />
+          <SpinningLoaderCircle size={26} color={colors.subtext} />
         </View>
       ) : (sharesQuery.data ?? []).length === 0 ? (
         <View style={styles.center}>
@@ -114,10 +115,10 @@ export default function SharesScreen() {
         <FlatList
           data={sharesQuery.data}
           keyExtractor={(s) => s.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
           ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
           renderItem={({ item }) => (
-            <View style={[styles.row, { borderRadius: rad.md }]}>
+            <View style={styles.row}>
               <View style={styles.rowText}>
                 <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
                   {item.description || item.url}
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, gap: spacing.md },
   emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
-  listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg, gap: spacing.sm },
+  listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.page, gap: spacing.sm },
   separator: { height: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md },
   rowText: { flex: 1, minWidth: 0 },

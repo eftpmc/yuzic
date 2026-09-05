@@ -1049,6 +1049,9 @@
   },
   "podcasts": {
     "title": "播客",
+    "field": {
+      "feedUrl": "订阅源地址"
+    },
     "empty": "还没有播客。添加一个即可开始收听。",
     "add": "添加播客",
     "addTitle": "订阅播客",

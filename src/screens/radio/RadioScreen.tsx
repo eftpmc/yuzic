@@ -1,29 +1,30 @@
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Plus, Radio as RadioIcon, Trash2 } from 'lucide-react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
+import { Pencil, Plus, Radio as RadioIcon, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { InternetRadioStation } from '@/api/types';
-import { DetailHeaderBar } from '@/components/DetailHeader';
+import { DetailHeaderBar, DetailHeaderIconButton } from '@/components/DetailHeader';
+import { FormSheet, FormSheetField } from '@/components/FormSheet';
+import MediaListRow from '@/components/MediaListRow';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { onDark, spacing, typography } from '@/constants/design';
+import { controlSize, spacing, typography } from '@/constants/design';
+import { QueryKeys } from '@/enums/queryKeys';
 import { useRadius } from '@/hooks/useRadius';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { stationToSong } from '@/utils/playback/buildStationSong';
 import haptics from '@/utils/haptics';
+
+type Editing =
+  | { mode: 'add' }
+  | { mode: 'edit'; station: InternetRadioStation };
 
 /**
  * Radio browsing surface — Navidrome only (the empty adapter's `api.radio` is
@@ -35,12 +36,12 @@ export default function RadioScreen() {
   const { colors } = useTheme();
   const api = useApi();
   const queryClient = useQueryClient();
-  const rad = useRadius();
+  const scrollClearance = useScrollClearance();
   const { playSong } = usePlayingActions();
-  const [editing, setEditing] = useState<null | { mode: 'add' } | { mode: 'edit'; station: InternetRadioStation }>(null);
+  const [editing, setEditing] = useState<Editing | null>(null);
 
   const stationsQuery = useQuery({
-    queryKey: ['radio-stations'],
+    queryKey: [QueryKeys.Radio],
     queryFn: async () => (await api.radio?.list()) ?? [],
     enabled: Boolean(api.radio),
     staleTime: 1000 * 60 * 5,
@@ -63,9 +64,9 @@ export default function RadioScreen() {
           onPress: async () => {
             try {
               await api.radio?.remove(station.id);
-              await queryClient.invalidateQueries({ queryKey: ['radio-stations'] });
+              await queryClient.invalidateQueries({ queryKey: [QueryKeys.Radio] });
             } catch {
-              Alert.alert(t('common.error.unexpected'));
+              toast.error(t('common.error.unexpected'));
             }
           },
         },
@@ -75,7 +76,7 @@ export default function RadioScreen() {
 
   const closeEditor = useCallback(() => setEditing(null), []);
   const refreshList = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['radio-stations'] });
+    await queryClient.invalidateQueries({ queryKey: [QueryKeys.Radio] });
   }, [queryClient]);
 
   const stationCount = stationsQuery.data?.length ?? 0;
@@ -92,19 +93,18 @@ export default function RadioScreen() {
           stationCount > 0 ? t('library.count.stations', { count: stationCount }) : undefined
         }
         rightAction={
-          <Touchable
+          <DetailHeaderIconButton
             onPress={() => setEditing({ mode: 'add' })}
-            hitSlop={12}
             accessibilityLabel={t('radio.add', 'Add station')}
           >
-            <Plus size={22} color={colors.secondary} />
-          </Touchable>
+            <Plus size={24} color={colors.secondary} />
+          </DetailHeaderIconButton>
         }
       />
 
       {stationsQuery.isLoading ? (
         <View style={styles.center}>
-          <SpinningLoaderCircle size={24} color={colors.subtext} />
+          <SpinningLoaderCircle size={26} color={colors.subtext} />
         </View>
       ) : stationsQuery.isError || !stationsQuery.data?.length ? (
         <View style={styles.center}>
@@ -117,38 +117,45 @@ export default function RadioScreen() {
         <FlatList
           data={stationsQuery.data}
           keyExtractor={(s) => s.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
           ItemSeparatorComponent={() => (
             <View style={[styles.separator, { backgroundColor: colors.border }]} />
           )}
           renderItem={({ item }) => (
-            <View style={styles.row}>
-              <Touchable
-                onPress={() => handlePlay(item)}
-                onLongPress={() => setEditing({ mode: 'edit', station: item })}
-                style={[styles.rowBody, { borderRadius: rad.md }]}
-              >
-                <View style={[styles.iconWrap, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
-                  <RadioIcon size={20} color={colors.secondary} />
+            <MediaListRow
+              title={item.name}
+              subtitle={item.streamUrl}
+              cover={{ kind: 'none' }}
+              showCover={false}
+              variant="compact"
+              onPress={() => handlePlay(item)}
+              leading={<StationIcon />}
+              trailing={
+                <View style={styles.rowActions}>
+                  {/* Editing used to be reachable only by long-pressing the
+                      row, which is both invisible and — on the Podcasts screen
+                      next door — the gesture that deletes things. */}
+                  <Touchable
+                    onPress={() => setEditing({ mode: 'edit', station: item })}
+                    hitSlop={10}
+                    style={styles.rowAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('radio.editTitle', 'Edit station')}
+                  >
+                    <Pencil size={18} color={colors.subtext} />
+                  </Touchable>
+                  <Touchable
+                    onPress={() => handleDelete(item)}
+                    hitSlop={10}
+                    style={styles.rowAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('common.delete', 'Delete')}
+                  >
+                    <Trash2 size={18} color={colors.subtext} />
+                  </Touchable>
                 </View>
-                <View style={styles.rowText}>
-                  <Text style={[styles.name, { color: colors.secondary }]} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  <Text style={[styles.streamUrl, { color: colors.subtext }]} numberOfLines={1}>
-                    {item.streamUrl}
-                  </Text>
-                </View>
-              </Touchable>
-              <Touchable
-                onPress={() => handleDelete(item)}
-                hitSlop={10}
-                style={styles.deleteBtn}
-                accessibilityLabel={t('common.delete', 'Delete')}
-              >
-                <Trash2 size={18} color={colors.subtext} />
-              </Touchable>
-            </View>
+              }
+            />
           )}
         />
       )}
@@ -157,13 +164,22 @@ export default function RadioScreen() {
         <StationEditor
           initial={editing.mode === 'edit' ? editing.station : null}
           onClose={closeEditor}
-          onSaved={async () => {
-            closeEditor();
-            await refreshList();
-          }}
+          onSaved={refreshList}
         />
       )}
     </SafeAreaView>
+  );
+}
+
+/** The stand-in for artwork a stream does not have. Sized like the thumbnail
+ *  it replaces so the titles line up with every other compact row. */
+function StationIcon() {
+  const { colors } = useTheme();
+  const rad = useRadius();
+  return (
+    <View style={[styles.iconWrap, { backgroundColor: colors.muted, borderRadius: rad.thumb }]}>
+      <RadioIcon size={20} color={colors.secondary} />
+    </View>
   );
 }
 
@@ -177,19 +193,15 @@ function StationEditor({
   onSaved: () => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const api = useApi();
-  const rad = useRadius();
   const [name, setName] = useState(initial?.name ?? '');
   const [streamUrl, setStreamUrl] = useState(initial?.streamUrl ?? '');
   const [homepageUrl, setHomepageUrl] = useState(initial?.homepageUrl ?? '');
-  const [saving, setSaving] = useState(false);
 
   const canSave = name.trim().length > 0 && /^https?:\/\//i.test(streamUrl.trim());
 
   const handleSave = useCallback(async () => {
-    if (!canSave || saving || !api.radio) return;
-    setSaving(true);
+    if (!api.radio) return false;
     try {
       const payload = {
         name: name.trim(),
@@ -202,115 +214,74 @@ function StationEditor({
         await api.radio.create(payload);
       }
       await onSaved();
+      return true;
     } catch {
-      Alert.alert(t('common.error.unexpected'));
-    } finally {
-      setSaving(false);
+      toast.error(t('common.error.unexpected'));
+      return false;
     }
-  }, [api.radio, canSave, homepageUrl, initial, name, onSaved, saving, streamUrl, t]);
+  }, [api.radio, homepageUrl, initial, name, onSaved, streamUrl, t]);
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.modalBackdrop}>
-        <View style={[styles.modalCard, { backgroundColor: colors.background, borderRadius: rad.panel }]}>
-          <Text style={[styles.modalTitle, { color: colors.secondary }]}>
-            {initial ? t('radio.editTitle', 'Edit station') : t('radio.addTitle', 'Add station')}
-          </Text>
-
-          <FieldInput
-            label={t('radio.field.name', 'Name')}
-            value={name}
-            onChangeText={setName}
-            placeholder="Radio Paradise"
-          />
-          <FieldInput
-            label={t('radio.field.streamUrl', 'Stream URL')}
-            value={streamUrl}
-            onChangeText={setStreamUrl}
-            placeholder="https://stream.radioparadise.com/aac-320"
-            autoCapitalize="none"
-            keyboardType="url"
-          />
-          <FieldInput
-            label={t('radio.field.homepage', 'Homepage (optional)')}
-            value={homepageUrl}
-            onChangeText={setHomepageUrl}
-            placeholder="https://radioparadise.com"
-            autoCapitalize="none"
-            keyboardType="url"
-          />
-
-          <View style={styles.modalActions}>
-            <Touchable onPress={onClose} style={styles.modalBtn}>
-              <Text style={[styles.modalBtnText, { color: colors.subtext }]}>{t('common.cancel')}</Text>
-            </Touchable>
-            <Touchable onPress={handleSave} disabled={!canSave || saving} style={styles.modalBtn}>
-              <Text style={[styles.modalBtnText, { color: canSave ? colors.themeColor : colors.subtext }]}>
-                {saving ? t('common.saving', 'Saving…') : t('common.save', 'Save')}
-              </Text>
-            </Touchable>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function FieldInput({
-  label,
-  ...inputProps
-}: React.ComponentProps<typeof TextInput> & { label: string }) {
-  const { colors } = useTheme();
-  const rad = useRadius();
-  return (
-    <View style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: colors.subtext }]}>{label}</Text>
-      <TextInput
-        {...inputProps}
-        placeholderTextColor={colors.placeholder}
-        style={[
-          styles.fieldInput,
-          {
-            backgroundColor: colors.muted,
-            borderRadius: rad.md,
-            color: colors.secondary,
-          },
-        ]}
+    <FormSheet
+      title={initial ? t('radio.editTitle', 'Edit station') : t('radio.addTitle', 'Add station')}
+      submitLabel={t('common.save', 'Save')}
+      canSubmit={canSave}
+      onSubmit={handleSave}
+      onClose={onClose}
+    >
+      <FormSheetField
+        label={t('radio.field.name', 'Name')}
+        value={name}
+        onChangeText={setName}
+        placeholder="Radio Paradise"
       />
-    </View>
+      <FormSheetField
+        label={t('radio.field.streamUrl', 'Stream URL')}
+        value={streamUrl}
+        onChangeText={setStreamUrl}
+        placeholder="https://stream.radioparadise.com/aac-320"
+        autoCapitalize="none"
+        keyboardType="url"
+      />
+      <FormSheetField
+        label={t('radio.field.homepage', 'Homepage (optional)')}
+        value={homepageUrl}
+        onChangeText={setHomepageUrl}
+        placeholder="https://radioparadise.com"
+        autoCapitalize="none"
+        keyboardType="url"
+      />
+    </FormSheet>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, gap: spacing.md },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
-  listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
-  separator: { height: StyleSheet.hairlineWidth, marginVertical: spacing.xs },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  rowBody: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, gap: spacing.md },
-  iconWrap: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  rowText: { flex: 1, minWidth: 0 },
-  name: { ...typography.rowTitle },
-  streamUrl: { ...typography.caption, marginTop: spacing.xxs },
-  deleteBtn: { padding: spacing.md },
-  modalBackdrop: {
+  center: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
   },
-  modalCard: { width: '100%', maxWidth: 420, padding: spacing.lg, gap: spacing.md },
-  modalTitle: { ...typography.sectionTitle },
-  field: { gap: spacing.xs },
-  fieldLabel: { ...typography.caption },
-  fieldInput: {
-    ...typography.body,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+  emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
+  listContent: { paddingVertical: spacing.md },
+  // Inset to match `MediaListRow`'s own page padding, so the rule starts where
+  // the row's content does rather than running to the screen edge.
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: spacing.xs,
+    marginHorizontal: spacing.page,
   },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.lg, marginTop: spacing.md },
-  modalBtn: { padding: spacing.sm },
-  modalBtnText: { ...typography.rowTitle },
+  iconWrap: {
+    width: controlSize.compactMediaRowArt,
+    height: controlSize.compactMediaRowArt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // A row with no cover gives its text no left margin, because the usual
+    // such row has nothing in front of the text at all.
+    marginRight: spacing.rowGap,
+  },
+  rowActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.inlineGap },
+  rowAction: { padding: spacing.xs },
 });

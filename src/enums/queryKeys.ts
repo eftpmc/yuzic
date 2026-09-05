@@ -30,6 +30,8 @@ export enum QueryKeys {
 	LbSimilarForYou = 'lb-similar-for-you',
 	ArtistMbid = 'artist-mbid-lookup',
 	Podcasts = 'server-podcasts',
+	Radio = 'server-radio-stations',
+	Shares = 'server-shares',
 	ExploreGenreRow = 'explore-genre-row',
 	ExternalAlbumPreviews = 'external-album-previews',
 	LidarrQueue = 'lidarr-queue',

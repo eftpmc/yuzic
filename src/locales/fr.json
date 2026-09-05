@@ -1051,6 +1051,9 @@
   },
   "podcasts": {
     "title": "Podcasts",
+    "field": {
+      "feedUrl": "URL du flux"
+    },
     "empty": "Aucun podcast pour l’instant. Ajoutez-en un pour commencer à écouter.",
     "add": "Ajouter un podcast",
     "addTitle": "S’abonner à un podcast",

@@ -976,6 +976,9 @@
   },
   "podcasts": {
     "title": "Podcasts",
+    "field": {
+      "feedUrl": "Feed URL"
+    },
     "empty": "No podcasts yet. Add one to start listening.",
     "add": "Add podcast",
     "addTitle": "Subscribe to a podcast",

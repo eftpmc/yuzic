@@ -13,6 +13,7 @@ import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 import { spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -38,6 +39,7 @@ function formatDuration(seconds: number | undefined): string {
 export default function PodcastChannelScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const scrollClearance = useScrollClearance();
   const api = useApi();
   const queryClient = useQueryClient();
   const { channelId } = useLocalSearchParams<{ channelId: string }>();
@@ -93,7 +95,7 @@ export default function PodcastChannelScreen() {
       />
       {channelsQuery.isLoading ? (
         <View style={styles.center}>
-          <SpinningLoaderCircle size={24} color={colors.subtext} />
+          <SpinningLoaderCircle size={26} color={colors.subtext} />
         </View>
       ) : !channel ? (
         <View style={styles.center}>
@@ -111,7 +113,7 @@ export default function PodcastChannelScreen() {
         <FlatList
           data={channel.episodes}
           keyExtractor={(e) => e.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
           ItemSeparatorComponent={() => (
             <View style={[styles.separator, { backgroundColor: colors.border }]} />
           )}
@@ -137,7 +139,7 @@ export default function PodcastChannelScreen() {
                 </View>
                 <View style={styles.action}>
                   {isDownloading ? (
-                    <SpinningLoaderCircle size={22} color={colors.subtext} />
+                    <SpinningLoaderCircle size={18} color={colors.subtext} />
                   ) : playable ? (
                     <Touchable
                       onPress={() => handlePlay(item)}
@@ -171,7 +173,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg },
   emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
-  listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
+  listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.page },
   separator: { height: StyleSheet.hairlineWidth, marginVertical: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md },
   rowMain: { flex: 1, minWidth: 0 },
