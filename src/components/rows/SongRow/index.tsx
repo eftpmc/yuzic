@@ -128,11 +128,16 @@ const SongRow: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   trackNumber: {
-    ...typography.rowSubtitle,
+    // Smaller and quieter than the artist line beside it. At subtitle size and
+    // full subtext weight the numbers read as a column of their own competing
+    // with the titles, which is the opposite of what an index is for — it
+    // should be findable when looked for and invisible when not.
+    ...typography.caption,
+    opacity: 0.6,
     // Fixed width and right-aligned so the titles form a straight edge whether
     // the record has nine tracks or nineteen. Tabular figures keep "11" the
     // same width as "17", which proportional digits do not.
-    width: 24,
+    width: 20,
     marginRight: spacing.md,
     textAlign: 'right',
     fontVariant: ['tabular-nums'],

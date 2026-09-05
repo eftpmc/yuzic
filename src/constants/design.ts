@@ -205,7 +205,15 @@ export const controlSize = {
   minimumTarget: 44,
   iconDefault: 44,
   iconCompact: 36,
-  detailSecondary: 40,
+  /** The circles either side of a detail screen's play pill. The same height
+   *  as the pill on purpose: three controls on one row that stop at three
+   *  different heights read as three unrelated controls, and the eye picks the
+   *  mismatch out long before it names it. Only the widths differ. */
+  detailSecondary: 48,
+  /** The player's quietest controls — cast and queue, under the 68pt play
+   *  button. Drawn small deliberately; they borrowed `detailSecondary` back
+   *  when both happened to be 40. */
+  playerSecondary: 40,
   /** A control that sits inline with text — the library's sort pill and the
    *  toggle beside it, a recent-search chip. 34pt drawn, padded out to the
    *  minimum tap target by `hitSlopFor`. */

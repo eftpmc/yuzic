@@ -6,12 +6,12 @@ import { buildCover } from '@/utils/builders/buildCover'
 import { PLAYING_GRADIENT_CACHE_MAX } from '@/constants/features'
 import { selectCoverAccentEnabled } from '@/utils/redux/selectors/settingsSelectors'
 import type { CoverSource } from '@/types'
-import { createAccentCache, darken, pickAccent } from './coverAccent'
+import { createAccentCache, pickAccent, toWashAccent } from './coverAccent'
 
 const accents = createAccentCache<string>(PLAYING_GRADIENT_CACHE_MAX)
 
 /**
- * A darkened accent taken from a cover, or null until there is one.
+ * A cover's accent, made fit to sit behind text, or null until there is one.
  *
  * Null rather than a default colour so a screen can render its ordinary
  * background and fade the accent in once it arrives, instead of flashing a grey
@@ -48,7 +48,7 @@ export function useCoverAccent(cover: CoverSource | undefined): string | null {
     setAccent(null)
     ImageColors.getColors(uri, { fallback: '#121212' })
       .then(result => {
-        const value = darken(pickAccent(result, '#121212'))
+        const value = toWashAccent(pickAccent(result, '#121212'))
         accents.set(uri, value)
         if (current) setAccent(value)
       })

@@ -81,20 +81,20 @@ const LoadingAlbumHeader: React.FC = () => {
             <View style={styles.actionsRow}>
                 <View style={styles.actions}>
                     <Skeleton
-                        width={40}
-                        height={40}
+                        width={controlSize.detailSecondary}
+                        height={controlSize.detailSecondary}
                         radius={rad.pillFor(controlSize.detailSecondary)}
                         colorMode={colorMode}
                     />
                     <Skeleton
-                        width={112}
-                        height={48}
+                        width={controlSize.detailPrimaryWidth}
+                        height={controlSize.detailPrimaryHeight}
                         radius={rad.pillFor(controlSize.detailPrimaryHeight)}
                         colorMode={colorMode}
                     />
                     <Skeleton
-                        width={40}
-                        height={40}
+                        width={controlSize.detailSecondary}
+                        height={controlSize.detailSecondary}
                         radius={rad.pillFor(controlSize.detailSecondary)}
                         colorMode={colorMode}
                     />

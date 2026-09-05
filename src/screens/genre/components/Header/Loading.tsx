@@ -24,9 +24,9 @@ const LoadingGenreHeader: React.FC = () => {
       </View>
 
       <View style={styles.buttonRow}>
-        <Skeleton width={40} height={40} radius={rad.pillFor(controlSize.detailSecondary)} colorMode={colorMode} />
-        <Skeleton width={112} height={48} radius={rad.pillFor(controlSize.detailPrimaryHeight)} colorMode={colorMode} />
-        <Skeleton width={40} height={40} radius={rad.pillFor(controlSize.detailSecondary)} colorMode={colorMode} />
+        <Skeleton width={controlSize.detailSecondary} height={controlSize.detailSecondary} radius={rad.pillFor(controlSize.detailSecondary)} colorMode={colorMode} />
+        <Skeleton width={controlSize.detailPrimaryWidth} height={controlSize.detailPrimaryHeight} radius={rad.pillFor(controlSize.detailPrimaryHeight)} colorMode={colorMode} />
+        <Skeleton width={controlSize.detailSecondary} height={controlSize.detailSecondary} radius={rad.pillFor(controlSize.detailSecondary)} colorMode={colorMode} />
       </View>
     </>
   );

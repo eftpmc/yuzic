@@ -8,7 +8,7 @@ import Animated, {
 import ImageColors from 'react-native-image-colors';
 import { useSelector } from 'react-redux';
 
-import { createAccentCache, darken, pickAccent } from '@/features/theme/coverAccent';
+import { createAccentCache, pickAccent, toWashAccent } from '@/features/theme/coverAccent';
 import { PLAYING_GRADIENT_CACHE_MAX } from '@/constants/features';
 import { usePlayingState } from '@/contexts/PlayingContext';
 import { MediaImage } from '@/components/MediaImage';
@@ -62,7 +62,7 @@ export default function PlayerHost() {
     }
     try {
       const result = await ImageColors.getColors(uri, { fallback: '#121212' });
-      const gradient: [string, string] = [darken(pickAccent(result, '#121212')), '#000'];
+      const gradient: [string, string] = [toWashAccent(pickAccent(result, '#121212')), '#000'];
       gradientCache.set(uri, gradient);
       setNextGradient(gradient);
     } catch {

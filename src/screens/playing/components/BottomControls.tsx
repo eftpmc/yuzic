@@ -17,7 +17,7 @@ type BottomControlsProps = {
  *  6pt of padding gave the active one a background barely larger than the
  *  icon, which read as a highlight that had slipped rather than as a control
  *  that was on. `hitSlopFor` takes the finger the rest of the way. */
-const BUTTON_SIZE = controlSize.detailSecondary;
+const BUTTON_SIZE = controlSize.playerSecondary;
 
 const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
   const { activeDevice } = useCast();

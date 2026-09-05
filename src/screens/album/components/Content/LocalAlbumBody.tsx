@@ -57,12 +57,12 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   }, [artistAlbums, album.id]);
 
   /**
-   * How long the record is, above the record rather than below it.
+   * How long the record is, under the last track rather than above the first.
    *
-   * This used to sit at the end of the footer, under the last track and the
-   * "more by" shelf — so "49 min" was only readable by someone who had already
-   * scrolled past every song. It answers a question asked before pressing
-   * play, not after, which puts it beside the play button.
+   * A sleeve prints the running time on the back, and the same reason applies
+   * here: between the play button and the track list it was a line of small
+   * grey type standing between the reader and the thing they came for. Under
+   * the final track it closes the list off instead, where a total belongs.
    */
   const stats = useMemo(() => {
     const songs = album.songs ?? [];
@@ -87,6 +87,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
   const footer = useMemo(() => {
     return (
       <View>
+        {stats}
         {moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
             <Text style={[styles.moreSectionTitle, { color: colors.secondary }]}>
@@ -119,7 +120,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
         )}
       </View>
     );
-  }, [album.artist, album.id, colors, moreAlbums, tileWidth, navigation, t, rad.card]);
+  }, [album.artist, album.id, colors, moreAlbums, stats, tileWidth, navigation, t, rad.card]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -191,10 +192,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
             item.type === 'disc-header' ? ALBUM_DISC_HEADER_HEIGHT : ALBUM_ESTIMATED_ROW_HEIGHT;
         }}
         ListHeaderComponent={
-          <>
-            <AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />
-            {stats}
-          </>
+          <AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />
         }
         ListFooterComponent={footer}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
@@ -216,8 +214,8 @@ const styles = StyleSheet.create({
   },
   statsHeader: {
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xs,
   },
   statsText: {
     ...typography.caption,
