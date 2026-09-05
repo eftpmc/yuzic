@@ -53,7 +53,12 @@
         "invalidError": "L’URL doit commencer par http:// ou https://",
         "duplicatePrimaryError": "C’est déjà l’URL principale.",
         "duplicateError": "Cette URL est déjà dans la liste."
-      }
+      },
+      "privacyTitle": "Confidentialité",
+      "queueSync": "Synchroniser la file d’attente entre appareils",
+      "queueSyncDescription": "Enregistre ce que vous écoutez sur le serveur pour qu’un autre appareil puisse reprendre où vous vous êtes arrêté.",
+      "nowPlayingShelf": "Afficher qui écoute aussi",
+      "nowPlayingShelfDescription": "Une rangée sur l’accueil listant les autres utilisateurs de ce serveur et ce qu’ils écoutent en ce moment."
     },
     "appearance": {
       "title": "Apparence",
@@ -254,7 +259,9 @@
       "showVolumeSliderSubtext": "Affiche un contrôle du volume dans le lecteur.",
       "autoplay": "Lecture automatique",
       "autoplaySubtextAudiomuse": "Continue de jouer des titres sonoriquement similaires une fois la file d'attente terminée, grâce à AudioMuse-AI.",
-      "autoplaySubtextNative": "Continue de jouer des titres similaires depuis votre serveur une fois la file d'attente terminée."
+      "autoplaySubtextNative": "Continue de jouer des titres similaires depuis votre serveur une fois la file d'attente terminée.",
+      "resumeLongTracks": "Reprendre les pistes longues",
+      "resumeLongTracksSubtext": "Livres audio, sets DJ, épisodes de podcast — reprenez où vous vous êtes arrêté."
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -440,7 +447,10 @@
     "less": "Moins",
     "playbackError": "Impossible de lire le morceau",
     "serverUnreachableBanner": "Serveur injoignable — affichage des données locales",
-    "searchPlaceholder": "Rechercher…"
+    "searchPlaceholder": "Rechercher…",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "dismiss": "Ignorer"
   },
   "onboarding": {
     "home": {
@@ -548,7 +558,22 @@
       "tracks_one": "{{count}} titre",
       "tracks_other": "{{count}} titres",
       "episodes_one": "{{count}} épisode",
-      "episodes_other": "{{count}} épisodes"
+      "episodes_other": "{{count}} épisodes",
+      "stations_one": "{{count}} station",
+      "stations_other": "{{count}} stations",
+      "podcasts_one": "{{count}} podcast",
+      "podcasts_other": "{{count}} podcasts",
+      "shares_one": "{{count}} lien partagé",
+      "shares_other": "{{count}} liens partagés"
+    },
+    "radio": {
+      "title": "Stations de radio"
+    },
+    "podcasts": {
+      "title": "Podcasts"
+    },
+    "shares": {
+      "title": "Liens partagés"
     }
   },
   "home": {
@@ -718,7 +743,8 @@
       "download": "Télécharger",
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
-      "goToArtist": "Voir l'artiste"
+      "goToArtist": "Voir l'artiste",
+      "generatePlaylist": "Créer une playlist à partir de ce titre"
     },
     "sections": {
       "media": "Média",
@@ -762,7 +788,10 @@
       "addToQueueFailed": "Échec de l'ajout à la file d'attente.",
       "playNext": "{{title}} sera lu en suivant.",
       "playNextFailed": "Échec de la mise en file d'attente.",
-      "instantMixFailed": "Échec du lancement du mix instantané"
+      "instantMixFailed": "Échec du lancement du mix instantané",
+      "playlistGenerated_one": "Playlist créée avec {{count}} titre",
+      "playlistGenerated_other": "Playlist créée avec {{count}} titres",
+      "playlistGenerationFailed": "Impossible de générer la playlist"
     }
   },
   "externalAlbum": {
@@ -835,7 +864,8 @@
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
       "favorite": "Ajouter aux favoris",
-      "unfavorite": "Retirer des favoris"
+      "unfavorite": "Retirer des favoris",
+      "share": "Partager"
     },
     "toasts": {
       "addedNext": "Lecture de {{title}} ensuite",
@@ -843,7 +873,8 @@
       "shuffledToQueue": "{{title}} ajouté en ordre aléatoire",
       "addedToFavorites": "{{title}} ajouté aux favoris.",
       "removedFromFavorites": "{{title}} retiré des favoris.",
-      "updateFavoritesFailed": "Échec de la mise à jour des favoris."
+      "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
+      "shareFailed": "Impossible de créer le lien de partage"
     },
     "sections": {
       "albumInfo": "Informations sur l'album"
@@ -869,7 +900,8 @@
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
       "delete": "Supprimer la liste de lecture",
-      "rename": "Renommer"
+      "rename": "Renommer",
+      "share": "Partager"
     },
     "sections": {
       "info": "Informations sur la liste de lecture"
@@ -887,7 +919,8 @@
       "deleted": "Liste de lecture supprimée",
       "deleteFailed": "Impossible de supprimer la liste de lecture",
       "renamed": "Liste de lecture renommée",
-      "renameFailed": "Impossible de renommer la liste de lecture"
+      "renameFailed": "Impossible de renommer la liste de lecture",
+      "shareFailed": "Impossible de créer le lien de partage"
     },
     "rename": {
       "title": "Renommer la liste de lecture",
@@ -948,5 +981,49 @@
       "addedToEnd": "{{genre}} ajouté à la file",
       "shuffledToQueue": "{{genre}} ajouté en ordre aléatoire"
     }
+  },
+  "shares": {
+    "title": "Liens partagés",
+    "empty": "Vous n’avez encore rien partagé. Utilisez l’option Partager sur un album ou une playlist pour créer un lien.",
+    "linkCopied": "Lien copié",
+    "copy": "Copier le lien",
+    "share": "Partager",
+    "deleteTitle": "Révoquer le partage ?",
+    "deleteBody": "Le lien cessera immédiatement de fonctionner.",
+    "neverExpires": "N’expire jamais",
+    "expired": "Expiré",
+    "expiresOn": "Expire le {{date}}",
+    "visits_one": "{{count}} visite",
+    "visits_other": "{{count}} visites"
+  },
+  "radio": {
+    "title": "Radio",
+    "empty": "Aucune station de radio pour l’instant. Ajoutez-en une pour commencer.",
+    "add": "Ajouter une station",
+    "addTitle": "Ajouter une station",
+    "editTitle": "Modifier la station",
+    "deleteTitle": "Supprimer la station ?",
+    "deleteBody": "Supprimer « {{name}} » ?",
+    "field": {
+      "name": "Nom",
+      "streamUrl": "URL du flux",
+      "homepage": "Site web (facultatif)"
+    }
+  },
+  "podcasts": {
+    "title": "Podcasts",
+    "empty": "Aucun podcast pour l’instant. Ajoutez-en un pour commencer à écouter.",
+    "add": "Ajouter un podcast",
+    "addTitle": "S’abonner à un podcast",
+    "addHelp": "Collez l’URL du flux RSS de l’émission.",
+    "refresh": "Actualiser",
+    "subscribeFailed": "Impossible de s’abonner à ce flux",
+    "unsubscribeTitle": "Se désabonner ?",
+    "unsubscribeBody": "Ne plus suivre « {{title}} » ?",
+    "channelEmpty": "Aucun épisode pour l’instant — essayez d’actualiser.",
+    "notFound": "Podcast introuvable.",
+    "play": "Lire l’épisode",
+    "download": "Télécharger l’épisode",
+    "downloadStarted": "Téléchargement démarré"
   }
 }

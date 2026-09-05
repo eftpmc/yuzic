@@ -53,7 +53,12 @@
         "invalidError": "URLは http:// または https:// で始まる必要があります。",
         "duplicatePrimaryError": "これはすでにプライマリURLです。",
         "duplicateError": "このURLはすでにリストにあります。"
-      }
+      },
+      "privacyTitle": "プライバシー",
+      "queueSync": "デバイス間でキューを同期",
+      "queueSyncDescription": "再生中の内容をサーバーに保存し、別のデバイスで続きから再生できるようにします。",
+      "nowPlayingShelf": "他に聴いている人を表示",
+      "nowPlayingShelfDescription": "このサーバーの他のユーザーと、そのユーザーが今再生している曲をホームに表示します。"
     },
     "appearance": {
       "title": "外観",
@@ -253,7 +258,9 @@
       "showVolumeSliderSubtext": "プレイヤー画面にアプリ内の音量スライダーを表示します。",
       "autoplay": "自動再生",
       "autoplaySubtextAudiomuse": "AudioMuse-AIを使って、キューが終わった後も音響的に似た曲を再生し続けます。",
-      "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。"
+      "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。",
+      "resumeLongTracks": "長いトラックを再開",
+      "resumeLongTracksSubtext": "オーディオブック、DJ セット、ポッドキャストのエピソードを続きから再生します。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -439,7 +446,10 @@
     "less": "閉じる",
     "playbackError": "曲を再生できません",
     "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中",
-    "searchPlaceholder": "検索…"
+    "searchPlaceholder": "検索…",
+    "save": "保存",
+    "saving": "保存中…",
+    "dismiss": "閉じる"
   },
   "onboarding": {
     "home": {
@@ -547,7 +557,22 @@
       "tracks_one": "{{count}} 曲",
       "tracks_other": "{{count}} 曲",
       "episodes_one": "{{count}} 本のエピソード",
-      "episodes_other": "{{count}} 本のエピソード"
+      "episodes_other": "{{count}} 本のエピソード",
+      "stations_one": "{{count}} 局のラジオ",
+      "stations_other": "{{count}} 局のラジオ",
+      "podcasts_one": "{{count}} 本のポッドキャスト",
+      "podcasts_other": "{{count}} 本のポッドキャスト",
+      "shares_one": "{{count}} 件の共有リンク",
+      "shares_other": "{{count}} 件の共有リンク"
+    },
+    "radio": {
+      "title": "ラジオ局"
+    },
+    "podcasts": {
+      "title": "ポッドキャスト"
+    },
+    "shares": {
+      "title": "共有リンク"
     }
   },
   "home": {
@@ -717,7 +742,8 @@
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
-      "goToArtist": "アーティストへ移動"
+      "goToArtist": "アーティストへ移動",
+      "generatePlaylist": "この曲からプレイリストを作成"
     },
     "sections": {
       "media": "メディア",
@@ -761,7 +787,10 @@
       "addToQueueFailed": "キューへの追加に失敗しました。",
       "playNext": "{{title}} を次に再生します。",
       "playNextFailed": "次の再生予約に失敗しました。",
-      "instantMixFailed": "インスタントミックスの開始に失敗しました"
+      "instantMixFailed": "インスタントミックスの開始に失敗しました",
+      "playlistGenerated_one": "{{count}} 曲のプレイリストを作成しました",
+      "playlistGenerated_other": "{{count}} 曲のプレイリストを作成しました",
+      "playlistGenerationFailed": "プレイリストを作成できませんでした"
     }
   },
   "externalAlbum": {
@@ -834,7 +863,8 @@
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "favorite": "お気に入り",
-      "unfavorite": "お気に入り解除"
+      "unfavorite": "お気に入り解除",
+      "share": "共有"
     },
     "toasts": {
       "addedNext": "{{title}}を次に再生",
@@ -842,7 +872,8 @@
       "shuffledToQueue": "{{title}}をシャッフルで追加",
       "addedToFavorites": "{{title}} をお気に入りに追加しました。",
       "removedFromFavorites": "{{title}} をお気に入りから削除しました。",
-      "updateFavoritesFailed": "お気に入りの更新に失敗しました。"
+      "updateFavoritesFailed": "お気に入りの更新に失敗しました。",
+      "shareFailed": "共有リンクを作成できませんでした"
     },
     "sections": {
       "albumInfo": "アルバム情報"
@@ -868,7 +899,8 @@
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "delete": "プレイリストを削除",
-      "rename": "名前を変更"
+      "rename": "名前を変更",
+      "share": "共有"
     },
     "sections": {
       "info": "プレイリスト情報"
@@ -886,7 +918,8 @@
       "deleted": "プレイリストを削除しました",
       "deleteFailed": "プレイリストを削除できませんでした",
       "renamed": "プレイリスト名を変更しました",
-      "renameFailed": "プレイリスト名を変更できませんでした"
+      "renameFailed": "プレイリスト名を変更できませんでした",
+      "shareFailed": "共有リンクを作成できませんでした"
     },
     "rename": {
       "title": "プレイリスト名を変更",
@@ -947,5 +980,49 @@
       "addedToEnd": "{{genre}}をキューに追加",
       "shuffledToQueue": "{{genre}}をシャッフルで追加"
     }
+  },
+  "shares": {
+    "title": "共有リンク",
+    "empty": "まだ何も共有していません。アルバムまたはプレイリストの「共有」からリンクを作成できます。",
+    "linkCopied": "リンクをコピーしました",
+    "copy": "リンクをコピー",
+    "share": "共有",
+    "deleteTitle": "共有を取り消しますか？",
+    "deleteBody": "リンクはただちに使用できなくなります。",
+    "neverExpires": "無期限",
+    "expired": "期限切れ",
+    "expiresOn": "{{date}} に期限切れ",
+    "visits_one": "{{count}} 回の閲覧",
+    "visits_other": "{{count}} 回の閲覧"
+  },
+  "radio": {
+    "title": "ラジオ",
+    "empty": "ラジオ局がまだありません。追加して始めましょう。",
+    "add": "ラジオ局を追加",
+    "addTitle": "ラジオ局を追加",
+    "editTitle": "ラジオ局を編集",
+    "deleteTitle": "ラジオ局を削除しますか？",
+    "deleteBody": "「{{name}}」を削除しますか？",
+    "field": {
+      "name": "名前",
+      "streamUrl": "ストリーム URL",
+      "homepage": "ホームページ（任意）"
+    }
+  },
+  "podcasts": {
+    "title": "ポッドキャスト",
+    "empty": "ポッドキャストがまだありません。追加して聴き始めましょう。",
+    "add": "ポッドキャストを追加",
+    "addTitle": "ポッドキャストを購読",
+    "addHelp": "番組の RSS フィード URL を貼り付けてください。",
+    "refresh": "更新",
+    "subscribeFailed": "このフィードを購読できませんでした",
+    "unsubscribeTitle": "購読を解除しますか？",
+    "unsubscribeBody": "「{{title}}」のフォローを解除しますか？",
+    "channelEmpty": "エピソードがまだありません。更新してみてください。",
+    "notFound": "ポッドキャストが見つかりません。",
+    "play": "エピソードを再生",
+    "download": "エピソードをダウンロード",
+    "downloadStarted": "ダウンロードを開始しました"
   }
 }

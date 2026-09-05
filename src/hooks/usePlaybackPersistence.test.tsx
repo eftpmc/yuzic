@@ -45,9 +45,11 @@ function makeStore(preload?: { activeServerId?: string; persistedServerId?: stri
 }
 
 function wrapperFor(store: ReturnType<typeof makeStore>) {
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>{children}</Provider>
   )
+  Wrapper.displayName = 'TestStoreWrapper'
+  return Wrapper
 }
 
 const song = (id: string, contentKind: Song['contentKind'] = 'song'): Song => ({

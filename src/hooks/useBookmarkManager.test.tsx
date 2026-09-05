@@ -61,9 +61,11 @@ function makeStore(opts?: { resumeEnabled?: boolean; serverId?: string; seededBo
 }
 
 function wrapperFor(store: ReturnType<typeof makeStore>) {
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>{children}</Provider>
   )
+  Wrapper.displayName = 'TestStoreWrapper'
+  return Wrapper
 }
 
 const longAudiobook = (id = 'ab'): Song => ({

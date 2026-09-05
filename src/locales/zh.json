@@ -53,7 +53,12 @@
         "invalidError": "URL 必须以 http:// 或 https:// 开头。",
         "duplicatePrimaryError": "这已经是主URL。",
         "duplicateError": "此URL已在列表中。"
-      }
+      },
+      "privacyTitle": "隐私",
+      "queueSync": "跨设备同步播放队列",
+      "queueSyncDescription": "将正在播放的内容保存到服务器，以便在其他设备上从上次的位置继续播放。",
+      "nowPlayingShelf": "显示其他正在收听的人",
+      "nowPlayingShelfDescription": "在首页显示此服务器上的其他用户以及他们正在播放的内容。"
     },
     "appearance": {
       "title": "外观",
@@ -253,7 +258,9 @@
       "showVolumeSliderSubtext": "在播放器界面显示应用内音量滑块。",
       "autoplay": "自动播放",
       "autoplaySubtextAudiomuse": "队列播放完毕后，使用 AudioMuse-AI 继续播放声音相似的曲目。",
-      "autoplaySubtextNative": "队列播放完毕后，继续播放服务器中的相似曲目。"
+      "autoplaySubtextNative": "队列播放完毕后，继续播放服务器中的相似曲目。",
+      "resumeLongTracks": "继续播放长音轨",
+      "resumeLongTracksSubtext": "有声书、DJ 混音、播客单集——从上次停下的地方继续。"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -439,7 +446,10 @@
     "less": "收起",
     "playbackError": "无法播放曲目",
     "serverUnreachableBanner": "无法连接服务器 — 正在显示本地数据",
-    "searchPlaceholder": "搜索…"
+    "searchPlaceholder": "搜索…",
+    "save": "保存",
+    "saving": "正在保存…",
+    "dismiss": "忽略"
   },
   "onboarding": {
     "home": {
@@ -547,7 +557,22 @@
       "tracks_one": "{{count}} 首歌曲",
       "tracks_other": "{{count}} 首歌曲",
       "episodes_one": "{{count}} 集",
-      "episodes_other": "{{count}} 集"
+      "episodes_other": "{{count}} 集",
+      "stations_one": "{{count}} 个电台",
+      "stations_other": "{{count}} 个电台",
+      "podcasts_one": "{{count}} 个播客",
+      "podcasts_other": "{{count}} 个播客",
+      "shares_one": "{{count}} 个共享链接",
+      "shares_other": "{{count}} 个共享链接"
+    },
+    "radio": {
+      "title": "电台"
+    },
+    "podcasts": {
+      "title": "播客"
+    },
+    "shares": {
+      "title": "共享链接"
     }
   },
   "home": {
@@ -717,7 +742,8 @@
       "download": "下载",
       "downloading": "下载中…",
       "downloaded": "已下载",
-      "goToArtist": "前往艺术家"
+      "goToArtist": "前往艺术家",
+      "generatePlaylist": "以此创建播放列表"
     },
     "sections": {
       "media": "媒体信息",
@@ -761,7 +787,10 @@
       "addToQueueFailed": "添加至队列失败。",
       "playNext": "{{title}} 将作为下一曲播放。",
       "playNextFailed": "无法将曲目加入下一曲播放队列。",
-      "instantMixFailed": "启动即时混音失败"
+      "instantMixFailed": "启动即时混音失败",
+      "playlistGenerated_one": "已创建包含 {{count}} 首歌曲的播放列表",
+      "playlistGenerated_other": "已创建包含 {{count}} 首歌曲的播放列表",
+      "playlistGenerationFailed": "无法生成播放列表"
     }
   },
   "externalAlbum": {
@@ -834,7 +863,8 @@
       "downloading": "下载中…",
       "downloaded": "已下载",
       "favorite": "加入收藏",
-      "unfavorite": "移出收藏"
+      "unfavorite": "移出收藏",
+      "share": "共享"
     },
     "sections": {
       "albumInfo": "专辑信息"
@@ -853,7 +883,8 @@
       "shuffledToQueue": "{{title}} 已随机添加至队列。",
       "addedToFavorites": "{{title}} 已加入收藏。",
       "removedFromFavorites": "{{title}} 已移出收藏。",
-      "updateFavoritesFailed": "更新收藏失败。"
+      "updateFavoritesFailed": "更新收藏失败。",
+      "shareFailed": "无法创建共享链接"
     }
   },
   "playlistOptions": {
@@ -868,7 +899,8 @@
       "downloading": "下载中…",
       "downloaded": "已下载",
       "delete": "删除播放列表",
-      "rename": "重命名"
+      "rename": "重命名",
+      "share": "共享"
     },
     "sections": {
       "info": "播放列表信息"
@@ -886,7 +918,8 @@
       "deleted": "播放列表已删除",
       "deleteFailed": "无法删除播放列表",
       "renamed": "播放列表已重命名",
-      "renameFailed": "无法重命名播放列表"
+      "renameFailed": "无法重命名播放列表",
+      "shareFailed": "无法创建共享链接"
     },
     "rename": {
       "title": "重命名播放列表",
@@ -947,5 +980,49 @@
       "addedToEnd": "{{genre}} 已添加至队尾。",
       "shuffledToQueue": "{{genre}} 已随机添加至队列。"
     }
+  },
+  "shares": {
+    "title": "共享链接",
+    "empty": "你还没有共享任何内容。在专辑或播放列表上使用“共享”即可创建链接。",
+    "linkCopied": "链接已复制",
+    "copy": "复制链接",
+    "share": "共享",
+    "deleteTitle": "撤销共享？",
+    "deleteBody": "该链接将立即失效。",
+    "neverExpires": "永不过期",
+    "expired": "已过期",
+    "expiresOn": "{{date}} 过期",
+    "visits_one": "{{count}} 次访问",
+    "visits_other": "{{count}} 次访问"
+  },
+  "radio": {
+    "title": "电台",
+    "empty": "还没有电台。添加一个即可开始。",
+    "add": "添加电台",
+    "addTitle": "添加电台",
+    "editTitle": "编辑电台",
+    "deleteTitle": "删除电台？",
+    "deleteBody": "要删除“{{name}}”吗？",
+    "field": {
+      "name": "名称",
+      "streamUrl": "流媒体地址",
+      "homepage": "主页（可选）"
+    }
+  },
+  "podcasts": {
+    "title": "播客",
+    "empty": "还没有播客。添加一个即可开始收听。",
+    "add": "添加播客",
+    "addTitle": "订阅播客",
+    "addHelp": "粘贴该节目的 RSS 订阅源地址。",
+    "refresh": "刷新",
+    "subscribeFailed": "无法订阅该订阅源",
+    "unsubscribeTitle": "取消订阅？",
+    "unsubscribeBody": "不再关注“{{title}}”？",
+    "channelEmpty": "还没有单集——请尝试刷新。",
+    "notFound": "未找到该播客。",
+    "play": "播放单集",
+    "download": "下载单集",
+    "downloadStarted": "已开始下载"
   }
 }
