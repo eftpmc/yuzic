@@ -186,7 +186,12 @@ const LibraryEntryRows: React.FC = () => {
                     <Text style={[styles.label, { color: colors.secondary }]} numberOfLines={1}>
                       {t(entry.labelKey)}
                     </Text>
-                    {count !== undefined && count > 0 && (
+                    {/* Zero is a count, not the absence of one. "0 items"
+                        under Downloaded says the feature exists and you have
+                        none of it; the row going silent said nothing, and read
+                        the same as Radio — which genuinely has no count,
+                        because fetching one costs a request. */}
+                    {count !== undefined && (
                       <Text style={[styles.count, { color: colors.subtext }]} numberOfLines={1}>
                         {t(COUNT_KEY[entry.key], { count })}
                       </Text>

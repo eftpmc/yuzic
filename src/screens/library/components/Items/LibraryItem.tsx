@@ -11,7 +11,15 @@ import Touchable from '@/components/Touchable';
 type Props = {
   cover: CoverSource;
   title: string;
-  subtext: string;
+  /**
+   * The second line, or `undefined` for a row that has none.
+   *
+   * The distinction matters: an empty string still reserves the line, so a
+   * track with no artist stays aligned with the tracks either side of it,
+   * while `undefined` removes it — which is what a screen of nothing but
+   * artists wants, since "Artist" under every name is the same word 26 times.
+   */
+  subtext?: string;
   isGridView: boolean;
   gridWidth: number;
   gridSpacing?: number;
@@ -66,9 +74,11 @@ const LibraryItem: React.FC<Props> = ({
         <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
           {title}
         </Text>
-        <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
-          {subtext}
-        </Text>
+        {subtext !== undefined && (
+          <Text style={[styles.subtext, { color: colors.subtext }]} numberOfLines={1}>
+            {subtext}
+          </Text>
+        )}
       </View>
 
       {!isGridView && (
@@ -104,6 +114,10 @@ const styles = StyleSheet.create({
   },
   subtext: {
     ...typography.caption,
+    // Reserved rather than measured: a grid where one tile's artist is blank
+    // and its neighbour's is not used to put the two titles on different
+    // baselines, which reads as a layout bug rather than as missing data.
+    minHeight: typography.caption.lineHeight,
   },
   pressed: {
     opacity: 0.9,

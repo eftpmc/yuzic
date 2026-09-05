@@ -119,7 +119,7 @@ const LibraryCollectionScreen: React.FC = () => {
       <DetailHeaderBar title={title} subtitle={count} />
 
       {isLoading && items.length === 0 ? (
-        <LoadingLibraryList />
+        <LoadingLibraryList collection={type ?? null} />
       ) : items.length === 0 ? (
         <View style={styles.empty}>
           <Text style={[styles.emptyText, { color: colors.subtext }]}>
@@ -129,6 +129,7 @@ const LibraryCollectionScreen: React.FC = () => {
       ) : (
         <LibraryList
           items={items}
+          collection={type ?? null}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
           sortLabel={sortLabels[sortOrder]}

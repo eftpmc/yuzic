@@ -5,7 +5,9 @@ import {
   LibrarySortOrder,
   ThemeMode,
   SearchScope,
-  AppLanguage
+  AppLanguage,
+  LibraryViewKey,
+  LIBRARY_VIEW_DEFAULTS,
 } from '@/utils/redux/slices/settingsSlice';
 import type { RadiusPreset } from '@/constants/design';
 
@@ -28,6 +30,23 @@ export const selectGridSpacing = (state: RootState): number =>
 
 export const selectIsGridView = (state: RootState): boolean =>
   state.settings.isGridView;
+
+/**
+ * Grid or list for one collection.
+ *
+ * Three tiers, most specific first: what the user chose for *this* collection,
+ * then what the kind defaults to, then the old global flag — which is still
+ * the answer for a caller with no collection to name.
+ */
+export const selectLibraryViewMode =
+  (collection: LibraryViewKey | null) =>
+  (state: RootState): boolean => {
+    if (!collection) return state.settings.isGridView;
+    return (
+      state.settings.libraryViewModes?.[collection] ??
+      LIBRARY_VIEW_DEFAULTS[collection]
+    );
+  };
 
 export const selectPlayingBarAction = (state: RootState) =>
   state.settings.playingBarAction;

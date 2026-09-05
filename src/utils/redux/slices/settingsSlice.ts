@@ -3,6 +3,35 @@ import { DEFAULT_LANGUAGE } from '@/constants/languages';
 import type { RadiusPreset } from '@/constants/design';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
+
+/**
+ * The collections that remember their own grid/list choice.
+ *
+ * Mirrors `LibraryCollectionType` in screens/library/librarySort, kept here as
+ * its own type so the settings slice doesn't reach up into a screen for it.
+ */
+export type LibraryViewKey =
+  | 'playlists'
+  | 'albums'
+  | 'artists'
+  | 'tracks'
+  | 'downloaded';
+
+/**
+ * What each collection shows before the user says otherwise.
+ *
+ * Artwork is the thing you scan an album or artist list for, so those are
+ * grids. A track is a title — the art beside it is its album's, repeated once
+ * per song on the record — so tracks and the mixed downloads list are rows,
+ * where the title gets the width instead of a caption under a thumbnail.
+ */
+export const LIBRARY_VIEW_DEFAULTS: Record<LibraryViewKey, boolean> = {
+  playlists: true,
+  albums: true,
+  artists: true,
+  tracks: false,
+  downloaded: false,
+};
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 export type PreferredCodec = 'mp3' | 'opus';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist' | 'cast';
@@ -23,6 +52,20 @@ export interface SettingsState {
   gridColumns: number;
   gridSpacing: number;
   isGridView: boolean;
+  /**
+   * Per-collection overrides for {@link isGridView}.
+   *
+   * One flag used to drive every collection screen, so switching Tracks to a
+   * list — which is what a list of 500 songs wants, since a three-up grid
+   * truncates every title and shows the same artwork nine times — also flipped
+   * Albums and Artists, where the grid is the right drawing. The kinds want
+   * different answers, so they get to hold different ones.
+   *
+   * Absent keys fall back to `LIBRARY_VIEW_DEFAULTS` and then to `isGridView`,
+   * which is what keeps this additive: a user upgrading with no overrides
+   * stored sees the per-kind defaults, not a reset.
+   */
+  libraryViewModes: Partial<Record<LibraryViewKey, boolean>>;
 
   playingBarAction: PlayingBarAction;
   showQualityBadge: boolean;
@@ -100,6 +143,7 @@ const initialState: SettingsState = {
   gridColumns: 3,
   gridSpacing: 8,
   isGridView: true,
+  libraryViewModes: {},
   playingBarAction: 'skip',
   showQualityBadge: false,
   showSourceHeaders: true,
@@ -168,6 +212,15 @@ const settingsSlice = createSlice({
     },
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
+    },
+    setLibraryViewMode(
+      state,
+      action: PayloadAction<{ collection: LibraryViewKey; isGridView: boolean }>
+    ) {
+      state.libraryViewModes = {
+        ...state.libraryViewModes,
+        [action.payload.collection]: action.payload.isGridView,
+      };
     },
     setPlayingBarAction(
       state,
@@ -293,6 +346,7 @@ export const {
   setGridColumns,
   setGridSpacing,
   setIsGridView,
+  setLibraryViewMode,
   setPlayingBarAction,
   setShowQualityBadge,
   setShowSourceHeaders,
