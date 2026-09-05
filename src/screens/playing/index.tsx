@@ -115,8 +115,20 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const outputDeviceSheetRef = useSheetRef();
 
     const [mode, setMode] = useState<PlayingViewMode>("player");
+    // The queue is a whole draggable list — a gesture handler and a reanimated
+    // context per row — and it used to mount with the player whether or not
+    // anyone asked for it, on a screen whose mount time is what the user feels
+    // when they tap the playing bar. Mount it the first time the queue is
+    // actually opened; after that it stays, so the crossfade back and forth
+    // costs nothing.
+    const [queueMounted, setQueueMounted] = useState(false);
     const { playerStyle, queueStyle } =
         usePlayingTransitions(mode);
+
+    const changeMode = useCallback((next: PlayingViewMode) => {
+        if (next === "queue") setQueueMounted(true);
+        setMode(next);
+    }, []);
 
     const { width, height } = useWindowDimensions();
     const isTablet = width >= 768;
@@ -186,15 +198,17 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         backgroundColor="transparent"
                         translucent
                     />
-                    <Animated.View
-                        style={[queueStyle, { alignItems: 'center', justifyContent: 'flex-start' }]}
-                        pointerEvents={mode === "queue" ? 'auto' : 'none'}
-                    >
-                        <Queue
-                            onBack={() => setMode("player")}
-                            width={layoutWidth}
-                        />
-                    </Animated.View>
+                    {queueMounted && (
+                        <Animated.View
+                            style={[queueStyle, { alignItems: 'center', justifyContent: 'flex-start' }]}
+                            pointerEvents={mode === "queue" ? 'auto' : 'none'}
+                        >
+                            <Queue
+                                onBack={() => changeMode("player")}
+                                width={layoutWidth}
+                            />
+                        </Animated.View>
+                    )}
 
                     <Animated.View
                         style={[playerStyle, { flex: 1, width: '100%' }]}
@@ -248,13 +262,13 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         styles.bottomControlsRow,
                                         {
                                             width: contentWidth,
-                                            paddingBottom: insets.bottom + 12,
+                                            paddingBottom: insets.bottom + spacing.md,
                                         },
                                     ]}
                                 >
                                     <BottomControls
                                         mode={mode}
-                                        setMode={setMode}
+                                        setMode={changeMode}
                                         onOpenOutputSheet={() => outputDeviceSheetRef.current?.present()}
                                     />
                                 </View>
@@ -363,10 +377,13 @@ const styles = StyleSheet.create({
     },
     bottomControlsRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: spacing.md,
-        paddingBottom: spacing.md,
+        // A step below the transport row, not crowded under it: 12pt left the
+        // pair reading as part of the play button's row while carrying twice
+        // that much empty space beneath them. `justifyContent` was
+        // `space-between` over a single flex child, which is the shape this
+        // row had before the two controls became a centred cluster.
+        paddingTop: spacing.xl,
     },
 });
 

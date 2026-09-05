@@ -279,6 +279,14 @@ export default function PlayingBarBase({ variant }: Props) {
 
   const handleExpand = () => {
     if (!currentSong) return;
+    // `present()` only does anything the first time: it mounts the sheet.
+    // Afterwards the sheet is still mounted (see `enableDismissOnClose`) and
+    // sitting at index -1, where presenting it again is a no-op — it has to be
+    // snapped back open instead.
+    if (hasBeenOpened) {
+      bottomSheetRef.current?.expand();
+      return;
+    }
     setHasBeenOpened(true);
     bottomSheetRef.current?.present();
   };
@@ -404,6 +412,13 @@ export default function PlayingBarBase({ variant }: Props) {
         snapPoints={['100%']}
         enableDynamicSizing={false}
         enablePanDownToClose
+        // Closing a modal sheet unmounts its children by default, so every
+        // single open re-mounted the whole player — cover, controls, the
+        // optional cards and four nested sheets — as ~140ms of blocking JS
+        // racing the present animation. That is the lag on opening the player.
+        // Closing hides it now instead; combined with the `hasBeenOpened` gate
+        // above, the tree is built once per session and never again.
+        enableDismissOnClose={false}
         onChange={(index) => setIsPlayerSheetOpen(index >= 0)}
         backgroundStyle={{ backgroundColor: 'transparent' }}
         backgroundComponent={props => (
