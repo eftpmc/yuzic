@@ -74,10 +74,11 @@ const variantStyles = {
     wrapper: {},
     container: {
       flexDirection: 'column' as const,
-      // Equal above the row and below it — the artwork was 2pt inside a 52pt
-      // row with 12pt over it and 8pt under, which read as the whole bar
-      // sitting slightly high.
-      paddingTop: spacing.md,
+      // Equal above the row and below it. Tighter than the gap around the
+      // 40pt cover was: the art grows into this padding rather than pushing
+      // the row taller, so the cover gains prominence and the bar does not
+      // gain height.
+      paddingTop: spacing.sm,
       paddingBottom: 0,
       paddingHorizontal: spacing.page,
     },
@@ -85,12 +86,14 @@ const variantStyles = {
       justifyContent: 'center' as const,
     },
     topRow: {
-      minHeight: 44,
+      // The artwork sets the row height rather than sitting inside it with
+      // slack, so the cover can grow without the dock growing with it.
+      minHeight: 48,
       paddingRight: 0,
     },
     coverArt: {
-      width: 40,
-      height: 40,
+      width: 48,
+      height: 48,
       marginRight: spacing.md,
     },
     // The title was `caption` like the artist under it, so the two read as
@@ -107,7 +110,7 @@ const variantStyles = {
       // tabs, so it cancels the container's page padding rather than sitting
       // inset like a widget's own progress bar.
       height: 2,
-      marginTop: spacing.md,
+      marginTop: spacing.sm,
       marginHorizontal: -spacing.page,
       borderRadius: radius.none,
     },
@@ -126,10 +129,11 @@ const variantStyles = {
     wrapper: {},
     container: {
       flexDirection: 'column' as const,
-      // Equal above the row and below it — the artwork was 2pt inside a 52pt
-      // row with 12pt over it and 8pt under, which read as the whole bar
-      // sitting slightly high.
-      paddingTop: spacing.md,
+      // Equal above the row and below it. Tighter than the gap around the
+      // 40pt cover was: the art grows into this padding rather than pushing
+      // the row taller, so the cover gains prominence and the bar does not
+      // gain height.
+      paddingTop: spacing.sm,
       paddingBottom: 0,
       paddingHorizontal: spacing.page,
     },
@@ -137,12 +141,14 @@ const variantStyles = {
       justifyContent: 'center' as const,
     },
     topRow: {
-      minHeight: 44,
+      // The artwork sets the row height rather than sitting inside it with
+      // slack, so the cover can grow without the dock growing with it.
+      minHeight: 48,
       paddingRight: 0,
     },
     coverArt: {
-      width: 40,
-      height: 40,
+      width: 48,
+      height: 48,
       marginRight: spacing.md,
     },
     // The title was `caption` like the artist under it, so the two read as
@@ -159,7 +165,7 @@ const variantStyles = {
       // tabs, so it cancels the container's page padding rather than sitting
       // inset like a widget's own progress bar.
       height: 2,
-      marginTop: spacing.md,
+      marginTop: spacing.sm,
       marginHorizontal: -spacing.page,
       borderRadius: radius.none,
     },
