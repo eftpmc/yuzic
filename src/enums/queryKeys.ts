@@ -21,9 +21,14 @@ export enum QueryKeys {
 	SimilarArtists = 'server-similar-artists',
 	SimilarAlbums = 'server-similar-albums',
 	Bookmarks = 'server-bookmarks',
-	ServerRandom = 'server-random-shelf',
-	ServerNowPlaying = 'server-now-playing',
+	/** v2: the entry became { songs, themed } — the persisted cache outlives an
+	 * app upgrade, and a v1 array read through the new shape is an empty shelf. */
+	ServerRandom = 'server-random-shelf-v2',
+	/** v2: entries carry a resolved `cover` where they used to carry a raw
+	 * `coverArt` id. Same reason as above — persisted v1 rows have no cover. */
+	ServerNowPlaying = 'server-now-playing-v2',
 	LbSimilarForYou = 'lb-similar-for-you',
+	ArtistMbid = 'artist-mbid-lookup',
 	Podcasts = 'server-podcasts',
 	ExploreGenreRow = 'explore-genre-row',
 	ExternalAlbumPreviews = 'external-album-previews',

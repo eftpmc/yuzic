@@ -18,17 +18,20 @@ export type LibraryItem =
 /**
  * A browse destination in the library.
  *
- * Mostly entity types, plus two views over them: `downloaded` and
- * `recentlyAdded` are both albums and playlists filtered or ordered a
- * particular way, and both earn a place because they answer a question the
- * entity lists can't — what can I play offline, and what is new.
+ * The entity types, plus `downloaded` — a filter across them that answers a
+ * question no entity list can: what can I play with no server.
+ *
+ * There is deliberately no `recentlyAdded` here. It was one, and it bought a
+ * whole collection type for what is only the albums list under a different
+ * sort — a screen that existed for exactly one caller and duplicated another.
+ * A time ordering is a `SortOrder`, so Home's shelf opens the albums list
+ * already sorted that way, and the sort control still says so.
  */
 export type LibraryCollectionType =
   | 'playlists'
   | 'albums'
   | 'artists'
   | 'tracks'
-  | 'recentlyAdded'
   | 'downloaded'
 
 export type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded'

@@ -9,6 +9,7 @@ import { getLBSimilarArtists } from '@/api/listenbrainz';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useTheme } from '@/hooks/useTheme';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
+import { useArtistMbid } from '@/hooks/artists';
 import { selectLibraryArtists } from '@/utils/redux/selectors/librarySelectors';
 import {
   SECTION_H_PADDING as H_PADDING,
@@ -17,10 +18,17 @@ import {
 } from '@/features/home/constants';
 import MediaTile from './MediaTile';
 import SkeletonTiles from '@/components/SkeletonTiles';
+import { useSourceSectionPresence } from './SourceGroup';
 import type { ExternalArtistBase } from '@/types';
 import { spacing, typography } from '@/constants/design';
 
-type Props = { artistName: string; refreshKey?: number };
+type Props = {
+  /** This shelf's key in the home layout, so the source group above it knows
+   * which of its sections has just gone quiet. */
+  sectionKey: string;
+  artistName: string;
+  refreshKey?: number;
+};
 
 /**
  * "Artists similar to <one you love>" from ListenBrainz's public graph —
@@ -28,7 +36,7 @@ type Props = { artistName: string; refreshKey?: number };
  * from the local library so the whole thing works before the user connects
  * anything.
  */
-export default function LBSimilarForYouSection({ artistName, refreshKey = 0 }: Props) {
+export default function LBSimilarForYouSection({ sectionKey, artistName, refreshKey = 0 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
@@ -39,7 +47,10 @@ export default function LBSimilarForYouSection({ artistName, refreshKey = 0 }: P
     () => libraryArtists.find((a) => a.name === artistName) ?? null,
     [artistName, libraryArtists]
   );
-  const seedMbid = seed?.mbid ?? null;
+  // Subsonic servers don't carry MusicBrainz ids, so the library mbid is null
+  // for everyone not on Jellyfin/Emby and this shelf never rendered for them.
+  // Looking the seed up by name is what makes it work on any server.
+  const { mbid: seedMbid, isResolving } = useArtistMbid(artistName, seed?.mbid);
 
   const gridItemWidth = useMemo(
     () => (screenWidth - H_PADDING * 2 - SECTION_GRID_GAP * 2) / SECTION_VISIBLE_ITEMS,
@@ -55,7 +66,7 @@ export default function LBSimilarForYouSection({ artistName, refreshKey = 0 }: P
         id: a.artistMbid,
         name: a.name,
         cover: { kind: 'letter' as const, name: a.name },
-        subtext: '',
+        subtext: a.comment ?? '',
         externalIds: { mbid: a.artistMbid },
       }));
     },
@@ -65,6 +76,10 @@ export default function LBSimilarForYouSection({ artistName, refreshKey = 0 }: P
   });
 
   const data = query.data ?? [];
+  const isLoading = isResolving || (Boolean(seedMbid) && query.isLoading);
+  const hasContent = isLoading || data.length > 0;
+
+  useSourceSectionPresence(sectionKey, hasContent);
 
   const renderArtist = useCallback(({ item }: { item: ExternalArtistBase }) => (
     <MediaTile
@@ -77,21 +92,23 @@ export default function LBSimilarForYouSection({ artistName, refreshKey = 0 }: P
     />
   ), [gridItemWidth, navigateToArtist]);
 
-  if (!seedMbid) return null;
+  // A heading over an empty rail is worse than no shelf — and the source
+  // header above it goes with it, told by the presence report.
+  if (!hasContent) return null;
 
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
         {t('explore.sections.lbSimilarForYou', { artist: artistName, defaultValue: `Because you like ${artistName}` })}
       </Text>
-      {query.isLoading ? (
+      {isLoading ? (
         <SkeletonTiles
           itemSize={gridItemWidth}
           gap={SECTION_GRID_GAP}
           horizontalPadding={H_PADDING}
           variant="artist"
         />
-      ) : data.length === 0 ? null : (
+      ) : (
         <FlashList
           horizontal
           data={data}

@@ -669,13 +669,20 @@
       "searchGenres": "搜索流派…",
       "genrePrefix": "更多",
       "topArtists": "热门艺术家",
-      "fromYourLibrary": "来自你的音乐库"
+      "fromYourLibrary": "来自你的音乐库",
+      "serverRandom": "随便听听",
+      "serverRandomThemed": "今日{{genre}}",
+      "serverNowPlaying": "服务器上正在播放",
+      "lbSimilarForYou": "因为你喜欢 {{artist}}"
     },
     "empty": {
       "recentSongs": "播放音乐后将显示在此处",
       "recentlyAdded": "媒体库中暂无专辑",
       "albumsForYou": "正在发现专辑...",
       "artistsForYou": "正在发现艺术家..."
+    },
+    "sources": {
+      "server": "在你的服务器上"
     }
   },
   "playing": {

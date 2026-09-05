@@ -4,6 +4,7 @@ import {
   Album,
   AlbumBase,
   Artist,
+  CoverSource,
   ExternalArtistBase,
   Song,
   SongBase,
@@ -128,7 +129,10 @@ export type NowPlayingEntry = {
   artist: string;
   albumTitle?: string;
   albumId?: string;
-  coverArt?: string;
+  /** Resolved by the adapter, like every other cover the app renders. This
+   * used to be a raw Subsonic coverArt id, which no consumer could turn into
+   * an image — so the shelf drew rows of bare text. */
+  cover: CoverSource;
   username: string;
   minutesAgo?: number;
 };

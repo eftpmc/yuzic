@@ -670,13 +670,20 @@
       "searchGenres": "Rechercher des genres…",
       "genrePrefix": "Plus",
       "topArtists": "Meilleurs artistes",
-      "fromYourLibrary": "Dans votre bibliothèque"
+      "fromYourLibrary": "Dans votre bibliothèque",
+      "serverRandom": "Surprenez-moi",
+      "serverRandomThemed": "{{genre}} du jour",
+      "serverNowPlaying": "En écoute sur votre serveur",
+      "lbSimilarForYou": "Parce que vous aimez {{artist}}"
     },
     "empty": {
       "recentSongs": "Écoutez quelque chose pour le voir ici",
       "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment",
       "albumsForYou": "Découverte des albums...",
       "artistsForYou": "Découverte des artistes..."
+    },
+    "sources": {
+      "server": "Sur votre serveur"
     }
   },
   "playing": {

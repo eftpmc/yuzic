@@ -28,10 +28,17 @@ export default function RecentlyAdded() {
   const coversToPrefetch = useMemo(() => recentlyAdded.map(a => a.cover), [recentlyAdded]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
-  // The shelf stops at ten; the Library tab's recently-added collection is the
-  // same albums in full, so the heading leads there rather than nowhere.
+  // The shelf stops at ten; the albums list ordered newest-first is the same
+  // albums in full, so the heading leads there rather than nowhere. It used to
+  // lead to a collection type of its own, which was that list under another
+  // name — and hid the fact that what you were looking at was a sort order you
+  // could change.
   const openAll = useCallback(
-    () => navigation.push('libraryCollectionView', { type: 'recentlyAdded' }),
+    () => navigation.push('libraryCollectionView', {
+      type: 'albums',
+      sort: 'recentlyAdded',
+      titleKey: 'explore.sections.recentlyAdded',
+    }),
     [navigation]
   );
 

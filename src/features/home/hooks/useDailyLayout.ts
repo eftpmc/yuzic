@@ -5,6 +5,7 @@ import { useArtists } from '@/hooks/artists'
 import { useIsOffline } from '@/hooks/useIsOffline'
 import { selectArtistPlayCounts } from '@/utils/redux/selectors/statsSelectors'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
+import { presentableGenres } from '../genres'
 import {
   buildDiscoverySections,
   buildLibrarySections,
@@ -103,21 +104,18 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
   )
 
   const availableGenres = useMemo(() => {
-    const genres = new Set<string>()
-    libraryGenres.forEach(genre => {
-      const normalized = genre.trim()
-      if (normalized) genres.add(normalized)
-    })
+    const genres: string[] = [...libraryGenres]
     // Supplement from album tags, but cap at 500 albums — scanning all 9000 for
     // a handful of genre seeds isn't worth it when the server genre list covers most cases.
     const scanLimit = Math.min(libraryAlbums.length, 500)
     for (let i = 0; i < scanLimit; i++) {
-      libraryAlbums[i].genres?.forEach(genre => {
-        const normalized = genre.trim()
-        if (normalized) genres.add(normalized)
-      })
+      const albumGenres = libraryAlbums[i].genres
+      if (albumGenres) genres.push(...albumGenres)
     }
-    return [...genres]
+    // Placeholder tags ("Unknown", "Other") are the biggest bucket in most
+    // libraries, so a shuffle picks them far more often than a real genre —
+    // and "More Unknown" is not a shelf anybody wants.
+    return presentableGenres(genres)
   }, [libraryAlbums, libraryGenres])
 
   const topGenres = useMemo(() => {
@@ -155,8 +153,9 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
     ]
   }, [isOffline, hasLibrary])
 
-  // ListenBrainz tier — needs a seed artist with an MBID and won't render
-  // anything without one, so it's still cheap to include unconditionally.
+  // ListenBrainz tier — the seed's MBID comes from the library where the
+  // server carries one and from a MusicBrainz lookup where it doesn't, so a
+  // seed artist name is all this tier needs.
   const listenbrainz = useMemo<SectionConfig[]>(() => {
     if (isOffline || !hasLibrary || becauseSeeds.length === 0) return []
     return [

@@ -1,6 +1,7 @@
 import type { NavidromeClient } from '../client';
 import type { SubsonicResponse } from '../types';
 import type { NowPlayingEntry } from '@/api/types';
+import type { CoverSource } from '@/types';
 
 /**
  * Users currently listening on this server. Small servers with a single user
@@ -19,7 +20,9 @@ export async function getNowPlaying(client: NavidromeClient): Promise<NowPlaying
         artist: e.artist ?? 'Unknown Artist',
         albumTitle: e.album ?? undefined,
         albumId: e.albumId ?? undefined,
-        coverArt: e.coverArt ?? undefined,
+        cover: e.coverArt
+          ? ({ kind: 'navidrome', coverArtId: e.coverArt } as CoverSource)
+          : ({ kind: 'none' } as CoverSource),
         username: e.username,
         minutesAgo: typeof e.minutesAgo === 'number' ? e.minutesAgo : undefined,
       }));

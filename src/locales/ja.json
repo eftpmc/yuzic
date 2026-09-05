@@ -669,13 +669,20 @@
       "searchGenres": "ジャンルを検索…",
       "genrePrefix": "その他",
       "topArtists": "人気アーティスト",
-      "fromYourLibrary": "ライブラリから"
+      "fromYourLibrary": "ライブラリから",
+      "serverRandom": "おまかせ",
+      "serverRandomThemed": "今日の{{genre}}",
+      "serverNowPlaying": "サーバーで再生中",
+      "lbSimilarForYou": "{{artist}} が好きなあなたへ"
     },
     "empty": {
       "recentSongs": "再生するとここに表示されます",
       "recentlyAdded": "ライブラリにアルバムがありません",
       "albumsForYou": "アルバムを探しています...",
       "artistsForYou": "アーティストを探しています..."
+    },
+    "sources": {
+      "server": "サーバー内"
     }
   },
   "playing": {

@@ -24,6 +24,7 @@ import ServerRandomSection from './components/ServerRandomSection'
 import ServerNowPlayingSection from './components/ServerNowPlayingSection'
 import LBSimilarForYouSection from './components/LBSimilarForYouSection'
 import ContinuePlayingSection from './components/ContinuePlayingSection'
+import SourceGroup from './components/SourceGroup'
 import { ResumeQueueBanner } from './components/ResumeQueueBanner'
 import { DownloadsInProgressBanner } from './components/DownloadsInProgressBanner'
 import { useApi } from '@/api'
@@ -53,11 +54,11 @@ function renderSection(config: SectionConfig, refreshKey: number) {
     case 'genre':
       return <GenreSection key={config.key} genre={config.genre!} refreshKey={refreshKey} />
     case 'serverRandom':
-      return <ServerRandomSection key={config.key} refreshKey={refreshKey} />
+      return <ServerRandomSection key={config.key} sectionKey={config.key} refreshKey={refreshKey} />
     case 'serverNowPlaying':
-      return <ServerNowPlayingSection key={config.key} />
+      return <ServerNowPlayingSection key={config.key} sectionKey={config.key} />
     case 'lbSimilarArtistsForYou':
-      return <LBSimilarForYouSection key={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
+      return <LBSimilarForYouSection key={config.key} sectionKey={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
     default:
       return null
   }
@@ -120,7 +121,10 @@ export default function Home() {
     {
       id: 'server',
       label: t('explore.sources.server', 'On your server'),
-      color: sourceColor.listenbrainz, // fallback source color; server has no brand hex
+      // Your own server is not a third-party brand, so it gets the app's own
+      // accent rather than borrowing ListenBrainz's orange — which is what it
+      // used to do, leaving two headers on one screen badged identically.
+      color: colors.themeColor,
       letter: 'S',
       sections: server,
       enabled: Boolean(api.discovery) && homeServerEnabled,
@@ -167,20 +171,28 @@ export default function Home() {
 
       {activeSources.map(source => {
         if (!source.enabled || source.sections.length === 0) return null
+        // The shelves under a source decide for themselves whether they have
+        // anything; the group withholds the heading until one of them says it
+        // does, so a source that renders nothing takes its label with it.
         return (
-          <React.Fragment key={source.id}>
-            <View style={styles.sourceHeader}>
-              {showSourceHeaders && (
-                <View style={[styles.sourceBadge, { backgroundColor: source.color, borderRadius: rad.pill }]}>
-                  <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
-                </View>
-              )}
-              <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
-                {source.label}
-              </Text>
-            </View>
+          <SourceGroup
+            key={source.id}
+            sectionKeys={source.sections.map(config => config.key)}
+            header={
+              <View style={styles.sourceHeader}>
+                {showSourceHeaders && (
+                  <View style={[styles.sourceBadge, { backgroundColor: source.color, borderRadius: rad.pill }]}>
+                    <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
+                  </View>
+                )}
+                <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
+                  {source.label}
+                </Text>
+              </View>
+            }
+          >
             {source.sections.map(config => renderSection(config, refreshKey))}
-          </React.Fragment>
+          </SourceGroup>
         )
       })}
     </ScrollView>
