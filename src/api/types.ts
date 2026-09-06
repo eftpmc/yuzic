@@ -24,6 +24,31 @@ export interface SongsApi {
   scrobble(songId: string, timestamp: number): Promise<void>;
   buildStreamUrl(songId: string, quality: AudioQuality, codec?: PreferredCodec): string;
   /**
+   * What `scrobble()` amounts to on this server, which is the whole difference
+   * between the two labels the Settings row can carry: Subsonic's scrobble.view
+   * is a listen the server may forward onward to Last.fm/ListenBrainz, while
+   * MediaBrowser's PlayedItems only moves a play count (its own scrobble plugin
+   * reads the session events instead). Same call, two honest descriptions.
+   */
+  scrobbleKind: 'scrobble' | 'markPlayed';
+  /**
+   * The codecs this server will transcode a stream into, so a setting for one
+   * is only offered where it does something. Subsonic's stream.view takes a
+   * format but yuzic asks it for mp3 only, so Navidrome declares `['mp3']` and
+   * the Opus switch stays off the Playback screen; MediaBrowser servers take an
+   * `AudioCodec` and declare both. Callers read this rather than the server
+   * type — a provider that gains Opus support declares it here and the switch
+   * appears with no change to the screen.
+   */
+  streamableCodecs: readonly PreferredCodec[];
+  /**
+   * "I am playing this right now", however the provider spells it: Subsonic's
+   * scrobble.view with submission=false, a session-start event on
+   * Jellyfin/Emby. Every provider that can express it implements this, so the
+   * caller announces a track without knowing which server it is talking to.
+   */
+  reportNowPlaying?(songId: string): Promise<void>;
+  /**
    * Session playback reporting for servers that scrobble on the strength of it
    * (Jellyfin / Emby's Last.fm plugin reads these events, not scrobble.view or
    * PlayedItems). Optional — Navidrome's Subsonic path already forwards to

@@ -45,7 +45,7 @@ import { getGenres } from "./genres/getGenres";
 
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 import { getSong } from "./songs/getSong";
-import { scrobble } from "./songs/scrobble";
+import { scrobble, nowPlaying } from "./songs/scrobble";
 import { getTracks } from "./tracks/getTracks";
 import { getSimilarSongs } from "./similar/getSimilarSongs";
 import { getSimilarArtists as getNavidromeSimilarArtists } from "./similar/getSimilarArtists";
@@ -233,7 +233,10 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const songs: SongsApi = {
     get: async (id: string) => getSong(client, id),
     scrobble: async (songId, timestamp) => scrobble(client, songId, timestamp),
+    reportNowPlaying: async (songId) => nowPlaying(client, songId),
     buildStreamUrl: (songId, quality) => client.buildStreamUrl(songId, quality),
+    scrobbleKind: 'scrobble',
+    streamableCodecs: ['mp3'],
   };
 
   const tracks: TracksApi = {
