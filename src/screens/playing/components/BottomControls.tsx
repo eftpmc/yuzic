@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Cast, ListMusic } from 'lucide-react-native';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
-import { controlSize, hitSlopFor, onDark, spacing, stateLayer } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, onDark, spacing, stateLayer } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type BottomControlsProps = {
@@ -47,7 +47,7 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
         style={buttonStyle(isCasting)}
         hitSlop={hitSlopFor(BUTTON_SIZE)}
       >
-        <Cast size={24} color={isCasting ? onDark.text : onDark.subtext} />
+        <Cast size={iconSize.header} color={isCasting ? onDark.text : onDark.subtext} />
       </Touchable>
 
       <Touchable
@@ -59,7 +59,7 @@ const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOu
         style={buttonStyle(showingQueue)}
         hitSlop={hitSlopFor(BUTTON_SIZE)}
       >
-        <ListMusic size={24} color={showingQueue ? onDark.text : onDark.subtext} />
+        <ListMusic size={iconSize.header} color={showingQueue ? onDark.text : onDark.subtext} />
       </Touchable>
     </View>
   );

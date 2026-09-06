@@ -45,7 +45,7 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { sourceColor, spacing, typography } from '@/constants/design';
+import { iconSize, sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LOCAL_COUNT = 8;
@@ -176,8 +176,8 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
           disabled={adding || added}
         >
           {added
-            ? <CheckCircle size={22} color={colors.placeholder} />
-            : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
+            ? <CheckCircle size={iconSize.secondary} color={colors.placeholder} />
+            : <CirclePlus size={iconSize.secondary} color={(adding || added) ? colors.placeholder : colors.subtext} />
           }
         </Touchable>
       }
@@ -218,7 +218,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
           style={styles.actionBtn}
         >
           <CloudDownload
-            size={22}
+            size={iconSize.secondary}
             color={hasDownloader ? colors.subtext : colors.muted}
           />
         </Touchable>
@@ -309,7 +309,7 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
         title={t('playlist.recommended.local')}
         action={
           <IconActionButton
-            icon={<RefreshCw size={17} color={colors.subtext} />}
+            icon={<RefreshCw size={iconSize.row} color={colors.subtext} />}
             onPress={onRefresh}
             accessibilityLabel={t('playlist.recommended.refresh')}
             size="compact"
@@ -416,7 +416,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         }
         action={
           <IconActionButton
-            icon={<RefreshCw size={17} color={colors.subtext} />}
+            icon={<RefreshCw size={iconSize.row} color={colors.subtext} />}
             onPress={onRefreshExternal}
             loading={externalQuery.isFetching}
             accessibilityLabel={t('playlist.recommended.refresh')}

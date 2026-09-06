@@ -17,7 +17,7 @@ import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
 import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography, onDark } from '@/constants/design';
+import { iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Library = { id: string; name: string };
@@ -97,7 +97,7 @@ export default function LibrariesOnboarding() {
         </Text>
 
         {isLoading ? (
-          <SpinningLoaderCircle size={26} color={onDark.text} />
+          <SpinningLoaderCircle size={iconSize.loader} color={onDark.text} />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
@@ -109,7 +109,7 @@ export default function LibrariesOnboarding() {
           <View style={styles.optionList}>
             <Touchable onPress={selectAll} style={[styles.optionRow, { borderRadius: rad.md }]}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
-                {isAll && <Check size={14} color="#000" />}
+                {isAll && <Check size={iconSize.badge} color="#000" />}
               </View>
               <Text style={styles.optionText}>{t('onboarding.libraries.allLibraries')}</Text>
             </Touchable>
@@ -123,7 +123,7 @@ export default function LibrariesOnboarding() {
                   style={[styles.optionRow, { borderRadius: rad.md }]}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                    {selected && <Check size={14} color="#000" />}
+                    {selected && <Check size={iconSize.badge} color="#000" />}
                   </View>
                   <Text style={styles.optionText} numberOfLines={1}>
                     {lib.name}

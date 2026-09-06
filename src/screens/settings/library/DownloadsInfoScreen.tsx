@@ -20,7 +20,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const DownloadsInfoScreen: React.FC = () => {
@@ -164,7 +164,7 @@ const DownloadsInfoScreen: React.FC = () => {
                       onPress={() => confirmClearProvider(item)}
                       style={styles.providerDelete}
                     >
-                      <Trash2 size={16} color={colors.subtext} />
+                      <Trash2 size={iconSize.inline} color={colors.subtext} />
                     </Touchable>
                   </View>
                 )}
@@ -195,7 +195,7 @@ const DownloadsInfoScreen: React.FC = () => {
                     onPress={() => confirmRemove(item)}
                     disabled={removingId === item.id}
                   >
-                    <Trash2 size={16} color={colors.subtext} />
+                    <Trash2 size={iconSize.inline} color={colors.subtext} />
                   </Touchable>
                 </View>
               </View>

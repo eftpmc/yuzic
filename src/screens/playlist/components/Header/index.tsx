@@ -23,7 +23,7 @@ import {
   DetailMetaText,
   DetailPlayAction,
 } from '@/components/DetailHeader';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   playlist: Playlist;
@@ -94,7 +94,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
             accessibilityLabel={t('a11y.common.moreOptions')}
             onPress={onOptions ?? (() => optionsSheetRef.current?.present())}
           >
-            <Ellipsis size={24} color={colors.secondary} />
+            <Ellipsis size={iconSize.header} color={colors.secondary} />
           </DetailHeaderIconButton>
         }
         meta={
@@ -110,11 +110,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
         actions={
           <DetailActionRow style={{ marginBottom: spacing.lg }}>
             <DetailCircleAction onPress={handleShuffle} accessibilityLabel={t('a11y.detail.shuffle')}>
-              <Shuffle size={18} color={colors.secondary} />
+              <Shuffle size={iconSize.row} color={colors.secondary} />
             </DetailCircleAction>
 
             <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
-              <Play size={24} color="#fff" fill="#fff" />
+              <Play size={iconSize.header} color="#fff" fill="#fff" />
             </DetailPlayAction>
 
             <DetailCircleAction
@@ -128,11 +128,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
               )}
             >
               {isPlaylistDownloading ? (
-                <DownloadProgressRing progress={downloadFraction} size={18} />
+                <DownloadProgressRing progress={downloadFraction} size={iconSize.row} />
               ) : isPlaylistDownloaded ? (
-                <Check size={18} color={colors.secondary} />
+                <Check size={iconSize.row} color={colors.secondary} />
               ) : (
-                <Download size={18} color={colors.secondary} />
+                <Download size={iconSize.row} color={colors.secondary} />
               )}
             </DetailCircleAction>
           </DetailActionRow>
@@ -155,7 +155,7 @@ export const PlaylistHeaderBar: React.FC<Props> = ({ playlist, onOptions }) => {
           accessibilityLabel={t('a11y.common.moreOptions')}
           onPress={onOptions}
         >
-          <Ellipsis size={24} color={colors.secondary} />
+          <Ellipsis size={iconSize.header} color={colors.secondary} />
         </DetailHeaderIconButton>
       }
     />

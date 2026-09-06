@@ -301,6 +301,50 @@ export const controlSize = {
 } as const;
 
 /**
+ * The glyph scale.
+ *
+ * Same rule as the type and shape scales, one axis over: pick by what the
+ * glyph is doing, not by how big it should be. Literal `size={n}` ran to 20
+ * distinct values across 294 icons, with the usual near-misses — 17 beside 18,
+ * 21 beside 20, 23 beside 24, 13 and 12 beside 14 — which is drift rather than
+ * a decision, and nothing linted it because `size` is a JSX attribute rather
+ * than a style property.
+ *
+ * Adding a role here is fine. Adding one that differs from an existing role
+ * only in size is how the app got thirteen font sizes.
+ */
+export const iconSize = {
+  /** A glyph inside a badge, on top of another control. */
+  marker: 10,
+  /** An inline marker beside a row's own text — a download arrow, a heart, a
+   *  warning triangle on a subtitle. */
+  badge: 14,
+  /** Sits inline with body text at its own size. */
+  inline: 16,
+  /** The default: a row action, a small control, a settings chevron. */
+  row: 18,
+  /** A control that carries a little more weight than a row action. */
+  control: 20,
+  /** The player's quieter transport — cast, queue, the controls flanking
+   *  shuffle and repeat. */
+  secondary: 22,
+  /** Navigation and header icons, and a detail screen's circle actions. */
+  header: 24,
+  /** A whole-sheet or whole-screen loader. `SpinningLoaderCircle` at 18 sits
+   *  inside a control instead; both numbers are the convention in AGENTS.md. */
+  loader: 26,
+  /** A large standalone control — the player's add button, a card's spinner. */
+  large: 28,
+  /** The player's skip buttons, either side of the 68pt play button. */
+  transport: 34,
+  /** The glyph an empty state is built around. */
+  emptyState: 40,
+  /** Oversized and faded, as texture rather than as an icon — the moon behind
+   *  the sleep timer, the dial behind playback speed. */
+  decorative: 96,
+} as const;
+
+/**
  * The padding a control of this size needs to reach the minimum tap target.
  *
  * Returns undefined when it already does, so it can be spread onto a component

@@ -12,7 +12,7 @@ import PlaylistOptions from '@/components/options/PlaylistOptions';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   playlist: PlaylistBase;
@@ -39,7 +39,7 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
         onPress={handlePress}
         trailing={
           <IconActionButton
-            icon={<Ellipsis size={24} color={colors.secondary} />}
+            icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
             onPress={handleOptionsPress}
             accessibilityLabel={t('a11y.rows.options', { title: playlist.title })}
             size="compact"

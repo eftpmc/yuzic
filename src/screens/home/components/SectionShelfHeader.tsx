@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { ChevronRight } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { spacing } from '@/constants/design'
+import { iconSize, spacing } from '@/constants/design'
 import { sectionStyles } from './sectionStyles'
 import Touchable from '@/components/Touchable'
 
@@ -45,7 +45,7 @@ export default function SectionShelfHeader({ title, onSeeAll, seeAllLabel, testI
     >
       {heading}
       <View style={styles.chevron}>
-        <ChevronRight size={20} color={colors.subtext} />
+        <ChevronRight size={iconSize.control} color={colors.subtext} />
       </View>
     </Touchable>
   )

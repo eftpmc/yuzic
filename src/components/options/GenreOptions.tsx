@@ -18,6 +18,7 @@ import { useTracks } from '@/hooks/tracks';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
+import { iconSize } from '@/constants/design';
 import {
   OptionSheetDivider,
   OptionSheetHeader,
@@ -183,19 +184,19 @@ const GenreOptions = forwardRef<BottomSheetModal, GenreOptionsProps>(({ genre, a
         <OptionSheetDivider />
 
         <OptionSheetRow
-          icon={<ListStart size={26} color={colors.secondary} />}
+          icon={<ListStart size={iconSize.loader} color={colors.secondary} />}
           label={t('genreOptions.actions.addToNext')}
           onPress={() => void handleAddToNext()}
           loading={songsLoading && isSheetOpen}
         />
         <OptionSheetRow
-          icon={<ListEnd size={26} color={colors.secondary} />}
+          icon={<ListEnd size={iconSize.loader} color={colors.secondary} />}
           label={t('genreOptions.actions.addToEnd')}
           onPress={() => void handleAddToEnd()}
           loading={songsLoading && isSheetOpen}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('genreOptions.actions.shuffleToQueue')}
           onPress={() => void handleShuffleToQueue()}
           loading={songsLoading && isSheetOpen}
@@ -203,8 +204,8 @@ const GenreOptions = forwardRef<BottomSheetModal, GenreOptionsProps>(({ genre, a
         <OptionSheetRow
           icon={
             isDownloadingAll || isDownloading ? undefined
-              : isFullyDownloaded ? <Check size={26} color={colors.secondary} />
-                : <ArrowDownCircle size={26} color={colors.secondary} />
+              : isFullyDownloaded ? <Check size={iconSize.loader} color={colors.secondary} />
+                : <ArrowDownCircle size={iconSize.loader} color={colors.secondary} />
           }
           label={
             isDownloadingAll || isDownloading ? t('genreOptions.actions.downloading')

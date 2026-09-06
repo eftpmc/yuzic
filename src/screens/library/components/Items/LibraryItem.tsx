@@ -5,7 +5,7 @@ import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useListDensity } from '@/hooks/useListDensity';
 import Touchable from '@/components/Touchable';
@@ -93,7 +93,7 @@ const LibraryItem: React.FC<Props> = ({
           {...hitSlopFor(18)}
           feedback="control"
         >
-          <Ellipsis size={18} color={colors.subtext} />
+          <Ellipsis size={iconSize.row} color={colors.subtext} />
         </Touchable>
       )}
     </Pressable>

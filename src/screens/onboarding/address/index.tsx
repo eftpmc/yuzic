@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { spacing, typography, onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Scheme = 'https' | 'http';
@@ -57,7 +57,7 @@ export default function Address() {
                                 onPress={() => schemeSheetRef.current?.present()}
                             >
                                 <Text style={styles.schemeText}>{scheme}://</Text>
-                                <ChevronDown size={14} color={onDark.mutedText} style={{ marginLeft: spacing.xs }} />
+                                <ChevronDown size={iconSize.badge} color={onDark.mutedText} style={{ marginLeft: spacing.xs }} />
                             </Touchable>
 
                             <TextInput
@@ -116,8 +116,8 @@ export default function Address() {
                             >
                                 <View style={styles.schemeOptionLeft}>
                                     {s === 'https'
-                                      ? <Lock size={18} color={isSelected ? onDark.text : onDark.mutedText} style={{ marginRight: spacing.controlGap }} />
-                                      : <LockOpen size={18} color={isSelected ? onDark.text : onDark.mutedText} style={{ marginRight: spacing.controlGap }} />
+                                      ? <Lock size={iconSize.row} color={isSelected ? onDark.text : onDark.mutedText} style={{ marginRight: spacing.controlGap }} />
+                                      : <LockOpen size={iconSize.row} color={isSelected ? onDark.text : onDark.mutedText} style={{ marginRight: spacing.controlGap }} />
                                     }
                                     <View>
                                         <Text style={[styles.schemeOptionText, isSelected && styles.schemeOptionTextSelected]}>
@@ -130,7 +130,7 @@ export default function Address() {
                                         </Text>
                                     </View>
                                 </View>
-                                {isSelected && <Check size={20} color={onDark.text} />}
+                                {isSelected && <Check size={iconSize.control} color={onDark.text} />}
                             </Touchable>
                         );
                     })}

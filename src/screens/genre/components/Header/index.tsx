@@ -36,7 +36,7 @@ import {
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { controlSize, spacing, typography } from '@/constants/design';
+import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -182,7 +182,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
               style={[styles.backButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
             </Touchable>
           </View>
         )}
@@ -205,9 +205,9 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           accessibilityLabel={t('a11y.detail.shuffle')}
         >
           {songsLoading ? (
-            <SpinningLoaderCircle size={18} color={colors.secondary} />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
           ) : (
-            <Shuffle size={18} color={colors.secondary} />
+            <Shuffle size={iconSize.row} color={colors.secondary} />
           )}
         </DetailCircleAction>
 
@@ -217,9 +217,9 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           accessibilityLabel={t('a11y.detail.play')}
         >
           {songsLoading ? (
-            <SpinningLoaderCircle size={18} color="#fff" />
+            <SpinningLoaderCircle size={iconSize.row} color="#fff" />
           ) : (
-            <Play size={24} color="#fff" fill="#fff" />
+            <Play size={iconSize.header} color="#fff" fill="#fff" />
           )}
         </DetailPlayAction>
 
@@ -236,11 +236,11 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           )}
         >
           {isDownloadingAll || isDownloading ? (
-            <SpinningLoaderCircle size={18} color={colors.secondary} />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
           ) : isFullyDownloaded ? (
-            <Check size={18} color={colors.secondary} />
+            <Check size={iconSize.row} color={colors.secondary} />
           ) : (
-            <Download size={18} color={colors.secondary} />
+            <Download size={iconSize.row} color={colors.secondary} />
           )}
         </DetailCircleAction>
       </DetailActionRow>
@@ -262,7 +262,7 @@ function GenreOptionsButton({ genre, albums }: { genre: string; albums: AlbumBas
         accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => optionsSheetRef.current?.present()}
       >
-        <Ellipsis size={24} color={colors.secondary} />
+        <Ellipsis size={iconSize.header} color={colors.secondary} />
       </DetailHeaderIconButton>
       <GenreOptions ref={optionsSheetRef} genre={genre} albums={albums} />
     </>

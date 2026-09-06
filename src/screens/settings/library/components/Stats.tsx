@@ -12,6 +12,7 @@ import IconActionButton from '@/components/IconActionButton';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsInfoRow from '../../components/SettingsInfoRow';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
+import { iconSize } from '@/constants/design';
 
 function formatLastSynced(ts: number | null, t: TFunction, now = Date.now()): string {
   if (ts === null) return t('settings.library.stats.neverSynced');
@@ -67,7 +68,7 @@ const Stats: React.FC = () => {
               icon={
                 <Animated.View style={spinStyle}>
                   <RefreshCw
-                    size={18}
+                    size={iconSize.row}
                     color={isSyncing ? colors.themeColor : colors.secondary}
                   />
                 </Animated.View>

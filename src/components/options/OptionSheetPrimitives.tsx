@@ -1,5 +1,5 @@
 import React from 'react';
-import { radius, spacing, typography } from '@/constants/design';
+import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   StyleSheet,
@@ -70,7 +70,7 @@ export function OptionSheetRow({
   trailing,
 }: RowProps) {
   const { colors } = useTheme();
-  const leading = loading ? <SpinningLoaderCircle size={18} color={colors.subtext} /> : icon;
+  const leading = loading ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} /> : icon;
 
   return (
     <Touchable

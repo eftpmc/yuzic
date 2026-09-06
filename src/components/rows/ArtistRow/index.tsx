@@ -11,7 +11,7 @@ import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   artist: Artist;
@@ -42,7 +42,7 @@ const ArtistRow: React.FC<Props> = ({ artist, onPress, rounded = false }) => {
           roundedCover={rounded}
           trailing={
             <IconActionButton
-              icon={<Ellipsis size={24} color={colors.secondary} />}
+              icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
               onPress={handleOpenOptions}
               accessibilityLabel={t('a11y.rows.options', { title: artist.name })}
               size="compact"

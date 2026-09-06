@@ -19,7 +19,7 @@ import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice';
 import { useDownloaderQueue, type QueueDiff } from './useDownloaderQueue';
 import type { DownloaderConfig } from './useDownloaderConnection';
 import type { RowCancelHelpers } from './DownloaderSettingsScreen';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 
 type Props<T extends { id: string }> = {
   id: DownloaderId;
@@ -112,7 +112,7 @@ function DownloaderQueueCard<T extends { id: string }>({
       <SettingsCardHeader title={title ?? t('settings.downloaders.queue')} />
       {loadingQueue ? (
         <Animated.View style={[styles.queueLoading, spinStyle]}>
-          <Loader2 size={32} color={colors.secondary} />
+          <Loader2 size={iconSize.large} color={colors.secondary} />
         </Animated.View>
       ) : queueError ? (
         <Text style={[styles.emptyText, { color: colors.subtext }]}>

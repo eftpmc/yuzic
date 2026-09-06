@@ -15,7 +15,7 @@ import { hasFiniteDuration } from '@/utils/playback/contentKind';
 import { CirclePlus } from 'lucide-react-native';
 import { usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type PlayingMainProps = {
@@ -155,7 +155,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <CirclePlus
-            size={32}
+            size={iconSize.large}
             color={onDark.text}
           />
         </Touchable>

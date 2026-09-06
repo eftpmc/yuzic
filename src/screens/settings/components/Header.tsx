@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 
 type HeaderProps = {
     title: string;
@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
                 style={styles.backButton}
             >
                 <ChevronLeft
-                    size={24}
+                    size={iconSize.header}
                     color={colors.secondary}
                 />
             </Touchable>

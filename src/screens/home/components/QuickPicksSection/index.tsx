@@ -31,7 +31,7 @@ import {
   QUICK_PICKS_PEEK,
 } from '@/constants/home';
 import { SECTION_H_PADDING } from '@/features/home/constants';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 
 function useQuickPicks(refreshKey: number): SongBase[] {
   const songsById = useSelector(selectSongsById);
@@ -132,7 +132,7 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
                 rowStyle={styles.row}
                 trailing={
                   <IconActionButton
-                    icon={<Ellipsis size={18} color={colors.secondary} />}
+                    icon={<Ellipsis size={iconSize.row} color={colors.secondary} />}
                     onPress={() => { void handleOptions(song); }}
                     accessibilityLabel={t('a11y.rows.options', { title: song.title })}
                     size="compact"

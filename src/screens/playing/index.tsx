@@ -41,7 +41,7 @@ import VolumeCard from './components/VolumeCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, onDark, spacing } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing } from '@/constants/design';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -302,7 +302,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         style={styles.headerButton}
                                         hitSlop={hitSlopFor(40)}
                                     >
-                                        <ChevronDown size={28} color={onDark.text} />
+                                        <ChevronDown size={iconSize.large} color={onDark.text} />
                                     </Touchable>
 
                                     <Touchable
@@ -312,7 +312,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         style={styles.headerButton}
                                         hitSlop={hitSlopFor(40)}
                                     >
-                                        <Ellipsis size={24} color={onDark.text} />
+                                        <Ellipsis size={iconSize.header} color={onDark.text} />
                                     </Touchable>
                                 </View>
 

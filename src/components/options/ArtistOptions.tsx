@@ -29,6 +29,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import { iconSize } from '@/constants/design';
 
 export type ArtistOptionsProps = {
   artist: Artist | null;
@@ -179,7 +180,7 @@ const ArtistOptions = forwardRef<
         backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
         <View style={[optionSheetStyles.loading, sheetBg]}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+          <SpinningLoaderCircle size={iconSize.loader} color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );
@@ -212,7 +213,7 @@ const ArtistOptions = forwardRef<
         <OptionSheetDivider />
 
         <OptionSheetRow
-          icon={<Play size={26} color={colors.secondary} fill={colors.secondary} />}
+          icon={<Play size={iconSize.loader} color={colors.secondary} fill={colors.secondary} />}
           label={t('artistOptions.actions.play')}
           onPress={() => handlePlay(false)}
           disabled={playbackDisabled}
@@ -220,21 +221,21 @@ const ArtistOptions = forwardRef<
           loading={songsLoading}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('artistOptions.actions.shuffle')}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<ListEnd size={26} color={colors.secondary} />}
+          icon={<ListEnd size={iconSize.loader} color={colors.secondary} />}
           label={t('artistOptions.actions.addToQueue')}
           onPress={handleAddToQueue}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('artistOptions.actions.shuffleToQueue')}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
@@ -243,9 +244,9 @@ const ArtistOptions = forwardRef<
         <OptionSheetRow
           icon={
             isDownloaded ? (
-              <CheckCircle size={26} color={colors.subtext} />
+              <CheckCircle size={iconSize.loader} color={colors.subtext} />
             ) : (
-              <ArrowDownCircle size={26} color={colors.secondary} />
+              <ArrowDownCircle size={iconSize.loader} color={colors.secondary} />
             )
           }
           label={isDownloading
@@ -261,7 +262,7 @@ const ArtistOptions = forwardRef<
 
         {!hideGoToArtist && (
           <OptionSheetRow
-            icon={<User size={26} color={colors.secondary} />}
+            icon={<User size={iconSize.loader} color={colors.secondary} />}
             label={t('artistOptions.actions.goToArtist')}
             onPress={handleGoToArtist}
           />
@@ -269,7 +270,7 @@ const ArtistOptions = forwardRef<
 
         {enabledSources.length > 0 && (
           <OptionSheetRow
-            icon={<Globe size={26} color={colors.secondary} />}
+            icon={<Globe size={iconSize.loader} color={colors.secondary} />}
             label={t('artistOptions.actions.viewExternal')}
             onPress={handleViewExternal}
           />

@@ -31,7 +31,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { statusColor } from '@/constants/design';
+import { iconSize, statusColor } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import haptics from '@/utils/haptics';
 
@@ -212,7 +212,7 @@ const AlbumOptions = forwardRef<
         backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
         <View style={[optionSheetStyles.loading, sheetBg]}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+          <SpinningLoaderCircle size={iconSize.loader} color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );
@@ -245,13 +245,13 @@ const AlbumOptions = forwardRef<
         <OptionSheetDivider />
 
         <OptionSheetRow
-          icon={<Heart size={26} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
+          icon={<Heart size={iconSize.loader} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
           label={isStarred ? t('albumOptions.actions.unfavorite') : t('albumOptions.actions.favorite')}
           onPress={toggleFavorite}
         />
 
         <OptionSheetRow
-          icon={<Play size={26} color={colors.secondary} fill={colors.secondary} />}
+          icon={<Play size={iconSize.loader} color={colors.secondary} fill={colors.secondary} />}
           label={t('albumOptions.actions.play')}
           onPress={() => handlePlay(false)}
           disabled={playbackDisabled}
@@ -259,28 +259,28 @@ const AlbumOptions = forwardRef<
           loading={songsLoading}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('albumOptions.actions.shuffle')}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<ListStart size={26} color={colors.secondary} />}
+          icon={<ListStart size={iconSize.loader} color={colors.secondary} />}
           label={t('albumOptions.actions.addToNext')}
           onPress={handleAddToNext}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<ListEnd size={26} color={colors.secondary} />}
+          icon={<ListEnd size={iconSize.loader} color={colors.secondary} />}
           label={t('albumOptions.actions.addToEnd')}
           onPress={handleAddToEnd}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('albumOptions.actions.shuffleToQueue')}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
@@ -289,7 +289,7 @@ const AlbumOptions = forwardRef<
 
         {!hideGoToAlbum && (
           <OptionSheetRow
-            icon={<Disc size={26} color={colors.secondary} />}
+            icon={<Disc size={iconSize.loader} color={colors.secondary} />}
             label={t('albumOptions.actions.goToAlbum')}
             onPress={handleGoToAlbum}
           />
@@ -297,7 +297,7 @@ const AlbumOptions = forwardRef<
 
         {enabledSources.length > 0 && !!album.artist?.name && (
           <OptionSheetRow
-            icon={<Globe size={26} color={colors.secondary} />}
+            icon={<Globe size={iconSize.loader} color={colors.secondary} />}
             label={t('albumOptions.actions.viewExternal')}
             onPress={handleViewExternal}
           />
@@ -305,7 +305,7 @@ const AlbumOptions = forwardRef<
 
         {api.shares && (
           <OptionSheetRow
-            icon={<Share2 size={26} color={colors.secondary} />}
+            icon={<Share2 size={iconSize.loader} color={colors.secondary} />}
             label={t('albumOptions.actions.share')}
             onPress={handleShare}
             disabled={isSharing}
@@ -316,9 +316,9 @@ const AlbumOptions = forwardRef<
         <OptionSheetRow
           icon={
             isDownloaded ? (
-              <CheckCircle size={26} color={colors.subtext} />
+              <CheckCircle size={iconSize.loader} color={colors.subtext} />
             ) : (
-              <ArrowDownCircle size={26} color={colors.secondary} />
+              <ArrowDownCircle size={iconSize.loader} color={colors.secondary} />
             )
           }
           label={isDownloading ? t('albumOptions.actions.downloading') : isDownloaded ? t('albumOptions.actions.downloaded') : t('albumOptions.actions.download')}

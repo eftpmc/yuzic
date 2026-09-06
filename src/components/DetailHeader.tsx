@@ -33,7 +33,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
 import { ACCENT_WASH_LOCATIONS, accentWashColors } from '@/features/theme/coverAccent';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, spacing, typography } from '@/constants/design';
+import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
@@ -188,7 +188,7 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
       >
         {/* A chevron's ink is a "<": its geometric centre sits right of where
             the eye puts it, so centring it in the disc reads as pushed over. */}
-        <ChevronLeft size={24} color={colors.secondary} style={styles.chevron} />
+        <ChevronLeft size={iconSize.header} color={colors.secondary} style={styles.chevron} />
       </BarButton>
 
       <Animated.View pointerEvents="none" style={[styles.headerTitleWrapper, fadeStyle]}>

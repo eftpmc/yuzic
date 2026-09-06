@@ -25,7 +25,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 interface Props {
   album: ExternalAlbumBase;
@@ -100,7 +100,7 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
             dimRow={anyLoading}
             trailing={
               loadingId === downloader.def.id
-                ? <SpinningLoaderCircle size={18} color={colors.subtext} />
+                ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
                 : null
             }
           />

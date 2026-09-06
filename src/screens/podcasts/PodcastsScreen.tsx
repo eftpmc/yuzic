@@ -24,7 +24,7 @@ import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
-import { hitSlopFor, spacing, statusColor } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, statusColor } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import type { CoverSource } from '@/types';
 
@@ -119,7 +119,7 @@ export default function PodcastsScreen() {
           // show's own blurb, so the row says which one it is.
           subtitleTrailing={
             item.errorMessage
-              ? <AlertTriangle size={14} color={statusColor.warningText} />
+              ? <AlertTriangle size={iconSize.badge} color={statusColor.warningText} />
               : undefined
           }
           trailing={
@@ -130,7 +130,7 @@ export default function PodcastsScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('podcasts.unsubscribe')}
             >
-              <Trash2 size={18} color={colors.subtext} />
+              <Trash2 size={iconSize.row} color={colors.subtext} />
             </Touchable>
           }
         />
@@ -157,15 +157,15 @@ export default function PodcastsScreen() {
               accessibilityLabel={t('podcasts.refresh')}
             >
               {refreshing
-                ? <SpinningLoaderCircle size={18} color={colors.secondary} />
-                : <RefreshCw size={24} color={colors.secondary} />
+                ? <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
+                : <RefreshCw size={iconSize.header} color={colors.secondary} />
               }
             </DetailHeaderIconButton>
             <DetailHeaderIconButton
               onPress={() => setAdding(true)}
               accessibilityLabel={t('podcasts.add')}
             >
-              <Plus size={24} color={colors.secondary} />
+              <Plus size={iconSize.header} color={colors.secondary} />
             </DetailHeaderIconButton>
           </View>
         }
@@ -177,13 +177,13 @@ export default function PodcastsScreen() {
         </View>
       ) : channelsQuery.isError ? (
         <EmptyState
-          icon={<PodcastIcon size={40} color={colors.subtext} />}
+          icon={<PodcastIcon size={iconSize.emptyState} color={colors.subtext} />}
           message={t('common.loadFailed')}
           action={{ label: t('common.retry'), onPress: () => channelsQuery.refetch() }}
         />
       ) : (channelsQuery.data ?? []).length === 0 ? (
         <EmptyState
-          icon={<PodcastIcon size={40} color={colors.subtext} />}
+          icon={<PodcastIcon size={iconSize.emptyState} color={colors.subtext} />}
           message={t('podcasts.empty')}
           action={{ label: t('podcasts.add'), onPress: () => setAdding(true) }}
         />

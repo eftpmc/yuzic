@@ -11,7 +11,7 @@ import {
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = { contentWidth: number };
@@ -51,7 +51,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       {/* Decorative gauge */}
       <View style={styles.gaugeDecor} pointerEvents="none">
         <Gauge
-          size={96}
+          size={iconSize.decorative}
           color={isAltered ? themeColor : onDark.text}
           strokeWidth={0.8}
           style={{ opacity: 0.07 }}
@@ -61,7 +61,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       {/* Header */}
       <View style={styles.headerRow}>
         <Gauge
-          size={16}
+          size={iconSize.inline}
           color={isAltered ? themeColor : 'rgba(255,255,255,0.5)'}
         />
         <Text style={[styles.label, isAltered && { color: themeColor }]}>

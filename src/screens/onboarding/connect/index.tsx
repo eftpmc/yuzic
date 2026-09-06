@@ -17,7 +17,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography, onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Connect() {
@@ -77,7 +77,7 @@ export default function Connect() {
     if (!isLayoutMounted) {
         return (
             <View style={styles.loadingContainer}>
-                <SpinningLoaderCircle size={26} color={onDark.mutedText} />
+                <SpinningLoaderCircle size={iconSize.loader} color={onDark.mutedText} />
             </View>
         );
     }
@@ -140,7 +140,7 @@ export default function Connect() {
                     disabled={isTesting}
                 >
                     {isTesting ? (
-                        <SpinningLoaderCircle size={18} color="#000" />
+                        <SpinningLoaderCircle size={iconSize.row} color="#000" />
                     ) : (
                         <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}

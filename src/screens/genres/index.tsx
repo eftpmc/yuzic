@@ -9,7 +9,7 @@ import { ChevronRight } from 'lucide-react-native'
 
 import { DetailHeaderBar } from '@/components/DetailHeader'
 import { useTheme } from '@/hooks/useTheme'
-import { spacing, typography } from '@/constants/design'
+import { iconSize, spacing, typography } from '@/constants/design'
 import { useAlbums } from '@/hooks/albums'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
 import { buildGenreRows, type GenreRow } from '@/utils/library/genreList'
@@ -43,7 +43,7 @@ const GenresScreen: React.FC = () => {
           {t('library.genres.albumCount', { count: item.albumCount })}
         </Text>
       </View>
-      <ChevronRight size={18} color={colors.subtext} />
+      <ChevronRight size={iconSize.row} color={colors.subtext} />
     </Touchable>
   ), [colors, navigation, t])
 

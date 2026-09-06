@@ -22,7 +22,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { spacing, statusColor } from '@/constants/design';
+import { iconSize, spacing, statusColor } from '@/constants/design';
 import Touchable from '@/components/Touchable';
 
 interface ExternalAlbumOptionsProps {
@@ -50,7 +50,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
         style={styles.moreButton}
         onPress={() => bottomSheetRef.current?.present()}
       >
-        <Ellipsis size={24} color={colors.secondary} />
+        <Ellipsis size={iconSize.header} color={colors.secondary} />
       </Touchable>
 
       <BottomSheetModal
@@ -69,24 +69,24 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
           {status.kind === 'in_library' ? (
             <OptionSheetRow
-              icon={<Link size={26} color={statusColor.success} />}
+              icon={<Link size={iconSize.loader} color={statusColor.success} />}
               label={t('externalAlbum.menu.inLibrary')}
             />
           ) : status.kind === 'downloading' ? (
             <OptionSheetRow
-              icon={<SpinningLoaderCircle size={26} color={statusColor.downloading} />}
+              icon={<SpinningLoaderCircle size={iconSize.loader} color={statusColor.downloading} />}
               label={t('externalAlbum.menu.downloading', { progress: status.progress })}
             />
           ) : canDownload ? (
             <OptionSheetRow
-              icon={<CloudDownload size={26} color={colors.secondary} />}
+              icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
               label={t('externalAlbum.menu.downloadToServer')}
               onPress={() => downloadSheetRef.current?.present()}
-              trailing={<ChevronRight size={16} color={colors.placeholder} style={styles.chevron} />}
+              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
             />
           ) : (
             <OptionSheetRow
-              icon={<CloudDownload size={26} color={colors.muted} />}
+              icon={<CloudDownload size={iconSize.loader} color={colors.muted} />}
               label={t('externalAlbum.menu.noServiceConnected')}
               labelColor={colors.muted}
             />

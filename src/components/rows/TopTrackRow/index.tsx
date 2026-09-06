@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { typography } from '@/constants/design'
+import { iconSize, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 
 /** The preview affordance on an external top-track row, drawn small on purpose
@@ -49,7 +49,7 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
             disabled={!onPress}
             hitSlop={8}
           >
-            <Play size={13} color={colors.secondary} fill={colors.secondary} />
+            <Play size={iconSize.badge} color={colors.secondary} fill={colors.secondary} />
           </Touchable>
         ) : undefined
       }

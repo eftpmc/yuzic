@@ -4,7 +4,7 @@ import { X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -48,7 +48,7 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           testID={testID ? `${testID}-close` : undefined}
         >
-          <X size={14} color={textColor} />
+          <X size={iconSize.badge} color={textColor} />
         </Touchable>
       )}
     </View>

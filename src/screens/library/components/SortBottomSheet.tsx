@@ -10,7 +10,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -78,7 +78,7 @@ const SortBottomSheet = forwardRef<
             >
               <View style={styles.pickerLeft}>
                 <option.Icon
-                  size={18}
+                  size={iconSize.row}
                   color={isSelected ? themeColor : colors.subtext}
                   style={{ marginRight: spacing.controlGap }}
                 />
@@ -90,7 +90,7 @@ const SortBottomSheet = forwardRef<
               </View>
 
               {isSelected && (
-                <Check size={20} color={themeColor} />
+                <Check size={iconSize.control} color={themeColor} />
               )}
             </Touchable>
           );

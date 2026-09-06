@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle, X } from 'lucide-react-native';
 
 import type { SlskdQueueRecord } from '@/api/slskd';
-import { hitSlopFor, statusColor } from '@/constants/design';
+import { hitSlopFor, iconSize, statusColor } from '@/constants/design';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
@@ -53,14 +53,14 @@ export function useSlskdRenderItem() {
             </View>
             <View style={styles.headerTrailing}>
               {isCompleted ? (
-                <CheckCircle size={16} color={statusColor.success} />
+                <CheckCircle size={iconSize.inline} color={statusColor.success} />
               ) : (
                 <Text style={[styles.itemPct, { color: colors.subtext }]}>{percent}%</Text>
               )}
               {cancel.requestCancel && (
                 cancel.isCancelling ? (
                   <View style={styles.cancelButton}>
-                    <SpinningLoaderCircle size={18} color={colors.subtext} />
+                    <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
                   </View>
                 ) : (
                   <Touchable
@@ -71,7 +71,7 @@ export function useSlskdRenderItem() {
                     accessibilityRole="button"
                     accessibilityLabel={t('settings.downloaders.cancelAria', { title })}
                   >
-                    <X size={18} color={statusColor.destructive} />
+                    <X size={iconSize.row} color={statusColor.destructive} />
                   </Touchable>
                 )
               )}

@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux';
 import { selectAlbumsById } from '@/utils/redux/selectors/librarySelectors';
 import { Song } from '@/types';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type QueueItemProps = {
@@ -149,7 +149,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
           onPress={onBack}
           style={styles.backButton}
         >
-          <ChevronLeft size={28} color={onDark.text} />
+          <ChevronLeft size={iconSize.large} color={onDark.text} />
         </Touchable>
 
         {currentSong && (
@@ -183,8 +183,8 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
             style={[styles.controlButton, { borderRadius: rad.md }]}
           >
             {isPlaying
-              ? <Pause size={20} color={onDark.text} fill={onDark.text} />
-              : <Play size={20} color={onDark.text} fill={onDark.text} />
+              ? <Pause size={iconSize.control} color={onDark.text} fill={onDark.text} />
+              : <Play size={iconSize.control} color={onDark.text} fill={onDark.text} />
             }
           </Touchable>
 
@@ -194,7 +194,7 @@ const Queue: React.FC<{ onBack: () => void; width: number }> = ({
             onPress={skipToNext}
             style={[styles.controlButton, { borderRadius: rad.md }]}
           >
-            <SkipForward size={20} color={onDark.text} fill={onDark.text} />
+            <SkipForward size={iconSize.control} color={onDark.text} fill={onDark.text} />
           </Touchable>
         </View>
       </View>

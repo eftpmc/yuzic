@@ -30,7 +30,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { statusColor } from '@/constants/design';
+import { iconSize, statusColor } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 
 export type PlaylistOptionsProps = {
@@ -212,7 +212,7 @@ const PlaylistOptions = forwardRef<
         backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
       >
         <View style={[optionSheetStyles.loading, sheetBg]}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+          <SpinningLoaderCircle size={iconSize.loader} color={colors.subtext} />
         </View>
       </BottomSheetModal>
     );
@@ -244,7 +244,7 @@ const PlaylistOptions = forwardRef<
         <OptionSheetDivider />
 
         <OptionSheetRow
-          icon={<Play size={26} color={colors.secondary} fill={colors.secondary} />}
+          icon={<Play size={iconSize.loader} color={colors.secondary} fill={colors.secondary} />}
           label={t('playlistOptions.actions.play')}
           onPress={() => handlePlay(false)}
           disabled={playbackDisabled}
@@ -252,21 +252,21 @@ const PlaylistOptions = forwardRef<
           loading={songsLoading}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('playlistOptions.actions.shuffle')}
           onPress={() => handlePlay(true)}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<ListEnd size={26} color={colors.secondary} />}
+          icon={<ListEnd size={iconSize.loader} color={colors.secondary} />}
           label={t('playlistOptions.actions.addToQueue')}
           onPress={handleAddToQueue}
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
         <OptionSheetRow
-          icon={<Shuffle size={26} color={colors.secondary} />}
+          icon={<Shuffle size={iconSize.loader} color={colors.secondary} />}
           label={t('playlistOptions.actions.shuffleToQueue')}
           onPress={handleShuffleToQueue}
           disabled={playbackDisabled}
@@ -275,7 +275,7 @@ const PlaylistOptions = forwardRef<
 
         {!hideGoToPlaylist && (
           <OptionSheetRow
-            icon={<List size={26} color={colors.secondary} />}
+            icon={<List size={iconSize.loader} color={colors.secondary} />}
             label={t('playlistOptions.actions.goToPlaylist')}
             onPress={handleGoToPlaylist}
           />
@@ -284,9 +284,9 @@ const PlaylistOptions = forwardRef<
         <OptionSheetRow
           icon={
             isDownloaded ? (
-              <CheckCircle size={26} color={colors.subtext} />
+              <CheckCircle size={iconSize.loader} color={colors.subtext} />
             ) : (
-              <ArrowDownCircle size={26} color={colors.secondary} />
+              <ArrowDownCircle size={iconSize.loader} color={colors.secondary} />
             )
           }
           label={isDownloading ? t('playlistOptions.actions.downloading') : isDownloaded ? t('playlistOptions.actions.downloaded') : t('playlistOptions.actions.download')}
@@ -298,7 +298,7 @@ const PlaylistOptions = forwardRef<
 
         {api.shares && (
           <OptionSheetRow
-            icon={<Share2 size={26} color={colors.secondary} />}
+            icon={<Share2 size={iconSize.loader} color={colors.secondary} />}
             label={t('playlistOptions.actions.share')}
             onPress={handleShare}
             disabled={isSharing}
@@ -308,7 +308,7 @@ const PlaylistOptions = forwardRef<
 
         {playlist.id !== FAVORITES_ID && (
           <OptionSheetRow
-            icon={<Pencil size={26} color={colors.secondary} />}
+            icon={<Pencil size={iconSize.loader} color={colors.secondary} />}
             label={t('playlistOptions.actions.rename')}
             onPress={handleRenamePress}
           />
@@ -316,7 +316,7 @@ const PlaylistOptions = forwardRef<
 
         {playlist.id !== FAVORITES_ID && (
           <OptionSheetRow
-            icon={<Trash2 size={26} color={statusColor.destructive} />}
+            icon={<Trash2 size={iconSize.loader} color={statusColor.destructive} />}
             label={t('playlistOptions.actions.delete')}
             labelColor={statusColor.destructive}
             onPress={handleDeletePress}

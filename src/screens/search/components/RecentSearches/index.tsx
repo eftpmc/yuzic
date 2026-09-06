@@ -7,7 +7,7 @@ import MediaListRow from '@/components/MediaListRow';
 import IconActionButton from '@/components/IconActionButton';
 import { useTheme } from '@/hooks/useTheme';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
-import { controlSize, hitSlopFor, spacing, typography } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   searchHistoryEntryKey,
@@ -67,7 +67,7 @@ export default function RecentSearches({
                 accessibilityLabel={entry.text}
                 onPress={() => onQueryPress(entry.text)}
               >
-                <SearchIcon size={13} color={colors.subtext} />
+                <SearchIcon size={iconSize.badge} color={colors.subtext} />
                 <Text style={[styles.chipText, { color: colors.secondary }]} numberOfLines={1}>
                   {entry.text}
                 </Text>
@@ -78,7 +78,7 @@ export default function RecentSearches({
                 accessibilityRole="button"
                 accessibilityLabel={t('search.removeRecentSearch', { query: entry.text })}
               >
-                <X size={14} color={colors.subtext} />
+                <X size={iconSize.badge} color={colors.subtext} />
               </Touchable>
             </View>
           ))}
@@ -105,7 +105,7 @@ export default function RecentSearches({
                 onPress={() => onEntityPress(entity)}
                 trailing={
                   <IconActionButton
-                    icon={<X size={18} color={colors.subtext} />}
+                    icon={<X size={iconSize.row} color={colors.subtext} />}
                     onPress={() => onRemove(searchHistoryEntryKey(entity))}
                     accessibilityLabel={t('search.removeRecentSearch', { query: entity.title })}
                     size="compact"

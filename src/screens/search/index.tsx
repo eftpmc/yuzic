@@ -49,7 +49,7 @@ import { getSourceMeta } from '@/features/sources/registry';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 
@@ -289,7 +289,7 @@ const Search = () => {
           onPress={() => { void handleSongPress(result); }}
           trailing={
             <IconActionButton
-              icon={<Ellipsis size={24} color={colors.secondary} />}
+              icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
               onPress={() => { void handleSongOptions(result); }}
               accessibilityLabel={t('a11y.rows.options', { title: result.title })}
               size="compact"
@@ -381,7 +381,7 @@ const Search = () => {
       />
       <View style={styles.headerRow}>
         <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
-          <SearchIcon size={18} color={colors.placeholder} style={styles.searchIcon} />
+          <SearchIcon size={iconSize.row} color={colors.placeholder} style={styles.searchIcon} />
           <TextInput
             accessibilityLabel={t('a11y.searchInput')}
             testID="search-input"
@@ -411,7 +411,7 @@ const Search = () => {
               {...hitSlopFor(20)}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
-              <X size={20} color={colors.secondary} />
+              <X size={iconSize.control} color={colors.secondary} />
             </Touchable>
           )}
         </View>
@@ -419,7 +419,7 @@ const Search = () => {
 
       {hasSearched && !isLoading && hasError && (
         <StatusBanner
-          icon={<CloudOff size={14} color={colors.subtext} />}
+          icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
           text={t('search.searchError')}
           closable
           style={styles.errorBanner}

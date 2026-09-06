@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 import {
   View,
   StyleSheet,
@@ -56,7 +56,7 @@ const ExternalSongRow: React.FC<Props> = ({
       trailing={
         <View style={styles.rowRight}>
           {hasPreview && (
-            <PlayCircle size={16} color={colors.subtext} />
+            <PlayCircle size={iconSize.inline} color={colors.subtext} />
           )}
           <ExternalSongOptions
             song={song}

@@ -19,7 +19,7 @@ import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors
 import { canJumpWithin } from '@/utils/playback/contentKind';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, controlSize, fontScaleCap, onDark, spacing, typography } from '@/constants/design';
+import { cappedTypography, controlSize, fontScaleCap, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import haptics from '@/utils/haptics';
@@ -49,10 +49,10 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
       style={[styles.playButton, { borderRadius: rad.pillFor(controlSize.playerPrimary) }, animStyle]}
     >
       {isBuffering
-        ? <SpinningLoaderCircle size={18} color="#000" />
+        ? <SpinningLoaderCircle size={iconSize.row} color="#000" />
         : isPlaying
-          ? <Pause size={26} color="#000" fill="#000" />
-          : <Play size={26} color="#000" fill="#000" />
+          ? <Pause size={iconSize.loader} color="#000" fill="#000" />
+          : <Play size={iconSize.loader} color="#000" fill="#000" />
       }
     </AnimatedPressable>
   );
@@ -110,7 +110,7 @@ function ToggleButton({
         <View style={styles.activeBadgeSlot}>
           {badge === 'dot'
             ? <View style={[styles.activeDot, { borderRadius: rad.pill }, styles.activeDotVisible]} />
-            : <Sparkle size={9} color={onDark.text} fill={onDark.text} />
+            : <Sparkle size={iconSize.marker} color={onDark.text} fill={onDark.text} />
           }
         </View>
       )}
@@ -133,7 +133,7 @@ function JumpButton({ direction, onPress }: { direction: 'back' | 'forward'; onP
       hitSlop={HIT_SLOP}
     >
       <View style={styles.jumpWrapper}>
-        <Icon size={28} color={onDark.text} />
+        <Icon size={iconSize.large} color={onDark.text} />
         <Text style={styles.jumpLabel} maxFontSizeMultiplier={fontScaleCap.glyph}>{label}</Text>
       </View>
     </Touchable>
@@ -172,7 +172,7 @@ const Controls: React.FC = () => {
         active={shuffleMode !== 'off'}
         onPress={handleShuffle}
       >
-        <Shuffle size={23} color={toggleColor(shuffleMode !== 'off')} />
+        <Shuffle size={iconSize.header} color={toggleColor(shuffleMode !== 'off')} />
       </ToggleButton>
 
       <Touchable
@@ -181,7 +181,7 @@ const Controls: React.FC = () => {
         onPress={handleSkipPrev}
         hitSlop={HIT_SLOP}
       >
-        <SkipBack size={34} color={onDark.text} fill={onDark.text} />
+        <SkipBack size={iconSize.transport} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
       {showJumpButtons && canJump && <JumpButton direction="back" onPress={handleJumpBack} />}
@@ -196,7 +196,7 @@ const Controls: React.FC = () => {
         onPress={handleSkipNext}
         hitSlop={HIT_SLOP}
       >
-        <SkipForward size={34} color={onDark.text} fill={onDark.text} />
+        <SkipForward size={iconSize.transport} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
       <ToggleButton
@@ -207,8 +207,8 @@ const Controls: React.FC = () => {
         onPress={handleRepeat}
       >
         {repeatMode === 'one'
-          ? <Repeat1 size={23} color={toggleColor(true)} />
-          : <Repeat size={23} color={toggleColor(repeatMode !== 'off')} />
+          ? <Repeat1 size={iconSize.header} color={toggleColor(true)} />
+          : <Repeat size={iconSize.header} color={toggleColor(repeatMode !== 'off')} />
         }
       </ToggleButton>
     </View>

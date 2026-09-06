@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { sourceColor, spacing, statusColor, typography } from '@/constants/design'
+import { iconSize, sourceColor, spacing, statusColor, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
@@ -402,8 +402,8 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         >
           <View style={[styles.showMoreIcon, { backgroundColor: colors.card, borderRadius: rad.thumb }]}>
             {isUnowned
-              ? <Globe size={18} color={colors.secondary} />
-              : <Ellipsis size={18} color={colors.secondary} />
+              ? <Globe size={iconSize.row} color={colors.secondary} />
+              : <Ellipsis size={iconSize.row} color={colors.secondary} />
             }
           </View>
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>

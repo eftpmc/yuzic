@@ -13,7 +13,7 @@ import StatusBanner from '@/components/StatusBanner';
 import PlaylistContent from './components/Content';
 import LoadingPlaylistContent from './components/Content/Loading';
 import { DETAIL_BAR_HEIGHT } from '@/components/DetailHeader'
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 const PlaylistScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -48,7 +48,7 @@ const PlaylistScreen: React.FC = () => {
           style={[styles.degradedBanner, { top: insets.top + DETAIL_BAR_HEIGHT }]}
         >
           <StatusBanner
-            icon={<CloudOff size={14} color={colors.subtext} />}
+            icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
             text={t('common.serverUnreachableBanner')}
             closable
             testID="server-unreachable-banner"

@@ -13,7 +13,7 @@ import {
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function PendingOfflineChanges() {
@@ -60,7 +60,7 @@ export default function PendingOfflineChanges() {
   return (
     <SettingsCard style={styles.card}>
       <View style={[styles.iconWrap, { backgroundColor: `${colors.themeColor}22`, borderRadius: rad.pill }]}>
-        <CloudUpload size={21} color={colors.themeColor} />
+        <CloudUpload size={iconSize.control} color={colors.themeColor} />
       </View>
       <View style={styles.textWrap}>
         <Text style={[styles.title, { color: colors.secondary }]}>
@@ -83,7 +83,7 @@ export default function PendingOfflineChanges() {
                 { backgroundColor: `${colors.themeColor}18`, borderColor: `${colors.themeColor}44`, borderRadius: rad.md },
               ]}
             >
-              <RotateCcw size={14} color={colors.themeColor} />
+              <RotateCcw size={iconSize.badge} color={colors.themeColor} />
               <Text style={[styles.actionText, { color: colors.themeColor }]}>
                 {t('settings.library.offlineChanges.retry')}
               </Text>
@@ -93,7 +93,7 @@ export default function PendingOfflineChanges() {
             onPress={discardPending}
             style={[styles.actionButton, discardBtnStyle, { borderRadius: rad.md }]}
           >
-            <Trash2 size={14} color={discardIconColor} />
+            <Trash2 size={iconSize.badge} color={discardIconColor} />
             <Text style={[styles.actionText, { color: discardTextColor }]}>
               {t('settings.library.offlineChanges.discard')}
             </Text>

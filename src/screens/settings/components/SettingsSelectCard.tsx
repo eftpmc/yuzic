@@ -5,7 +5,7 @@ import SettingsCard from './SettingsCard';
 import SettingsDivider from './SettingsDivider';
 import SettingsRow from './SettingsRow';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 
 export type SelectItem = { key: string; label: string };
 
@@ -38,7 +38,7 @@ const SettingsSelectCard: React.FC<Props> = ({
       <SettingsCard>
         {isLoading ? (
           <View style={styles.loader}>
-            <SpinningLoaderCircle size={18} color={colors.themeColor} />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.themeColor} />
           </View>
         ) : (
           items.map((item, index) => (

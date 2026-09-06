@@ -16,7 +16,7 @@ import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { podcastEpisodeToSong } from '@/utils/playback/buildPodcastSong';
@@ -109,7 +109,7 @@ export default function PodcastChannelScreen() {
           </View>
           <View style={styles.action}>
             {isDownloading ? (
-              <SpinningLoaderCircle size={18} color={colors.subtext} />
+              <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
             ) : playable ? (
               <Touchable
                 onPress={() => handlePlay(item)}
@@ -117,10 +117,10 @@ export default function PodcastChannelScreen() {
                 accessibilityLabel={t('podcasts.play')}
                 {...hitSlopFor(22)}
               >
-                <Play size={22} color={colors.themeColor} fill={colors.themeColor} />
+                <Play size={iconSize.secondary} color={colors.themeColor} fill={colors.themeColor} />
               </Touchable>
             ) : item.status === 'completed' ? (
-              <CheckCircle size={22} color={colors.subtext} />
+              <CheckCircle size={iconSize.secondary} color={colors.subtext} />
             ) : (
               <Touchable
                 onPress={() => void handleDownload(item)}
@@ -128,7 +128,7 @@ export default function PodcastChannelScreen() {
                 accessibilityLabel={t('podcasts.download')}
                 {...hitSlopFor(22)}
               >
-                <ArrowDownCircle size={22} color={colors.secondary} />
+                <ArrowDownCircle size={iconSize.secondary} color={colors.secondary} />
               </Touchable>
             )}
           </View>

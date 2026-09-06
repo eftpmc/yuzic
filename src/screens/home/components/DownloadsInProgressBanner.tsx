@@ -9,7 +9,7 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { useDownloadersQueue } from '@/features/downloaders/DownloadersQueueContext';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 
 /**
  * Banner that surfaces active downloader queues (Lidarr / slskd) at the top
@@ -43,7 +43,7 @@ export function DownloadsInProgressBanner() {
     <View style={[styles.container, { backgroundColor: colors.muted, borderRadius: rad.card }]}>
       <Touchable style={styles.body} onPress={handleOpen} accessibilityRole="button" accessibilityLabel={t('home.downloadsBanner.open')}>
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
-          <SpinningLoaderCircle size={14} color="#000" />
+          <SpinningLoaderCircle size={iconSize.badge} color="#000" />
         </View>
         <View style={styles.text}>
           <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
@@ -53,7 +53,7 @@ export function DownloadsInProgressBanner() {
             {summary}
           </Text>
         </View>
-        <CloudDownload size={20} color={colors.subtext} />
+        <CloudDownload size={iconSize.control} color={colors.subtext} />
       </Touchable>
     </View>
   );

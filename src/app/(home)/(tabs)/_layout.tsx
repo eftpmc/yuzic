@@ -13,7 +13,7 @@ import PlayingBar from '@/screens/playing/playingBar/PlayingBar';
 import Touchable from '@/components/Touchable';
 import { useTheme } from '@/hooks/useTheme';
 import { selectThemeColor, selectTranslucentDock } from '@/utils/redux/selectors/settingsSelectors';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 /**
  * The tab bar is a real react-navigation bottom tab bar now: the tab-tracking
@@ -125,7 +125,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           inactiveColor={inactiveColor}
         >
           {(color, strokeWidth) => (
-            <Home size={24} color={color} strokeWidth={strokeWidth} />
+            <Home size={iconSize.header} color={color} strokeWidth={strokeWidth} />
           )}
         </TabButton>
         <TabButton
@@ -137,7 +137,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           inactiveColor={inactiveColor}
         >
           {(color, strokeWidth) => (
-            <Search size={24} color={color} strokeWidth={strokeWidth} />
+            <Search size={iconSize.header} color={color} strokeWidth={strokeWidth} />
           )}
         </TabButton>
         <TabButton
@@ -149,7 +149,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
           inactiveColor={inactiveColor}
         >
           {(color, strokeWidth) => (
-            <Library size={24} color={color} strokeWidth={strokeWidth} />
+            <Library size={iconSize.header} color={color} strokeWidth={strokeWidth} />
           )}
         </TabButton>
       </View>

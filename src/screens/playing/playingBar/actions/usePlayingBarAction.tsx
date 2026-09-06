@@ -9,6 +9,7 @@ import { useAlbums } from '@/hooks/albums';
 import { useApi } from '@/api';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useTheme } from '@/hooks/useTheme';
+import { iconSize } from '@/constants/design';
 
 export type PlayingBarActionConfig = {
   id: PlayingBarAction;
@@ -57,7 +58,7 @@ export function usePlayingBarAction(
     case 'skip':
       return {
         id,
-        icon: <SkipForward size={20} color={iconColor} />,
+        icon: <SkipForward size={iconSize.control} color={iconColor} />,
         label: label('skip'),
         onPress: skipToNext,
       };
@@ -65,7 +66,7 @@ export function usePlayingBarAction(
     case 'favorite':
       return {
         id,
-        icon: <Heart size={20} color={iconColor} fill={isFavorite ? iconColor : 'none'} />,
+        icon: <Heart size={iconSize.control} color={iconColor} fill={isFavorite ? iconColor : 'none'} />,
         label: label('favorite'),
         selected: isFavorite,
         onPress: async () => {
@@ -102,7 +103,7 @@ export function usePlayingBarAction(
     case 'randomAlbum':
       return {
         id,
-        icon: <Dices size={20} color={iconColor} />,
+        icon: <Dices size={iconSize.control} color={iconColor} />,
         label: label('randomAlbum'),
         onPress: async () => {
           if (!albums.length) return;
@@ -130,7 +131,7 @@ export function usePlayingBarAction(
     case 'addToPlaylist':
       return {
         id,
-        icon: <PlusCircle size={20} color={iconColor} />,
+        icon: <PlusCircle size={iconSize.control} color={iconColor} />,
         label: label('addToPlaylist'),
         onPress: options?.presentAddToPlaylist ?? (() => {}),
       };
@@ -138,7 +139,7 @@ export function usePlayingBarAction(
     case 'cast':
       return {
         id,
-        icon: <Cast size={20} color={iconColor} />,
+        icon: <Cast size={iconSize.control} color={iconColor} />,
         label: label('cast'),
         onPress: options?.presentCast ?? (() => {}),
       };

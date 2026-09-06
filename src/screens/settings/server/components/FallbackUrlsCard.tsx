@@ -7,7 +7,7 @@ import { Plus, X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { forgetReachable } from '@/utils/servers/urlFailover';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
@@ -88,7 +88,7 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
                 onPress={() => handleRemove(index)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <X size={18} color={colors.subtext} />
+                <X size={iconSize.row} color={colors.subtext} />
               </Touchable>
             </View>
             {index < urls.length - 1 && <SettingsDivider />}
@@ -117,7 +117,7 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
             onPress={handleAdd}
             style={[styles.addButton, { backgroundColor: colors.muted, borderRadius: rad.md }]}
           >
-            <Plus size={18} color={colors.secondary} />
+            <Plus size={iconSize.row} color={colors.secondary} />
           </Touchable>
         </View>
         {error && (

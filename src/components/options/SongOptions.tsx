@@ -32,7 +32,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { statusColor } from '@/constants/design';
+import { iconSize, statusColor } from '@/constants/design';
 import haptics from '@/utils/haptics';
 
 type SongOptionsProps = {
@@ -266,25 +266,25 @@ const SongOptions = forwardRef<
           <OptionSheetDivider />
 
           <OptionSheetRow
-            icon={<Heart size={26} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
+            icon={<Heart size={iconSize.loader} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
             label={isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             onPress={toggleFavorite}
           />
 
           <OptionSheetRow
-            icon={<ListStart size={26} color={colors.secondary} />}
+            icon={<ListStart size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.addToQueue')}
             onPress={handleAddToQueue}
           />
 
           <OptionSheetRow
-            icon={<ListEnd size={26} color={colors.secondary} />}
+            icon={<ListEnd size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.addToEnd')}
             onPress={handleAddToEndQueue}
           />
 
           <OptionSheetRow
-            icon={<CirclePlus size={26} color={colors.secondary} />}
+            icon={<CirclePlus size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.addToPlaylist')}
             onPress={handleAddToPlaylist}
           />
@@ -292,9 +292,9 @@ const SongOptions = forwardRef<
           <OptionSheetRow
             icon={
               isDownloaded ? (
-                <CheckCircle size={26} color={colors.subtext} />
+                <CheckCircle size={iconSize.loader} color={colors.subtext} />
               ) : (
-                <ArrowDownCircle size={26} color={colors.secondary} />
+                <ArrowDownCircle size={iconSize.loader} color={colors.secondary} />
               )
             }
             label={isDownloading ? t('songOptions.actions.downloading') : isDownloaded ? t('songOptions.actions.downloaded') : t('songOptions.actions.download')}
@@ -306,7 +306,7 @@ const SongOptions = forwardRef<
 
           {selectedSong.albumId && (
             <OptionSheetRow
-              icon={<Disc size={26} color={colors.secondary} />}
+              icon={<Disc size={iconSize.loader} color={colors.secondary} />}
               label={t('songOptions.actions.goToAlbum')}
               onPress={handleGoToAlbum}
             />
@@ -314,21 +314,21 @@ const SongOptions = forwardRef<
 
           {selectedSong.artistId && (
             <OptionSheetRow
-              icon={<Mic2 size={26} color={colors.secondary} />}
+              icon={<Mic2 size={iconSize.loader} color={colors.secondary} />}
               label={t('songOptions.actions.goToArtist')}
               onPress={handleGoToArtist}
             />
           )}
 
           <OptionSheetRow
-            icon={<Radio size={26} color={colors.secondary} />}
+            icon={<Radio size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.instantMix')}
             onPress={handleInstantMix}
           />
 
           {audiomuseConfigured && (
             <OptionSheetRow
-              icon={<Sparkles size={26} color={colors.secondary} />}
+              icon={<Sparkles size={iconSize.loader} color={colors.secondary} />}
               label={t('songOptions.actions.generatePlaylist')}
               onPress={handleGeneratePlaylist}
               disabled={isGeneratingPlaylist}

@@ -4,7 +4,7 @@ import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { SETTINGS_STATUS_COLORS } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
  type Props = {
@@ -53,10 +53,10 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
               ? { backgroundColor: colors.themeColor, borderColor: colors.themeColor }
               : { borderColor: colors.border },
           ]}>
-            {checked && <Check size={13} color="#fff" strokeWidth={3} />}
+            {checked && <Check size={iconSize.badge} color="#fff" strokeWidth={3} />}
           </View>
         ) : (
-          <ChevronRight size={18} color={colors.border} />
+          <ChevronRight size={iconSize.row} color={colors.border} />
         )}
       </View>
     </Touchable>

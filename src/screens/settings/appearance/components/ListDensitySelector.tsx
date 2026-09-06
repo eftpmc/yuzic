@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react-native';
 
 import { useTheme } from '@/hooks/useTheme';
-import { listDensity, spacing, typography, type ListDensity } from '@/constants/design';
+import { iconSize, listDensity, spacing, type ListDensity, typography } from '@/constants/design';
 import { selectListDensity, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setListDensity } from '@/utils/redux/slices/settingsSlice';
 import { useRadius } from '@/hooks/useRadius';
@@ -72,7 +72,7 @@ export const ListDensitySelector: React.FC = () => {
                     {t(`settings.appearance.listDensity.${density}.subtext`)}
                   </Text>
                 </View>
-                {isActive && <Check size={20} color={themeColor} />}
+                {isActive && <Check size={iconSize.control} color={themeColor} />}
               </Touchable>
               {index < DENSITIES.length - 1 && <SettingsDivider />}
             </React.Fragment>

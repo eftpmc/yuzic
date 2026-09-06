@@ -15,7 +15,7 @@ import StatusBanner from '@/components/StatusBanner';
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
 import { DETAIL_BAR_HEIGHT } from '@/components/DetailHeader'
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type RouteParams = {
   id?: string;
@@ -81,7 +81,7 @@ const ArtistScreen: React.FC = () => {
             style={[styles.degradedBanner, { top: insets.top + DETAIL_BAR_HEIGHT }]}
           >
             <StatusBanner
-              icon={<CloudOff size={14} color={colors.subtext} />}
+              icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
               text={t('common.serverUnreachableBanner')}
               closable
               testID="server-unreachable-banner"

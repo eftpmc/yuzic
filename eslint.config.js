@@ -70,6 +70,14 @@ module.exports = defineConfig([
         conditionalLiteralValue("fontSize", "typography"),
         conditionalLiteralValue("borderRadius", "radius"),
         ...SPACING_PROPERTIES.map(p => conditionalLiteralValue(p, "spacing")),
+        // The glyph scale, which lives on a JSX attribute rather than a style
+        // property — so none of the selectors above could ever have seen it,
+        // and it drifted to 20 distinct values across 294 icons.
+        {
+          selector: "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal",
+          message:
+            "Use an iconSize token from @/constants/design instead of a literal size. Adding a role there is fine; a one-off number is how the scale drifts.",
+        },
         // `components/Touchable` is the app's one answer to a press. A second
         // one drifts back the moment it is importable — a `TouchableOpacity`
         // had already reappeared in the server settings after the sweep that

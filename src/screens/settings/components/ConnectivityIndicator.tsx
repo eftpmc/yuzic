@@ -1,5 +1,5 @@
 import React from 'react';
-import { statusColor } from '@/constants/design';
+import { iconSize, statusColor } from '@/constants/design';
 import { View, StyleSheet } from 'react-native';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
@@ -15,7 +15,7 @@ const ConnectivityIndicator: React.FC<Props> = ({ isLoading, isConnected }) => {
   const rad = useRadius();
 
   if (isLoading) {
-    return <SpinningLoaderCircle size={14} color={colors.themeColor} />;
+    return <SpinningLoaderCircle size={iconSize.badge} color={colors.themeColor} />;
   }
 
   return (

@@ -23,7 +23,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { spacing, typography, onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Servers() {
@@ -119,7 +119,7 @@ export default function Servers() {
                     hitSlop={10}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <Ellipsis size={18} color={onDark.mutedText} />
+                    <Ellipsis size={iconSize.row} color={onDark.mutedText} />
                 </Touchable>
             </View>
         );

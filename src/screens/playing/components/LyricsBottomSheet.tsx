@@ -23,7 +23,7 @@ import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
@@ -164,7 +164,7 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
             style={styles.closeButton}
             hitSlop={hitSlopFor(40)}
           >
-            <ChevronDown size={28} color={colors.secondary} />
+            <ChevronDown size={iconSize.large} color={colors.secondary} />
           </Touchable>
           <Text
             style={[styles.title, { color: colors.secondary }]}

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect } from 'react';
-import { fontScaleCap, hitSlopFor, spacing, statusColor, typography } from '@/constants/design';
+import { fontScaleCap, hitSlopFor, iconSize, spacing, statusColor, typography } from '@/constants/design';
 import { useListDensity } from '@/hooks/useListDensity';
 import {
   Text,
@@ -106,10 +106,10 @@ const SongRow: React.FC<Props> = ({
         trailing={
           <View style={styles.rowRight}>
             <Animated.View style={heartStyle}>
-              <Heart size={15} color={statusColor.favorite} fill={statusColor.favorite} />
+              <Heart size={iconSize.inline} color={statusColor.favorite} fill={statusColor.favorite} />
             </Animated.View>
             {downloaded && (isAlbumCompact || showDownloadedDot) && (
-              <ArrowDownCircle size={16} color={colors.subtext} />
+              <ArrowDownCircle size={iconSize.inline} color={colors.subtext} />
             )}
             <Touchable
               onPress={openOptions}
@@ -117,7 +117,7 @@ const SongRow: React.FC<Props> = ({
               accessibilityRole="button"
               accessibilityLabel={t('a11y.rows.options', { title: song.title })}
             >
-              <Ellipsis size={18} color={colors.secondary} />
+              <Ellipsis size={iconSize.row} color={colors.secondary} />
             </Touchable>
           </View>
         }

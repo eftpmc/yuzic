@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, statusColor } from '@/constants/design';
+import { hitSlopFor, iconSize, statusColor } from '@/constants/design';
 import { downloaderQueueStyles as styles, type RowCancelHelpers } from './DownloaderSettingsScreen';
 
 /**
@@ -53,7 +53,7 @@ export function useLidarrRenderItem() {
               {cancel.requestCancel && (
                 cancel.isCancelling ? (
                   <View style={styles.cancelButton}>
-                    <SpinningLoaderCircle size={18} color={colors.subtext} />
+                    <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
                   </View>
                 ) : (
                   <Touchable
@@ -64,7 +64,7 @@ export function useLidarrRenderItem() {
                     accessibilityRole="button"
                     accessibilityLabel={t('settings.downloaders.cancelAria', { title })}
                   >
-                    <X size={18} color={statusColor.destructive} />
+                    <X size={iconSize.row} color={statusColor.destructive} />
                   </Touchable>
                 )
               )}

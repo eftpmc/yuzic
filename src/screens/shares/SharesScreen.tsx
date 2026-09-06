@@ -14,7 +14,7 @@ import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { shareItem } from '@/utils/share';
 
@@ -120,7 +120,7 @@ export default function SharesScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('shares.share')}
           >
-            <Share2 size={18} color={colors.subtext} />
+            <Share2 size={iconSize.row} color={colors.subtext} />
           </Touchable>
           <Touchable
             onPress={() => handleDelete(item)}
@@ -129,7 +129,7 @@ export default function SharesScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('shares.revoke')}
           >
-            <Trash2 size={18} color={colors.subtext} />
+            <Trash2 size={iconSize.row} color={colors.subtext} />
           </Touchable>
         </View>
       </View>
@@ -153,13 +153,13 @@ export default function SharesScreen() {
         </View>
       ) : sharesQuery.isError ? (
         <EmptyState
-          icon={<Link2 size={40} color={colors.subtext} />}
+          icon={<Link2 size={iconSize.emptyState} color={colors.subtext} />}
           message={t('common.loadFailed')}
           action={{ label: t('common.retry'), onPress: () => sharesQuery.refetch() }}
         />
       ) : (sharesQuery.data ?? []).length === 0 ? (
         <EmptyState
-          icon={<Link2 size={40} color={colors.subtext} />}
+          icon={<Link2 size={iconSize.emptyState} color={colors.subtext} />}
           message={t('shares.empty')}
         />
       ) : (

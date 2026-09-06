@@ -14,7 +14,7 @@ import MediaListRow from '@/components/MediaListRow';
 import Touchable from '@/components/Touchable';
 import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
-import { controlSize, hitSlopFor, spacing } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, spacing } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
@@ -107,7 +107,7 @@ export default function RadioScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('radio.editTitle')}
             >
-              <Pencil size={18} color={colors.subtext} />
+              <Pencil size={iconSize.row} color={colors.subtext} />
             </Touchable>
             <Touchable
               onPress={() => handleDelete(item)}
@@ -116,7 +116,7 @@ export default function RadioScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('common.delete')}
             >
-              <Trash2 size={18} color={colors.subtext} />
+              <Trash2 size={iconSize.row} color={colors.subtext} />
             </Touchable>
           </View>
         }
@@ -143,7 +143,7 @@ export default function RadioScreen() {
             onPress={() => setEditing({ mode: 'add' })}
             accessibilityLabel={t('radio.add')}
           >
-            <Plus size={24} color={colors.secondary} />
+            <Plus size={iconSize.header} color={colors.secondary} />
           </DetailHeaderIconButton>
         }
       />
@@ -156,13 +156,13 @@ export default function RadioScreen() {
         </View>
       ) : stationsQuery.isError ? (
         <EmptyState
-          icon={<RadioIcon size={40} color={colors.subtext} />}
+          icon={<RadioIcon size={iconSize.emptyState} color={colors.subtext} />}
           message={t('common.loadFailed')}
           action={{ label: t('common.retry'), onPress: () => stationsQuery.refetch() }}
         />
       ) : !stationsQuery.data?.length ? (
         <EmptyState
-          icon={<RadioIcon size={40} color={colors.subtext} />}
+          icon={<RadioIcon size={iconSize.emptyState} color={colors.subtext} />}
           message={t('radio.empty')}
           action={{ label: t('radio.add'), onPress: () => setEditing({ mode: 'add' }) }}
         />
@@ -194,7 +194,7 @@ function StationIcon() {
   const rad = useRadius();
   return (
     <View style={[styles.iconWrap, { backgroundColor: colors.muted, borderRadius: rad.thumb }]}>
-      <RadioIcon size={20} color={colors.secondary} />
+      <RadioIcon size={iconSize.control} color={colors.secondary} />
     </View>
   );
 }

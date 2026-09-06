@@ -17,7 +17,7 @@ import {
 
 import { useApi } from '@/api'
 import { useTheme } from '@/hooks/useTheme'
-import { spacing, typography } from '@/constants/design'
+import { iconSize, spacing, typography } from '@/constants/design'
 import CoverMosaic from './CoverMosaic'
 import { useLibrarySummary, type LibraryEntryKey } from './useLibrarySummary'
 import type { LibraryCollectionType } from './librarySort'
@@ -197,7 +197,7 @@ const LibraryEntryRows: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <ChevronRight size={18} color={colors.subtext} />
+                  <ChevronRight size={iconSize.row} color={colors.subtext} />
                 </View>
               </Touchable>
             )

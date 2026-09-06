@@ -15,7 +15,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from '@/components/options/OptionSheetPrimitives';
-import { controlSize, spacing, typography } from '@/constants/design';
+import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -148,7 +148,7 @@ export function FormSheet({
             accessibilityState={{ disabled: !submitEnabled }}
           >
             {submitting ? (
-              <SpinningLoaderCircle size={18} color={colors.onThemeColor} />
+              <SpinningLoaderCircle size={iconSize.row} color={colors.onThemeColor} />
             ) : (
               <Text
                 style={[

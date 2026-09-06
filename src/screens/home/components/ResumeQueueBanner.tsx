@@ -8,7 +8,7 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { useResumableServerQueue } from '@/hooks/useResumableServerQueue';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 
 /**
  * Shown at the top of Home when the server has a recent queue that this
@@ -41,8 +41,8 @@ export function ResumeQueueBanner() {
       >
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
           {resuming
-            ? <SpinningLoaderCircle size={16} color="#000" />
-            : <Play size={16} color="#000" fill="#000" />
+            ? <SpinningLoaderCircle size={iconSize.inline} color="#000" />
+            : <Play size={iconSize.inline} color="#000" fill="#000" />
           }
         </View>
         <View style={styles.text}>
@@ -64,7 +64,7 @@ export function ResumeQueueBanner() {
         accessibilityRole="button"
         accessibilityLabel={t('common.dismiss')}
       >
-        <X size={18} color={colors.subtext} />
+        <X size={iconSize.row} color={colors.subtext} />
       </Touchable>
     </View>
   );

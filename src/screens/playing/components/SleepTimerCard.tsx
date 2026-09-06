@@ -12,7 +12,7 @@ import {
   SLEEP_TIMER_INCREMENTS,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 function formatCountdown(seconds: number): string {
@@ -109,7 +109,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
       {/* Decorative moon */}
       <View style={styles.moonDecor} pointerEvents="none">
         <Moon
-          size={88}
+          size={iconSize.decorative}
           color={isActive ? themeColor : onDark.text}
           strokeWidth={1}
           style={{ opacity: 0.08 }}
@@ -119,7 +119,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
       {/* Header */}
       <View style={styles.headerRow}>
         <Moon
-          size={16}
+          size={iconSize.inline}
           color={isActive ? themeColor : 'rgba(255,255,255,0.5)'}
           fill={isActive ? themeColor : 'transparent'}
         />

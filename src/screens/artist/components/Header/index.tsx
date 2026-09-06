@@ -37,7 +37,7 @@ import {
 } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -120,7 +120,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
             </Touchable>
             {localArtist ? (
               <LocalOptionsButton artist={localArtist} />
@@ -174,7 +174,7 @@ function LocalOptionsButton({ artist }: { artist: Artist }) {
         accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => optionsSheetRef.current?.present()}
       >
-        <Ellipsis size={24} color={colors.secondary} />
+        <Ellipsis size={iconSize.header} color={colors.secondary} />
       </DetailHeaderIconButton>
       <ArtistOptions ref={optionsSheetRef} artist={artist} hideGoToArtist />
     </>
@@ -336,9 +336,9 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         accessibilityLabel={t('a11y.detail.shuffle')}
       >
         {songsLoading ? (
-          <SpinningLoaderCircle size={18} color={colors.secondary} />
+          <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
         ) : (
-          <Shuffle size={18} color={colors.secondary} />
+          <Shuffle size={iconSize.row} color={colors.secondary} />
         )}
       </DetailCircleAction>
 
@@ -348,9 +348,9 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         accessibilityLabel={t('a11y.detail.play')}
       >
         {songsLoading ? (
-          <SpinningLoaderCircle size={18} color="#fff" />
+          <SpinningLoaderCircle size={iconSize.row} color="#fff" />
         ) : (
-          <Play size={24} color="#fff" fill="#fff" />
+          <Play size={iconSize.header} color="#fff" fill="#fff" />
         )}
       </DetailPlayAction>
 
@@ -367,11 +367,11 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         )}
       >
         {isDownloadingAll || isArtistDownloading ? (
-          <SpinningLoaderCircle size={18} color={colors.secondary} />
+          <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
         ) : isArtistFullyDownloaded ? (
-          <Check size={18} color={colors.secondary} />
+          <Check size={iconSize.row} color={colors.secondary} />
         ) : (
-          <Download size={18} color={colors.secondary} />
+          <Download size={iconSize.row} color={colors.secondary} />
         )}
       </DetailCircleAction>
     </DetailActionRow>

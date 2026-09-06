@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
 import Touchable from '@/components/Touchable'
-import { spacing, typography } from '@/constants/design'
+import { iconSize, spacing, typography } from '@/constants/design'
 
 type Props = {
   message?: string
@@ -29,7 +29,7 @@ export default function NotFoundView({ message }: Props) {
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
         >
-          <ChevronLeft size={24} color={colors.secondary} />
+          <ChevronLeft size={iconSize.header} color={colors.secondary} />
         </Touchable>
         <View style={styles.headerSpacer} />
       </View>

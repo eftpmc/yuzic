@@ -20,7 +20,7 @@ import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
-import { cappedTypography, fontScaleCap, radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Settings() {
@@ -90,25 +90,25 @@ export default function Settings() {
                 <SettingsCard>
                     <SettingsRow
                         label={t('settings.rows.server')}
-                        leftIcon={<Server size={22} color={colors.secondary} />}
+                        leftIcon={<Server size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/serverView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.library')}
-                        leftIcon={<Library size={22} color={colors.secondary} />}
+                        leftIcon={<Library size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/libraryView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.player')}
-                        leftIcon={<Volume2 size={22} color={colors.secondary} />}
+                        leftIcon={<Volume2 size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/playerView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.appearance')}
-                        leftIcon={<Palette size={22} color={colors.secondary} />}
+                        leftIcon={<Palette size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/appearanceView')}
                     />
                 </SettingsCard>
@@ -116,13 +116,13 @@ export default function Settings() {
                 <SettingsCard>
                     <SettingsRow
                         label={t('settings.sections.integrations')}
-                        leftIcon={<Puzzle size={22} color={colors.secondary} />}
+                        leftIcon={<Puzzle size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/integrationsView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.downloaders.title')}
-                        leftIcon={<Download size={22} color={colors.secondary} />}
+                        leftIcon={<Download size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/downloadersView')}
                     />
                     {hasDownloader && (
@@ -130,7 +130,7 @@ export default function Settings() {
                             <SettingsDivider />
                             <SettingsRow
                                 label={t('downloads.title')}
-                                leftIcon={<CloudDownload size={22} color={colors.secondary} />}
+                                leftIcon={<CloudDownload size={iconSize.secondary} color={colors.secondary} />}
                                 onPress={() => router.push('/downloadsView')}
                             />
                         </>
@@ -144,19 +144,19 @@ export default function Settings() {
                 <SettingsCard>
                     <SettingsRow
                         label={t('settings.rows.github')}
-                        leftIcon={<Github size={22} color={colors.secondary} />}
+                        leftIcon={<Github size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => openLink('https://github.com/eftpmc/yuzic')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.privacyPolicy')}
-                        leftIcon={<ShieldCheck size={22} color={colors.secondary} />}
+                        leftIcon={<ShieldCheck size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => openLink('https://eftpmc.github.io/yuzic-web/privacypolicy/')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.termsOfUse')}
-                        leftIcon={<ScrollText size={22} color={colors.secondary} />}
+                        leftIcon={<ScrollText size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => openLink('https://eftpmc.github.io/yuzic-web/tos/')}
                     />
                 </SettingsCard>

@@ -19,7 +19,7 @@ import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useDlnaDiscovery, type DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import { useCast } from '@/contexts/CastContext';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const {
@@ -89,7 +89,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.secondary }]}>Connect</Text>
           <IconActionButton
-            icon={<RotateCcw size={16} color={colors.subtext} />}
+            icon={<RotateCcw size={iconSize.inline} color={colors.subtext} />}
             onPress={scan}
             loading={isScanning}
             accessibilityLabel={t('a11y.scanForDevices')}
@@ -106,17 +106,17 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
           }}
         >
           <View style={styles.itemLeft}>
-            <Smartphone size={18} color={!activeDevice && !airplayDevice ? themeColor : colors.subtext} />
+            <Smartphone size={iconSize.row} color={!activeDevice && !airplayDevice ? themeColor : colors.subtext} />
             <Text style={[styles.itemLabel, { color: colors.secondary }]}>This device</Text>
           </View>
-          {!activeDevice && !airplayDevice && <Check size={18} color={themeColor} />}
+          {!activeDevice && !airplayDevice && <Check size={iconSize.row} color={themeColor} />}
         </Touchable>
 
         {/* AirPlay — iOS only */}
         {Platform.OS === 'ios' && AirplayButton && (
           <View style={[styles.item, { backgroundColor: airplayDevice ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}>
             <View style={styles.itemLeft}>
-              <Airplay size={18} color={airplayDevice ? themeColor : colors.subtext} />
+              <Airplay size={iconSize.row} color={airplayDevice ? themeColor : colors.subtext} />
               <Text style={[
                 styles.itemLabel,
                 { color: colors.secondary, fontWeight: airplayDevice ? '600' : '400' },
@@ -125,7 +125,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
                 {airplayDevice ? airplayDevice.portName : 'AirPlay'}
               </Text>
             </View>
-            {airplayDevice && <Check size={18} color={themeColor} />}
+            {airplayDevice && <Check size={iconSize.row} color={themeColor} />}
             <AirplayButton
               style={StyleSheet.absoluteFillObject}
               tintColor="transparent"
@@ -149,12 +149,12 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
             onPress={disconnectDevice}
           >
             <View style={styles.itemLeft}>
-              <Cast size={18} color={themeColor} />
+              <Cast size={iconSize.row} color={themeColor} />
               <Text style={[styles.itemLabel, { color: colors.secondary, fontWeight: '600' }]}>
                 {activeDevice.name}
               </Text>
             </View>
-            <Check size={18} color={themeColor} />
+            <Check size={iconSize.row} color={themeColor} />
           </Touchable>
         )}
 
@@ -169,10 +169,10 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
               disabled={isConnecting}
             >
               <View style={styles.itemLeft}>
-                <Cast size={18} color={colors.subtext} />
+                <Cast size={iconSize.row} color={colors.subtext} />
                 <Text style={[styles.itemLabel, { color: colors.secondary }]}>{device.name}</Text>
               </View>
-              {connectingDlnaUdn === device.udn && <SpinningLoaderCircle size={18} color={colors.subtext} />}
+              {connectingDlnaUdn === device.udn && <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />}
             </Touchable>
           );
         })}
@@ -180,7 +180,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {/* Scanning / empty state */}
         {isScanning && devices.length === 0 && !activeDevice && (
           <View style={styles.searchingRow}>
-            <SpinningLoaderCircle size={16} color={colors.subtext} />
+            <SpinningLoaderCircle size={iconSize.inline} color={colors.subtext} />
             <Text style={[styles.empty, { color: colors.subtext, paddingVertical: 0 }]}>
               Searching for devices...
             </Text>
@@ -201,8 +201,8 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         >
           <View style={styles.itemLeft}>
             {isProbing
-              ? <SpinningLoaderCircle size={18} color={colors.subtext} />
-              : <Plus size={18} color={colors.subtext} />
+              ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
+              : <Plus size={iconSize.row} color={colors.subtext} />
             }
             <Text style={[styles.itemLabel, { color: colors.subtext }]}>Add device manually</Text>
           </View>

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { controlSize, hitSlopFor, spacing, typography } from '@/constants/design'
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import {
   selectLibraryViewMode,
@@ -154,7 +154,7 @@ const LibraryList: React.FC<Props> = ({
                 onPress={() => sortSheetRef.current?.present()}
                 accessibilityRole="button"
               >
-                <ArrowUpDown size={17} color={colors.secondary} />
+                <ArrowUpDown size={iconSize.row} color={colors.secondary} />
                 <Text style={[styles.sortLabel, { color: colors.secondary }]}>
                   {sortLabel}
                 </Text>
@@ -171,8 +171,8 @@ const LibraryList: React.FC<Props> = ({
                 accessibilityLabel={isGridView ? t('library.view.switchToList') : t('library.view.switchToGrid')}
               >
                 {isGridView
-                  ? <List size={17} color={colors.secondary} />
-                  : <Grid2x2 size={17} color={colors.secondary} />
+                  ? <List size={iconSize.row} color={colors.secondary} />
+                  : <Grid2x2 size={iconSize.row} color={colors.secondary} />
                 }
               </Touchable>
             </View>

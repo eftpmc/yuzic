@@ -22,7 +22,7 @@ import {
     authenticateWithQuickConnect,
 } from '@/api/jellyfin/auth/quickConnect';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, statusColor, typography } from '@/constants/design';
+import { iconSize, onDark, spacing, statusColor, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 // Quick Connect codes expire server-side; without a client-side ceiling too,
@@ -206,12 +206,12 @@ export default function Credentials() {
                                 <Text style={styles.quickConnectCode}>{quickCode}</Text>
                             ) : (
                                 <View style={{ marginVertical: spacing.roomy }}>
-                                  <SpinningLoaderCircle size={26} color={onDark.text} />
+                                  <SpinningLoaderCircle size={iconSize.loader} color={onDark.text} />
                                 </View>
                             )}
                             {isPolling && quickCode ? (
                                 <View style={styles.quickConnectWaiting}>
-                                    <SpinningLoaderCircle size={16} color={onDark.mutedText} />
+                                    <SpinningLoaderCircle size={iconSize.inline} color={onDark.mutedText} />
                                     <Text style={styles.quickConnectWaitingText}>
                                         Waiting for approval…
                                     </Text>
@@ -225,7 +225,7 @@ export default function Credentials() {
                         // ── Username / password form ──────────────────────────
                         <>
                             <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
-                                <User size={20} color={onDark.mutedText} style={styles.inputIcon} />
+                                <User size={iconSize.control} color={onDark.mutedText} style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder={t('onboarding.credentials.usernamePlaceholder')}
@@ -239,7 +239,7 @@ export default function Credentials() {
                             </View>
 
                             <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
-                                <Lock size={20} color={onDark.mutedText} style={styles.inputIcon} />
+                                <Lock size={iconSize.control} color={onDark.mutedText} style={styles.inputIcon} />
                                 <TextInput
                                     ref={passwordRef}
                                     style={styles.input}
@@ -259,23 +259,23 @@ export default function Credentials() {
                                 style={styles.proxyToggle}
                                 onPress={() => setProxyExpanded(v => !v)}
                             >
-                                <Shield size={16} color={onDark.mutedText} style={styles.proxyToggleIcon} />
+                                <Shield size={iconSize.inline} color={onDark.mutedText} style={styles.proxyToggleIcon} />
                                 <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
-                                {proxyExpanded ? <ChevronUp size={16} color={onDark.mutedText} /> : <ChevronDown size={16} color={onDark.mutedText} />}
+                                {proxyExpanded ? <ChevronUp size={iconSize.inline} color={onDark.mutedText} /> : <ChevronDown size={iconSize.inline} color={onDark.mutedText} />}
                             </Touchable>
 
                             {proxyExpanded && (
                                 <View style={styles.proxySection}>
                                     {insecureWithProxy && (
                                         <View style={[styles.warningRow, { borderRadius: rad.md }]}>
-                                            <TriangleAlert size={15} color="#f59e0b" />
+                                            <TriangleAlert size={iconSize.inline} color="#f59e0b" />
                                             <Text style={styles.warningText}>
                                                 Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
                                             </Text>
                                         </View>
                                     )}
                                     <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
-                                        <User size={20} color={onDark.mutedText} style={styles.inputIcon} />
+                                        <User size={iconSize.control} color={onDark.mutedText} style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyUsernameRef}
                                             style={styles.input}
@@ -289,7 +289,7 @@ export default function Credentials() {
                                         />
                                     </View>
                                     <View style={[styles.inputWrapper, { borderRadius: rad.md }]}>
-                                        <Lock size={20} color={onDark.mutedText} style={styles.inputIcon} />
+                                        <Lock size={iconSize.control} color={onDark.mutedText} style={styles.inputIcon} />
                                         <TextInput
                                             ref={proxyPasswordRef}
                                             style={styles.input}
@@ -313,9 +313,9 @@ export default function Credentials() {
                                     onPress={handleStartQuickConnect}
                                     disabled={isTesting}
                                 >
-                                    <QrCode size={16} color={onDark.mutedText} style={styles.proxyToggleIcon} />
+                                    <QrCode size={iconSize.inline} color={onDark.mutedText} style={styles.proxyToggleIcon} />
                                     <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
-                                    <ChevronRight size={16} color={onDark.mutedText} />
+                                    <ChevronRight size={iconSize.inline} color={onDark.mutedText} />
                                 </Touchable>
                             )}
                         </>
@@ -330,7 +330,7 @@ export default function Credentials() {
                             disabled={isTesting}
                         >
                             {isTesting
-                                ? <SpinningLoaderCircle size={18} color="#000" />
+                                ? <SpinningLoaderCircle size={iconSize.row} color="#000" />
                                 : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                             }
                         </Touchable>

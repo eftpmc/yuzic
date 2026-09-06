@@ -12,7 +12,7 @@ import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   album: AlbumBase;
@@ -46,7 +46,7 @@ const AlbumRow: React.FC<Props> = ({
         onPress={handlePress}
         trailing={
           <IconActionButton
-            icon={<Ellipsis size={24} color={colors.secondary} />}
+            icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
             onPress={handleOptionsPress}
             accessibilityLabel={t('a11y.rows.options', { title: album.title })}
             size="compact"

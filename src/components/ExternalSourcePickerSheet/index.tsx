@@ -15,7 +15,7 @@ import {
 } from '@/components/options/OptionSheetPrimitives'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
@@ -56,7 +56,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         <BottomSheetScrollView style={sheetBg} contentContainerStyle={optionSheetStyles.sheetContent}>
           {isLoading && (
             <View style={styles.loading}>
-              <SpinningLoaderCircle size={26} color={colors.subtext} />
+              <SpinningLoaderCircle size={iconSize.loader} color={colors.subtext} />
             </View>
           )}
 

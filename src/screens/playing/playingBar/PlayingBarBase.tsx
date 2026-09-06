@@ -35,7 +35,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, onDark, radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 
 type Variant = 'ios' | 'android';
 
@@ -341,10 +341,10 @@ export default function PlayingBarBase({ variant }: Props) {
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           {isBuffering
-            ? <SpinningLoaderCircle size={20} color={colors.secondary} />
+            ? <SpinningLoaderCircle size={iconSize.control} color={colors.secondary} />
             : isPlaying
-              ? <Pause size={24} color={colors.secondary} fill={colors.secondary} />
-              : <Play size={24} color={colors.secondary} fill={colors.secondary} />
+              ? <Pause size={iconSize.header} color={colors.secondary} fill={colors.secondary} />
+              : <Play size={iconSize.header} color={colors.secondary} fill={colors.secondary} />
           }
         </Touchable>
       )}
