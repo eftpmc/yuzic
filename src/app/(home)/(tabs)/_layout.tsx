@@ -5,6 +5,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { Home, Library, Search } from 'lucide-react-native';
+import { StackActions } from '@react-navigation/native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BottomTabBarHeightCallbackContext } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
@@ -107,9 +108,19 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
     // tabs, navigate; if the user re-taps the current tab, popToTop so a
     // deep detail push goes back to the tab root.
     const event = navigation.emit({ type: 'tabPress', target: target.key, canPreventDefault: true });
-    if (focusedRouteName !== name && !event.defaultPrevented) {
+    if (event.defaultPrevented) return;
+
+    if (focusedRouteName !== name) {
       navigation.navigate(target.name as never);
+      return;
     }
+
+    // The event alone does not pop. The built-in tab bar pops in its own
+    // onPress and only *notifies* through `tabPress`; a custom bar has to do
+    // it itself. Without this, re-tapping the active tab from a pushed screen
+    // did nothing at all — `useScrollToTop` listens to the same event but
+    // no-ops unless the screen is already the first in its stack.
+    navigation.dispatch({ ...StackActions.popToTop(), target: target.key });
   };
 
   const rows = (
