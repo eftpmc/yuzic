@@ -10,10 +10,11 @@ import { useApi } from '@/api';
 import type { Share } from '@/api/types';
 import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
-import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import EmptyState from '@/components/EmptyState';
+import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { shareItem } from '@/utils/share';
 
@@ -23,12 +24,12 @@ function formatDate(value: string | undefined): string {
 }
 
 function formatExpiry(t: (k: string, opts?: any) => string, value: string | undefined): string {
-  if (!value) return t('shares.neverExpires', 'Never expires');
+  if (!value) return t('shares.neverExpires');
   const ms = Date.parse(value);
   if (Number.isNaN(ms)) return value;
   const now = Date.now();
-  if (ms <= now) return t('shares.expired', 'Expired');
-  return t('shares.expiresOn', { date: formatDate(value), defaultValue: `Expires ${formatDate(value)}` });
+  if (ms <= now) return t('shares.expired');
+  return t('shares.expiresOn', { date: formatDate(value) });
 }
 
 /**
@@ -67,15 +68,12 @@ export default function SharesScreen() {
 
   const handleDelete = useCallback((share: Share) => {
     Alert.alert(
-      t('shares.deleteTitle', 'Revoke share?'),
-      t('shares.deleteBody', {
-        title: share.description ?? share.url,
-        defaultValue: `The link will stop working immediately.`,
-      }),
+      t('shares.deleteTitle'),
+      t('shares.deleteBody', { title: share.description ?? share.url }),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('common.delete', 'Revoke'),
+          text: t('shares.revoke'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -90,6 +88,55 @@ export default function SharesScreen() {
     );
   }, [api.shares, queryClient, t]);
 
+  const renderSeparator = useCallback(
+    () => <View style={[styles.separator, { backgroundColor: colors.border }]} />,
+    [colors.border]
+  );
+
+  const renderShare = useCallback(
+    ({ item }: { item: Share }) => (
+      <View style={styles.row}>
+        <View style={styles.rowText}>
+          <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
+            {item.description || item.url}
+          </Text>
+          <Text style={[styles.url, { color: colors.subtext }]} numberOfLines={1}>
+            {item.url}
+          </Text>
+          <Text style={[styles.meta, { color: colors.subtext }]} numberOfLines={1}>
+            {[
+              formatExpiry(t, item.expires),
+              typeof item.visitCount === 'number'
+                ? t('shares.visits', { count: item.visitCount })
+                : null,
+            ].filter(Boolean).join(' · ')}
+          </Text>
+        </View>
+        <View style={styles.actions}>
+          <Touchable
+            onPress={() => handleShareAgain(item)}
+            {...hitSlopFor(18)}
+            style={styles.actionBtn}
+            accessibilityRole="button"
+            accessibilityLabel={t('shares.share')}
+          >
+            <Share2 size={18} color={colors.subtext} />
+          </Touchable>
+          <Touchable
+            onPress={() => handleDelete(item)}
+            {...hitSlopFor(18)}
+            style={styles.actionBtn}
+            accessibilityRole="button"
+            accessibilityLabel={t('shares.revoke')}
+          >
+            <Trash2 size={18} color={colors.subtext} />
+          </Touchable>
+        </View>
+      </View>
+    ),
+    [colors.secondary, colors.subtext, handleShareAgain, handleDelete, t]
+  );
+
   return (
     <SafeAreaView
       testID="shares-screen"
@@ -97,54 +144,31 @@ export default function SharesScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <DetailHeaderBar
-        title={t('shares.title', 'Shared links')}
+        title={t('shares.title')}
         subtitle={shareCount > 0 ? t('library.count.shares', { count: shareCount }) : undefined}
       />
       {sharesQuery.isLoading ? (
-        <View style={styles.center}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+        <View style={styles.listContent}>
+          {[...Array(6)].map((_, i) => <SkeletonListRow key={i} />)}
         </View>
+      ) : sharesQuery.isError ? (
+        <EmptyState
+          icon={<Link2 size={40} color={colors.subtext} />}
+          message={t('common.loadFailed')}
+          action={{ label: t('common.retry'), onPress: () => sharesQuery.refetch() }}
+        />
       ) : (sharesQuery.data ?? []).length === 0 ? (
-        <View style={styles.center}>
-          <Link2 size={40} color={colors.subtext} />
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('shares.empty', 'You haven’t shared anything yet. Use the Share option on an album or playlist to create a link.')}
-          </Text>
-        </View>
+        <EmptyState
+          icon={<Link2 size={40} color={colors.subtext} />}
+          message={t('shares.empty')}
+        />
       ) : (
         <FlatList
           data={sharesQuery.data}
           keyExtractor={(s) => s.id}
           contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
-          ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
-          renderItem={({ item }) => (
-            <View style={styles.row}>
-              <View style={styles.rowText}>
-                <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
-                  {item.description || item.url}
-                </Text>
-                <Text style={[styles.url, { color: colors.subtext }]} numberOfLines={1}>
-                  {item.url}
-                </Text>
-                <Text style={[styles.meta, { color: colors.subtext }]} numberOfLines={1}>
-                  {[
-                    formatExpiry(t, item.expires),
-                    typeof item.visitCount === 'number'
-                      ? t('shares.visits', { count: item.visitCount, defaultValue: `${item.visitCount} visits` })
-                      : null,
-                  ].filter(Boolean).join(' · ')}
-                </Text>
-              </View>
-              <View style={styles.actions}>
-                <Touchable onPress={() => handleShareAgain(item)} hitSlop={8} style={styles.actionBtn} accessibilityLabel={t('shares.share', 'Share')}>
-                  <Share2 size={18} color={colors.subtext} />
-                </Touchable>
-                <Touchable onPress={() => handleDelete(item)} hitSlop={8} style={styles.actionBtn} accessibilityLabel={t('common.delete', 'Revoke')}>
-                  <Trash2 size={18} color={colors.subtext} />
-                </Touchable>
-              </View>
-            </View>
-          )}
+          ItemSeparatorComponent={renderSeparator}
+          renderItem={renderShare}
         />
       )}
     </SafeAreaView>
@@ -153,8 +177,6 @@ export default function SharesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, gap: spacing.md },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
   listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.page, gap: spacing.sm },
   separator: { height: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md },

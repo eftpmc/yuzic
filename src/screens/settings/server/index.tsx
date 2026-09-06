@@ -86,10 +86,20 @@ const ServerSettings: React.FC = () => {
   const isAuthenticated = activeServer?.isAuthenticated;
   const cleanUrl = serverUrl?.replace(/^https?:\/\//, '') ?? t('settings.server.notSet');
 
+  // What the last ping actually found, as opposed to `isAuthenticated`, which
+  // is a stored credential flag the ping never writes — reading that made the
+  // dot go green against a server that had just refused to answer.
+  const [reachable, setReachable] = useState<boolean | null>(null);
+
   const ping = async () => {
     if (!api || !serverUrl || isLoading) return;
     setIsLoading(true);
-    try { await api.auth.ping(); } catch {}
+    try {
+      await api.auth.ping();
+      setReachable(true);
+    } catch {
+      setReachable(false);
+    }
     finally { setIsLoading(false); }
   };
 
@@ -98,11 +108,20 @@ const ServerSettings: React.FC = () => {
     let cancelled = false;
     const timeout = setTimeout(async () => {
       setIsLoading(true);
-      try { await api.auth.ping(); } catch {}
+      try {
+        await api.auth.ping();
+        if (!cancelled) setReachable(true);
+      } catch {
+        if (!cancelled) setReachable(false);
+      }
       finally { if (!cancelled) setIsLoading(false); }
     }, 500);
     return () => { cancelled = true; clearTimeout(timeout); };
   }, [api, serverUrl]);
+
+  // Until the first ping lands there is nothing better to show than whether we
+  // hold credentials at all.
+  const isConnected = reachable ?? !!isAuthenticated;
 
   if (!activeServer) return null;
 
@@ -130,7 +149,7 @@ const ServerSettings: React.FC = () => {
               onPress={ping}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <ConnectivityIndicator isLoading={isLoading} isConnected={!!isAuthenticated} />
+              <ConnectivityIndicator isLoading={isLoading} isConnected={isConnected} />
             </Touchable>
           }
         />

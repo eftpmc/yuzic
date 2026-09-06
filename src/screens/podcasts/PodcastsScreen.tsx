@@ -1,10 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,9 +20,11 @@ import { FormSheet, FormSheetField } from '@/components/FormSheet';
 import MediaListRow from '@/components/MediaListRow';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import EmptyState from '@/components/EmptyState';
+import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
-import { spacing, statusColor, typography } from '@/constants/design';
+import { hitSlopFor, spacing, statusColor } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import type { CoverSource } from '@/types';
 
@@ -44,6 +45,14 @@ export default function PodcastsScreen() {
     staleTime: 1000 * 60 * 15,
   });
 
+  // The requery below is scheduled, not awaited, so leaving the screen
+  // mid-refresh has to cancel it — otherwise the timer fires against an
+  // unmounted screen and `refreshing` stays pinned true for the full 5s.
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+  }, []);
+
   const handleRefresh = useCallback(async () => {
     if (!api.podcasts || refreshing) return;
     setRefreshing(true);
@@ -51,7 +60,8 @@ export default function PodcastsScreen() {
       await api.podcasts.refreshAll();
       // Refresh is async on the server; requery in a beat to catch the
       // updated channel list — most feeds finish within 5s of the request.
-      setTimeout(() => {
+      refreshTimer.current = setTimeout(() => {
+        refreshTimer.current = null;
         void queryClient.invalidateQueries({ queryKey: [QueryKeys.Podcasts] });
         setRefreshing(false);
       }, 5_000);
@@ -65,12 +75,12 @@ export default function PodcastsScreen() {
 
   const handleDelete = useCallback((channel: PodcastChannel) => {
     Alert.alert(
-      t('podcasts.unsubscribeTitle', 'Unsubscribe?'),
-      t('podcasts.unsubscribeBody', { title: channel.title, defaultValue: `Stop following "${channel.title}"?` }),
+      t('podcasts.unsubscribeTitle'),
+      t('podcasts.unsubscribeBody', { title: channel.title }),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('common.delete', 'Unsubscribe'),
+          text: t('podcasts.unsubscribe'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -85,6 +95,50 @@ export default function PodcastsScreen() {
     );
   }, [api.podcasts, queryClient, t]);
 
+  const renderSeparator = useCallback(
+    () => <View style={[styles.separator, { backgroundColor: colors.border }]} />,
+    [colors.border]
+  );
+
+  const renderChannel = useCallback(
+    ({ item }: { item: PodcastChannel }) => {
+      // Through `MediaImage` like every other cover in the app, rather than a
+      // hand-built URL into a raw image view: that is what makes it resolve
+      // against the active server, fall back, and show the app's placeholder
+      // instead of a blank square.
+      const cover: CoverSource = item.coverArt
+        ? { kind: 'navidrome', coverArtId: item.coverArt }
+        : { kind: 'none' };
+      return (
+        <MediaListRow
+          title={item.title}
+          subtitle={item.errorMessage || item.description || ''}
+          cover={cover}
+          onPress={() => navigation.push('podcastChannel', { channelId: item.id })}
+          // The message a broken feed reports reads in the same grey as a
+          // show's own blurb, so the row says which one it is.
+          subtitleTrailing={
+            item.errorMessage
+              ? <AlertTriangle size={14} color={statusColor.warningText} />
+              : undefined
+          }
+          trailing={
+            <Touchable
+              onPress={() => handleDelete(item)}
+              {...hitSlopFor(18)}
+              style={styles.rowAction}
+              accessibilityRole="button"
+              accessibilityLabel={t('podcasts.unsubscribe')}
+            >
+              <Trash2 size={18} color={colors.subtext} />
+            </Touchable>
+          }
+        />
+      );
+    },
+    [navigation, handleDelete, colors.subtext, t]
+  );
+
   return (
     <SafeAreaView
       testID="podcasts-screen"
@@ -92,7 +146,7 @@ export default function PodcastsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <DetailHeaderBar
-        title={t('podcasts.title', 'Podcasts')}
+        title={t('podcasts.title')}
         subtitle={
           channelCount > 0 ? t('library.count.podcasts', { count: channelCount }) : undefined
         }
@@ -100,7 +154,7 @@ export default function PodcastsScreen() {
           <View style={styles.headerActions}>
             <DetailHeaderIconButton
               onPress={handleRefresh}
-              accessibilityLabel={t('podcasts.refresh', 'Refresh')}
+              accessibilityLabel={t('podcasts.refresh')}
             >
               {refreshing
                 ? <SpinningLoaderCircle size={18} color={colors.secondary} />
@@ -109,7 +163,7 @@ export default function PodcastsScreen() {
             </DetailHeaderIconButton>
             <DetailHeaderIconButton
               onPress={() => setAdding(true)}
-              accessibilityLabel={t('podcasts.add', 'Add podcast')}
+              accessibilityLabel={t('podcasts.add')}
             >
               <Plus size={24} color={colors.secondary} />
             </DetailHeaderIconButton>
@@ -118,24 +172,27 @@ export default function PodcastsScreen() {
       />
 
       {channelsQuery.isLoading ? (
-        <View style={styles.center}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+        <View style={styles.listContent}>
+          {[...Array(8)].map((_, i) => <SkeletonListRow key={i} />)}
         </View>
+      ) : channelsQuery.isError ? (
+        <EmptyState
+          icon={<PodcastIcon size={40} color={colors.subtext} />}
+          message={t('common.loadFailed')}
+          action={{ label: t('common.retry'), onPress: () => channelsQuery.refetch() }}
+        />
       ) : (channelsQuery.data ?? []).length === 0 ? (
-        <View style={styles.center}>
-          <PodcastIcon size={40} color={colors.subtext} />
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('podcasts.empty', 'No podcasts yet. Add one to start listening.')}
-          </Text>
-        </View>
+        <EmptyState
+          icon={<PodcastIcon size={40} color={colors.subtext} />}
+          message={t('podcasts.empty')}
+          action={{ label: t('podcasts.add'), onPress: () => setAdding(true) }}
+        />
       ) : (
         <FlatList
           data={channelsQuery.data}
           keyExtractor={(c) => c.id}
           contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
-          ItemSeparatorComponent={() => (
-            <View style={[styles.separator, { backgroundColor: colors.border }]} />
-          )}
+          ItemSeparatorComponent={renderSeparator}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -143,41 +200,7 @@ export default function PodcastsScreen() {
               tintColor={colors.secondary}
             />
           }
-          renderItem={({ item }) => {
-            // Through `MediaImage` like every other cover in the app, rather
-            // than a hand-built URL into a raw image view: that is what makes
-            // it resolve against the active server, fall back, and show the
-            // app's placeholder instead of a blank square.
-            const cover: CoverSource = item.coverArt
-              ? { kind: 'navidrome', coverArtId: item.coverArt }
-              : { kind: 'none' };
-            return (
-              <MediaListRow
-                title={item.title}
-                subtitle={item.errorMessage || item.description || ''}
-                cover={cover}
-                onPress={() => navigation.push('podcastChannel', { channelId: item.id })}
-                // The message a broken feed reports reads in the same grey as
-                // a show's own blurb, so the row says which one it is.
-                subtitleTrailing={
-                  item.errorMessage
-                    ? <AlertTriangle size={14} color={statusColor.warningText} />
-                    : undefined
-                }
-                trailing={
-                  <Touchable
-                    onPress={() => handleDelete(item)}
-                    hitSlop={10}
-                    style={styles.rowAction}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('common.delete', 'Unsubscribe')}
-                  >
-                    <Trash2 size={18} color={colors.subtext} />
-                  </Touchable>
-                }
-              />
-            );
-          }}
+          renderItem={renderChannel}
         />
       )}
 
@@ -213,25 +236,25 @@ function SubscribeSheet({
       await onSubscribed();
       return true;
     } catch {
-      toast.error(t('podcasts.subscribeFailed', 'Could not subscribe to that feed'));
+      toast.error(t('podcasts.subscribeFailed'));
       return false;
     }
   }, [api.podcasts, onSubscribed, t, url]);
 
   return (
     <FormSheet
-      title={t('podcasts.addTitle', 'Subscribe to a podcast')}
-      description={t('podcasts.addHelp', 'Paste the RSS feed URL for the show.')}
+      title={t('podcasts.addTitle')}
+      description={t('podcasts.addHelp')}
       // Said what it does. The button used to read `t('common.save',
       // 'Subscribe')`, and since `common.save` exists that fallback never
       // showed — the sheet titled "Subscribe to a podcast" ended in "Save".
-      submitLabel={t('podcasts.add', 'Add podcast')}
+      submitLabel={t('podcasts.add')}
       canSubmit={canSave}
       onSubmit={handleSave}
       onClose={onClose}
     >
       <FormSheetField
-        label={t('podcasts.field.feedUrl', 'Feed URL')}
+        label={t('podcasts.field.feedUrl')}
         value={url}
         onChangeText={setUrl}
         placeholder="https://feeds.example.com/podcast.xml"
@@ -244,14 +267,6 @@ function SubscribeSheet({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   listContent: { paddingVertical: spacing.md },
   // Inset to match `MediaListRow`'s own page padding, so the rule starts where

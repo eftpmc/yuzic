@@ -462,7 +462,9 @@
     "searchPlaceholder": "Search…",
     "save": "Save",
     "saving": "Saving…",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "retry": "Retry",
+    "loadFailed": "Couldn't load. Check your connection."
   },
   "onboarding": {
     "home": {
@@ -1022,7 +1024,8 @@
     "notFound": "Podcast not found.",
     "play": "Play episode",
     "download": "Download episode",
-    "downloadStarted": "Download started"
+    "downloadStarted": "Download started",
+    "unsubscribe": "Unsubscribe"
   },
   "shares": {
     "title": "Shared links",
@@ -1036,7 +1039,8 @@
     "expired": "Expired",
     "expiresOn": "Expires {{date}}",
     "visits_one": "{{count}} visit",
-    "visits_other": "{{count}} visits"
+    "visits_other": "{{count}} visits",
+    "revoke": "Revoke"
   },
   "a11y": {
     "detail": {

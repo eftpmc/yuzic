@@ -487,7 +487,9 @@
     "searchPlaceholder": "Rechercher…",
     "save": "Enregistrer",
     "saving": "Enregistrement…",
-    "dismiss": "Ignorer"
+    "dismiss": "Ignorer",
+    "retry": "Réessayer",
+    "loadFailed": "Chargement impossible. Vérifiez votre connexion."
   },
   "onboarding": {
     "home": {
@@ -1064,7 +1066,8 @@
     "expired": "Expiré",
     "expiresOn": "Expire le {{date}}",
     "visits_one": "{{count}} visite",
-    "visits_other": "{{count}} visites"
+    "visits_other": "{{count}} visites",
+    "revoke": "Révoquer"
   },
   "radio": {
     "title": "Radio",
@@ -1097,7 +1100,8 @@
     "notFound": "Podcast introuvable.",
     "play": "Lire l’épisode",
     "download": "Télécharger l’épisode",
-    "downloadStarted": "Téléchargement démarré"
+    "downloadStarted": "Téléchargement démarré",
+    "unsubscribe": "Se désabonner"
   },
   "a11y": {
     "detail": {

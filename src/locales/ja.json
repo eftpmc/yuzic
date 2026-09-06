@@ -486,7 +486,9 @@
     "searchPlaceholder": "検索…",
     "save": "保存",
     "saving": "保存中…",
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "retry": "再試行",
+    "loadFailed": "読み込めませんでした。接続を確認してください。"
   },
   "onboarding": {
     "home": {
@@ -1060,7 +1062,8 @@
     "expired": "期限切れ",
     "expiresOn": "{{date}} に期限切れ",
     "visits_one": "{{count}} 回の閲覧",
-    "visits_other": "{{count}} 回の閲覧"
+    "visits_other": "{{count}} 回の閲覧",
+    "revoke": "取り消す"
   },
   "radio": {
     "title": "ラジオ",
@@ -1093,7 +1096,8 @@
     "notFound": "ポッドキャストが見つかりません。",
     "play": "エピソードを再生",
     "download": "エピソードをダウンロード",
-    "downloadStarted": "ダウンロードを開始しました"
+    "downloadStarted": "ダウンロードを開始しました",
+    "unsubscribe": "登録解除"
   },
   "a11y": {
     "detail": {

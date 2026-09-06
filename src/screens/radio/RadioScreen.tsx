@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -12,8 +12,9 @@ import { DetailHeaderBar, DetailHeaderIconButton } from '@/components/DetailHead
 import { FormSheet, FormSheetField } from '@/components/FormSheet';
 import MediaListRow from '@/components/MediaListRow';
 import Touchable from '@/components/Touchable';
-import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { controlSize, spacing, typography } from '@/constants/design';
+import EmptyState from '@/components/EmptyState';
+import SkeletonListRow from '@/components/SkeletonListRow';
+import { controlSize, hitSlopFor, spacing } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
@@ -54,12 +55,12 @@ export default function RadioScreen() {
 
   const handleDelete = useCallback((station: InternetRadioStation) => {
     Alert.alert(
-      t('radio.deleteTitle', 'Delete station?'),
-      t('radio.deleteBody', { name: station.name, defaultValue: `Remove "${station.name}"?` }),
+      t('radio.deleteTitle'),
+      t('radio.deleteBody', { name: station.name }),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('common.delete', 'Delete'),
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -79,6 +80,51 @@ export default function RadioScreen() {
     await queryClient.invalidateQueries({ queryKey: [QueryKeys.Radio] });
   }, [queryClient]);
 
+  const renderSeparator = useCallback(
+    () => <View style={[styles.separator, { backgroundColor: colors.border }]} />,
+    [colors.border]
+  );
+
+  const renderStation = useCallback(
+    ({ item }: { item: InternetRadioStation }) => (
+      <MediaListRow
+        title={item.name}
+        subtitle={item.streamUrl}
+        cover={{ kind: 'none' }}
+        showCover={false}
+        variant="compact"
+        onPress={() => handlePlay(item)}
+        leading={<StationIcon />}
+        trailing={
+          <View style={styles.rowActions}>
+            {/* Editing used to be reachable only by long-pressing the row,
+                which is both invisible and — on the Podcasts screen next
+                door — the gesture that deletes things. */}
+            <Touchable
+              onPress={() => setEditing({ mode: 'edit', station: item })}
+              {...hitSlopFor(18)}
+              style={styles.rowAction}
+              accessibilityRole="button"
+              accessibilityLabel={t('radio.editTitle')}
+            >
+              <Pencil size={18} color={colors.subtext} />
+            </Touchable>
+            <Touchable
+              onPress={() => handleDelete(item)}
+              {...hitSlopFor(18)}
+              style={styles.rowAction}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.delete')}
+            >
+              <Trash2 size={18} color={colors.subtext} />
+            </Touchable>
+          </View>
+        }
+      />
+    ),
+    [handlePlay, handleDelete, colors.subtext, t]
+  );
+
   const stationCount = stationsQuery.data?.length ?? 0;
 
   return (
@@ -88,14 +134,14 @@ export default function RadioScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <DetailHeaderBar
-        title={t('radio.title', 'Radio')}
+        title={t('radio.title')}
         subtitle={
           stationCount > 0 ? t('library.count.stations', { count: stationCount }) : undefined
         }
         rightAction={
           <DetailHeaderIconButton
             onPress={() => setEditing({ mode: 'add' })}
-            accessibilityLabel={t('radio.add', 'Add station')}
+            accessibilityLabel={t('radio.add')}
           >
             <Plus size={24} color={colors.secondary} />
           </DetailHeaderIconButton>
@@ -103,60 +149,30 @@ export default function RadioScreen() {
       />
 
       {stationsQuery.isLoading ? (
-        <View style={styles.center}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+        <View style={styles.listContent}>
+          {[...Array(8)].map((_, i) => (
+            <SkeletonListRow key={i} artSize={controlSize.compactMediaRowArt} />
+          ))}
         </View>
-      ) : stationsQuery.isError || !stationsQuery.data?.length ? (
-        <View style={styles.center}>
-          <RadioIcon size={40} color={colors.subtext} />
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('radio.empty', 'No radio stations yet. Add one to get started.')}
-          </Text>
-        </View>
+      ) : stationsQuery.isError ? (
+        <EmptyState
+          icon={<RadioIcon size={40} color={colors.subtext} />}
+          message={t('common.loadFailed')}
+          action={{ label: t('common.retry'), onPress: () => stationsQuery.refetch() }}
+        />
+      ) : !stationsQuery.data?.length ? (
+        <EmptyState
+          icon={<RadioIcon size={40} color={colors.subtext} />}
+          message={t('radio.empty')}
+          action={{ label: t('radio.add'), onPress: () => setEditing({ mode: 'add' }) }}
+        />
       ) : (
         <FlatList
           data={stationsQuery.data}
           keyExtractor={(s) => s.id}
           contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
-          ItemSeparatorComponent={() => (
-            <View style={[styles.separator, { backgroundColor: colors.border }]} />
-          )}
-          renderItem={({ item }) => (
-            <MediaListRow
-              title={item.name}
-              subtitle={item.streamUrl}
-              cover={{ kind: 'none' }}
-              showCover={false}
-              variant="compact"
-              onPress={() => handlePlay(item)}
-              leading={<StationIcon />}
-              trailing={
-                <View style={styles.rowActions}>
-                  {/* Editing used to be reachable only by long-pressing the
-                      row, which is both invisible and — on the Podcasts screen
-                      next door — the gesture that deletes things. */}
-                  <Touchable
-                    onPress={() => setEditing({ mode: 'edit', station: item })}
-                    hitSlop={10}
-                    style={styles.rowAction}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('radio.editTitle', 'Edit station')}
-                  >
-                    <Pencil size={18} color={colors.subtext} />
-                  </Touchable>
-                  <Touchable
-                    onPress={() => handleDelete(item)}
-                    hitSlop={10}
-                    style={styles.rowAction}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('common.delete', 'Delete')}
-                  >
-                    <Trash2 size={18} color={colors.subtext} />
-                  </Touchable>
-                </View>
-              }
-            />
-          )}
+          ItemSeparatorComponent={renderSeparator}
+          renderItem={renderStation}
         />
       )}
 
@@ -223,20 +239,20 @@ function StationEditor({
 
   return (
     <FormSheet
-      title={initial ? t('radio.editTitle', 'Edit station') : t('radio.addTitle', 'Add station')}
-      submitLabel={t('common.save', 'Save')}
+      title={initial ? t('radio.editTitle') : t('radio.addTitle')}
+      submitLabel={t('common.save')}
       canSubmit={canSave}
       onSubmit={handleSave}
       onClose={onClose}
     >
       <FormSheetField
-        label={t('radio.field.name', 'Name')}
+        label={t('radio.field.name')}
         value={name}
         onChangeText={setName}
         placeholder="Radio Paradise"
       />
       <FormSheetField
-        label={t('radio.field.streamUrl', 'Stream URL')}
+        label={t('radio.field.streamUrl')}
         value={streamUrl}
         onChangeText={setStreamUrl}
         placeholder="https://stream.radioparadise.com/aac-320"
@@ -244,7 +260,7 @@ function StationEditor({
         keyboardType="url"
       />
       <FormSheetField
-        label={t('radio.field.homepage', 'Homepage (optional)')}
+        label={t('radio.field.homepage')}
         value={homepageUrl}
         onChangeText={setHomepageUrl}
         placeholder="https://radioparadise.com"
@@ -257,14 +273,6 @@ function StationEditor({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
   listContent: { paddingVertical: spacing.md },
   // Inset to match `MediaListRow`'s own page padding, so the rule starts where
   // the row's content does rather than running to the screen edge.

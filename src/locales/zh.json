@@ -486,7 +486,9 @@
     "searchPlaceholder": "搜索…",
     "save": "保存",
     "saving": "正在保存…",
-    "dismiss": "忽略"
+    "dismiss": "忽略",
+    "retry": "重试",
+    "loadFailed": "加载失败。请检查网络连接。"
   },
   "onboarding": {
     "home": {
@@ -1060,7 +1062,8 @@
     "expired": "已过期",
     "expiresOn": "{{date}} 过期",
     "visits_one": "{{count}} 次访问",
-    "visits_other": "{{count}} 次访问"
+    "visits_other": "{{count}} 次访问",
+    "revoke": "撤销"
   },
   "radio": {
     "title": "电台",
@@ -1093,7 +1096,8 @@
     "notFound": "未找到该播客。",
     "play": "播放单集",
     "download": "下载单集",
-    "downloadStarted": "已开始下载"
+    "downloadStarted": "已开始下载",
+    "unsubscribe": "取消订阅"
   },
   "a11y": {
     "detail": {

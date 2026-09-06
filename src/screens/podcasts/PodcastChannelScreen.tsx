@@ -12,9 +12,11 @@ import type { PodcastChannel, PodcastEpisode } from '@/api/types';
 import { DetailHeaderBar } from '@/components/DetailHeader';
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import EmptyState from '@/components/EmptyState';
+import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { podcastEpisodeToSong } from '@/utils/playback/buildPodcastSong';
@@ -70,7 +72,7 @@ export default function PodcastChannelScreen() {
     if (!api.podcasts) return;
     try {
       await api.podcasts.downloadEpisode(episode.id);
-      toast(t('podcasts.downloadStarted', 'Download started'));
+      toast(t('podcasts.downloadStarted'));
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: [QueryKeys.Podcasts, 'withEpisodes'] });
       }, 5_000);
@@ -79,6 +81,63 @@ export default function PodcastChannelScreen() {
     }
   }, [api.podcasts, queryClient, t]);
 
+  const renderSeparator = useCallback(
+    () => <View style={[styles.separator, { backgroundColor: colors.border }]} />,
+    [colors.border]
+  );
+
+  const renderEpisode = useCallback(
+    ({ item }: { item: PodcastEpisode }) => {
+      const playable = item.playableStreamId !== null;
+      const isDownloading = item.status === 'downloading';
+      return (
+        <View style={styles.row}>
+          <View style={styles.rowMain}>
+            <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={[styles.meta, { color: colors.subtext }]} numberOfLines={1}>
+              {[formatDate(item.publishDate), formatDuration(item.durationSeconds)]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            {item.description ? (
+              <Text style={[styles.description, { color: colors.subtext }]} numberOfLines={2}>
+                {item.description}
+              </Text>
+            ) : null}
+          </View>
+          <View style={styles.action}>
+            {isDownloading ? (
+              <SpinningLoaderCircle size={18} color={colors.subtext} />
+            ) : playable ? (
+              <Touchable
+                onPress={() => handlePlay(item)}
+                accessibilityRole="button"
+                accessibilityLabel={t('podcasts.play')}
+                {...hitSlopFor(22)}
+              >
+                <Play size={22} color={colors.themeColor} fill={colors.themeColor} />
+              </Touchable>
+            ) : item.status === 'completed' ? (
+              <CheckCircle size={22} color={colors.subtext} />
+            ) : (
+              <Touchable
+                onPress={() => void handleDownload(item)}
+                accessibilityRole="button"
+                accessibilityLabel={t('podcasts.download')}
+                {...hitSlopFor(22)}
+              >
+                <ArrowDownCircle size={22} color={colors.secondary} />
+              </Touchable>
+            )}
+          </View>
+        </View>
+      );
+    },
+    [colors.secondary, colors.subtext, colors.themeColor, handlePlay, handleDownload, t]
+  );
+
   return (
     <SafeAreaView
       testID="podcast-channel-screen"
@@ -86,7 +145,7 @@ export default function PodcastChannelScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <DetailHeaderBar
-        title={channel?.title ?? t('podcasts.title', 'Podcast')}
+        title={channel?.title ?? t('podcasts.title')}
         subtitle={
           channel && channel.episodes.length > 0
             ? t('library.count.episodes', { count: channel.episodes.length })
@@ -94,75 +153,25 @@ export default function PodcastChannelScreen() {
         }
       />
       {channelsQuery.isLoading ? (
-        <View style={styles.center}>
-          <SpinningLoaderCircle size={26} color={colors.subtext} />
+        <View style={styles.listContent}>
+          {[...Array(8)].map((_, i) => <SkeletonListRow key={i} />)}
         </View>
+      ) : channelsQuery.isError ? (
+        <EmptyState
+          message={t('common.loadFailed')}
+          action={{ label: t('common.retry'), onPress: () => channelsQuery.refetch() }}
+        />
       ) : !channel ? (
-        <View style={styles.center}>
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('podcasts.notFound', 'Podcast not found.')}
-          </Text>
-        </View>
+        <EmptyState message={t('podcasts.notFound')} />
       ) : channel.episodes.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('podcasts.channelEmpty', 'No episodes yet — try refreshing.')}
-          </Text>
-        </View>
+        <EmptyState message={t('podcasts.channelEmpty')} />
       ) : (
         <FlatList
           data={channel.episodes}
           keyExtractor={(e) => e.id}
           contentContainerStyle={[styles.listContent, { paddingBottom: scrollClearance }]}
-          ItemSeparatorComponent={() => (
-            <View style={[styles.separator, { backgroundColor: colors.border }]} />
-          )}
-          renderItem={({ item }) => {
-            const playable = item.playableStreamId !== null;
-            const isDownloading = item.status === 'downloading';
-            return (
-              <View style={styles.row}>
-                <View style={styles.rowMain}>
-                  <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Text style={[styles.meta, { color: colors.subtext }]} numberOfLines={1}>
-                    {[formatDate(item.publishDate), formatDuration(item.durationSeconds)]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Text>
-                  {item.description ? (
-                    <Text style={[styles.description, { color: colors.subtext }]} numberOfLines={2}>
-                      {item.description}
-                    </Text>
-                  ) : null}
-                </View>
-                <View style={styles.action}>
-                  {isDownloading ? (
-                    <SpinningLoaderCircle size={18} color={colors.subtext} />
-                  ) : playable ? (
-                    <Touchable
-                      onPress={() => handlePlay(item)}
-                      accessibilityLabel={t('podcasts.play', 'Play episode')}
-                      hitSlop={10}
-                    >
-                      <Play size={22} color={colors.themeColor} fill={colors.themeColor} />
-                    </Touchable>
-                  ) : item.status === 'completed' ? (
-                    <CheckCircle size={22} color={colors.subtext} />
-                  ) : (
-                    <Touchable
-                      onPress={() => void handleDownload(item)}
-                      accessibilityLabel={t('podcasts.download', 'Download episode')}
-                      hitSlop={10}
-                    >
-                      <ArrowDownCircle size={22} color={colors.secondary} />
-                    </Touchable>
-                  )}
-                </View>
-              </View>
-            );
-          }}
+          ItemSeparatorComponent={renderSeparator}
+          renderItem={renderEpisode}
         />
       )}
     </SafeAreaView>
@@ -171,8 +180,6 @@ export default function PodcastChannelScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg },
-  emptyText: { ...typography.rowSubtitle, textAlign: 'center' },
   listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.page },
   separator: { height: StyleSheet.hairlineWidth, marginVertical: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md },
