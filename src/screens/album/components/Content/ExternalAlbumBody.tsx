@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Platform, Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
 import { ExternalAlbum, ExternalSong } from '@/types';
@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { ALBUM_EXTERNAL_HORIZONTAL_PADDING } from '@/constants/features';
 import { spacing, typography } from '@/constants/design';
 import { DetailScreen } from '@/components/DetailHeader';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 type Props = {
   album: ExternalAlbum;
@@ -18,6 +19,7 @@ type Props = {
 
 const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
   const { colors } = useTheme();
+  const scrollClearance = useScrollClearance();
   const songs = useMemo(() => album.songs ?? [], [album.songs]);
   const previews = useExternalAlbumPreviews(album);
   const { toggleInAlbum } = usePreviewPlayer();
@@ -73,7 +75,7 @@ const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
         extraData={handleSongPress}
         ListHeaderComponent={<AlbumHeader localAlbum={null} externalAlbum={album} showNavigation={false} />}
         ListFooterComponent={footer}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
         {...scroll}
       />

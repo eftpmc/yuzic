@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     },
 
     bottomContent: {
-        marginBottom: Platform.OS === 'ios' ? 40 : 20,
+        marginBottom: Platform.OS === 'ios' ? spacing.xxxl : spacing.roomy,
     },
 
     addButton: {

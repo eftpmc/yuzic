@@ -30,6 +30,20 @@ const literalSpacing = (property) => ({
   message: `Use a spacing token from @/constants/design instead of a literal ${property}. Adding a step there is fine; a one-off number is how the scale drifts.`,
 });
 
+/**
+ * The same number, one branch deep.
+ *
+ * `[value.type='Literal']` only ever saw `paddingBottom: 140`. Four detail
+ * screens kept `paddingBottom: Platform.OS === 'android' ? 180 : 140` right
+ * through the sweep that introduced `spacing.scrollClearance`, because a
+ * ConditionalExpression is not a Literal. Only a branch that is itself a raw
+ * literal is flagged, so `cond ? spacing.md : spacing.lg` stays legal.
+ */
+const conditionalLiteralValue = (property, token) => ({
+  selector: `Property[key.name='${property}'] > ConditionalExpression:matches([consequent.type='Literal'][consequent.value!=0], [alternate.type='Literal'][alternate.value!=0])`,
+  message: `Use a ${token} token from @/constants/design on both branches instead of a literal ${property}. A number behind a Platform check is still a one-off number.`,
+});
+
 const SPACING_PROPERTIES = ['padding', 'margin'].flatMap(base => [
   base,
   ...['Horizontal', 'Vertical', 'Top', 'Bottom', 'Left', 'Right', 'Start', 'End']
@@ -53,6 +67,9 @@ module.exports = defineConfig([
         literalStyleValue("fontSize", "typography"),
         literalStyleValue("borderRadius", "radius"),
         ...SPACING_PROPERTIES.map(literalSpacing),
+        conditionalLiteralValue("fontSize", "typography"),
+        conditionalLiteralValue("borderRadius", "radius"),
+        ...SPACING_PROPERTIES.map(p => conditionalLiteralValue(p, "spacing")),
         // `components/Touchable` is the app's one answer to a press. A second
         // one drifts back the moment it is importable — a `TouchableOpacity`
         // had already reappeared in the server settings after the sweep that

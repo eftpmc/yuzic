@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { Platform } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +13,7 @@ import Header, { PlaylistHeaderBar } from '../Header';
 import RecommendedSection from '../RecommendedSection';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { DetailScreen } from '@/components/DetailHeader';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 type Props = {
   playlist: Playlist;
@@ -25,6 +25,7 @@ type SkeletonItem = { type: 'skeleton'; id: string };
 type ListItem = SongItem | SkeletonItem;
 
 const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
+  const scrollClearance = useScrollClearance();
   const { t } = useTranslation();
   const { songs: starredSongs } = useStarredSongs();
   const optionsRef = useRef<BottomSheetModal>(null);
@@ -69,7 +70,7 @@ const PlaylistContent: React.FC<Props> = ({ playlist, songsLoading }) => {
         ListHeaderComponent={<Header playlist={playlist} showNavigation={false} onOptions={() => optionsRef.current?.present()} />}
         ListFooterComponent={<RecommendedSection playlist={playlist} />}
         ListEmptyComponent={songsLoading ? null : <SectionEmptyState message={t('playlist.empty')} />}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
         {...scroll}
       />

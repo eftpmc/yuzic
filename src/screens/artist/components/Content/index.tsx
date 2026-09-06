@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { sourceColor, spacing, statusColor, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
-import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ellipsis, Globe } from 'lucide-react-native'
@@ -32,6 +32,7 @@ import { useSelector } from 'react-redux'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
 import Touchable from '@/components/Touchable'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 type Props = {
   localArtist: Artist | null
@@ -222,6 +223,7 @@ function ExternalSimilarArtistsSection({ similarArtists }: { similarArtists: Ext
 }
 
 export default function ArtistContent({ localArtist, externalArtist }: Props) {
+  const scrollClearance = useScrollClearance()
   const navigation = useNavigation<any>()
   const { navigateToAlbum } = useMatchedNavigation()
   const { colors } = useTheme()
@@ -440,7 +442,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: Platform.OS === 'android' ? 180 : 140,
+          paddingBottom: scrollClearance,
           backgroundColor: colors.background,
         }}
         {...scroll}

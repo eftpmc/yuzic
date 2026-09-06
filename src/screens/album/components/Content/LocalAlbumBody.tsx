@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Platform, Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
@@ -26,6 +26,7 @@ import {
 import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { DetailScreen } from '@/components/DetailHeader';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 type Props = {
   album: Album;
@@ -38,6 +39,7 @@ type SkeletonItem = { type: 'skeleton'; id: string };
 type ListItem = DiscHeader | SongItem | SkeletonItem;
 
 const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
+  const scrollClearance = useScrollClearance();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
@@ -195,7 +197,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
           <AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />
         }
         ListFooterComponent={footer}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
         {...scroll}
       />

@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     bottomContent: {
         width: '100%',
         alignItems: 'center',
-        marginBottom: Platform.OS === 'ios' ? 40 : 20,
+        marginBottom: Platform.OS === 'ios' ? spacing.xxxl : spacing.roomy,
     },
     buttonContainer: {
         width: '90%',
