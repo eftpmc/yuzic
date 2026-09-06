@@ -50,26 +50,26 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
       await connectToDevice(device);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     } catch {
-      toast.error('Could not connect to device');
+      toast.error(t('playing.output.connectFailed'));
     } finally {
       setConnectingDlnaUdn(null);
     }
-  }, [connectToDevice, ref]);
+  }, [connectToDevice, ref, t]);
 
   const handleManualEntry = useCallback(() => {
     Alert.prompt(
-      'Add Device',
-      'Enter the IP address of your DLNA device',
+      t('playing.output.addManuallyTitle'),
+      t('playing.output.addManuallyBody'),
       async (ip) => {
         if (!ip?.trim()) return;
         const device = await probeManual(ip);
-        if (!device) toast.error('No DLNA device found at that address');
+        if (!device) toast.error(t('playing.output.notFoundAtAddress'));
       },
       'plain-text',
       '',
       'decimal-pad',
     );
-  }, [probeManual]);
+  }, [probeManual, t]);
 
   return (
     <BottomSheetModal
@@ -87,7 +87,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* Title */}
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: colors.secondary }]}>Connect</Text>
+          <Text style={[styles.title, { color: colors.secondary }]}>{t('playing.output.title')}</Text>
           <IconActionButton
             icon={<RotateCcw size={iconSize.inline} color={colors.subtext} />}
             onPress={scan}
@@ -107,7 +107,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         >
           <View style={styles.itemLeft}>
             <Smartphone size={iconSize.row} color={!activeDevice && !airplayDevice ? themeColor : colors.subtext} />
-            <Text style={[styles.itemLabel, { color: colors.secondary }]}>This device</Text>
+            <Text style={[styles.itemLabel, { color: colors.secondary }]}>{t('playing.output.thisDevice')}</Text>
           </View>
           {!activeDevice && !airplayDevice && <Check size={iconSize.row} color={themeColor} />}
         </Touchable>
@@ -122,7 +122,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
                 { color: colors.secondary, fontWeight: airplayDevice ? '600' : '400' },
               ]}
               >
-                {airplayDevice ? airplayDevice.portName : 'AirPlay'}
+                {airplayDevice ? airplayDevice.portName : t('playing.output.airplay')}
               </Text>
             </View>
             {airplayDevice && <Check size={iconSize.row} color={themeColor} />}
@@ -138,7 +138,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {(devices.length > 0 || activeDevice || isScanning) && (
           <>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <Text style={[styles.sectionLabel, { color: colors.subtext }]}>DLNA / UPnP</Text>
+            <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t('playing.output.dlnaSection')}</Text>
           </>
         )}
 
@@ -182,13 +182,13 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
           <View style={styles.searchingRow}>
             <SpinningLoaderCircle size={iconSize.inline} color={colors.subtext} />
             <Text style={[styles.empty, { color: colors.subtext, paddingVertical: 0 }]}>
-              Searching for devices...
+              {t('playing.output.searching')}
             </Text>
           </View>
         )}
         {!isScanning && devices.length === 0 && !activeDevice && (
           <Text style={[styles.empty, { color: colors.subtext }]}>
-            No devices found on your network.
+            {t('playing.output.noneFound')}
           </Text>
         )}
 
@@ -204,7 +204,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
               ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
               : <Plus size={iconSize.row} color={colors.subtext} />
             }
-            <Text style={[styles.itemLabel, { color: colors.subtext }]}>Add device manually</Text>
+            <Text style={[styles.itemLabel, { color: colors.subtext }]}>{t('playing.output.addManually')}</Text>
           </View>
         </Touchable>
 

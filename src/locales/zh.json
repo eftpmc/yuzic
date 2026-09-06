@@ -706,6 +706,19 @@
     }
   },
   "playing": {
+    "output": {
+      "title": "连接",
+      "thisDevice": "本机",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "正在搜索设备…",
+      "noneFound": "在你的网络上未找到设备。",
+      "addManually": "手动添加设备",
+      "addManuallyTitle": "添加设备",
+      "addManuallyBody": "输入你的 DLNA 设备的 IP 地址",
+      "connectFailed": "无法连接到该设备。",
+      "notFoundAtAddress": "该地址上未找到 DLNA 设备。"
+    },
     "queue": {
       "title": "播放队列",
       "playingFromAlbum": "正在播放 {{album}} 中的曲目",

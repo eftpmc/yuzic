@@ -706,6 +706,19 @@
     }
   },
   "playing": {
+    "output": {
+      "title": "接続",
+      "thisDevice": "このデバイス",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "デバイスを検索中…",
+      "noneFound": "ネットワーク上にデバイスが見つかりません。",
+      "addManually": "デバイスを手動で追加",
+      "addManuallyTitle": "デバイスを追加",
+      "addManuallyBody": "DLNA デバイスの IP アドレスを入力してください",
+      "connectFailed": "そのデバイスに接続できませんでした。",
+      "notFoundAtAddress": "そのアドレスに DLNA デバイスは見つかりません。"
+    },
     "queue": {
       "title": "キュー",
       "playingFromAlbum": "{{album}} から再生",

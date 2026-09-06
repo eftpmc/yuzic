@@ -709,6 +709,19 @@
     }
   },
   "playing": {
+    "output": {
+      "title": "Connexion",
+      "thisDevice": "Cet appareil",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "Recherche d’appareils…",
+      "noneFound": "Aucun appareil trouvé sur votre réseau.",
+      "addManually": "Ajouter un appareil manuellement",
+      "addManuallyTitle": "Ajouter un appareil",
+      "addManuallyBody": "Saisissez l’adresse IP de votre appareil DLNA",
+      "connectFailed": "Connexion à cet appareil impossible.",
+      "notFoundAtAddress": "Aucun appareil DLNA trouvé à cette adresse."
+    },
     "queue": {
       "title": "File d'attente",
       "playingFromAlbum": "Lecture depuis {{album}}",
