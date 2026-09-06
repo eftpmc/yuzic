@@ -61,7 +61,6 @@ export interface SettingsState {
    */
   coverAccentEnabled: boolean;
   gridColumns: number;
-  gridSpacing: number;
   isGridView: boolean;
   /**
    * Per-collection overrides for {@link isGridView}.
@@ -167,7 +166,6 @@ const initialState: SettingsState = {
   listDensity: 'default',
   coverAccentEnabled: true,
   gridColumns: 3,
-  gridSpacing: 8,
   isGridView: true,
   libraryViewModes: {},
   playingBarAction: 'skip',
@@ -240,9 +238,6 @@ const settingsSlice = createSlice({
     },
     setGridColumns(state, action: PayloadAction<number>) {
       state.gridColumns = action.payload;
-    },
-    setGridSpacing(state, action: PayloadAction<number>) {
-      state.gridSpacing = action.payload;
     },
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
@@ -386,7 +381,6 @@ export const {
   setListDensity,
   setCoverAccentEnabled,
   setGridColumns,
-  setGridSpacing,
   setIsGridView,
   setLibraryViewMode,
   setPlayingBarAction,

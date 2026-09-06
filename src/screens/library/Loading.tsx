@@ -7,10 +7,9 @@ import SkeletonListRow from '@/components/SkeletonListRow'
 import { spacing } from '@/constants/design'
 import {
   selectGridColumns,
-  selectGridSpacing,
   selectLibraryViewMode,
 } from '@/utils/redux/selectors/settingsSelectors'
-import { gridItemWidth, libraryGutter } from './layout'
+import { gridItemWidth, libraryGutter, GRID_SPACING } from './layout'
 import type { LibraryCollectionType } from './librarySort'
 
 const PLACEHOLDER_ROWS = 8
@@ -34,12 +33,11 @@ const LoadingLibraryList: React.FC<{ collection?: LibraryCollectionType | null }
 }) => {
   const isGridView = useSelector(selectLibraryViewMode(collection))
   const gridColumns = useSelector(selectGridColumns)
-  const gridSpacing = useSelector(selectGridSpacing)
   const { width } = useWindowDimensions()
 
   const rows = useMemo(() => Array.from({ length: PLACEHOLDER_ROWS }), [])
 
-  const gutter = libraryGutter(isGridView, gridSpacing)
+  const gutter = libraryGutter(isGridView, GRID_SPACING)
 
   return (
     <ScrollView
@@ -50,8 +48,8 @@ const LoadingLibraryList: React.FC<{ collection?: LibraryCollectionType | null }
       {isGridView ? (
         <View style={{ paddingHorizontal: gutter }}>
           <SkeletonGrid
-            itemSize={gridItemWidth(width, gridColumns, gridSpacing, gutter)}
-            itemSpacing={gridSpacing}
+            itemSize={gridItemWidth(width, gridColumns, GRID_SPACING, gutter)}
+            itemSpacing={GRID_SPACING}
             variant="album"
             count={gridColumns * PLACEHOLDER_GRID_ROWS}
           />

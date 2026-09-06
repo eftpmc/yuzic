@@ -33,9 +33,6 @@ export const selectCoverAccentEnabled = (state: RootState): boolean =>
 export const selectGridColumns = (state: RootState): number =>
   state.settings.gridColumns;
 
-export const selectGridSpacing = (state: RootState): number =>
-  state.settings.gridSpacing;
-
 export const selectIsGridView = (state: RootState): boolean =>
   state.settings.isGridView;
 

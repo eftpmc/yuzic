@@ -11,10 +11,9 @@ import { useRadius } from '@/hooks/useRadius'
 import {
   selectLibraryViewMode,
   selectGridColumns,
-  selectGridSpacing,
 } from '@/utils/redux/selectors/settingsSelectors'
 import { setIsGridView, setLibraryViewMode } from '@/utils/redux/slices/settingsSlice'
-import { gridItemWidth, libraryGutter } from './layout'
+import { gridItemWidth, libraryGutter, GRID_SPACING } from './layout'
 import AlbumItem from './components/Items/AlbumItem'
 import ArtistItem from './components/Items/ArtistItem'
 import PlaylistItem from './components/Items/PlaylistItem'
@@ -58,13 +57,12 @@ const LibraryList: React.FC<Props> = ({
   const dispatch = useDispatch()
   const isGridView = useSelector(selectLibraryViewMode(collection))
   const gridColumns = useSelector(selectGridColumns)
-  const gridSpacing = useSelector(selectGridSpacing)
   const { width: screenWidth } = useWindowDimensions()
 
   const sortSheetRef = useSheetRef()
 
-  const gutter = libraryGutter(isGridView, gridSpacing)
-  const gridWidth = gridItemWidth(screenWidth, gridColumns, gridSpacing, gutter)
+  const gutter = libraryGutter(isGridView, GRID_SPACING)
+  const gridWidth = gridItemWidth(screenWidth, gridColumns, GRID_SPACING, gutter)
 
   /**
    * Whether a row should say what kind of thing it is.
@@ -93,7 +91,7 @@ const LibraryList: React.FC<Props> = ({
             showTypeLabel={showTypeLabel}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
       case 'artist':
@@ -106,7 +104,7 @@ const LibraryList: React.FC<Props> = ({
             cover={item.data.cover}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
       case 'playlist':
@@ -119,7 +117,7 @@ const LibraryList: React.FC<Props> = ({
             cover={item.data.cover}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
       case 'track':
@@ -128,11 +126,11 @@ const LibraryList: React.FC<Props> = ({
             song={item.data}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
     }
-  }, [isGridView, gridWidth, gridSpacing, showTypeLabel])
+  }, [isGridView, gridWidth, GRID_SPACING, showTypeLabel])
 
   return (
     <>
