@@ -22,11 +22,21 @@ import {
 } from '@/utils/downloads/downloadStore';
 import {
   readDownloadsSnapshot,
+  readResumables,
   PersistedDownloadJob,
+  type PersistedResumable,
   writeDownloadedCollections,
   writeDownloadJobs,
   writeDownloadedTracks,
+  writeResumables,
 } from '@/utils/downloads/localDownloadStore';
+import {
+  expiredResumables,
+  findUsableResumable,
+  removeResumable,
+  stagingPathsToKeep,
+  upsertResumable,
+} from '@/utils/downloads/resumeState';
 import {
   createDownloadJobRunner,
 } from '@/utils/downloads/jobQueue';
@@ -157,15 +167,18 @@ async function cleanupLegacyTempDownloads() {
 }
 
 // Downloads land in a .part staging file and only move to their final path on
-// success, so a stray .part is always safe to delete.
-async function cleanupStagingFiles() {
+// success, so a stray .part is safe to delete — unless we are deliberately
+// holding its bytes to resume from, which is what `keep` carries.
+async function cleanupStagingFiles(keep: Set<string> = new Set()) {
   const info = await FileSystem.getInfoAsync(DOWNLOAD_DIR);
   if (!info.exists) return;
   const names = await FileSystem.readDirectoryAsync(DOWNLOAD_DIR).catch(() => [] as string[]);
   await Promise.all(
     names
       .filter(name => name.endsWith(STAGING_SUFFIX))
-      .map(name => FileSystem.deleteAsync(`${DOWNLOAD_DIR}${name}`, { idempotent: true }).catch(() => {}))
+      .map(name => `${DOWNLOAD_DIR}${name}`)
+      .filter(path => !keep.has(path))
+      .map(path => FileSystem.deleteAsync(path, { idempotent: true }).catch(() => {}))
   );
 }
 
@@ -249,6 +262,15 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const networkTypeRef = useRef(networkType);
   wifiOnlyRef.current = wifiOnly;
   networkTypeRef.current = networkType;
+
+  // Saved state for downloads that were interrupted part-way. Held in a ref
+  // rather than state: nothing renders from it, and it is written from inside
+  // the queue, which must not re-run because of its own bookkeeping.
+  const resumablesRef = useRef<PersistedResumable[]>(readResumables());
+  const setResumables = useCallback((next: PersistedResumable[]) => {
+    resumablesRef.current = next;
+    writeResumables(next);
+  }, []);
 
   useEffect(() => {
     const stalePaths = legacyDownloadPathsToDelete;
@@ -397,6 +419,14 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const stagingPath = buildStagingPath(track);
 
     try {
+      // Bytes already on disk from a run that was cut short. Only usable
+      // against the very same URL — see findUsableResumable.
+      const saved = findUsableResumable(
+        resumablesRef.current,
+        track.id,
+        resolvedTrack.streamUrl,
+      );
+
       const resumable = FileSystem.createDownloadResumable(
         resolvedTrack.streamUrl,
         stagingPath,
@@ -406,10 +436,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
           progress.totalBytesWritten,
           progress.totalBytesExpectedToWrite,
         ),
+        saved?.resumeData,
       );
       activeDownloadsRef.current.set(track.id, resumable);
 
-      const result = await resumable.downloadAsync();
+      const result = saved
+        ? await resumable.resumeAsync()
+        : await resumable.downloadAsync();
       // downloadAsync resolves undefined when cancelAsync() was called —
       // not an error, just nothing to record.
       if (!result) return;
@@ -446,6 +479,9 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         },
       };
 
+      // The file is whole and moved; there is nothing left to resume.
+      setResumables(removeResumable(resumablesRef.current, track.id));
+
       updateTracks(tracks => [
         ...tracks.filter(existing => existing.trackId !== track.id),
         entry,
@@ -465,14 +501,60 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     } finally {
       activeDownloadsRef.current.delete(track.id);
       clearDownloadProgress(track.id);
-      await FileSystem.deleteAsync(stagingPath, { idempotent: true }).catch(() => {});
+
+      // Normally the staging file is scratch and goes. The exception is a
+      // download we paused on purpose and saved state for — deleting that
+      // here would throw away the very bytes the pause existed to keep.
+      const held = resumablesRef.current.some(
+        saved => saved.trackId === track.id && saved.resumeData
+      );
+      if (!held) {
+        await FileSystem.deleteAsync(stagingPath, { idempotent: true }).catch(() => {});
+      }
       setTrackDownloading(track.id, false);
     }
-  }, [activeServer?.id, activeServer?.type, clearDownloadProgress, isTrackDownloaded, isTrackDownloading, reportDownloadProgress, resolveTrack, setTrackDownloading, updateCollections, updateTracks]);
+  }, [activeServer?.id, activeServer?.type, clearDownloadProgress, isTrackDownloaded, isTrackDownloading, reportDownloadProgress, resolveTrack, setResumables, setTrackDownloading, updateCollections, updateTracks]);
 
   const removeJob = useCallback((jobId: string) => {
     updateJobs(jobs => jobs.filter(job => job.id !== jobId));
   }, [updateJobs]);
+
+  /**
+   * Write down where every in-flight download had got to, so the next launch
+   * can carry on from those bytes instead of fetching them again.
+   *
+   * `pauseAsync` is what produces the resume token, and it resolves the
+   * in-flight `downloadAsync` with undefined — the same shape as a cancel —
+   * so `performDownloadTrack` treats it as "nothing to record" and leaves the
+   * staging file alone, which is exactly what is wanted here.
+   */
+  const pauseActiveDownloads = useCallback(async () => {
+    const active = [...activeDownloadsRef.current.entries()];
+    if (!active.length) return;
+
+    const saved = await Promise.all(active.map(async ([trackId, resumable]): Promise<PersistedResumable | null> => {
+      try {
+        const state = await resumable.pauseAsync();
+        if (!state.resumeData) return null;
+        return {
+          trackId,
+          url: state.url,
+          fileUri: state.fileUri,
+          resumeData: state.resumeData,
+          savedAt: Date.now(),
+        };
+      } catch {
+        // A download that had already finished or failed has nothing to
+        // pause; it simply isn't resumable and starts over if retried.
+        return null;
+      }
+    }));
+
+    const next = saved
+      .filter((entry): entry is PersistedResumable => entry !== null)
+      .reduce(upsertResumable, resumablesRef.current);
+    setResumables(next);
+  }, [setResumables]);
 
   const CONCURRENT_TRACK_DOWNLOADS = 3;
 
@@ -502,12 +584,21 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       },
       prepare: async () => {
         await ensureDownloadDir();
-        await cleanupStagingFiles();
+        // Drop the saved state that has aged out first, so its staging file
+        // falls out of `keep` and gets collected in the same sweep.
+        const stale = expiredResumables(resumablesRef.current);
+        if (stale.length) {
+          setResumables(stale.reduce(
+            (list, entry) => removeResumable(list, entry.trackId),
+            resumablesRef.current,
+          ));
+        }
+        await cleanupStagingFiles(stagingPathsToKeep(resumablesRef.current));
       },
       concurrency: CONCURRENT_TRACK_DOWNLOADS,
       maxAttempts: MAX_JOB_ATTEMPTS,
     });
-  }, [performDownloadTrack, removeJob, t, updateJobs]);
+  }, [performDownloadTrack, removeJob, setResumables, t, updateJobs]);
 
   const enqueueDownloadJob = useCallback(async (job: Omit<PersistedDownloadJob, 'createdAt' | 'updatedAt'>) => {
     const now = Date.now();
@@ -630,7 +721,14 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       const resumable = activeDownloadsRef.current.get(trackId);
       return resumable ? resumable.cancelAsync().catch(() => {}) : Promise.resolve();
     }));
-  }, []);
+
+    // Nobody is coming back for these bytes. Dropping the saved state also
+    // releases the staging file, which the pre-pass sweep was holding on to
+    // precisely because state existed for it.
+    if (orphans.length) {
+      setResumables(orphans.reduce(removeResumable, resumablesRef.current));
+    }
+  }, [setResumables]);
 
   const deleteFiles = useCallback(async (tracks: LocalDownloadedTrackEntry[]) => {
     await Promise.all(tracks.map(track =>
@@ -730,13 +828,22 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const subscription = AppState.addEventListener('change', state => {
       if (state === 'active' && jobsRef.current.length > 0) {
         void processDownloadQueue();
+        return;
+      }
+
+      // Leaving the foreground is the last chance to write down where each
+      // download had got to. Without it the process can be killed with a 40MB
+      // track 90% done and the next launch starts that file from zero — which
+      // is what "downloads don't resume" means in practice.
+      if (state === 'background') {
+        void pauseActiveDownloads();
       }
     });
 
     return () => {
       subscription.remove();
     };
-  }, [processDownloadQueue]);
+  }, [processDownloadQueue, pauseActiveDownloads]);
 
   // Coming back onto WiFi — or turning the restriction off — is the other way
   // a held queue becomes runnable, and neither goes through AppState.
