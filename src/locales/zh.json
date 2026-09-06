@@ -988,7 +988,8 @@
       "min": "{{mins}} 分钟"
     },
     "play": "次播放",
-    "plays": "次播放"
+    "plays": "次播放",
+    "similarAlbums": "相似专辑"
   },
   "externalSourcePicker": {
     "empty": "没有来源能够解析此项目。"

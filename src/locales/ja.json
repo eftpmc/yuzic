@@ -988,7 +988,8 @@
       "min": "{{mins}}分"
     },
     "play": "回再生",
-    "plays": "回再生"
+    "plays": "回再生",
+    "similarAlbums": "似ているアルバム"
   },
   "externalSourcePicker": {
     "empty": "この項目を解決できるソースがありません。"

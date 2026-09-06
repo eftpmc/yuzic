@@ -992,7 +992,8 @@
       "min": "{{mins}} min"
     },
     "play": "lecture",
-    "plays": "lectures"
+    "plays": "lectures",
+    "similarAlbums": "Albums similaires"
   },
   "externalSourcePicker": {
     "empty": "Aucune source n'a pu résoudre cet élément."

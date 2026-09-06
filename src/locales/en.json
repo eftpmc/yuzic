@@ -679,7 +679,8 @@
       "min": "{{mins}} min"
     },
     "play": "play",
-    "plays": "plays"
+    "plays": "plays",
+    "similarAlbums": "Similar albums"
   },
   "explore": {
     "sections": {

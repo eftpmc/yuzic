@@ -16,6 +16,7 @@ import { useStarredSongs } from '@/hooks/starred';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import AlbumRecommendedSection from '../AlbumRecommendedSection';
+import SimilarAlbumsSection from '../SimilarAlbumsSection';
 import {
   ALBUM_ESTIMATED_ROW_HEIGHT,
   ALBUM_DISC_HEADER_HEIGHT,
@@ -114,6 +115,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
             </ScrollView>
           </View>
         )}
+        <SimilarAlbumsSection albumId={album.id} />
         {album.artist?.name && (
           <AlbumRecommendedSection
             artistName={album.artist.name}
