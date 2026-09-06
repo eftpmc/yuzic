@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
+import TopSongsSection from './TopSongsSection'
 import { useServerSimilarArtists } from '@/hooks/artists/useServerSimilarArtists'
 import { useLBSimilarArtists } from '@/hooks/artists/useLBSimilarArtists'
 import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
@@ -41,6 +42,7 @@ type Props = {
 
 type ArtistContentItem =
   | { kind: 'mostPlayed'; id: string }
+  | { kind: 'topSongs'; id: string }
   | { kind: 'popularOnDeezer'; id: string }
   | { kind: 'section'; id: string; title: string }
   | { kind: 'localAlbum'; id: string; album: AlbumBase }
@@ -250,6 +252,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
 
     if (localArtist) {
       rows.push({ kind: 'mostPlayed', id: 'most-played' })
+      rows.push({ kind: 'topSongs', id: 'server-top-songs' })
       rows.push({ kind: 'popularOnDeezer', id: 'popular-on-deezer' })
 
       const albums = localAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
@@ -345,6 +348,10 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
   const renderItem = useCallback(({ item }: { item: ArtistContentItem }) => {
     if (item.kind === 'mostPlayed') {
       return localArtist ? <MostPlayedSection artist={localArtist} /> : null
+    }
+
+    if (item.kind === 'topSongs') {
+      return localArtist ? <TopSongsSection artist={localArtist} /> : null
     }
 
     if (item.kind === 'popularOnDeezer') {

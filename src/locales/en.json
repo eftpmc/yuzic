@@ -664,7 +664,8 @@
       "mostPlayed": "Most Played",
       "popularOnDeezer": "Popular on Deezer",
       "similarArtists": "Similar artists",
-      "bio": "About"
+      "bio": "About",
+      "topSongs": "Top songs"
     },
     "showMore": "{{count}} more",
     "showUnowned": "{{count}} you don't own"

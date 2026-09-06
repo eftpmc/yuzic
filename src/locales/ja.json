@@ -671,7 +671,8 @@
       "mostPlayed": "よく聴いた曲",
       "popularOnDeezer": "Deezerで人気",
       "similarArtists": "似ているアーティスト",
-      "bio": "概要"
+      "bio": "概要",
+      "topSongs": "人気の曲"
     },
     "showMore": "あと{{count}}件",
     "showUnowned": "未所持の{{count}}件"

@@ -671,7 +671,8 @@
       "mostPlayed": "常听曲目",
       "popularOnDeezer": "Deezer 热门",
       "similarArtists": "相似歌手",
-      "bio": "简介"
+      "bio": "简介",
+      "topSongs": "热门歌曲"
     },
     "showMore": "还有 {{count}} 个",
     "showUnowned": "你未拥有的 {{count}} 个"

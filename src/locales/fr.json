@@ -674,7 +674,8 @@
       "mostPlayed": "Les plus écoutés",
       "popularOnDeezer": "Populaire sur Deezer",
       "similarArtists": "Artistes similaires",
-      "bio": "À propos"
+      "bio": "À propos",
+      "topSongs": "Titres populaires"
     },
     "showMore": "{{count}} de plus",
     "showUnowned": "{{count}} que vous ne possédez pas"
