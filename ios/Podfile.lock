@@ -3431,6 +3431,8 @@ PODS:
     - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
+  - YuzicEngine (0.0.0):
+    - ExpoModulesCore
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -3558,6 +3560,7 @@ DEPENDENCIES:
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - SocketRocket (~> 0.7.1)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
+  - YuzicEngine (from `../node_modules/yuzic-engine/ios`)
 
 SPEC REPOS:
   trunk:
@@ -3823,6 +3826,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-worklets"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
+  YuzicEngine:
+    :path: "../node_modules/yuzic-engine/ios"
 
 SPEC CHECKSUMS:
   APNGKit: eb7e111277527cfd47636f797c9c8e7aab5d9601
@@ -3863,7 +3868,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   Gifu: 9f7e52357d41c0739709019eb80a71ad9aab1b6d
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: 1a09f19eb4520ff275c833929c62c77653bac4a5
+  hermes-engine: 694ca5cfe2c124e67562d0c2bcaa926273aa9ee9
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -3961,6 +3966,7 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: b669e79fa0f8d3f6f5e35372345f54b99e06b13c
+  YuzicEngine: b3f15657f1a26d23ef4c2c34e8846e756d7bd9e0
 
 PODFILE CHECKSUM: 0a9d7fe2b7d7051d8f049cc799931b185ca60dc3
 

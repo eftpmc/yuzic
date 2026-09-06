@@ -11,6 +11,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsRow from '../components/SettingsRow';
 import StreamingQuality from './components/StreamingQuality';
+import EngineSmokeTest from './EngineSmokeTest';
 import {
   selectPreferredCodec,
   selectShowSleepTimer,
@@ -143,6 +144,8 @@ const PlayerSettings: React.FC = () => {
           onPress={clearStreamCache}
         />
       </SettingsCard>
+
+      <EngineSmokeTest />
     </SettingsScreen>
   );
 };
