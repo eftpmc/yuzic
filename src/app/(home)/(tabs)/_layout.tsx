@@ -120,7 +120,17 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
     // it itself. Without this, re-tapping the active tab from a pushed screen
     // did nothing at all — `useScrollToTop` listens to the same event but
     // no-ops unless the screen is already the first in its stack.
-    navigation.dispatch({ ...StackActions.popToTop(), target: target.key });
+    //
+    // The action has to be addressed to the *stack inside* this tab, by that
+    // navigator's own state key. `target.key` is the tab route's key, which
+    // belongs to no navigator, so the action goes unhandled — visibly, as a
+    // red "POP_TO_TOP was not handled" box in development. The nested state is
+    // undefined until that stack has rendered once, and a tab that has never
+    // been opened has nothing to pop anyway.
+    const nestedStackKey = target.state?.key;
+    if (nestedStackKey) {
+      navigation.dispatch({ ...StackActions.popToTop(), target: nestedStackKey });
+    }
   };
 
   const rows = (
