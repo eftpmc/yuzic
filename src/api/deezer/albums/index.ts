@@ -1,5 +1,5 @@
 import { deezerClient } from '../client';
-import { getDeezerAlbum, resolveDeezerAlbum } from '../catalog';
+import { resolveDeezerAlbum } from '../catalog';
 
 export type DeezerPreviewTrack = {
   id: number;
@@ -56,17 +56,4 @@ export async function searchAlbumPreviews(
   );
 
   return tracksRes.data?.filter(t => !!t.preview) ?? [];
-}
-
-export async function getAlbumEmbeddedPreviews(albumId: string): Promise<DeezerPreviewTrack[]> {
-  const album = await getDeezerAlbum(albumId);
-  return (album?.songs ?? [])
-    .filter(song => !!song.previewUrl)
-    .map((song, index) => ({
-      id: Number(song.id),
-      title: song.title,
-      track_position: index + 1,
-      preview: song.previewUrl!,
-      duration: Number(song.duration) || 0,
-    }));
 }
