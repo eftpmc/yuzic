@@ -40,15 +40,20 @@ includes a **Navidrome demo** (`demo.navidrome.org`) that works out of the
 box. Jellyfin and Emby have no equivalent public demo, so testing those
 integrations requires a self-hosted instance you point the app at.
 
-No API keys or `.env` are required to build the app. A few features talk to
-services baked in at the constant level rather than configured by you:
+No API keys or `.env` are required to build the app. Every outside service is
+optional and configured at runtime in Settings, not at build time:
 
-- Last.fm / ListenBrainz scrobbling is authenticated per-user at runtime via
-  Settings — nothing to set up to build the app.
-- The slskd/Lidarr download-transcode pipeline (`RAWARR_URL` in
-  `src/constants/rawarr.ts`) points at a hosted service run by the
-  maintainer, not something you can self-host or point elsewhere. Keep that
-  in mind if you're testing download-related changes.
+- Deezer, MusicBrainz, and Last.fm are read-only and need no account — the
+  Last.fm key is bundled.
+- ListenBrainz scrobbling and AudioMuse-AI are authenticated per-user in
+  **Settings → Integrations**.
+- The Lidarr and slskd downloaders point at your own self-hosted instances
+  (**Settings → Downloaders**). Downloaded audio is transcoded server-side by
+  your music server via the stream URL, so testing a download-related change
+  needs a real server but no extra service.
+
+[`docs/integrations.md`](docs/integrations.md) lists all of them, with what
+each one needs and what it changes in the UI.
 
 ### Linting, types, and tests
 
@@ -66,6 +71,21 @@ PR won't be mergeable until it's green.
 
 E2E coverage uses Maestro against an installed dev-client build — see
 [`.maestro/README.md`](.maestro/README.md) for setup and how to run it.
+
+## Where things are
+
+- [`docs/architecture.md`](docs/architecture.md) — the four patterns the app
+  is built on (`ApiAdapter`, `playbackSlice`, `contentKind`, `useSync`). Read
+  this before adding a provider, a player behaviour, or a synced resource.
+- [`docs/integrations.md`](docs/integrations.md) — servers, integrations, and
+  downloaders, with the endpoints each one calls and the ones we don't.
+- [`AGENTS.md`](AGENTS.md) — the app's UI conventions (spacing and type
+  scales, tap targets, accessibility labels, translations). Several of these
+  are enforced by lint rules, so a PR that ignores them won't go green.
+
+If your change adds an integration or a downloader, or calls a new endpoint
+on an existing one, update `docs/integrations.md` in the same PR — that's how
+it stays true.
 
 ## Branch model
 

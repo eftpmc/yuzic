@@ -1,5 +1,24 @@
 # Agent instructions for yuzic
 
+## Docs map
+
+Read the doc that covers what you're touching before you touch it — these are
+kept current, and a change that contradicts one is a change that needs the doc
+updated in the same commit.
+
+| Doc | Read it before |
+| --- | --- |
+| [`docs/architecture.md`](docs/architecture.md) | Adding a server provider, a player behaviour, a persisted playback field, or a synced library resource. Covers `ApiAdapter`, `playbackSlice`, `contentKind`, `useSync`, and where things live under `src/`. |
+| [`docs/integrations.md`](docs/integrations.md) | Adding or changing a server, integration, or downloader, or calling a new endpoint on one. Carries the endpoint tables and the list of endpoints we deliberately don't call. |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Setup, the three CI gates, E2E. |
+| This file, below | Any UI work, and anything under `.github/workflows/` or `fastlane/`. |
+
+**Keep them in sync.** A new integration, downloader, or outside endpoint
+belongs in `docs/integrations.md`, and a new load-bearing pattern in
+`docs/architecture.md` — in the same change, not afterwards. `README.md`
+carries the user-facing summary of the servers/integrations/downloaders
+tables; update it when that set changes.
+
 ## Branch model
 
 - `dev` is the long-running integration branch. Push work here (directly or via PR) — do not delete it after merging.
