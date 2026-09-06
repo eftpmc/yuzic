@@ -45,6 +45,7 @@ UI shows them only when the active server's adapter provides them:
 | Capability | `ApiAdapter` field | Navidrome | Jellyfin / Emby |
 | --- | --- | --- | --- |
 | Internet radio stations | `radio` | ✅ | — |
+| Jukebox (play on the server) | `jukebox` | ✅ (off by default server-side) | — |
 | Public share links | `shares` | ✅ | — |
 | Resume positions / bookmarks | `bookmarks` | ✅ (native endpoint) | ✅ (from `PlaybackPositionTicks`) |
 | Server-side play queue sync | `queue` | ✅ | — |
@@ -296,10 +297,24 @@ against it.
 | Lidarr | Everything outside the add-artist → monitor-album → search flow: quality profiles, indexers, history, calendar, import lists | The app is a request button, not a Lidarr client. Configure Lidarr in Lidarr. |
 | slskd | User browsing, chat, rooms, shares, uploads | Same reason. The app searches, enqueues, watches, and cancels. |
 
-## Casting
+## Playing somewhere else
 
-`src/contexts/CastContext.tsx`, `src/hooks/useDlnaDiscovery.ts`
+All of these are picked from the same **Connect** sheet on the player, which is
+a single-select list of outputs — the cast button opens it.
 
-DLNA/UPnP renderers are discovered on the local network over SSDP, and AirPlay
-routes are offered on iOS. Both are picked from the output-device sheet on the
-player screen. Nothing to configure.
+| Output | What it is | Setup |
+| --- | --- | --- |
+| This device | The phone. The default. | — |
+| AirPlay | Routed by iOS. iOS only. | — |
+| DLNA / UPnP | Renderers discovered on the local network over SSDP, or added by IP. | — |
+| Play on *your server* | The server plays through its own speakers (Subsonic jukebox). Nothing streams to the phone. | Enable `Jukebox.Enabled` on Navidrome and grant the user the jukebox role |
+
+The jukebox row is **absent unless the server says yes**: Navidrome ships the
+feature off, and grants it per user once on, so the app probes it rather than
+offering a row that would error when tapped. A server with it disabled answers
+with prose rather than a Subsonic error, which is a second reason not to guess.
+
+Code: `src/contexts/PlaybackSinkContext.tsx` routes transport to whichever
+output is selected; `src/features/player/playbackSink.ts` holds the types;
+`src/contexts/CastContext.tsx` and `src/hooks/useDlnaDiscovery.ts` are the DLNA
+half; `src/api/navidrome/jukebox/` is the Subsonic jukebox client.

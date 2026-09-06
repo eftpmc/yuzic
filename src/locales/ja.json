@@ -717,7 +717,9 @@
       "addManuallyTitle": "デバイスを追加",
       "addManuallyBody": "DLNA デバイスの IP アドレスを入力してください",
       "connectFailed": "そのデバイスに接続できませんでした。",
-      "notFoundAtAddress": "そのアドレスに DLNA デバイスは見つかりません。"
+      "notFoundAtAddress": "そのアドレスに DLNA デバイスは見つかりません。",
+      "playOnServer": "{{server}} で再生",
+      "jukeboxFailed": "サーバーでの再生を開始できませんでした。"
     },
     "queue": {
       "title": "キュー",

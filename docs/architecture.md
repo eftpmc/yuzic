@@ -26,8 +26,17 @@ export interface ApiAdapter {
   queue?: QueueApi;         // Subsonic only
   discovery?: DiscoveryApi; // getRandomSongs + getNowPlaying (Subsonic)
   podcasts?: PodcastsApi;   // Subsonic only
+  jukebox?: JukeboxApi;     // Subsonic only — see the note on probing below
 }
 ```
+
+**Presence is not always permission.** `jukebox` is the case that shows the
+limit of presence-gating: every Navidrome adapter has it, but Navidrome ships
+the feature off (`Jukebox.Enabled`) and, once on, grants it per user. A server
+with it disabled doesn't even answer in Subsonic's error shape —
+demo.navidrome.org replies with prose. So the output picker asks
+(`useJukeboxAvailability` → one `status()` call) and treats any failure as a
+no. Presence decides whether the app *can* ask; the server decides the answer.
 
 A capability that isn't a whole surface is declared as a field on the surface
 that owns it, and read the same way:
@@ -110,6 +119,29 @@ Add the field to `PlaybackState`, an action + reducer, a selector in
 loop) a call in `PlayingContext` at the site the value changes. The persister
 already covers the throttling for hot-path fields — model position, not add
 another one.
+
+### Sinks — where the audio comes out
+
+`features/player/playbackSink.ts` names the three outputs, and one distinction
+runs through all of them: **does the local player still run?**
+
+- `local` — TrackPlayer plays and keeps the clock.
+- `dlna` — TrackPlayer *still* plays, muted (`setVolume(0)`), because a DLNA
+  renderer reports no position back; it keeps the clock and drives the queue
+  while the same stream URL goes to the renderer. Transport is **mirrored**.
+- `jukebox` — the server holds the audio and reports its own position. Nothing
+  streams to the phone. Transport is **replaced**, and the progress bar reads
+  the server's polled position instead of `useProgress`.
+
+`ownsPlayback(sink)` is that question, and every transport call in
+`PlayingContext` asks it before touching TrackPlayer. Getting it wrong for the
+jukebox means the phone plays the track a second time, out loud, next to the
+server already playing it.
+
+`PlaybackSinkContext` owns which sink is selected and routes transport to it.
+This replaced four copies of `if (activeDevice) castX()` in the player and a
+three-term negation in the output sheet that decided whether "This device" was
+the selected row — every new output had been adding another term to both.
 
 ## 3. `contentKind` — routing the player around non-song content
 
@@ -207,7 +239,11 @@ src/hooks/
   usePlaybackPersistence.ts — the bridge between PlayingContext and
                           playbackSlice
 
+src/contexts/PlaybackSinkContext.tsx — which output is selected, and where
+                                    transport commands go
+
 src/features/           — feature-scoped modules that span providers
+  player/playbackSink   — the sink types and `ownsPlayback`
   downloaders/          — Lidarr + slskd registry + the queue provider
   downloads/            — Auto-download watcher
   sources/              — External catalog registry (Deezer, MB)

@@ -722,7 +722,9 @@
       "addManuallyTitle": "Add device",
       "addManuallyBody": "Enter the IP address of your DLNA device",
       "connectFailed": "Could not connect to that device.",
-      "notFoundAtAddress": "No DLNA device found at that address."
+      "notFoundAtAddress": "No DLNA device found at that address.",
+      "playOnServer": "Play on {{server}}",
+      "jukeboxFailed": "Could not start playback on the server."
     },
     "queue": {
       "title": "Queue",

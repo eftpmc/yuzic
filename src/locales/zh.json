@@ -717,7 +717,9 @@
       "addManuallyTitle": "添加设备",
       "addManuallyBody": "输入你的 DLNA 设备的 IP 地址",
       "connectFailed": "无法连接到该设备。",
-      "notFoundAtAddress": "该地址上未找到 DLNA 设备。"
+      "notFoundAtAddress": "该地址上未找到 DLNA 设备。",
+      "playOnServer": "在 {{server}} 上播放",
+      "jukeboxFailed": "无法在服务器上开始播放。"
     },
     "queue": {
       "title": "播放队列",

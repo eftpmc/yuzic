@@ -46,7 +46,8 @@ Yuzic provides a Navidrome demo but requires a self-hosted Subsonic, Jellyfin, o
 - **Playback** — streaming with per-network quality (up to lossless),
   equalizer, sleep timer, playback speed, autoplay, and resume for long tracks.
 - **Radio, podcasts, and shares** — where your server supports them.
-- **Casting** — DLNA/UPnP renderers on the local network, and AirPlay on iOS.
+- **Play it elsewhere** — DLNA/UPnP renderers on the local network, AirPlay on
+  iOS, or the server's own speakers where it offers a jukebox.
 - **Search & browsing** — on-device or server-side search, sortable library
   collections, genres, and a Home built from what's changing.
 - **Customisable UI** — light/dark/system, accent colour, corner radius, list
