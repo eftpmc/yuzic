@@ -25,7 +25,7 @@ const GenreScreen: React.FC = () => {
   const genreAlbums = albums.filter((a) => a.genres.includes(genre))
 
   if (!genre) {
-    return <NotFoundView message="Genre not found" />
+    return <NotFoundView message={t('media.genreNotFound')} />
   }
 
   if (isLoading) {

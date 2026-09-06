@@ -12,10 +12,13 @@ type Props = {
   message?: string
 }
 
-export default function NotFoundView({ message = 'Not found' }: Props) {
+export default function NotFoundView({ message }: Props) {
   const { t } = useTranslation()
   const navigation = useNavigation<any>()
   const { colors } = useTheme()
+  // Defaulted here rather than in the signature so the fallback is translated
+  // too — a default parameter can't reach `t`.
+  const text = message ?? t('media.notFound')
 
   return (
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
@@ -32,7 +35,7 @@ export default function NotFoundView({ message = 'Not found' }: Props) {
       </View>
 
       <View style={styles.body}>
-        <Text style={[styles.message, { color: colors.secondary }]}>{message}</Text>
+        <Text style={[styles.message, { color: colors.secondary }]}>{text}</Text>
       </View>
     </SafeAreaView>
   )

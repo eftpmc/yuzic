@@ -14,13 +14,9 @@
       "library": "Bibliothèque",
       "player": "Lecture",
       "appearance": "Apparence",
-      "scrobbling": "Scrobbling",
-      "downloaders": "Téléchargements",
-      "listenBrainz": "ListenBrainz",
       "github": "Github",
       "privacyPolicy": "Politique de confidentialité",
-      "termsOfUse": "Conditions d'utilisation",
-      "version": "Version"
+      "termsOfUse": "Conditions d'utilisation"
     },
     "profile": {
       "unknownUser": "Utilisateur inconnu",
@@ -369,10 +365,6 @@
       },
       "queueTitle": "File de téléchargement"
     },
-    "integrations": {
-      "enabled": "Activé",
-      "disabled": "Désactivé"
-    },
     "musicbrainz": {
       "external": "Données externes d'artiste et d'album",
       "externalDescription": "Complète les pages d'artiste et d'album avec les données MusicBrainz lorsqu'elles ne sont pas dans votre bibliothèque. Aucun compte requis."
@@ -428,23 +420,6 @@
       "nowPlayingDescription": "Afficher ce que vous écoutez en temps réel.",
       "markAsPlayed": "Marquer comme écouté",
       "markAsPlayedDescription": "Mettre à jour le nombre de lectures sur votre serveur."
-    },
-    "discovery": {
-      "title": "Découverte",
-      "sections": {
-        "about": {
-          "title": "Découverte",
-          "body": "L'onglet Découverte suggère des artistes et des albums en fonction de votre bibliothèque. Vous y trouverez des artistes similaires, des albums susceptibles de vous plaire et les nouvelles sorties de ces artistes."
-        },
-        "how": {
-          "title": "Comment ça marche",
-          "body": "Nous utilisons les artistes de votre bibliothèque pour trouver des artistes similaires via Rawarr/LastFM, puis nous résolvons les artistes et albums via Deezer pour Explorer."
-        },
-        "sync": {
-          "title": "Synchronisation et actualisation",
-          "body": "La découverte se synchronise lorsque vous vous connectez à un serveur. Actualiser dans Découverte ne fait que mélanger le contenu déjà chargé sans récupérer de nouvelles données. En cas d'échec, un message s'affiche et vous pouvez appuyer sur « Réessayer »."
-        }
-      }
     }
   },
   "common": {
@@ -561,11 +536,6 @@
       "switchToList": "Passer à la vue liste",
       "switchToGrid": "Passer à la vue grille"
     },
-    "shuffle": {
-      "all": "Tout mélanger",
-      "favorites": "Mélanger les favoris",
-      "downloaded": "Mélanger les téléchargements"
-    },
     "genres": {
       "title": "Genres",
       "albumCount_one": "{{count}} album",
@@ -622,21 +592,18 @@
       "artists": "Artistes",
       "playlists": "Listes de lecture",
       "tracks": "Pistes",
-      "downloaded": "Téléchargés",
-      "genres": "Genres"
+      "downloaded": "Téléchargés"
     },
     "sort": {
       "alphabetical": "Alphabétique",
       "mostRecent": "Plus récents",
       "mostPlayed": "Plus écoutés",
       "releaseYear": "Année de sortie",
-      "recentlyAdded": "Récemment ajouté",
-      "lastModified": "Dernière modification"
+      "recentlyAdded": "Récemment ajouté"
     },
     "sortSheet": {
       "title": "Trier par"
     },
-    "empty": "Aucun contenu disponible.",
     "account": {
       "settings": "Paramètres",
       "triggerScan": "Lancer l'analyse",
@@ -680,21 +647,17 @@
       "album": "Album",
       "artist": "Artiste",
       "playlist": "Playlist"
-    },
-    "chips": {
-      "local": "Local",
-      "external": "Externe",
-      "song": "Morceau",
-      "album": "Album",
-      "artist": "Artiste",
-      "playlist": "Playlist",
-      "deezer": "Deezer"
     }
   },
   "media": {
     "albumNotFound": "Album introuvable",
     "artistNotFound": "Artiste introuvable.",
-    "playlistNotFound": "Liste de lecture introuvable."
+    "playlistNotFound": "Liste de lecture introuvable.",
+    "genreNotFound": "Genre introuvable.",
+    "notFound": "Introuvable.",
+    "albumLoadFailed": "Impossible de charger l’album. Vérifiez votre connexion.",
+    "artistLoadFailed": "Impossible de charger l’artiste. Vérifiez votre connexion.",
+    "playlistLoadFailed": "Impossible de charger la liste de lecture. Vérifiez votre connexion."
   },
   "artist": {
     "sections": {
@@ -710,18 +673,14 @@
   },
   "explore": {
     "sections": {
-      "dial": "Sélection",
       "quickPicks": "Sélection rapide",
       "recentlyPlayed": "Écoutés récemment",
       "recentlyAdded": "Ajoutés récemment",
       "mostPlayed": "Les plus écoutés",
-      "newReleases": "Nouvelles sorties",
       "becauseYouListened": "Dans le style de {{artist}}",
       "becauseYouListenedLabel": "Dans le style de",
       "charts": "Tendances du moment",
       "genre": "Plus de {{genre}}",
-      "albumsForYou": "Albums pour vous",
-      "artistsForYou": "Artistes pour vous",
       "searchArtists": "Rechercher des artistes…",
       "searchGenres": "Rechercher des genres…",
       "genrePrefix": "Plus",
@@ -734,10 +693,7 @@
       "continuePlaying": "Reprendre"
     },
     "empty": {
-      "recentSongs": "Écoutez quelque chose pour le voir ici",
-      "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment",
-      "albumsForYou": "Découverte des albums...",
-      "artistsForYou": "Découverte des artistes..."
+      "recentlyAdded": "Aucun album dans votre bibliothèque pour le moment"
     },
     "sources": {
       "server": "Sur votre serveur"
@@ -915,10 +871,6 @@
       "songs": "{{count}} morceau",
       "songs_other": "{{count}} morceaux",
       "externalMetadata": "Métadonnées externes"
-    },
-    "info": {
-      "title": "À propos des albums externes",
-      "body": "Les métadonnées de l'album et les aperçus des pistes sont fournis par Deezer — des extraits de 30 secondes conformément aux conditions d'utilisation de l'API Deezer."
     }
   },
   "albumOptions": {
@@ -929,8 +881,6 @@
       "addToEnd": "Ajouter à la fin",
       "shuffleToQueue": "Ajouter aléatoirement à la file d'attente",
       "goToAlbum": "Aller à l'album",
-      "goToExternalAlbum": "Aller à l'album externe",
-      "goToExternalArtist": "Aller à l'artiste externe",
       "viewExternal": "Voir externe",
       "download": "Télécharger",
       "downloading": "Téléchargement…",
@@ -1010,7 +960,6 @@
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
       "goToArtist": "Aller à l'artiste",
-      "goToExternalArtist": "Aller à l'artiste externe",
       "viewExternal": "Voir externe"
     },
     "sections": {
@@ -1126,7 +1075,6 @@
       "back": "Retour",
       "close": "Fermer",
       "moreOptions": "Plus d'options",
-      "clearSearch": "Effacer la recherche",
       "checkConnection": "Vérifier la connexion"
     },
     "player": {

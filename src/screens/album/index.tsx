@@ -69,7 +69,7 @@ const AlbumScreen: React.FC = () => {
     if (!localResult.album) {
       return (
         <NotFoundView
-          message={localResult.error ? "Couldn't load album. Check your connection." : 'Album not found'}
+          message={localResult.error ? t('media.albumLoadFailed') : t('media.albumNotFound')}
         />
       );
     }
@@ -94,7 +94,7 @@ const AlbumScreen: React.FC = () => {
   }
 
   if (!albumId && !(artist && title)) {
-    return <NotFoundView message="Album not found" />;
+    return <NotFoundView message={t('media.albumNotFound')} />;
   }
   if (externalResult.isLoading) {
     return (
@@ -104,7 +104,7 @@ const AlbumScreen: React.FC = () => {
     );
   }
   if (externalResult.error || !externalResult.album) {
-    return <NotFoundView message="Couldn't load album. Check your connection." />;
+    return <NotFoundView message={t('media.albumLoadFailed')} />;
   }
 
   return (

@@ -14,13 +14,9 @@
       "library": "ライブラリ",
       "player": "再生",
       "appearance": "外観",
-      "scrobbling": "スクロブル",
-      "downloaders": "ダウンローダー",
-      "listenBrainz": "ListenBrainz",
       "github": "GitHub",
       "privacyPolicy": "プライバシーポリシー",
-      "termsOfUse": "利用規約",
-      "version": "バージョン"
+      "termsOfUse": "利用規約"
     },
     "profile": {
       "unknownUser": "不明なユーザー",
@@ -368,10 +364,6 @@
       },
       "queueTitle": "ダウンロードキュー"
     },
-    "integrations": {
-      "enabled": "有効",
-      "disabled": "無効"
-    },
     "musicbrainz": {
       "external": "外部アーティスト・アルバムデータ",
       "externalDescription": "ライブラリにないアーティストやアルバムのページを MusicBrainz のデータで補完します。アカウント不要。"
@@ -427,23 +419,6 @@
       "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。",
       "markAsPlayed": "再生済みにする",
       "markAsPlayedDescription": "サーバーの再生回数を更新します。"
-    },
-    "discovery": {
-      "title": "ディスカバリー",
-      "sections": {
-        "about": {
-          "title": "ディスカバリー",
-          "body": "ディスカバリーではライブラリをもとにアーティストやアルバムを提案します。似ているアーティスト、好みに合いそうなアルバム、新譜などが表示されます。"
-        },
-        "how": {
-          "title": "仕組み",
-          "body": "ライブラリ内のアーティストから Rawarr/LastFM で類似アーティストを探し、Deezer でアーティストとアルバムを解決して Explore に表示します。"
-        },
-        "sync": {
-          "title": "同期と更新",
-          "body": "サーバーに接続するとディスカバリーは同期されます。ディスカバリーでの更新は読み込済みデータのシャッフルのみで再取得は行いません。失敗した場合はメッセージが表示され、「再試行」をタップできます。"
-        }
-      }
     }
   },
   "common": {
@@ -560,11 +535,6 @@
       "switchToList": "リスト表示に切り替え",
       "switchToGrid": "グリッド表示に切り替え"
     },
-    "shuffle": {
-      "all": "すべてシャッフル",
-      "favorites": "お気に入りをシャッフル",
-      "downloaded": "ダウンロード済みをシャッフル"
-    },
     "genres": {
       "title": "ジャンル",
       "albumCount_one": "{{count}} 枚のアルバム",
@@ -621,21 +591,18 @@
       "artists": "アーティスト",
       "playlists": "プレイリスト",
       "tracks": "トラック",
-      "downloaded": "ダウンロード済み",
-      "genres": "ジャンル"
+      "downloaded": "ダウンロード済み"
     },
     "sort": {
       "alphabetical": "アルファベット順",
       "mostRecent": "最近再生",
       "mostPlayed": "よく再生",
       "releaseYear": "リリース年",
-      "recentlyAdded": "最近追加",
-      "lastModified": "更新順"
+      "recentlyAdded": "最近追加"
     },
     "sortSheet": {
       "title": "並び替え"
     },
-    "empty": "コンテンツがありません。",
     "account": {
       "settings": "設定",
       "triggerScan": "スキャンを実行",
@@ -677,21 +644,17 @@
       "album": "アルバム",
       "artist": "アーティスト",
       "playlist": "プレイリスト"
-    },
-    "chips": {
-      "local": "ローカル",
-      "external": "外部",
-      "song": "曲",
-      "album": "アルバム",
-      "artist": "アーティスト",
-      "playlist": "プレイリスト",
-      "deezer": "Deezer"
     }
   },
   "media": {
     "albumNotFound": "アルバムが見つかりません",
     "artistNotFound": "アーティストが見つかりません。",
-    "playlistNotFound": "プレイリストが見つかりません。"
+    "playlistNotFound": "プレイリストが見つかりません。",
+    "genreNotFound": "ジャンルが見つかりません。",
+    "notFound": "見つかりません。",
+    "albumLoadFailed": "アルバムを読み込めませんでした。接続を確認してください。",
+    "artistLoadFailed": "アーティストを読み込めませんでした。接続を確認してください。",
+    "playlistLoadFailed": "プレイリストを読み込めませんでした。接続を確認してください。"
   },
   "artist": {
     "sections": {
@@ -707,18 +670,14 @@
   },
   "explore": {
     "sections": {
-      "dial": "ダイアル",
       "quickPicks": "クイックピック",
       "recentlyPlayed": "最近再生",
       "recentlyAdded": "最近追加",
       "mostPlayed": "最も再生された",
-      "newReleases": "新着リリース",
       "becauseYouListened": "{{artist}}に似た音楽",
       "becauseYouListenedLabel": "似たアーティスト：",
       "charts": "今トレンド",
       "genre": "もっと{{genre}}",
-      "albumsForYou": "あなたへのアルバム",
-      "artistsForYou": "あなたへのアーティスト",
       "searchArtists": "アーティストを検索…",
       "searchGenres": "ジャンルを検索…",
       "genrePrefix": "その他",
@@ -731,10 +690,7 @@
       "continuePlaying": "続きから"
     },
     "empty": {
-      "recentSongs": "再生するとここに表示されます",
-      "recentlyAdded": "ライブラリにアルバムがありません",
-      "albumsForYou": "アルバムを探しています...",
-      "artistsForYou": "アーティストを探しています..."
+      "recentlyAdded": "ライブラリにアルバムがありません"
     },
     "sources": {
       "server": "サーバー内"
@@ -911,10 +867,6 @@
       "songs": "{{count}} 曲",
       "songs_other": "{{count}} 曲",
       "externalMetadata": "外部メタデータ"
-    },
-    "info": {
-      "title": "外部アルバムについて",
-      "body": "アルバムのメタデータとトラックのプレビューは Deezer が提供しています。Deezer API 利用規約に基づく 30 秒のクリップです。"
     }
   },
   "albumOptions": {
@@ -925,8 +877,6 @@
       "addToEnd": "末尾に追加",
       "shuffleToQueue": "シャッフルで追加",
       "goToAlbum": "アルバムへ",
-      "goToExternalAlbum": "外部アルバムへ",
-      "goToExternalArtist": "外部アーティストへ",
       "viewExternal": "外部で表示",
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
@@ -1006,7 +956,6 @@
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "goToArtist": "アーティストへ",
-      "goToExternalArtist": "外部アーティストへ",
       "viewExternal": "外部で表示"
     },
     "sections": {
@@ -1122,7 +1071,6 @@
       "back": "戻る",
       "close": "閉じる",
       "moreOptions": "その他のオプション",
-      "clearSearch": "検索をクリア",
       "checkConnection": "接続を確認"
     },
     "player": {

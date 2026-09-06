@@ -1065,7 +1065,6 @@
       "back": "Back",
       "close": "Close",
       "moreOptions": "More options",
-      "clearSearch": "Clear search",
       "checkConnection": "Check connection"
     },
     "player": {
@@ -1131,5 +1130,15 @@
   "downloads": {
     "title": "Download queue",
     "noDownloaders": "No downloaders connected. Add one in Settings."
+  },
+  "media": {
+    "albumNotFound": "Album not found",
+    "artistNotFound": "Artist not found",
+    "playlistNotFound": "Playlist not found",
+    "genreNotFound": "Genre not found",
+    "notFound": "Not found",
+    "albumLoadFailed": "Couldn't load album. Check your connection.",
+    "artistLoadFailed": "Couldn't load artist. Check your connection.",
+    "playlistLoadFailed": "Couldn't load playlist. Check your connection."
   }
 }

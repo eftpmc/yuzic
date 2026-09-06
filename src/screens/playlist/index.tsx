@@ -35,7 +35,7 @@ const PlaylistScreen: React.FC = () => {
   if (!playlist) {
     return (
       <NotFoundView
-        message={error ? "Couldn't load playlist. Check your connection." : 'Playlist not found'}
+        message={error ? t('media.playlistLoadFailed') : t('media.playlistNotFound')}
       />
     );
   }

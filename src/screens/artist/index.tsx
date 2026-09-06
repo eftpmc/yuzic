@@ -69,7 +69,7 @@ const ArtistScreen: React.FC = () => {
     if (!localResult.artist) {
       return (
         <NotFoundView
-          message={localResult.error ? "Couldn't load artist. Check your connection." : 'Artist not found'}
+          message={localResult.error ? t('media.artistLoadFailed') : t('media.artistNotFound')}
         />
       );
     }
@@ -94,7 +94,7 @@ const ArtistScreen: React.FC = () => {
   }
 
   if (!artistId && !mbid && !name) {
-    return <NotFoundView message="Artist not found" />;
+    return <NotFoundView message={t('media.artistNotFound')} />;
   }
   if (externalResult.isLoading) {
     return (
@@ -104,7 +104,7 @@ const ArtistScreen: React.FC = () => {
     );
   }
   if (externalResult.error || !externalResult.data) {
-    return <NotFoundView message="Couldn't load artist. Check your connection." />;
+    return <NotFoundView message={t('media.artistLoadFailed')} />;
   }
 
   return (

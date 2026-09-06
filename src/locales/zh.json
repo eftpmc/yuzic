@@ -14,13 +14,9 @@
       "library": "媒体库",
       "player": "播放",
       "appearance": "外观",
-      "scrobbling": "Scrobbling",
-      "downloaders": "下载管理",
-      "listenBrainz": "ListenBrainz",
       "github": "Github",
       "privacyPolicy": "隐私政策",
-      "termsOfUse": "使用条款",
-      "version": "版本"
+      "termsOfUse": "使用条款"
     },
     "profile": {
       "unknownUser": "未知用户",
@@ -368,10 +364,6 @@
       },
       "queueTitle": "下载队列"
     },
-    "integrations": {
-      "enabled": "已启用",
-      "disabled": "已禁用"
-    },
     "musicbrainz": {
       "external": "外部艺术家和专辑数据",
       "externalDescription": "当艺术家或专辑不在您的音乐库中时，用 MusicBrainz 数据补全其页面。无需账号。"
@@ -427,23 +419,6 @@
       "nowPlayingDescription": "实时显示正在播放的内容。",
       "markAsPlayed": "标记为已播放",
       "markAsPlayedDescription": "更新服务器上的播放次数。"
-    },
-    "discovery": {
-      "title": "发现",
-      "sections": {
-        "about": {
-          "title": "发现",
-          "body": "「发现」标签页会根据你的媒体库推荐歌手和专辑。你可以在这里看到相似的歌手、你可能喜欢的专辑，以及这些歌手的最新发行作品。"
-        },
-        "how": {
-          "title": "工作原理",
-          "body": "我们通过 Rawarr/LastFM 根据媒体库中的歌手找到相似歌手，然后通过 Deezer 解析歌手和专辑并显示在「探索」页面。"
-        },
-        "sync": {
-          "title": "同步与刷新",
-          "body": "连接服务器时，发现功能会自动同步。在「发现」页面下拉刷新仅会重新随机展示已加载的内容，不会重新获取新数据。若同步失败，会显示提示消息，你可点击「重试」重新操作。"
-        }
-      }
     }
   },
   "common": {
@@ -560,11 +535,6 @@
       "switchToList": "切换到列表视图",
       "switchToGrid": "切换到网格视图"
     },
-    "shuffle": {
-      "all": "随机播放全部",
-      "favorites": "随机播放收藏",
-      "downloaded": "随机播放已下载"
-    },
     "genres": {
       "title": "流派",
       "albumCount_one": "{{count}} 张专辑",
@@ -621,21 +591,18 @@
       "artists": "歌手",
       "playlists": "播放列表",
       "tracks": "曲目",
-      "downloaded": "已下载",
-      "genres": "流派"
+      "downloaded": "已下载"
     },
     "sort": {
       "alphabetical": "按字母顺序",
       "mostRecent": "最新添加",
       "mostPlayed": "播放最多",
       "releaseYear": "发行年份",
-      "recentlyAdded": "最近添加",
-      "lastModified": "最后修改时间"
+      "recentlyAdded": "最近添加"
     },
     "sortSheet": {
       "title": "排序方式"
     },
-    "empty": "暂无可用内容。",
     "account": {
       "settings": "设置",
       "triggerScan": "开始扫描",
@@ -677,21 +644,17 @@
       "album": "专辑",
       "artist": "艺人",
       "playlist": "播放列表"
-    },
-    "chips": {
-      "local": "本地",
-      "external": "外部",
-      "song": "曲目",
-      "album": "专辑",
-      "artist": "歌手",
-      "playlist": "播放列表",
-      "deezer": "Deezer"
     }
   },
   "media": {
     "albumNotFound": "未找到专辑",
     "artistNotFound": "未找到歌手。",
-    "playlistNotFound": "未找到播放列表。"
+    "playlistNotFound": "未找到播放列表。",
+    "genreNotFound": "未找到流派。",
+    "notFound": "未找到。",
+    "albumLoadFailed": "无法加载专辑。请检查网络连接。",
+    "artistLoadFailed": "无法加载歌手。请检查网络连接。",
+    "playlistLoadFailed": "无法加载播放列表。请检查网络连接。"
   },
   "artist": {
     "sections": {
@@ -707,18 +670,14 @@
   },
   "explore": {
     "sections": {
-      "dial": "推荐",
       "quickPicks": "快速选择",
       "recentlyPlayed": "最近播放",
       "recentlyAdded": "最近添加",
       "mostPlayed": "最常播放",
-      "newReleases": "新发行",
       "becauseYouListened": "更多像{{artist}}的音乐",
       "becauseYouListenedLabel": "更多像",
       "charts": "当下流行",
       "genre": "更多{{genre}}",
-      "albumsForYou": "为你推荐的专辑",
-      "artistsForYou": "为你推荐的艺术家",
       "searchArtists": "搜索艺术家…",
       "searchGenres": "搜索流派…",
       "genrePrefix": "更多",
@@ -731,10 +690,7 @@
       "continuePlaying": "继续播放"
     },
     "empty": {
-      "recentSongs": "播放音乐后将显示在此处",
-      "recentlyAdded": "媒体库中暂无专辑",
-      "albumsForYou": "正在发现专辑...",
-      "artistsForYou": "正在发现艺术家..."
+      "recentlyAdded": "媒体库中暂无专辑"
     },
     "sources": {
       "server": "在你的服务器上"
@@ -911,10 +867,6 @@
       "songs": "{{count}} 首曲目",
       "songs_other": "{{count}} 首曲目",
       "externalMetadata": "外部元数据"
-    },
-    "info": {
-      "title": "关于外部专辑",
-      "body": "专辑元数据和曲目预览由 Deezer 提供——依据 Deezer API 条款提供的 30 秒片段。"
     }
   },
   "albumOptions": {
@@ -925,8 +877,6 @@
       "addToEnd": "添加至队尾",
       "shuffleToQueue": "随机添加至队列",
       "goToAlbum": "前往专辑页面",
-      "goToExternalAlbum": "前往外部专辑页面",
-      "goToExternalArtist": "前往外部歌手页面",
       "viewExternal": "查看外部信息",
       "download": "下载",
       "downloading": "下载中…",
@@ -1006,7 +956,6 @@
       "downloading": "下载中…",
       "downloaded": "已下载",
       "goToArtist": "前往歌手页面",
-      "goToExternalArtist": "前往外部歌手页面",
       "viewExternal": "查看外部信息"
     },
     "sections": {
@@ -1122,7 +1071,6 @@
       "back": "返回",
       "close": "关闭",
       "moreOptions": "更多选项",
-      "clearSearch": "清除搜索",
       "checkConnection": "检查连接"
     },
     "player": {

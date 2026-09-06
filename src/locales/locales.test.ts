@@ -30,8 +30,6 @@ const translations = { fr, ja, zh }
 /**
  * A key present in English and missing elsewhere falls back to English at
  * runtime, so a French user gets one English word inside a French sentence.
- * A key the other way round is only dead weight, which is why this checks the
- * one direction — there is a backlog of stale keys and no user sees them.
  */
 describe.each(Object.entries(translations))('%s', (_name, translation) => {
   it('translates every key English has', () => {
@@ -40,6 +38,21 @@ describe.each(Object.entries(translations))('%s', (_name, translation) => {
       key => !translated.has(key)
     )
     expect(missing).toEqual([])
+  })
+
+  /**
+   * And the reverse. A key only the other locales carry is dead weight no user
+   * ever sees, so nothing announced it: 38 of them had accumulated in each
+   * file — roughly 5% of every translation — including a whole `media.*` block
+   * whose English half had never been written, so the code spoke English in
+   * every locale while three finished translations sat unused beside it.
+   */
+  it('carries no key English has dropped', () => {
+    const known = new Set(leafKeys(en).map(pluralBase))
+    const stale = [...new Set(leafKeys(translation).map(pluralBase))].filter(
+      key => !known.has(key)
+    )
+    expect(stale).toEqual([])
   })
 })
 
