@@ -104,6 +104,57 @@ const EngineSmokeTest: React.FC = () => {
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
+  const publishBrowseTree = useCallback(async () => {
+    setLog([]);
+    try {
+      const playable = tracks.slice(0, 20).filter(track => activeServer);
+      if (playable.length === 0) {
+        say('no tracks to publish');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 1000 });
+
+      // Grouped by album, because a flat list of every track is what CarPlay's
+      // list limit exists to prevent — and because choosing a track inside an
+      // album is what the engine's selection rule is built around.
+      const albums = new Map<string, typeof playable>();
+      for (const track of playable) {
+        const name = track.albumTitle || 'Unknown album';
+        albums.set(name, [...(albums.get(name) ?? []), track]);
+      }
+
+      await YuzicEngine.setBrowseTree({
+        id: 'root',
+        title: 'yuzic',
+        children: [...albums].map(([name, albumTracks]) => ({
+          id: `album:${name}`,
+          title: name,
+          subtitle: albumTracks[0]?.artist,
+          children: albumTracks.map(track => ({
+            id: `track:${track.id}`,
+            title: track.title,
+            subtitle: track.artist,
+            playable: {
+              id: track.id,
+              uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+              title: track.title,
+              artist: track.artist,
+              album: track.albumTitle,
+              durationSec: Number(track.duration) || undefined,
+            },
+          })),
+        })),
+      });
+      say(`published ${albums.size} albums, ${playable.length} tracks`);
+      toast.success('Browse tree published');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Browse tree failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
   if (!__DEV__) return null;
 
   return (
@@ -112,6 +163,7 @@ const EngineSmokeTest: React.FC = () => {
       <SettingsCard>
         <SettingsRow label="Probe the native module" onPress={probe} />
         <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
+        <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
       {log.length > 0 && (
         <View style={styles.log}>
