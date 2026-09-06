@@ -45,7 +45,7 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { iconSize, sourceColor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LOCAL_COUNT = 8;
@@ -171,7 +171,7 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
           accessibilityLabel={t(added ? 'a11y.playlist.songAdded' : 'a11y.playlist.addSong', { title: song.title })}
           accessibilityState={{ disabled: adding || added }}
           onPress={() => void handleAdd()}
-          hitSlop={10}
+          {...hitSlopFor(iconSize.row)}
           style={styles.actionBtn}
           disabled={adding || added}
         >
@@ -214,7 +214,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
           accessibilityState={{ disabled: !hasDownloader }}
           onPress={() => hasDownloader && onDownload(song)}
           disabled={!hasDownloader}
-          hitSlop={10}
+          {...hitSlopFor(iconSize.row)}
           style={styles.actionBtn}
         >
           <CloudDownload

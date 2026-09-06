@@ -7,7 +7,7 @@ import { Plus, X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { forgetReachable } from '@/utils/servers/urlFailover';
-import { iconSize, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
@@ -86,7 +86,7 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
                 accessibilityRole="button"
                 accessibilityLabel={t('settings.server.fallbackUrls.removeAria', { url })}
                 onPress={() => handleRemove(index)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                {...hitSlopFor(iconSize.row)}
               >
                 <X size={iconSize.row} color={colors.subtext} />
               </Touchable>

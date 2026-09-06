@@ -33,7 +33,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
 import { ACCENT_WASH_LOCATIONS, accentWashColors } from '@/features/theme/coverAccent';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, iconSize, spacing, typography } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
@@ -427,7 +427,7 @@ function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: Bar
         scrim ? { backgroundColor: scrim } : null,
       ]}
       feedback="control"
-      hitSlop={8}
+      {...hitSlopFor(iconSize.header)}
     >
       {children}
     </Touchable>

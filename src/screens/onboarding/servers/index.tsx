@@ -23,7 +23,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Servers() {
@@ -116,7 +116,7 @@ export default function Servers() {
                     accessibilityRole="button"
                     accessibilityLabel={t('a11y.onboarding.serverOptions', { url: item.serverUrl })}
                     style={[styles.menuButton, { borderRadius: rad.md }]}
-                    hitSlop={10}
+                    {...hitSlopFor(iconSize.row)}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
                     <Ellipsis size={iconSize.row} color={onDark.mutedText} />

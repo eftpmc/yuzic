@@ -268,7 +268,7 @@ export default function Credentials() {
                                 <View style={styles.proxySection}>
                                     {insecureWithProxy && (
                                         <View style={[styles.warningRow, { borderRadius: rad.md }]}>
-                                            <TriangleAlert size={iconSize.inline} color="#f59e0b" />
+                                            <TriangleAlert size={iconSize.inline} color={statusColor.warningText} />
                                             <Text style={styles.warningText}>
                                                 Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
                                             </Text>

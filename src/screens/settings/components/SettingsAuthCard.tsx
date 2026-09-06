@@ -7,7 +7,7 @@ import SettingsInputField from './SettingsInputField';
 import SettingsInfoRow from './SettingsInfoRow';
 import ConnectivityIndicator from './ConnectivityIndicator';
 import Touchable from '@/components/Touchable';
-import { spacing } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing } from '@/constants/design';
 
 export type AuthField = {
   label: string;
@@ -51,7 +51,7 @@ const SettingsAuthCard: React.FC<Props> = ({
               accessibilityRole="button"
               accessibilityLabel={t('a11y.common.checkConnection')}
               onPress={onConnectivityPress}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              {...hitSlopFor(iconSize.badge)}
             >
               {indicator}
             </Touchable>

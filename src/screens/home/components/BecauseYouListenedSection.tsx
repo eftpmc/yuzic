@@ -26,7 +26,7 @@ import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types';
 import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 async function fetchAlbumsForSeed(
@@ -131,7 +131,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.becauseYouListenedLabel')}
           </Text>
-          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} {...hitSlopFor(iconSize.control)}>
             <Text
               style={[styles.artistName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}

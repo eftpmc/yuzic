@@ -35,7 +35,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, iconSize, onDark, radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 
 type Variant = 'ios' | 'android';
 
@@ -338,7 +338,7 @@ export default function PlayingBarBase({ variant }: Props) {
           testID="playing-bar-play-pause"
           style={[styles.playPauseButton, stylesForVariant.playPauseButton]}
           onPress={handlePlayPause}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          {...hitSlopFor(iconSize.control)}
         >
           {isBuffering
             ? <SpinningLoaderCircle size={iconSize.control} color={colors.secondary} />
@@ -361,7 +361,7 @@ export default function PlayingBarBase({ variant }: Props) {
             : { selected: primaryAction.selected }}
           style={[styles.actionButton, stylesForVariant.actionButton]}
           onPress={primaryAction.onPress}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          {...hitSlopFor(iconSize.control)}
         >
           {primaryAction.icon}
         </Touchable>

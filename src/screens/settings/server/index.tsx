@@ -27,6 +27,7 @@ import {
   type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 import Touchable from '@/components/Touchable';
+import { hitSlopFor, iconSize } from '@/constants/design';
 
 const ServerSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -147,7 +148,7 @@ const ServerSettings: React.FC = () => {
               accessibilityRole="button"
               accessibilityLabel={t('a11y.common.checkConnection')}
               onPress={ping}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              {...hitSlopFor(iconSize.badge)}
             >
               <ConnectivityIndicator isLoading={isLoading} isConnected={isConnected} />
             </Touchable>

@@ -217,9 +217,9 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           accessibilityLabel={t('a11y.detail.play')}
         >
           {songsLoading ? (
-            <SpinningLoaderCircle size={iconSize.row} color="#fff" />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.onThemeColor} />
           ) : (
-            <Play size={iconSize.header} color="#fff" fill="#fff" />
+            <Play size={iconSize.header} color={colors.onThemeColor} fill={colors.onThemeColor} />
           )}
         </DetailPlayAction>
 

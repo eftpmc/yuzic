@@ -34,7 +34,7 @@ import {
   HOME_GENRE_ARTIST_LIMIT,
 } from '@/constants/home';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 function normalize(s: string): string {
@@ -225,7 +225,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.genrePrefix')}
           </Text>
-          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} {...hitSlopFor(iconSize.control)}>
             <Text
               style={[styles.genreName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}

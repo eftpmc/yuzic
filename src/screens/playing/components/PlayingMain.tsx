@@ -15,7 +15,7 @@ import { hasFiniteDuration } from '@/utils/playback/contentKind';
 import { CirclePlus } from 'lucide-react-native';
 import { usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type PlayingMainProps = {
@@ -152,7 +152,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           accessibilityLabel={t('a11y.player.addToPlaylist')}
           onPress={onPressAdd}
           style={styles.optionsButton}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          {...hitSlopFor(iconSize.large)}
         >
           <CirclePlus
             size={iconSize.large}

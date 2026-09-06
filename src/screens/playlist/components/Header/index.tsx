@@ -114,7 +114,7 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
             </DetailCircleAction>
 
             <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
-              <Play size={iconSize.header} color="#fff" fill="#fff" />
+              <Play size={iconSize.header} color={colors.onThemeColor} fill={colors.onThemeColor} />
             </DetailPlayAction>
 
             <DetailCircleAction

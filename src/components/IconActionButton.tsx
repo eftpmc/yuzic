@@ -6,7 +6,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, iconSize } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
@@ -49,7 +49,7 @@ export default function IconActionButton({
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      hitSlop={8}
+      {...hitSlopFor(boundsSize)}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}

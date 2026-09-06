@@ -19,14 +19,14 @@ import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors
 import { canJumpWithin } from '@/utils/playback/contentKind';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, controlSize, fontScaleCap, iconSize, onDark, spacing, typography } from '@/constants/design';
+import { cappedTypography, controlSize, fontScaleCap, hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import haptics from '@/utils/haptics';
 
 const JUMP_SECONDS = 15;
 
-const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
+const HIT_SLOP = hitSlopFor(iconSize.control);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boolean; isBuffering: boolean; onPress: () => void }) {

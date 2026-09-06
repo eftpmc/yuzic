@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { renderBackdrop } from '@/components/BottomSheetBackdrop'
 import Touchable from '@/components/Touchable'
-import { iconSize, spacing, typography } from '@/constants/design'
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
@@ -87,7 +87,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
             accessibilityLabel={t('a11y.selection.randomize')}
             onPress={onRandomize}
             style={styles.shuffleButton}
-            hitSlop={8}
+            {...hitSlopFor(iconSize.row)}
           >
             <Dices size={iconSize.row} color={colors.subtext} />
           </Touchable>

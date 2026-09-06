@@ -48,7 +48,7 @@ export default function RecentSearches({
         <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
           {t('search.recentSearches')}
         </Text>
-        <Touchable onPress={onClear} hitSlop={8}>
+        <Touchable onPress={onClear} {...hitSlopFor(iconSize.control)}>
           <Text style={[styles.clear, { color: colors.subtext }]}>{t('search.clearRecent')}</Text>
         </Touchable>
       </View>

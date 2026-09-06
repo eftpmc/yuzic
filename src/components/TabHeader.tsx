@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { fontScaleCap, spacing, typography } from '@/constants/design';
+import { fontScaleCap, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 /** Header shared by the Home, Library and Search tabs: screen title plus the
@@ -32,7 +32,7 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
           accessibilityRole="button"
           style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}
           onPress={onAccountPress}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          {...hitSlopFor(iconSize.large)}
         >
           <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>
             {username?.[0]?.toUpperCase() ?? '?'}

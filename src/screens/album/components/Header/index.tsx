@@ -268,7 +268,7 @@ function LocalActionRow({ album }: { album: Album }) {
       </DetailCircleAction>
 
       <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
-        <Play size={iconSize.control} color="#fff" fill="#fff" />
+        <Play size={iconSize.control} color={colors.onThemeColor} fill={colors.onThemeColor} />
       </DetailPlayAction>
 
       <DetailCircleAction
