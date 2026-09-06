@@ -192,6 +192,77 @@ const EngineSmokeTest: React.FC = () => {
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
+  /**
+   * Drives an actual crossfade between two tracks.
+   *
+   * This is the feature the whole graph architecture exists for — two sources
+   * overlapping, which no single-output player can do — and until now nothing
+   * had made one happen outside a unit test. Rather than wait several minutes
+   * for a track to end, it seeks to just before the crossover so the engine's
+   * own tick decides to begin the transition, the same way it would in the
+   * middle of an album.
+   *
+   * The evidence is the track-change event: the engine fires it at the fade's
+   * midpoint, not at its start, so `previousListenedSec` arriving with a
+   * plausible figure means the overlap really was scheduled and timed.
+   */
+  const crossfadeProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pair = tracks.slice(0, 2);
+      if (pair.length < 2 || !activeServer) {
+        say('need two tracks in the library');
+        return;
+      }
+      const queue = pair.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }));
+      if (queue.some(item => !item.uri)) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const fadeSec = 8;
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      await YuzicEngine.setCrossfade({ durationSec: fadeSec, mode: 'always' });
+      await YuzicEngine.setQueue(queue, 0);
+      await YuzicEngine.play();
+      say(`1: ${queue[0].title}`);
+      say(`2: ${queue[1].title}`);
+
+      const stop = YuzicEngine.addListener(event => {
+        if (event.type === 'trackChange') {
+          say(`crossover → index ${event.index}`);
+          say(`listened ${event.previousListenedSec?.toFixed(1) ?? '?'}s of track 1`);
+          stop();
+        }
+        if (event.type === 'error') say(`error: ${event.code} ${event.message}`);
+      });
+      setTimeout(stop, 60_000);
+
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      const progress = await YuzicEngine.getProgress();
+      if (!progress.durationSec) {
+        say('duration unknown — cannot place the crossover');
+        return;
+      }
+      // Land a few seconds before the fade would start, so the engine begins
+      // the transition on its own rather than being told to.
+      const target = Math.max(0, progress.durationSec - fadeSec - 4);
+      say(`seeking to ${target.toFixed(1)}s of ${progress.durationSec.toFixed(1)}s`);
+      await YuzicEngine.seekTo(target);
+      say(`waiting for the fade (${fadeSec}s)`);
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Crossfade probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
   const publishBrowseTree = useCallback(async () => {
     setLog([]);
     try {
@@ -252,6 +323,7 @@ const EngineSmokeTest: React.FC = () => {
         <SettingsRow label="Probe the native module" onPress={probe} />
         <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
         <SettingsRow label="Time a seek into unfetched audio" onPress={seekProbe} />
+        <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
       {log.length > 0 && (
