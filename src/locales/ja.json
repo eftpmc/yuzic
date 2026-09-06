@@ -345,7 +345,8 @@
       "cancelFailed": "ダウンロードをキャンセルできませんでした。",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "lidarr": {
         "title": "Lidarr",
@@ -370,7 +371,14 @@
         "preferFreeSlot": "空きスロットを優先",
         "preferFreeSlotSubtext": "アップロード枠が空いているピアを優先します。オフにすると待ってでも希少なリリースを取得します。"
       },
-      "queueTitle": "ダウンロードキュー"
+      "queueTitle": "ダウンロードキュー",
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "接続",
+        "credentialsHelper": "SoulSync サーバーの URL と API キー。SoulSync の Settings → API Keys で生成できます。",
+        "connectionFailed": "SoulSync への接続に失敗しました",
+        "disconnected": "SoulSync から切断しました。"
+      }
     },
     "musicbrainz": {
       "external": "外部アーティスト・アルバムデータ",
@@ -884,8 +892,19 @@
           "request_failed": "Soulseek に接続できません。サーバーを確認してもう一度お試しください。",
           "search_failed": "Soulseek で検索を開始できませんでした。",
           "search_timeout": "Soulseek の検索がタイムアウトしました。"
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync には API キーが必要です。",
+          "INVALID_KEY": "SoulSync がこの API キーを拒否しました。",
+          "BAD_REQUEST": "SoulSync がこのリクエストを解釈できませんでした。",
+          "BAD_RESPONSE": "そのアドレスは SoulSync の応答を返しませんでした。URL を確認してください。",
+          "HTTP_ERROR": "SoulSync に接続できません。サーバーを確認して再試行してください。",
+          "NOT_AVAILABLE": "SoulSync に Soulseek 接続が設定されていません。"
         }
-      }
+      },
+      "soulsyncDesc": "SoulSync 経由で Soulseek を検索",
+      "addedToSoulsync": "SoulSync にリクエストしました。",
+      "addedTrackToSoulsync": "SoulSync にリクエストしました。"
     },
     "header": {
       "songs": "{{count}} 曲",

@@ -354,7 +354,8 @@
       "cancelFailed": "Couldn't cancel that download.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "queueTitle": "Download Queue",
       "lidarr": {
@@ -379,6 +380,13 @@
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "Prefer Free Upload Slot",
         "preferFreeSlotSubtext": "Pick peers whose slot is free over ones with a queue. Turn off to catch rare releases even if it means waiting."
+      },
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "Connection",
+        "credentialsHelper": "Your SoulSync server URL and API key. Generate a key in SoulSync under Settings → API Keys.",
+        "connectionFailed": "SoulSync connection failed",
+        "disconnected": "Disconnected from SoulSync."
       }
     },
     "deezer": {
@@ -890,8 +898,19 @@
           "request_failed": "Could not reach Soulseek. Check the server and try again.",
           "search_failed": "Soulseek couldn't start the search.",
           "search_timeout": "The Soulseek search timed out."
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync needs an API key.",
+          "INVALID_KEY": "SoulSync rejected this API key.",
+          "BAD_REQUEST": "SoulSync could not read that request.",
+          "BAD_RESPONSE": "That address didn't answer like SoulSync. Check the URL.",
+          "HTTP_ERROR": "Could not reach SoulSync. Check the server and try again.",
+          "NOT_AVAILABLE": "SoulSync has no Soulseek connection configured."
         }
-      }
+      },
+      "soulsyncDesc": "Search Soulseek through SoulSync",
+      "addedToSoulsync": "Requested from SoulSync.",
+      "addedTrackToSoulsync": "Requested from SoulSync."
     },
     "header": {
       "songs": "{{count}} song",

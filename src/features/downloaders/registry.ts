@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import type { Href } from 'expo-router'
 import * as lidarr from '@/api/lidarr'
 import * as slskd from '@/api/slskd'
+import * as soulsync from '@/api/soulsync'
 import type { SlskdSearchPreferences } from '@/api/slskd'
 import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice'
 import type { ExternalAlbumBase } from '@/types'
@@ -44,8 +45,15 @@ export type DownloaderDefinition = {
   albumAddedKey: string
   trackAddedKey?: string
   settingsRoute: Href
-  downloadAlbum(config: DownloaderConfig, req: AlbumDownloadRequest): Promise<DownloadResult>
-  /** Only downloaders that can fetch individual files support this (Lidarr is album-oriented). */
+  /**
+   * Both units are optional, because a downloader gets to have a natural one.
+   * Lidarr is album-oriented and can't fetch a single file; SoulSync's request
+   * pipeline is track-oriented and has no album endpoint at all; slskd does
+   * both. Callers presence-check the unit they need rather than assuming an
+   * album is always on offer — `downloadAlbum` used to be required, which was
+   * Lidarr's shape written into the contract for everyone.
+   */
+  downloadAlbum?(config: DownloaderConfig, req: AlbumDownloadRequest): Promise<DownloadResult>
   downloadTrack?(config: DownloaderConfig, req: TrackDownloadRequest): Promise<DownloadResult>
   /**
    * Reads the transfer queue and reports which items disappeared since the
@@ -68,6 +76,10 @@ const lidarrDownloader: DownloaderDefinition = {
   settingsRoute: '/settings/lidarrView',
   downloadAlbum: (config, album) => lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album)),
   fetchQueueWithDiff: lidarr.fetchQueueWithDiff as DownloaderDefinition['fetchQueueWithDiff'],
+}
+
+function soulsyncConfigOf(config: DownloaderConfig): soulsync.SoulSyncConfig {
+  return { serverUrl: config.serverUrl, apiKey: config.apiKey }
 }
 
 function slskdConfigOf(config: DownloaderConfig): slskd.SlskdConfig {
@@ -100,7 +112,37 @@ const slskdDownloader: DownloaderDefinition = {
     slskd.fetchQueueWithDiff(slskdConfigOf(config), previous as any)) as DownloaderDefinition['fetchQueueWithDiff'],
 }
 
-export const ALL_DOWNLOADERS: DownloaderDefinition[] = [lidarrDownloader, slskdDownloader]
+/**
+ * SoulSync takes a track and nothing else. Its public entry point is a single
+ * free-text request that runs its own search-match-download pipeline, and it
+ * exposes no album endpoint — so this is the first downloader with no
+ * `downloadAlbum`, and the reason that field became optional.
+ */
+const soulsyncDownloader: DownloaderDefinition = {
+  id: 'soulsync',
+  label: 'SoulSync',
+  descriptionKey: 'externalAlbum.download.soulsyncDesc',
+  albumAddedKey: 'externalAlbum.download.addedToSoulsync',
+  trackAddedKey: 'externalAlbum.download.addedTrackToSoulsync',
+  settingsRoute: '/settings/soulsyncView',
+  downloadTrack: async (config, req) => {
+    try {
+      await soulsync.downloadTrack(soulsyncConfigOf(config), req)
+      return { success: true }
+    } catch (error) {
+      const code = error instanceof soulsync.SoulSyncError ? error.code : undefined
+      return { success: false, code, message: (error as Error)?.message ?? 'SoulSync request failed' }
+    }
+  },
+  fetchQueueWithDiff: ((config: DownloaderConfig, previous: { id: string }[]) =>
+    soulsync.fetchQueueWithDiff(soulsyncConfigOf(config), previous as any)) as DownloaderDefinition['fetchQueueWithDiff'],
+}
+
+export const ALL_DOWNLOADERS: DownloaderDefinition[] = [
+  lidarrDownloader,
+  slskdDownloader,
+  soulsyncDownloader,
+]
 
 export type DownloaderState = {
   def: DownloaderDefinition
@@ -136,4 +178,9 @@ export function useAnyDownloaderConnected(): boolean {
 
 export function useAnyTrackDownloaderConnected(): boolean {
   return useDownloaderStates().some((d) => d.isConnected && !!d.def.downloadTrack)
+}
+
+/** Somewhere to send a whole album — not every connected downloader takes one. */
+export function useAnyAlbumDownloaderConnected(): boolean {
+  return useDownloaderStates().some((d) => d.isConnected && !!d.def.downloadAlbum)
 }

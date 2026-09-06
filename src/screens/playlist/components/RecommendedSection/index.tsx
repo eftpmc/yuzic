@@ -37,7 +37,7 @@ import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists';
 import { LASTFM_API_KEY } from '@/constants/keys';
 import { QueryKeys } from '@/enums/queryKeys';
 import DownloadSheet from '@/components/options/DownloadSheet';
-import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
+import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
@@ -342,7 +342,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
   const lastfmEnabled = useSelector(selectLastfmEnabled);
-  const hasDownloader = useAnyDownloaderConnected();
+  const hasDownloader = useAnyAlbumDownloaderConnected();
   const downloadSheetRef = useSheetRef();
   const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
 

@@ -7,7 +7,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { CloudDownload, Ellipsis, Link, ChevronRight } from 'lucide-react-native';
 
-import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
+import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
@@ -39,7 +39,7 @@ const ExternalAlbumOptions: React.FC<ExternalAlbumOptionsProps> = ({ album }) =>
 
   const status = useExternalAlbumStatus(album);
 
-  const canDownload = useAnyDownloaderConnected();
+  const canDownload = useAnyAlbumDownloaderConnected();
   const sheetBg = useOptionSheetBackground();
 
   return (

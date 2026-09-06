@@ -345,7 +345,8 @@
       "cancelFailed": "无法取消该下载。",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "lidarr": {
         "title": "Lidarr",
@@ -370,7 +371,14 @@
         "preferFreeSlot": "优先空闲上传槽",
         "preferFreeSlotSubtext": "优先选择上传槽空闲的对端。关闭后即使需要排队，也可能获取到罕见的发行版本。"
       },
-      "queueTitle": "下载队列"
+      "queueTitle": "下载队列",
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "连接",
+        "credentialsHelper": "你的 SoulSync 服务器地址和 API 密钥。可在 SoulSync 的 Settings → API Keys 中生成。",
+        "connectionFailed": "SoulSync 连接失败",
+        "disconnected": "已断开与 SoulSync 的连接。"
+      }
     },
     "musicbrainz": {
       "external": "外部艺术家和专辑数据",
@@ -884,8 +892,19 @@
           "request_failed": "无法连接 Soulseek。请检查服务器后重试。",
           "search_failed": "Soulseek 无法开始搜索。",
           "search_timeout": "Soulseek 搜索超时。"
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync 需要 API 密钥。",
+          "INVALID_KEY": "SoulSync 拒绝了此 API 密钥。",
+          "BAD_REQUEST": "SoulSync 无法解析该请求。",
+          "BAD_RESPONSE": "该地址的响应不像 SoulSync，请检查网址。",
+          "HTTP_ERROR": "无法连接 SoulSync，请检查服务器后重试。",
+          "NOT_AVAILABLE": "SoulSync 尚未配置 Soulseek 连接。"
         }
-      }
+      },
+      "soulsyncDesc": "通过 SoulSync 搜索 Soulseek",
+      "addedToSoulsync": "已向 SoulSync 发起请求。",
+      "addedTrackToSoulsync": "已向 SoulSync 发起请求。"
     },
     "header": {
       "songs": "{{count}} 首曲目",

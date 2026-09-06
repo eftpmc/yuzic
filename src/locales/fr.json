@@ -346,7 +346,8 @@
       "cancelFailed": "Impossible d'annuler ce téléchargement.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "lidarr": {
         "title": "Lidarr",
@@ -371,7 +372,14 @@
         "preferFreeSlot": "Préférer les slots libres",
         "preferFreeSlotSubtext": "Choisir les pairs dont le slot est libre plutôt qu'en file. Désactivez pour attraper des raretés même en attendant."
       },
-      "queueTitle": "File de téléchargement"
+      "queueTitle": "File de téléchargement",
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "Connexion",
+        "credentialsHelper": "L’URL de votre serveur SoulSync et sa clé d’API. Générez une clé dans SoulSync sous Settings → API Keys.",
+        "connectionFailed": "Échec de la connexion à SoulSync",
+        "disconnected": "Déconnecté de SoulSync."
+      }
     },
     "musicbrainz": {
       "external": "Données externes d'artiste et d'album",
@@ -888,8 +896,19 @@
           "request_failed": "Soulseek est injoignable. Vérifiez le serveur et réessayez.",
           "search_failed": "Soulseek n'a pas pu lancer la recherche.",
           "search_timeout": "La recherche Soulseek a expiré."
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync exige une clé d’API.",
+          "INVALID_KEY": "SoulSync a refusé cette clé d’API.",
+          "BAD_REQUEST": "SoulSync n’a pas pu lire cette demande.",
+          "BAD_RESPONSE": "Cette adresse n’a pas répondu comme SoulSync. Vérifiez l’URL.",
+          "HTTP_ERROR": "Impossible de joindre SoulSync. Vérifiez le serveur et réessayez.",
+          "NOT_AVAILABLE": "SoulSync n’a aucune connexion Soulseek configurée."
         }
-      }
+      },
+      "soulsyncDesc": "Chercher sur Soulseek via SoulSync",
+      "addedToSoulsync": "Demandé à SoulSync.",
+      "addedTrackToSoulsync": "Demandé à SoulSync."
     },
     "header": {
       "songs": "{{count}} morceau",
