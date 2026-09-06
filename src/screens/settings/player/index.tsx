@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from '@backpackapp-io/react-native-toast';
 import TrackPlayer from '@rntp/player';
 import { useDispatch, useSelector } from 'react-redux';
+import { useApi } from '@/api';
 import SettingsScreen from '../components/SettingsScreen';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
 import SettingsCard from '../components/SettingsCard';
@@ -19,7 +20,6 @@ import {
   selectAutoplayEnabled,
   selectResumeLongTracksEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectIsAudiomuseConfigured } from '@/utils/redux/selectors/audiomuseSelectors';
 import {
   setPreferredCodec,
@@ -34,8 +34,8 @@ import {
 const PlayerSettings: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const api = useApi();
   const preferredCodec = useSelector(selectPreferredCodec);
-  const activeServer = useSelector(selectActiveServer);
   const showSleepTimer = useSelector(selectShowSleepTimer);
   const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
   const showJumpButtons = useSelector(selectShowJumpButtons);
@@ -43,7 +43,9 @@ const PlayerSettings: React.FC = () => {
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
   const resumeLongTracks = useSelector(selectResumeLongTracksEnabled);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
-  const supportsOpus = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
+  // Presence, not provider: a server whose adapter declares Opus gets the
+  // switch, whichever server it is.
+  const supportsOpus = api.songs.streamableCodecs.includes('opus');
 
   const toggleOpus = useCallback((v: boolean) => { dispatch(setPreferredCodec(v ? 'opus' : 'mp3')); }, [dispatch]);
   const opusItems = useMemo(() => [{

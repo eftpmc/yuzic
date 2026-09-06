@@ -8,7 +8,6 @@ import {
 } from '@/utils/offline/offlineMutations';
 import { enqueueOfflineMutationAction } from '@/utils/redux/slices/offlineMutationsSlice';
 import * as listenbrainz from '@/api/listenbrainz';
-import * as navidromeScrobble from '@/api/navidrome/scrobble';
 import { canScrobble } from '@/utils/playback/contentKind';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
@@ -107,32 +106,14 @@ export function useScrobbling() {
       }));
     }
 
-    if (activeServer?.type === 'navidrome') {
-      if (serverScrobbleEnabled) {
-        const password = activeServer.auth?.password as string | undefined;
-        if (activeServer.serverUrl && activeServer.username && password) {
-          try {
-            await navidromeScrobble.scrobble(
-              {
-                serverUrl: activeServer.serverUrl,
-                username: activeServer.username,
-                password,
-                basicAuth: activeServer.basicAuth,
-              },
-              song.id,
-              opts.startTime
-            );
-          } catch {
-            queueScrobble('server', song, opts.startTime, songDuration, opts.listenedSeconds);
-          }
-        }
-      }
-    } else if (serverScrobbleEnabled) {
+    if (serverScrobbleEnabled) {
       try {
         await api.songs.scrobble(song.id, opts.startTime);
         // Jellyfin/Emby's Last.fm plugin scrobbles on PlaybackStopped; markPlayed
         // alone doesn't reach it. Send the session-stop event with the actual
-        // listened position so the plugin picks it up.
+        // listened position so the plugin picks it up. Navidrome's scrobble is
+        // the whole story on its own and implements no session events, so the
+        // `?.` skips this there.
         api.songs.reportPlaybackStop?.(song.id, opts.listenedSeconds * 1000).catch(() => {});
       } catch {
         queueScrobble('server', song, opts.startTime, songDuration, opts.listenedSeconds);
@@ -162,26 +143,12 @@ export function useScrobbling() {
     if (!canScrobble(song)) return;
     const songDuration = Number(song.duration) || undefined;
 
-    if (activeServer?.type === 'navidrome' && serverScrobbleEnabled) {
-      const password = activeServer.auth?.password as string | undefined;
-      if (activeServer.serverUrl && activeServer.username && password) {
-        navidromeScrobble.nowPlaying(
-          {
-            serverUrl: activeServer.serverUrl,
-            username: activeServer.username,
-            password,
-            basicAuth: activeServer.basicAuth,
-          },
-          song.id
-        ).catch(() => {});
-      }
-    }
-
-    // Session-start on Jellyfin/Emby. Fire-and-forget: the scrobble plugin
-    // reads these events, but a session-report outage should never block the
-    // player. Navidrome adapters don't implement this — the ?. skips them.
-    if (activeServer?.type !== 'navidrome' && serverScrobbleEnabled) {
-      api.songs.reportPlaybackStart?.(song.id, 0).catch(() => {});
+    // Whatever the provider calls it — scrobble.view with submission=false on
+    // Subsonic, a session-start event on Jellyfin/Emby. Fire-and-forget: the
+    // scrobble plugin reads these events, but a report outage should never
+    // block the player.
+    if (serverScrobbleEnabled) {
+      api.songs.reportNowPlaying?.(song.id).catch(() => {});
     }
 
     if (listenBrainzConfig?.token && lbScrobbleEnabled) {
@@ -192,19 +159,20 @@ export function useScrobbling() {
         album: song.albumTitle,
       }).catch(() => {});
     }
-  }, [activeServer, serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, api]);
+  }, [serverScrobbleEnabled, listenBrainzConfig, lbScrobbleEnabled, api]);
 
   /**
-   * Keeps the Jellyfin/Emby session alive by pinging /Sessions/Playing/Progress
-   * on a fixed cadence. Without this heartbeat the server can drop the session
-   * before the track finishes, and PlaybackStopped never reaches the Last.fm
-   * plugin. Fire-and-forget; a failed ping is not user-visible.
+   * Keeps a server-side playback session alive on the providers that keep one
+   * (Jellyfin/Emby's /Sessions/Playing/Progress). Without this heartbeat the
+   * server can drop the session before the track finishes, and PlaybackStopped
+   * never reaches the Last.fm plugin. Providers with no session — Subsonic —
+   * don't implement it, so the `?.` skips them. Fire-and-forget; a failed ping
+   * is not user-visible.
    */
   const reportPlaybackProgress = useCallback((song: Song, positionMs: number, isPaused: boolean) => {
-    if (activeServer?.type === 'navidrome') return;
     if (!serverScrobbleEnabled) return;
     api.songs.reportPlaybackProgress?.(song.id, positionMs, isPaused).catch(() => {});
-  }, [activeServer?.type, serverScrobbleEnabled, api]);
+  }, [serverScrobbleEnabled, api]);
 
   return { scrobbleIfNeeded, submitNowPlaying, reportPlaybackProgress, resetLastScrobbled };
 }

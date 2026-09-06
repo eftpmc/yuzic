@@ -1,5 +1,9 @@
 # Architecture
 
+How the app is built. For *what* it supports — the servers, integrations, and
+downloaders, and every outside endpoint the app calls — see
+[integrations.md](integrations.md).
+
 Four load-bearing patterns hold the app together. Everything else is a leaf on
 one of these trunks.
 
@@ -25,6 +29,18 @@ export interface ApiAdapter {
 }
 ```
 
+A capability that isn't a whole surface is declared as a field on the surface
+that owns it, and read the same way:
+
+- `songs.streamableCodecs` — the Opus switch on Playback appears where the
+  adapter says Opus is streamable, not where the server is a Jellyfin.
+- `songs.scrobbleKind` — `'scrobble'` where the call is a listen the server may
+  forward onward, `'markPlayed'` where it only moves a play count. The Server
+  screen words its one switch from this instead of asking who the server is.
+
+`api/capabilities.test.ts` pins what each adapter declares, because these are
+read by screens that no longer have any other way to find out.
+
 **Callers check for existence, not provider name.** The Library tab does
 `if (api.radio) show Radio row`. If Plex adopts an equivalent tomorrow, its
 adapter fills in `radio`, and the row appears for Plex users without any
@@ -37,6 +53,19 @@ etc.
 **Never gate on `activeServer.type`.** That couples UI to provider identity and
 grows a `if/else` ladder every time another server joins. Presence-gating stays
 open-ended.
+
+### One adapter per protocol, not per product
+
+`api/mediaBrowser/adapter.ts` backs both Jellyfin and Emby: they speak the same
+MediaBrowser-derived API and differ only in what `MediaBrowserBrand` captures —
+the stream token param, whether `/System/Ping` returns JSON, and how a cover is
+addressed. `api/jellyfin/index.ts` and `api/emby/index.ts` are three-line brand
+bindings over it.
+
+They were two full adapter files, identical but for the brand constant, and had
+already started to drift; `adapter.test.ts` now asserts the two surfaces match
+so a change can't reach only one. A server whose API is genuinely different —
+Plex — gets its own adapter rather than a third brand.
 
 ### Building a new provider adapter
 
@@ -154,7 +183,8 @@ src/api/                — providers + shared surfaces
   navidrome/            — Subsonic client + endpoints
   mediaBrowser/         — shared Jellyfin/Emby endpoints (both adapters
                           re-export these; only auth + brand differ)
-  jellyfin/, emby/      — the two mediaBrowser adapters
+  mediaBrowser/adapter.ts — the adapter both brands share
+  jellyfin/, emby/      — brand bindings over that adapter (3 lines each)
   audiomuse/            — the acoustic-similarity service client
   listenbrainz/         — read-only recs client (scrobble is separate)
   lastfm/               — bundled-key read-only client (similar-artists)
@@ -193,7 +223,12 @@ src/utils/playback/     — contentKind + Song-synthesis helpers
 
 - **Optional method + presence check, not provider switch.** Every time a
   feature landed as `if (activeServer.type === 'navidrome')` in a review,
-  it got rewritten as `if (api.<feature>)` before merging.
+  it got rewritten as `if (api.<feature>)` before merging. What the adapter
+  can't express, `utils/servers/registry.ts` does: it holds the per-provider
+  facts that aren't API calls — the demo, cover URLs, and `libraryScope`, the
+  `auth` key each provider stores its chosen libraries under. `activeServer.type`
+  is for naming a server to the user and tagging data with its origin; it is not
+  how you decide what the app can do.
 - **Local first, server as sink.** State the app can produce locally lives
   locally; server sync is a mirror. Playback state is the canonical example.
 - **Toggles for privacy and bandwidth, not for "we couldn't pick a default".**

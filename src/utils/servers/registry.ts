@@ -13,6 +13,9 @@ import { createJellyfinAdapter } from '@/api/jellyfin';
 import { createEmbyClient } from '@/api/emby/client';
 import { createEmbyAdapter } from '@/api/emby';
 
+import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
+import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
+
 import { ping as pingMediaBrowser } from '@/api/mediaBrowser/auth/ping';
 import { connect as connectMediaBrowser } from '@/api/mediaBrowser/auth/connect';
 import { JELLYFIN_BRAND, EMBY_BRAND } from '@/api/mediaBrowser/brand';
@@ -44,12 +47,29 @@ export type ServerCapabilities = {
   supportsDemo: boolean;
 };
 
+/**
+ * Where a provider keeps the user's chosen library ids inside `server.auth`.
+ *
+ * Subsonic scopes a request by `musicFolderId`, MediaBrowser by `parentId`, and
+ * both were once written as a single id before multi-select existed — so each
+ * provider names the array key it writes now and the singular key an upgrading
+ * install may still be carrying. Callers read and write the selection through
+ * `selectedLibraryIds` / `libraryScopePatch` rather than knowing either name.
+ */
+export type LibraryScope = {
+  key: string;
+  legacyKey: string;
+};
+
 export type ServerProviderConfig = {
   type: ServerType;
   label: string;
   description: string;
   icon: any;
   capabilities: ServerCapabilities;
+  libraryScope: LibraryScope;
+  /** The libraries/folders this server offers to scope the app to. */
+  listLibraries: (server: Server) => Promise<Library[]>;
   ping: (
     url: string,
     username: string,
@@ -88,6 +108,8 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: true,
     },
+    libraryScope: { key: 'musicFolderIds', legacyKey: 'musicFolderId' },
+    listLibraries: (server) => getMusicFolders(server),
     ping: async (url, username, auth, basicAuth) => {
       const password = auth.password as string;
       if (!username || !password) return false;
@@ -149,6 +171,8 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: false,
     },
+    libraryScope: { key: 'parentIds', legacyKey: 'parentId' },
+    listLibraries: (server) => getMusicLibraries(server),
     ping: async (url, username, auth, basicAuth) => {
       const token = auth.token as string;
       const userId = auth.userId as string;
@@ -191,6 +215,8 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     capabilities: {
       supportsDemo: false,
     },
+    libraryScope: { key: 'parentIds', legacyKey: 'parentId' },
+    listLibraries: (server) => getMusicLibraries(server),
     ping: async (url, username, auth, basicAuth) => {
       const token = auth.token as string;
       const userId = auth.userId as string;
@@ -242,3 +268,28 @@ export const getAllServerProviders = () =>
 
 export const supportsDemo = (type: ServerType) =>
   SERVER_PROVIDERS[type]?.capabilities.supportsDemo ?? false;
+
+/** The libraries this server offers, asked of it without knowing its type. */
+export const listServerLibraries = (server: Server): Promise<Library[]> =>
+  getServerProvider(server.type).listLibraries(server);
+
+/**
+ * The library ids currently selected, empty meaning "all". Reads the provider's
+ * own key, falling back to the pre-multi-select singular one so a server
+ * configured before that change keeps its scope.
+ */
+export const selectedLibraryIds = (server: Server): string[] => {
+  const { key, legacyKey } = getServerProvider(server.type).libraryScope;
+  const current = server.auth?.[key];
+  if (Array.isArray(current)) return current as string[];
+  const legacy = server.auth?.[legacyKey];
+  return legacy ? [String(legacy)] : [];
+};
+
+/** The `auth` patch that stores a new selection for this server. */
+export const libraryScopePatch = (
+  server: Server,
+  ids: string[]
+): Record<string, string[]> => ({
+  [getServerProvider(server.type).libraryScope.key]: ids,
+});

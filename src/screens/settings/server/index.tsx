@@ -39,22 +39,20 @@ const ServerSettings: React.FC = () => {
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const queueSyncEnabled = useSelector(selectQueueSyncEnabled);
   const nowPlayingShelfEnabled = useSelector(selectServerNowPlayingShelfEnabled);
-  const isNavidrome = activeServer?.type === 'navidrome';
-  const isJellyfinOrEmby = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setServerScrobbleEnabled(v)); }, [dispatch]);
   const toggleQueueSync = useCallback((v: boolean) => { dispatch(setQueueSyncEnabled(v)); }, [dispatch]);
   const toggleNowPlayingShelf = useCallback((v: boolean) => { dispatch(setServerNowPlayingShelfEnabled(v)); }, [dispatch]);
 
-  // Shared-server privacy — only Navidrome exposes these surfaces today, so
-  // gate on that rather than showing a toggle for something a Jellyfin user
-  // can't turn on either way. If the server later grows a queue/nowplaying
-  // API these will appear automatically for that server too.
-  const supportsQueueSync = isNavidrome;
-  const supportsNowPlayingShelf = isNavidrome;
+  // Shared-server privacy — a switch appears only where the adapter can back
+  // the thing it governs, rather than showing a Jellyfin user a toggle that
+  // couldn't do anything either way. Only Subsonic backs these today; a server
+  // that grows the API gets the switches with no change here.
+  const supportsQueueSync = Boolean(api.queue);
+  const supportsNowPlayingShelf = Boolean(api.discovery);
 
   const privacyItems = useMemo(() => {
-    const items: Array<{ label: string; subtext: string; value: boolean; onValueChange: (v: boolean) => void }> = [];
+    const items: { label: string; subtext: string; value: boolean; onValueChange: (v: boolean) => void }[] = [];
     if (supportsQueueSync) items.push({
       label: t('settings.server.queueSync'),
       subtext: t('settings.server.queueSyncDescription'),
@@ -70,16 +68,23 @@ const ServerSettings: React.FC = () => {
     return items;
   }, [supportsQueueSync, supportsNowPlayingShelf, queueSyncEnabled, nowPlayingShelfEnabled, toggleQueueSync, toggleNowPlayingShelf, t]);
 
+  // One switch, worded for what the server actually does with the call — the
+  // adapter says which, so this doesn't ask what kind of server it is.
+  //
   // Now-playing follows scrobble; there was a separate row for it and the two
   // states were never independently useful — a user who doesn't want the
   // finished listen submitted doesn't want the in-progress broadcast either.
-  const navidromeScrobbleItems = useMemo(() => [
-    { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
-  ], [t, serverScrobbleEnabled, toggleScrobble]);
-
-  const jellyfinScrobbleItems = useMemo(() => [
-    { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
-  ], [t, serverScrobbleEnabled, toggleScrobble]);
+  const scrobbleItems = useMemo(() => {
+    const isScrobble = api.songs.scrobbleKind === 'scrobble';
+    return [{
+      label: t(isScrobble ? 'settings.scrobbling.scrobble' : 'settings.scrobbling.markAsPlayed'),
+      subtext: t(isScrobble
+        ? 'settings.scrobbling.scrobbleDescription'
+        : 'settings.scrobbling.markAsPlayedDescription'),
+      value: serverScrobbleEnabled,
+      onValueChange: toggleScrobble,
+    }];
+  }, [t, api, serverScrobbleEnabled, toggleScrobble]);
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
@@ -168,12 +173,12 @@ const ServerSettings: React.FC = () => {
         onSelect={key => dispatch(setSearchScope(key as SearchScope))}
       />
 
-      {(isNavidrome || isJellyfinOrEmby) && (
-        <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
+      {activeServer && (
+        <>
+          <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
+          <SettingsToggleGroup items={scrobbleItems} />
+        </>
       )}
-
-      {isNavidrome && <SettingsToggleGroup items={navidromeScrobbleItems} />}
-      {isJellyfinOrEmby && <SettingsToggleGroup items={jellyfinScrobbleItems} />}
 
       {privacyItems.length > 0 && (
         <>

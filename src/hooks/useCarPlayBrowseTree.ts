@@ -10,9 +10,7 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
-import { createNavidromeClient } from '@/api/navidrome/client';
-import { createJellyfinClient } from '@/api/jellyfin/client';
-import { createEmbyClient } from '@/api/emby/client';
+import type { ApiAdapter } from '@/api/types';
 
 const CARPLAY_ALBUM_LIMIT = 50;
 const CARPLAY_PLAYLIST_LIMIT = 50;
@@ -42,49 +40,27 @@ function isAlbumDetail(album: Album | AlbumBase): album is Album {
   return 'songs' in album && Array.isArray(album.songs);
 }
 
-function buildStreamUrl(server: Server | null | undefined, songId: string): string | null {
+/**
+ * CarPlay needs a plain URL per row rather than a player call, so it builds one
+ * up front for every track it lists.
+ *
+ * This used to construct a provider's client by hand, one branch per server
+ * type, which meant a fourth server would have gone unplayable in the car until
+ * someone remembered this file. The adapter already knows how to address a
+ * stream on whichever server is active — including which URL failover last
+ * confirmed alive — so it does it.
+ *
+ * `'high'` rather than the user's streaming-quality setting is what this always
+ * asked for; both clients defaulted to it.
+ */
+function buildStreamUrl(api: ApiAdapter, server: Server | null | undefined, songId: string): string | null {
   if (!server?.isAuthenticated) return null;
-
-  if (server.type === 'navidrome') {
-    const password = server.auth?.password;
-    if (typeof password !== 'string') return null;
-    return createNavidromeClient({
-      serverUrl: server.serverUrl,
-      username: server.username,
-      password,
-      basicAuth: server.basicAuth,
-    }).buildStreamUrl(songId);
-  }
-
-  if (server.type === 'jellyfin') {
-    const token = server.auth?.token;
-    const userId = server.auth?.userId;
-    if (typeof token !== 'string' || typeof userId !== 'string') return null;
-    return createJellyfinClient({
-      serverUrl: server.serverUrl,
-      token,
-      userId,
-      basicAuth: server.basicAuth,
-    }).buildStreamUrl(songId);
-  }
-
-  if (server.type === 'emby') {
-    const token = server.auth?.token;
-    const userId = server.auth?.userId;
-    if (typeof token !== 'string' || typeof userId !== 'string') return null;
-    return createEmbyClient({
-      serverUrl: server.serverUrl,
-      token,
-      userId,
-      basicAuth: server.basicAuth,
-    }).buildStreamUrl(songId);
-  }
-
-  return null;
+  // Empty is what an adapter with nothing behind it returns.
+  return api.songs.buildStreamUrl(songId, 'high') || null;
 }
 
-function toPlayableSong(track: SongBase, server: Server | null | undefined): Song | null {
-  const streamUrl = buildStreamUrl(server, track.id);
+function toPlayableSong(api: ApiAdapter, track: SongBase, server: Server | null | undefined): Song | null {
+  const streamUrl = buildStreamUrl(api, server, track.id);
   if (!streamUrl) return null;
 
   return {
@@ -115,14 +91,14 @@ export function useCarPlayBrowseTree() {
   const tracksByAlbumId = useMemo(() => {
     const grouped = new Map<string, Song[]>();
     tracks.forEach(track => {
-      const song = toPlayableSong(track, activeServer);
+      const song = toPlayableSong(api, track, activeServer);
       if (!song) return;
       const existing = grouped.get(track.albumId) ?? [];
       existing.push(song);
       grouped.set(track.albumId, existing);
     });
     return grouped;
-  }, [activeServer, tracks]);
+  }, [api, activeServer, tracks]);
 
   useEffect(() => {
     if (!activeServer?.id || !albums.length) return;

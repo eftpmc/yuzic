@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
-import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
-import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
+import {
+  listServerLibraries,
+  selectedLibraryIds,
+  libraryScopePatch,
+  type Library,
+} from '@/utils/servers/registry';
 import { useSync } from '@/hooks/useSync';
 import SettingsSelectCard from '../../components/SettingsSelectCard';
-
-type Library = { id: string; name: string };
 
 const LibrarySelect: React.FC = () => {
   const { t } = useTranslation();
@@ -26,12 +28,7 @@ const LibrarySelect: React.FC = () => {
     setIsLoading(true);
     const load = async () => {
       try {
-        let result: Library[] = [];
-        if (activeServer.type === 'navidrome') {
-          result = await getMusicFolders(activeServer);
-        } else if (activeServer.type === 'jellyfin' || activeServer.type === 'emby') {
-          result = await getMusicLibraries(activeServer);
-        }
+        const result = await listServerLibraries(activeServer);
         if (!cancelled) setLibraries(result);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -41,19 +38,10 @@ const LibrarySelect: React.FC = () => {
     return () => { cancelled = true; };
   }, [activeServer]);
 
-  const selectedIds: string[] = useMemo(() => {
-    if (!activeServer) return [];
-    if (activeServer.type === 'navidrome') {
-      const v = activeServer.auth?.musicFolderIds;
-      if (Array.isArray(v)) return v as string[];
-      const old = activeServer.auth?.musicFolderId;
-      return old ? [String(old)] : [];
-    }
-    const v = activeServer.auth?.parentIds;
-    if (Array.isArray(v)) return v as string[];
-    const old = (activeServer.auth as any)?.parentId;
-    return old ? [String(old)] : [];
-  }, [activeServer]);
+  const selectedIds: string[] = useMemo(
+    () => (activeServer ? selectedLibraryIds(activeServer) : []),
+    [activeServer]
+  );
 
   useEffect(() => {
     if (!pendingSyncRef.current || !activeServer?.id) return;
@@ -78,13 +66,10 @@ const LibrarySelect: React.FC = () => {
         ? selectedIds.filter(s => s !== key)
         : [...selectedIds, key];
     }
-    const authPatch = activeServer.type === 'navidrome'
-      ? { musicFolderIds: next }
-      : { parentIds: next };
     pendingSyncRef.current = true;
     dispatch(updateServer({
       id: activeServer.id,
-      patch: { auth: { ...activeServer.auth, ...authPatch } as any },
+      patch: { auth: { ...activeServer.auth, ...libraryScopePatch(activeServer, next) } as any },
     }));
   };
 
