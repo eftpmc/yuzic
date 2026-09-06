@@ -29,8 +29,8 @@ import {
   QUICK_PICKS_CANDIDATE_POOL,
   QUICK_PICKS_DECAY_MS,
   QUICK_PICKS_PEEK,
-  HOME_SECTION_HORIZONTAL_PADDING,
 } from '@/constants/home';
+import { SECTION_H_PADDING } from '@/features/home/constants';
 import { spacing, typography } from '@/constants/design';
 
 function useQuickPicks(refreshKey: number): SongBase[] {
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.sectionTitle,
     marginBottom: spacing.sm,
-    paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
+    paddingHorizontal: SECTION_H_PADDING,
   },
   page: {
     gap: 2,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   row: {
-    paddingHorizontal: HOME_SECTION_HORIZONTAL_PADDING,
+    paddingHorizontal: SECTION_H_PADDING,
     paddingVertical: spacing.tight,
   },
 });
