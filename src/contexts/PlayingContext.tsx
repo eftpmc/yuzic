@@ -35,13 +35,11 @@ import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
 import {
-  selectWifiStreamQuality,
-  selectCellularStreamQuality,
   selectPreferredCodec,
   selectAutoplayEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
-import { useNetworkType } from '@/hooks/useNetworkType';
+import { useStreamQuality } from '@/hooks/useStreamQuality';
 import {
   QueueFillProvider,
   createNativeSimilarityQueueFillProvider,
@@ -234,12 +232,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   sinkRef.current = sink;
   /** The server is holding the audio; the local player must stay out of it. */
   const remoteOwnsPlayback = () => ownsPlayback(sinkRef.current);
-  const networkType = useNetworkType();
-  const wifiQuality = useSelector(selectWifiStreamQuality);
-  const cellularQuality = useSelector(selectCellularStreamQuality);
-  const streamQuality = networkType === 'wifi' ? wifiQuality
-    : networkType === 'cellular' ? cellularQuality
-    : 'high';
+  const streamQuality = useStreamQuality();
   const streamQualityRef = useRef(streamQuality);
   streamQualityRef.current = streamQuality;
   const preferredCodec = useSelector(selectPreferredCodec);

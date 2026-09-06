@@ -11,6 +11,9 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import type { ApiAdapter } from '@/api/types';
+import { useStreamQuality } from './useStreamQuality';
+import { selectPreferredCodec } from '@/utils/redux/selectors/settingsSelectors';
+import type { AudioQuality, PreferredCodec } from '@/utils/redux/slices/settingsSlice';
 
 const CARPLAY_ALBUM_LIMIT = 50;
 const CARPLAY_PLAYLIST_LIMIT = 50;
@@ -50,17 +53,32 @@ function isAlbumDetail(album: Album | AlbumBase): album is Album {
  * stream on whichever server is active — including which URL failover last
  * confirmed alive — so it does it.
  *
- * `'high'` rather than the user's streaming-quality setting is what this always
- * asked for; both clients defaulted to it.
+ * Quality and codec are the user's, the same as on the phone. This asked for
+ * `'high'` unconditionally for as long as it existed, so someone who chose
+ * Original on WiFi still got a 320kbps stream the moment they got in the car —
+ * the setting was derived inside PlayingContext and nowhere else, and this
+ * file never saw it.
  */
-function buildStreamUrl(api: ApiAdapter, server: Server | null | undefined, songId: string): string | null {
+function buildStreamUrl(
+  api: ApiAdapter,
+  server: Server | null | undefined,
+  songId: string,
+  quality: AudioQuality,
+  codec: PreferredCodec
+): string | null {
   if (!server?.isAuthenticated) return null;
   // Empty is what an adapter with nothing behind it returns.
-  return api.songs.buildStreamUrl(songId, 'high') || null;
+  return api.songs.buildStreamUrl(songId, quality, codec) || null;
 }
 
-function toPlayableSong(api: ApiAdapter, track: SongBase, server: Server | null | undefined): Song | null {
-  const streamUrl = buildStreamUrl(api, server, track.id);
+function toPlayableSong(
+  api: ApiAdapter,
+  track: SongBase,
+  server: Server | null | undefined,
+  quality: AudioQuality,
+  codec: PreferredCodec
+): Song | null {
+  const streamUrl = buildStreamUrl(api, server, track.id, quality, codec);
   if (!streamUrl) return null;
 
   return {
@@ -76,6 +94,8 @@ export function useCarPlayBrowseTree() {
   const api = useApi();
   const apiRef = useRef(api);
   const activeServer = useSelector(selectActiveServer);
+  const streamQuality = useStreamQuality();
+  const preferredCodec = useSelector(selectPreferredCodec);
   const { albums, playlists, starred, tracks } = useLibrary();
   const [hydratedPlaylists, setHydratedPlaylists] = useState<Playlist[]>([]);
 
@@ -91,14 +111,14 @@ export function useCarPlayBrowseTree() {
   const tracksByAlbumId = useMemo(() => {
     const grouped = new Map<string, Song[]>();
     tracks.forEach(track => {
-      const song = toPlayableSong(api, track, activeServer);
+      const song = toPlayableSong(api, track, activeServer, streamQuality, preferredCodec);
       if (!song) return;
       const existing = grouped.get(track.albumId) ?? [];
       existing.push(song);
       grouped.set(track.albumId, existing);
     });
     return grouped;
-  }, [api, activeServer, tracks]);
+  }, [api, activeServer, tracks, streamQuality, preferredCodec]);
 
   useEffect(() => {
     if (!activeServer?.id || !albums.length) return;
