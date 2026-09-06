@@ -87,8 +87,14 @@ const EngineSmokeTest: React.FC = () => {
       // graph reports zero forever.
       const stop = YuzicEngine.addListener(event => {
         if (event.type === 'progress') {
-          const { positionSec, durationSec } = event.progress;
-          say(`progress ${positionSec.toFixed(1)}s / ${durationSec.toFixed(1)}s`);
+          const { positionSec, durationSec, bufferedSec } = event.progress;
+          // bufferedSec used to be hardcoded to zero. Shown here because a
+          // buffering figure pinned at zero looks exactly like a stall, and
+          // that is the failure worth being able to see.
+          say(
+            `progress ${positionSec.toFixed(1)}s / ${durationSec.toFixed(1)}s ` +
+              `(buffered ${bufferedSec.toFixed(1)}s)`
+          );
         }
         if (event.type === 'stateChange') say(`state: ${event.state}`);
         if (event.type === 'error') say(`error: ${event.code} ${event.message}`);
