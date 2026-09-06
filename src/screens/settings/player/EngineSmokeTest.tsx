@@ -110,6 +110,88 @@ const EngineSmokeTest: React.FC = () => {
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
+  /**
+   * Times a seek into a region the cache has not fetched.
+   *
+   * This is the half of `docs/architecture.md` open question 3 that a stub
+   * server cannot answer: cancellation is unit-tested, but "how long until the
+   * first sample at the new position" only means something against a real
+   * server over a real network.
+   *
+   * The seek target is deliberately most of the way into the track, so it is
+   * far beyond anything the two-second read-ahead has pulled. Measured from
+   * just before `seekTo` to the first progress event that actually lands near
+   * the target — progress reported at the *old* position is the engine not
+   * having moved yet, and counting it would flatter the number.
+   */
+  const seekProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library to seek');
+        return;
+      }
+      const url = api.songs.buildStreamUrl(track.id, 'high');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      await YuzicEngine.play();
+      say(`playing: ${track.title}`);
+
+      // Let it settle into steady playback first. Seeking during the initial
+      // buffering would measure the open, not the seek.
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
+      const before = await YuzicEngine.getProgress();
+      if (!before.durationSec) {
+        say('duration unknown — cannot pick a seek target');
+        return;
+      }
+      const target = before.durationSec * 0.8;
+      say(`at ${before.positionSec.toFixed(1)}s, buffered ${before.bufferedSec.toFixed(1)}s`);
+      say(`seeking to ${target.toFixed(1)}s`);
+
+      const started = Date.now();
+      let settled = false;
+      const stop = YuzicEngine.addListener(event => {
+        if (settled || event.type !== 'progress') return;
+        // Within five seconds of the target counts as arrived; the engine
+        // resumes at the requested frame, not exactly on it.
+        if (Math.abs(event.progress.positionSec - target) > 5) return;
+        settled = true;
+        say(`first sample at ${Date.now() - started}ms`);
+        say(`buffered there: ${event.progress.bufferedSec.toFixed(1)}s`);
+        stop();
+      });
+
+      await YuzicEngine.seekTo(target);
+      say('seekTo() returned — waiting for audio');
+
+      setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          stop();
+          say('no sample within 15s — the seek did not arrive');
+        }
+      }, 15_000);
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Seek probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
   const publishBrowseTree = useCallback(async () => {
     setLog([]);
     try {
@@ -169,6 +251,7 @@ const EngineSmokeTest: React.FC = () => {
       <SettingsCard>
         <SettingsRow label="Probe the native module" onPress={probe} />
         <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
+        <SettingsRow label="Time a seek into unfetched audio" onPress={seekProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
       {log.length > 0 && (
