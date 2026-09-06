@@ -290,7 +290,13 @@
       "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
       "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends.",
       "resumeLongTracks": "Resume long tracks",
-      "resumeLongTracksSubtext": "Audiobooks, DJ sets, podcast episodes — pick up where you left off."
+      "resumeLongTracksSubtext": "Audiobooks, DJ sets, podcast episodes — pick up where you left off.",
+      "cacheTitle": "Playback cache",
+      "clearCache": "Clear playback cache",
+      "clearCacheTitle": "Clear playback cache?",
+      "clearCacheBody": "Streamed audio held on this device will be fetched again next time you play it. Your downloads are not affected.",
+      "clearCacheConfirm": "Clear",
+      "clearCacheDone": "Playback cache cleared"
     },
     "listenBrainz": {
       "title": "ListenBrainz",

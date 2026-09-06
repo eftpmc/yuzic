@@ -289,7 +289,13 @@
       "autoplaySubtextAudiomuse": "AudioMuse-AIを使って、キューが終わった後も音響的に似た曲を再生し続けます。",
       "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。",
       "resumeLongTracks": "長いトラックを再開",
-      "resumeLongTracksSubtext": "オーディオブック、DJ セット、ポッドキャストのエピソードを続きから再生します。"
+      "resumeLongTracksSubtext": "オーディオブック、DJ セット、ポッドキャストのエピソードを続きから再生します。",
+      "cacheTitle": "再生キャッシュ",
+      "clearCache": "再生キャッシュを削除",
+      "clearCacheTitle": "再生キャッシュを削除しますか？",
+      "clearCacheBody": "この端末に保持されたストリーム音声は、次回再生時に再取得されます。ダウンロード済みの曲には影響しません。",
+      "clearCacheConfirm": "削除",
+      "clearCacheDone": "再生キャッシュを削除しました"
     },
     "listenBrainz": {
       "title": "ListenBrainz",

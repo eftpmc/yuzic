@@ -290,7 +290,13 @@
       "autoplaySubtextAudiomuse": "Continue de jouer des titres sonoriquement similaires une fois la file d'attente terminée, grâce à AudioMuse-AI.",
       "autoplaySubtextNative": "Continue de jouer des titres similaires depuis votre serveur une fois la file d'attente terminée.",
       "resumeLongTracks": "Reprendre les pistes longues",
-      "resumeLongTracksSubtext": "Livres audio, sets DJ, épisodes de podcast — reprenez où vous vous êtes arrêté."
+      "resumeLongTracksSubtext": "Livres audio, sets DJ, épisodes de podcast — reprenez où vous vous êtes arrêté.",
+      "cacheTitle": "Cache de lecture",
+      "clearCache": "Vider le cache de lecture",
+      "clearCacheTitle": "Vider le cache de lecture ?",
+      "clearCacheBody": "Les flux conservés sur cet appareil seront téléchargés à nouveau à la prochaine lecture. Vos téléchargements ne sont pas affectés.",
+      "clearCacheConfirm": "Vider",
+      "clearCacheDone": "Cache de lecture vidé"
     },
     "listenBrainz": {
       "title": "ListenBrainz",

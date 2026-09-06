@@ -5,7 +5,7 @@
     "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "myapp",
+    "scheme": "yuzic",
     "userInterfaceStyle": "automatic",
     "ios": {
       "buildNumber": "1",

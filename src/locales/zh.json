@@ -289,7 +289,13 @@
       "autoplaySubtextAudiomuse": "队列播放完毕后，使用 AudioMuse-AI 继续播放声音相似的曲目。",
       "autoplaySubtextNative": "队列播放完毕后，继续播放服务器中的相似曲目。",
       "resumeLongTracks": "继续播放长音轨",
-      "resumeLongTracksSubtext": "有声书、DJ 混音、播客单集——从上次停下的地方继续。"
+      "resumeLongTracksSubtext": "有声书、DJ 混音、播客单集——从上次停下的地方继续。",
+      "cacheTitle": "播放缓存",
+      "clearCache": "清除播放缓存",
+      "clearCacheTitle": "清除播放缓存？",
+      "clearCacheBody": "设备上保存的流媒体音频将在下次播放时重新获取。已下载的内容不受影响。",
+      "clearCacheConfirm": "清除",
+      "clearCacheDone": "已清除播放缓存"
     },
     "listenBrainz": {
       "title": "ListenBrainz",
