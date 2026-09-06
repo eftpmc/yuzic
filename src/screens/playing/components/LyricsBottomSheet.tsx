@@ -91,9 +91,14 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     const [layoutVersion, setLayoutVersion] = useState(0);
 
     const lines = useMemo(() => lyrics?.lines ?? [], [lyrics?.lines]);
+    // Unsynced lines all carry `startMs: 0`, which would otherwise resolve to
+    // "the last line is current" forever — highlighting the wrong line and
+    // pinning the scroll to the bottom. There is no current line without
+    // timings, so there is no highlight and no follow.
+    const synced = lyrics?.synced ?? false;
     const currentIndex = useMemo(
-      () => getCurrentLineIndex(lines, progress.position),
-      [lines, progress.position]
+      () => (synced ? getCurrentLineIndex(lines, progress.position) : -1),
+      [synced, lines, progress.position]
     );
 
     useEffect(() => {
@@ -130,6 +135,9 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
     if (!lyrics) return null;
 
     const getVariant = (index: number): 'active' | 'adjacent' | 'inactive' => {
+      // Nothing is "current" in a plain block, so every line reads the same
+      // rather than the whole sheet sitting greyed out.
+      if (!synced) return 'active';
       if (index === currentIndex) return 'active';
       if (index === currentIndex - 1 || index === currentIndex + 1)
         return 'adjacent';
@@ -182,23 +190,35 @@ const LyricsBottomSheet = forwardRef<BottomSheetModal, LyricsBottomSheetProps>(
           onContentSizeChange={(w, h) => setContentHeight(h)}
           onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
         >
-          {lines.map((line, index) => (
-            <Touchable
-              key={index}
-              accessibilityRole="button"
-              accessibilityLabel={line.text}
-              accessibilityHint={t('a11y.player.seekToLyric')}
-              onLayout={onLineLayout(index)}
-              onPress={() => seekSong(line.startMs / 1000)}
-            >
+          {lines.map((line, index) =>
+            // Tapping a line seeks to it, which an untimed line cannot do —
+            // so it isn't a button, and isn't announced as one.
+            synced ? (
+              <Touchable
+                key={index}
+                accessibilityRole="button"
+                accessibilityLabel={line.text}
+                accessibilityHint={t('a11y.player.seekToLyric')}
+                onLayout={onLineLayout(index)}
+                onPress={() => seekSong(line.startMs / 1000)}
+              >
+                <LyricLine
+                  text={line.text}
+                  variant={getVariant(index)}
+                  activeColor={colors.secondary}
+                  inactiveColor={colors.subtext}
+                />
+              </Touchable>
+            ) : (
               <LyricLine
+                key={index}
                 text={line.text}
                 variant={getVariant(index)}
                 activeColor={colors.secondary}
                 inactiveColor={colors.subtext}
               />
-            </Touchable>
-          ))}
+            )
+          )}
         </BottomSheetScrollView>
       </BottomSheetModal>
     );

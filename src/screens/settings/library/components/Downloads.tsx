@@ -40,7 +40,7 @@ const Downloads: React.FC = () => {
       />
       <SettingsDivider />
       <SettingsInfoRow
-        label={t('settings.library.downloads.availableLabel', { defaultValue: 'Available Space' })}
+        label={t('settings.library.downloads.availableLabel')}
         value={formattedAvailable}
         stacked
       />

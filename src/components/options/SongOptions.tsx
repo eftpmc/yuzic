@@ -230,14 +230,11 @@ const SongOptions = forwardRef<
       setIsGeneratingPlaylist(true);
       try {
         const result = await generateSimilarPlaylist(api, audiomuseConfig, selectedSong, { size: 25 });
-        toast.success(t('songOptions.toasts.playlistGenerated', {
-          count: result.trackCount,
-          defaultValue: `Playlist created with ${result.trackCount} tracks`,
-        }));
+        toast.success(t('songOptions.toasts.playlistGenerated', { count: result.trackCount }));
         close();
         router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
       } catch {
-        toast.error(t('songOptions.toasts.playlistGenerationFailed', 'Could not generate playlist'));
+        toast.error(t('songOptions.toasts.playlistGenerationFailed'));
       } finally {
         generatePlaylistInFlightRef.current = false;
         setIsGeneratingPlaylist(false);
@@ -332,7 +329,7 @@ const SongOptions = forwardRef<
           {audiomuseConfigured && (
             <OptionSheetRow
               icon={<Sparkles size={26} color={colors.secondary} />}
-              label={t('songOptions.actions.generatePlaylist', 'Make a playlist from this')}
+              label={t('songOptions.actions.generatePlaylist')}
               onPress={handleGeneratePlaylist}
               disabled={isGeneratingPlaylist}
               loading={isGeneratingPlaylist}

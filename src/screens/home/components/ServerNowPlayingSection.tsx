@@ -79,7 +79,7 @@ export default function ServerNowPlayingSection({ sectionKey }: Props) {
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
-        {t('explore.sections.serverNowPlaying', 'Playing on your server')}
+        {t('explore.sections.serverNowPlaying')}
       </Text>
       <View style={styles.list}>
         {others.map((e) => (

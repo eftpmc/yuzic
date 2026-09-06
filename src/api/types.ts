@@ -271,7 +271,17 @@ export type LyricLine = {
 
 export type LyricsResult = {
   provider: "jellyfin" | "navidrome" | "emby";
-  synced: true;
+  /**
+   * Whether `startMs` on each line means anything.
+   *
+   * This was the literal type `true`, which read as "we only support synced
+   * lyrics" but landed as "unsynced lyrics are silently dropped" — both
+   * adapters returned null the moment a track's lyrics had no timings, so a
+   * plain `.txt` or an untimed tag showed nothing at all. Unsynced lyrics are
+   * still lyrics; they just can't be followed along, so every line arrives
+   * with `startMs: 0` and the UI shows them as a plain block.
+   */
+  synced: boolean;
   lines: LyricLine[];
 };
 

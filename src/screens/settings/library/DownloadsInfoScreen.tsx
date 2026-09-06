@@ -126,7 +126,7 @@ const DownloadsInfoScreen: React.FC = () => {
         <SettingsCard>
           <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
           <SettingsDivider />
-          <SettingsInfoRow label={t('settings.library.downloads.availableLabel', { defaultValue: 'Available Space' })} value={formattedAvailable} stacked />
+          <SettingsInfoRow label={t('settings.library.downloads.availableLabel')} value={formattedAvailable} stacked />
           <SettingsDivider />
           <SettingsInfoRow label={t('settings.library.downloads.table.playlists')} value={String(downloadedPlaylistCount)} stacked />
           <SettingsDivider />

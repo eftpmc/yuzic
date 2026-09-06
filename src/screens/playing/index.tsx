@@ -208,11 +208,14 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 try {
                     const res = await api.lyrics.getBySongId(currentSong.id);
                     if (cancelled) return;
-                    if (res?.synced && res.lines.length > 0) {
+                    if (res && res.lines.length > 0) {
                         setLyrics(res);
                         setLyricsAvailable(true);
                     }
                 } catch {
+                    // A track without lyrics is the common case, not a fault —
+                    // the panel just stays closed. Nothing to tell the user and
+                    // nothing to retry, so this stays silent on purpose.
                 }
             })();
         });
@@ -343,7 +346,11 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 </View>
                             </View>
 
-                            {lyricsAvailable && lyrics && (
+                            {/* The preview card exists to follow the current
+                                line, which unsynced lyrics have no notion of —
+                                they open in the sheet from the player's own
+                                control instead. */}
+                            {lyricsAvailable && lyrics?.synced && (
                                 <LyricsPreviewCardResolver
                                     lyrics={lyrics}
                                     contentWidth={contentWidth}

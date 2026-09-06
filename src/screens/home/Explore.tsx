@@ -131,7 +131,7 @@ export default function Home() {
   const activeSources = [
     {
       id: 'server',
-      label: t('explore.sources.server', 'On your server'),
+      label: t('explore.sources.server'),
       // Your own server is not a third-party brand, so it gets the app's own
       // accent rather than borrowing ListenBrainz's orange — which is what it
       // used to do, leaving two headers on one screen badged identically.

@@ -60,7 +60,7 @@ export function ResumeQueueBanner() {
         onPress={dismiss}
         hitSlop={10}
         style={styles.dismiss}
-        accessibilityLabel={t('common.dismiss', 'Dismiss')}
+        accessibilityLabel={t('common.dismiss')}
       >
         <X size={18} color={colors.subtext} />
       </Touchable>

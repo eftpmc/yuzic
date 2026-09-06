@@ -111,7 +111,7 @@ export default function LBSimilarForYouSection({ sectionKey, artistName, refresh
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
-        {t('explore.sections.lbSimilarForYou', { artist: artistName, defaultValue: `Because you like ${artistName}` })}
+        {t('explore.sections.lbSimilarForYou', { artist: artistName })}
       </Text>
       {isLoading ? (
         <SkeletonTiles

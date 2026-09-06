@@ -136,11 +136,8 @@ export default function ServerRandomSection({ sectionKey, refreshKey = 0 }: Prop
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.secondary }]}>
         {isThemed
-          ? t('explore.sections.serverRandomThemed', {
-              genre: themeGenre,
-              defaultValue: `Today's ${themeGenre}`,
-            })
-          : t('explore.sections.serverRandom', 'Surprise me')}
+          ? t('explore.sections.serverRandomThemed', { genre: themeGenre })
+          : t('explore.sections.serverRandom')}
       </Text>
       {isLoading ? (
         <SkeletonTiles
