@@ -14,6 +14,7 @@ import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
+import { useListDensity } from '@/hooks/useListDensity';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { shareItem } from '@/utils/share';
@@ -42,6 +43,7 @@ export default function SharesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const scrollClearance = useScrollClearance();
+  const density = useListDensity();
   const api = useApi();
   const queryClient = useQueryClient();
 
@@ -95,7 +97,7 @@ export default function SharesScreen() {
 
   const renderShare = useCallback(
     ({ item }: { item: Share }) => (
-      <View style={styles.row}>
+      <View style={[styles.row, { paddingVertical: density.rowPadding }]}>
         <View style={styles.rowText}>
           <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
             {item.description || item.url}
@@ -134,7 +136,7 @@ export default function SharesScreen() {
         </View>
       </View>
     ),
-    [colors.secondary, colors.subtext, handleShareAgain, handleDelete, t]
+    [colors.secondary, colors.subtext, handleShareAgain, handleDelete, t, density.rowPadding]
   );
 
   return (
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.page, gap: spacing.sm },
   separator: { height: StyleSheet.hairlineWidth },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   rowText: { flex: 1, minWidth: 0 },
   title: { ...typography.rowTitle },
   url: { ...typography.caption, marginTop: spacing.xxs },

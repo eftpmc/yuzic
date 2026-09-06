@@ -107,6 +107,17 @@ function DownloaderQueueCard<T extends { id: string }>({
     [runCancel, t]
   );
 
+  const renderQueueItem = React.useCallback(
+    ({ item }: { item: T }) =>
+      renderItem(item, {
+        requestCancel: cancelQueueItem
+          ? (label: string) => confirmCancel(item, label)
+          : undefined,
+        isCancelling: cancellingId === item.id,
+      }),
+    [renderItem, cancelQueueItem, confirmCancel, cancellingId]
+  );
+
   return (
     <SettingsCard>
       <SettingsCardHeader title={title ?? t('settings.downloaders.queue')} />
@@ -126,14 +137,7 @@ function DownloaderQueueCard<T extends { id: string }>({
         <FlatList
           data={queue}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) =>
-            renderItem(item, {
-              requestCancel: cancelQueueItem
-                ? (label) => confirmCancel(item, label)
-                : undefined,
-              isCancelling: cancellingId === item.id,
-            })
-          }
+          renderItem={renderQueueItem}
           scrollEnabled={false}
         />
       )}

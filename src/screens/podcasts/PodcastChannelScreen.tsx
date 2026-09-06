@@ -16,6 +16,7 @@ import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
+import { useListDensity } from '@/hooks/useListDensity';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -42,6 +43,7 @@ export default function PodcastChannelScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const scrollClearance = useScrollClearance();
+  const density = useListDensity();
   const api = useApi();
   const queryClient = useQueryClient();
   const { channelId } = useLocalSearchParams<{ channelId: string }>();
@@ -91,7 +93,7 @@ export default function PodcastChannelScreen() {
       const playable = item.playableStreamId !== null;
       const isDownloading = item.status === 'downloading';
       return (
-        <View style={styles.row}>
+        <View style={[styles.row, { paddingVertical: density.rowPadding }]}>
           <View style={styles.rowMain}>
             <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={2}>
               {item.title}
@@ -135,7 +137,7 @@ export default function PodcastChannelScreen() {
         </View>
       );
     },
-    [colors.secondary, colors.subtext, colors.themeColor, handlePlay, handleDownload, t]
+    [colors.secondary, colors.subtext, colors.themeColor, handlePlay, handleDownload, t, density.rowPadding]
   );
 
   return (
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { paddingVertical: spacing.md, paddingHorizontal: spacing.page },
   separator: { height: StyleSheet.hairlineWidth, marginVertical: spacing.xs },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   rowMain: { flex: 1, minWidth: 0 },
   title: { ...typography.rowTitle },
   meta: { ...typography.caption, marginTop: spacing.xxs },

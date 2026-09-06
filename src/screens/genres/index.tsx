@@ -16,12 +16,14 @@ import { buildGenreRows, type GenreRow } from '@/utils/library/genreList'
 import LoadingGenreList from './Loading'
 import Touchable from '@/components/Touchable'
 import { useScrollClearance } from '@/hooks/useScrollClearance'
+import { useListDensity } from '@/hooks/useListDensity'
 
 const GenresScreen: React.FC = () => {
   const navigation = useNavigation<any>()
   const { t } = useTranslation()
   const scrollClearance = useScrollClearance()
   const { colors } = useTheme()
+  const density = useListDensity()
   const { albums, isLoading } = useAlbums()
   const genres = useSelector(selectLibraryGenres)
 
@@ -32,7 +34,7 @@ const GenresScreen: React.FC = () => {
       testID="genres-item"
       accessibilityRole="button"
       accessibilityLabel={item.genre}
-      style={[styles.row, { borderBottomColor: colors.border }]}
+      style={[styles.row, { borderBottomColor: colors.border, paddingVertical: density.rowPadding }]}
       onPress={() => navigation.push('genreView', { genre: item.genre })}
     >
       <View style={styles.rowText}>
@@ -45,7 +47,7 @@ const GenresScreen: React.FC = () => {
       </View>
       <ChevronRight size={iconSize.row} color={colors.subtext} />
     </Touchable>
-  ), [colors, navigation, t])
+  ), [colors, navigation, t, density.rowPadding])
 
   return (
     <SafeAreaView
@@ -90,7 +92,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.page,
-    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   rowText: { flex: 1, minWidth: 0, marginRight: spacing.rowGap },
