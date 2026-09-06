@@ -48,7 +48,7 @@ export default function RecentSearches({
         <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
           {t('search.recentSearches')}
         </Text>
-        <Touchable onPress={onClear} {...hitSlopFor(iconSize.control)}>
+        <Touchable onPress={onClear} hitSlop={hitSlopFor(iconSize.control)}>
           <Text style={[styles.clear, { color: colors.subtext }]}>{t('search.clearRecent')}</Text>
         </Touchable>
       </View>
@@ -74,7 +74,7 @@ export default function RecentSearches({
               </Touchable>
               <Touchable
                 onPress={() => onRemove(searchHistoryEntryKey(entry))}
-                {...hitSlopFor(14)}
+                hitSlop={hitSlopFor(14)}
                 accessibilityRole="button"
                 accessibilityLabel={t('search.removeRecentSearch', { query: entry.text })}
               >

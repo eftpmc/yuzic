@@ -125,7 +125,7 @@ export default function PodcastsScreen() {
           trailing={
             <Touchable
               onPress={() => handleDelete(item)}
-              {...hitSlopFor(18)}
+              hitSlop={hitSlopFor(18)}
               style={styles.rowAction}
               accessibilityRole="button"
               accessibilityLabel={t('podcasts.unsubscribe')}

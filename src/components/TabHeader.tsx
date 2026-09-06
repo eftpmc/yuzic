@@ -32,7 +32,7 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
           accessibilityRole="button"
           style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}
           onPress={onAccountPress}
-          {...hitSlopFor(iconSize.large)}
+          hitSlop={hitSlopFor(iconSize.large)}
         >
           <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>
             {username?.[0]?.toUpperCase() ?? '?'}

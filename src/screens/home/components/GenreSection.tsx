@@ -225,7 +225,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.genrePrefix')}
           </Text>
-          <Touchable onPress={() => sheetRef.current?.present()} {...hitSlopFor(iconSize.control)}>
+          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={hitSlopFor(iconSize.control)}>
             <Text
               style={[styles.genreName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}

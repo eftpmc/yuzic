@@ -113,7 +113,7 @@ const SongRow: React.FC<Props> = ({
             )}
             <Touchable
               onPress={openOptions}
-              {...hitSlopFor(18)}
+              hitSlop={hitSlopFor(18)}
               accessibilityRole="button"
               accessibilityLabel={t('a11y.rows.options', { title: song.title })}
             >

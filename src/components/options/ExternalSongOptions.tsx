@@ -75,7 +75,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         accessibilityRole="button"
         accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => bottomSheetRef.current?.present()}
-        {...hitSlopFor(18)}
+        hitSlop={hitSlopFor(18)}
       >
         <Ellipsis size={iconSize.row} color={colors.secondary} />
       </Touchable>

@@ -338,7 +338,7 @@ export default function PlayingBarBase({ variant }: Props) {
           testID="playing-bar-play-pause"
           style={[styles.playPauseButton, stylesForVariant.playPauseButton]}
           onPress={handlePlayPause}
-          {...hitSlopFor(iconSize.control)}
+          hitSlop={hitSlopFor(iconSize.control)}
         >
           {isBuffering
             ? <SpinningLoaderCircle size={iconSize.control} color={colors.secondary} />
@@ -361,7 +361,7 @@ export default function PlayingBarBase({ variant }: Props) {
             : { selected: primaryAction.selected }}
           style={[styles.actionButton, stylesForVariant.actionButton]}
           onPress={primaryAction.onPress}
-          {...hitSlopFor(iconSize.control)}
+          hitSlop={hitSlopFor(iconSize.control)}
         >
           {primaryAction.icon}
         </Touchable>

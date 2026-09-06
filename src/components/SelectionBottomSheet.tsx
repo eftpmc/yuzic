@@ -87,7 +87,7 @@ const SelectionBottomSheet = forwardRef<BottomSheetModal, Props>(
             accessibilityLabel={t('a11y.selection.randomize')}
             onPress={onRandomize}
             style={styles.shuffleButton}
-            {...hitSlopFor(iconSize.row)}
+            hitSlop={hitSlopFor(iconSize.row)}
           >
             <Dices size={iconSize.row} color={colors.subtext} />
           </Touchable>

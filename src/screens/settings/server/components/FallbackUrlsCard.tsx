@@ -86,7 +86,7 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
                 accessibilityRole="button"
                 accessibilityLabel={t('settings.server.fallbackUrls.removeAria', { url })}
                 onPress={() => handleRemove(index)}
-                {...hitSlopFor(iconSize.row)}
+                hitSlop={hitSlopFor(iconSize.row)}
               >
                 <X size={iconSize.row} color={colors.subtext} />
               </Touchable>

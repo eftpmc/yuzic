@@ -117,7 +117,7 @@ export default function SharesScreen() {
         <View style={styles.actions}>
           <Touchable
             onPress={() => handleShareAgain(item)}
-            {...hitSlopFor(18)}
+            hitSlop={hitSlopFor(18)}
             style={styles.actionBtn}
             accessibilityRole="button"
             accessibilityLabel={t('shares.share')}
@@ -126,7 +126,7 @@ export default function SharesScreen() {
           </Touchable>
           <Touchable
             onPress={() => handleDelete(item)}
-            {...hitSlopFor(18)}
+            hitSlop={hitSlopFor(18)}
             style={styles.actionBtn}
             accessibilityRole="button"
             accessibilityLabel={t('shares.revoke')}

@@ -47,7 +47,7 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
             style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pillFor(PREVIEW_BUTTON_SIZE) }]}
             onPress={onPress}
             disabled={!onPress}
-            {...hitSlopFor(iconSize.badge)}
+            hitSlop={hitSlopFor(iconSize.badge)}
           >
             <Play size={iconSize.badge} color={colors.secondary} fill={colors.secondary} />
           </Touchable>

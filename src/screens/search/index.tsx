@@ -408,7 +408,7 @@ const Search = () => {
               accessibilityRole="button"
               accessibilityLabel={t('a11y.search.clear')}
               style={styles.clearButton}
-              {...hitSlopFor(20)}
+              hitSlop={hitSlopFor(20)}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
               <X size={iconSize.control} color={colors.secondary} />

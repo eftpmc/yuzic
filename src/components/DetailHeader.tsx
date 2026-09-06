@@ -427,7 +427,7 @@ function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: Bar
         scrim ? { backgroundColor: scrim } : null,
       ]}
       feedback="control"
-      {...hitSlopFor(iconSize.header)}
+      hitSlop={hitSlopFor(iconSize.header)}
     >
       {children}
     </Touchable>

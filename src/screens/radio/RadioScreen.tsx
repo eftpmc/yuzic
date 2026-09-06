@@ -102,7 +102,7 @@ export default function RadioScreen() {
                 door — the gesture that deletes things. */}
             <Touchable
               onPress={() => setEditing({ mode: 'edit', station: item })}
-              {...hitSlopFor(18)}
+              hitSlop={hitSlopFor(18)}
               style={styles.rowAction}
               accessibilityRole="button"
               accessibilityLabel={t('radio.editTitle')}
@@ -111,7 +111,7 @@ export default function RadioScreen() {
             </Touchable>
             <Touchable
               onPress={() => handleDelete(item)}
-              {...hitSlopFor(18)}
+              hitSlop={hitSlopFor(18)}
               style={styles.rowAction}
               accessibilityRole="button"
               accessibilityLabel={t('common.delete')}

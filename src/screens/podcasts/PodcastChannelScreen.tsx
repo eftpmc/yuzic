@@ -117,7 +117,7 @@ export default function PodcastChannelScreen() {
                 onPress={() => handlePlay(item)}
                 accessibilityRole="button"
                 accessibilityLabel={t('podcasts.play')}
-                {...hitSlopFor(22)}
+                hitSlop={hitSlopFor(22)}
               >
                 <Play size={iconSize.secondary} color={colors.themeColor} fill={colors.themeColor} />
               </Touchable>
@@ -128,7 +128,7 @@ export default function PodcastChannelScreen() {
                 onPress={() => void handleDownload(item)}
                 accessibilityRole="button"
                 accessibilityLabel={t('podcasts.download')}
-                {...hitSlopFor(22)}
+                hitSlop={hitSlopFor(22)}
               >
                 <ArrowDownCircle size={iconSize.secondary} color={colors.secondary} />
               </Touchable>

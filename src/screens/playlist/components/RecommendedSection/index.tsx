@@ -171,7 +171,7 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
           accessibilityLabel={t(added ? 'a11y.playlist.songAdded' : 'a11y.playlist.addSong', { title: song.title })}
           accessibilityState={{ disabled: adding || added }}
           onPress={() => void handleAdd()}
-          {...hitSlopFor(iconSize.row)}
+          hitSlop={hitSlopFor(iconSize.row)}
           style={styles.actionBtn}
           disabled={adding || added}
         >
@@ -214,7 +214,7 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
           accessibilityState={{ disabled: !hasDownloader }}
           onPress={() => hasDownloader && onDownload(song)}
           disabled={!hasDownloader}
-          {...hitSlopFor(iconSize.row)}
+          hitSlop={hitSlopFor(iconSize.row)}
           style={styles.actionBtn}
         >
           <CloudDownload

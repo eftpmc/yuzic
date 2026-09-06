@@ -148,7 +148,7 @@ const ServerSettings: React.FC = () => {
               accessibilityRole="button"
               accessibilityLabel={t('a11y.common.checkConnection')}
               onPress={ping}
-              {...hitSlopFor(iconSize.badge)}
+              hitSlop={hitSlopFor(iconSize.badge)}
             >
               <ConnectivityIndicator isLoading={isLoading} isConnected={isConnected} />
             </Touchable>

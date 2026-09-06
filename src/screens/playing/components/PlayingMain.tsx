@@ -152,7 +152,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           accessibilityLabel={t('a11y.player.addToPlaylist')}
           onPress={onPressAdd}
           style={styles.optionsButton}
-          {...hitSlopFor(iconSize.large)}
+          hitSlop={hitSlopFor(iconSize.large)}
         >
           <CirclePlus
             size={iconSize.large}

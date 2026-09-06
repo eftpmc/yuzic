@@ -59,7 +59,7 @@ export function ResumeQueueBanner() {
       </Touchable>
       <Touchable
         onPress={dismiss}
-        {...hitSlopFor(18)}
+        hitSlop={hitSlopFor(18)}
         style={styles.dismiss}
         accessibilityRole="button"
         accessibilityLabel={t('common.dismiss')}

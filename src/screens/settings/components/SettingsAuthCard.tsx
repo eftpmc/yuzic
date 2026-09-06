@@ -51,7 +51,7 @@ const SettingsAuthCard: React.FC<Props> = ({
               accessibilityRole="button"
               accessibilityLabel={t('a11y.common.checkConnection')}
               onPress={onConnectivityPress}
-              {...hitSlopFor(iconSize.badge)}
+              hitSlop={hitSlopFor(iconSize.badge)}
             >
               {indicator}
             </Touchable>

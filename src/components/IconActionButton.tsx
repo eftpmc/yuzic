@@ -49,7 +49,7 @@ export default function IconActionButton({
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      {...hitSlopFor(boundsSize)}
+      hitSlop={hitSlopFor(boundsSize)}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}

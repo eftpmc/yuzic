@@ -45,7 +45,7 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
           accessibilityRole="button"
           accessibilityLabel={t('a11y.dismissNotification')}
           onPress={() => setDismissed(true)}
-          {...hitSlopFor(iconSize.badge)}
+          hitSlop={hitSlopFor(iconSize.badge)}
           testID={testID ? `${testID}-close` : undefined}
         >
           <X size={iconSize.badge} color={textColor} />

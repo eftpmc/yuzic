@@ -116,7 +116,7 @@ export default function Servers() {
                     accessibilityRole="button"
                     accessibilityLabel={t('a11y.onboarding.serverOptions', { url: item.serverUrl })}
                     style={[styles.menuButton, { borderRadius: rad.md }]}
-                    {...hitSlopFor(iconSize.row)}
+                    hitSlop={hitSlopFor(iconSize.row)}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
                     <Ellipsis size={iconSize.row} color={onDark.mutedText} />

@@ -90,7 +90,7 @@ const LibraryItem: React.FC<Props> = ({
           accessibilityRole="button"
           accessibilityLabel={t('a11y.rows.options', { title })}
           onPress={onLongPress}
-          {...hitSlopFor(18)}
+          hitSlop={hitSlopFor(18)}
           feedback="control"
         >
           <Ellipsis size={iconSize.row} color={colors.subtext} />
