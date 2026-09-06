@@ -17,6 +17,9 @@ function harness(initialJobs: Job[], options: Partial<JobRunDeps<Track, Job>> = 
   const downloaded: string[] = [];
   const dropped: { id: string; attempts: number }[] = [];
   const rescheduled: { id: string; attempts: number }[] = [];
+  /** Every backoff the runner asked for, so the schedule can be asserted
+   *  without any test actually waiting. */
+  const delays: number[] = [];
 
   const deps: JobRunDeps<Track, Job> = {
     getJobs: () => jobs,
@@ -36,6 +39,9 @@ function harness(initialJobs: Job[], options: Partial<JobRunDeps<Track, Job>> = 
     },
     concurrency: 3,
     maxAttempts: 5,
+    // The runner's real backoff is seconds long; every test here asserts the
+    // schedule rather than living through it.
+    delay: async (ms: number) => { delays.push(ms); },
     ...options,
   };
 
@@ -44,6 +50,7 @@ function harness(initialJobs: Job[], options: Partial<JobRunDeps<Track, Job>> = 
     downloaded,
     dropped,
     rescheduled,
+    delays,
     remainingJobs: () => jobs,
     setJobs: (next: Job[]) => { jobs = next; },
     addJob: (next: Job) => { jobs = [...jobs, next]; },
@@ -113,10 +120,11 @@ describe('download job runner', () => {
     expect(h.remainingJobs().map(item => item.id)).toEqual(['bad']);
   });
 
-  it('stops a job at the first failing chunk', async () => {
+  it('stops a job at the first chunk that will not come good', async () => {
     const attempted: string[] = [];
     const h = harness([job('job-1', ['a', 'b', 'c', 'd'])], {
       concurrency: 2,
+      trackRetries: 2,
       downloadTrack: async (track) => {
         attempted.push(track.id);
         if (track.id === 'b') throw new Error('boom');
@@ -125,7 +133,9 @@ describe('download job runner', () => {
 
     await createDownloadJobRunner<Track, Job>().run(h.deps);
 
-    expect(attempted).toEqual(['a', 'b']);
+    // 'a' succeeds once and is not retried with 'b'; 'b' is retried alone
+    // until its retries are spent; 'c' and 'd' are never reached.
+    expect(attempted).toEqual(['a', 'b', 'b', 'b']);
   });
 
   it('drops a job once it runs out of attempts', async () => {
@@ -153,7 +163,7 @@ describe('download job runner', () => {
     expect(h.dropped).toEqual([]);
   });
 
-  it('retries a failed job only on a later run, not within the same one', async () => {
+  it('reschedules a job whose track never comes good, after exhausting retries', async () => {
     const h = harness([job('bad', ['x'])], {
       downloadTrack: async () => { throw new Error('boom'); },
     });
@@ -161,6 +171,71 @@ describe('download job runner', () => {
     await createDownloadJobRunner<Track, Job>().run(h.deps);
 
     expect(h.rescheduled).toHaveLength(1);
+  });
+
+  describe('a connection that is flaky rather than absent', () => {
+    it('carries on once a track stops failing', async () => {
+      // The case the whole retry exists for: the download does not stop, and
+      // nothing external has to happen to restart it.
+      let attempts = 0;
+      const h = harness([job('job-1', ['a'])], {
+        downloadTrack: async () => {
+          attempts += 1;
+          if (attempts < 3) throw new Error('connection reset');
+        },
+      });
+
+      await createDownloadJobRunner<Track, Job>().run(h.deps);
+
+      expect(attempts).toBe(3);
+      expect(h.remainingJobs()).toEqual([]);
+      expect(h.rescheduled).toEqual([]);
+      expect(h.dropped).toEqual([]);
+    });
+
+    it('backs off further with each retry', async () => {
+      const h = harness([job('bad', ['x'])], {
+        trackRetries: 3,
+        downloadTrack: async () => { throw new Error('boom'); },
+      });
+
+      await createDownloadJobRunner<Track, Job>().run(h.deps);
+
+      expect(h.delays).toEqual([1000, 2000, 4000]);
+    });
+
+    it('retries only the tracks that failed, not the whole chunk', async () => {
+      const attempted: string[] = [];
+      const h = harness([job('job-1', ['a', 'b', 'c'])], {
+        concurrency: 3,
+        downloadTrack: async (track) => {
+          attempted.push(track.id);
+          if (track.id === 'b' && attempted.filter(id => id === 'b').length === 1) {
+            throw new Error('connection reset');
+          }
+        },
+      });
+
+      await createDownloadJobRunner<Track, Job>().run(h.deps);
+
+      expect(attempted).toEqual(['a', 'b', 'c', 'b']);
+      expect(h.remainingJobs()).toEqual([]);
+    });
+
+    it('abandons a job cancelled while it was backing off', async () => {
+      // Deleting a download mid-backoff must not have it reappear: resuming
+      // would redownload tracks the user just removed.
+      const h = harness([job('job-1', ['a'])], {
+        downloadTrack: async () => { throw new Error('boom'); },
+      });
+      h.deps.delay = async () => { h.setJobs([]); };
+
+      await createDownloadJobRunner<Track, Job>().run(h.deps);
+
+      expect(h.rescheduled).toEqual([]);
+      expect(h.dropped).toEqual([]);
+      expect(h.remainingJobs()).toEqual([]);
+    });
   });
 
   it('makes a reentrant caller wait for the in-flight run to finish', async () => {

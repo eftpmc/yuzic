@@ -488,7 +488,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       downloadTrack: (track, collectionId) => performDownloadTrack(track, collectionId),
       onJobComplete: job => removeJob(job.id),
       onJobRescheduled: (job, attempts) => {
-        console.warn(`Download job ${job.id} paused until next resume (attempt ${attempts}/${MAX_JOB_ATTEMPTS})`);
+        console.warn(`Download job ${job.id} still failing after in-run retries; queued for the next pass (attempt ${attempts}/${MAX_JOB_ATTEMPTS})`);
         updateJobs(jobs => jobs.map(existing => (
           existing.id === job.id
             ? { ...existing, attempts, updatedAt: Date.now() }
