@@ -124,6 +124,9 @@ export const selectDownloadQuality = (state: RootState): AudioQuality =>
 export const selectAutoDownloadNewSongs = (state: RootState): boolean =>
   state.settings.autoDownloadNewSongs ?? false;
 
+export const selectDownloadOnWifiOnly = (state: RootState): boolean =>
+  state.settings.downloadOnWifiOnly ?? true;
+
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;
 

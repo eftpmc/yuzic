@@ -98,6 +98,10 @@ export interface SettingsState {
   preferredCodec: PreferredCodec;
   /** Auto-download songs newly added to the library after a sync. */
   autoDownloadNewSongs: boolean;
+  /** Hold downloads until the device is on WiFi. Downloads are the one thing
+   *  the app does that can run up a phone bill on its own, and auto-download
+   *  runs without anyone asking, so this defaults to on. */
+  downloadOnWifiOnly: boolean;
 
   language: AppLanguage;
 
@@ -179,6 +183,7 @@ const initialState: SettingsState = {
   downloadQuality: 'high',
   preferredCodec: 'mp3',
   autoDownloadNewSongs: false,
+  downloadOnWifiOnly: true,
 
   language: DEFAULT_LANGUAGE,
 
@@ -294,6 +299,9 @@ const settingsSlice = createSlice({
     setAutoDownloadNewSongs(state, action: PayloadAction<boolean>) {
       state.autoDownloadNewSongs = action.payload;
     },
+    setDownloadOnWifiOnly(state, action: PayloadAction<boolean>) {
+      state.downloadOnWifiOnly = action.payload;
+    },
 
     setLanguage(state, action: PayloadAction<AppLanguage>) {
       state.language = action.payload;
@@ -391,6 +399,7 @@ export const {
   setCellularStreamQuality,
   setDownloadQuality,
   setAutoDownloadNewSongs,
+  setDownloadOnWifiOnly,
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,

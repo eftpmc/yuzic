@@ -52,7 +52,8 @@ import {
   type LocalDownloadedTrackEntry,
 } from '@/utils/downloads/restore';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
+import { selectDownloadOnWifiOnly, selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
+import { useNetworkType } from '@/hooks/useNetworkType';
 
 export type DownloadedTrack = DownloadedTrackEntry & {
   localPath: string;
@@ -239,6 +240,15 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const activeDownloadsRef = useRef<Map<string, FileSystem.DownloadResumable>>(new Map());
   const progressRef = useRef<Record<string, number>>({});
   const progressFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Read through refs so the queue's identity doesn't change every time the
+  // radio flips — `processDownloadQueue` is a dependency of half this file.
+  const wifiOnly = useSelector(selectDownloadOnWifiOnly);
+  const networkType = useNetworkType();
+  const wifiOnlyRef = useRef(wifiOnly);
+  const networkTypeRef = useRef(networkType);
+  wifiOnlyRef.current = wifiOnly;
+  networkTypeRef.current = networkType;
 
   useEffect(() => {
     const stalePaths = legacyDownloadPathsToDelete;
@@ -467,6 +477,12 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const CONCURRENT_TRACK_DOWNLOADS = 3;
 
   const processDownloadQueue = useCallback(async () => {
+    // Downloads are the one thing the app does that can run up a phone bill
+    // without anyone asking for it — auto-download fires off a library sync,
+    // not off a tap. Jobs stay queued and persisted, so the queue drains on
+    // its own once WiFi is back; nothing is lost by waiting.
+    if (wifiOnlyRef.current && networkTypeRef.current === 'cellular') return;
+
     await jobRunnerRef.current.run({
       getJobs: () => jobsRef.current,
       downloadTrack: (track, collectionId) => performDownloadTrack(track, collectionId),
@@ -721,6 +737,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       subscription.remove();
     };
   }, [processDownloadQueue]);
+
+  // Coming back onto WiFi — or turning the restriction off — is the other way
+  // a held queue becomes runnable, and neither goes through AppState.
+  useEffect(() => {
+    if (wifiOnly && networkType === 'cellular') return;
+    if (jobsRef.current.length > 0) void processDownloadQueue();
+  }, [wifiOnly, networkType, processDownloadQueue]);
 
   const downloadedTracks = useMemo<DownloadedTrack[]>(() => state.tracks.map(track => ({
     trackId: track.trackId,

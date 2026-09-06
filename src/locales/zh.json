@@ -240,7 +240,9 @@
         "locationNote": "下载内容存储在应用的私有存储空间中，无法通过设备的文件管理器访问。请使用此页面查看和删除下载内容。",
         "autoDownloadLabel": "自动下载新歌曲",
         "autoDownloadSubtext": "自动下载资料库中新增的歌曲以供离线播放",
-        "autoDownloadStarted_other": "正在自动下载 {{count}} 首新歌曲"
+        "autoDownloadStarted_other": "正在自动下载 {{count}} 首新歌曲",
+        "wifiOnlyLabel": "仅在 WiFi 下下载",
+        "wifiOnlySubtext": "在连接 WiFi 前暂停下载。队列会自动继续。"
       },
       "downloadQuality": {
         "title": "下载音质",

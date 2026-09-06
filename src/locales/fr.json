@@ -241,7 +241,9 @@
         "autoDownloadLabel": "Télécharger automatiquement les nouveaux titres",
         "autoDownloadSubtext": "Télécharge automatiquement les titres ajoutés à votre bibliothèque pour une écoute hors ligne",
         "autoDownloadStarted_one": "Téléchargement automatique de {{count}} nouveau titre",
-        "autoDownloadStarted_other": "Téléchargement automatique de {{count}} nouveaux titres"
+        "autoDownloadStarted_other": "Téléchargement automatique de {{count}} nouveaux titres",
+        "wifiOnlyLabel": "Télécharger en WiFi uniquement",
+        "wifiOnlySubtext": "Suspend les téléchargements jusqu'au retour du WiFi. La file reprend automatiquement."
       },
       "downloadQuality": {
         "title": "Qualité de téléchargement",

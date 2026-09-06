@@ -241,7 +241,9 @@
         "autoDownloadLabel": "Auto-download new songs",
         "autoDownloadSubtext": "Automatically download songs added to your library for offline use",
         "autoDownloadStarted_one": "Auto-downloading {{count}} new song",
-        "autoDownloadStarted_other": "Auto-downloading {{count}} new songs"
+        "autoDownloadStarted_other": "Auto-downloading {{count}} new songs",
+        "wifiOnlyLabel": "Download on WiFi only",
+        "wifiOnlySubtext": "Hold downloads until you are on WiFi. Queued downloads resume automatically."
       },
       "downloadQuality": {
         "title": "Download Quality",

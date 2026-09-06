@@ -240,7 +240,9 @@
         "locationNote": "ダウンロードはアプリの非公開ストレージに保存されており、端末のファイルマネージャーからは参照できません。表示・削除にはこの画面をご利用ください。",
         "autoDownloadLabel": "新しい曲を自動ダウンロード",
         "autoDownloadSubtext": "ライブラリに追加された曲を自動的にダウンロードしてオフラインで再生できるようにします",
-        "autoDownloadStarted_other": "新しい曲{{count}}件を自動ダウンロード中"
+        "autoDownloadStarted_other": "新しい曲{{count}}件を自動ダウンロード中",
+        "wifiOnlyLabel": "WiFi接続時のみダウンロード",
+        "wifiOnlySubtext": "WiFiに接続するまでダウンロードを保留します。キューは自動的に再開されます。"
       },
       "downloadQuality": {
         "title": "ダウンロード音質",

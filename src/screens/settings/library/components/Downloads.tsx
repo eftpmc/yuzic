@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useDownload } from '@/contexts/DownloadContext';
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
-import { selectAutoDownloadNewSongs } from '@/utils/redux/selectors/settingsSelectors';
-import { setAutoDownloadNewSongs } from '@/utils/redux/slices/settingsSlice';
+import { selectAutoDownloadNewSongs, selectDownloadOnWifiOnly } from '@/utils/redux/selectors/settingsSelectors';
+import { setAutoDownloadNewSongs, setDownloadOnWifiOnly } from '@/utils/redux/slices/settingsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsDivider from '../../components/SettingsDivider';
@@ -19,6 +19,7 @@ const Downloads: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const autoDownloadNewSongs = useSelector(selectAutoDownloadNewSongs);
+  const downloadOnWifiOnly = useSelector(selectDownloadOnWifiOnly);
   const { totalDownloadedBytes, downloadStateVersion } = useDownload();
   const [freeBytes, setFreeBytes] = useState<number | null>(null);
 
@@ -50,6 +51,13 @@ const Downloads: React.FC = () => {
         subtext={t('settings.library.downloads.autoDownloadSubtext')}
         value={autoDownloadNewSongs}
         onValueChange={value => dispatch(setAutoDownloadNewSongs(value))}
+      />
+      <SettingsDivider />
+      <SettingsToggleRow
+        label={t('settings.library.downloads.wifiOnlyLabel')}
+        subtext={t('settings.library.downloads.wifiOnlySubtext')}
+        value={downloadOnWifiOnly}
+        onValueChange={value => dispatch(setDownloadOnWifiOnly(value))}
       />
       <SettingsDivider />
       <SettingsRow
