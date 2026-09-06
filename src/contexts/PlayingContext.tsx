@@ -29,7 +29,8 @@ import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, segmentAt
 import { isRepeatLoop } from './repeatPlay';
 import { resolvePlaybackErrorAction } from './playbackErrorRecovery';
 import { useDownloadActions } from './DownloadContext';
-import { useCast } from './CastContext';
+import { usePlaybackSink } from './PlaybackSinkContext';
+import { ownsPlayback } from '@/features/player/playbackSink';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
@@ -185,12 +186,25 @@ export const usePlayingQueueVersion = () => useContext(PlayingQueueVersionContex
 // Separate component so useProgress ticks don't rerender PlayingProvider.
 const PlayingProgressProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { position, duration, buffered } = useProgress(1);
+  // Whoever holds the audio holds the clock. With the jukebox selected the
+  // local player is stopped, so `useProgress` sits at zero and the bar would
+  // never move — the server's polled position is the real one. Duration still
+  // comes from the track: the jukebox reports where it is, not how long the
+  // song is, and nothing is buffered on this device at all.
+  const { jukeboxState } = usePlaybackSink();
+  const { currentSong } = usePlayingState();
 
-  const progress = useMemo<PlaybackProgress>(() => ({
-    position: typeof position === 'number' && !Number.isNaN(position) ? position : 0,
-    duration: typeof duration === 'number' && !Number.isNaN(duration) ? duration : 0,
-    buffered: typeof buffered === 'number' && !Number.isNaN(buffered) ? buffered : 0,
-  }), [position, duration, buffered]);
+  const progress = useMemo<PlaybackProgress>(() => {
+    if (jukeboxState) {
+      const songDuration = Number(currentSong?.duration) || 0;
+      return { position: jukeboxState.positionSeconds, duration: songDuration, buffered: 0 };
+    }
+    return {
+      position: typeof position === 'number' && !Number.isNaN(position) ? position : 0,
+      duration: typeof duration === 'number' && !Number.isNaN(duration) ? duration : 0,
+      buffered: typeof buffered === 'number' && !Number.isNaN(buffered) ? buffered : 0,
+    };
+  }, [position, duration, buffered, jukeboxState, currentSong]);
 
   return (
     <PlayingProgressContext.Provider value={progress}>
@@ -207,7 +221,19 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const activeMediaItem = useActiveMediaItem();
   const api = useApi();
   const { getLocalPath } = useDownloadActions();
-  const { activeDevice, castPause, castResume, castSeek } = useCast();
+  const {
+    sink, sinkPause, sinkResume, sinkSeek, sinkLoadQueue, sinkSkipTo, jukeboxState,
+  } = usePlaybackSink();
+  // The server's own clock, for the handful of places that read a position
+  // without going through the progress context.
+  const jukeboxPositionRef = useRef(0);
+  jukeboxPositionRef.current = jukeboxState?.positionSeconds ?? 0;
+  // Read through a ref inside callbacks so switching output doesn't rebuild
+  // every transport handler in the tree.
+  const sinkRef = useRef(sink);
+  sinkRef.current = sink;
+  /** The server is holding the audio; the local player must stay out of it. */
+  const remoteOwnsPlayback = () => ownsPlayback(sinkRef.current);
   const networkType = useNetworkType();
   const wifiQuality = useSelector(selectWifiStreamQuality);
   const cellularQuality = useSelector(selectCellularStreamQuality);
@@ -726,6 +752,12 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     assertPlayableSongs(songs);
     resetLastScrobbled();
     scrobbleStartTimeRef.current = Date.now();
+    if (remoteOwnsPlayback()) {
+      // The server plays from its own playlist of ids; nothing is streamed to
+      // this device, so the local player is never given the queue at all.
+      await sinkLoadQueue(songs.map(song => song.id), startIndex, play);
+      return;
+    }
     TrackPlayer.setMediaItems(toMediaItems(songs), startIndex);
     TrackPlayer.setRepeatMode(
       repeatModeRef.current === 'all' ? RepeatMode.All :
@@ -734,7 +766,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
     if (seekToPosition !== undefined && seekToPosition > 0) TrackPlayer.seekTo(seekToPosition);
     if (play) TrackPlayer.play();
-  }, [resetLastScrobbled]);
+  }, [resetLastScrobbled, sinkLoadQueue]);
   useEffect(() => { loadQueueRef.current = loadQueue; }, [loadQueue]);
 
   // Autoplay: fetches more tracks once the queue is running low, regardless
@@ -941,9 +973,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
     const nextIdx = currentIndexRef.current + 1;
     if (nextIdx >= queueRef.current.length && repeatModeRef.current !== 'all') return;
+    if (remoteOwnsPlayback()) {
+      await sinkSkipTo(nextIdx % Math.max(1, queueRef.current.length));
+      return;
+    }
     TrackPlayer.skipToNext();
     if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+  }, [sinkSkipTo]);
 
   const skipToPrevious = useCallback(async () => {
     await scrobbleOutgoingRef.current(
@@ -951,9 +987,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       Math.floor(TrackPlayer.getProgress().position)
     );
     if (currentIndexRef.current <= 0) return;
+    if (remoteOwnsPlayback()) {
+      await sinkSkipTo(currentIndexRef.current - 1);
+      return;
+    }
     TrackPlayer.skipToIndex(currentIndexRef.current - 1);
     if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+  }, [sinkSkipTo]);
 
   const skipTo = useCallback(async (index: number) => {
     const song = queueRef.current[index];
@@ -969,32 +1009,41 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentIndex(index);
     currentSongRef.current = song;
     setCurrentSong(song);
+    if (remoteOwnsPlayback()) {
+      await sinkSkipTo(index);
+      return;
+    }
     TrackPlayer.skipToIndex(index);
     if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+  }, [sinkSkipTo]);
 
+  // Each of these drives the local player *and* the sink, except where the
+  // sink owns playback outright — then the local player is not running and
+  // touching it would start a second copy of the track on this device.
   const pauseSong = useCallback(async () => {
-    TrackPlayer.pause();
-    if (activeDevice) castPause();
-  }, [activeDevice, castPause]);
+    if (!remoteOwnsPlayback()) TrackPlayer.pause();
+    await sinkPause();
+  }, [sinkPause]);
 
   const resumeSong = useCallback(async () => {
-    TrackPlayer.play();
-    if (activeDevice) castResume();
-  }, [activeDevice, castResume]);
+    if (!remoteOwnsPlayback()) TrackPlayer.play();
+    await sinkResume();
+  }, [sinkResume]);
 
   const seekSong = useCallback((positionSeconds: number) => {
-    TrackPlayer.seekTo(positionSeconds);
-    if (activeDevice) castSeek(positionSeconds);
-  }, [activeDevice, castSeek]);
+    if (!remoteOwnsPlayback()) TrackPlayer.seekTo(positionSeconds);
+    void sinkSeek(positionSeconds);
+  }, [sinkSeek]);
 
   const jumpBy = useCallback((deltaSeconds: number) => {
-    const { position, duration } = TrackPlayer.getProgress();
+    const { position, duration } = remoteOwnsPlayback()
+      ? { position: jukeboxPositionRef.current, duration: Number(currentSongRef.current?.duration) || 0 }
+      : TrackPlayer.getProgress();
     const max = duration > 0 ? duration : Number.POSITIVE_INFINITY;
     const target = Math.max(0, Math.min(max, (position || 0) + deltaSeconds));
-    TrackPlayer.seekTo(target);
-    if (activeDevice) castSeek(target);
-  }, [activeDevice, castSeek]);
+    if (!remoteOwnsPlayback()) TrackPlayer.seekTo(target);
+    void sinkSeek(target);
+  }, [sinkSeek]);
 
   const getQueue = useCallback(() => [...queueRef.current], []);
 
