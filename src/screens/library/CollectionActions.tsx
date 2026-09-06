@@ -34,7 +34,6 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
         style={[styles.button, { backgroundColor: colors.themeColor, borderRadius: rad.md }]}
         onPress={onPlay}
         accessibilityRole="button"
-        accessibilityLabel={t('common.play')}
       >
         <Play size={17} color={colors.onThemeColor} fill={colors.onThemeColor} />
         <Text style={[styles.label, { color: colors.onThemeColor }]}>
@@ -47,7 +46,6 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
         style={[styles.button, { backgroundColor: colors.muted, borderRadius: rad.md }]}
         onPress={onShuffle}
         accessibilityRole="button"
-        accessibilityLabel={t('common.shuffle')}
       >
         <Shuffle size={17} color={colors.secondary} />
         <Text style={[styles.label, { color: colors.secondary }]}>

@@ -7,7 +7,7 @@ import MediaListRow from '@/components/MediaListRow';
 import IconActionButton from '@/components/IconActionButton';
 import { useTheme } from '@/hooks/useTheme';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
-import { controlSize, spacing, typography } from '@/constants/design';
+import { controlSize, hitSlopFor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   searchHistoryEntryKey,
@@ -74,7 +74,8 @@ export default function RecentSearches({
               </Touchable>
               <Touchable
                 onPress={() => onRemove(searchHistoryEntryKey(entry))}
-                hitSlop={16}
+                {...hitSlopFor(14)}
+                accessibilityRole="button"
                 accessibilityLabel={t('search.removeRecentSearch', { query: entry.text })}
               >
                 <X size={14} color={colors.subtext} />

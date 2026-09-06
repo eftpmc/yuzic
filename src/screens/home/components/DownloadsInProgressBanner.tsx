@@ -41,7 +41,7 @@ export function DownloadsInProgressBanner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.muted, borderRadius: rad.card }]}>
-      <Touchable style={styles.body} onPress={handleOpen} accessibilityLabel={t('home.downloadsBanner.open')}>
+      <Touchable style={styles.body} onPress={handleOpen} accessibilityRole="button" accessibilityLabel={t('home.downloadsBanner.open')}>
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
           <SpinningLoaderCircle size={14} color="#000" />
         </View>

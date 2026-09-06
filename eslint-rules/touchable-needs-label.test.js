@@ -14,8 +14,10 @@ const ruleTester = new RuleTester({
 // top level rather than from inside an `it`.
 ruleTester.run('touchable-needs-label', rule, {
   valid: [
-    // The label is right there.
-    { code: `<Touchable accessibilityLabel={t('a11y.player.play')}><Play /></Touchable>` },
+    // The label is right there, and it says it is a button.
+    {
+      code: `<Touchable accessibilityRole="button" accessibilityLabel={t('a11y.player.play')}><Play /></Touchable>`,
+    },
     // Its own text names it, which is what a screen reader reads anyway.
     { code: `<Touchable onPress={x}><Text>Save</Text></Touchable>` },
     { code: `<Touchable onPress={x}><ThemedText>{title}</ThemedText></Touchable>` },
@@ -31,7 +33,16 @@ ruleTester.run('touchable-needs-label', rule, {
     // Not a pressable.
     { code: `<View><Icon /></View>` },
     // aria-label is the web spelling, and still a name.
-    { code: `<Pressable aria-label="Close"><X /></Pressable>` },
+    { code: `<Pressable role="button" aria-label={t('a11y.common.close')}><X /></Pressable>` },
+    // A pressable that names itself needs no role: the platform announces a
+    // button with text correctly on its own.
+    { code: `<Touchable onPress={x}><Text>{t('common.save')}</Text></Touchable>` },
+    // The label is a variable, which may well hold a translated string.
+    { code: `<Touchable accessibilityRole="button" accessibilityLabel={title}><X /></Touchable>` },
+    // The app's own pressables set their role and require their label, so a
+    // translated label is all that is left to check.
+    { code: `<IconActionButton accessibilityLabel={t('a11y.common.close')} onPress={x} />` },
+    { code: `<DetailPlayAction accessibilityLabel={t('common.play')}><Play /></DetailPlayAction>` },
   ],
 
   invalid: [
@@ -63,6 +74,37 @@ ruleTester.run('touchable-needs-label', rule, {
       // Two of them, reported separately.
       code: `<View><Touchable><A /></Touchable><Touchable><B /></Touchable></View>`,
       errors: [{ messageId: 'missingLabel' }, { messageId: 'missingLabel' }],
+    },
+    {
+      // Named, but never announced as pressable. Eight controls were like this
+      // after the a11y pass added labels and stopped there.
+      code: `<Touchable accessibilityLabel={t('common.dismiss')}><X /></Touchable>`,
+      errors: [{ messageId: 'missingRole', data: { name: 'Touchable' } }],
+    },
+    {
+      // A label that stays English in every locale.
+      code: `<Touchable accessibilityRole="button" accessibilityLabel="Close"><X /></Touchable>`,
+      errors: [{ messageId: 'hardcodedLabel' }],
+    },
+    {
+      code: `<Touchable accessibilityRole="button" accessibilityLabel={'Close'}><X /></Touchable>`,
+      errors: [{ messageId: 'hardcodedLabel' }],
+    },
+    {
+      // A template literal is just as English.
+      code: '<Touchable accessibilityRole="button" accessibilityLabel={`Play ${title}`}><X /></Touchable>',
+      errors: [{ messageId: 'hardcodedLabel' }],
+    },
+    {
+      // Both faults on one element. Reported in source order, so the element
+      // itself comes before the attribute on it.
+      code: `<Touchable accessibilityLabel="Close"><X /></Touchable>`,
+      errors: [{ messageId: 'missingRole' }, { messageId: 'hardcodedLabel' }],
+    },
+    {
+      // The wrappers are checked for the label's provenance too.
+      code: `<IconActionButton accessibilityLabel="Close" onPress={x} />`,
+      errors: [{ messageId: 'hardcodedLabel', data: { name: 'IconActionButton' } }],
     },
   ],
 });

@@ -28,7 +28,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import Touchable from '@/components/Touchable';
-import { spacing } from '@/constants/design';
+import { hitSlopFor, spacing } from '@/constants/design';
 
 interface ExternalSongOptionsProps {
   song: ExternalSong;
@@ -75,7 +75,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
         accessibilityRole="button"
         accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => bottomSheetRef.current?.present()}
-        hitSlop={10}
+        {...hitSlopFor(18)}
       >
         <Ellipsis size={18} color={colors.secondary} />
       </Touchable>

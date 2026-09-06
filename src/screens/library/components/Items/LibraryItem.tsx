@@ -5,7 +5,7 @@ import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { radius, spacing, typography } from '@/constants/design';
+import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useListDensity } from '@/hooks/useListDensity';
 import Touchable from '@/components/Touchable';
@@ -90,7 +90,7 @@ const LibraryItem: React.FC<Props> = ({
           accessibilityRole="button"
           accessibilityLabel={t('a11y.rows.options', { title })}
           onPress={onLongPress}
-          hitSlop={10}
+          {...hitSlopFor(18)}
           feedback="control"
         >
           <Ellipsis size={18} color={colors.subtext} />

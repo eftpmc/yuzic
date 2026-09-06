@@ -49,7 +49,7 @@ import { getSourceMeta } from '@/features/sources/registry';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 
@@ -408,6 +408,7 @@ const Search = () => {
               accessibilityRole="button"
               accessibilityLabel={t('a11y.search.clear')}
               style={styles.clearButton}
+              {...hitSlopFor(20)}
               onPress={() => { setQuery(''); clearSearch(); setHasSearched(false); }}
             >
               <X size={20} color={colors.secondary} />

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect } from 'react';
-import { fontScaleCap, spacing, statusColor, typography } from '@/constants/design';
+import { fontScaleCap, hitSlopFor, spacing, statusColor, typography } from '@/constants/design';
 import { useListDensity } from '@/hooks/useListDensity';
 import {
   Text,
@@ -113,7 +113,7 @@ const SongRow: React.FC<Props> = ({
             )}
             <Touchable
               onPress={openOptions}
-              hitSlop={10}
+              {...hitSlopFor(18)}
               accessibilityRole="button"
               accessibilityLabel={t('a11y.rows.options', { title: song.title })}
             >
