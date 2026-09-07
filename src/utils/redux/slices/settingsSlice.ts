@@ -146,6 +146,20 @@ export interface SettingsState {
   showJumpButtons: boolean;
   showVolumeSlider: boolean;
   autoplayEnabled: boolean;
+  /**
+   * Play through yuzic-engine instead of `@rntp/player`.
+   *
+   * Experimental and off by default. The engine is a from-scratch replacement
+   * (github.com/eftpmc/yuzic-engine) that exists to make crossfade and a real
+   * equalizer possible, neither of which a single-output player can do. It
+   * plays, seeks, crossfades and caches on iOS — and has never run on a phone
+   * rather than a simulator, and is missing eleven methods on Android.
+   *
+   * Persisted so it survives a relaunch, because the point of the switch is to
+   * live with one player for a while and notice what breaks. Changing it stops
+   * playback: the queue is not migrated between engines.
+   */
+  useYuzicEngine: boolean;
   hapticsEnabled: boolean;
   /** Float the tab dock over the content behind a blur instead of having it
    * take layout space. Off by default: it only shows on screens long enough
@@ -208,6 +222,7 @@ const initialState: SettingsState = {
   showJumpButtons: false,
   showVolumeSlider: false,
   autoplayEnabled: false,
+  useYuzicEngine: false,
   hapticsEnabled: true,
   translucentDock: false,
   respectReducedMotion: true,
@@ -362,6 +377,9 @@ const settingsSlice = createSlice({
     setAutoplayEnabled(state, action: PayloadAction<boolean>) {
       state.autoplayEnabled = action.payload;
     },
+    setUseYuzicEngine(state, action: PayloadAction<boolean>) {
+      state.useYuzicEngine = action.payload;
+    },
 
     setLastSyncedAt(state, action: PayloadAction<number | null>) {
       state.lastSyncedAt = action.payload;
@@ -415,6 +433,7 @@ export const {
   setRespectReducedMotion,
   setShowPlaybackSpeed,
   setAutoplayEnabled,
+  setUseYuzicEngine,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

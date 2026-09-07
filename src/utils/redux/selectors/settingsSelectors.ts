@@ -169,3 +169,13 @@ export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
 
 export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
   state.settings.homeServerSectionsEnabled ?? true;
+
+/**
+ * Whether playback runs through yuzic-engine rather than `@rntp/player`.
+ *
+ * Defaults false on purpose, and the `??` matters: a user upgrading has no
+ * stored value, and the answer for them is the player that has shipped, not
+ * the one that has never been on a phone.
+ */
+export const selectUseYuzicEngine = (state: RootState): boolean =>
+  state.settings.useYuzicEngine ?? false;

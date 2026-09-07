@@ -9,7 +9,7 @@ import React, {
   ReactNode,
 } from 'react';
 import type { MediaItem } from '@rntp/player';
-import { getBackend } from '@/features/player/activeBackend';
+import { getBackend, setBackendKind } from '@/features/player/activeBackend';
 import {
   useBackendKind,
   usePlayerActiveItem,
@@ -35,6 +35,7 @@ import { useSelector } from 'react-redux';
 import {
   selectPreferredCodec,
   selectAutoplayEnabled,
+  selectUseYuzicEngine,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
 import { useStreamQuality } from '@/hooks/useStreamQuality';
@@ -223,7 +224,16 @@ const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
+  // The setting is the authority; `backendKind` is the module singleton that
+  // follows it. Kept in that order so a persisted preference survives a
+  // relaunch — the singleton resets to rntp on every launch, and would
+  // otherwise silently undo the user's choice.
+  const useEngine = useSelector(selectUseYuzicEngine);
   const backendKind = useBackendKind();
+  useEffect(() => {
+    setBackendKind(useEngine ? 'engine' : 'rntp');
+  }, [useEngine]);
+
   const isPlaying = usePlayerIsPlaying();
   const activeMediaItem = usePlayerActiveItem();
   const api = useApi();
