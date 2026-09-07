@@ -94,9 +94,13 @@ export function createEngineBackend(): PlayerBackend {
           unsubscribeEngine = api.addListener((event: Parameters<typeof applyEvent>[1]) => {
             shadow = applyEvent(shadow, event);
             if (event.type === 'stateChange') {
-              // Only bufferingness crosses: see BackendEvent for why the two
-              // players cannot agree about a "playing" flag.
-              emit({ type: 'stateChange', buffering: event.state === 'buffering' });
+              // The engine *can* say whether it is playing, unlike rntp, so it
+              // does — see BackendEvent for why the field is optional.
+              emit({
+                type: 'stateChange',
+                buffering: event.state === 'buffering',
+                playing: event.state === 'playing',
+              });
             }
             if (event.type === 'trackChange') {
               emit({ type: 'trackChange', index: event.index });

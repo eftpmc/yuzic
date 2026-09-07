@@ -86,5 +86,15 @@ export interface PlayerBackend {
  */
 export type BackendEvent =
   | { type: 'error'; code?: string; message: string }
-  | { type: 'stateChange'; buffering: boolean }
+  | {
+      type: 'stateChange';
+      buffering: boolean;
+      /**
+       * Absent when the backend cannot say — which is rntp's honest answer,
+       * not an oversight. Consumers must not read absent as `false`; rntp's
+       * playing-ness comes from its `useIsPlaying` hook instead, and the
+       * player hooks pick whichever source the active backend actually has.
+       */
+      playing?: boolean;
+    }
   | { type: 'trackChange'; index: number };
