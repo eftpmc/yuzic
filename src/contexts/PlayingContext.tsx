@@ -41,6 +41,7 @@ import {
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
 import { useStreamQuality } from '@/hooks/useStreamQuality';
+import { playableQuality } from '@/utils/audio/playableFormat';
 import {
   QueueFillProvider,
   createNativeSimilarityQueueFillProvider,
@@ -769,7 +770,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (song.contentKind && song.contentKind !== 'song') return song;
     const localPath = getLocalPath(song.id);
     if (localPath) return { ...song, streamUrl: localPath };
-    const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);
+    // "Original" serves the untouched file, which is the only way to hear a
+    // lossless library losslessly — and the only setting that can hand the
+    // device something it cannot decode at all. An Ogg Vorbis album played on
+    // every quality except Original, where iOS has no Vorbis decoder and the
+    // track failed outright. Transcoding it is a smaller loss than silence.
+    const quality = playableQuality(song, streamQualityRef.current);
+    const freshUrl = api.songs.buildStreamUrl(song.id, quality, preferredCodecRef.current);
     return freshUrl ? { ...song, streamUrl: freshUrl } : song;
   }, [api, getLocalPath]);
   // Keep ref in sync during render so effects/handlers always have the latest version
