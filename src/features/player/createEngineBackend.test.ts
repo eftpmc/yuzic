@@ -1,4 +1,4 @@
-import type { MediaItem } from '@rntp/player';
+import type { MediaItem } from './mediaItem';
 
 /**
  * The engine backend's own behaviour, with the native module faked.

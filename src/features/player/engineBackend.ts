@@ -1,4 +1,4 @@
-import type { MediaItem } from '@rntp/player';
+import type { MediaItem } from './mediaItem';
 import type { EngineEvent, Progress, Track } from 'yuzic-engine';
 
 /**

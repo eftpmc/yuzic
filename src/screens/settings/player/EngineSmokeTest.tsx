@@ -11,8 +11,6 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, typography } from '@/constants/design';
-import { getBackendKind, setBackendKind } from '@/features/player/activeBackend';
-import { useBackendKind } from '@/features/player/usePlayerState';
 
 /**
  * Development-only: drives yuzic-engine directly, bypassing the player.
@@ -34,20 +32,10 @@ const EngineSmokeTest: React.FC = () => {
   const activeServer = useSelector(selectActiveServer);
   const [log, setLog] = useState<string[]>([]);
 
-  const backend = useBackendKind();
 
   const say = useCallback((line: string) => {
     setLog(previous => [...previous.slice(-6), line]);
   }, []);
-
-  const swapBackend = useCallback(() => {
-    const next = getBackendKind() === 'engine' ? 'rntp' : 'engine';
-    setBackendKind(next);
-    setLog([]);
-    say(`player is now ${next === 'engine' ? 'yuzic-engine' : '@rntp/player'}`);
-    say('playback stopped — pick something to play');
-    toast.success(next === 'engine' ? 'Using yuzic-engine' : 'Using @rntp/player');
-  }, [say]);
 
   const loadEngine = useCallback(() => {
     // Required lazily: if the native module is missing this throws, and it
@@ -422,6 +410,83 @@ const EngineSmokeTest: React.FC = () => {
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
+  /**
+   * The speed control, which has never run.
+   *
+   * `setSpeed` splices an `AVAudioUnitTimePitch` between the EQ and the output
+   * and is bypassed at 1.0, so the interesting question is not whether the
+   * number is accepted — it is whether audio still reaches the output once the
+   * node stops being bypassed. A disconnected graph is silent rather than
+   * broken-looking, which is the failure this is shaped to catch: position
+   * keeps advancing while nothing is heard.
+   *
+   * So it watches progress *rate* rather than the setting. At 2x the playhead
+   * should cover roughly twice the wall-clock time; at 0.5x roughly half. A
+   * node that swallowed the audio would leave the rate at zero.
+   */
+  const speedProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library');
+        return;
+      }
+      const url = api.songs.buildStreamUrl(track.id, 'original');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      await YuzicEngine.play();
+      say(`playing: ${track.title}`);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      /** Playhead seconds covered per second of wall clock. */
+      const rateOver = async (seconds: number) => {
+        const before = await YuzicEngine.getProgress();
+        const startedAt = Date.now();
+        await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+        const after = await YuzicEngine.getProgress();
+        const elapsed = (Date.now() - startedAt) / 1000;
+        return (after.positionSec - before.positionSec) / elapsed;
+      };
+
+      await YuzicEngine.setSpeed(1.0);
+      say(`1.0x → ${(await rateOver(3)).toFixed(2)}x measured`);
+
+      await YuzicEngine.setSpeed(2.0);
+      const fast = await rateOver(3);
+      say(`2.0x → ${fast.toFixed(2)}x measured`);
+
+      await YuzicEngine.setSpeed(0.5);
+      const slow = await rateOver(3);
+      say(`0.5x → ${slow.toFixed(2)}x measured`);
+
+      await YuzicEngine.setSpeed(1.0);
+      await YuzicEngine.stop();
+
+      // Silence is the failure worth naming: a rate near zero at 2x means the
+      // node is in the chain and nothing is getting through it.
+      if (fast < 0.2) say('no audio at 2x — the speed node broke the graph');
+      else if (fast > 1.5 && slow < 0.8) {
+        say('speed follows the setting');
+        toast.success('Speed control works');
+      } else say('rates did not track the setting');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Speed probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
   const publishBrowseTree = useCallback(async () => {
     setLog([]);
     try {
@@ -479,16 +544,6 @@ const EngineSmokeTest: React.FC = () => {
     <>
       <SettingsCardHeader subtle title="yuzic-engine (dev)" />
       <SettingsCard>
-        {/*
-          The switch the whole backend abstraction exists for: the same library,
-          the same screens, either player underneath. Stops playback on the way
-          across — the queue is not migrated, because rebuilding it would mean
-          guessing at position and shuffle order.
-        */}
-        <SettingsRow
-          label={`Player: ${backend === 'engine' ? 'yuzic-engine' : '@rntp/player'}`}
-          onPress={swapBackend}
-        />
         <SettingsRow label="Probe the native module" onPress={probe} />
         <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
         <SettingsRow label="Seek: direct stream (ranged)" onPress={() => seekProbe('original')} />
@@ -496,6 +551,7 @@ const EngineSmokeTest: React.FC = () => {
         <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
         <SettingsRow label="Edit the queue (insert/remove/move)" onPress={queueProbe} />
         <SettingsRow label="Disk cache: does it survive a track" onPress={cacheProbe} />
+        <SettingsRow label="Speed: 1x / 2x / 0.5x" onPress={speedProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
       {log.length > 0 && (

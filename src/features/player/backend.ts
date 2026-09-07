@@ -1,4 +1,5 @@
-import type { MediaItem } from '@rntp/player';
+import type { BrowseCategory } from './browse';
+import type { MediaItem } from './mediaItem';
 
 /**
  * The player, as the app talks to it.
@@ -8,10 +9,11 @@ import type { MediaItem } from '@rntp/player';
  * CarPlay hook — rather than from anyone's idea of a complete player. If a
  * method is here, something calls it; if something calls it, it is here.
  *
- * Two backends implement this: `@rntp/player` as it is used today, and
- * yuzic-engine. Having the interface at all is what turns replacing the player
- * from a rewrite of ~40 call sites into a choice, and what lets both be driven
- * on one device and compared.
+ * yuzic-engine implements this. It was written while `@rntp/player` was still
+ * the player, so both could be driven on one device and compared; that is what
+ * turned the replacement from a rewrite of ~40 call sites into a swap of one
+ * factory function, and the interface is worth keeping now that only one
+ * implementation is left.
  *
  * **Commands return void, not promises, and that is deliberate.** The call
  * sites are synchronous and treat playback as fire-and-forget — `play()` on a
@@ -65,6 +67,14 @@ export interface PlayerBackend {
 
   // Cache
   clearCache(): void;
+
+  /**
+   * Publish the tree the car surfaces browse.
+   *
+   * Best-effort by contract: a car that is not connected has nothing to show,
+   * and a failure here must never take the app down with it.
+   */
+  setBrowseTree(categories: BrowseCategory[]): void;
 
   /** Returns an unsubscribe function, as every caller here expects. */
   addListener(listener: (event: BackendEvent) => void): () => void;

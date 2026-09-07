@@ -5,7 +5,7 @@ import {
   toMediaItem,
   toRntpProgress,
 } from './engineBackend';
-import type { MediaItem } from '@rntp/player';
+import type { MediaItem } from './mediaItem';
 
 const item = (over: Partial<MediaItem> = {}): MediaItem => ({
   mediaId: 'song-1',

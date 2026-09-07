@@ -1,4 +1,6 @@
-import type { MediaItem } from '@rntp/player';
+import type { BrowseNode } from 'yuzic-engine';
+import type { BrowseCategory, BrowseItem } from './browse';
+import type { MediaItem } from './mediaItem';
 import type { PlayerBackend, BackendEvent } from './backend';
 import {
   applyEvent,
@@ -29,6 +31,32 @@ import {
 function requireEngine() {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   return (require('yuzic-engine') as typeof import('yuzic-engine')).YuzicEngine;
+}
+
+/**
+ * One browse row, as the engine wants it.
+ *
+ * A row with a `url` becomes playable; one without becomes a folder and its
+ * children are converted the same way. The app produces both, and which one a
+ * row is cannot be told from its position in the tree — an album row and the
+ * track rows beneath it sit at different depths in different categories.
+ */
+function toBrowseNode(item: BrowseItem): BrowseNode {
+  return {
+    id: item.mediaId,
+    title: item.title,
+    subtitle: item.artist,
+    children: item.children?.map(toBrowseNode),
+    playable: item.url
+      ? {
+          id: item.mediaId,
+          uri: item.url,
+          title: item.title,
+          artist: item.artist,
+          durationSec: item.duration,
+        }
+      : undefined,
+  };
 }
 
 export function createEngineBackend(): PlayerBackend {
@@ -198,6 +226,32 @@ export function createEngineBackend(): PlayerBackend {
     cancelSleepTimer() { fire('cancelSleep', async () => load().cancelSleep()); },
 
     clearCache() { fire('clearCache', async () => load().clearCache()); },
+
+    /**
+     * Flat categories in, a tree out.
+     *
+     * The engine takes a recursive `BrowseNode`; the app builds two flat
+     * levels. The conversion is here rather than in the CarPlay hook so the
+     * hook keeps describing the app's library instead of the engine's shape.
+     *
+     * `playable` is what makes a node selectable — a node without it is a
+     * folder — so the recursion sets it only where a `url` exists. The app
+     * nests three deep in places (Albums → an album → its tracks), which is
+     * why this recurses rather than mapping two fixed levels.
+     */
+    setBrowseTree(categories) {
+      fire('setBrowseTree', async () =>
+        load().setBrowseTree({
+          id: 'root',
+          title: 'yuzic',
+          children: categories.map(category => ({
+            id: category.mediaId,
+            title: category.title,
+            children: category.items.map(toBrowseNode),
+          })),
+        }),
+      );
+    },
 
     addListener(listener) {
       listeners = [...listeners, listener];

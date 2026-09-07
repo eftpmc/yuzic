@@ -8,10 +8,9 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import type { MediaItem } from '@rntp/player';
-import { getBackend, setBackendKind } from '@/features/player/activeBackend';
+import type { MediaItem } from '../features/player/mediaItem';
+import { getBackend } from '@/features/player/activeBackend';
 import {
-  useBackendKind,
   usePlayerActiveItem,
   usePlayerIsPlaying,
   usePlayerProgress,
@@ -35,7 +34,6 @@ import { useSelector } from 'react-redux';
 import {
   selectPreferredCodec,
   selectAutoplayEnabled,
-  selectUseYuzicEngine,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
 import { useStreamQuality } from '@/hooks/useStreamQuality';
@@ -156,16 +154,20 @@ const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, du
 const PlayingQueueVersionContext = createContext<number>(0);
 
 /**
- * Which players have been set up, not whether *a* player has.
+ * Whether the player has been set up this launch.
  *
- * This was a boolean, and switching backends then left the incoming one
- * un-set-up: the flag was already true from the outgoing player, so `setup()`
- * never ran on the new one. It claims the audio session and subscribes the
- * event listener, so without it the engine accepted a queue, reported nothing,
- * and sat silent — which reads as "the engine is broken" rather than "the
- * engine was never started".
+ * Module-level rather than a `useRef` so it survives a remount of the
+ * provider: `setup()` claims the audio session and subscribes the event
+ * listener, and doing that twice would rebuild the audio graph underneath a
+ * playing track.
+ *
+ * This was briefly a `Set` keyed by which backend, back when there were two
+ * and switching between them left the incoming one un-set-up — a plain
+ * boolean was already true from the outgoing player, so `setup()` never ran
+ * on the new one and the engine sat silent. With one player the key has
+ * nothing to distinguish, so it is a boolean again.
  */
-const playersSetUp = new Set<string>();
+const playerSetUp = { current: false };
 
 export const usePlayingState = () => {
   const ctx = useContext(PlayingStateContext);
@@ -224,16 +226,6 @@ const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
-  // The setting is the authority; `backendKind` is the module singleton that
-  // follows it. Kept in that order so a persisted preference survives a
-  // relaunch — the singleton resets to rntp on every launch, and would
-  // otherwise silently undo the user's choice.
-  const useEngine = useSelector(selectUseYuzicEngine);
-  const backendKind = useBackendKind();
-  useEffect(() => {
-    setBackendKind(useEngine ? 'engine' : 'rntp');
-  }, [useEngine]);
-
   const isPlaying = usePlayerIsPlaying();
   const activeMediaItem = usePlayerActiveItem();
   const api = useApi();
@@ -484,22 +476,25 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useCarPlayBrowseTree();
 
-  // Re-runs when the player is swapped, which is the point: the incoming one
-  // has not been set up, however long the outgoing one had been running.
+  // Setup rebuilds the audio graph, so it is guarded and runs once per launch.
+  //
+  // `setCommands` is deliberately *outside* that guard. Re-asserting the
+  // remote commands is the only way to reclaim the lock-screen controls from
+  // anything else that has called `removeTarget(nil)` on the shared command
+  // centre, and a guard around it is what left those controls greyed out while
+  // @rntp/player was still in the app destroying them on its way out.
   useEffect(() => {
-    // The options each player needs differ enough that they belong with the
-    // player rather than here — see createRntpBackend and createEngineBackend.
-    if (!playersSetUp.has(backendKind)) {
+    if (!playerSetUp.current) {
       try {
         getBackend().setup();
-        playersSetUp.add(backendKind);
+        playerSetUp.current = true;
       } catch (err) {
         console.warn('player setup failed', err);
       }
     }
 
     getBackend().setCommands();
-  }, [backendKind]);
+  }, []);
 
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
 

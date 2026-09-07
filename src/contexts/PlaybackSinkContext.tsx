@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import TrackPlayer from '@rntp/player';
+import { getBackend } from '@/features/player/activeBackend';
 
 import { useApi } from '@/api';
 import type { JukeboxState } from '@/api/types';
@@ -146,7 +146,7 @@ export function PlaybackSinkProvider({ children }: { children: React.ReactNode }
       if (sinkRef.current.kind === 'dlna') await disconnectDevice();
       // Nothing streams to the phone while the server plays — stop the local
       // player outright rather than muting it the way the DLNA path does.
-      TrackPlayer.pause();
+      getBackend().pause();
       setSink({ kind: 'jukebox', name });
       setJukeboxState(await api.jukebox.status());
     } finally {

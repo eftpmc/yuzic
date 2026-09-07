@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import TrackPlayer, { BrowseCategory, BrowseItem } from '@rntp/player';
+import { getBackend } from '@/features/player/activeBackend';
+import type { BrowseCategory, BrowseItem } from '@/features/player/browse';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { useLibrary } from '@/contexts/LibraryContext';
@@ -257,7 +258,7 @@ export function useCarPlayBrowseTree() {
     }
 
     try {
-      TrackPlayer.setBrowseTree(categories.slice(0, 4));
+      getBackend().setBrowseTree(categories.slice(0, 4));
     } catch {
       // best-effort
     }

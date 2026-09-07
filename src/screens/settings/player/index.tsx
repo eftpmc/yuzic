@@ -19,7 +19,6 @@ import {
   selectShowJumpButtons,
   selectShowVolumeSlider,
   selectAutoplayEnabled,
-  selectUseYuzicEngine,
   selectResumeLongTracksEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured } from '@/utils/redux/selectors/audiomuseSelectors';
@@ -30,7 +29,6 @@ import {
   setShowJumpButtons,
   setShowVolumeSlider,
   setAutoplayEnabled,
-  setUseYuzicEngine,
   setResumeLongTracksEnabled,
 } from '@/utils/redux/slices/settingsSlice';
 
@@ -44,7 +42,6 @@ const PlayerSettings: React.FC = () => {
   const showJumpButtons = useSelector(selectShowJumpButtons);
   const showVolumeSlider = useSelector(selectShowVolumeSlider);
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
-  const useYuzicEngine = useSelector(selectUseYuzicEngine);
   const resumeLongTracks = useSelector(selectResumeLongTracksEnabled);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
   // Presence, not provider: a server whose adapter declares Opus gets the
@@ -106,31 +103,6 @@ const PlayerSettings: React.FC = () => {
     },
   ], [t, isAudiomuseConfigured, autoplayEnabled, resumeLongTracks, dispatch]);
 
-  /**
-   * The engine switch, shown in release builds and not only under __DEV__.
-   *
-   * It has to be reachable on a real phone: everything yuzic-engine still owes
-   * — behaviour over Bluetooth, through a route change, on hardware that gets
-   * warm — cannot be answered on a simulator, and a build where the only way
-   * to select it is a debug-gated row answers none of it.
-   *
-   * Deliberately not translated. Every other string here goes through i18n;
-   * this one is a temporary switch on an experiment, and adding it to eleven
-   * locale files would imply a permanence it has not earned.
-   */
-  const engineItems = useMemo(() => [
-    {
-      label: 'Use yuzic-engine (experimental)',
-      subtext:
-        'Play through the new audio engine instead of the current player. ' +
-        'Crossfade and the equalizer only work here. Switching stops playback, ' +
-        'and the engine has not run on Android — expect problems, and say what ' +
-        'they were.',
-      value: useYuzicEngine,
-      onValueChange: (v: boolean) => dispatch(setUseYuzicEngine(v)),
-    },
-  ], [useYuzicEngine, dispatch]);
-
   // The stream cache is the player's own, and separate from downloads: it
   // fills itself as you listen so a re-listen doesn't refetch, and evicts
   // least-recently-used past its cap. There was no way to see it or empty it,
@@ -167,9 +139,6 @@ const PlayerSettings: React.FC = () => {
       {supportsOpus && <SettingsToggleGroup items={opusItems} />}
       <SettingsToggleGroup items={playerControlItems} />
       <SettingsToggleGroup items={autoplayItems} />
-
-      <SettingsCardHeader subtle title="Audio engine" />
-      <SettingsToggleGroup items={engineItems} />
 
       <SettingsCardHeader subtle title={t('settings.player.cacheTitle')} />
       <SettingsCard>

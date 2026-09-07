@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
-import TrackPlayer from '@rntp/player';
+import { getBackend } from '@/features/player/activeBackend';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -79,12 +79,12 @@ export default function SleepTimerCard({ contentWidth }: Props) {
       : 0;
     const newSeconds = Math.min(current + minutes * 60, SLEEP_TIMER_MAX_SECONDS);
     const fadeOut = Math.min(30, Math.round(newSeconds * 0.15));
-    TrackPlayer.sleepAfterTime(newSeconds, { fadeOutSeconds: fadeOut });
+    getBackend().sleepAfterTime(newSeconds, { fadeOutSeconds: fadeOut });
     startCountdown(newSeconds);
   }, [startCountdown]);
 
   const handleOff = useCallback(() => {
-    TrackPlayer.cancelSleepTimer();
+    getBackend().cancelSleepTimer();
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = null;
     targetMsRef.current = null;
