@@ -462,12 +462,32 @@ const EngineSmokeTest: React.FC = () => {
       say(`after stop: ${afterStop.entryCount} entries, ` +
         `${(afterStop.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
 
-      if (afterStop.usedBytes > 0 && afterStop.entryCount > 0) {
-        say('kept across the track ending');
-        toast.success('Disk cache holds');
-      } else {
+      if (afterStop.usedBytes === 0 || afterStop.entryCount === 0) {
         say('cache emptied when the track stopped');
         toast.error('Cache did not persist');
+        return;
+      }
+      say('kept across the track ending');
+
+      // `evict` last, and by MediaId rather than URL — the engine keys the
+      // cache on the id precisely so a rotating Subsonic or Jellyfin token
+      // cannot orphan an entry. Exercised here because the rest of this probe
+      // passing was being read as "the cache methods work" while this one had
+      // only ever been compiled.
+      await YuzicEngine.evict(track.id);
+      const afterEvict = await YuzicEngine.cacheStats();
+      say(`after evict: ${afterEvict.entryCount} entries, ` +
+        `${(afterEvict.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
+
+      if (afterEvict.entryCount < afterStop.entryCount) {
+        say('evict dropped the track it was given');
+        toast.success('Disk cache holds');
+      } else {
+        // Distinguishable from a thrown error: this is the call returning
+        // cleanly and changing nothing, which is the failure this codebase
+        // keeps producing and the one a passing probe would hide.
+        say('evict returned but removed nothing');
+        toast.error('evict did nothing');
       }
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
