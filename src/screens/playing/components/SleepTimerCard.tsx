@@ -14,6 +14,7 @@ import {
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 function formatCountdown(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -103,7 +104,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
       style={[
         styles.card,
         { width: contentWidth, borderRadius: rad.panel },
-        isActive && { borderColor: themeColor + '55', borderWidth: 1 },
+        isActive && { borderColor: withAlpha(themeColor, 0.33), borderWidth: 1 },
       ]}
     >
       {/* Decorative moon */}

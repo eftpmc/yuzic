@@ -17,6 +17,7 @@ import type { MediaItem } from './mediaItem';
 const mockCalls: { name: string; args: unknown[] }[] = [];
 let mockListener: ((event: unknown) => void) | null = null;
 let mockFailing: string | null = null;
+let mockSetupGate: Promise<void> | null = null;
 
 const mockEngine = new Proxy(
   {},
@@ -30,7 +31,11 @@ const mockEngine = new Proxy(
       }
       return (...args: unknown[]) => {
         mockCalls.push({ name, args });
-        return name === mockFailing ? Promise.reject(new Error('nope')) : Promise.resolve();
+        if (name === mockFailing) return Promise.reject(new Error('nope'));
+        // `setup` can be held open, so a test can reproduce the window in
+        // which the native graph does not exist yet.
+        if (name === 'setup' && mockSetupGate) return mockSetupGate;
+        return Promise.resolve();
       };
     },
   }
@@ -68,6 +73,7 @@ beforeEach(() => {
   mockCalls.length = 0;
   mockListener = null;
   mockFailing = null;
+  mockSetupGate = null;
   // Several tests here make calls fail on purpose, and `fire` warns on every
   // failure so a release build leaves a trace. Silenced rather than tolerated:
   // expected output that looks like a problem trains you to ignore the run.
@@ -147,6 +153,72 @@ describe('talking to the engine', () => {
     backend.setMediaItems([item('a', { url: { uri: 'file:///x.flac' } })], 0);
     const sent = named('setQueue')[0].args[0] as { uri: string; id: string }[];
     expect(sent[0]).toMatchObject({ id: 'a', uri: 'file:///x.flac' });
+  });
+});
+
+describe('the cold-launch race', () => {
+  /**
+   * The bug this prevents, reported from a TestFlight build: the app opened,
+   * showed the track, and sat paused until it was restarted.
+   *
+   * Every transport function on the native side is `self.engine?.play()`, so a
+   * call arriving before the graph exists is optional-chained into a silent
+   * no-op — no error, no event, nothing to grep for. Setup is slowest on a
+   * cold first launch, which is exactly when the restored queue issues
+   * `setMediaItems` and `play`.
+   */
+  it('holds transport calls until setup has finished', async () => {
+    let openTheGate: () => void = () => {};
+    mockSetupGate = new Promise<void>(resolve => {
+      openTheGate = resolve;
+    });
+
+    const backend = createEngineBackend();
+    backend.setup();
+    backend.setMediaItems([item('a')], 0);
+    backend.play();
+
+    await Promise.resolve();
+    expect(mockCalls.map(c => c.name)).toEqual(['setup']);
+
+    openTheGate();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(mockCalls.map(c => c.name)).toEqual(['setup', 'setQueue', 'play']);
+  });
+
+  /** Order is preserved once the gate opens — a play must not overtake a queue. */
+  it('replays the held calls in the order they were made', async () => {
+    let openTheGate: () => void = () => {};
+    mockSetupGate = new Promise<void>(resolve => {
+      openTheGate = resolve;
+    });
+
+    const backend = createEngineBackend();
+    backend.setup();
+    backend.setMediaItems([item('a')], 0);
+    backend.seekTo(30);
+    backend.play();
+
+    openTheGate();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(mockCalls.map(c => c.name)).toEqual(['setup', 'setQueue', 'seekTo', 'play']);
+  });
+
+  /**
+   * A setup that fails must not block the transport for the life of the
+   * process. It reports itself; the player should still try.
+   */
+  it('opens the gate even when setup fails', async () => {
+    mockFailing = 'setup';
+
+    const backend = createEngineBackend();
+    backend.setup();
+    backend.play();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(mockCalls.map(c => c.name)).toContain('play');
   });
 });
 

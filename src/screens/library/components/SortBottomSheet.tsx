@@ -15,6 +15,7 @@ import { useRadius } from '@/hooks/useRadius';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 type SortOrder = 'title' | 'recent' | 'userplays' | 'year' | 'recentlyAdded';
 
@@ -69,7 +70,7 @@ const SortBottomSheet = forwardRef<
                 styles.pickerItem,
                 {
                   backgroundColor: isSelected
-                    ? themeColor + '22'
+                    ? withAlpha(themeColor, 0.13)
                     : 'transparent',
                   borderRadius: rad.md,
                 },

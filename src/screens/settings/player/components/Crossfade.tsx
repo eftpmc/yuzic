@@ -15,6 +15,7 @@ import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsToggleRow from '../../components/SettingsToggleRow';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 /**
  * Twelve seconds, because past that the overlap stops being a transition and
@@ -43,7 +44,7 @@ export const Crossfade: React.FC = () => {
           <View
             style={[
               styles.badge,
-              { backgroundColor: themeColor + '22', borderRadius: rad.card },
+              { backgroundColor: withAlpha(themeColor, 0.13), borderRadius: rad.card },
             ]}
           >
             <Text style={[styles.badgeText, { color: themeColor }]}>

@@ -63,7 +63,8 @@
             "deploymentTarget": "16.0"
           }
         }
-      ]
+      ],
+      "yuzic-engine"
     ],
     "experiments": {
       "typedRoutes": true
