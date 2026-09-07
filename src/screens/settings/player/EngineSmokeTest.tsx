@@ -11,6 +11,8 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, typography } from '@/constants/design';
+import { getBackendKind, setBackendKind } from '@/features/player/activeBackend';
+import { useBackendKind } from '@/features/player/usePlayerState';
 
 /**
  * Development-only: drives yuzic-engine directly, bypassing the player.
@@ -32,9 +34,20 @@ const EngineSmokeTest: React.FC = () => {
   const activeServer = useSelector(selectActiveServer);
   const [log, setLog] = useState<string[]>([]);
 
+  const backend = useBackendKind();
+
   const say = useCallback((line: string) => {
     setLog(previous => [...previous.slice(-6), line]);
   }, []);
+
+  const swapBackend = useCallback(() => {
+    const next = getBackendKind() === 'engine' ? 'rntp' : 'engine';
+    setBackendKind(next);
+    setLog([]);
+    say(`player is now ${next === 'engine' ? 'yuzic-engine' : '@rntp/player'}`);
+    say('playback stopped — pick something to play');
+    toast.success(next === 'engine' ? 'Using yuzic-engine' : 'Using @rntp/player');
+  }, [say]);
 
   const loadEngine = useCallback(() => {
     // Required lazily: if the native module is missing this throws, and it
@@ -393,6 +406,16 @@ const EngineSmokeTest: React.FC = () => {
     <>
       <SettingsCardHeader subtle title="yuzic-engine (dev)" />
       <SettingsCard>
+        {/*
+          The switch the whole backend abstraction exists for: the same library,
+          the same screens, either player underneath. Stops playback on the way
+          across — the queue is not migrated, because rebuilding it would mean
+          guessing at position and shuffle order.
+        */}
+        <SettingsRow
+          label={`Player: ${backend === 'engine' ? 'yuzic-engine' : '@rntp/player'}`}
+          onPress={swapBackend}
+        />
         <SettingsRow label="Probe the native module" onPress={probe} />
         <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
         <SettingsRow label="Seek: direct stream (ranged)" onPress={() => seekProbe('original')} />

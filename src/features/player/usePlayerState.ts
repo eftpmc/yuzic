@@ -22,7 +22,7 @@ import { getBackend, getBackendKind, subscribeBackendKind } from './activeBacken
  */
 
 /** Re-render when the backend itself is swapped. */
-function useBackendKind() {
+export function useBackendKind() {
   return useSyncExternalStore(subscribeBackendKind, getBackendKind, getBackendKind);
 }
 
