@@ -99,18 +99,47 @@ export function createEngineBackend(): PlayerBackend {
    * imperfectly. The warning is what makes the difference visible without
    * changing that.
    */
+  /** Resolves once `setup` has settled. Null until `setup` is called. */
+  let ready: Promise<void> | null = null;
+
   function fire(what: string, run: () => Promise<unknown>) {
     const report = (error: unknown) => {
       console.warn(`[player] ${what} failed`, error);
       emit({ type: 'error', code: 'ENGINE_CALL_FAILED', message: `${what}: ${String(error)}` });
     };
-    try {
-      const result = run();
-      if (result && typeof result.catch === 'function') {
-        result.catch(report);
+
+    // Everything waits for setup, and this is not belt-and-braces: on the
+    // native side every transport function is `self.engine?.play()`, so a call
+    // arriving before the graph exists is optional-chained into a silent
+    // no-op. No error, no event, nothing in a log.
+    //
+    // That is what made the app open on a cold first launch, show the track,
+    // and sit paused: setup was still claiming the audio session and building
+    // the graph while the restored queue issued `setMediaItems` and `play`,
+    // and both went nowhere. Restarting "fixed" it because by then setup had
+    // long finished, which is exactly why it reads as flaky rather than
+    // broken.
+    //
+    // `then(next, next)` runs the call whether setup resolved or rejected: a
+    // failed setup already reports itself, and blocking the transport forever
+    // afterwards would turn a bad launch into a dead player.
+    const next = () => {
+      try {
+        const result = run();
+        if (result && typeof result.catch === 'function') {
+          result.catch(report);
+        }
+      } catch (error) {
+        report(error);
       }
-    } catch (error) {
-      report(error);
+    };
+
+    if (ready && what !== 'setup') {
+      // Callbacks queue in registration order, so calls stay in the order the
+      // app made them rather than racing each other once the gate opens.
+      ready.then(next, next);
+    } else {
+      next();
     }
   }
 
@@ -129,9 +158,22 @@ export function createEngineBackend(): PlayerBackend {
 
   return {
     setup() {
+      // Held so every later call can wait behind it. Assigned before `fire`
+      // runs the body, because `fire` reads it to decide whether to gate.
+      let settle: () => void = () => {};
+      ready = new Promise<void>(resolve => {
+        settle = resolve;
+      });
       fire('setup', async () => {
         const api = load();
-        await api.setup({ progressIntervalMs: 250 });
+        try {
+          await api.setup({ progressIntervalMs: 250 });
+        } finally {
+          // Resolved in `finally` rather than after: a setup that threw still
+          // has to open the gate, or the transport is blocked for the life of
+          // the process.
+          settle();
+        }
         // Subscribe once, and only after setup — the module has no listener
         // list before it exists.
         if (!unsubscribeEngine) {
