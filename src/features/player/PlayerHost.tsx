@@ -79,9 +79,17 @@ export default function PlayerHost() {
       return;
     }
     if (!currentSong?.cover) return;
+    // `grid` (420px), not `detail` (1200px). This image is never displayed —
+    // it is downloaded, averaged into an accent gradient, and thrown away, and
+    // averaging does not get better with resolution. At `detail` the app was
+    // fetching a 1200px cover on every track change, which is the largest
+    // per-track download in the app on a phone that is often on cellular.
+    //
+    // It also 404s more: Navidrome only generates 1200 for large originals,
+    // as `buildCover` already notes for the MusicBrainz path.
     const uri =
-      buildCover(currentSong.cover, 'detail') ??
-      buildCover({ kind: 'none' }, 'detail');
+      buildCover(currentSong.cover, 'grid') ??
+      buildCover({ kind: 'none' }, 'grid');
     if (uri) extractColors(uri);
   }, [coverAccentEnabled, currentSong?.cover, currentSong?.id, extractColors]);
 
