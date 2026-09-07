@@ -33,6 +33,33 @@ is the normal Expo flow:
 npx expo start
 ```
 
+**If you are not logged in to Expo, start it offline instead:**
+
+```sh
+npx expo start --dev-client --offline
+```
+
+Without this the dev client fails to load with *"Failed to open app… check
+your network connectivity and make sure you can access the server from your
+device"*, which is not what has gone wrong. Metro is running and reachable; it
+is the manifest request that fails, with HTTP 500 and
+`UnexpectedServerData: Unexpected server error: No returned query result`.
+
+The cause is that `app.json` carries an `extra.eas.projectId`, so serving a
+manifest makes the Expo CLI ask **api.expo.dev** about that project. An
+unauthenticated request for someone else's project returns no data, and
+`@expo/cli`'s GraphQL client raises that message. `--offline` skips the call.
+
+Two things worth knowing, because both cost time when this was first hit:
+
+- **It is not platform-specific and not a Metro cache problem.** The quickest
+  confirmation is `npx expo whoami` — it makes the same API call with no
+  bundler involved, and fails the same way. If that errors, this is your
+  problem; `--clear` will not help.
+- **Someone else's working dev server is not evidence your config is fine.**
+  A maintainer with an Expo session serves the manifest correctly from the same
+  commit. The difference is credentials, not the repository.
+
 ### Testing against a server
 
 You don't need your own media server to try most of the app — onboarding
