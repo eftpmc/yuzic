@@ -76,9 +76,9 @@
 					<key>UISceneClassName</key>
 					<string>CPTemplateApplicationScene</string>
 					<key>UISceneConfigurationName</key>
-					<string>CarPlay</string>
+					<string>YuzicEngineCarPlay</string>
 					<key>UISceneDelegateClassName</key>
-					<string>RNTPCarPlaySceneDelegate</string>
+					<string>YuzicCarPlaySceneDelegate</string>
 				</dict>
 			</array>
 			<key>UIWindowSceneSessionRoleApplication</key>
