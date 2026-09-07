@@ -271,6 +271,71 @@ const EngineSmokeTest: React.FC = () => {
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
+  /**
+   * Exercises the queue editing the host cannot switch to the engine without.
+   *
+   * These were declared in `AudioEngine.ts` from the start and implemented by
+   * nothing, which is what stood between yuzic and deleting its current
+   * player — it edits its queue through every one of them.
+   *
+   * `getQueue` is the reason this is a device probe and not a unit test. It is
+   * the only call that sends tracks *back* across the bridge, and the module's
+   * own header records the last time a declared shape typechecked and then
+   * threw at runtime. A compiler cannot tell us this works.
+   */
+  const queueProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pool = tracks.slice(0, 4);
+      if (pool.length < 4 || !activeServer) {
+        say('need four tracks in the library');
+        return;
+      }
+      const items = pool.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'original') ?? '',
+        title: track.title,
+        durationSec: Number(track.duration) || undefined,
+      }));
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 1000 });
+      await YuzicEngine.setQueue(items, 1);
+
+      const shown = async (label: string) => {
+        const queue = await YuzicEngine.getQueue();
+        const index = await YuzicEngine.getActiveIndex();
+        say(`${label}: [${queue.map(t => t.title.slice(0, 6)).join(', ')}] @${index}`);
+        return queue;
+      };
+
+      const initial = await shown('set');
+      if (initial.length !== 4) {
+        say(`getQueue returned ${initial.length}, expected 4`);
+        return;
+      }
+
+      // Each of these should leave the *same* track active — index 1 to begin
+      // with — which is the whole rule the editing is built around.
+      await YuzicEngine.insertAt(0, [items[3]]);
+      await shown('insert@0');
+      await YuzicEngine.removeAt(0);
+      await shown('remove@0');
+      await YuzicEngine.move(3, 0);
+      await shown('move 3→0');
+
+      await YuzicEngine.setRepeatMode('all');
+      say('repeat: all');
+      await YuzicEngine.clearQueue();
+      const emptied = await YuzicEngine.getQueue();
+      say(`cleared: ${emptied.length} items`);
+      toast.success('Queue editing works');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Queue probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
   const publishBrowseTree = useCallback(async () => {
     setLog([]);
     try {
@@ -333,6 +398,7 @@ const EngineSmokeTest: React.FC = () => {
         <SettingsRow label="Seek: direct stream (ranged)" onPress={() => seekProbe('original')} />
         <SettingsRow label="Seek: transcoded stream (320k)" onPress={() => seekProbe('high')} />
         <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
+        <SettingsRow label="Edit the queue (insert/remove/move)" onPress={queueProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
       {log.length > 0 && (
