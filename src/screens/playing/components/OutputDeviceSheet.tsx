@@ -24,6 +24,7 @@ import { getServerProvider } from '@/utils/servers/registry';
 import Touchable from '@/components/Touchable';
 import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 const {
   AirplayButton,
@@ -120,7 +121,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* This device — selected when no sink has taken the audio elsewhere */}
         <Touchable
-          style={[styles.item, { backgroundColor: isLocal ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}
+          style={[styles.item, { backgroundColor: isLocal ? withAlpha(themeColor, 0.13) : 'transparent', borderRadius: rad.md }]}
           onPress={async () => {
             await selectLocal();
             (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
@@ -140,7 +141,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {jukeboxAvailable && (
           <Touchable
             testID="output-jukebox"
-            style={[styles.item, { backgroundColor: sink.kind === 'jukebox' ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}
+            style={[styles.item, { backgroundColor: sink.kind === 'jukebox' ? withAlpha(themeColor, 0.13) : 'transparent', borderRadius: rad.md }]}
             onPress={handleSelectJukebox}
             disabled={isSwitching}
           >
@@ -156,7 +157,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
 
         {/* AirPlay — iOS only */}
         {Platform.OS === 'ios' && AirplayButton && (
-          <View style={[styles.item, { backgroundColor: airplayDevice ? themeColor + '22' : 'transparent', borderRadius: rad.md }]}>
+          <View style={[styles.item, { backgroundColor: airplayDevice ? withAlpha(themeColor, 0.13) : 'transparent', borderRadius: rad.md }]}>
             <View style={styles.itemLeft}>
               <Airplay size={iconSize.row} color={airplayDevice ? themeColor : colors.subtext} />
               <Text style={[
@@ -187,7 +188,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
         {/* Active DLNA device */}
         {activeDlna && (
           <Touchable
-            style={[styles.item, { backgroundColor: themeColor + '22', borderRadius: rad.md }]}
+            style={[styles.item, { backgroundColor: withAlpha(themeColor, 0.13), borderRadius: rad.md }]}
             onPress={selectLocal}
           >
             <View style={styles.itemLeft}>

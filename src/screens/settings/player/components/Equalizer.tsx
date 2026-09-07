@@ -10,6 +10,7 @@ import { setEqualizerGains } from '@/utils/redux/slices/settingsSlice';
 import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
+import { withAlpha } from '@/features/theme/coverAccent';
 import {
   EQ_FREQUENCIES,
   EQ_GAIN_LIMIT_DB,
@@ -86,7 +87,7 @@ export const Equalizer: React.FC = () => {
                 styles.preset,
                 {
                   borderRadius: rad.card,
-                  backgroundColor: selected ? themeColor : colors.border + '55',
+                  backgroundColor: selected ? themeColor : withAlpha(colors.border, 0.33),
                 },
               ]}
             >

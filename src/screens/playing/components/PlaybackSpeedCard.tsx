@@ -13,6 +13,7 @@ import {
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 type Props = { contentWidth: number };
 
@@ -45,7 +46,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
       style={[
         styles.card,
         { width: contentWidth, borderRadius: rad.panel },
-        isAltered && { borderColor: themeColor + '55', borderWidth: 1 },
+        isAltered && { borderColor: withAlpha(themeColor, 0.33), borderWidth: 1 },
       ]}
     >
       {/* Decorative gauge */}
