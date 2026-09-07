@@ -16,7 +16,7 @@ import { spacing, typography } from '@/constants/design';
  * Development-only: drives yuzic-engine directly, bypassing the player.
  *
  * The engine is a separate project being built to replace `@rntp/player`
- * (see github.com/eftpmc/yuzic-engine). It has a large unit-test suite, but
+ * (see github.com/yuzicapp/yuzic-engine). It has a large unit-test suite, but
  * nothing had ever called it across the React Native bridge — and the bugs
  * found so far were all of the kind that only appear when something really
  * builds or really runs. This is the smallest surface that exercises the whole

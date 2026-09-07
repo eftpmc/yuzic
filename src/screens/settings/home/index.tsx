@@ -145,19 +145,19 @@ export default function Settings() {
                     <SettingsRow
                         label={t('settings.rows.github')}
                         leftIcon={<Github size={iconSize.secondary} color={colors.secondary} />}
-                        onPress={() => openLink('https://github.com/eftpmc/yuzic')}
+                        onPress={() => openLink('https://github.com/yuzicapp/yuzic')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.privacyPolicy')}
                         leftIcon={<ShieldCheck size={iconSize.secondary} color={colors.secondary} />}
-                        onPress={() => openLink('https://eftpmc.github.io/yuzic-web/privacypolicy/')}
+                        onPress={() => openLink('https://yuzicapp.github.io/yuzic-web/privacypolicy/')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.termsOfUse')}
                         leftIcon={<ScrollText size={iconSize.secondary} color={colors.secondary} />}
-                        onPress={() => openLink('https://eftpmc.github.io/yuzic-web/tos/')}
+                        onPress={() => openLink('https://yuzicapp.github.io/yuzic-web/tos/')}
                     />
                 </SettingsCard>
 
