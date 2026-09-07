@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_SLSKD_PREFERENCES, type SlskdSearchPreferences } from '@/api/slskd';
 
-export type DownloaderId = 'lidarr' | 'slskd';
+export type DownloaderId = 'lidarr' | 'slskd' | 'soulsync';
 
-export const DOWNLOADER_IDS: DownloaderId[] = ['lidarr', 'slskd'];
+export const DOWNLOADER_IDS: DownloaderId[] = ['lidarr', 'slskd', 'soulsync'];
 
 export interface DownloaderConnection {
   serverUrl: string;
@@ -32,6 +32,7 @@ const emptyConnection: DownloaderConnection = {
 const defaultPerServer: PerServerDownloadersState = {
   lidarr: emptyConnection,
   slskd: emptyConnection,
+  soulsync: emptyConnection,
 };
 
 const initialState: DownloadersState = {

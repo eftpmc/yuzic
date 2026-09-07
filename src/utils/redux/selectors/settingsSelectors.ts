@@ -1,4 +1,6 @@
 import { RootState } from '@/utils/redux/store';
+import type { CrossfadeSettings } from '@/features/player/audioSettings';
+import { FLAT_EQ } from '@/features/player/audioSettings';
 import {
   AudioQuality,
   PreferredCodec,
@@ -169,3 +171,40 @@ export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
 
 export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
   state.settings.homeServerSectionsEnabled ?? true;
+
+/**
+ * Crossfade, as the engine wants it, or `null` when it is off.
+ *
+ * Zero seconds is off rather than a zero-length fade: `null` tells the engine
+ * not to overlap at all, which lets it leave the second voice idle instead of
+ * running a fade that does nothing.
+ */
+export const selectCrossfade = (state: RootState): CrossfadeSettings | null => {
+  const durationSec = state.settings.crossfadeSeconds ?? 0;
+  if (durationSec <= 0) return null;
+  return {
+    durationSec,
+    mode: state.settings.crossfadeAlways ? 'always' : 'gapless-aware',
+    // Not offered as a setting. A skip that fades feels broken rather than
+    // smooth, and the engine still applies a short ramp so it cannot click.
+    skipIsImmediate: true,
+  };
+};
+
+export const selectCrossfadeSeconds = (state: RootState): number =>
+  state.settings.crossfadeSeconds ?? 0;
+
+export const selectCrossfadeAlways = (state: RootState): boolean =>
+  state.settings.crossfadeAlways ?? false;
+
+/**
+ * A module constant, not a fresh array.
+ *
+ * This is read by `useSelector`, which compares by reference — returning
+ * `FLAT_EQ.map(...)` would hand back a new array on every render, re-run the
+ * effect that pushes the EQ to the engine, and re-render forever.
+ */
+const FLAT_GAINS: number[] = FLAT_EQ.map(band => band.gainDb);
+
+export const selectEqualizerGains = (state: RootState): number[] =>
+  state.settings.equalizerGains ?? FLAT_GAINS;

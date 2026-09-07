@@ -1,6 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
+import { DOWNLOADER_IDS } from '@/utils/redux/slices/downloadersSlice'
+import { ALL_DOWNLOADERS } from '@/features/downloaders/registry'
+
 import en from './en.json'
 import fr from './fr.json'
 import ja from './ja.json'
@@ -94,4 +97,37 @@ it('has an English string for every key the app asks for', () => {
   }
 
   expect(Object.fromEntries(missing)).toEqual({})
+})
+
+
+/**
+ * The per-downloader strings are looked up by a key built at runtime —
+ * `settings.downloaders.serverUrlPlaceholder.${id}` and friends — which the
+ * check above cannot see, because no literal in the source ever spells them
+ * out. Adding SoulSync shipped a screen whose URL field read
+ * "settings.downloaders.serverUrlPlaceholder." to the user; only opening the
+ * screen showed it. So the set of downloaders is walked directly.
+ */
+describe('per-downloader strings', () => {
+  const downloaders = en.settings.downloaders as unknown as Record<string, unknown>
+  const placeholders = downloaders.serverUrlPlaceholder as Record<string, string>
+
+  it.each(DOWNLOADER_IDS)('%s has a settings block and a URL placeholder', (id) => {
+    expect(placeholders[id]).toBeTruthy()
+    const block = downloaders[id] as Record<string, string> | undefined
+    expect(block?.title).toBeTruthy()
+    expect(block?.credentialsHelper).toBeTruthy()
+    expect(block?.connectionFailed).toBeTruthy()
+    expect(block?.disconnected).toBeTruthy()
+  })
+
+  it.each(ALL_DOWNLOADERS.map(d => [d.id, d] as const))(
+    '%s names the strings for the units it handles',
+    (_id, def) => {
+      const download = en.externalAlbum.download as unknown as Record<string, unknown>
+      expect(download[def.descriptionKey.split('.').pop()!]).toBeTruthy()
+      if (def.downloadAlbum) expect(download[def.albumAddedKey.split('.').pop()!]).toBeTruthy()
+      if (def.downloadTrack) expect(download[def.trackAddedKey!.split('.').pop()!]).toBeTruthy()
+    }
+  )
 })

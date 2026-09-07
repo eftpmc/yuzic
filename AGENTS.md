@@ -47,8 +47,11 @@ If you ever need to raise these offset constants (e.g. because a manual/local Fa
 
 ## Native/player notes
 
-- Audio playback goes through `@rntp/player` (the npm-scoped continuation of `react-native-track-player`, now under a commercial license as of v5 — see `node_modules/@rntp/player/package.json`). Keep it reasonably current; v5.0.0 → v5.6.0 fixed real bugs (notably `file://` local-playback support added in 5.2.0).
+- Audio playback goes through **`PlayerBackend`** (`src/features/player/backend.ts`), not through a player package directly. yuzic-engine implements it; `@rntp/player` was removed. Nine of those methods have no Android implementation yet and reject by name at the bridge. `docs/architecture.md` explains the seam and the three non-obvious things about it; read that before changing playback.
+- Adding a player call means adding it to `PlayerBackend` **and to both platforms of the engine**. A method implemented on iOS and not on Android is the failure this seam exists to surface — it has already happened, and nine such methods are outstanding. They reject by name (`setSpeed() is not implemented on android`) rather than throwing `is not a function`, so the gap is legible from a log; that is not the same as being fixed.
+- `@rntp/player` used to be the player and has been removed entirely. Do not reintroduce it, and do not read its source: it is the npm-scoped continuation of `react-native-track-player` and went to a commercial, non-compete licence at v5, which is a probable GPL-3 conflict for yuzic and a definite F-Droid blocker — and which is part of why the engine exists. react-native-track-player **v4** is Apache-2.0 and may be referenced with attribution.
 - `src/contexts/PlayingContext.tsx` is the central playback state/controls context — most player-related work touches this file.
+- The engine lives in its own repo (github.com/eftpmc/yuzic-engine) and is consumed as a pinned git dependency. **The pin drifts.** Bumping it once and then making further engine commits leaves the app building an engine older than the one you are reading, and it has caused two wrong conclusions already. Check `package.json` against the engine's HEAD before trusting that a fix is in the build.
 
 ## UI conventions
 

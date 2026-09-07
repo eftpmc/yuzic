@@ -26,8 +26,17 @@ export interface ApiAdapter {
   queue?: QueueApi;         // Subsonic only
   discovery?: DiscoveryApi; // getRandomSongs + getNowPlaying (Subsonic)
   podcasts?: PodcastsApi;   // Subsonic only
+  jukebox?: JukeboxApi;     // Subsonic only — see the note on probing below
 }
 ```
+
+**Presence is not always permission.** `jukebox` is the case that shows the
+limit of presence-gating: every Navidrome adapter has it, but Navidrome ships
+the feature off (`Jukebox.Enabled`) and, once on, grants it per user. A server
+with it disabled doesn't even answer in Subsonic's error shape —
+demo.navidrome.org replies with prose. So the output picker asks
+(`useJukeboxAvailability` → one `status()` call) and treats any failure as a
+no. Presence decides whether the app *can* ask; the server decides the answer.
 
 A capability that isn't a whole surface is declared as a field on the surface
 that owns it, and read the same way:
@@ -110,6 +119,69 @@ Add the field to `PlaybackState`, an action + reducer, a selector in
 loop) a call in `PlayingContext` at the site the value changes. The persister
 already covers the throttling for hot-path fields — model position, not add
 another one.
+
+### Sinks — where the audio comes out
+
+`features/player/playbackSink.ts` names the three outputs, and one distinction
+runs through all of them: **does the local player still run?**
+
+- `local` — the local player plays and keeps the clock.
+- `dlna` — the local player *still* plays, muted (`setVolume(0)`), because a
+  DLNA renderer reports no position back; it keeps the clock and drives the
+  queue while the same stream URL goes to the renderer. Transport is
+  **mirrored**.
+- `jukebox` — the server holds the audio and reports its own position. Nothing
+  streams to the phone. Transport is **replaced**, and the progress bar reads
+  the server's polled position instead of the player's.
+
+`ownsPlayback(sink)` is that question, and every transport call in
+`PlayingContext` asks it before touching the player. Getting it wrong for the
+jukebox means the phone plays the track a second time, out loud, next to the
+server already playing it.
+
+## The player, and the seam it sits behind
+
+`features/player/backend.ts` defines `PlayerBackend` — the surface the app
+actually uses, derived from its own call sites rather than from anyone's idea
+of a complete player. `createEngineBackend` (yuzic-engine) implements it,
+`activeBackend.ts` hands it out, and `PlayingContext` never imports a player
+directly.
+
+The seam was built while `@rntp/player` was still here, so both could run on
+one device and be compared. That is what turned the removal from a rewrite of
+~40 call sites into a swap of one factory function, and it is worth keeping
+now that one implementation is left: it is what every test in that directory
+fakes, and the engine does not run on web.
+
+Three things about it are not obvious:
+
+- **The engine's answers cross a bridge, and the call sites are synchronous.**
+  Call sites read `Math.floor(getProgress().position)` inline, so
+  `createEngineBackend` keeps a shadow of what the engine last reported and
+  answers from it. A `getProgress` straight after a `seekTo` returns the
+  pre-seek position until the next event.
+- **Playing-ness is an event, not a getter.** The engine reports it on the
+  `playing` field of its state event, which is optional — absent means "cannot
+  say", and `usePlayerState.ts` guards rather than coerces, because treating
+  absent as false would stop the button ever showing as playing.
+- **Commands return void.** They are fire-and-forget: `play()` on a button
+  press, `seekTo()` on a scrub. Failures arrive as an error event, and
+  `fire()` warns as well as emitting, because in a release build nothing
+  subscribes to that event.
+
+`@rntp/player` was removed in full — package, lockfile, patch and all. It was
+proprietary from v5 (non-commercial, with a non-compete clause), which is a
+probable GPL-3 conflict for yuzic and a definite F-Droid blocker.
+
+The engine is complete on iOS. On Android it is missing nine of the methods
+the app calls; they reject by name rather than throwing `is not a function`,
+and `setCrossfade` there is a stub that records its options and schedules no
+overlap, so crossfade is an iOS feature today.
+
+`PlaybackSinkContext` owns which sink is selected and routes transport to it.
+This replaced four copies of `if (activeDevice) castX()` in the player and a
+three-term negation in the output sheet that decided whether "This device" was
+the selected row — every new output had been adding another term to both.
 
 ## 3. `contentKind` — routing the player around non-song content
 
@@ -195,7 +267,20 @@ src/api/                — providers + shared surfaces
 src/contexts/PlayingContext.tsx  — the player. Consumes ApiAdapter,
                                     dispatches into playbackSlice, checks
                                     contentKind before every player-shape
-                                    decision.
+                                    decision. Talks to PlayerBackend, never
+                                    to a player package directly.
+
+src/features/player/
+  backend.ts            — PlayerBackend: the surface the app uses (§ above)
+  createEngineBackend.ts— yuzic-engine behind it, plus the shadow that lets
+                          a bridged engine answer synchronous getters
+  activeBackend.ts      — builds it, hands it out, one per launch
+  mediaItem.ts          — the app's own playable-item type, formerly the
+                          player package's
+  audioSettings.ts      — crossfade and equalizer shapes, bands and presets
+  usePlayerState.ts     — the reactive half: progress, playing, active item
+  playbackSink.ts       — where the audio comes out (§ above), a separate
+                          question from which player produces it
 
 src/hooks/
   useSync.ts            — the catalog pipeline (§4)
@@ -207,7 +292,11 @@ src/hooks/
   usePlaybackPersistence.ts — the bridge between PlayingContext and
                           playbackSlice
 
+src/contexts/PlaybackSinkContext.tsx — which output is selected, and where
+                                    transport commands go
+
 src/features/           — feature-scoped modules that span providers
+  player/playbackSink   — the sink types and `ownsPlayback`
   downloaders/          — Lidarr + slskd registry + the queue provider
   downloads/            — Auto-download watcher
   sources/              — External catalog registry (Deezer, MB)

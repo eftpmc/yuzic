@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Cast, ListMusic } from 'lucide-react-native';
-import { useCast } from '@/contexts/CastContext';
+import { usePlaybackSink } from '@/contexts/PlaybackSinkContext';
 import Touchable from '@/components/Touchable';
 import { controlSize, hitSlopFor, iconSize, onDark, spacing, stateLayer } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -22,9 +22,11 @@ const BUTTON_SIZE = controlSize.playerSecondary;
 
 const BottomControls: React.FC<BottomControlsProps> = ({ mode, setMode, onOpenOutputSheet }) => {
   const { t } = useTranslation();
-  const { activeDevice } = useCast();
+  const { sink } = usePlaybackSink();
   const rad = useRadius();
-  const isCasting = activeDevice != null;
+  // Lit for any output that isn't this phone — the button opens the picker
+  // for all of them, so it answers "is the sound somewhere else?".
+  const isCasting = sink.kind !== 'local';
   const showingQueue = mode === 'queue';
 
   // One way of saying "on" for both. The queue toggle used to get a filled

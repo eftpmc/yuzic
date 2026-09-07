@@ -9,7 +9,8 @@ import {
   SongsApi,
   TracksApi,
   AuthApi,
-  LyricsApi
+  LyricsApi,
+  JukeboxState
 } from "../types";
 import { FAVORITES_ID } from "@/constants/favorites";
 import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
@@ -68,6 +69,7 @@ import {
   deleteBookmark,
 } from "./bookmarks/getBookmarks";
 import { getPlayQueue, savePlayQueue } from "./queue/getPlayQueue";
+import * as jukeboxApi from "./jukebox";
 import { getRandomSongs } from "./discovery/random";
 import { getNowPlaying } from "./discovery/nowPlaying";
 import {
@@ -81,6 +83,17 @@ import {
 } from "./podcasts/getPodcasts";
 
 import { search as searchNavidrome } from "./search/search";
+
+/** The Subsonic wire shape, renamed to the contract's terms — `position` is
+ *  seconds, and the adapter boundary is where that stops being implied. */
+function toJukeboxState(status: jukeboxApi.JukeboxStatus): JukeboxState {
+  return {
+    currentIndex: status.currentIndex,
+    playing: status.playing,
+    gain: status.gain,
+    positionSeconds: status.position,
+  };
+}
 
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const { id: serverId, serverUrl, fallbackUrls, username, auth: providerAuth, basicAuth } = server;
@@ -294,6 +307,21 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     getNowPlaying: async () => getNowPlaying(client),
   };
 
+  // Subsonic's jukebox is admin-granted per user: the endpoint exists on every
+  // Navidrome, and answers error 50 for a user without the role. Presence here
+  // therefore means "this server speaks jukebox", not "you may use it" — the
+  // output picker probes status() before it offers the row.
+  const jukebox = {
+    status: async () => toJukeboxState(await jukeboxApi.getStatus(client)),
+    setPlaylist: async (songIds: string[]) => toJukeboxState(await jukeboxApi.setPlaylist(client, songIds)),
+    start: async () => toJukeboxState(await jukeboxApi.start(client)),
+    stop: async () => toJukeboxState(await jukeboxApi.stop(client)),
+    skip: async (index: number, offsetSeconds?: number) =>
+      toJukeboxState(await jukeboxApi.skip(client, index, offsetSeconds)),
+    clear: async () => toJukeboxState(await jukeboxApi.clear(client)),
+    setGain: async (gain: number) => toJukeboxState(await jukeboxApi.setGain(client, gain)),
+  };
+
   const podcasts = {
     list: async (includeEpisodes?: boolean) => getPodcasts(client, { includeEpisodes }),
     newestEpisodes: async (count?: number) => getNewestPodcasts(client, count),
@@ -322,5 +350,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     queue,
     discovery,
     podcasts,
+    jukebox,
   };
 };

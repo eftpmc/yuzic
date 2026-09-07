@@ -26,7 +26,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatDuration } from '@/utils/formatDuration';
-import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
+import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
@@ -298,7 +298,7 @@ function LocalActionRow({ album }: { album: Album }) {
 function ExternalActionRow({ album }: { album: ExternalAlbum }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const canDownload = useAnyDownloaderConnected();
+  const canDownload = useAnyAlbumDownloaderConnected();
   const { playSongInCollection } = usePlayingActions();
   const albumStatus = useExternalAlbumStatus(album);
   const previews = useExternalAlbumPreviews(album);

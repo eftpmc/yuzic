@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@backpackapp-io/react-native-toast';
-import TrackPlayer from '@rntp/player';
+import { getBackend } from '@/features/player/activeBackend';
 import { useDispatch, useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import SettingsScreen from '../components/SettingsScreen';
@@ -11,6 +11,9 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsRow from '../components/SettingsRow';
 import StreamingQuality from './components/StreamingQuality';
+import Crossfade from './components/Crossfade';
+import Equalizer from './components/Equalizer';
+import EngineSmokeTest from './EngineSmokeTest';
 import {
   selectPreferredCodec,
   selectShowSleepTimer,
@@ -118,7 +121,10 @@ const PlayerSettings: React.FC = () => {
           style: 'destructive',
           onPress: () => {
             try {
-              TrackPlayer.clearCache();
+              // Through the backend, so this empties whichever player is
+              // actually holding the audio. Called on TrackPlayer directly it
+              // would clear rntp's cache while the engine kept its own.
+              getBackend().clearCache();
               toast.success(t('settings.player.clearCacheDone'));
             } catch {
               toast.error(t('common.error.unexpected'));
@@ -136,6 +142,10 @@ const PlayerSettings: React.FC = () => {
       <SettingsToggleGroup items={playerControlItems} />
       <SettingsToggleGroup items={autoplayItems} />
 
+      <SettingsCardHeader subtle title={t('settings.player.audio')} />
+      <Crossfade />
+      <Equalizer />
+
       <SettingsCardHeader subtle title={t('settings.player.cacheTitle')} />
       <SettingsCard>
         <SettingsRow
@@ -143,6 +153,8 @@ const PlayerSettings: React.FC = () => {
           onPress={clearStreamCache}
         />
       </SettingsCard>
+
+      <EngineSmokeTest />
     </SettingsScreen>
   );
 };

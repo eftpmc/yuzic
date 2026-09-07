@@ -263,7 +263,14 @@
       "equalizer": {
         "title": "Égaliseur",
         "reset": "Réinitialiser",
-        "presets": "Préréglages"
+        "presets": "Préréglages",
+        "flatSubtext": "Plat — l’égaliseur est entièrement contourné, sans aucun coût.",
+        "gainSubtext": "Gains jusqu’à {{limit}} dB. S’applique à tout ce que le lecteur produit.",
+        "presetFlat": "Plat",
+        "presetBass": "Graves",
+        "presetTreble": "Aigus",
+        "presetVocal": "Voix",
+        "presetLoudness": "Loudness"
       },
       "streamingQuality": {
         "wifi": "Qualité WiFi",
@@ -296,7 +303,16 @@
       "clearCacheTitle": "Vider le cache de lecture ?",
       "clearCacheBody": "Les flux conservés sur cet appareil seront téléchargés à nouveau à la prochaine lecture. Vos téléchargements ne sont pas affectés.",
       "clearCacheConfirm": "Vider",
-      "clearCacheDone": "Cache de lecture vidé"
+      "clearCacheDone": "Cache de lecture vidé",
+      "audio": "Audio",
+      "crossfade": {
+        "label": "Fondu enchaîné",
+        "off": "Désactivé",
+        "offSubtext": "Les morceaux s’enchaînent sans chevauchement.",
+        "onSubtext": "Chaque morceau se fond dans le suivant sur {{seconds}} secondes. Passer au suivant coupe net.",
+        "seguesLabel": "Fondre aussi les enchaînements",
+        "seguesSubtext": "Les albums dont les morceaux s’enchaînent sont coupés net à ces jonctions par défaut, pour qu’un mix continu le reste. Activez ceci pour tout fondre."
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -346,7 +362,8 @@
       "cancelFailed": "Impossible d'annuler ce téléchargement.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "lidarr": {
         "title": "Lidarr",
@@ -371,7 +388,14 @@
         "preferFreeSlot": "Préférer les slots libres",
         "preferFreeSlotSubtext": "Choisir les pairs dont le slot est libre plutôt qu'en file. Désactivez pour attraper des raretés même en attendant."
       },
-      "queueTitle": "File de téléchargement"
+      "queueTitle": "File de téléchargement",
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "Connexion",
+        "credentialsHelper": "L’URL de votre serveur SoulSync et sa clé d’API. Générez une clé dans SoulSync sous Settings → API Keys.",
+        "connectionFailed": "Échec de la connexion à SoulSync",
+        "disconnected": "Déconnecté de SoulSync."
+      }
     },
     "musicbrainz": {
       "external": "Données externes d'artiste et d'album",
@@ -709,6 +733,21 @@
     }
   },
   "playing": {
+    "output": {
+      "title": "Connexion",
+      "thisDevice": "Cet appareil",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "Recherche d’appareils…",
+      "noneFound": "Aucun appareil trouvé sur votre réseau.",
+      "addManually": "Ajouter un appareil manuellement",
+      "addManuallyTitle": "Ajouter un appareil",
+      "addManuallyBody": "Saisissez l’adresse IP de votre appareil DLNA",
+      "connectFailed": "Connexion à cet appareil impossible.",
+      "notFoundAtAddress": "Aucun appareil DLNA trouvé à cette adresse.",
+      "playOnServer": "Lire sur {{server}}",
+      "jukeboxFailed": "Impossible de démarrer la lecture sur le serveur."
+    },
     "queue": {
       "title": "File d'attente",
       "playingFromAlbum": "Lecture depuis {{album}}",
@@ -873,8 +912,19 @@
           "request_failed": "Soulseek est injoignable. Vérifiez le serveur et réessayez.",
           "search_failed": "Soulseek n'a pas pu lancer la recherche.",
           "search_timeout": "La recherche Soulseek a expiré."
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync exige une clé d’API.",
+          "INVALID_KEY": "SoulSync a refusé cette clé d’API.",
+          "BAD_REQUEST": "SoulSync n’a pas pu lire cette demande.",
+          "BAD_RESPONSE": "Cette adresse n’a pas répondu comme SoulSync. Vérifiez l’URL.",
+          "HTTP_ERROR": "Impossible de joindre SoulSync. Vérifiez le serveur et réessayez.",
+          "NOT_AVAILABLE": "SoulSync n’a aucune connexion Soulseek configurée."
         }
-      }
+      },
+      "soulsyncDesc": "Chercher sur Soulseek via SoulSync",
+      "addedToSoulsync": "Demandé à SoulSync.",
+      "addedTrackToSoulsync": "Demandé à SoulSync."
     },
     "header": {
       "songs": "{{count}} morceau",
@@ -1140,6 +1190,12 @@
     },
     "topTrack": {
       "playPreview": "Écouter un extrait de {{title}}"
+    },
+    "equalizer": {
+      "band": "{{frequency}} hertz",
+      "reset": "Réinitialiser l’égaliseur",
+      "preset": "Préréglage d’égaliseur {{name}}",
+      "decibels": "{{gain}} décibels"
     }
   },
   "tabs": {

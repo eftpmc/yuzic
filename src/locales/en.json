@@ -263,7 +263,14 @@
       "equalizer": {
         "title": "Equalizer",
         "reset": "Reset",
-        "presets": "Presets"
+        "presets": "Presets",
+        "flatSubtext": "Flat — the equalizer is bypassed entirely, so it costs nothing.",
+        "gainSubtext": "Gains up to {{limit}} dB. Applies to everything the player outputs.",
+        "presetFlat": "Flat",
+        "presetBass": "Bass boost",
+        "presetTreble": "Treble boost",
+        "presetVocal": "Vocal",
+        "presetLoudness": "Loudness"
       },
       "streamingQuality": {
         "wifi": "WiFi Quality",
@@ -296,7 +303,16 @@
       "clearCacheTitle": "Clear playback cache?",
       "clearCacheBody": "Streamed audio held on this device will be fetched again next time you play it. Your downloads are not affected.",
       "clearCacheConfirm": "Clear",
-      "clearCacheDone": "Playback cache cleared"
+      "clearCacheDone": "Playback cache cleared",
+      "audio": "Audio",
+      "crossfade": {
+        "label": "Crossfade",
+        "off": "Off",
+        "offSubtext": "Tracks follow one another with no overlap.",
+        "onSubtext": "Each track fades into the next over {{seconds}} seconds. Skipping still cuts straight across.",
+        "seguesLabel": "Fade through segues",
+        "seguesSubtext": "Albums that run tracks together are hard-cut at those joins by default, so a continuous mix stays continuous. Turn this on to fade everything regardless."
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -354,7 +370,8 @@
       "cancelFailed": "Couldn't cancel that download.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "queueTitle": "Download Queue",
       "lidarr": {
@@ -379,6 +396,13 @@
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "Prefer Free Upload Slot",
         "preferFreeSlotSubtext": "Pick peers whose slot is free over ones with a queue. Turn off to catch rare releases even if it means waiting."
+      },
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "Connection",
+        "credentialsHelper": "Your SoulSync server URL and API key. Generate a key in SoulSync under Settings → API Keys.",
+        "connectionFailed": "SoulSync connection failed",
+        "disconnected": "Disconnected from SoulSync."
       }
     },
     "deezer": {
@@ -711,6 +735,21 @@
     }
   },
   "playing": {
+    "output": {
+      "title": "Connect",
+      "thisDevice": "This device",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "Searching for devices…",
+      "noneFound": "No devices found on your network.",
+      "addManually": "Add device manually",
+      "addManuallyTitle": "Add device",
+      "addManuallyBody": "Enter the IP address of your DLNA device",
+      "connectFailed": "Could not connect to that device.",
+      "notFoundAtAddress": "No DLNA device found at that address.",
+      "playOnServer": "Play on {{server}}",
+      "jukeboxFailed": "Could not start playback on the server."
+    },
     "queue": {
       "title": "Queue",
       "playingFromAlbum": "Playing from {{album}}",
@@ -875,8 +914,19 @@
           "request_failed": "Could not reach Soulseek. Check the server and try again.",
           "search_failed": "Soulseek couldn't start the search.",
           "search_timeout": "The Soulseek search timed out."
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync needs an API key.",
+          "INVALID_KEY": "SoulSync rejected this API key.",
+          "BAD_REQUEST": "SoulSync could not read that request.",
+          "BAD_RESPONSE": "That address didn't answer like SoulSync. Check the URL.",
+          "HTTP_ERROR": "Could not reach SoulSync. Check the server and try again.",
+          "NOT_AVAILABLE": "SoulSync has no Soulseek connection configured."
         }
-      }
+      },
+      "soulsyncDesc": "Search Soulseek through SoulSync",
+      "addedToSoulsync": "Requested from SoulSync.",
+      "addedTrackToSoulsync": "Requested from SoulSync."
     },
     "header": {
       "songs": "{{count}} song",
@@ -1130,6 +1180,12 @@
     },
     "topTrack": {
       "playPreview": "Play a preview of {{title}}"
+    },
+    "equalizer": {
+      "band": "{{frequency}} hertz",
+      "reset": "Reset equalizer to flat",
+      "preset": "{{name}} equalizer preset",
+      "decibels": "{{gain}} decibels"
     }
   },
   "tabs": {

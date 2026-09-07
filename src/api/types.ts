@@ -108,6 +108,39 @@ export interface ApiAdapter {
   discovery?: DiscoveryApi;
   /** Podcast channels + episodes managed by the server. */
   podcasts?: PodcastsApi;
+  /**
+   * Playback on the machine running the server rather than on this device.
+   * Present only where the server exposes it — and even then the *user* may
+   * not be allowed to drive it, so callers probe `status()` before offering
+   * it rather than trusting presence alone.
+   */
+  jukebox?: JukeboxApi;
+}
+
+export type JukeboxState = {
+  /** Index into the jukebox's own playlist, not the app's queue. */
+  currentIndex: number;
+  playing: boolean;
+  /** 0.0–1.0. */
+  gain: number;
+  /** Seconds into the current track. Servers that omit it report 0. */
+  positionSeconds: number;
+};
+
+/**
+ * Server-side playback. Every call returns the resulting state, so a caller
+ * that drives the jukebox never has to follow a command with a read.
+ */
+export interface JukeboxApi {
+  /** Throws when the server has the feature but this user may not use it. */
+  status(): Promise<JukeboxState>;
+  setPlaylist(songIds: string[]): Promise<JukeboxState>;
+  start(): Promise<JukeboxState>;
+  stop(): Promise<JukeboxState>;
+  /** Jump to `index` in the jukebox playlist, optionally `offsetSeconds` in. */
+  skip(index: number, offsetSeconds?: number): Promise<JukeboxState>;
+  clear(): Promise<JukeboxState>;
+  setGain(gain: number): Promise<JukeboxState>;
 }
 
 export type PodcastEpisodeStatus = 'new' | 'downloading' | 'completed' | 'skipped' | 'error';

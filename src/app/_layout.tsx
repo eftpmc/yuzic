@@ -11,6 +11,7 @@ import 'react-native-reanimated';
 import { enableFreeze } from 'react-native-screens';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { CastProvider } from '@/contexts/CastContext';
+import { PlaybackSinkProvider } from '@/contexts/PlaybackSinkContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { SongActionSheetProvider } from '@/contexts/SongActionSheetContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
@@ -202,6 +203,7 @@ function AppShell() {
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
         <CastProvider>
+        <PlaybackSinkProvider>
         <PlayingProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
@@ -251,6 +253,7 @@ function AppShell() {
               </ErrorBoundary>
             </GestureHandlerRootView>
         </PlayingProvider>
+        </PlaybackSinkProvider>
         </CastProvider>
       </DownloadProvider>
     </ThemeProvider>
