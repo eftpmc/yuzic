@@ -1,5 +1,6 @@
 import type { BrowseNode } from 'yuzic-engine';
 import type { BrowseCategory, BrowseItem } from './browse';
+import { isFlat } from './audioSettings';
 import type { MediaItem } from './mediaItem';
 import type { PlayerBackend, BackendEvent } from './backend';
 import {
@@ -239,6 +240,21 @@ export function createEngineBackend(): PlayerBackend {
       fire('sleepAfter', async () => load().sleepAfter(seconds));
     },
     cancelSleepTimer() { fire('cancelSleep', async () => load().cancelSleep()); },
+
+    setCrossfade(options) {
+      fire('setCrossfade', async () => load().setCrossfade(options));
+    },
+
+    /**
+     * Flat is sent as an empty array rather than ten zeroed bands, so the
+     * engine can bypass the EQ unit outright instead of running a filter chain
+     * that multiplies by one.
+     */
+    setEqualizer(bands) {
+      fire('setEqualizer', async () =>
+        load().setEqualizer(isFlat(bands) ? [] : bands),
+      );
+    },
 
     clearCache() { fire('clearCache', async () => load().clearCache()); },
 

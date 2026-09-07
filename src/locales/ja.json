@@ -262,7 +262,14 @@
       "equalizer": {
         "title": "イコライザー",
         "reset": "リセット",
-        "presets": "プリセット"
+        "presets": "プリセット",
+        "flatSubtext": "フラット — イコライザーは完全にバイパスされ、負荷はありません。",
+        "gainSubtext": "ゲインは最大{{limit}} dBです。プレーヤーの出力すべてに適用されます。",
+        "presetFlat": "フラット",
+        "presetBass": "低音強調",
+        "presetTreble": "高音強調",
+        "presetVocal": "ボーカル",
+        "presetLoudness": "ラウドネス"
       },
       "streamingQuality": {
         "wifi": "WiFi音質",
@@ -295,7 +302,16 @@
       "clearCacheTitle": "再生キャッシュを削除しますか？",
       "clearCacheBody": "この端末に保持されたストリーム音声は、次回再生時に再取得されます。ダウンロード済みの曲には影響しません。",
       "clearCacheConfirm": "削除",
-      "clearCacheDone": "再生キャッシュを削除しました"
+      "clearCacheDone": "再生キャッシュを削除しました",
+      "audio": "オーディオ",
+      "crossfade": {
+        "label": "クロスフェード",
+        "off": "オフ",
+        "offSubtext": "曲は重ならずにそのまま次へ進みます。",
+        "onSubtext": "各曲が{{seconds}}秒かけて次の曲へフェードします。スキップした場合はそのまま切り替わります。",
+        "seguesLabel": "連続した曲もフェードする",
+        "seguesSubtext": "曲が途切れなくつながるアルバムは、既定ではそのつなぎ目で切り替えるため、連続したミックスはそのまま保たれます。すべてフェードするにはオンにしてください。"
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -1170,6 +1186,12 @@
     },
     "topTrack": {
       "playPreview": "{{title}}の試聴を再生"
+    },
+    "equalizer": {
+      "band": "{{frequency}} ヘルツ",
+      "reset": "イコライザーをフラットに戻す",
+      "preset": "{{name}} イコライザープリセット",
+      "decibels": "{{gain}} デシベル"
     }
   },
   "tabs": {

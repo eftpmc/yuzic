@@ -262,7 +262,14 @@
       "equalizer": {
         "title": "均衡器",
         "reset": "重置",
-        "presets": "预设"
+        "presets": "预设",
+        "flatSubtext": "平坦 — 均衡器已完全绕过，不占用任何资源。",
+        "gainSubtext": "增益最高 {{limit}} dB，作用于播放器的全部输出。",
+        "presetFlat": "平坦",
+        "presetBass": "低音增强",
+        "presetTreble": "高音增强",
+        "presetVocal": "人声",
+        "presetLoudness": "响度"
       },
       "streamingQuality": {
         "wifi": "WiFi音质",
@@ -295,7 +302,16 @@
       "clearCacheTitle": "清除播放缓存？",
       "clearCacheBody": "设备上保存的流媒体音频将在下次播放时重新获取。已下载的内容不受影响。",
       "clearCacheConfirm": "清除",
-      "clearCacheDone": "已清除播放缓存"
+      "clearCacheDone": "已清除播放缓存",
+      "audio": "音频",
+      "crossfade": {
+        "label": "交叉淡入淡出",
+        "off": "关闭",
+        "offSubtext": "曲目之间直接衔接，不重叠。",
+        "onSubtext": "每首曲目在 {{seconds}} 秒内淡入下一首。手动切歌仍会直接切换。",
+        "seguesLabel": "连贯曲目也淡入淡出",
+        "seguesSubtext": "默认情况下，曲目相连的专辑会在衔接处直接切换，以保持整张混音的连贯。开启后将对所有曲目淡入淡出。"
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -1170,6 +1186,12 @@
     },
     "topTrack": {
       "playPreview": "播放{{title}}的试听"
+    },
+    "equalizer": {
+      "band": "{{frequency}} 赫兹",
+      "reset": "将均衡器重置为平坦",
+      "preset": "{{name}} 均衡器预设",
+      "decibels": "{{gain}} 分贝"
     }
   },
   "tabs": {

@@ -1,4 +1,5 @@
 import type { BrowseCategory } from './browse';
+import type { CrossfadeSettings, EqualizerBand } from './audioSettings';
 import type { MediaItem } from './mediaItem';
 
 /**
@@ -50,6 +51,18 @@ export interface PlayerBackend {
   setVolume(volume: number): void;
   setPlaybackSpeed(speed: number): void;
   setRepeatMode(mode: 'off' | 'track' | 'queue'): void;
+
+  /**
+   * Overlap consecutive tracks, or `null` for none.
+   *
+   * Not every player can do this — it needs two sources playing at once — so
+   * it is the one method here whose absence is a feature being unavailable
+   * rather than a platform being incomplete.
+   */
+  setCrossfade(options: CrossfadeSettings | null): void;
+
+  /** Bands in ascending frequency order. An empty array is flat. */
+  setEqualizer(bands: EqualizerBand[]): void;
 
   // State, answered synchronously.
   //

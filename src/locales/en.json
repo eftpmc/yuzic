@@ -263,7 +263,14 @@
       "equalizer": {
         "title": "Equalizer",
         "reset": "Reset",
-        "presets": "Presets"
+        "presets": "Presets",
+        "flatSubtext": "Flat — the equalizer is bypassed entirely, so it costs nothing.",
+        "gainSubtext": "Gains up to {{limit}} dB. Applies to everything the player outputs.",
+        "presetFlat": "Flat",
+        "presetBass": "Bass boost",
+        "presetTreble": "Treble boost",
+        "presetVocal": "Vocal",
+        "presetLoudness": "Loudness"
       },
       "streamingQuality": {
         "wifi": "WiFi Quality",
@@ -296,7 +303,16 @@
       "clearCacheTitle": "Clear playback cache?",
       "clearCacheBody": "Streamed audio held on this device will be fetched again next time you play it. Your downloads are not affected.",
       "clearCacheConfirm": "Clear",
-      "clearCacheDone": "Playback cache cleared"
+      "clearCacheDone": "Playback cache cleared",
+      "audio": "Audio",
+      "crossfade": {
+        "label": "Crossfade",
+        "off": "Off",
+        "offSubtext": "Tracks follow one another with no overlap.",
+        "onSubtext": "Each track fades into the next over {{seconds}} seconds. Skipping still cuts straight across.",
+        "seguesLabel": "Fade through segues",
+        "seguesSubtext": "Albums that run tracks together are hard-cut at those joins by default, so a continuous mix stays continuous. Turn this on to fade everything regardless."
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -1164,6 +1180,12 @@
     },
     "topTrack": {
       "playPreview": "Play a preview of {{title}}"
+    },
+    "equalizer": {
+      "band": "{{frequency}} hertz",
+      "reset": "Reset equalizer to flat",
+      "preset": "{{name}} equalizer preset",
+      "decibels": "{{gain}} decibels"
     }
   },
   "tabs": {

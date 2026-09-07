@@ -263,7 +263,14 @@
       "equalizer": {
         "title": "Égaliseur",
         "reset": "Réinitialiser",
-        "presets": "Préréglages"
+        "presets": "Préréglages",
+        "flatSubtext": "Plat — l’égaliseur est entièrement contourné, sans aucun coût.",
+        "gainSubtext": "Gains jusqu’à {{limit}} dB. S’applique à tout ce que le lecteur produit.",
+        "presetFlat": "Plat",
+        "presetBass": "Graves",
+        "presetTreble": "Aigus",
+        "presetVocal": "Voix",
+        "presetLoudness": "Loudness"
       },
       "streamingQuality": {
         "wifi": "Qualité WiFi",
@@ -296,7 +303,16 @@
       "clearCacheTitle": "Vider le cache de lecture ?",
       "clearCacheBody": "Les flux conservés sur cet appareil seront téléchargés à nouveau à la prochaine lecture. Vos téléchargements ne sont pas affectés.",
       "clearCacheConfirm": "Vider",
-      "clearCacheDone": "Cache de lecture vidé"
+      "clearCacheDone": "Cache de lecture vidé",
+      "audio": "Audio",
+      "crossfade": {
+        "label": "Fondu enchaîné",
+        "off": "Désactivé",
+        "offSubtext": "Les morceaux s’enchaînent sans chevauchement.",
+        "onSubtext": "Chaque morceau se fond dans le suivant sur {{seconds}} secondes. Passer au suivant coupe net.",
+        "seguesLabel": "Fondre aussi les enchaînements",
+        "seguesSubtext": "Les albums dont les morceaux s’enchaînent sont coupés net à ces jonctions par défaut, pour qu’un mix continu le reste. Activez ceci pour tout fondre."
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -1174,6 +1190,12 @@
     },
     "topTrack": {
       "playPreview": "Écouter un extrait de {{title}}"
+    },
+    "equalizer": {
+      "band": "{{frequency}} hertz",
+      "reset": "Réinitialiser l’égaliseur",
+      "preset": "Préréglage d’égaliseur {{name}}",
+      "decibels": "{{gain}} décibels"
     }
   },
   "tabs": {

@@ -68,6 +68,14 @@ beforeEach(() => {
   mockCalls.length = 0;
   mockListener = null;
   mockFailing = null;
+  // Several tests here make calls fail on purpose, and `fire` warns on every
+  // failure so a release build leaves a trace. Silenced rather than tolerated:
+  // expected output that looks like a problem trains you to ignore the run.
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe('the queue the app can read straight away', () => {

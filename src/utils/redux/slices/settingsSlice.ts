@@ -146,6 +146,16 @@ export interface SettingsState {
   showJumpButtons: boolean;
   showVolumeSlider: boolean;
   autoplayEnabled: boolean;
+  /**
+   * Seconds of overlap between tracks. `0` is off, which is the default —
+   * crossfade is a taste, not an improvement, and a player that fades by
+   * default is one that has decided for you.
+   */
+  crossfadeSeconds: number;
+  /** Fade through segues too, rather than hard-cutting where they join. */
+  crossfadeAlways: boolean;
+  /** Per-band gains in dB, in `EQ_FREQUENCIES` order. All zero is flat. */
+  equalizerGains: number[];
   hapticsEnabled: boolean;
   /** Float the tab dock over the content behind a blur instead of having it
    * take layout space. Off by default: it only shows on screens long enough
@@ -208,6 +218,9 @@ const initialState: SettingsState = {
   showJumpButtons: false,
   showVolumeSlider: false,
   autoplayEnabled: false,
+  crossfadeSeconds: 0,
+  crossfadeAlways: false,
+  equalizerGains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   hapticsEnabled: true,
   translucentDock: false,
   respectReducedMotion: true,
@@ -359,6 +372,15 @@ const settingsSlice = createSlice({
     setRespectReducedMotion(state, action: PayloadAction<boolean>) {
       state.respectReducedMotion = action.payload;
     },
+    setCrossfadeSeconds(state, action: PayloadAction<number>) {
+      state.crossfadeSeconds = action.payload;
+    },
+    setCrossfadeAlways(state, action: PayloadAction<boolean>) {
+      state.crossfadeAlways = action.payload;
+    },
+    setEqualizerGains(state, action: PayloadAction<number[]>) {
+      state.equalizerGains = action.payload;
+    },
     setAutoplayEnabled(state, action: PayloadAction<boolean>) {
       state.autoplayEnabled = action.payload;
     },
@@ -415,6 +437,9 @@ export const {
   setRespectReducedMotion,
   setShowPlaybackSpeed,
   setAutoplayEnabled,
+  setCrossfadeSeconds,
+  setCrossfadeAlways,
+  setEqualizerGains,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

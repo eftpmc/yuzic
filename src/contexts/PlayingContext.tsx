@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import type { MediaItem } from '../features/player/mediaItem';
 import { getBackend } from '@/features/player/activeBackend';
+import { presetToBands } from '@/features/player/audioSettings';
 import {
   usePlayerActiveItem,
   usePlayerIsPlaying,
@@ -34,6 +35,9 @@ import { useSelector } from 'react-redux';
 import {
   selectPreferredCodec,
   selectAutoplayEnabled,
+  selectCrossfadeSeconds,
+  selectCrossfadeAlways,
+  selectEqualizerGains,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
 import { useStreamQuality } from '@/hooks/useStreamQuality';
@@ -250,6 +254,26 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const preferredCodecRef = useRef(preferredCodec);
   preferredCodecRef.current = preferredCodec;
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
+
+  // Selected as primitives and rebuilt here rather than selected as objects.
+  // `useSelector` compares by reference, so a selector that constructs its
+  // result hands back a new value every render and re-runs the effects below
+  // forever.
+  const crossfadeSeconds = useSelector(selectCrossfadeSeconds);
+  const crossfadeAlways = useSelector(selectCrossfadeAlways);
+  const equalizerGains = useSelector(selectEqualizerGains);
+  const crossfade = useMemo(
+    () =>
+      crossfadeSeconds > 0
+        ? {
+            durationSec: crossfadeSeconds,
+            mode: crossfadeAlways ? ('always' as const) : ('gapless-aware' as const),
+            skipIsImmediate: true,
+          }
+        : null,
+    [crossfadeSeconds, crossfadeAlways],
+  );
+  const equalizerBands = useMemo(() => presetToBands(equalizerGains), [equalizerGains]);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
   const audiomuseConfig = useSelector(selectAudiomuseConfig);
 
@@ -495,6 +519,24 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     getBackend().setCommands();
   }, []);
+
+  /**
+   * Push the audio settings down whenever they change.
+   *
+   * Separate from setup so that changing a slider takes effect immediately
+   * rather than at the next launch — an equalizer you have to restart the app
+   * to hear is one people conclude is broken.
+   *
+   * Both are safe to re-send: the engine bypasses a flat EQ and a null
+   * crossfade outright, so the steady state costs nothing.
+   */
+  useEffect(() => {
+    getBackend().setCrossfade(crossfade);
+  }, [crossfade]);
+
+  useEffect(() => {
+    getBackend().setEqualizer(equalizerBands);
+  }, [equalizerBands]);
 
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
 

@@ -11,6 +11,8 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsRow from '../components/SettingsRow';
 import StreamingQuality from './components/StreamingQuality';
+import Crossfade from './components/Crossfade';
+import Equalizer from './components/Equalizer';
 import EngineSmokeTest from './EngineSmokeTest';
 import {
   selectPreferredCodec,
@@ -139,6 +141,10 @@ const PlayerSettings: React.FC = () => {
       {supportsOpus && <SettingsToggleGroup items={opusItems} />}
       <SettingsToggleGroup items={playerControlItems} />
       <SettingsToggleGroup items={autoplayItems} />
+
+      <SettingsCardHeader subtle title={t('settings.player.audio')} />
+      <Crossfade />
+      <Equalizer />
 
       <SettingsCardHeader subtle title={t('settings.player.cacheTitle')} />
       <SettingsCard>
