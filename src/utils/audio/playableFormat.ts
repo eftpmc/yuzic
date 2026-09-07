@@ -10,10 +10,19 @@ import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
  * and the failure is total rather than degraded: the reader cannot open the
  * stream, so nothing comes out.
  *
- * That is not hypothetical. An Ogg Vorbis album on a Navidrome server plays
- * on every quality except Original, where iOS's Core Audio has no Vorbis
- * decoder and the track fails with "Unable to play track" — one album
- * unplayable while the rest of the library is fine.
+ * That is not hypothetical. An Ogg Vorbis album on a Navidrome server played
+ * on every quality except Original, where Core Audio has no Vorbis decoder and
+ * the track failed with "Unable to play track" — one album unplayable while
+ * the rest of the library was fine. The engine now vendors libvorbis and
+ * decodes those itself, so Vorbis is on the decodable list and the transcode
+ * is no longer needed for it.
+ *
+ * Opus stays off the list: nothing decodes it here yet. The residual gap is
+ * Opus inside a `.ogg` rather than a `.opus`, which is unusual but legal —
+ * the extension says Vorbis, so this leaves it at Original, the engine's
+ * sniff correctly declines to treat it as Vorbis, and Core Audio cannot open
+ * it either. That file fails where it used to transcode. Narrow enough to
+ * accept knowingly rather than transcode every Vorbis library to avoid.
  */
 
 /**
@@ -37,6 +46,9 @@ const IOS_DECODABLE = [
   'wav', 'wave', 'x-wav',
   'aif', 'aiff', 'x-aiff',
   'caf',
+  // Not Core Audio's — the engine vendors libvorbis and decodes these itself,
+  // which is why a self-hosted Vorbis library can stay on Original.
+  'ogg', 'vorbis', 'oga',
 ];
 
 /** The format token from a MIME type or a filename, lowercased. */

@@ -25,14 +25,16 @@ describe('formatOf', () => {
 
 describe('playableQuality', () => {
   /**
-   * The reported bug: an Ogg Vorbis album played on every quality except
-   * Original, where iOS has no decoder and the track failed outright.
+   * Vorbis used to be transcoded here. The engine vendors libvorbis now, so
+   * the file the bug was reported against stays at Original and is decoded on
+   * the device — which is the whole point of choosing Original.
    */
-  it('transcodes an Ogg on iOS rather than failing to play it', () => {
-    expect(playableQuality({ mimeType: 'audio/ogg' }, 'original', 'ios')).toBe('high');
+  it('keeps Ogg Vorbis at original, because the engine decodes it', () => {
+    expect(playableQuality({ mimeType: 'audio/ogg' }, 'original', 'ios')).toBe('original');
+    expect(playableQuality({ filePath: 'a/b.ogg' }, 'original', 'ios')).toBe('original');
   });
 
-  it('leaves Ogg alone on Android, which can decode it', () => {
+  it('leaves Ogg alone on Android too', () => {
     expect(playableQuality({ mimeType: 'audio/ogg' }, 'original', 'android')).toBe('original');
   });
 
@@ -42,9 +44,10 @@ describe('playableQuality', () => {
     }
   });
 
-  /** Opus is the other common one Core Audio cannot open. */
+  /** Opus is still undecoded here — libvorbis is not libopus. */
   it('transcodes Opus on iOS', () => {
     expect(playableQuality({ filePath: 'a/b.opus' }, 'original', 'ios')).toBe('high');
+    expect(playableQuality({ mimeType: 'audio/opus' }, 'original', 'ios')).toBe('high');
   });
 
   /**
@@ -53,7 +56,7 @@ describe('playableQuality', () => {
    */
   it('never changes a quality that already transcodes', () => {
     for (const quality of ['low', 'medium', 'high'] as const) {
-      expect(playableQuality({ mimeType: 'audio/ogg' }, quality, 'ios')).toBe(quality);
+      expect(playableQuality({ mimeType: 'audio/opus' }, quality, 'ios')).toBe(quality);
     }
   });
 
