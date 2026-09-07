@@ -11,6 +11,7 @@ import React, {
 import type { MediaItem } from '@rntp/player';
 import { getBackend } from '@/features/player/activeBackend';
 import {
+  useBackendKind,
   usePlayerActiveItem,
   usePlayerIsPlaying,
   usePlayerProgress,
@@ -153,7 +154,17 @@ const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, du
 // need to re-render for. Only the queue list itself reads this.
 const PlayingQueueVersionContext = createContext<number>(0);
 
-let playerWasSetup = false;
+/**
+ * Which players have been set up, not whether *a* player has.
+ *
+ * This was a boolean, and switching backends then left the incoming one
+ * un-set-up: the flag was already true from the outgoing player, so `setup()`
+ * never ran on the new one. It claims the audio session and subscribes the
+ * event listener, so without it the engine accepted a queue, reported nothing,
+ * and sat silent — which reads as "the engine is broken" rather than "the
+ * engine was never started".
+ */
+const playersSetUp = new Set<string>();
 
 export const usePlayingState = () => {
   const ctx = useContext(PlayingStateContext);
@@ -212,6 +223,7 @@ const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
+  const backendKind = useBackendKind();
   const isPlaying = usePlayerIsPlaying();
   const activeMediaItem = usePlayerActiveItem();
   const api = useApi();
@@ -462,20 +474,22 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useCarPlayBrowseTree();
 
+  // Re-runs when the player is swapped, which is the point: the incoming one
+  // has not been set up, however long the outgoing one had been running.
   useEffect(() => {
     // The options each player needs differ enough that they belong with the
     // player rather than here — see createRntpBackend and createEngineBackend.
-    if (!playerWasSetup) {
+    if (!playersSetUp.has(backendKind)) {
       try {
         getBackend().setup();
-        playerWasSetup = true;
+        playersSetUp.add(backendKind);
       } catch (err) {
         console.warn('player setup failed', err);
       }
     }
 
     getBackend().setCommands();
-  }, []);
+  }, [backendKind]);
 
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
 
