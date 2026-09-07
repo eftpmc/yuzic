@@ -94,7 +94,9 @@ export function createEngineBackend(): PlayerBackend {
           unsubscribeEngine = api.addListener((event: Parameters<typeof applyEvent>[1]) => {
             shadow = applyEvent(shadow, event);
             if (event.type === 'stateChange') {
-              emit({ type: 'stateChange', playing: event.state === 'playing' });
+              // Only bufferingness crosses: see BackendEvent for why the two
+              // players cannot agree about a "playing" flag.
+              emit({ type: 'stateChange', buffering: event.state === 'buffering' });
             }
             if (event.type === 'trackChange') {
               emit({ type: 'trackChange', index: event.index });
@@ -178,8 +180,10 @@ export function createEngineBackend(): PlayerBackend {
 
     getProgress() { return toRntpProgress(shadow.progress); },
     getQueue() { return shadow.queue; },
-    getActiveMediaItemIndex() { return shadow.activeIndex; },
-    getActiveMediaItem() { return shadow.queue[shadow.activeIndex]; },
+    // Null on an empty queue, matching rntp: "nothing is active" and "the
+    // first track" are different answers, and the app branches on it.
+    getActiveMediaItemIndex() { return shadow.queue.length > 0 ? shadow.activeIndex : null; },
+    getActiveMediaItem() { return shadow.queue[shadow.activeIndex] ?? null; },
 
     sleepAfterTime(seconds) {
       // The engine picks its own fade length and explains why in SleepTimer;

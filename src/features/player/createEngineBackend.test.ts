@@ -118,7 +118,10 @@ describe('the queue the app can read straight away', () => {
     backend.setMediaItems([item('a')], 0);
     backend.clear();
     expect(backend.getQueue()).toEqual([]);
-    expect(backend.getActiveMediaItem()).toBeUndefined();
+    // Null, not undefined, and not index 0 — "nothing is active" is a distinct
+    // answer that the app branches on, and rntp says it the same way.
+    expect(backend.getActiveMediaItem()).toBeNull();
+    expect(backend.getActiveMediaItemIndex()).toBeNull();
   });
 });
 

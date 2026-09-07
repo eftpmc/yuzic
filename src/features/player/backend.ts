@@ -49,11 +49,15 @@ export interface PlayerBackend {
   setPlaybackSpeed(speed: number): void;
   setRepeatMode(mode: 'off' | 'track' | 'queue'): void;
 
-  // State, answered synchronously
+  // State, answered synchronously.
+  //
+  // `null` from the two active-item getters means *nothing is active*, which
+  // is not index 0 — the app already distinguishes them, falling back to
+  // finding the track by id when the player has no opinion yet.
   getProgress(): { position: number; duration: number; buffered: number };
   getQueue(): MediaItem[];
-  getActiveMediaItemIndex(): number;
-  getActiveMediaItem(): MediaItem | undefined;
+  getActiveMediaItemIndex(): number | null;
+  getActiveMediaItem(): MediaItem | null;
 
   // Sleep timer
   sleepAfterTime(seconds: number, options?: { fadeOutSeconds?: number }): void;
@@ -69,12 +73,18 @@ export interface PlayerBackend {
 /**
  * The events the app reacts to, which is fewer than either player emits.
  *
- * `PlayingContext` subscribes to exactly three — error, state, track change —
- * and derives everything else from polling the getters. Narrowing to that
- * keeps the two backends from having to agree about events neither is asked
- * about.
+ * `PlayingContext` subscribes to exactly three, and what it takes from each is
+ * narrower still — the state event is read for one thing, whether the player
+ * is buffering. So that is what this carries.
+ *
+ * **Not playing-ness.** rntp has no "playing" state at all: its `PlaybackState`
+ * is idle / ready / buffering / ended / error, and whether audio is coming out
+ * is a separate question answered by `useIsPlaying`. Putting a `playing` flag
+ * here would mean inventing one on the rntp side and having the two backends
+ * disagree about a field the app does not read. Playing-ness belongs to the
+ * hooks, where both can answer it honestly.
  */
 export type BackendEvent =
   | { type: 'error'; code?: string; message: string }
-  | { type: 'stateChange'; playing: boolean }
+  | { type: 'stateChange'; buffering: boolean }
   | { type: 'trackChange'; index: number };
