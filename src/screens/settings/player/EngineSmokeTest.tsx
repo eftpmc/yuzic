@@ -124,7 +124,7 @@ const EngineSmokeTest: React.FC = () => {
    * the target — progress reported at the *old* position is the engine not
    * having moved yet, and counting it would flatter the number.
    */
-  const seekProbe = useCallback(async () => {
+  const seekProbe = useCallback(async (quality: 'original' | 'high') => {
     setLog([]);
     try {
       const track = tracks[0];
@@ -132,7 +132,15 @@ const EngineSmokeTest: React.FC = () => {
         say('no track in the library to seek');
         return;
       }
-      const url = api.songs.buildStreamUrl(track.id, 'high');
+      // Which transport this exercises is decided here and nowhere else, which
+      // is exactly how it is easy to get wrong. `original` sends format=raw:
+      // the server serves the file, honours `Range`, and a seek is a ranged
+      // GET. Every other quality sends format/maxBitRate, so the server
+      // transcodes, refuses ranges, and a forward seek is a reconnection with
+      // `timeOffset` — a different code path with a different cost. See
+      // docs/architecture.md §10 in the engine.
+      const url = api.songs.buildStreamUrl(track.id, quality);
+      say(quality === 'original' ? 'transport: direct (ranged)' : 'transport: transcoded (320k)');
       if (!url) {
         say('no stream url — is a server connected?');
         return;
@@ -322,7 +330,8 @@ const EngineSmokeTest: React.FC = () => {
       <SettingsCard>
         <SettingsRow label="Probe the native module" onPress={probe} />
         <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
-        <SettingsRow label="Time a seek into unfetched audio" onPress={seekProbe} />
+        <SettingsRow label="Seek: direct stream (ranged)" onPress={() => seekProbe('original')} />
+        <SettingsRow label="Seek: transcoded stream (320k)" onPress={() => seekProbe('high')} />
         <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
