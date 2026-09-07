@@ -58,6 +58,7 @@ import {
   playableSongsOnly,
 } from './playableMedia';
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
+import { buildRestoredQueue } from './restoreQueue';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { useQueueSync } from '@/hooks/useQueueSync';
@@ -352,28 +353,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (queueRef.current.length > 0) return; // Something already playing — don't ambush.
     if (libraryTracks.length === 0) return; // Wait for the library to hydrate.
 
-    const byId = new Map(libraryTracks.map((t) => [t.id, t as unknown as Song]));
-    const restored = persistedQueueIds
-      .map((id) => byId.get(id))
-      .filter((s): s is Song => Boolean(s))
-      .map((s) => ({ ...s, streamUrl: '' })); // playSongs will re-derive.
+    const { queue: restored, index: idx } = buildRestoredQueue({
+      persistedIds: persistedQueueIds,
+      persistedIndex: persistedCurrentIndex,
+      libraryTracks: libraryTracks as unknown as Song[],
+      resolve: resolvePlayableSongRef.current,
+    });
     if (restored.length === 0) {
       hasAutoRestoredRef.current = true;
       return;
     }
     hasAutoRestoredRef.current = true;
 
-    // The filter above can drop tracks the library no longer has, which moves
-    // every song after them one slot up. Find the remembered song by id and
-    // follow it; the positional fallback is only for the case where the song
-    // itself is one of the ones that went missing.
-    const persistedCurrentId = persistedQueueIds[persistedCurrentIndex];
-    const foundIdx = persistedCurrentId
-      ? restored.findIndex((s) => s.id === persistedCurrentId)
-      : -1;
-    const idx = foundIdx >= 0
-      ? foundIdx
-      : Math.min(persistedCurrentIndex, restored.length - 1);
     // Restore modes before loading the queue — getBackend().setRepeatMode
     // inside loadQueue reads from repeatModeRef, which follows setState.
     setRepeatMode(persistedRepeatMode);
@@ -390,7 +381,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentSong(restored[idx]);
     // Load paused at the persisted position — the user didn't ask us to
     // start playing on cold boot, they asked us to remember where they were.
-    void loadQueueRef.current(restored, idx, false, Math.floor(persistedPositionMs / 1000));
+    // Reported rather than dropped. This was `void`, so the failure that made
+    // the restored queue unplayable was invisible from both sides — nothing in
+    // a log, and a UI that looked correct.
+    loadQueueRef.current(restored, idx, false, Math.floor(persistedPositionMs / 1000))
+      .catch((error) => {
+        console.warn('[player] restoring the persisted queue failed', error);
+      });
   }, [
     currentServerId,
     persistedServerIdForPlayback,
