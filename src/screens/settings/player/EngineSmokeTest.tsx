@@ -16,7 +16,7 @@ import { spacing, typography } from '@/constants/design';
  * Development-only: drives yuzic-engine directly, bypassing the player.
  *
  * The engine is a separate project being built to replace `@rntp/player`
- * (see github.com/eftpmc/yuzic-engine). It has a large unit-test suite, but
+ * (see github.com/yuzicapp/yuzic-engine). It has a large unit-test suite, but
  * nothing had ever called it across the React Native bridge — and the bugs
  * found so far were all of the kind that only appear when something really
  * builds or really runs. This is the smallest surface that exercises the whole
@@ -198,6 +198,71 @@ const EngineSmokeTest: React.FC = () => {
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
       toast.error('Seek probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * Does "next" light up when a track is appended behind the one playing?
+   *
+   * Android now holds one track per voice, so ExoPlayer's timeline can never
+   * answer whether there is a next track — the queue does, and
+   * `getAvailableCommands` is overridden to say so. But Media3 only re-reads
+   * that when the *player* fires an event, and appending to the queue touches
+   * no player method at all.
+   *
+   * Every other route to a second track is masked: `setQueue` and
+   * `skipToIndex` both call `setMediaItem`, and changing repeat mode sets it on
+   * the player. Each of those fires an event that refreshes the command set as
+   * a side effect, so they would pass whether or not the invalidation works.
+   * This probe is deliberately the one path with nothing to hide behind — play
+   * a queue of exactly one, then append, and touch nothing else.
+   *
+   * Read the result on the notification or lock screen, not here: the question
+   * is whether the next button becomes enabled without any other state change.
+   * It is expected to FAIL as written — that is the point. It exists so the fix
+   * has a success condition that can be observed rather than argued about.
+   */
+  const appendCommandProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pair = tracks.slice(0, 2);
+      if (pair.length < 2 || !activeServer) {
+        say('need two tracks in the library');
+        return;
+      }
+      const items = pair.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }));
+      if (items.some(item => !item.uri)) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      // No crossfade: a fade would start a second voice and fire player events,
+      // which is exactly the masking this probe is built to avoid. Zero is what
+      // disables it — `shouldBeginTransition` returns false on a non-positive
+      // duration whatever the mode says.
+      await YuzicEngine.setCrossfade({ durationSec: 0, mode: 'always' });
+      await YuzicEngine.setQueue([items[0]], 0);
+      await YuzicEngine.play();
+      say(`playing a queue of one: ${items[0].title}`);
+      say('check the notification — "next" should be disabled');
+
+      await new Promise(resolve => setTimeout(resolve, 6000));
+
+      await YuzicEngine.append([items[1]]);
+      say(`appended: ${items[1].title}`);
+      say('check again — did "next" become enabled?');
+      say('no other engine call was made in between');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Append probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -397,12 +462,32 @@ const EngineSmokeTest: React.FC = () => {
       say(`after stop: ${afterStop.entryCount} entries, ` +
         `${(afterStop.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
 
-      if (afterStop.usedBytes > 0 && afterStop.entryCount > 0) {
-        say('kept across the track ending');
-        toast.success('Disk cache holds');
-      } else {
+      if (afterStop.usedBytes === 0 || afterStop.entryCount === 0) {
         say('cache emptied when the track stopped');
         toast.error('Cache did not persist');
+        return;
+      }
+      say('kept across the track ending');
+
+      // `evict` last, and by MediaId rather than URL — the engine keys the
+      // cache on the id precisely so a rotating Subsonic or Jellyfin token
+      // cannot orphan an entry. Exercised here because the rest of this probe
+      // passing was being read as "the cache methods work" while this one had
+      // only ever been compiled.
+      await YuzicEngine.evict(track.id);
+      const afterEvict = await YuzicEngine.cacheStats();
+      say(`after evict: ${afterEvict.entryCount} entries, ` +
+        `${(afterEvict.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
+
+      if (afterEvict.entryCount < afterStop.entryCount) {
+        say('evict dropped the track it was given');
+        toast.success('Disk cache holds');
+      } else {
+        // Distinguishable from a thrown error: this is the call returning
+        // cleanly and changing nothing, which is the failure this codebase
+        // keeps producing and the one a passing probe would hide.
+        say('evict returned but removed nothing');
+        toast.error('evict did nothing');
       }
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
@@ -550,6 +635,7 @@ const EngineSmokeTest: React.FC = () => {
         <SettingsRow label="Seek: transcoded stream (320k)" onPress={() => seekProbe('high')} />
         <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
         <SettingsRow label="Edit the queue (insert/remove/move)" onPress={queueProbe} />
+        <SettingsRow label="Append: does &quot;next&quot; light up?" onPress={appendCommandProbe} />
         <SettingsRow label="Disk cache: does it survive a track" onPress={cacheProbe} />
         <SettingsRow label="Speed: 1x / 2x / 0.5x" onPress={speedProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
