@@ -84,17 +84,32 @@ export function createEngineBackend(): PlayerBackend {
    * Named for what it is rather than hidden in every method: the app cannot
    * see a rejected promise, so anything that fails silently here is a track
    * that simply never plays with nothing in the log to say why.
+   *
+   * **It also warns, and the warning is not redundant.** Emitting the event
+   * alone means "handled" in the sense that nothing crashes, not in the sense
+   * that anyone finds out: the only subscriber to `error` in this app is the
+   * dev smoke-test screen. A method that is missing on a platform therefore
+   * fails on the main playback path and leaves no trace at all — `loadQueue`
+   * calls `setRepeatMode`, that call rejects, the lines after it still run, so
+   * the track plays and repeat mode is silently dead.
+   *
+   * Swallowing is still right: one absent method must not stop the calls
+   * after it, or a partial platform would play nothing rather than play
+   * imperfectly. The warning is what makes the difference visible without
+   * changing that.
    */
   function fire(what: string, run: () => Promise<unknown>) {
+    const report = (error: unknown) => {
+      console.warn(`[player] ${what} failed`, error);
+      emit({ type: 'error', code: 'ENGINE_CALL_FAILED', message: `${what}: ${String(error)}` });
+    };
     try {
       const result = run();
       if (result && typeof result.catch === 'function') {
-        result.catch((error: unknown) => {
-          emit({ type: 'error', code: 'ENGINE_CALL_FAILED', message: `${what}: ${String(error)}` });
-        });
+        result.catch(report);
       }
     } catch (error) {
-      emit({ type: 'error', code: 'ENGINE_CALL_FAILED', message: `${what}: ${String(error)}` });
+      report(error);
     }
   }
 
