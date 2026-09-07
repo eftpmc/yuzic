@@ -122,6 +122,37 @@ export const Equalizer: React.FC = () => {
                 the style because the rotation happens after layout.
               */}
               <View style={styles.sliderWell}>
+                {/*
+                  The track is drawn here rather than by the Slider, because
+                  this control is bipolar and the Slider only fills from one
+                  end. Filling from minimum would leave every band half-filled
+                  at 0 dB — the state a user sees most — which reads as "half
+                  on" rather than "neutral". Filling from the centre detent
+                  outward makes flat read as empty, and makes a boost and a cut
+                  distinguishable by direction rather than by length.
+
+                  The crossfade slider above still fills from its low end, and
+                  that is not an inconsistency: it runs 0..12 with no
+                  meaningful centre.
+                */}
+                <View style={[styles.trackBase, { backgroundColor: colors.border }]} />
+                <View style={[styles.detent, { backgroundColor: colors.subtext }]} />
+                {gain !== 0 && (
+                  <View
+                    style={[
+                      styles.trackFill,
+                      {
+                        backgroundColor: themeColor,
+                        height: (Math.abs(gain) / EQ_GAIN_LIMIT_DB) * (SLIDER_LENGTH / 2),
+                        bottom:
+                          gain > 0
+                            ? SLIDER_LENGTH / 2
+                            : SLIDER_LENGTH / 2 -
+                              (Math.abs(gain) / EQ_GAIN_LIMIT_DB) * (SLIDER_LENGTH / 2),
+                      },
+                    ]}
+                  />
+                )}
                 <Slider
                   style={styles.slider}
                   minimumValue={-EQ_GAIN_LIMIT_DB}
@@ -129,13 +160,9 @@ export const Equalizer: React.FC = () => {
                   step={1}
                   value={gain}
                   onValueChange={value => setBand(index, value)}
-                  // Accent below the thumb, grey above — the rotation maps
-                  // "minimum" to the bottom, so this is the fill-from-the-low-
-                  // end direction every other slider in the app uses. Reversed,
-                  // the highlighted region is the part above the thumb, which
-                  // reads as the value while actually being the remainder.
-                  minimumTrackTintColor={themeColor}
-                  maximumTrackTintColor={colors.border}
+                  // Both transparent: the fill above is the visible track.
+                  minimumTrackTintColor="transparent"
+                  maximumTrackTintColor="transparent"
                   thumbTintColor={themeColor}
                   accessibilityLabel={t('a11y.equalizer.band', {
                     frequency: labelFor(frequencyHz),
@@ -161,6 +188,7 @@ export const Equalizer: React.FC = () => {
 };
 
 const SLIDER_LENGTH = 120;
+const TRACK_WIDTH = 4;
 
 const styles = StyleSheet.create({
   header: {
@@ -208,6 +236,26 @@ const styles = StyleSheet.create({
     width: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  /** The full-length groove, behind everything. */
+  trackBase: {
+    position: 'absolute',
+    width: TRACK_WIDTH,
+    height: SLIDER_LENGTH,
+    borderRadius: TRACK_WIDTH / 2,
+  },
+  /** The 0 dB mark, so neutral is findable without reading the number. */
+  detent: {
+    position: 'absolute',
+    width: 12,
+    height: 1,
+    opacity: 0.5,
+  },
+  /** Centre outward: up for a boost, down for a cut. */
+  trackFill: {
+    position: 'absolute',
+    width: TRACK_WIDTH,
+    borderRadius: TRACK_WIDTH / 2,
   },
   slider: {
     width: SLIDER_LENGTH,
