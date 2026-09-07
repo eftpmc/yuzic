@@ -23,6 +23,7 @@ tables; update it when that set changes.
 
 - `dev` is the long-running integration branch. Push work here (directly or via PR) — do not delete it after merging.
 - `master` is the stable/release branch. Promote work from `dev` to `master` via a PR (e.g. #137), not by pushing directly.
+- **A merge to `master` that changes `package.json`'s `version` ships.** `release-on-version-bump.yml` fires on the push and calls both build workflows, which upload to TestFlight and Play's alpha track. There is no separate "publish" step to forget or to hold back at — opening that PR *is* the release decision, so treat it as one.
 - Both branches have GitHub branch protection requiring the `Lint, Typecheck & Test` check (from `.github/workflows/pr-checks.yml`) to pass before a PR can merge. Repo admins can bypass this for direct pushes — it does not block `git push` outright.
 
 ## CI
@@ -40,14 +41,50 @@ The mechanism (see `fastlane/Fastfile`):
 - `ANDROID_VERSION_CODE` / `IOS_BUILD_NUMBER` derive from `GITHUB_RUN_NUMBER` (GitHub's per-workflow-file counter — starts at 1, increments forever, never resets or repeats) **plus a fixed offset** (`ANDROID_LAST_PUBLISHED_VERSION_CODE` / `IOS_LAST_PUBLISHED_BUILD_NUMBER` constants at the top of `Fastfile`). The offset exists because CI's run counter started from 0 while the stores already had real published versions ahead of it.
 
 **Last known published versions** (recorded here so this doesn't silently break again):
-- Android: version 1.3.7, versionCode **109**
-- iOS: version 1.3.7, build **1**
+- Android: version **1.3.7**, versionCode **109**. 1.4.0 was *rejected*, not published — see below.
+- iOS: version **1.4.0**, build **9**, uploaded to App Store Connect 2026-09-04.
+
+The two platforms are not on the same version, and that asymmetry is the
+evidence of a half-failed release rather than a mistake in this table.
 
 If you ever need to raise these offset constants (e.g. because a manual/local Fastlane run published a version CI didn't know about), only ever increase them, and update this table to match. Do not remove the offset mechanism or reintroduce `workflow_dispatch` inputs for version numbers — that reopens the exact collision risk it was built to close.
 
+## Releasing — check both halves
+
+A release is **two independent jobs**, and one can succeed while the other
+fails. That has already happened: on 2026-09-04 the 1.4.0 release shipped iOS
+to TestFlight and was rejected by Play in the same run, leaving the two
+platforms on different versions and the GitHub release stuck as an empty draft.
+Nothing announced this — the workflow simply showed as failed, and a failed
+release looks the same whether nothing shipped or half of it did.
+
+So after any release:
+
+1. Open the `release-on-version-bump` run and check **both** `Ship iOS build`
+   and `Ship Android build`, not just the run's overall conclusion.
+2. Fill in and publish the draft release the run created. It is generated with
+   an empty body and stays a draft until someone writes it, which is why the
+   public releases page can lag the actual shipped version by months.
+3. If one platform failed, say so explicitly rather than re-running blind. The
+   fix usually belongs on `dev` and has to be promoted before a re-run can
+   possibly succeed — which is exactly what did not happen after 1.4.0.
+
+**Play requires `targetSdkVersion` 36** (Android 16) for uploads to any track,
+alpha included. Below that, `supply` fails with `Google Api Error: Invalid
+request - Target SDK of artifact is too low`, *after* a full successful Gradle
+build — so a green build says nothing about whether Play will take it. Set in
+`android/gradle.properties` and `app.json`.
+
+**Play release notes come from `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.**
+That directory does not exist, so every upload logs `Could not find changelog
+for '<code>'` and ships with no notes. Because the version code is derived from
+the run number, the filename cannot be known before the run — either add the
+file per release or accept the warning deliberately, but do not read it as a
+new failure.
+
 ## Native/player notes
 
-- Audio playback goes through **`PlayerBackend`** (`src/features/player/backend.ts`), not through a player package directly. yuzic-engine implements it; `@rntp/player` was removed. Nine of those methods have no Android implementation yet and reject by name at the bridge. `docs/architecture.md` explains the seam and the three non-obvious things about it; read that before changing playback.
+- Audio playback goes through **`PlayerBackend`** (`src/features/player/backend.ts`), not through a player package directly. yuzic-engine implements it; `@rntp/player` was removed. Exactly one method has no Android implementation — `configureCache` — and it is deliberately *absent* rather than stubbed, so it rejects by name at the bridge. Derive that gap rather than trusting this sentence: it has been wrong before. `docs/architecture.md` explains the seam and the three non-obvious things about it; read that before changing playback.
 - Adding a player call means adding it to `PlayerBackend` **and to both platforms of the engine**. A method implemented on iOS and not on Android is the failure this seam exists to surface — it has already happened, and nine such methods are outstanding. They reject by name (`setSpeed() is not implemented on android`) rather than throwing `is not a function`, so the gap is legible from a log; that is not the same as being fixed.
 - `@rntp/player` used to be the player and has been removed entirely. Do not reintroduce it, and do not read its source: it is the npm-scoped continuation of `react-native-track-player` and went to a commercial, non-compete licence at v5, which is a probable GPL-3 conflict for yuzic and a definite F-Droid blocker — and which is part of why the engine exists. react-native-track-player **v4** is Apache-2.0 and may be referenced with attribution.
 - `src/contexts/PlayingContext.tsx` is the central playback state/controls context — most player-related work touches this file.
