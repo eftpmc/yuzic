@@ -129,8 +129,13 @@ export const Equalizer: React.FC = () => {
                   step={1}
                   value={gain}
                   onValueChange={value => setBand(index, value)}
-                  minimumTrackTintColor={colors.border}
-                  maximumTrackTintColor={themeColor}
+                  // Accent below the thumb, grey above — the rotation maps
+                  // "minimum" to the bottom, so this is the fill-from-the-low-
+                  // end direction every other slider in the app uses. Reversed,
+                  // the highlighted region is the part above the thumb, which
+                  // reads as the value while actually being the remainder.
+                  minimumTrackTintColor={themeColor}
+                  maximumTrackTintColor={colors.border}
                   thumbTintColor={themeColor}
                   accessibilityLabel={t('a11y.equalizer.band', {
                     frequency: labelFor(frequencyHz),

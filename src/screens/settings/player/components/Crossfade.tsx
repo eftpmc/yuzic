@@ -51,6 +51,13 @@ export const Crossfade: React.FC = () => {
             </Text>
           </View>
         </View>
+        {/*
+          The inset lives on a wrapper rather than on the Slider itself.
+          `width: '100%'` plus the control's own `paddingHorizontal` does not
+          inset it symmetrically — the track keeps its full width and shifts,
+          so it runs past the right edge of the card.
+        */}
+        <View style={styles.sliderRow}>
         <Slider
           style={styles.slider}
           minimumValue={0}
@@ -62,6 +69,7 @@ export const Crossfade: React.FC = () => {
           maximumTrackTintColor={colors.border}
           thumbTintColor={themeColor}
         />
+        </View>
         <Text style={[styles.subtext, { color: colors.subtext }]}>
           {off
             ? t('settings.player.crossfade.offSubtext')
@@ -106,10 +114,12 @@ const styles = StyleSheet.create({
   badgeText: {
     ...typography.label,
   },
+  sliderRow: {
+    paddingHorizontal: spacing.lg,
+  },
   slider: {
     width: '100%',
     height: 40,
-    paddingHorizontal: spacing.lg,
   },
   subtext: {
     ...typography.caption,
