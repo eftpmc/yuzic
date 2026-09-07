@@ -125,18 +125,57 @@ another one.
 `features/player/playbackSink.ts` names the three outputs, and one distinction
 runs through all of them: **does the local player still run?**
 
-- `local` — TrackPlayer plays and keeps the clock.
-- `dlna` — TrackPlayer *still* plays, muted (`setVolume(0)`), because a DLNA
-  renderer reports no position back; it keeps the clock and drives the queue
-  while the same stream URL goes to the renderer. Transport is **mirrored**.
+- `local` — the local player plays and keeps the clock.
+- `dlna` — the local player *still* plays, muted (`setVolume(0)`), because a
+  DLNA renderer reports no position back; it keeps the clock and drives the
+  queue while the same stream URL goes to the renderer. Transport is
+  **mirrored**.
 - `jukebox` — the server holds the audio and reports its own position. Nothing
   streams to the phone. Transport is **replaced**, and the progress bar reads
-  the server's polled position instead of `useProgress`.
+  the server's polled position instead of the player's.
 
 `ownsPlayback(sink)` is that question, and every transport call in
-`PlayingContext` asks it before touching TrackPlayer. Getting it wrong for the
+`PlayingContext` asks it before touching the player. Getting it wrong for the
 jukebox means the phone plays the track a second time, out loud, next to the
 server already playing it.
+
+## Which player, and the seam between them
+
+"The local player" is deliberately vague above, because there are two of them.
+
+`features/player/backend.ts` defines `PlayerBackend` — the surface the app
+actually uses, derived from the `TrackPlayer.*` call sites rather than from
+anyone's idea of a complete player. Two implement it: `createRntpBackend`
+(`@rntp/player`, the default and the one that has shipped) and
+`createEngineBackend` (yuzic-engine, opt-in). `activeBackend.ts` holds which
+one is live; `PlayingContext` imports neither player directly.
+
+The seam exists because replacing the player otherwise meant rewriting ~40 call
+sites in one change that either worked or did not. With it, the swap is a
+setting — Settings → Playback → Audio engine, persisted, off by default — and
+the two can be compared on one device.
+
+Three things about it are not obvious:
+
+- **The two APIs disagree about time.** `getProgress()` returns a value; the
+  engine returns a promise, because it crosses a bridge. Call sites read
+  `Math.floor(getProgress().position)` inline, so `createEngineBackend` keeps a
+  shadow of what the engine last reported and answers synchronously from it.
+  A `getProgress` straight after a `seekTo` returns the pre-seek position until
+  the next event — rntp has the same property for the same reason.
+- **Playing-ness is not an event.** rntp's `PlaybackState` is idle / ready /
+  buffering / ended / error, with no "playing"; it answers only through
+  `useIsPlaying`. The engine answers only through an event. So
+  `usePlayerState.ts` reconciles them, calling both sources unconditionally and
+  selecting one — calling hooks conditionally would break the rules of hooks
+  the moment the backend changed.
+- **Switching stops playback.** The queue is not migrated: rebuilding it in the
+  other player means guessing at position and shuffle order.
+
+The engine is experimental. It plays, seeks, crossfades and caches on iOS; it
+has not run on a physical device, and on Android it is missing eleven methods
+that throw at the bridge if called. `@rntp/player` remains the default and the
+only one that has shipped.
 
 `PlaybackSinkContext` owns which sink is selected and routes transport to it.
 This replaced four copies of `if (activeDevice) castX()` in the player and a
@@ -227,7 +266,18 @@ src/api/                — providers + shared surfaces
 src/contexts/PlayingContext.tsx  — the player. Consumes ApiAdapter,
                                     dispatches into playbackSlice, checks
                                     contentKind before every player-shape
-                                    decision.
+                                    decision. Talks to PlayerBackend, never
+                                    to a player package directly.
+
+src/features/player/
+  backend.ts            — PlayerBackend: the surface the app uses (§ above)
+  createRntpBackend.ts  — @rntp/player behind it. The default.
+  createEngineBackend.ts— yuzic-engine behind it, plus the shadow that lets
+                          a bridged engine answer synchronous getters
+  activeBackend.ts      — which one is live, and letting go of the other
+  usePlayerState.ts     — the reactive half: progress, playing, active item
+  playbackSink.ts       — where the audio comes out (§ above), a separate
+                          question from which player produces it
 
 src/hooks/
   useSync.ts            — the catalog pipeline (§4)
