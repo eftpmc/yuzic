@@ -202,6 +202,71 @@ const EngineSmokeTest: React.FC = () => {
   }, [api, tracks, activeServer, loadEngine, say]);
 
   /**
+   * Does "next" light up when a track is appended behind the one playing?
+   *
+   * Android now holds one track per voice, so ExoPlayer's timeline can never
+   * answer whether there is a next track — the queue does, and
+   * `getAvailableCommands` is overridden to say so. But Media3 only re-reads
+   * that when the *player* fires an event, and appending to the queue touches
+   * no player method at all.
+   *
+   * Every other route to a second track is masked: `setQueue` and
+   * `skipToIndex` both call `setMediaItem`, and changing repeat mode sets it on
+   * the player. Each of those fires an event that refreshes the command set as
+   * a side effect, so they would pass whether or not the invalidation works.
+   * This probe is deliberately the one path with nothing to hide behind — play
+   * a queue of exactly one, then append, and touch nothing else.
+   *
+   * Read the result on the notification or lock screen, not here: the question
+   * is whether the next button becomes enabled without any other state change.
+   * It is expected to FAIL as written — that is the point. It exists so the fix
+   * has a success condition that can be observed rather than argued about.
+   */
+  const appendCommandProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pair = tracks.slice(0, 2);
+      if (pair.length < 2 || !activeServer) {
+        say('need two tracks in the library');
+        return;
+      }
+      const items = pair.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }));
+      if (items.some(item => !item.uri)) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      // No crossfade: a fade would start a second voice and fire player events,
+      // which is exactly the masking this probe is built to avoid. Zero is what
+      // disables it — `shouldBeginTransition` returns false on a non-positive
+      // duration whatever the mode says.
+      await YuzicEngine.setCrossfade({ durationSec: 0, mode: 'always' });
+      await YuzicEngine.setQueue([items[0]], 0);
+      await YuzicEngine.play();
+      say(`playing a queue of one: ${items[0].title}`);
+      say('check the notification — "next" should be disabled');
+
+      await new Promise(resolve => setTimeout(resolve, 6000));
+
+      await YuzicEngine.append([items[1]]);
+      say(`appended: ${items[1].title}`);
+      say('check again — did "next" become enabled?');
+      say('no other engine call was made in between');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Append probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
    * Drives an actual crossfade between two tracks.
    *
    * This is the feature the whole graph architecture exists for — two sources
@@ -550,6 +615,7 @@ const EngineSmokeTest: React.FC = () => {
         <SettingsRow label="Seek: transcoded stream (320k)" onPress={() => seekProbe('high')} />
         <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
         <SettingsRow label="Edit the queue (insert/remove/move)" onPress={queueProbe} />
+        <SettingsRow label="Append: does &quot;next&quot; light up?" onPress={appendCommandProbe} />
         <SettingsRow label="Disk cache: does it survive a track" onPress={cacheProbe} />
         <SettingsRow label="Speed: 1x / 2x / 0.5x" onPress={speedProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
