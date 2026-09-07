@@ -17,7 +17,7 @@ the app running locally and how changes get merged.
 npm install
 ```
 
-Yuzic can't run in plain Expo Go — playback (`@rntp/player`), storage
+Yuzic can't run in plain Expo Go — playback (`yuzic-engine`), storage
 (MMKV), and DLNA discovery are all native modules that Expo Go doesn't ship.
 You need a dev-client build instead:
 

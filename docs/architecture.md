@@ -139,43 +139,44 @@ runs through all of them: **does the local player still run?**
 jukebox means the phone plays the track a second time, out loud, next to the
 server already playing it.
 
-## Which player, and the seam between them
-
-"The local player" is deliberately vague above, because there are two of them.
+## The player, and the seam it sits behind
 
 `features/player/backend.ts` defines `PlayerBackend` — the surface the app
-actually uses, derived from the `TrackPlayer.*` call sites rather than from
-anyone's idea of a complete player. Two implement it: `createRntpBackend`
-(`@rntp/player`, the default and the one that has shipped) and
-`createEngineBackend` (yuzic-engine, opt-in). `activeBackend.ts` holds which
-one is live; `PlayingContext` imports neither player directly.
+actually uses, derived from its own call sites rather than from anyone's idea
+of a complete player. `createEngineBackend` (yuzic-engine) implements it,
+`activeBackend.ts` hands it out, and `PlayingContext` never imports a player
+directly.
 
-The seam exists because replacing the player otherwise meant rewriting ~40 call
-sites in one change that either worked or did not. With it, the swap is a
-setting — Settings → Playback → Audio engine, persisted, off by default — and
-the two can be compared on one device.
+The seam was built while `@rntp/player` was still here, so both could run on
+one device and be compared. That is what turned the removal from a rewrite of
+~40 call sites into a swap of one factory function, and it is worth keeping
+now that one implementation is left: it is what every test in that directory
+fakes, and the engine does not run on web.
 
 Three things about it are not obvious:
 
-- **The two APIs disagree about time.** `getProgress()` returns a value; the
-  engine returns a promise, because it crosses a bridge. Call sites read
-  `Math.floor(getProgress().position)` inline, so `createEngineBackend` keeps a
-  shadow of what the engine last reported and answers synchronously from it.
-  A `getProgress` straight after a `seekTo` returns the pre-seek position until
-  the next event — rntp has the same property for the same reason.
-- **Playing-ness is not an event.** rntp's `PlaybackState` is idle / ready /
-  buffering / ended / error, with no "playing"; it answers only through
-  `useIsPlaying`. The engine answers only through an event. So
-  `usePlayerState.ts` reconciles them, calling both sources unconditionally and
-  selecting one — calling hooks conditionally would break the rules of hooks
-  the moment the backend changed.
-- **Switching stops playback.** The queue is not migrated: rebuilding it in the
-  other player means guessing at position and shuffle order.
+- **The engine's answers cross a bridge, and the call sites are synchronous.**
+  Call sites read `Math.floor(getProgress().position)` inline, so
+  `createEngineBackend` keeps a shadow of what the engine last reported and
+  answers from it. A `getProgress` straight after a `seekTo` returns the
+  pre-seek position until the next event.
+- **Playing-ness is an event, not a getter.** The engine reports it on the
+  `playing` field of its state event, which is optional — absent means "cannot
+  say", and `usePlayerState.ts` guards rather than coerces, because treating
+  absent as false would stop the button ever showing as playing.
+- **Commands return void.** They are fire-and-forget: `play()` on a button
+  press, `seekTo()` on a scrub. Failures arrive as an error event, and
+  `fire()` warns as well as emitting, because in a release build nothing
+  subscribes to that event.
 
-The engine is experimental. It plays, seeks, crossfades and caches on iOS; it
-has not run on a physical device, and on Android it is missing eleven methods
-that throw at the bridge if called. `@rntp/player` remains the default and the
-only one that has shipped.
+`@rntp/player` was removed in full — package, lockfile, patch and all. It was
+proprietary from v5 (non-commercial, with a non-compete clause), which is a
+probable GPL-3 conflict for yuzic and a definite F-Droid blocker.
+
+The engine is complete on iOS. On Android it is missing nine of the methods
+the app calls; they reject by name rather than throwing `is not a function`,
+and `setCrossfade` there is a stub that records its options and schedules no
+overlap, so crossfade is an iOS feature today.
 
 `PlaybackSinkContext` owns which sink is selected and routes transport to it.
 This replaced four copies of `if (activeDevice) castX()` in the player and a
@@ -271,10 +272,12 @@ src/contexts/PlayingContext.tsx  — the player. Consumes ApiAdapter,
 
 src/features/player/
   backend.ts            — PlayerBackend: the surface the app uses (§ above)
-  createRntpBackend.ts  — @rntp/player behind it. The default.
   createEngineBackend.ts— yuzic-engine behind it, plus the shadow that lets
                           a bridged engine answer synchronous getters
-  activeBackend.ts      — which one is live, and letting go of the other
+  activeBackend.ts      — builds it, hands it out, one per launch
+  mediaItem.ts          — the app's own playable-item type, formerly the
+                          player package's
+  audioSettings.ts      — crossfade and equalizer shapes, bands and presets
   usePlayerState.ts     — the reactive half: progress, playing, active item
   playbackSink.ts       — where the audio comes out (§ above), a separate
                           question from which player produces it
