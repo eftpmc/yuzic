@@ -349,6 +349,79 @@ const EngineSmokeTest: React.FC = () => {
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
+  /**
+   * Exercises the disk cache, which has never run.
+   *
+   * `configureCache`, `cacheStats`, `clearCache` and `evict` were declared for
+   * months and implemented by nothing — calling one failed with "function not
+   * found". They exist now, and this is the first thing to actually call them.
+   *
+   * The claim under test is that audio survives a track ending: play, stop,
+   * and see whether the bytes are still counted. A cache whose numbers go back
+   * to zero is an in-memory cache wearing a disk cache's name, which is
+   * exactly what this replaced.
+   */
+  const cacheProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library');
+        return;
+      }
+      // Original: only the ranged path is cached, by design — a transcoded
+      // stream's bytes are not the file.
+      const url = api.songs.buildStreamUrl(track.id, 'original');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 500 });
+
+      // From a known-empty state, so the numbers below are this track's and
+      // not whatever a previous probe left behind.
+      await YuzicEngine.clearCache();
+      const empty = await YuzicEngine.cacheStats();
+      say(`cleared: ${empty.entryCount} entries, ${empty.usedBytes}B`);
+      if (empty.usedBytes !== 0) say('clearCache left bytes behind');
+
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      await YuzicEngine.play();
+      say(`playing: ${track.title}`);
+
+      await new Promise(resolve => setTimeout(resolve, 6000));
+      const warm = await YuzicEngine.cacheStats();
+      const mb = (warm.usedBytes / (1024 * 1024)).toFixed(2);
+      say(`after 6s: ${warm.entryCount} entries, ${mb}MB`);
+
+      // Stopping ends the track. The bytes must not go with it — that is the
+      // whole difference between this and what came before.
+      await YuzicEngine.stop();
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const afterStop = await YuzicEngine.cacheStats();
+      say(`after stop: ${afterStop.entryCount} entries, ` +
+        `${(afterStop.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
+
+      if (afterStop.usedBytes > 0 && afterStop.entryCount > 0) {
+        say('kept across the track ending');
+        toast.success('Disk cache holds');
+      } else {
+        say('cache emptied when the track stopped');
+        toast.error('Cache did not persist');
+      }
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Cache probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
   const publishBrowseTree = useCallback(async () => {
     setLog([]);
     try {
@@ -422,6 +495,7 @@ const EngineSmokeTest: React.FC = () => {
         <SettingsRow label="Seek: transcoded stream (320k)" onPress={() => seekProbe('high')} />
         <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
         <SettingsRow label="Edit the queue (insert/remove/move)" onPress={queueProbe} />
+        <SettingsRow label="Disk cache: does it survive a track" onPress={cacheProbe} />
         <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
       </SettingsCard>
       {log.length > 0 && (
