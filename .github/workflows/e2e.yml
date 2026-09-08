@@ -1,0 +1,156 @@
+name: E2E (Maestro, iOS Simulator)
+
+# Deliberately not a PR gate.
+#
+# The flows drive the app against the public `demo.navidrome.org` server,
+# because that is what gives a fresh install a library without shipping
+# credentials to CI. That server is somebody else's, it rate-limits, and it is
+# occasionally down — so a red run here means "look at this", not "your change
+# is rejected". Gating merges on a third party's uptime teaches people to
+# ignore the check, which is worse than not having it.
+#
+# `testIds.test.ts` runs in `pr-checks` and is the fast half of this: it cannot
+# tell whether a flow passes, only that a renamed testID has not silently
+# broken one. This job is the half that actually runs them.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Nightly, well clear of the release workflow's usual window.
+    - cron: '0 9 * * *'
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Maestro on iOS Simulator
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: pods-
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      # Release rather than Debug: a Debug build expects Metro, and the flows
+      # would then be testing a dev client's launcher. Release embeds the JS
+      # bundle, so the simulator runs the app the way a person would get it.
+      # No signing is involved for a simulator destination.
+      - name: Build for the simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace ios/Yuzic.xcworkspace \
+            -scheme Yuzic \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build \
+            CODE_SIGNING_ALLOWED=NO \
+            build \
+            > /tmp/xcodebuild-e2e.log 2>&1 || {
+              echo "::error::Simulator build failed — last 100 lines follow, full log uploaded."
+              tail -100 /tmp/xcodebuild-e2e.log
+              exit 1
+            }
+
+      # Chosen from what the image actually has rather than hard-coded. Runner
+      # images change their installed simulators without warning, and a
+      # hard-coded name turns that into a mystery failure months later.
+      - name: Boot a simulator
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available --json | jq -r '
+            [.devices[][] | select(.isAvailable and (.name | test("iPhone")))]
+            | last | .udid // empty
+          ')
+          if [ -z "$udid" ]; then
+            echo "::error::No available iPhone simulator on this runner."
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid"
+
+      - name: Install the app
+        run: |
+          app=$(find ios/build/Build/Products -maxdepth 3 -name 'Yuzic.app' | head -1)
+          if [ -z "$app" ]; then
+            echo "::error::Built app not found under ios/build/Build/Products."
+            exit 1
+          fi
+          echo "Installing $app"
+          xcrun simctl install "${{ steps.sim.outputs.udid }}" "$app"
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # Order matters and is the reason these are separate steps rather than
+      # `npm run test:e2e`. `onboarding-demo` is the only flow that runs from a
+      # fresh install, and it is what leaves the app connected to a server —
+      # every flow after it opens with `clearState: false` and depends on the
+      # state this one established.
+      - name: Onboarding (connects to the Navidrome demo)
+        run: maestro test .maestro/onboarding-demo.yaml
+
+      - name: Smoke
+        run: maestro test .maestro/smoke.yaml
+
+      - name: Common user flows
+        run: maestro test .maestro/common-user-flows.yaml
+
+      - name: Detail flows
+        run: maestro test .maestro/detail-flows.yaml
+
+      # Maestro writes a screenshot and a view hierarchy for the step that
+      # failed, which is the only thing that makes a red E2E run diagnosable
+      # from a machine you cannot see. Collected into the workspace first:
+      # `upload-artifact` does not expand `~`, and a path outside the
+      # workspace is uploaded with its full directory structure.
+      - name: Collect diagnostics
+        if: failure()
+        run: |
+          mkdir -p e2e-output
+          cp -R "$HOME/.maestro/tests" e2e-output/maestro 2>/dev/null || true
+          cp /tmp/xcodebuild-e2e.log e2e-output/ 2>/dev/null || true
+          xcrun simctl io "${{ steps.sim.outputs.udid }}" screenshot \
+            e2e-output/simulator.png 2>/dev/null || true
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-output
+          path: e2e-output
+          retention-days: 7
+          if-no-files-found: ignore

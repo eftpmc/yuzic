@@ -73,11 +73,29 @@ placeholders there — that's the server, not the app.
 The suite intentionally avoids assumptions about specific song titles or
 server fixtures.
 
+## In CI
+
+`.github/workflows/e2e.yml` runs the whole suite nightly on a macOS runner,
+and on demand from the Actions tab. It builds the app for the simulator in
+Release — Debug would expect Metro and the flows would end up driving a dev
+client's launcher — installs it on whichever iPhone simulator the runner image
+actually has, and runs the flows in the order below. `onboarding-demo` goes
+first because it is the only one that starts from a fresh install, and it is
+what leaves the app connected to a server for the three that follow.
+
+It is deliberately **not** a PR gate. The flows depend on `demo.navidrome.org`,
+which is someone else's server: it rate-limits, and it is sometimes down. A
+red run there means "look at this", not "your change is rejected" — gating
+merges on a third party's uptime is how a check gets ignored.
+
+On failure the run uploads Maestro's screenshot and view hierarchy for the
+failing step, the xcodebuild log, and a screenshot of the simulator.
+
 `testIds.test.ts` runs with the unit tests and checks that every element the
 flows reach for still exists in the source. It cannot tell whether a flow
 passes — only that a renamed testID hasn't silently broken one, which is the
-failure that actually happens given nothing runs Maestro in CI. It reads
-untracked files too, so a screen added but not yet committed still counts.
+failure that actually happens between nightly runs. It reads untracked files
+too, so a screen added but not yet committed still counts.
 
 Gotcha for future sheet-based flows: @gorhom/bottom-sheet defaults
 `accessible=true` on its container, which collapses everything inside into
