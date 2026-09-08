@@ -37,6 +37,6 @@ export async function getRandomSongs(
       });
   } catch (error) {
     console.error('Navidrome getRandomSongs failed:', error);
-    return [];
+    throw error;
   }
 }

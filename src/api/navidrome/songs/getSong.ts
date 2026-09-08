@@ -40,6 +40,6 @@ export async function getSong(
     };
   } catch (error) {
     console.error("Failed to fetch Navidrome song:", error);
-    return null;
+    throw error;
   }
 }

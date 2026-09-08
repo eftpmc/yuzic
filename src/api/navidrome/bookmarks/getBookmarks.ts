@@ -24,7 +24,7 @@ export async function getBookmarks(client: NavidromeClient): Promise<Bookmark[]>
       }));
   } catch (error) {
     console.error('Navidrome getBookmarks failed:', error);
-    return [];
+    throw error;
   }
 }
 

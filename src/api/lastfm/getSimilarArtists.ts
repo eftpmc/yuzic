@@ -52,7 +52,8 @@ export async function getLastFmSimilarArtists(
         };
       })
       .filter((a): a is LastFmSimilarArtist => a !== null);
-  } catch {
-    return [];
+  } catch (error) {
+    console.error('Last.fm getSimilarArtists failed:', error);
+    throw error;
   }
 }

@@ -35,6 +35,6 @@ export async function getSimilarArtists(
       }));
   } catch (error) {
     console.error('Navidrome getSimilarArtists failed:', error);
-    return [];
+    throw error;
   }
 }

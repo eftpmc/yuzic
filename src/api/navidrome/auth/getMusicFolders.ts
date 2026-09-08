@@ -32,7 +32,8 @@ export async function getMusicFolders(server: Server): Promise<{ id: string; nam
         return { id, name: name || `Library ${index + 1}` };
       })
       .filter((folder): folder is { id: string; name: string } => folder !== null);
-  } catch {
-    return [];
+  } catch (error) {
+    console.error('Navidrome getMusicFolders failed:', error);
+    throw error;
   }
 }

@@ -53,7 +53,8 @@ export async function getLyricsBySongId(
       synced: structured.synced,
       lines,
     };
-  } catch {
-    return null;
+  } catch (error) {
+    console.error('Navidrome getLyricsBySongId failed:', error);
+    throw error;
   }
 }

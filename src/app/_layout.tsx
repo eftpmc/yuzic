@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { enableFreeze } from 'react-native-screens';
 import { PlayingProvider } from '@/contexts/PlayingContext';
-import { CastProvider } from '@/contexts/CastContext';
+import { DlnaProvider } from '@/contexts/DlnaContext';
 import { PlaybackSinkProvider } from '@/contexts/PlaybackSinkContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { SongActionSheetProvider } from '@/contexts/SongActionSheetContext';
@@ -114,7 +114,13 @@ const queryClient = new QueryClient({
       // the server unreachable; ServerReachabilityWatcher then pings to confirm
       // and clears the flag on the first success, so a one-off blip
       // self-corrects within seconds.
-      if (isLikelyNetworkError(error)) {
+      //
+      // Scoped to the active server, because `isLikelyNetworkError` reads the
+      // message and cannot tell *whose* host was unreachable. Deezer, Last.fm,
+      // ListenBrainz and MusicBrainz all fetch from here too, and a Deezer
+      // outage raising "can't reach your server" is a banner about the wrong
+      // machine — pointing the user at a server that is working fine.
+      if (isLikelyNetworkError(error) && isQueryForActiveServer(query.queryKey)) {
         setServerUnreachable(true);
       }
 
@@ -202,7 +208,7 @@ function AppShell() {
   return (
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
-        <CastProvider>
+        <DlnaProvider>
         <PlaybackSinkProvider>
         <PlayingProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
@@ -254,7 +260,7 @@ function AppShell() {
             </GestureHandlerRootView>
         </PlayingProvider>
         </PlaybackSinkProvider>
-        </CastProvider>
+        </DlnaProvider>
       </DownloadProvider>
     </ThemeProvider>
   );

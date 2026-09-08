@@ -55,7 +55,8 @@ export async function getLyricsBySongId(
       }
     }
     return null;
-  } catch {
-    return null;
+  } catch (error) {
+    console.error('Jellyfin/Emby getLyricsBySongId failed:', error);
+    throw error;
   }
 }

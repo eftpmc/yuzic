@@ -26,7 +26,7 @@ export async function getPlayQueue(client: NavidromeClient): Promise<ServerPlayQ
     };
   } catch (error) {
     console.error('Navidrome getPlayQueue failed:', error);
-    return null;
+    throw error;
   }
 }
 
