@@ -1,8 +1,8 @@
-Fixes for playback on a weak connection, and a tidier Settings.
+Playback fixes, most of them for a weak connection.
 
-- Songs no longer cut off part-way through when the network stalls
-- A brief drop no longer ends the track — playback picks the file back up
-- Screens say when they failed to load instead of looking empty
-- A Deezer or Last.fm outage no longer reports your server as unreachable
-- The equalizer has its own screen, so scrolling past it can't move a band
-- Home shelf sources moved to Home; player controls moved to Appearance
+- Tracks no longer cut out and go quiet on a patchy connection
+- A crossfaded track no longer stops the queue when it finishes
+- Playing again works after a stream fails or a headphone disconnects
+- The player says "buffering" instead of going silent while it retries
+- Fewer requests to your server while music is playing
+- A failed download is no longer cached as silence
