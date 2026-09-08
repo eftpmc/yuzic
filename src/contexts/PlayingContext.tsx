@@ -348,10 +348,25 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const hasAutoRestoredRef = useRef(false);
   useEffect(() => {
     if (hasAutoRestoredRef.current) return;
-    if (!currentServerId || persistedServerIdForPlayback !== currentServerId) return;
-    if (persistedQueueIds.length === 0) return;
-    if (queueRef.current.length > 0) return; // Something already playing — don't ambush.
-    if (libraryTracks.length === 0) return; // Wait for the library to hydrate.
+
+    // Why the restore did not happen, said out loud. Every one of these was a
+    // bare `return`, so a queue that was displayed but never handed to the
+    // player looked identical from the outside to one that had been restored
+    // properly — the app showed the track and play did nothing, with nothing
+    // anywhere to say which guard had stopped it. Some of these are ordinary
+    // (the library has not hydrated yet, and the effect will run again), so
+    // this is deliberately not a warning.
+    const blocked =
+      !currentServerId ? 'no active server'
+      : persistedServerIdForPlayback !== currentServerId ? `queue belongs to another server (${persistedServerIdForPlayback})`
+      : persistedQueueIds.length === 0 ? 'nothing persisted'
+      : queueRef.current.length > 0 ? 'a queue is already loaded'
+      : libraryTracks.length === 0 ? 'library not hydrated yet'
+      : null;
+    if (blocked) {
+      console.log(`[player] not restoring the persisted queue: ${blocked}`);
+      return;
+    }
 
     const { queue: restored, index: idx } = buildRestoredQueue({
       persistedIds: persistedQueueIds,
@@ -601,6 +616,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   // (e.g. an unreachable server) takes longer than the window to surface, which
   // makes every retry look like a "first" attempt and loops forever.
   const lastRecoveryAttemptedIdRef = useRef<string | null>(null);
+  // Stalls resumed for the current song, so a connection that will never serve
+  // it cannot loop. Reset when the song changes.
+  const stallResumesRef = useRef<{ songId: string | null; count: number }>({ songId: null, count: 0 });
 
   useEffect(() => {
     const unsubscribe = getBackend().addListener(event => {
@@ -624,9 +642,35 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         return;
       }
 
+      // Where playback had reached. A failure at 57 seconds into a track is a
+      // stream that stalled, not a track that cannot be played, and the two
+      // want opposite responses: resume in place, versus rebuild and drop.
+      const positionSeconds = getBackend().getProgress().position;
+      if (stallResumesRef.current.songId !== (song?.id ?? null)) {
+        stallResumesRef.current = { songId: song?.id ?? null, count: 0 };
+      }
+
       // First failure for this specific track: refresh every URL in the queue
       // (catches stale Navidrome tokens after JS context restarts) then retry.
-      const decision = resolvePlaybackErrorAction(lastRecoveryAttemptedIdRef.current, song?.id);
+      const decision = resolvePlaybackErrorAction(
+        lastRecoveryAttemptedIdRef.current,
+        song?.id,
+        { positionSeconds, stallCount: stallResumesRef.current.count }
+      );
+
+      // A stall: put it back where it was rather than starting the track over.
+      // Restarting is what made the same minute of a song play twice before
+      // the track was removed as unplayable.
+      if (decision.action === 'resume') {
+        stallResumesRef.current = {
+          songId: song?.id ?? null,
+          count: decision.nextStallCount,
+        };
+        getBackend().seekTo(decision.positionSeconds);
+        getBackend().play();
+        return;
+      }
+
       if (decision.action === 'retry') {
         lastRecoveryAttemptedIdRef.current = decision.nextLastRecoveryAttemptedId;
         const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
@@ -798,7 +842,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (seekToPosition !== undefined && seekToPosition > 0) getBackend().seekTo(seekToPosition);
     if (play) getBackend().play();
   }, [resetLastScrobbled, sinkLoadQueue]);
-  useEffect(() => { loadQueueRef.current = loadQueue; }, [loadQueue]);
+  // Assigned during render, not in an effect. React runs effects in the order
+  // they are declared, and the auto-restore effect is declared far above this
+  // one — so on first mount it called the placeholder this ref was
+  // initialised with, an `async () => {}` that does nothing and resolves
+  // successfully. The restore therefore "succeeded" silently: the queue and
+  // current song were written to state, the one-shot guard was set, and the
+  // player was never given anything. The app showed the remembered queue and
+  // play did nothing, with no error anywhere to say why.
+  //
+  // `resolvePlayableSongRef` above is assigned the same way, for the same
+  // reason.
+  loadQueueRef.current = loadQueue;
 
   // Autoplay: fetches more tracks once the queue is running low, regardless
   // of shuffle mode. Independent of Smart Shuffle — see injectSmartShuffleTracks.

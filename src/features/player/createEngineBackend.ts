@@ -100,7 +100,23 @@ export function createEngineBackend(): PlayerBackend {
    * changing that.
    */
   /** Resolves once `setup` has settled. Null until `setup` is called. */
-  let ready: Promise<void> | null = null;
+  // Created eagerly, not when `setup` is called. `fire` gates every other call
+  // behind this, and a null gate meant a call arriving *before* setup was
+  // fired straight at an engine that did not exist yet — "the engine is not
+  // set up — call setup() and wait for it before any command".
+  //
+  // That is not hypothetical ordering: `setup()` is invoked from an effect
+  // declared well below the one that restores the persisted queue, and React
+  // runs effects in declaration order. So on every cold launch the restore's
+  // `setQueue` went out first and was rejected, and the app came up showing a
+  // queue the player had never been given.
+  //
+  // The gate handled "setup is in flight" and not "setup has not started",
+  // which are the same thing from the caller's side.
+  let settleReady: () => void = () => {};
+  let ready: Promise<void> = new Promise<void>(resolve => {
+    settleReady = resolve;
+  });
 
   function fire(what: string, run: () => Promise<unknown>) {
     const report = (error: unknown) => {
@@ -134,7 +150,7 @@ export function createEngineBackend(): PlayerBackend {
       }
     };
 
-    if (ready && what !== 'setup') {
+    if (what !== 'setup') {
       // Callbacks queue in registration order, so calls stay in the order the
       // app made them rather than racing each other once the gate opens.
       ready.then(next, next);
@@ -158,12 +174,8 @@ export function createEngineBackend(): PlayerBackend {
 
   return {
     setup() {
-      // Held so every later call can wait behind it. Assigned before `fire`
-      // runs the body, because `fire` reads it to decide whether to gate.
-      let settle: () => void = () => {};
-      ready = new Promise<void>(resolve => {
-        settle = resolve;
-      });
+      // The gate already exists — see `ready` above. All this has to do is
+      // open it once the engine is actually up.
       fire('setup', async () => {
         const api = load();
         try {
@@ -172,7 +184,7 @@ export function createEngineBackend(): PlayerBackend {
           // Resolved in `finally` rather than after: a setup that threw still
           // has to open the gate, or the transport is blocked for the life of
           // the process.
-          settle();
+          settleReady();
         }
         // Subscribe once, and only after setup — the module has no listener
         // list before it exists.

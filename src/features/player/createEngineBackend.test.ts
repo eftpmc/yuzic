@@ -140,17 +140,33 @@ describe('the queue the app can read straight away', () => {
 });
 
 describe('talking to the engine', () => {
-  it('translates the app repeat vocabulary into the engine one', () => {
+  /**
+   * Every call now waits behind setup, so a test that wants to see one arrive
+   * has to let setup happen first — which is what the app does on mount. The
+   * earlier version of these tests called the backend without setting it up
+   * and asserted the call went straight out, which is precisely the behaviour
+   * that broke a restored queue on every cold launch.
+   */
+  async function readyBackend() {
     const backend = createEngineBackend();
+    backend.setup();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    return backend;
+  }
+
+  it('translates the app repeat vocabulary into the engine one', async () => {
+    const backend = await readyBackend();
     backend.setRepeatMode('track');
     backend.setRepeatMode('queue');
     backend.setRepeatMode('off');
+    await new Promise(resolve => setTimeout(resolve, 0));
     expect(named('setRepeatMode').map(c => c.args[0])).toEqual(['one', 'all', 'off']);
   });
 
-  it('sends tracks in the engine shape, not the app one', () => {
-    const backend = createEngineBackend();
+  it('sends tracks in the engine shape, not the app one', async () => {
+    const backend = await readyBackend();
     backend.setMediaItems([item('a', { url: { uri: 'file:///x.flac' } })], 0);
+    await new Promise(resolve => setTimeout(resolve, 0));
     const sent = named('setQueue')[0].args[0] as { uri: string; id: string }[];
     expect(sent[0]).toMatchObject({ id: 'a', uri: 'file:///x.flac' });
   });
@@ -185,6 +201,34 @@ describe('the cold-launch race', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(mockCalls.map(c => c.name)).toEqual(['setup', 'setQueue', 'play']);
+  });
+
+  /**
+   * The half the gate used to miss: a call made *before* `setup`.
+   *
+   * The gate was created inside `setup()`, so until that ran there was nothing
+   * to wait behind and a call went straight out to an engine that did not
+   * exist — rejected with "the engine is not set up". That is not a
+   * hypothetical ordering. `setup()` is invoked from an effect declared below
+   * the one that restores the persisted queue, and React runs effects in
+   * declaration order, so the restore's `setQueue` always went first.
+   *
+   * The result was an app that came up showing the remembered queue with the
+   * player never having been given it: press play, nothing happens. Silent,
+   * because the rejection was swallowed further up.
+   */
+  it('holds calls made before setup is even called', async () => {
+    const backend = createEngineBackend();
+
+    // Before any setup, exactly as the restore does on a cold launch.
+    backend.setMediaItems([item('a')], 0);
+    await flush();
+    expect(mockCalls.map(c => c.name)).toEqual([]);
+
+    backend.setup();
+    await flush();
+
+    expect(mockCalls.map(c => c.name)).toEqual(['setup', 'setQueue']);
   });
 
   /** Order is preserved once the gate opens — a play must not overtake a queue. */
@@ -228,6 +272,10 @@ describe('failures the app would otherwise never see', () => {
     const seen: unknown[] = [];
     backend.addListener((event: unknown) => seen.push(event));
 
+    // Set up first: transport now waits behind the gate, as it does in the app.
+    backend.setup();
+    await flush();
+
     mockFailing = 'play';
     backend.play();
     // The rejection is caught inside; let it get there.
@@ -242,6 +290,9 @@ describe('failures the app would otherwise never see', () => {
     const backend = createEngineBackend();
     const seen: { message?: string }[] = [];
     backend.addListener((event: { message?: string }) => seen.push(event));
+
+    backend.setup();
+    await flush();
 
     mockFailing = 'seekTo';
     backend.seekTo(30);
