@@ -10,6 +10,7 @@ import { selectListDensity, selectThemeColor } from '@/utils/redux/selectors/set
 import { setListDensity } from '@/utils/redux/slices/settingsSlice';
 import { useRadius } from '@/hooks/useRadius';
 import Touchable from '@/components/Touchable';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsDivider from '../../components/SettingsDivider';
 
@@ -42,9 +43,7 @@ export const ListDensitySelector: React.FC = () => {
 
   return (
     <>
-      <Text style={[styles.caption, { color: colors.subtext }]}>
-        {t('settings.appearance.listDensity.info')}
-      </Text>
+      <SettingsCardHeader subtle title={t('settings.appearance.listDensity.title')} />
       <SettingsCard>
         {DENSITIES.map((density, index) => {
           const isActive = selected === density;
@@ -84,12 +83,6 @@ export const ListDensitySelector: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  caption: {
-    ...typography.caption,
-    paddingHorizontal: spacing.page,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.tight,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

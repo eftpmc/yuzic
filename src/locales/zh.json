@@ -66,10 +66,12 @@
         "subtitle": "浅色、深色或跟随系统"
       },
       "color": {
+        "title": "主题色",
         "info": "自定义应用的主色调",
         "change": "修改主题颜色"
       },
       "playingBarAction": {
+        "title": "播放栏操作",
         "info": "选择播放栏显示的操作按钮",
         "actions": {
           "none": "无",
@@ -108,6 +110,7 @@
         "subtext": "网格视图中显示的专辑、艺人和播放列表的列数。"
       },
       "radiusPreset": {
+        "title": "圆角",
         "info": "整个应用中圆角的圆滑程度。",
         "sharp": {
           "label": "微圆方角",
@@ -127,6 +130,7 @@
       "coverAccent": "取色自封面",
       "coverAccentSubtext": "用封面上的颜色为专辑、艺人和播放器页面着色。",
       "listDensity": {
+        "title": "列表密度",
         "info": "列表中各行之间留出的间距。",
         "compact": {
           "label": "紧凑",

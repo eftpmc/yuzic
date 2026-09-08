@@ -9,6 +9,7 @@ import { iconSize, spacing, type RadiusPreset, typography } from '@/constants/de
 import { selectRadiusPreset, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setRadiusPreset } from '@/utils/redux/slices/settingsSlice';
 import Touchable from '@/components/Touchable';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsDivider from '../../components/SettingsDivider';
 
@@ -37,9 +38,7 @@ export const RadiusPresetSelector: React.FC = () => {
 
   return (
     <>
-      <Text style={[styles.caption, { color: colors.subtext }]}>
-        {t('settings.appearance.radiusPreset.info')}
-      </Text>
+      <SettingsCardHeader subtle title={t('settings.appearance.radiusPreset.title')} />
       <SettingsCard>
         {presets.map((preset, index) => {
           const isActive = selected === preset;
@@ -81,12 +80,6 @@ export const RadiusPresetSelector: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  caption: {
-    ...typography.caption,
-    paddingHorizontal: spacing.page,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.tight,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
