@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -12,24 +13,15 @@ import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsRow from '../components/SettingsRow';
 import StreamingQuality from './components/StreamingQuality';
 import Crossfade from './components/Crossfade';
-import Equalizer from './components/Equalizer';
 import EngineSmokeTest from './EngineSmokeTest';
 import {
   selectPreferredCodec,
-  selectShowSleepTimer,
-  selectShowPlaybackSpeed,
-  selectShowJumpButtons,
-  selectShowVolumeSlider,
   selectAutoplayEnabled,
   selectResumeLongTracksEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured } from '@/utils/redux/selectors/audiomuseSelectors';
 import {
   setPreferredCodec,
-  setShowSleepTimer,
-  setShowPlaybackSpeed,
-  setShowJumpButtons,
-  setShowVolumeSlider,
   setAutoplayEnabled,
   setResumeLongTracksEnabled,
 } from '@/utils/redux/slices/settingsSlice';
@@ -37,12 +29,9 @@ import {
 const PlayerSettings: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const router = useRouter();
   const api = useApi();
   const preferredCodec = useSelector(selectPreferredCodec);
-  const showSleepTimer = useSelector(selectShowSleepTimer);
-  const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
-  const showJumpButtons = useSelector(selectShowJumpButtons);
-  const showVolumeSlider = useSelector(selectShowVolumeSlider);
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
   const resumeLongTracks = useSelector(selectResumeLongTracksEnabled);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
@@ -57,33 +46,6 @@ const PlayerSettings: React.FC = () => {
     value: preferredCodec === 'opus',
     onValueChange: toggleOpus,
   }], [t, preferredCodec, toggleOpus]);
-
-  const playerControlItems = useMemo(() => [
-    {
-      label: t('settings.player.showSleepTimer'),
-      subtext: t('settings.player.showSleepTimerSubtext'),
-      value: showSleepTimer,
-      onValueChange: (v: boolean) => dispatch(setShowSleepTimer(v)),
-    },
-    {
-      label: t('settings.player.showPlaybackSpeed'),
-      subtext: t('settings.player.showPlaybackSpeedSubtext'),
-      value: showPlaybackSpeed,
-      onValueChange: (v: boolean) => dispatch(setShowPlaybackSpeed(v)),
-    },
-    {
-      label: t('settings.player.showJumpButtons'),
-      subtext: t('settings.player.showJumpButtonsSubtext'),
-      value: showJumpButtons,
-      onValueChange: (v: boolean) => dispatch(setShowJumpButtons(v)),
-    },
-    {
-      label: t('settings.player.showVolumeSlider'),
-      subtext: t('settings.player.showVolumeSliderSubtext'),
-      value: showVolumeSlider,
-      onValueChange: (v: boolean) => dispatch(setShowVolumeSlider(v)),
-    },
-  ], [t, showSleepTimer, showPlaybackSpeed, showJumpButtons, showVolumeSlider, dispatch]);
 
   const autoplayItems = useMemo(() => [
     {
@@ -137,14 +99,31 @@ const PlayerSettings: React.FC = () => {
 
   return (
     <SettingsScreen title={t('settings.player.title')}>
+      {/*
+        Audio first, then behaviour, then storage. Crossfade and the equalizer
+        used to sit fifth, below four "show this control in the player"
+        toggles — which are display settings and now live in Appearance, with
+        the rest of what the app looks like.
+      */}
       <StreamingQuality />
       {supportsOpus && <SettingsToggleGroup items={opusItems} />}
-      <SettingsToggleGroup items={playerControlItems} />
-      <SettingsToggleGroup items={autoplayItems} />
 
       <SettingsCardHeader subtle title={t('settings.player.audio')} />
       <Crossfade />
-      <Equalizer />
+      <SettingsCard>
+        {/*
+          A row rather than the equalizer itself: inline, its rotated band
+          sliders claimed the vertical drag that was meant to scroll the page,
+          so scrolling past it changed the user's sound. See
+          `screens/settings/equalizer`.
+        */}
+        <SettingsRow
+          label={t('settings.player.equalizer.title')}
+          onPress={() => router.push('/settings/equalizerView')}
+        />
+      </SettingsCard>
+
+      <SettingsToggleGroup items={autoplayItems} />
 
       <SettingsCardHeader subtle title={t('settings.player.cacheTitle')} />
       <SettingsCard>

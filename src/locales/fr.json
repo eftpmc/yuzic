@@ -452,6 +452,9 @@
       "nowPlayingDescription": "Afficher ce que vous écoutez en temps réel.",
       "markAsPlayed": "Marquer comme écouté",
       "markAsPlayedDescription": "Mettre à jour le nombre de lectures sur votre serveur."
+    },
+    "home": {
+      "title": "Accueil"
     }
   },
   "common": {

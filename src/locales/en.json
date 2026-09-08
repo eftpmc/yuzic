@@ -452,6 +452,9 @@
       "nowPlayingDescription": "Show what you're listening to in real time.",
       "markAsPlayed": "Mark as Played",
       "markAsPlayedDescription": "Update play count on your server."
+    },
+    "home": {
+      "title": "Home"
     }
   },
   "common": {
