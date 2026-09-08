@@ -54,7 +54,18 @@
       "queueSync": "Synchroniser la file d’attente entre appareils",
       "queueSyncDescription": "Enregistre ce que vous écoutez sur le serveur pour qu’un autre appareil puisse reprendre où vous vous êtes arrêté.",
       "nowPlayingShelf": "Afficher qui écoute aussi",
-      "nowPlayingShelfDescription": "Une rangée sur l’accueil listant les autres utilisateurs de ce serveur et ce qu’ils écoutent en ce moment."
+      "nowPlayingShelfDescription": "Une rangée sur l’accueil listant les autres utilisateurs de ce serveur et ce qu’ils écoutent en ce moment.",
+      "clientCertificate": {
+        "title": "Certificat client",
+        "description": "Pour un serveur qui demande au client de prouver son identité. Choisissez le fichier PKCS#12 (.p12 ou .pfx) délivré par votre serveur.",
+        "passwordPlaceholder": "Mot de passe du certificat",
+        "choose": "Choisir un certificat",
+        "installed": "Certificat installé",
+        "remove": "Supprimer le certificat",
+        "rejected": "Ce certificat n'a pas pu être lu. Vérifiez le mot de passe et réessayez.",
+        "readFailed": "Ce fichier n'a pas pu être lu.",
+        "unsupported": "Les certificats clients ne sont pas encore pris en charge sur cette plateforme."
+      }
     },
     "appearance": {
       "title": "Apparence",

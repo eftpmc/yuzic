@@ -54,7 +54,18 @@
       "queueSync": "デバイス間でキューを同期",
       "queueSyncDescription": "再生中の内容をサーバーに保存し、別のデバイスで続きから再生できるようにします。",
       "nowPlayingShelf": "他に聴いている人を表示",
-      "nowPlayingShelfDescription": "このサーバーの他のユーザーと、そのユーザーが今再生している曲をホームに表示します。"
+      "nowPlayingShelfDescription": "このサーバーの他のユーザーと、そのユーザーが今再生している曲をホームに表示します。",
+      "clientCertificate": {
+        "title": "クライアント証明書",
+        "description": "クライアントの身元確認を求めるサーバー用です。サーバーから発行された PKCS#12 ファイル（.p12 または .pfx）を選択してください。",
+        "passwordPlaceholder": "証明書のパスワード",
+        "choose": "証明書を選択",
+        "installed": "証明書を設定済み",
+        "remove": "証明書を削除",
+        "rejected": "この証明書を読み込めませんでした。パスワードを確認してもう一度お試しください。",
+        "readFailed": "このファイルを読み込めませんでした。",
+        "unsupported": "このプラットフォームではクライアント証明書にまだ対応していません。"
+      }
     },
     "appearance": {
       "title": "外観",
