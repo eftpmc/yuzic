@@ -13,7 +13,8 @@ export const PlayingBarActionSelector: React.FC = () => {
 
   return (
     <SettingsIconSelectCard
-      title={t('settings.appearance.playingBarAction.info')}
+      title={t('settings.appearance.playingBarAction.title')}
+      subtitle={t('settings.appearance.playingBarAction.info')}
       items={PLAYING_BAR_ACTIONS.map(action => ({
         id: action.id,
         icon: action.icon as React.ReactElement<{ color?: string }>,

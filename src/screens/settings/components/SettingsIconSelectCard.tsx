@@ -16,19 +16,25 @@ export type IconSelectItem = {
 
 type Props = {
   title: string;
+  /** An explanation under the title, for a card whose options are bare glyphs
+   *  and cannot say what the setting is for on their own. */
+  subtitle?: string;
   items: IconSelectItem[];
   selected: string;
   onSelect: (id: string) => void;
 };
 
-const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSelect }) => {
+const SettingsIconSelectCard: React.FC<Props> = ({ title, subtitle, items, selected, onSelect }) => {
   const { colors } = useTheme();
   const rad = useRadius();
 
   return (
     <SettingsCard>
       <View style={styles.inner}>
-        <Text style={[styles.title, { color: colors.subtext }]}>{title}</Text>
+        <Text style={[styles.title, { color: colors.secondary }]}>{title}</Text>
+        {subtitle ? (
+          <Text style={[styles.subtitle, { color: colors.subtext }]}>{subtitle}</Text>
+        ) : null}
         <View style={styles.row} accessibilityRole="radiogroup">
           {items.map(item => {
             const active = selected === item.id;
@@ -66,6 +72,10 @@ const styles = StyleSheet.create({
   inner: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+  },
+  subtitle: {
+    ...typography.caption,
+    marginTop: spacing.xxs,
   },
   title: {
     ...typography.caption,

@@ -66,10 +66,12 @@
         "subtitle": "Clair, sombre ou système"
       },
       "color": {
+        "title": "Couleur d'accentuation",
         "info": "Personnalisez la couleur principale de votre application",
         "change": "Modifier la couleur du thème"
       },
       "playingBarAction": {
+        "title": "Action de la barre de lecture",
         "info": "Choisissez l'action affichée dans la barre de lecture",
         "actions": {
           "none": "Aucune",
@@ -108,6 +110,7 @@
         "subtext": "Nombre de colonnes d’albums, d’artistes et de listes de lecture affichées en vue grille."
       },
       "radiusPreset": {
+        "title": "Coins",
         "info": "Arrondi des coins dans toute l’application.",
         "sharp": {
           "label": "Carré doux",
@@ -127,6 +130,7 @@
       "coverAccent": "Couleur de la pochette",
       "coverAccentSubtext": "Teinte les écrans d'album, d'artiste et du lecteur avec une nuance prise sur la pochette.",
       "listDensity": {
+        "title": "Densité des listes",
         "info": "L'espace laissé entre les lignes d'une liste.",
         "compact": {
           "label": "Compact",

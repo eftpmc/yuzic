@@ -66,10 +66,12 @@
         "subtitle": "Light, dark, or system"
       },
       "color": {
+        "title": "Accent colour",
         "info": "Customize the primary color of your app",
-        "change": "Change Theme Color"
+        "change": "Change theme colour"
       },
       "playingBarAction": {
+        "title": "Playing bar action",
         "info": "Choose which action appears in the playing bar",
         "actions": {
           "none": "None",
@@ -108,6 +110,7 @@
         "subtext": "How many columns of albums, artists, and playlists appear in grid view."
       },
       "radiusPreset": {
+        "title": "Corners",
         "info": "How rounded the corners are across the app.",
         "sharp": {
           "label": "Soft square",
@@ -127,6 +130,7 @@
       "coverAccent": "Colour from artwork",
       "coverAccentSubtext": "Tint album, artist, and player screens with a shade taken from the cover.",
       "listDensity": {
+        "title": "List density",
         "info": "How much space sits between rows in a list.",
         "compact": {
           "label": "Compact",

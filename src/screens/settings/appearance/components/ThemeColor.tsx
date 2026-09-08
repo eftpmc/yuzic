@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setThemeColor } from '@/utils/redux/slices/settingsSlice';
 import { useTheme } from '@/hooks/useTheme';
+import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
@@ -23,9 +24,7 @@ export const ThemeColor: React.FC = () => {
 
   return (
     <>
-      <Text style={[styles.caption, { color: colors.subtext }]}>
-        {t('settings.appearance.color.info')}
-      </Text>
+      <SettingsCardHeader subtle title={t('settings.appearance.color.title')} />
       <SettingsCard style={styles.card}>
         <View style={styles.presets} accessibilityRole="radiogroup">
           {THEME_PRESET_COLORS.map(color => (
@@ -78,12 +77,6 @@ export const ThemeColor: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  caption: {
-    ...typography.caption,
-    marginBottom: spacing.tight,
-    marginTop: spacing.lg,
-    marginLeft: spacing.xs,
-  },
   card: {
     padding: spacing.lg,
   },
