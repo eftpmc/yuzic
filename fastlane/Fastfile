@@ -68,31 +68,55 @@ def resolved_version_label
   value
 end
 
-def resolved_ios_build_number(api_key, version_label)
-  # Two questions, because App Store Connect enforces only the first: a build
-  # number must be unique within its version train. Nothing stops 2.0.0 (10)
-  # landing underneath an existing 2.0.0 (94) — that upload succeeds, and
-  # testers keep the higher build. That is what the release run did.
-  in_train = latest_testflight_build_number(
-    api_key: api_key,
-    app_identifier: APP_IDENTIFIER,
-    version: version_label,
-    initial_build_number: 0
-  ).to_i
+def resolved_ios_build_number(api_key, _version_label)
+  # Every build the app has, and the highest number among them — not the
+  # "latest" one.
+  #
+  # `latest_testflight_build_number` cannot answer this, and using it here was
+  # a real mistake rather than a subtlety: it asks App Store Connect for
+  # `sort: "-uploadedDate", limit: 1`, so it returns the most recently
+  # *uploaded* build. When 2.0.0 (10) was uploaded after 2.0.0 (94), "latest"
+  # was 10, this produced 11, and the new build sorted below five older ones in
+  # TestFlight. The two-counter bug was fixed and the number still did not
+  # climb.
+  #
+  # Asked across every version rather than the current train. App Store Connect
+  # only requires uniqueness within a train, but a number that also climbs
+  # app-wide is what puts a new build at the top of the tester's list, which is
+  # the thing anyone actually wants from it.
+  require 'spaceship'
 
-  overall = begin
-    latest_testflight_build_number(
-      api_key: api_key,
-      app_identifier: APP_IDENTIFIER,
-      initial_build_number: 0
-    ).to_i
-  rescue StandardError => e
-    UI.important("Could not read the latest TestFlight build overall (#{e.message.to_s.strip.lines.first.to_s.strip}) — using the #{version_label} train alone.")
-    0
+  token = Spaceship::ConnectAPI::Token.from(hash: api_key)
+  UI.user_error!("No App Store Connect API token — cannot ask for a build number.") if token.nil?
+  Spaceship::ConnectAPI.token = token
+
+  app = Spaceship::ConnectAPI::App.find(APP_IDENTIFIER)
+  UI.user_error!("No app on App Store Connect for #{APP_IDENTIFIER}.") if app.nil?
+
+  # AWAITING_UPLOAD is excluded because those carry no uploaded date and are
+  # not builds anyone has; the other three states all hold a number that is
+  # spent and cannot be reused.
+  uploads = Spaceship::ConnectAPI.get_build_uploads(
+    app_id: app.id,
+    filter: { state: "PROCESSING,FAILED,COMPLETE" },
+    sort: "-uploadedDate",
+    limit: 200
+  )
+
+  numbers = uploads.map { |upload| upload.cf_build_version.to_i }.reject(&:zero?)
+  if numbers.empty?
+    UI.user_error!(
+      "App Store Connect returned no builds for #{APP_IDENTIFIER}. Refusing to " \
+      "invent a build number — check the API key's access."
+    )
   end
 
-  value = [in_train, overall].max + 1
-  UI.important("Latest TestFlight build — #{version_label} train: #{in_train}, overall: #{overall}. Using iOS build number: #{value}")
+  highest = numbers.max
+  value = highest + 1
+  UI.important(
+    "App Store Connect holds #{numbers.count} builds (capped at 200 by recency); " \
+    "highest build number: #{highest}. Using iOS build number: #{value}"
+  )
   value
 end
 
