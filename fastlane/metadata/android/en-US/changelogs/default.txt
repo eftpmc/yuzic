@@ -1,0 +1,9 @@
+Yuzic now has its own audio engine. Playback was rebuilt around an audio graph rather than a single player.
+
+- Crossfade, with a gapless-aware mode
+- Ten-band equalizer and replay gain
+- Android Auto plays the quality you chose
+- A unified Downloads screen, with progress and cancel
+- A sleep timer that fades out rather than cutting
+- Appearance settings for density, corners and glyph scale
+- Screen reader labels on every control you can reach

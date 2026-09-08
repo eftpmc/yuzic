@@ -3,31 +3,56 @@ Dotenv.load
 
 default_platform(:android)
 
-# Last versionCode/build number actually published to Play/App Store Connect
-# before CI started auto-deriving these from GITHUB_RUN_NUMBER. Play and
-# App Store Connect both reject uploads whose version code/build number
-# isn't strictly greater than everything published before, so CI adds these
-# as a fixed offset on top of the ever-increasing run number. Never lower
-# these constants — only raise them if you learn the true published value is
-# higher than what's recorded here.
-ANDROID_LAST_PUBLISHED_VERSION_CODE = 109
-IOS_LAST_PUBLISHED_BUILD_NUMBER = 1
+# Version codes and build numbers are asked of the stores, never derived.
+#
+# They used to be GITHUB_RUN_NUMBER plus a fixed offset, documented as "a
+# per-workflow-file counter that never resets or repeats". That is true of a
+# workflow_dispatch and false of a workflow_call: a reusable workflow sees the
+# *caller's* run number, so one build entered two ways kept two unrelated
+# counters. The dispatch path reached versionCode 132 while the release path
+# was still at 118, and Play refused 2.0.0 with "You cannot rollout this
+# release because it does not allow any existing users to upgrade to the newly
+# added APKs" — after a fully green Gradle build.
+#
+# Play and App Store Connect both require a number greater than what they
+# already hold, which makes them the only things that know the answer. Asking
+# them makes every entry point agree by construction. There is deliberately no
+# override and no fallback: a number nobody checked is the failure being
+# replaced here, and version code space spent is not recoverable.
+
+APP_IDENTIFIER = "com.arinora.rawarr"
+
+# Every track, not only the one being uploaded to. A code live anywhere is a
+# code Play will not take again, and production sits below alpha here.
+PLAY_TRACKS = %w[internal alpha beta production].freeze
 
 def resolved_android_version_code
-  if ENV["ANDROID_VERSION_CODE"]
-    raw = ENV["ANDROID_VERSION_CODE"]
-  elsif ENV["GITHUB_RUN_NUMBER"]
-    raw = (ENV["GITHUB_RUN_NUMBER"].to_i + ANDROID_LAST_PUBLISHED_VERSION_CODE).to_s
-  else
-    raw = Time.now.to_i.to_s
+  codes = PLAY_TRACKS.flat_map do |track|
+    begin
+      google_play_track_version_codes(
+        package_name: APP_IDENTIFIER,
+        track: track,
+        json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"]
+      ).map(&:to_i)
+    rescue StandardError => e
+      # A track that has never been used has nothing to report, which is not
+      # a failure — only every track being unreadable is.
+      UI.important("No version codes readable on '#{track}' (#{e.message.to_s.strip.lines.first.to_s.strip}) — skipping it.")
+      []
+    end
   end
-  code = raw.to_i
 
-  if code <= 0 || raw.to_s !~ /\A\d+\z/
-    UI.user_error!("Invalid Android version code '#{raw}'. Set ANDROID_VERSION_CODE (positive integer).")
+  if codes.empty?
+    UI.user_error!(
+      "Play returned no version codes on any of: #{PLAY_TRACKS.join(', ')}. " \
+      "Refusing to invent one. Check GOOGLE_PLAY_JSON_KEY and that the package " \
+      "is still #{APP_IDENTIFIER}."
+    )
   end
 
-  UI.important("Using Android version code: #{code}")
+  highest = codes.max
+  code = highest + 1
+  UI.important("Highest version code on Play: #{highest}. Using Android version code: #{code}")
   code
 end
 
@@ -43,21 +68,31 @@ def resolved_version_label
   value
 end
 
-def resolved_ios_build_number
-  if ENV["IOS_BUILD_NUMBER"]
-    raw = ENV["IOS_BUILD_NUMBER"]
-  elsif ENV["GITHUB_RUN_NUMBER"]
-    raw = (ENV["GITHUB_RUN_NUMBER"].to_i + IOS_LAST_PUBLISHED_BUILD_NUMBER).to_s
-  else
-    raw = Time.now.to_i.to_s
-  end
-  value = raw.to_i
+def resolved_ios_build_number(api_key, version_label)
+  # Two questions, because App Store Connect enforces only the first: a build
+  # number must be unique within its version train. Nothing stops 2.0.0 (10)
+  # landing underneath an existing 2.0.0 (94) — that upload succeeds, and
+  # testers keep the higher build. That is what the release run did.
+  in_train = latest_testflight_build_number(
+    api_key: api_key,
+    app_identifier: APP_IDENTIFIER,
+    version: version_label,
+    initial_build_number: 0
+  ).to_i
 
-  if value <= 0 || raw.to_s !~ /\A\d+\z/
-    UI.user_error!("Invalid iOS build number '#{raw}'. Set IOS_BUILD_NUMBER (positive integer).")
+  overall = begin
+    latest_testflight_build_number(
+      api_key: api_key,
+      app_identifier: APP_IDENTIFIER,
+      initial_build_number: 0
+    ).to_i
+  rescue StandardError => e
+    UI.important("Could not read the latest TestFlight build overall (#{e.message.to_s.strip.lines.first.to_s.strip}) — using the #{version_label} train alone.")
+    0
   end
 
-  UI.important("Using iOS build number: #{value}")
+  value = [in_train, overall].max + 1
+  UI.important("Latest TestFlight build — #{version_label} train: #{in_train}, overall: #{overall}. Using iOS build number: #{value}")
   value
 end
 
@@ -97,7 +132,13 @@ platform :android do
       skip_upload_apk: true,
       skip_upload_metadata: true,
       skip_upload_images: true,
-      skip_upload_screenshots: true
+      skip_upload_screenshots: true,
+      # Explicitly not skipped. Notes come from
+      # metadata/android/en-US/changelogs/default.txt, which supply falls back
+      # to when there is no <version code>.txt — and there cannot be one, since
+      # the code is only known once Play has been asked. Every upload before
+      # this logged "Could not find changelog" and shipped with no notes.
+      skip_upload_changelogs: false
     )
   end
 end
@@ -108,12 +149,10 @@ platform :ios do
     prepare_build_dirs
 
     team_id = resolved_ios_team_id
-    build_number = resolved_ios_build_number
     version_label = resolved_version_label
     profile_name = resolved_ios_profile_name
 
     UI.important("iOS team id: #{team_id}")
-    UI.important("iOS build number: #{build_number}")
     UI.important("iOS version label: #{version_label}")
     UI.important("iOS provisioning profile: #{profile_name}")
 
@@ -128,6 +167,10 @@ platform :ios do
       key_content: ENV["APPSTORE_API_KEY_BASE64"],
       is_key_content_base64: true
     )
+
+    # After the API key exists, because the number is asked of App Store
+    # Connect rather than derived from anything local.
+    build_number = resolved_ios_build_number(api_key, version_label)
 
     match(
       type: "appstore",

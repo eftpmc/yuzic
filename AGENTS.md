@@ -32,40 +32,75 @@ tables; update it when that set changes.
 - `.github/workflows/android-build.yml` / `ios-build.yml`: build and ship to Play's alpha track / App Store Connect (TestFlight only — `submit_for_review: false`, never public review). Runnable manually (`workflow_dispatch`) or called by the release workflow (`workflow_call`). No manual version inputs — see below.
 - `.github/workflows/release-on-version-bump.yml`: on push to `master`, if `package.json`'s `version` field changed from the previous commit, automatically calls both build workflows.
 
-## Version numbers — do not reintroduce manual overrides
+## Version numbers — the stores are asked, never told
 
-Android versionCode and iOS build number are derived automatically and must **never** be manually typed in per-run — a human-entered duplicate is exactly what gets a build rejected by Play/App Store Connect, since both require every new version code/build number to be strictly greater than everything published before.
+Android versionCode and iOS build number are **queried from Play and App Store
+Connect at build time** and must never be typed in per-run. Both stores require
+a number greater than what they already hold, so they are the only things that
+know the right answer; anything computed locally is a guess that is wrong the
+moment a build is entered a different way.
 
 The mechanism (see `fastlane/Fastfile`):
-- `VERSION_LABEL` (e.g. `1.3.7`) is read directly from `package.json` at build time — single source of truth, never passed as a workflow input.
-- `ANDROID_VERSION_CODE` / `IOS_BUILD_NUMBER` derive from `GITHUB_RUN_NUMBER` (GitHub's per-workflow-file counter — starts at 1, increments forever, never resets or repeats) **plus a fixed offset** (`ANDROID_LAST_PUBLISHED_VERSION_CODE` / `IOS_LAST_PUBLISHED_BUILD_NUMBER` constants at the top of `Fastfile`). The offset exists because CI's run counter started from 0 while the stores already had real published versions ahead of it.
+- `VERSION_LABEL` (e.g. `2.0.0`) is read directly from `package.json` at build time — single source of truth, never passed as a workflow input.
+- **Android**: `google_play_track_version_codes` across *all four* tracks (internal, alpha, beta, production), highest + 1. All four, because a code live anywhere is a code Play will not accept again — and production has historically sat *below* alpha here.
+- **iOS**: `latest_testflight_build_number` twice — for the current version train and for the app overall — highest + 1. App Store Connect only enforces uniqueness *within* a version, so the second question is what stops a new build landing underneath an existing one.
+- There is deliberately **no override and no fallback**. If the store cannot be reached the build fails; it does not invent a number. The old code fell back to `Time.now.to_i`, which would have spent about 1.7 billion of a 2.1 billion version code ceiling in one upload, irreversibly.
 
-**Last known published versions** (recorded here so this doesn't silently break again):
-- Android: version **1.3.7**, versionCode **109**. 1.4.0 was *rejected*, not published — see below.
-- iOS: version **1.4.0**, build **9**, uploaded to App Store Connect 2026-09-04.
+**Do not reintroduce a locally-derived number.** The previous mechanism was
+`GITHUB_RUN_NUMBER` plus a fixed offset, described here as a per-workflow-file
+counter that "never resets or repeats". That is true of a `workflow_dispatch`
+and **false of a `workflow_call`**: a reusable workflow sees the *caller's* run
+number. So the same build had two counters — the dispatch path reached
+versionCode 132 while the release path was still at 118 — and 2.0.0 was refused
+by Play with `You cannot rollout this release because it does not allow any
+existing users to upgrade to the newly added APKs`, after a fully green Gradle
+build. On iOS the same skew was silent and worse: the release uploaded 2.0.0
+build **10** underneath the dispatch path's 2.0.0 build **94**, which App Store
+Connect *accepted*, leaving testers on the older-numbered build.
 
-The two platforms are not on the same version, and that asymmetry is the
-evidence of a half-failed release rather than a mistake in this table.
+**What the stores held when this changed (2026-09-07)**, as a sanity check
+rather than a source of truth — the next run should come out one above these:
+- Play: production **1.3.7 / 109**, alpha **1.4.0 / 132** (a `workflow_dispatch` upload on 2026-09-05). The rejected 2.0.0 attempt was code 118.
+- TestFlight: **2.0.0 / 94**, plus the release run's stranded **2.0.0 / 10**.
 
-If you ever need to raise these offset constants (e.g. because a manual/local Fastlane run published a version CI didn't know about), only ever increase them, and update this table to match. Do not remove the offset mechanism or reintroduce `workflow_dispatch` inputs for version numbers — that reopens the exact collision risk it was built to close.
+So the first run on the new mechanism should say `Using Android version code:
+133` and `Using iOS build number: 95`. Anything much lower means something
+local answered instead of the store.
+
+**Play release notes** come from
+`fastlane/metadata/android/en-US/changelogs/`. There cannot be a
+`<version code>.txt` any more — the code is only known once Play has been asked
+— so notes live in `default.txt`, which supply falls back to, and
+`skip_upload_changelogs: false` is set explicitly to keep it that way. Update
+`default.txt` as part of a release; it is capped at **500 characters** by Play.
 
 ## Releasing — check both halves
 
 A release is **two independent jobs**, and one can succeed while the other
-fails. That has already happened: on 2026-09-04 the 1.4.0 release shipped iOS
-to TestFlight and was rejected by Play in the same run, leaving the two
-platforms on different versions and the GitHub release stuck as an empty draft.
-Nothing announced this — the workflow simply showed as failed, and a failed
-release looks the same whether nothing shipped or half of it did.
+fails. That has now happened twice. On 2026-09-04 the 1.4.0 release shipped iOS
+to TestFlight and was rejected by Play in the same run. On 2026-09-07 the 2.0.0
+release did it again for a different reason (the run-number skew above),
+leaving the two platforms on different versions and the GitHub release stuck as
+an empty draft both times. Nothing announced this — the workflow simply showed
+as failed, and a failed release looks the same whether nothing shipped or half
+of it did.
+
+**A succeeded job is not a shipped release either.** 2.0.0's iOS half reported
+success while uploading a build number below what TestFlight already had, so
+testers never saw it. Check the number that actually landed, not the tick.
 
 So after any release:
 
 1. Open the `release-on-version-bump` run and check **both** `Ship iOS build`
    and `Ship Android build`, not just the run's overall conclusion.
-2. Fill in and publish the draft release the run created. It is generated with
+2. Read the `Using Android version code:` / `Using iOS build number:` lines out
+   of the logs and confirm each is higher than the last release's. They are
+   queried from the stores now, so they should be — this is the check that
+   proves the query happened rather than something local answering.
+3. Fill in and publish the draft release the run created. It is generated with
    an empty body and stays a draft until someone writes it, which is why the
    public releases page can lag the actual shipped version by months.
-3. If one platform failed, say so explicitly rather than re-running blind. The
+4. If one platform failed, say so explicitly rather than re-running blind. The
    fix usually belongs on `dev` and has to be promoted before a re-run can
    possibly succeed — which is exactly what did not happen after 1.4.0.
 
@@ -74,13 +109,6 @@ alpha included. Below that, `supply` fails with `Google Api Error: Invalid
 request - Target SDK of artifact is too low`, *after* a full successful Gradle
 build — so a green build says nothing about whether Play will take it. Set in
 `android/gradle.properties` and `app.json`.
-
-**Play release notes come from `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.**
-That directory does not exist, so every upload logs `Could not find changelog
-for '<code>'` and ships with no notes. Because the version code is derived from
-the run number, the filename cannot be known before the run — either add the
-file per release or accept the warning deliberately, but do not read it as a
-new failure.
 
 ## Native/player notes
 
