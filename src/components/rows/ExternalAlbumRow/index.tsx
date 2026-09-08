@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { statusColor, typography } from '@/constants/design';
+import { iconSize, statusColor, typography } from '@/constants/design';
 import {
   View,
   Text,
@@ -27,10 +27,10 @@ const ExternalAlbumRow: React.FC<Props> = ({ album, onPress, subtextOverride }) 
 
   const statusBadge =
     status.kind === 'in_library' ? (
-      <Link size={14} color={statusColor.success} />
+      <Link size={iconSize.badge} color={statusColor.success} />
     ) : status.kind === 'downloading' ? (
       <View style={styles.badge}>
-        <ArrowDownCircle size={12} color={statusColor.downloading} />
+        <ArrowDownCircle size={iconSize.badge} color={statusColor.downloading} />
         <Text style={[styles.badgeText, styles.badgeTextBlue]}>{status.progress}%</Text>
       </View>
     ) : null;

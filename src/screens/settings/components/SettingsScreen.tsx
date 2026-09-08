@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import Header from './Header';
 import { spacing } from '@/constants/design';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 type Props = {
   title: string;
@@ -21,9 +22,16 @@ const SettingsScreen: React.FC<Props> = ({
   scrollContentStyle,
 }) => {
   const { colors } = useTheme();
+  const scrollClearance = useScrollClearance();
 
   return (
     <SafeAreaView
+      // Top only, like every other screen. The default is all four edges, and
+      // the bottom one paints the home-indicator inset as a dead black band
+      // between the last card and the playing bar — the dock is a real docked
+      // tabBar that already owns that space, so claiming it twice just leaves
+      // a strip of background no content can reach.
+      edges={['top']}
       style={[
         styles.container,
         { backgroundColor: colors.background },
@@ -31,7 +39,13 @@ const SettingsScreen: React.FC<Props> = ({
       ]}
     >
       <Header title={title} onBackPress={onBackPress} rightAction={rightAction} />
-      <ScrollView contentContainerStyle={[styles.scrollContent, scrollContentStyle]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: scrollClearance },
+          scrollContentStyle,
+        ]}
+      >
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -44,6 +58,5 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: {
     padding: spacing.lg,
-    paddingBottom: spacing.scrollClearance,
   },
 });

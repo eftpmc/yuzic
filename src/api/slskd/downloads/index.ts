@@ -1,5 +1,6 @@
 import { createSlskdClient, DEFAULT_SLSKD_PREFERENCES, type SlskdClient, type SlskdConfig, type SlskdSearchPreferences } from '../client';
 import { createRequestCoalescer } from '../../coalesceRequest';
+import { canonicalizeAlbumFromMbid } from '../mb/canonicalize';
 import {
   normalize,
   selectAlbumDirectory,
@@ -7,6 +8,19 @@ import {
   type SearchFile,
   type SearchResponseItem,
 } from './selection';
+
+export type SlskdAlbumRequest = {
+  title: string;
+  artist: string;
+  /** Optional MusicBrainz release-group id — when present, used to look up
+   * the canonical title and artist credit before searching. */
+  mbid?: string | null;
+};
+
+export type SlskdTrackRequest = {
+  title: string;
+  artist: string;
+};
 
 const SEARCH_TIMEOUT_MS = 15000;
 const POLL_MS = 2000;
@@ -166,12 +180,20 @@ function preferencesFrom(config: SlskdConfig): SlskdSearchPreferences {
 
 async function performAlbumDownload(
   config: SlskdConfig,
-  albumTitle: string,
-  artistName: string
+  req: SlskdAlbumRequest
 ): Promise<DownloadAlbumResult> {
-  if (!albumTitle || !artistName) {
+  if (!req.title || !req.artist) {
     return failure('missing_identity');
   }
+
+  // Prefer the canonical strings from MusicBrainz when we have an MBID —
+  // Soulseek matches filenames, and an uploader is more likely to have
+  // tagged the release using its canonical name than a source-specific
+  // variant. Falls back to the caller's strings if MB is unreachable or
+  // returns nothing useful.
+  const canonical = await canonicalizeAlbumFromMbid(req.mbid);
+  const albumTitle = canonical?.title ?? req.title;
+  const artistName = canonical?.artist ?? req.artist;
 
   const searchText = `${artistName} ${albumTitle}`.trim();
   const client = createSlskdClient(config);
@@ -201,13 +223,14 @@ async function performAlbumDownload(
 
 async function performTrackDownload(
   config: SlskdConfig,
-  trackTitle: string,
-  artistName: string
+  req: SlskdTrackRequest
 ): Promise<DownloadTrackResult> {
-  if (!trackTitle || !artistName) {
+  if (!req.title || !req.artist) {
     return failure('missing_identity');
   }
 
+  const trackTitle = req.title;
+  const artistName = req.artist;
   const searchText = `${artistName} ${trackTitle}`.trim();
   const client = createSlskdClient(config);
   const prefs = preferencesFrom(config);
@@ -236,20 +259,18 @@ async function performTrackDownload(
  */
 export function downloadAlbum(
   config: SlskdConfig,
-  albumTitle: string,
-  artistName: string
+  req: SlskdAlbumRequest
 ): Promise<DownloadAlbumResult> {
-  return coalesce(requestKey(config, 'album', albumTitle, artistName), () =>
-    performAlbumDownload(config, albumTitle, artistName)
+  return coalesce(requestKey(config, 'album', req.title, req.artist), () =>
+    performAlbumDownload(config, req)
   );
 }
 
 export function downloadTrack(
   config: SlskdConfig,
-  trackTitle: string,
-  artistName: string
+  req: SlskdTrackRequest
 ): Promise<DownloadTrackResult> {
-  return coalesce(requestKey(config, 'track', trackTitle, artistName), () =>
-    performTrackDownload(config, trackTitle, artistName)
+  return coalesce(requestKey(config, 'track', req.title, req.artist), () =>
+    performTrackDownload(config, req)
   );
 }

@@ -1,13 +1,17 @@
 import { RootState } from '@/utils/redux/store';
+import type { CrossfadeSettings } from '@/features/player/audioSettings';
+import { FLAT_EQ } from '@/features/player/audioSettings';
 import {
   AudioQuality,
   PreferredCodec,
   LibrarySortOrder,
   ThemeMode,
   SearchScope,
-  AppLanguage
+  AppLanguage,
+  LibraryViewKey,
+  LIBRARY_VIEW_DEFAULTS,
 } from '@/utils/redux/slices/settingsSlice';
-import type { RadiusPreset } from '@/constants/design';
+import type { ListDensity, RadiusPreset } from '@/constants/design';
 
 export const selectSettings = (state: RootState) => state.settings;
 
@@ -20,14 +24,36 @@ export const selectThemeColor = (state: RootState): string =>
 export const selectRadiusPreset = (state: RootState): RadiusPreset =>
   (state.settings.radiusPreset as RadiusPreset | undefined) ?? 'default';
 
+/** Falls back rather than reading straight through, because a user upgrading
+ *  has a persisted settings object written before this key existed. */
+export const selectListDensity = (state: RootState): ListDensity =>
+  (state.settings.listDensity as ListDensity | undefined) ?? 'default';
+
+export const selectCoverAccentEnabled = (state: RootState): boolean =>
+  state.settings.coverAccentEnabled ?? true;
+
 export const selectGridColumns = (state: RootState): number =>
   state.settings.gridColumns;
 
-export const selectGridSpacing = (state: RootState): number =>
-  state.settings.gridSpacing;
-
 export const selectIsGridView = (state: RootState): boolean =>
   state.settings.isGridView;
+
+/**
+ * Grid or list for one collection.
+ *
+ * Three tiers, most specific first: what the user chose for *this* collection,
+ * then what the kind defaults to, then the old global flag — which is still
+ * the answer for a caller with no collection to name.
+ */
+export const selectLibraryViewMode =
+  (collection: LibraryViewKey | null) =>
+  (state: RootState): boolean => {
+    if (!collection) return state.settings.isGridView;
+    return (
+      state.settings.libraryViewModes?.[collection] ??
+      LIBRARY_VIEW_DEFAULTS[collection]
+    );
+  };
 
 export const selectPlayingBarAction = (state: RootState) =>
   state.settings.playingBarAction;
@@ -73,6 +99,9 @@ export const selectHapticsEnabled = (state: RootState): boolean =>
 export const selectRespectReducedMotion = (state: RootState): boolean =>
   state.settings.respectReducedMotion ?? true;
 
+export const selectTranslucentDock = (state: RootState): boolean =>
+  state.settings.translucentDock ?? false;
+
 export const selectAutoplayEnabled = (state: RootState): boolean =>
   state.settings.autoplayEnabled ?? false;
 
@@ -94,11 +123,11 @@ export const selectDownloadQuality = (state: RootState): AudioQuality =>
 export const selectAutoDownloadNewSongs = (state: RootState): boolean =>
   state.settings.autoDownloadNewSongs ?? false;
 
+export const selectDownloadOnWifiOnly = (state: RootState): boolean =>
+  state.settings.downloadOnWifiOnly ?? true;
+
 export const selectServerScrobbleEnabled = (state: RootState): boolean =>
   state.settings.serverScrobbleEnabled ?? true;
-
-export const selectServerNowPlayingEnabled = (state: RootState): boolean =>
-  state.settings.serverNowPlayingEnabled ?? true;
 
 export const selectLastSyncedAt = (state: RootState): number | null =>
   state.settings.lastSyncedAt;
@@ -118,26 +147,64 @@ export const selectDeezerExternalEnabled = (state: RootState): boolean =>
 export const selectMusicbrainzExternalEnabled = (state: RootState): boolean =>
   state.settings.musicbrainzExternalEnabled ?? false;
 
+/** Off until asked for: see the note on the field in settingsSlice. */
+export const selectListenbrainzDiscoveryEnabled = (state: RootState): boolean =>
+  state.settings.listenbrainzDiscoveryEnabled ?? false;
 
-export const selectDeezerTopTracksEnabled = (state: RootState): boolean =>
-  state.settings.deezerTopTracksEnabled ?? false;
+export const selectLastfmEnabled = (state: RootState): boolean =>
+  state.settings.lastfmEnabled ?? false;
 
-export const selectDeezerSimilarArtistsEnabled = (state: RootState): boolean =>
-  state.settings.deezerSimilarArtistsEnabled ?? false;
-
-
-export const selectDeezerAlbumRecommendationsEnabled = (state: RootState): boolean =>
-  state.settings.deezerAlbumRecommendationsEnabled ?? false;
-
-export const selectDeezerSamplesEnabled = (state: RootState): boolean =>
-  state.settings.deezerSamplesEnabled ?? false;
-
-export const selectDeezerPlaylistRecommendationsEnabled = (state: RootState): boolean =>
-  state.settings.deezerPlaylistRecommendationsEnabled ?? false;
 
 export const selectAnyDeezerEnabled = (state: RootState): boolean =>
   (state.settings.deezerDiscoveryEnabled ||
     state.settings.deezerSearchEnabled ||
-    state.settings.deezerExternalEnabled ||
-    state.settings.deezerTopTracksEnabled ||
-    state.settings.deezerSimilarArtistsEnabled) ?? false;
+    state.settings.deezerExternalEnabled) ?? false;
+
+export const selectQueueSyncEnabled = (state: RootState): boolean =>
+  state.settings.queueSyncEnabled ?? true;
+
+export const selectServerNowPlayingShelfEnabled = (state: RootState): boolean =>
+  state.settings.serverNowPlayingShelfEnabled ?? true;
+
+export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
+  state.settings.resumeLongTracksEnabled ?? true;
+
+export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
+  state.settings.homeServerSectionsEnabled ?? true;
+
+/**
+ * Crossfade, as the engine wants it, or `null` when it is off.
+ *
+ * Zero seconds is off rather than a zero-length fade: `null` tells the engine
+ * not to overlap at all, which lets it leave the second voice idle instead of
+ * running a fade that does nothing.
+ */
+export const selectCrossfade = (state: RootState): CrossfadeSettings | null => {
+  const durationSec = state.settings.crossfadeSeconds ?? 0;
+  if (durationSec <= 0) return null;
+  return {
+    durationSec,
+    mode: state.settings.crossfadeAlways ? 'always' : 'gapless-aware',
+    // Not offered as a setting. A skip that fades feels broken rather than
+    // smooth, and the engine still applies a short ramp so it cannot click.
+    skipIsImmediate: true,
+  };
+};
+
+export const selectCrossfadeSeconds = (state: RootState): number =>
+  state.settings.crossfadeSeconds ?? 0;
+
+export const selectCrossfadeAlways = (state: RootState): boolean =>
+  state.settings.crossfadeAlways ?? false;
+
+/**
+ * A module constant, not a fresh array.
+ *
+ * This is read by `useSelector`, which compares by reference — returning
+ * `FLAT_EQ.map(...)` would hand back a new array on every render, re-run the
+ * effect that pushes the EQ to the engine, and re-render forever.
+ */
+const FLAT_GAINS: number[] = FLAT_EQ.map(band => band.gainDb);
+
+export const selectEqualizerGains = (state: RootState): number[] =>
+  state.settings.equalizerGains ?? FLAT_GAINS;

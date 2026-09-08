@@ -17,6 +17,9 @@ export type LibraryEntryKey =
   | 'tracks'
   | 'genres'
   | 'downloaded'
+  | 'radio'
+  | 'podcasts'
+  | 'shares'
 
 export type LibraryEntrySummary = {
   /** How much sits behind the entry point. */
@@ -109,6 +112,12 @@ export function useLibrarySummary(): Record<LibraryEntryKey, LibraryEntrySummary
       tracks: { count: tracks.length, covers: trackCovers },
       genres: { count: genreRows.length, covers: genreCovers },
       downloaded: { count: downloaded.length, covers: coversOf(downloaded) },
+      // Radio has no count summary here — the list lives on the server, and
+      // fetching it just to say "3 stations" on a row people don't click yet
+      // isn't worth the request. The screen itself fetches on open.
+      radio: { count: undefined, covers: [] },
+      podcasts: { count: undefined, covers: [] },
+      shares: { count: undefined, covers: [] },
     }
   }, [albums, artists, playlists, tracks, genres, getAllDownloadedCollections])
 }

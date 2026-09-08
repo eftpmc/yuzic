@@ -4,7 +4,10 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle, Sparkles } from 'lucide-react-native';
+import { useApi } from '@/api';
+import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
+import { generateSimilarPlaylist } from '@/features/audiomuse/generatePlaylist';
 
 import { Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
@@ -29,7 +32,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { statusColor } from '@/constants/design';
+import { iconSize, statusColor } from '@/constants/design';
 import haptics from '@/utils/haptics';
 
 type SongOptionsProps = {
@@ -63,6 +66,11 @@ const SongOptions = forwardRef<
     const { currentSong } = usePlayingState();
     const { addToQueue, playNext, playSimilar } = usePlayingActions();
     const instantMixInFlightRef = useRef(false);
+    const generatePlaylistInFlightRef = useRef(false);
+    const [isGeneratingPlaylist, setIsGeneratingPlaylist] = React.useState(false);
+    const api = useApi();
+    const audiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
+    const audiomuseConfig = useSelector(selectAudiomuseConfig);
     const playCount = useSelector(selectSongPlayCount(selectedSong.id));
 
     const { songs: starredSongs } = useStarredSongs();
@@ -194,13 +202,13 @@ const SongOptions = forwardRef<
     const handleGoToAlbum = () => {
       close();
       onNavigate?.();
-      router.push({ pathname: '/(home)/albumView', params: { id: selectedSong.albumId } });
+      router.push({ pathname: '/albumView', params: { id: selectedSong.albumId } });
     };
 
     const handleGoToArtist = () => {
       close();
       onNavigate?.();
-      router.push({ pathname: '/(home)/artistView', params: { id: selectedSong.artistId } });
+      router.push({ pathname: '/artistView', params: { id: selectedSong.artistId } });
     };
 
     const handleInstantMix = async () => {
@@ -213,6 +221,23 @@ const SongOptions = forwardRef<
       } finally {
         instantMixInFlightRef.current = false;
         close();
+      }
+    };
+
+    const handleGeneratePlaylist = async () => {
+      if (generatePlaylistInFlightRef.current || !audiomuseConfigured) return;
+      generatePlaylistInFlightRef.current = true;
+      setIsGeneratingPlaylist(true);
+      try {
+        const result = await generateSimilarPlaylist(api, audiomuseConfig, selectedSong, { size: 25 });
+        toast.success(t('songOptions.toasts.playlistGenerated', { count: result.trackCount }));
+        close();
+        router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
+      } catch {
+        toast.error(t('songOptions.toasts.playlistGenerationFailed'));
+      } finally {
+        generatePlaylistInFlightRef.current = false;
+        setIsGeneratingPlaylist(false);
       }
     };
 
@@ -241,25 +266,25 @@ const SongOptions = forwardRef<
           <OptionSheetDivider />
 
           <OptionSheetRow
-            icon={<Heart size={26} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
+            icon={<Heart size={iconSize.loader} color={statusColor.favorite} fill={isStarred ? statusColor.favorite : 'none'} />}
             label={isStarred ? t('songOptions.actions.unfavorite') : t('songOptions.actions.favorite')}
             onPress={toggleFavorite}
           />
 
           <OptionSheetRow
-            icon={<ListStart size={26} color={colors.secondary} />}
+            icon={<ListStart size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.addToQueue')}
             onPress={handleAddToQueue}
           />
 
           <OptionSheetRow
-            icon={<ListEnd size={26} color={colors.secondary} />}
+            icon={<ListEnd size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.addToEnd')}
             onPress={handleAddToEndQueue}
           />
 
           <OptionSheetRow
-            icon={<CirclePlus size={26} color={colors.secondary} />}
+            icon={<CirclePlus size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.addToPlaylist')}
             onPress={handleAddToPlaylist}
           />
@@ -267,9 +292,9 @@ const SongOptions = forwardRef<
           <OptionSheetRow
             icon={
               isDownloaded ? (
-                <CheckCircle size={26} color={colors.subtext} />
+                <CheckCircle size={iconSize.loader} color={colors.subtext} />
               ) : (
-                <ArrowDownCircle size={26} color={colors.secondary} />
+                <ArrowDownCircle size={iconSize.loader} color={colors.secondary} />
               )
             }
             label={isDownloading ? t('songOptions.actions.downloading') : isDownloaded ? t('songOptions.actions.downloaded') : t('songOptions.actions.download')}
@@ -281,7 +306,7 @@ const SongOptions = forwardRef<
 
           {selectedSong.albumId && (
             <OptionSheetRow
-              icon={<Disc size={26} color={colors.secondary} />}
+              icon={<Disc size={iconSize.loader} color={colors.secondary} />}
               label={t('songOptions.actions.goToAlbum')}
               onPress={handleGoToAlbum}
             />
@@ -289,17 +314,27 @@ const SongOptions = forwardRef<
 
           {selectedSong.artistId && (
             <OptionSheetRow
-              icon={<Mic2 size={26} color={colors.secondary} />}
+              icon={<Mic2 size={iconSize.loader} color={colors.secondary} />}
               label={t('songOptions.actions.goToArtist')}
               onPress={handleGoToArtist}
             />
           )}
 
           <OptionSheetRow
-            icon={<Radio size={26} color={colors.secondary} />}
+            icon={<Radio size={iconSize.loader} color={colors.secondary} />}
             label={t('songOptions.actions.instantMix')}
             onPress={handleInstantMix}
           />
+
+          {audiomuseConfigured && (
+            <OptionSheetRow
+              icon={<Sparkles size={iconSize.loader} color={colors.secondary} />}
+              label={t('songOptions.actions.generatePlaylist')}
+              onPress={handleGeneratePlaylist}
+              disabled={isGeneratingPlaylist}
+              loading={isGeneratingPlaylist}
+            />
+          )}
 
           <OptionSheetDivider />
 

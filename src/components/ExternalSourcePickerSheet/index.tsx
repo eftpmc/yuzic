@@ -15,7 +15,8 @@ import {
 } from '@/components/options/OptionSheetPrimitives'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 export type PickerItemAlbum = SourceResolvedAlbum & { kind: 'album' }
 export type PickerItemArtist = SourceResolvedArtist & { kind: 'artist' }
@@ -34,6 +35,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
     const { t } = useTranslation()
     const { colors } = useTheme()
     const sheetBg = useOptionSheetBackground()
+    const rad = useRadius()
 
     const grouped = items.reduce<Record<string, PickerItem[]>>((acc, item) => {
       if (!acc[item.source]) acc[item.source] = []
@@ -54,7 +56,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
         <BottomSheetScrollView style={sheetBg} contentContainerStyle={optionSheetStyles.sheetContent}>
           {isLoading && (
             <View style={styles.loading}>
-              <SpinningLoaderCircle size={26} color={colors.subtext} />
+              <SpinningLoaderCircle size={iconSize.loader} color={colors.subtext} />
             </View>
           )}
 
@@ -84,7 +86,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
                       <MediaImage
                         cover={item.coverUrl ? { kind: 'url', url: item.coverUrl } : { kind: 'letter', name: label }}
                         size="thumb"
-                        style={[styles.cover, { borderRadius: isArtist ? COVER_SIZE / 2 : 6 }]}
+                        style={[styles.cover, { borderRadius: isArtist ? COVER_SIZE / 2 : rad.md }]}
                       />
                       <View style={styles.optionText}>
                         <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>

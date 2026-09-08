@@ -10,7 +10,9 @@ interface ItemProps {
   playlist?: PlaylistBase;
   id: string;
   title: string;
-  subtext: string;
+  /** Undefined on a screen of nothing but playlists, where the server's
+   *  subtext is the literal word "Playlist" under every title. */
+  subtext?: string;
   cover: CoverSource;
   isGridView: boolean;
   gridWidth: number;
@@ -34,7 +36,7 @@ const PlaylistItem: React.FC<ItemProps> = ({
   const playlistForOptions = useMemo(() => playlist ?? {
     id,
     title,
-    subtext,
+    subtext: subtext ?? '',
     cover,
     changed: new Date(0),
     created: new Date(0),

@@ -20,7 +20,7 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const DownloadsInfoScreen: React.FC = () => {
@@ -126,7 +126,7 @@ const DownloadsInfoScreen: React.FC = () => {
         <SettingsCard>
           <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
           <SettingsDivider />
-          <SettingsInfoRow label={t('settings.library.downloads.availableLabel', { defaultValue: 'Available Space' })} value={formattedAvailable} stacked />
+          <SettingsInfoRow label={t('settings.library.downloads.availableLabel')} value={formattedAvailable} stacked />
           <SettingsDivider />
           <SettingsInfoRow label={t('settings.library.downloads.table.playlists')} value={String(downloadedPlaylistCount)} stacked />
           <SettingsDivider />
@@ -158,8 +158,13 @@ const DownloadsInfoScreen: React.FC = () => {
                 {showSectionHeader && (
                   <View style={styles.providerHeader}>
                     <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
-                    <Touchable onPress={() => confirmClearProvider(item)} style={styles.providerDelete}>
-                      <Trash2 size={16} color={colors.subtext} />
+                    <Touchable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('a11y.settings.clearProviderDownloads', { provider: sectionTitle })}
+                      onPress={() => confirmClearProvider(item)}
+                      style={styles.providerDelete}
+                    >
+                      <Trash2 size={iconSize.inline} color={colors.subtext} />
                     </Touchable>
                   </View>
                 )}
@@ -183,12 +188,14 @@ const DownloadsInfoScreen: React.FC = () => {
                     </View>
                   </View>
                   <Touchable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('a11y.settings.removeDownload', { title: item.title })}
                     style={[styles.removeButton, removingId === item.id && styles.disabled]}
                     hitSlop={hitSlopFor(32)}
                     onPress={() => confirmRemove(item)}
                     disabled={removingId === item.id}
                   >
-                    <Trash2 size={16} color={colors.subtext} />
+                    <Trash2 size={iconSize.inline} color={colors.subtext} />
                   </Touchable>
                 </View>
               </View>

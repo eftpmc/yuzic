@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export const ThemeColor: React.FC = () => {
@@ -27,10 +27,13 @@ export const ThemeColor: React.FC = () => {
         {t('settings.appearance.color.info')}
       </Text>
       <SettingsCard style={styles.card}>
-        <View style={styles.presets}>
+        <View style={styles.presets} accessibilityRole="radiogroup">
           {THEME_PRESET_COLORS.map(color => (
             <Touchable
               key={color}
+              accessibilityRole="radio"
+              accessibilityLabel={t('a11y.settings.themeColor', { color })}
+              accessibilityState={{ selected: themeColor === color, checked: themeColor === color }}
               onPress={() => dispatch(setThemeColor(color))}
               style={[
                 styles.preset,
@@ -52,8 +55,8 @@ export const ThemeColor: React.FC = () => {
             </Text>
           </View>
           {open
-            ? <ChevronUp size={18} color={colors.subtext} />
-            : <ChevronDown size={18} color={colors.subtext} />
+            ? <ChevronUp size={iconSize.row} color={colors.subtext} />
+            : <ChevronDown size={iconSize.row} color={colors.subtext} />
           }
         </Touchable>
 

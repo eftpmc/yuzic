@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import { iconSize } from '@/constants/design';
 
 export default function Index() {
   const activeServer = useSelector(selectActiveServer);
@@ -13,7 +14,7 @@ export default function Index() {
     !!activeServer?.isAuthenticated && !!activeServer?.serverUrl;
 
   if (hasAuthenticatedServer) {
-    return <Redirect href="/(home)/(tabs)" />;
+    return <Redirect href="/(home)/(tabs)/(home)" />;
   }
 
   if (!activeServer) {
@@ -22,7 +23,7 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-      <SpinningLoaderCircle size={26} color={colors.secondary} />
+      <SpinningLoaderCircle size={iconSize.loader} color={colors.secondary} />
     </View>
   );
 }

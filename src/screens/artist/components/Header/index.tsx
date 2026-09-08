@@ -37,7 +37,7 @@ import {
 } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -51,6 +51,7 @@ function isAlbumCountText(value?: string | null): boolean {
 }
 
 const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNavigation = true }) => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDarkMode, colors } = useTheme();
   const rad = useRadius();
@@ -114,12 +115,12 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
             <Touchable
               testID="detail-back-button"
               accessibilityRole="button"
-              accessibilityLabel="Go back"
+              accessibilityLabel={t('a11y.common.back')}
               style={[styles.backButton, { borderRadius: rad.md }]}
               hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
             </Touchable>
             {localArtist ? (
               <LocalOptionsButton artist={localArtist} />
@@ -164,15 +165,16 @@ export const ArtistHeaderBar: React.FC<Props> = ({ localArtist, externalArtist }
 };
 
 function LocalOptionsButton({ artist }: { artist: Artist }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
   return (
     <>
       <DetailHeaderIconButton
-        accessibilityLabel="Artist options"
+        accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => optionsSheetRef.current?.present()}
       >
-        <Ellipsis size={24} color={colors.secondary} />
+        <Ellipsis size={iconSize.header} color={colors.secondary} />
       </DetailHeaderIconButton>
       <ArtistOptions ref={optionsSheetRef} artist={artist} hideGoToArtist />
     </>
@@ -331,24 +333,24 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         onPress={() => void playArtist(true)}
         disabled={songsLoading}
         style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-        accessibilityLabel="Shuffle artist"
+        accessibilityLabel={t('a11y.detail.shuffle')}
       >
         {songsLoading ? (
-          <SpinningLoaderCircle size={18} color={colors.secondary} />
+          <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
         ) : (
-          <Shuffle size={18} color={colors.secondary} />
+          <Shuffle size={iconSize.row} color={colors.secondary} />
         )}
       </DetailCircleAction>
 
       <DetailPlayAction
         onPress={() => void playArtist(false)}
         disabled={songsLoading}
-        accessibilityLabel="Play artist"
+        accessibilityLabel={t('a11y.detail.play')}
       >
         {songsLoading ? (
-          <SpinningLoaderCircle size={18} color="#fff" />
+          <SpinningLoaderCircle size={iconSize.row} color={colors.onThemeColor} />
         ) : (
-          <Play size={24} color="#fff" fill="#fff" />
+          <Play size={iconSize.header} color={colors.onThemeColor} fill={colors.onThemeColor} />
         )}
       </DetailPlayAction>
 
@@ -356,20 +358,20 @@ function LocalActionRow({ artist }: { artist: Artist }) {
         onPress={() => void handleDownloadAll()}
         disabled={isDownloadingAll || isArtistDownloading}
         style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-        accessibilityLabel={
+        accessibilityLabel={t(
           isDownloadingAll || isArtistDownloading
-            ? 'Downloading artist'
+            ? 'a11y.detail.downloading'
             : isArtistFullyDownloaded
-              ? 'Downloaded'
-              : 'Download all artist songs'
-        }
+              ? 'a11y.detail.downloaded'
+              : 'a11y.detail.download'
+        )}
       >
         {isDownloadingAll || isArtistDownloading ? (
-          <SpinningLoaderCircle size={18} color={colors.secondary} />
+          <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
         ) : isArtistFullyDownloaded ? (
-          <Check size={18} color={colors.secondary} />
+          <Check size={iconSize.row} color={colors.secondary} />
         ) : (
-          <Download size={18} color={colors.secondary} />
+          <Download size={iconSize.row} color={colors.secondary} />
         )}
       </DetailCircleAction>
     </DetailActionRow>

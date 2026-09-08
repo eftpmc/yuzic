@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { usePlayingActions, usePlayingState } from '@/contexts/PlayingContext';
-import { onDark, spacing, typography } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import haptics from '@/utils/haptics';
 
@@ -44,7 +44,7 @@ export default function VolumeCard({ contentWidth }: Props) {
       ]}
     >
       <View style={styles.headerRow}>
-        <Icon size={16} color={isMuted ? themeColor : 'rgba(255,255,255,0.5)'} />
+        <Icon size={iconSize.inline} color={isMuted ? themeColor : 'rgba(255,255,255,0.5)'} />
         <Text style={[styles.label, isMuted && { color: themeColor }]}>
           Volume
         </Text>

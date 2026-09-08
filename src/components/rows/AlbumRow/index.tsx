@@ -4,6 +4,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { AlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
@@ -11,7 +12,7 @@ import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   album: AlbumBase;
@@ -26,6 +27,7 @@ const AlbumRow: React.FC<Props> = ({
   onPress,
   subtextOverride,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
 
@@ -44,9 +46,9 @@ const AlbumRow: React.FC<Props> = ({
         onPress={handlePress}
         trailing={
           <IconActionButton
-            icon={<Ellipsis size={24} color={colors.secondary} />}
+            icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
             onPress={handleOptionsPress}
-            accessibilityLabel="Album options"
+            accessibilityLabel={t('a11y.rows.options', { title: album.title })}
             size="compact"
           />
         }

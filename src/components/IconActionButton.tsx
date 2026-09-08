@@ -6,7 +6,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 
@@ -30,24 +31,30 @@ export default function IconActionButton({
   style,
 }: Props) {
   const { colors } = useTheme();
+  const rad = useRadius();
   const isDisabled = disabled || loading;
+  // Only the Android ripple is bounded by this — the button has no background
+  // of its own — but a round ripple under a squared-off preset is the same
+  // half-applied look the play button had.
+  const boundsSize = size === 'compact' ? controlSize.iconCompact : controlSize.iconDefault;
 
   return (
     <Touchable
       style={[
         styles.button,
         size === 'compact' ? styles.compact : styles.default,
+        { borderRadius: rad.pillFor(boundsSize) },
         isDisabled && styles.disabled,
         style,
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      hitSlop={8}
+      hitSlop={hitSlopFor(boundsSize)}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
-      {loading ? <SpinningLoaderCircle size={18} color={colors.subtext} /> : icon}
+      {loading ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} /> : icon}
     </Touchable>
   );
 }
@@ -60,12 +67,10 @@ const styles = StyleSheet.create({
   default: {
     width: controlSize.iconDefault,
     height: controlSize.iconDefault,
-    borderRadius: controlSize.iconDefault / 2,
   },
   compact: {
     width: controlSize.iconCompact,
     height: controlSize.iconCompact,
-    borderRadius: controlSize.iconCompact / 2,
   },
   disabled: {
     opacity: 0.45,

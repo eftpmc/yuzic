@@ -2,7 +2,9 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, radius, spacing } from '@/constants/design';
+import { controlSize, spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
+import { useListDensity } from '@/hooks/useListDensity';
 
 type Props = {
   /** Art size of the rows this stands in for. Defaults to the shared media row;
@@ -13,15 +15,17 @@ type Props = {
 
 const SkeletonListRow: React.FC<Props> = ({ artSize = controlSize.mediaRowArt }) => {
   const { isDarkMode } = useTheme();
+  const rad = useRadius();
+  const density = useListDensity();
   const colorMode = isDarkMode ? 'dark' : 'light';
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.row}>
+      <View style={[styles.row, { marginBottom: density.rowGap }]}>
         <Skeleton
           width={artSize}
           height={artSize}
-          radius={radius.thumb}
+          radius={rad.thumb}
           colorMode={colorMode}
         />
 
@@ -44,7 +48,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
   },
   textContainer: {
     flex: 1,

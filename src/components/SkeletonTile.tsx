@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Skeleton } from 'moti/skeleton'
-import { radius } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 type Props = {
   size: number
@@ -16,7 +16,8 @@ type Props = {
  * shape wherever it stands in for a real one.
  */
 export default function SkeletonTile({ size, variant, colorMode }: Props) {
-  const artRadius = variant === 'artist' ? size / 2 : radius.thumb
+  const rad = useRadius()
+  const artRadius = variant === 'artist' ? size / 2 : rad.thumb
 
   return (
     <View style={{ width: size }}>

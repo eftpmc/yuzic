@@ -28,7 +28,7 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import Touchable from '@/components/Touchable';
-import { spacing } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing } from '@/constants/design';
 
 interface ExternalSongOptionsProps {
   song: ExternalSong;
@@ -72,10 +72,12 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
   return (
     <>
       <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => bottomSheetRef.current?.present()}
-        hitSlop={10}
+        hitSlop={hitSlopFor(18)}
       >
-        <Ellipsis size={18} color={colors.secondary} />
+        <Ellipsis size={iconSize.row} color={colors.secondary} />
       </Touchable>
 
       <BottomSheetModal
@@ -102,7 +104,7 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
 
           {onPlay && (
             <OptionSheetRow
-              icon={<Play size={26} color={colors.secondary} fill={colors.secondary} />}
+              icon={<Play size={iconSize.loader} color={colors.secondary} fill={colors.secondary} />}
               label={t('songOptions.actions.play')}
               onPress={() => {
                 bottomSheetRef.current?.dismiss();
@@ -113,19 +115,19 @@ const ExternalSongOptions: React.FC<ExternalSongOptionsProps> = ({
 
           {canDownloadTrack && (
             <OptionSheetRow
-              icon={<Download size={26} color={colors.secondary} />}
+              icon={<Download size={iconSize.loader} color={colors.secondary} />}
               label={t('externalAlbum.menu.downloadSong')}
               onPress={() => trackDownloadSheetRef.current?.present()}
-              trailing={<ChevronRight size={16} color={colors.placeholder} style={styles.chevron} />}
+              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
             />
           )}
 
           {canDownload && (
             <OptionSheetRow
-              icon={<CloudDownload size={26} color={colors.secondary} />}
+              icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
               label={t('externalAlbum.menu.downloadToServer')}
               onPress={() => downloadSheetRef.current?.present()}
-              trailing={<ChevronRight size={16} color={colors.placeholder} style={styles.chevron} />}
+              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
             />
           )}
 

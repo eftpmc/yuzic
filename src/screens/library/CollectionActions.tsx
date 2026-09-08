@@ -4,7 +4,7 @@ import { Play, Shuffle } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useTheme } from '@/hooks/useTheme'
-import { controlSize, spacing, typography } from '@/constants/design'
+import { controlSize, iconSize, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import Touchable from '@/components/Touchable'
 
@@ -34,9 +34,8 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
         style={[styles.button, { backgroundColor: colors.themeColor, borderRadius: rad.md }]}
         onPress={onPlay}
         accessibilityRole="button"
-        accessibilityLabel={t('common.play')}
       >
-        <Play size={17} color={colors.onThemeColor} fill={colors.onThemeColor} />
+        <Play size={iconSize.row} color={colors.onThemeColor} fill={colors.onThemeColor} />
         <Text style={[styles.label, { color: colors.onThemeColor }]}>
           {t('common.play')}
         </Text>
@@ -47,9 +46,8 @@ const CollectionActions: React.FC<Props> = ({ onPlay, onShuffle }) => {
         style={[styles.button, { backgroundColor: colors.muted, borderRadius: rad.md }]}
         onPress={onShuffle}
         accessibilityRole="button"
-        accessibilityLabel={t('common.shuffle')}
       >
-        <Shuffle size={17} color={colors.secondary} />
+        <Shuffle size={iconSize.row} color={colors.secondary} />
         <Text style={[styles.label, { color: colors.secondary }]}>
           {t('common.shuffle')}
         </Text>

@@ -16,15 +16,18 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectSearchScope,
   selectServerScrobbleEnabled,
-  selectServerNowPlayingEnabled,
+  selectQueueSyncEnabled,
+  selectServerNowPlayingShelfEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setSearchScope,
   setServerScrobbleEnabled,
-  setServerNowPlayingEnabled,
+  setQueueSyncEnabled,
+  setServerNowPlayingShelfEnabled,
   type SearchScope,
 } from '@/utils/redux/slices/settingsSlice';
 import Touchable from '@/components/Touchable';
+import { hitSlopFor, iconSize } from '@/constants/design';
 
 const ServerSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -34,21 +37,54 @@ const ServerSettings: React.FC = () => {
   const searchScope = useSelector(selectSearchScope);
   const activeServer = useSelector(selectActiveServer);
   const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
-  const serverNowPlayingEnabled = useSelector(selectServerNowPlayingEnabled);
-  const isNavidrome = activeServer?.type === 'navidrome';
-  const isJellyfinOrEmby = activeServer?.type === 'jellyfin' || activeServer?.type === 'emby';
+  const queueSyncEnabled = useSelector(selectQueueSyncEnabled);
+  const nowPlayingShelfEnabled = useSelector(selectServerNowPlayingShelfEnabled);
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setServerScrobbleEnabled(v)); }, [dispatch]);
-  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setServerNowPlayingEnabled(v)); }, [dispatch]);
+  const toggleQueueSync = useCallback((v: boolean) => { dispatch(setQueueSyncEnabled(v)); }, [dispatch]);
+  const toggleNowPlayingShelf = useCallback((v: boolean) => { dispatch(setServerNowPlayingShelfEnabled(v)); }, [dispatch]);
 
-  const navidromeScrobbleItems = useMemo(() => [
-    { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
-    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: serverNowPlayingEnabled, onValueChange: toggleNowPlaying },
-  ], [t, serverScrobbleEnabled, serverNowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
+  // Shared-server privacy — a switch appears only where the adapter can back
+  // the thing it governs, rather than showing a Jellyfin user a toggle that
+  // couldn't do anything either way. Only Subsonic backs these today; a server
+  // that grows the API gets the switches with no change here.
+  const supportsQueueSync = Boolean(api.queue);
+  const supportsNowPlayingShelf = Boolean(api.discovery);
 
-  const jellyfinScrobbleItems = useMemo(() => [
-    { label: t('settings.scrobbling.markAsPlayed'), subtext: t('settings.scrobbling.markAsPlayedDescription'), value: serverScrobbleEnabled, onValueChange: toggleScrobble },
-  ], [t, serverScrobbleEnabled, toggleScrobble]);
+  const privacyItems = useMemo(() => {
+    const items: { label: string; subtext: string; value: boolean; onValueChange: (v: boolean) => void }[] = [];
+    if (supportsQueueSync) items.push({
+      label: t('settings.server.queueSync'),
+      subtext: t('settings.server.queueSyncDescription'),
+      value: queueSyncEnabled,
+      onValueChange: toggleQueueSync,
+    });
+    if (supportsNowPlayingShelf) items.push({
+      label: t('settings.server.nowPlayingShelf'),
+      subtext: t('settings.server.nowPlayingShelfDescription'),
+      value: nowPlayingShelfEnabled,
+      onValueChange: toggleNowPlayingShelf,
+    });
+    return items;
+  }, [supportsQueueSync, supportsNowPlayingShelf, queueSyncEnabled, nowPlayingShelfEnabled, toggleQueueSync, toggleNowPlayingShelf, t]);
+
+  // One switch, worded for what the server actually does with the call — the
+  // adapter says which, so this doesn't ask what kind of server it is.
+  //
+  // Now-playing follows scrobble; there was a separate row for it and the two
+  // states were never independently useful — a user who doesn't want the
+  // finished listen submitted doesn't want the in-progress broadcast either.
+  const scrobbleItems = useMemo(() => {
+    const isScrobble = api.songs.scrobbleKind === 'scrobble';
+    return [{
+      label: t(isScrobble ? 'settings.scrobbling.scrobble' : 'settings.scrobbling.markAsPlayed'),
+      subtext: t(isScrobble
+        ? 'settings.scrobbling.scrobbleDescription'
+        : 'settings.scrobbling.markAsPlayedDescription'),
+      value: serverScrobbleEnabled,
+      onValueChange: toggleScrobble,
+    }];
+  }, [t, api, serverScrobbleEnabled, toggleScrobble]);
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
@@ -56,10 +92,20 @@ const ServerSettings: React.FC = () => {
   const isAuthenticated = activeServer?.isAuthenticated;
   const cleanUrl = serverUrl?.replace(/^https?:\/\//, '') ?? t('settings.server.notSet');
 
+  // What the last ping actually found, as opposed to `isAuthenticated`, which
+  // is a stored credential flag the ping never writes — reading that made the
+  // dot go green against a server that had just refused to answer.
+  const [reachable, setReachable] = useState<boolean | null>(null);
+
   const ping = async () => {
     if (!api || !serverUrl || isLoading) return;
     setIsLoading(true);
-    try { await api.auth.ping(); } catch {}
+    try {
+      await api.auth.ping();
+      setReachable(true);
+    } catch {
+      setReachable(false);
+    }
     finally { setIsLoading(false); }
   };
 
@@ -68,11 +114,20 @@ const ServerSettings: React.FC = () => {
     let cancelled = false;
     const timeout = setTimeout(async () => {
       setIsLoading(true);
-      try { await api.auth.ping(); } catch {}
+      try {
+        await api.auth.ping();
+        if (!cancelled) setReachable(true);
+      } catch {
+        if (!cancelled) setReachable(false);
+      }
       finally { if (!cancelled) setIsLoading(false); }
     }, 500);
     return () => { cancelled = true; clearTimeout(timeout); };
   }, [api, serverUrl]);
+
+  // Until the first ping lands there is nothing better to show than whether we
+  // hold credentials at all.
+  const isConnected = reachable ?? !!isAuthenticated;
 
   if (!activeServer) return null;
 
@@ -94,8 +149,13 @@ const ServerSettings: React.FC = () => {
         <SettingsInfoRow
           label={t('settings.server.connectivity')}
           right={
-            <Touchable onPress={ping} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <ConnectivityIndicator isLoading={isLoading} isConnected={!!isAuthenticated} />
+            <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.common.checkConnection')}
+              onPress={ping}
+              hitSlop={hitSlopFor(iconSize.badge)}
+            >
+              <ConnectivityIndicator isLoading={isLoading} isConnected={isConnected} />
             </Touchable>
           }
         />
@@ -113,12 +173,19 @@ const ServerSettings: React.FC = () => {
         onSelect={key => dispatch(setSearchScope(key as SearchScope))}
       />
 
-      {(isNavidrome || isJellyfinOrEmby) && (
-        <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
+      {activeServer && (
+        <>
+          <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
+          <SettingsToggleGroup items={scrobbleItems} />
+        </>
       )}
 
-      {isNavidrome && <SettingsToggleGroup items={navidromeScrobbleItems} />}
-      {isJellyfinOrEmby && <SettingsToggleGroup items={jellyfinScrobbleItems} />}
+      {privacyItems.length > 0 && (
+        <>
+          <SettingsCardHeader subtle title={t('settings.server.privacyTitle')} />
+          <SettingsToggleGroup items={privacyItems} />
+        </>
+      )}
     </SettingsScreen>
   );
 };

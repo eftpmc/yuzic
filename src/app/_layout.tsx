@@ -11,6 +11,7 @@ import 'react-native-reanimated';
 import { enableFreeze } from 'react-native-screens';
 import { PlayingProvider } from '@/contexts/PlayingContext';
 import { CastProvider } from '@/contexts/CastContext';
+import { PlaybackSinkProvider } from '@/contexts/PlaybackSinkContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
 import { SongActionSheetProvider } from '@/contexts/SongActionSheetContext';
 import { DownloadProvider } from '@/contexts/DownloadContext';
@@ -22,6 +23,8 @@ import { Alert, AppState } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { PlayerExpansionProvider } from '@/features/player/PlayerExpansion';
+import PlayerHost from '@/features/player/PlayerHost';
 import { useTheme } from '@/hooks/useTheme';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { selectLanguage } from '@/utils/redux/selectors/settingsSelectors';
@@ -200,16 +203,23 @@ function AppShell() {
     <ThemeProvider value={resolved === 'dark' ? DarkTheme : DefaultTheme}>
       <DownloadProvider>
         <CastProvider>
+        <PlaybackSinkProvider>
         <PlayingProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <ErrorBoundary>
               <BottomSheetModalProvider>
                 <SongActionSheetProvider>
+                <PlayerExpansionProvider>
                 <Stack>
                   <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
                   <Stack.Screen name="(home)" options={{ headerShown: false }} />
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                 </Stack>
+
+                {/* Above every screen and the dock, below the sheet portal:
+                  * the player covers the app, and the option sheets it opens
+                  * still come up over the player. */}
+                <PlayerHost />
 
                 <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
@@ -237,11 +247,13 @@ function AppShell() {
                     },
                   }}
                 />
+                </PlayerExpansionProvider>
                 </SongActionSheetProvider>
               </BottomSheetModalProvider>
               </ErrorBoundary>
             </GestureHandlerRootView>
         </PlayingProvider>
+        </PlaybackSinkProvider>
         </CastProvider>
       </DownloadProvider>
     </ThemeProvider>

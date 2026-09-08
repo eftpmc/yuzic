@@ -15,7 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -84,14 +84,14 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
       enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={[{ backgroundColor: colors.card }, styles.sheetBackground]}
+      backgroundStyle={[{ backgroundColor: colors.card, borderTopLeftRadius: rad.lg, borderTopRightRadius: rad.lg }, styles.sheetBackground]}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
     >
       <BottomSheetView style={styles.container}>
         {/* Profile */}
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}>
-            <Text style={styles.avatarText}>{initial}</Text>
+            <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>{initial}</Text>
           </View>
           <View style={styles.headerInfo}>
             <Text style={[styles.username, { color: colors.secondary }]}>{username}</Text>
@@ -112,17 +112,17 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
 
         {/* Actions */}
         <Touchable style={styles.row} onPress={handleSettings}>
-          <Settings size={18} color={colors.subtext} />
+          <Settings size={iconSize.row} color={colors.subtext} />
           <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.settings')}</Text>
         </Touchable>
 
         <Touchable style={styles.row} onPress={handleScan}>
-          <RefreshCw size={18} color={colors.subtext} />
+          <RefreshCw size={iconSize.row} color={colors.subtext} />
           <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.triggerScan')}</Text>
         </Touchable>
 
         <Touchable style={styles.row} onPress={handleSignOut}>
-          <LogOut size={18} color={destructiveColor} />
+          <LogOut size={iconSize.row} color={destructiveColor} />
           <Text style={[styles.rowText, { color: destructiveColor }]}>{t('home.account.signOut')}</Text>
         </Touchable>
       </BottomSheetView>
@@ -135,10 +135,7 @@ AccountBottomSheet.displayName = 'AccountBottomSheet';
 export default AccountBottomSheet;
 
 const styles = StyleSheet.create({
-  sheetBackground: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
+  sheetBackground: {},
   container: {
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
@@ -156,7 +153,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    ...typography.navigationTitle,
+    ...cappedTypography.glyph.navigationTitle,
     fontWeight: '700',
     color: '#fff',
   },

@@ -1,6 +1,10 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
 const expoConfig = require("eslint-config-expo/flat");
+const touchableNeedsLabel = require('./eslint-rules/touchable-needs-label');
+
+/** Rules that are this app's own conventions rather than anyone's preset. */
+const yuzic = { rules: { 'touchable-needs-label': touchableNeedsLabel } };
 
 /**
  * Sizes, corner radii and spacing come from `constants/design`, everywhere.
@@ -26,6 +30,20 @@ const literalSpacing = (property) => ({
   message: `Use a spacing token from @/constants/design instead of a literal ${property}. Adding a step there is fine; a one-off number is how the scale drifts.`,
 });
 
+/**
+ * The same number, one branch deep.
+ *
+ * `[value.type='Literal']` only ever saw `paddingBottom: 140`. Four detail
+ * screens kept `paddingBottom: Platform.OS === 'android' ? 180 : 140` right
+ * through the sweep that introduced `spacing.scrollClearance`, because a
+ * ConditionalExpression is not a Literal. Only a branch that is itself a raw
+ * literal is flagged, so `cond ? spacing.md : spacing.lg` stays legal.
+ */
+const conditionalLiteralValue = (property, token) => ({
+  selector: `Property[key.name='${property}'] > ConditionalExpression:matches([consequent.type='Literal'][consequent.value!=0], [alternate.type='Literal'][alternate.value!=0])`,
+  message: `Use a ${token} token from @/constants/design on both branches instead of a literal ${property}. A number behind a Platform check is still a one-off number.`,
+});
+
 const SPACING_PROPERTIES = ['padding', 'margin'].flatMap(base => [
   base,
   ...['Horizontal', 'Vertical', 'Top', 'Bottom', 'Left', 'Right', 'Start', 'End']
@@ -39,14 +57,40 @@ module.exports = defineConfig([
   },
   {
     files: SCALED_FILES,
-    ignores: ["src/constants/design.ts"],
+    // The scale file is where the numbers live, and its test has to write a
+    // fixture scale to check the scaling with.
+    ignores: ["src/constants/design.ts", "src/constants/design.test.ts"],
+    plugins: { yuzic },
     rules: {
       "no-restricted-syntax": [
         "error",
         literalStyleValue("fontSize", "typography"),
         literalStyleValue("borderRadius", "radius"),
         ...SPACING_PROPERTIES.map(literalSpacing),
+        conditionalLiteralValue("fontSize", "typography"),
+        conditionalLiteralValue("borderRadius", "radius"),
+        ...SPACING_PROPERTIES.map(p => conditionalLiteralValue(p, "spacing")),
+        // The glyph scale, which lives on a JSX attribute rather than a style
+        // property — so none of the selectors above could ever have seen it,
+        // and it drifted to 20 distinct values across 294 icons.
+        {
+          selector: "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal",
+          message:
+            "Use an iconSize token from @/constants/design instead of a literal size. Adding a role there is fine; a one-off number is how the scale drifts.",
+        },
+        // `components/Touchable` is the app's one answer to a press. A second
+        // one drifts back the moment it is importable — a `TouchableOpacity`
+        // had already reappeared in the server settings after the sweep that
+        // removed every other use of it.
+        {
+          selector:
+            "ImportDeclaration[source.value='react-native'] > ImportSpecifier[imported.name='TouchableOpacity']",
+          message:
+            "Use components/Touchable instead of TouchableOpacity. It gives Android a bounded ripple and every other platform an opacity dip, from one file so the two can't drift apart per screen.",
+        },
       ],
+      // A bare glyph says nothing to a screen reader unless it is told to.
+      "yuzic/touchable-needs-label": "error",
     },
   },
 ]);

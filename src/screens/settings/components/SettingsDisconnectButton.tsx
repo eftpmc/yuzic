@@ -3,7 +3,7 @@ import { Text, StyleSheet } from 'react-native';
 import { LogOut } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -17,7 +17,7 @@ const SettingsDisconnectButton: React.FC<Props> = ({ label, onPress }) => {
 
   return (
     <Touchable style={[styles.button, { backgroundColor: colors.destructive, borderRadius: rad.md }]} onPress={onPress}>
-      <LogOut size={18} color="#fff" />
+      <LogOut size={iconSize.row} color="#fff" />
       <Text style={styles.label}>{label}</Text>
     </Touchable>
   );

@@ -22,7 +22,6 @@ const DEFAULT_SORT: Record<LibraryCollectionType, SortOrder> = {
   albums: 'recentlyAdded',
   artists: 'title',
   tracks: 'title',
-  recentlyAdded: 'recentlyAdded',
   downloaded: 'recentlyAdded',
 }
 
@@ -31,7 +30,6 @@ const TITLE_KEY: Record<LibraryCollectionType, string> = {
   albums: 'home.filters.albums',
   artists: 'home.filters.artists',
   tracks: 'home.filters.tracks',
-  recentlyAdded: 'library.recentlyAdded',
   downloaded: 'home.filters.downloaded',
 }
 
@@ -40,19 +38,38 @@ const COUNT_KEY: Record<LibraryCollectionType, string> = {
   albums: 'library.count.albums',
   artists: 'library.count.artists',
   tracks: 'library.count.tracks',
-  recentlyAdded: 'library.count.albums',
   downloaded: 'library.count.items',
+}
+
+/**
+ * What this screen shows: which slice of the library, and ordered how.
+ *
+ * A caller that wants a particular order — Home's "Recently added", "Most
+ * played" and "Recents" shelves all do — asks for a `sort` rather than for a
+ * screen of its own. That is what a sort order is, and the sort control says
+ * so once you arrive, which a bespoke screen never did.
+ *
+ * The title names the slice, never the order. A shelf's own name would be a
+ * promise the list doesn't keep: `userplays` and `recent` order the albums by
+ * play data, they don't filter to what has any, so a screen headed "Most
+ * played" would be listing every album you own — and would still say so after
+ * the reader changed the sort to A–Z.
+ */
+type CollectionParams = {
+  type?: LibraryCollectionType
+  sort?: SortOrder
 }
 
 const LibraryCollectionScreen: React.FC = () => {
   const route = useRoute<any>()
-  const type = route.params?.type as LibraryCollectionType | undefined
+  const params = (route.params ?? {}) as CollectionParams
+  const { type, sort } = params
   const { t } = useTranslation()
   const { colors } = useTheme()
   const sortLabels = useSortLabels()
 
   const [sortOrder, setSortOrder] = useState<SortOrder>(
-    type ? DEFAULT_SORT[type] : 'recent'
+    sort ?? (type ? DEFAULT_SORT[type] : 'recent')
   )
 
   const { items, isLoading } = useLibraryItems(type ?? null, sortOrder)
@@ -102,7 +119,7 @@ const LibraryCollectionScreen: React.FC = () => {
       <DetailHeaderBar title={title} subtitle={count} />
 
       {isLoading && items.length === 0 ? (
-        <LoadingLibraryList />
+        <LoadingLibraryList collection={type ?? null} />
       ) : items.length === 0 ? (
         <View style={styles.empty}>
           <Text style={[styles.emptyText, { color: colors.subtext }]}>
@@ -112,6 +129,7 @@ const LibraryCollectionScreen: React.FC = () => {
       ) : (
         <LibraryList
           items={items}
+          collection={type ?? null}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
           sortLabel={sortLabels[sortOrder]}

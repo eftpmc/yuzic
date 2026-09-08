@@ -3,11 +3,12 @@ import { FlashList } from '@shopify/flash-list';
 
 import LoadingHeader from '../Header/Loading';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
-import { spacing } from '@/constants/design';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 const PLACEHOLDER_ROWS = 8;
 
 const LoadingAlbumContent: React.FC = () => {
+  const scrollClearance = useScrollClearance();
   /**
    * Static placeholder data
    */
@@ -30,7 +31,7 @@ const LoadingAlbumContent: React.FC = () => {
       keyExtractor={(_, index) => `skeleton-${index}`}
       renderItem={renderItem}
       ListHeaderComponent={header}
-      contentContainerStyle={{ paddingBottom: spacing.scrollClearance }}
+      contentContainerStyle={{ paddingBottom: scrollClearance }}
       showsVerticalScrollIndicator={false}
     />
   );

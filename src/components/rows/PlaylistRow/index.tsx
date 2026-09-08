@@ -4,6 +4,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ellipsis } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { PlaylistBase } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
@@ -11,7 +12,7 @@ import PlaylistOptions from '@/components/options/PlaylistOptions';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   playlist: PlaylistBase;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
 
@@ -37,9 +39,9 @@ const PlaylistRow: React.FC<Props> = ({ playlist, onPress }) => {
         onPress={handlePress}
         trailing={
           <IconActionButton
-            icon={<Ellipsis size={24} color={colors.secondary} />}
+            icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
             onPress={handleOptionsPress}
-            accessibilityLabel="Playlist options"
+            accessibilityLabel={t('a11y.rows.options', { title: playlist.title })}
             size="compact"
           />
         }

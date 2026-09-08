@@ -15,7 +15,7 @@ import StatusBanner from '@/components/StatusBanner';
 import ArtistContent from './components/Content';
 import LoadingArtistContent from './components/Content/Loading';
 import { DETAIL_BAR_HEIGHT } from '@/components/DetailHeader'
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type RouteParams = {
   id?: string;
@@ -69,7 +69,7 @@ const ArtistScreen: React.FC = () => {
     if (!localResult.artist) {
       return (
         <NotFoundView
-          message={localResult.error ? "Couldn't load artist. Check your connection." : 'Artist not found'}
+          message={localResult.error ? t('media.artistLoadFailed') : t('media.artistNotFound')}
         />
       );
     }
@@ -81,7 +81,7 @@ const ArtistScreen: React.FC = () => {
             style={[styles.degradedBanner, { top: insets.top + DETAIL_BAR_HEIGHT }]}
           >
             <StatusBanner
-              icon={<CloudOff size={14} color={colors.subtext} />}
+              icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
               text={t('common.serverUnreachableBanner')}
               closable
               testID="server-unreachable-banner"
@@ -94,7 +94,7 @@ const ArtistScreen: React.FC = () => {
   }
 
   if (!artistId && !mbid && !name) {
-    return <NotFoundView message="Artist not found" />;
+    return <NotFoundView message={t('media.artistNotFound')} />;
   }
   if (externalResult.isLoading) {
     return (
@@ -104,7 +104,7 @@ const ArtistScreen: React.FC = () => {
     );
   }
   if (externalResult.error || !externalResult.data) {
-    return <NotFoundView message="Couldn't load artist. Check your connection." />;
+    return <NotFoundView message={t('media.artistLoadFailed')} />;
   }
 
   return (

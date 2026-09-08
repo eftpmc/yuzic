@@ -7,10 +7,10 @@ import SkeletonListRow from '@/components/SkeletonListRow'
 import { spacing } from '@/constants/design'
 import {
   selectGridColumns,
-  selectGridSpacing,
-  selectIsGridView,
+  selectLibraryViewMode,
 } from '@/utils/redux/selectors/settingsSelectors'
-import { gridItemWidth, libraryGutter } from './layout'
+import { gridItemWidth, libraryGutter, GRID_SPACING } from './layout'
+import type { LibraryCollectionType } from './librarySort'
 
 const PLACEHOLDER_ROWS = 8
 const PLACEHOLDER_GRID_ROWS = 3
@@ -24,17 +24,20 @@ const LIST_ART_SIZE = 52
  *
  * Follows the view the list is about to appear in: rows for a list, tiles for a
  * grid. A skeleton earns its place by predicting the layout, and eight rows in
- * front of a grid of covers predicts the wrong one.
+ * front of a grid of covers predicts the wrong one — which is why it has to be
+ * told which collection it is standing in for, now that grid-or-list is
+ * answered per kind rather than once for all of them.
  */
-const LoadingLibraryList: React.FC = () => {
-  const isGridView = useSelector(selectIsGridView)
+const LoadingLibraryList: React.FC<{ collection?: LibraryCollectionType | null }> = ({
+  collection = null,
+}) => {
+  const isGridView = useSelector(selectLibraryViewMode(collection))
   const gridColumns = useSelector(selectGridColumns)
-  const gridSpacing = useSelector(selectGridSpacing)
   const { width } = useWindowDimensions()
 
   const rows = useMemo(() => Array.from({ length: PLACEHOLDER_ROWS }), [])
 
-  const gutter = libraryGutter(isGridView, gridSpacing)
+  const gutter = libraryGutter(isGridView, GRID_SPACING)
 
   return (
     <ScrollView
@@ -45,8 +48,8 @@ const LoadingLibraryList: React.FC = () => {
       {isGridView ? (
         <View style={{ paddingHorizontal: gutter }}>
           <SkeletonGrid
-            itemSize={gridItemWidth(width, gridColumns, gridSpacing, gutter)}
-            itemSpacing={gridSpacing}
+            itemSize={gridItemWidth(width, gridColumns, GRID_SPACING, gutter)}
+            itemSpacing={GRID_SPACING}
             variant="album"
             count={gridColumns * PLACEHOLDER_GRID_ROWS}
           />

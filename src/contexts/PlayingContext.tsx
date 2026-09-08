@@ -8,16 +8,14 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import TrackPlayer, {
-  Event,
-  MediaItem,
-  PlayerCommand,
-  PlaybackState,
-  RepeatMode,
-  useActiveMediaItem,
-  useIsPlaying,
-  useProgress,
-} from '@rntp/player';
+import type { MediaItem } from '../features/player/mediaItem';
+import { getBackend } from '@/features/player/activeBackend';
+import { presetToBands } from '@/features/player/audioSettings';
+import {
+  usePlayerActiveItem,
+  usePlayerIsPlaying,
+  usePlayerProgress,
+} from '@/features/player/usePlayerState';
 
 import { Album, Playlist, Song, SongBase } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
@@ -25,21 +23,25 @@ import { useApi } from '@/api';
 import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
-import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, tagSegment, shiftSegmentsAfterInsert } from './playingQueue';
+import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, segmentAt, tagSegment, shiftSegmentsAfterInsert } from './playingQueue';
+import { isRepeatLoop } from './repeatPlay';
 import { resolvePlaybackErrorAction } from './playbackErrorRecovery';
 import { useDownloadActions } from './DownloadContext';
-import { useCast } from './CastContext';
+import { usePlaybackSink } from './PlaybackSinkContext';
+import { ownsPlayback } from '@/features/player/playbackSink';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
 import { useSelector } from 'react-redux';
 import {
-  selectWifiStreamQuality,
-  selectCellularStreamQuality,
   selectPreferredCodec,
   selectAutoplayEnabled,
+  selectCrossfadeSeconds,
+  selectCrossfadeAlways,
+  selectEqualizerGains,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
-import { useNetworkType } from '@/hooks/useNetworkType';
+import { useStreamQuality } from '@/hooks/useStreamQuality';
+import { playableQuality } from '@/utils/audio/playableFormat';
 import {
   QueueFillProvider,
   createNativeSimilarityQueueFillProvider,
@@ -56,6 +58,21 @@ import {
   playableSongsOnly,
 } from './playableMedia';
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
+import { buildRestoredQueue } from './restoreQueue';
+import { canFillQueueFrom } from '@/utils/playback/contentKind';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
+import { useQueueSync } from '@/hooks/useQueueSync';
+import { usePlaybackPersistence } from '@/hooks/usePlaybackPersistence';
+import {
+  selectPersistedPlaybackActiveServerId,
+  selectPersistedPlaybackCurrentIndex,
+  selectPersistedPlaybackPositionMs,
+  selectPersistedPlaybackQueue,
+  selectPersistedPlaybackRepeatMode,
+  selectPersistedPlaybackShuffleMode,
+} from '@/utils/redux/selectors/playbackSelectors';
+import { selectActiveServerId as selectActiveServerIdSel } from '@/utils/redux/selectors/serversSelectors';
+import { selectLibraryTracks } from '@/utils/redux/selectors/librarySelectors';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
 
@@ -142,7 +159,21 @@ const PlayingProgressContext = createContext<PlaybackProgress>({ position: 0, du
 // need to re-render for. Only the queue list itself reads this.
 const PlayingQueueVersionContext = createContext<number>(0);
 
-let playerWasSetup = false;
+/**
+ * Whether the player has been set up this launch.
+ *
+ * Module-level rather than a `useRef` so it survives a remount of the
+ * provider: `setup()` claims the audio session and subscribes the event
+ * listener, and doing that twice would rebuild the audio graph underneath a
+ * playing track.
+ *
+ * This was briefly a `Set` keyed by which backend, back when there were two
+ * and switching between them left the incoming one un-set-up — a plain
+ * boolean was already true from the outgoing player, so `setup()` never ran
+ * on the new one and the engine sat silent. With one player the key has
+ * nothing to distinguish, so it is a boolean again.
+ */
+const playerSetUp = { current: false };
 
 export const usePlayingState = () => {
   const ctx = useContext(PlayingStateContext);
@@ -169,13 +200,26 @@ export const usePlayingQueueVersion = () => useContext(PlayingQueueVersionContex
 
 // Separate component so useProgress ticks don't rerender PlayingProvider.
 const PlayingProgressProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { position, duration, buffered } = useProgress(1);
+  const { position, duration, buffered } = usePlayerProgress(1);
+  // Whoever holds the audio holds the clock. With the jukebox selected the
+  // local player is stopped, so `useProgress` sits at zero and the bar would
+  // never move — the server's polled position is the real one. Duration still
+  // comes from the track: the jukebox reports where it is, not how long the
+  // song is, and nothing is buffered on this device at all.
+  const { jukeboxState } = usePlaybackSink();
+  const { currentSong } = usePlayingState();
 
-  const progress = useMemo<PlaybackProgress>(() => ({
-    position: typeof position === 'number' && !Number.isNaN(position) ? position : 0,
-    duration: typeof duration === 'number' && !Number.isNaN(duration) ? duration : 0,
-    buffered: typeof buffered === 'number' && !Number.isNaN(buffered) ? buffered : 0,
-  }), [position, duration, buffered]);
+  const progress = useMemo<PlaybackProgress>(() => {
+    if (jukeboxState) {
+      const songDuration = Number(currentSong?.duration) || 0;
+      return { position: jukeboxState.positionSeconds, duration: songDuration, buffered: 0 };
+    }
+    return {
+      position: typeof position === 'number' && !Number.isNaN(position) ? position : 0,
+      duration: typeof duration === 'number' && !Number.isNaN(duration) ? duration : 0,
+      buffered: typeof buffered === 'number' && !Number.isNaN(buffered) ? buffered : 0,
+    };
+  }, [position, duration, buffered, jukeboxState, currentSong]);
 
   return (
     <PlayingProgressContext.Provider value={progress}>
@@ -188,23 +232,50 @@ const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
 
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
-  const isPlaying = useIsPlaying();
-  const activeMediaItem = useActiveMediaItem();
+  const isPlaying = usePlayerIsPlaying();
+  const activeMediaItem = usePlayerActiveItem();
   const api = useApi();
   const { getLocalPath } = useDownloadActions();
-  const { activeDevice, castPause, castResume, castSeek } = useCast();
-  const networkType = useNetworkType();
-  const wifiQuality = useSelector(selectWifiStreamQuality);
-  const cellularQuality = useSelector(selectCellularStreamQuality);
-  const streamQuality = networkType === 'wifi' ? wifiQuality
-    : networkType === 'cellular' ? cellularQuality
-    : 'high';
+  const {
+    sink, sinkPause, sinkResume, sinkSeek, sinkLoadQueue, sinkSkipTo, jukeboxState,
+  } = usePlaybackSink();
+  // The server's own clock, for the handful of places that read a position
+  // without going through the progress context.
+  const jukeboxPositionRef = useRef(0);
+  jukeboxPositionRef.current = jukeboxState?.positionSeconds ?? 0;
+  // Read through a ref inside callbacks so switching output doesn't rebuild
+  // every transport handler in the tree.
+  const sinkRef = useRef(sink);
+  sinkRef.current = sink;
+  /** The server is holding the audio; the local player must stay out of it. */
+  const remoteOwnsPlayback = () => ownsPlayback(sinkRef.current);
+  const streamQuality = useStreamQuality();
   const streamQualityRef = useRef(streamQuality);
   streamQualityRef.current = streamQuality;
   const preferredCodec = useSelector(selectPreferredCodec);
   const preferredCodecRef = useRef(preferredCodec);
   preferredCodecRef.current = preferredCodec;
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
+
+  // Selected as primitives and rebuilt here rather than selected as objects.
+  // `useSelector` compares by reference, so a selector that constructs its
+  // result hands back a new value every render and re-runs the effects below
+  // forever.
+  const crossfadeSeconds = useSelector(selectCrossfadeSeconds);
+  const crossfadeAlways = useSelector(selectCrossfadeAlways);
+  const equalizerGains = useSelector(selectEqualizerGains);
+  const crossfade = useMemo(
+    () =>
+      crossfadeSeconds > 0
+        ? {
+            durationSec: crossfadeSeconds,
+            mode: crossfadeAlways ? ('always' as const) : ('gapless-aware' as const),
+            skipIsImmediate: true,
+          }
+        : null,
+    [crossfadeSeconds, crossfadeAlways],
+  );
+  const equalizerBands = useMemo(() => presetToBands(equalizerGains), [equalizerGains]);
   const isAudiomuseConfigured = useSelector(selectIsAudiomuseConfigured);
   const audiomuseConfig = useSelector(selectAudiomuseConfig);
 
@@ -237,19 +308,198 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   // volatile deps, while keeping the callbacks themselves stable for context consumers.
   const scrobbleIfNeededRef = useRef<(
     song: Song | null,
-    opts: { listenedSeconds: number; startTime: number }
+    opts: { listenedSeconds: number; startTime: number; playlistId?: string }
   ) => Promise<void>>(async () => {});
+  const scrobbleOutgoingRef = useRef<(song: Song | null, listenedSeconds: number) => Promise<void>>(
+    async () => {}
+  );
+  /** Position at the previous heartbeat, so a looping track's restart is visible. */
+  const lastTickPositionRef = useRef(0);
   const submitNowPlayingRef = useRef<(song: Song) => void>(() => {});
   const removeFailedCurrentTrackRef = useRef<() => void>(() => {});
   const resolvePlayableSongRef = useRef<(song: Song) => Song>((s) => s);
 
-  const { scrobbleIfNeeded, submitNowPlaying, resetLastScrobbled } = useScrobbling();
+  const { scrobbleIfNeeded, submitNowPlaying, reportPlaybackProgress, resetLastScrobbled } = useScrobbling();
+  const bookmarks = useBookmarkManager();
+  const bookmarksRef = useRef(bookmarks);
+  useEffect(() => { bookmarksRef.current = bookmarks; }, [bookmarks]);
+
+  const queueSync = useQueueSync();
+  const queueSyncRef = useRef(queueSync);
+  useEffect(() => { queueSyncRef.current = queueSync; }, [queueSync]);
+
+  const persistence = usePlaybackPersistence();
+  const persistenceRef = useRef(persistence);
+  useEffect(() => { persistenceRef.current = persistence; }, [persistence]);
+
+  // Auto-restore persisted playback on first mount for the active server.
+  // This is what makes "the app remembers what I was doing" true on every
+  // provider, not just Navidrome — the slice is our source of truth, and
+  // the server-side queue mirror in useQueueSync is a secondary path used
+  // only when local is empty (see ResumeQueueBanner).
+  const persistedQueueIds = useSelector(selectPersistedPlaybackQueue);
+  const persistedCurrentIndex = useSelector(selectPersistedPlaybackCurrentIndex);
+  const persistedPositionMs = useSelector(selectPersistedPlaybackPositionMs);
+  const persistedRepeatMode = useSelector(selectPersistedPlaybackRepeatMode);
+  const persistedShuffleMode = useSelector(selectPersistedPlaybackShuffleMode);
+  const persistedServerIdForPlayback = useSelector(selectPersistedPlaybackActiveServerId);
+  const currentServerId = useSelector(selectActiveServerIdSel);
+  const libraryTracks = useSelector(selectLibraryTracks);
+  const hasAutoRestoredRef = useRef(false);
+  useEffect(() => {
+    if (hasAutoRestoredRef.current) return;
+
+    // Why the restore did not happen, said out loud. Every one of these was a
+    // bare `return`, so a queue that was displayed but never handed to the
+    // player looked identical from the outside to one that had been restored
+    // properly — the app showed the track and play did nothing, with nothing
+    // anywhere to say which guard had stopped it. Some of these are ordinary
+    // (the library has not hydrated yet, and the effect will run again), so
+    // this is deliberately not a warning.
+    const blocked =
+      !currentServerId ? 'no active server'
+      : persistedServerIdForPlayback !== currentServerId ? `queue belongs to another server (${persistedServerIdForPlayback})`
+      : persistedQueueIds.length === 0 ? 'nothing persisted'
+      : queueRef.current.length > 0 ? 'a queue is already loaded'
+      : libraryTracks.length === 0 ? 'library not hydrated yet'
+      : null;
+    if (blocked) {
+      console.log(`[player] not restoring the persisted queue: ${blocked}`);
+      return;
+    }
+
+    const { queue: restored, index: idx } = buildRestoredQueue({
+      persistedIds: persistedQueueIds,
+      persistedIndex: persistedCurrentIndex,
+      libraryTracks: libraryTracks as unknown as Song[],
+      resolve: resolvePlayableSongRef.current,
+    });
+    if (restored.length === 0) {
+      hasAutoRestoredRef.current = true;
+      return;
+    }
+    hasAutoRestoredRef.current = true;
+
+    // Restore modes before loading the queue — getBackend().setRepeatMode
+    // inside loadQueue reads from repeatModeRef, which follows setState.
+    setRepeatMode(persistedRepeatMode);
+    setShuffleMode(persistedShuffleMode);
+    queueRef.current = restored;
+    queueSegmentsRef.current = [{
+      startIndex: 0,
+      length: restored.length,
+      source: { kind: 'user', contextId: 'restored', contextType: 'adhoc' },
+    }];
+    currentIndexRef.current = idx;
+    setCurrentIndex(idx);
+    currentSongRef.current = restored[idx];
+    setCurrentSong(restored[idx]);
+    // Load paused at the persisted position — the user didn't ask us to
+    // start playing on cold boot, they asked us to remember where they were.
+    // Reported rather than dropped. This was `void`, so the failure that made
+    // the restored queue unplayable was invisible from both sides — nothing in
+    // a log, and a UI that looked correct.
+    loadQueueRef.current(restored, idx, false, Math.floor(persistedPositionMs / 1000))
+      .catch((error) => {
+        console.warn('[player] restoring the persisted queue failed', error);
+      });
+  }, [
+    currentServerId,
+    persistedServerIdForPlayback,
+    persistedQueueIds,
+    persistedCurrentIndex,
+    persistedPositionMs,
+    persistedRepeatMode,
+    persistedShuffleMode,
+    libraryTracks,
+  ]);
+  const loadQueueRef = useRef<(songs: Song[], startIndex: number, play?: boolean, seek?: number) => Promise<void>>(async () => {});
+
+  /**
+   * Records the listen that is ending, attributed to the collection it came
+   * from.
+   *
+   * Every caller scrobbles the *outgoing* song, and each does so before moving
+   * the index, so the current index still points at the queue position that
+   * song occupied — which is what carries the playlist tag.
+   */
+  const scrobbleOutgoing = useCallback((song: Song | null, listenedSeconds: number) => {
+    const source = segmentAt(queueSegmentsRef.current, currentIndexRef.current)?.source;
+    const playlistId = source?.kind === 'user' && source.contextType === 'playlist'
+      ? source.contextId
+      : undefined;
+    return scrobbleIfNeededRef.current(song, {
+      listenedSeconds,
+      startTime: scrobbleStartTimeRef.current,
+      playlistId,
+    });
+  }, []);
+  // Stable for the life of the provider, so the effects and queue callbacks
+  // below can reach it without listing it as a dependency.
+  scrobbleOutgoingRef.current = scrobbleOutgoing;
 
   useEffect(() => { scrobbleIfNeededRef.current = scrobbleIfNeeded; }, [scrobbleIfNeeded]);
   useEffect(() => { submitNowPlayingRef.current = submitNowPlaying; }, [submitNowPlaying]);
-  useEffect(() => { repeatModeRef.current = repeatMode; }, [repeatMode]);
-  useEffect(() => { shuffleModeRef.current = shuffleMode; }, [shuffleMode]);
-  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  // Session heartbeat for mediaBrowser servers. Jellyfin will drop the session
+  // (and never fire the Stopped event the Last.fm plugin scrobbles on) if it
+  // stops seeing progress reports. 10s is well inside its ~30s idle window.
+  //
+  // The same tick also persists the current playback position so a kill or
+  // background termination doesn't lose more than ~10s of resume precision.
+  // The persistence hook throttles further; this loop is the writer.
+  useEffect(() => {
+    if (!isPlaying) {
+      lastTickPositionRef.current = 0;
+      return;
+    }
+    const interval = setInterval(() => {
+      const song = currentSongRef.current;
+      if (!song) return;
+      const { position: positionSeconds, duration } = getBackend().getProgress();
+
+      // A track on repeat never changes media item, so nothing else in here
+      // ever sees it finish. Catching the restart is what makes the second
+      // time round count as a second listen instead of being folded into the
+      // first — a track left on repeat used to record exactly one play.
+      const isLooping = repeatModeRef.current === 'one'
+        || (repeatModeRef.current === 'all' && queueRef.current.length === 1);
+      if (isRepeatLoop({
+        isLooping,
+        previousPosition: lastTickPositionRef.current,
+        currentPosition: positionSeconds,
+        duration,
+      })) {
+        // The pass that just ended is its own listen, so the guard against
+        // scrobbling one track twice has to be released for it.
+        resetLastScrobbled();
+        void scrobbleOutgoingRef.current(song, Math.floor(lastTickPositionRef.current));
+        scrobbleStartTimeRef.current = Date.now();
+      }
+      lastTickPositionRef.current = positionSeconds;
+
+      reportPlaybackProgress(song, Math.floor(positionSeconds * 1000), false);
+      persistenceRef.current.persistPosition(positionSeconds);
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, [isPlaying, reportPlaybackProgress, resetLastScrobbled]);
+  useEffect(() => {
+    repeatModeRef.current = repeatMode;
+    persistenceRef.current.persistRepeatMode(repeatMode);
+  }, [repeatMode]);
+  useEffect(() => {
+    shuffleModeRef.current = shuffleMode;
+    persistenceRef.current.persistShuffleMode(shuffleMode);
+  }, [shuffleMode]);
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    // On pause, force-persist so kill-during-pause preserves the paused-at
+    // position rather than losing up to the throttle window.
+    if (!isPlaying && currentSongRef.current) {
+      const positionSeconds = getBackend().getProgress().position;
+      persistenceRef.current.persistPosition(positionSeconds, { force: true });
+    }
+  }, [isPlaying]);
   useEffect(() => { autoplayEnabledRef.current = autoplayEnabled; }, [autoplayEnabled]);
 
   // AudioMuse-AI first when configured, native similar-songs as fallback —
@@ -263,46 +513,58 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useCarPlayBrowseTree();
 
+  // Setup rebuilds the audio graph, so it is guarded and runs once per launch.
+  //
+  // `setCommands` is deliberately *outside* that guard. Re-asserting the
+  // remote commands is the only way to reclaim the lock-screen controls from
+  // anything else that has called `removeTarget(nil)` on the shared command
+  // centre, and a guard around it is what left those controls greyed out while
+  // @rntp/player was still in the app destroying them on its way out.
   useEffect(() => {
-    if (!playerWasSetup) {
+    if (!playerSetUp.current) {
       try {
-        TrackPlayer.setupPlayer({
-          contentType: 'music',
-          handleAudioBecomingNoisy: true,
-          cache: {
-            maxSizeBytes: 1024 * 1024 * 1024,
-            preloading: { window: 2 },
-          },
-          android: {
-            wakeMode: 'network',
-            notification: {
-              channelId: 'yuzic-playback',
-              channelName: 'Playback',
-              smallIcon: 'ic_launcher',
-            },
-          },
-        });
-        playerWasSetup = true;
+        getBackend().setup();
+        playerSetUp.current = true;
       } catch (err) {
-        console.warn('TrackPlayer setup failed', err);
+        console.warn('player setup failed', err);
       }
     }
 
-    TrackPlayer.setCommands({
-      capabilities: [
-        PlayerCommand.PlayPause,
-        PlayerCommand.Next,
-        PlayerCommand.Previous,
-        PlayerCommand.Seek,
-        PlayerCommand.Stop,
-        PlayerCommand.SkipForward,
-        PlayerCommand.SkipBackward,
-      ],
-      handling: 'native',
-    });
+    getBackend().setCommands();
   }, []);
 
+  /**
+   * Push the audio settings down whenever they change.
+   *
+   * Separate from setup so that changing a slider takes effect immediately
+   * rather than at the next launch — an equalizer you have to restart the app
+   * to hear is one people conclude is broken.
+   *
+   * Both are safe to re-send: the engine bypasses a flat EQ and a null
+   * crossfade outright, so the steady state costs nothing.
+   */
+  useEffect(() => {
+    getBackend().setCrossfade(crossfade);
+  }, [crossfade]);
+
+  useEffect(() => {
+    getBackend().setEqualizer(equalizerBands);
+  }, [equalizerBands]);
+
   const bumpQueue = useCallback(() => setQueueVersion(v => v + 1), []);
+
+  // Every queue mutation (playSong, playSongs, playSongInCollection, autoplay
+  // fill, smart-shuffle inject, clear) calls bumpQueue immediately after. Rather
+  // than sprinkle persistence calls at each site, mirror bumpQueue → persist here.
+  useEffect(() => {
+    if (queueVersion === 0) return; // Skip the initial state.
+    persistenceRef.current.persistQueue({
+      queue: queueRef.current,
+      currentIndex: currentIndexRef.current,
+      repeatMode: repeatModeRef.current,
+      shuffleMode: shuffleModeRef.current,
+    });
+  }, [queueVersion]);
 
   const clearPlaybackState = useCallback(() => {
     queueRef.current = [];
@@ -314,8 +576,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentSong(null);
     setShuffleMode('off');
     bumpQueue();
-    TrackPlayer.stop();
-    TrackPlayer.clear();
+    getBackend().stop();
+    getBackend().clear();
   }, [bumpQueue]);
 
   const removeFailedCurrentTrack = useCallback(() => {
@@ -341,10 +603,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentSong(nextSong);
     bumpQueue();
 
-    TrackPlayer.removeMediaItem(failedIndex);
+    getBackend().removeMediaItem(failedIndex);
     if (nextSong) {
-      TrackPlayer.skipToIndex(nextIndex);
-      TrackPlayer.play();
+      getBackend().skipToIndex(nextIndex);
+      getBackend().play();
     }
   }, [bumpQueue, clearPlaybackState]);
   removeFailedCurrentTrackRef.current = removeFailedCurrentTrack;
@@ -354,9 +616,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   // (e.g. an unreachable server) takes longer than the window to surface, which
   // makes every retry look like a "first" attempt and loops forever.
   const lastRecoveryAttemptedIdRef = useRef<string | null>(null);
+  // Stalls resumed for the current song, so a connection that will never serve
+  // it cannot loop. Reset when the song changes.
+  const stallResumesRef = useRef<{ songId: string | null; count: number }>({ songId: null, count: 0 });
 
   useEffect(() => {
-    const subscription = TrackPlayer.addEventListener(Event.PlaybackError, event => {
+    const unsubscribe = getBackend().addListener(event => {
+      if (event.type !== 'error') return;
       const song = currentSongRef.current;
       console.warn('Playback failed', {
         code: event.code,
@@ -371,21 +637,47 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       const now = Date.now();
 
       // Preview URLs (Deezer etc.) can't be refreshed — remove immediately.
-      if (song?.isPreview) {
+      if (song?.contentKind === 'preview') {
         removeFailedCurrentTrackRef.current();
         return;
       }
 
+      // Where playback had reached. A failure at 57 seconds into a track is a
+      // stream that stalled, not a track that cannot be played, and the two
+      // want opposite responses: resume in place, versus rebuild and drop.
+      const positionSeconds = getBackend().getProgress().position;
+      if (stallResumesRef.current.songId !== (song?.id ?? null)) {
+        stallResumesRef.current = { songId: song?.id ?? null, count: 0 };
+      }
+
       // First failure for this specific track: refresh every URL in the queue
       // (catches stale Navidrome tokens after JS context restarts) then retry.
-      const decision = resolvePlaybackErrorAction(lastRecoveryAttemptedIdRef.current, song?.id);
+      const decision = resolvePlaybackErrorAction(
+        lastRecoveryAttemptedIdRef.current,
+        song?.id,
+        { positionSeconds, stallCount: stallResumesRef.current.count }
+      );
+
+      // A stall: put it back where it was rather than starting the track over.
+      // Restarting is what made the same minute of a song play twice before
+      // the track was removed as unplayable.
+      if (decision.action === 'resume') {
+        stallResumesRef.current = {
+          songId: song?.id ?? null,
+          count: decision.nextStallCount,
+        };
+        getBackend().seekTo(decision.positionSeconds);
+        getBackend().play();
+        return;
+      }
+
       if (decision.action === 'retry') {
         lastRecoveryAttemptedIdRef.current = decision.nextLastRecoveryAttemptedId;
         const freshQueue = queueRef.current.map(s => resolvePlayableSongRef.current(s));
         queueRef.current = freshQueue;
         currentSongRef.current = freshQueue[currentIndexRef.current] ?? song;
-        TrackPlayer.setMediaItems(toMediaItems(freshQueue), currentIndexRef.current);
-        TrackPlayer.play();
+        getBackend().setMediaItems(toMediaItems(freshQueue), currentIndexRef.current);
+        getBackend().play();
         return;
       }
 
@@ -398,14 +690,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       removeFailedCurrentTrackRef.current();
     });
 
-    return () => subscription.remove();
+    return unsubscribe;
   }, [t]);
 
   useEffect(() => {
-    const subscription = TrackPlayer.addEventListener(Event.PlaybackStateChanged, ({ state }) => {
-      setIsBuffering(state === PlaybackState.Buffering);
+    return getBackend().addListener(event => {
+      if (event.type === 'stateChange') setIsBuffering(event.buffering);
     });
-    return () => subscription.remove();
   }, []);
 
   // Build a song lookup map from the library for queue reconciliation
@@ -422,14 +713,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     const prev = currentSongRef.current;
     if (prev && prev.id !== mediaId) {
-      scrobbleIfNeededRef.current(prev, {
-        listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-        startTime: scrobbleStartTimeRef.current,
-      });
+      const prevPosition = Math.floor(getBackend().getProgress().position);
+      scrobbleOutgoingRef.current(prev, prevPosition);
+      // Save a resume bookmark on the way out. isBookmarkable filters this
+      // down to long-form tracks and podcasts — a 3-min song leaving mid-way
+      // doesn't get one. Fire-and-forget: a save failing must not delay the
+      // next track loading.
+      void bookmarksRef.current.saveOrClear(prev, prevPosition);
       scrobbleStartTimeRef.current = Date.now();
     }
 
-    const nativeQueue = TrackPlayer.getQueue();
+    const nativeQueue = getBackend().getQueue();
     const nativeQueueSongs = nativeQueue
       .map(item => {
         const id = getMediaItemId(item);
@@ -448,7 +742,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       bumpQueue();
     }
 
-    const nativeIndex = TrackPlayer.getActiveMediaItemIndex();
+    const nativeIndex = getBackend().getActiveMediaItemIndex();
     let newIndex = typeof nativeIndex === 'number' && nativeIndex >= 0
       ? nativeIndex
       : queueRef.current.findIndex(s => s.id === mediaId);
@@ -473,9 +767,33 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     currentSongRef.current = songFromQueue;
     setCurrentSong(songFromQueue);
 
+    // Persist the pointer move — the queue itself doesn't change every track,
+    // only the current index does, so this is the frequent write.
+    persistenceRef.current.persistCurrentIndex(newIndex);
+
+    // Auto-resume for tracks that earn a bookmark (long-form + podcast).
+    // Only seek when the player is still at the top of the track — a user
+    // who already advanced past zero is where they want to be.
+    const resumeSeconds = bookmarksRef.current.getResumePosition(songFromQueue.id);
+    if (resumeSeconds && Math.floor(getBackend().getProgress().position) < 2) {
+      getBackend().seekTo(resumeSeconds);
+    }
+
     submitNowPlayingRef.current(songFromQueue);
 
-    if (shouldFillQueue({
+    // Server-side queue sync — hands the current queue and position to
+    // Subsonic so opening yuzic on another device resumes here. Throttled
+    // in the hook; a same-queue re-fire is a no-op.
+    void queueSyncRef.current.save(
+      queueRef.current,
+      songFromQueue.id,
+      Math.floor(getBackend().getProgress().position * 1000)
+    );
+
+    // Autoplay-fill from a radio station is meaningless: the station is its
+    // own infinite feed and there's no seed to compute a follow-up from.
+    // Podcasts skip fill too — a "next episode" isn't a similarity call.
+    if (canFillQueueFrom(songFromQueue) && shouldFillQueue({
       queueLength: queueRef.current.length,
       currentIndex: newIndex,
       autoplayEnabled: autoplayEnabledRef.current,
@@ -486,10 +804,20 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [activeMediaItem, bumpQueue]);
 
   const resolvePlayableSong = useCallback((song: Song): Song => {
-    if (song.isPreview) return song;
+    // Preview URLs (Deezer etc.), live-stream URLs and resolved podcast
+    // episode URLs are external — the server doesn't own them and rebuilding
+    // through api.songs.buildStreamUrl would send the client to a broken
+    // /rest/stream endpoint. Leave the song as-is.
+    if (song.contentKind && song.contentKind !== 'song') return song;
     const localPath = getLocalPath(song.id);
     if (localPath) return { ...song, streamUrl: localPath };
-    const freshUrl = api.songs.buildStreamUrl(song.id, streamQualityRef.current, preferredCodecRef.current);
+    // "Original" serves the untouched file, which is the only way to hear a
+    // lossless library losslessly — and the only setting that can hand the
+    // device something it cannot decode at all. An Ogg Vorbis album played on
+    // every quality except Original, where iOS has no Vorbis decoder and the
+    // track failed outright. Transcoding it is a smaller loss than silence.
+    const quality = playableQuality(song, streamQualityRef.current);
+    const freshUrl = api.songs.buildStreamUrl(song.id, quality, preferredCodecRef.current);
     return freshUrl ? { ...song, streamUrl: freshUrl } : song;
   }, [api, getLocalPath]);
   // Keep ref in sync during render so effects/handlers always have the latest version
@@ -499,15 +827,33 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     assertPlayableSongs(songs);
     resetLastScrobbled();
     scrobbleStartTimeRef.current = Date.now();
-    TrackPlayer.setMediaItems(toMediaItems(songs), startIndex);
-    TrackPlayer.setRepeatMode(
-      repeatModeRef.current === 'all' ? RepeatMode.All :
-      repeatModeRef.current === 'one' ? RepeatMode.One :
-      RepeatMode.Off
+    if (remoteOwnsPlayback()) {
+      // The server plays from its own playlist of ids; nothing is streamed to
+      // this device, so the local player is never given the queue at all.
+      await sinkLoadQueue(songs.map(song => song.id), startIndex, play);
+      return;
+    }
+    getBackend().setMediaItems(toMediaItems(songs), startIndex);
+    getBackend().setRepeatMode(
+      repeatModeRef.current === 'all' ? 'queue' :
+      repeatModeRef.current === 'one' ? 'track' :
+      'off'
     );
-    if (seekToPosition !== undefined && seekToPosition > 0) TrackPlayer.seekTo(seekToPosition);
-    if (play) TrackPlayer.play();
-  }, [resetLastScrobbled]);
+    if (seekToPosition !== undefined && seekToPosition > 0) getBackend().seekTo(seekToPosition);
+    if (play) getBackend().play();
+  }, [resetLastScrobbled, sinkLoadQueue]);
+  // Assigned during render, not in an effect. React runs effects in the order
+  // they are declared, and the auto-restore effect is declared far above this
+  // one — so on first mount it called the placeholder this ref was
+  // initialised with, an `async () => {}` that does nothing and resolves
+  // successfully. The restore therefore "succeeded" silently: the queue and
+  // current song were written to state, the one-shot guard was set, and the
+  // player was never given anything. The app showed the remembered queue and
+  // play did nothing, with no error anywhere to say why.
+  //
+  // `resolvePlayableSongRef` above is assigned the same way, for the same
+  // reason.
+  loadQueueRef.current = loadQueue;
 
   // Autoplay: fetches more tracks once the queue is running low, regardless
   // of shuffle mode. Independent of Smart Shuffle — see injectSmartShuffleTracks.
@@ -528,7 +874,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         kind: 'autoplay-fill',
         contextId: `autoplay-${insertAt}`,
       });
-      TrackPlayer.addMediaItems(toMediaItems(playable));
+      getBackend().addMediaItems(toMediaItems(playable));
       bumpQueue();
     } catch (err) {
       console.warn('Autoplay fill failed', err);
@@ -683,7 +1029,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       contextId: collection.id,
       contextType: 'year' in collection ? 'album' : 'playlist',
     });
-    TrackPlayer.addMediaItems(toMediaItems(toAdd));
+    getBackend().addMediaItems(toMediaItems(toAdd));
     bumpQueue();
   }, [bumpQueue, resolvePlayableSong]);
 
@@ -702,71 +1048,88 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       contextId: collection.id,
       contextType: 'year' in collection ? 'album' : 'playlist',
     });
-    TrackPlayer.addMediaItems(toMediaItems(toAdd));
+    getBackend().addMediaItems(toMediaItems(toAdd));
     bumpQueue();
   }, [bumpQueue, resolvePlayableSong]);
 
   const skipToNext = useCallback(async () => {
-    await scrobbleIfNeededRef.current(currentSongRef.current, {
-      listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-      startTime: scrobbleStartTimeRef.current,
-    });
+    await scrobbleOutgoingRef.current(
+      currentSongRef.current,
+      Math.floor(getBackend().getProgress().position)
+    );
     const nextIdx = currentIndexRef.current + 1;
     if (nextIdx >= queueRef.current.length && repeatModeRef.current !== 'all') return;
-    TrackPlayer.skipToNext();
-    if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+    if (remoteOwnsPlayback()) {
+      await sinkSkipTo(nextIdx % Math.max(1, queueRef.current.length));
+      return;
+    }
+    getBackend().skipToNext();
+    if (isPlayingRef.current) getBackend().play();
+  }, [sinkSkipTo]);
 
   const skipToPrevious = useCallback(async () => {
-    await scrobbleIfNeededRef.current(currentSongRef.current, {
-      listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-      startTime: scrobbleStartTimeRef.current,
-    });
+    await scrobbleOutgoingRef.current(
+      currentSongRef.current,
+      Math.floor(getBackend().getProgress().position)
+    );
     if (currentIndexRef.current <= 0) return;
-    TrackPlayer.skipToIndex(currentIndexRef.current - 1);
-    if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+    if (remoteOwnsPlayback()) {
+      await sinkSkipTo(currentIndexRef.current - 1);
+      return;
+    }
+    getBackend().skipToIndex(currentIndexRef.current - 1);
+    if (isPlayingRef.current) getBackend().play();
+  }, [sinkSkipTo]);
 
   const skipTo = useCallback(async (index: number) => {
     const song = queueRef.current[index];
     if (!song) return;
     if (index !== currentIndexRef.current) {
-      await scrobbleIfNeededRef.current(currentSongRef.current, {
-        listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-        startTime: scrobbleStartTimeRef.current,
-      });
+      await scrobbleOutgoingRef.current(
+        currentSongRef.current,
+        Math.floor(getBackend().getProgress().position)
+      );
       scrobbleStartTimeRef.current = Date.now();
     }
     currentIndexRef.current = index;
     setCurrentIndex(index);
     currentSongRef.current = song;
     setCurrentSong(song);
-    TrackPlayer.skipToIndex(index);
-    if (isPlayingRef.current) TrackPlayer.play();
-  }, []);
+    if (remoteOwnsPlayback()) {
+      await sinkSkipTo(index);
+      return;
+    }
+    getBackend().skipToIndex(index);
+    if (isPlayingRef.current) getBackend().play();
+  }, [sinkSkipTo]);
 
+  // Each of these drives the local player *and* the sink, except where the
+  // sink owns playback outright — then the local player is not running and
+  // touching it would start a second copy of the track on this device.
   const pauseSong = useCallback(async () => {
-    TrackPlayer.pause();
-    if (activeDevice) castPause();
-  }, [activeDevice, castPause]);
+    if (!remoteOwnsPlayback()) getBackend().pause();
+    await sinkPause();
+  }, [sinkPause]);
 
   const resumeSong = useCallback(async () => {
-    TrackPlayer.play();
-    if (activeDevice) castResume();
-  }, [activeDevice, castResume]);
+    if (!remoteOwnsPlayback()) getBackend().play();
+    await sinkResume();
+  }, [sinkResume]);
 
   const seekSong = useCallback((positionSeconds: number) => {
-    TrackPlayer.seekTo(positionSeconds);
-    if (activeDevice) castSeek(positionSeconds);
-  }, [activeDevice, castSeek]);
+    if (!remoteOwnsPlayback()) getBackend().seekTo(positionSeconds);
+    void sinkSeek(positionSeconds);
+  }, [sinkSeek]);
 
   const jumpBy = useCallback((deltaSeconds: number) => {
-    const { position, duration } = TrackPlayer.getProgress();
+    const { position, duration } = remoteOwnsPlayback()
+      ? { position: jukeboxPositionRef.current, duration: Number(currentSongRef.current?.duration) || 0 }
+      : getBackend().getProgress();
     const max = duration > 0 ? duration : Number.POSITIVE_INFINITY;
     const target = Math.max(0, Math.min(max, (position || 0) + deltaSeconds));
-    TrackPlayer.seekTo(target);
-    if (activeDevice) castSeek(target);
-  }, [activeDevice, castSeek]);
+    if (!remoteOwnsPlayback()) getBackend().seekTo(target);
+    void sinkSeek(target);
+  }, [sinkSeek]);
 
   const getQueue = useCallback(() => [...queueRef.current], []);
 
@@ -776,7 +1139,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [item] = q.splice(from, 1);
     q.splice(to, 0, item);
     queueRef.current = q;
-    TrackPlayer.moveMediaItem(from, to);
+    getBackend().moveMediaItem(from, to);
     setCurrentIndex(prev => {
       let next = prev;
       if (prev === from) next = to;
@@ -799,7 +1162,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       contextId: playableSong.id,
       contextType: 'adhoc',
     });
-    TrackPlayer.addMediaItem(buildTrackItem(playableSong));
+    getBackend().addMediaItems([buildTrackItem(playableSong)]);
     bumpQueue();
   }, [bumpQueue, resolvePlayableSong]);
 
@@ -810,9 +1173,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const update = moveSongAfterCurrent(queueRef.current, currentIndexRef.current, playableSong);
     if (!update) return;
     if (update.removedIndex !== null) {
-      TrackPlayer.moveMediaItem(update.removedIndex, update.insertIndex);
+      getBackend().moveMediaItem(update.removedIndex, update.insertIndex);
     } else {
-      TrackPlayer.insertMediaItem(update.insertIndex, buildTrackItem(playableSong));
+      getBackend().insertMediaItem(update.insertIndex, buildTrackItem(playableSong));
       queueSegmentsRef.current = tagSegment(
         shiftSegmentsAfterInsert(queueSegmentsRef.current, update.insertIndex, 1),
         update.insertIndex,
@@ -862,7 +1225,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (isShufflingRef.current) return;
     isShufflingRef.current = true;
     const wasPlaying = isPlayingRef.current;
-    const savedPosition = TrackPlayer.getProgress().position;
+    const savedPosition = getBackend().getProgress().position;
     const current = shuffleModeRef.current;
     try {
       if (current === 'off') {
@@ -920,10 +1283,10 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const toggleRepeat = useCallback(() => {
     setRepeatMode(prev => {
       const next: RepeatModeState = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
-      TrackPlayer.setRepeatMode(
-        next === 'all' ? RepeatMode.All :
-        next === 'one' ? RepeatMode.One :
-        RepeatMode.Off
+      getBackend().setRepeatMode(
+        next === 'all' ? 'queue' :
+        next === 'one' ? 'track' :
+        'off'
       );
       return next;
     });
@@ -932,23 +1295,23 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const setVolume = useCallback((next: number) => {
     const clamped = Math.max(0, Math.min(1, next));
     setVolumeState(clamped);
-    TrackPlayer.setVolume(clamped);
+    getBackend().setVolume(clamped);
   }, []);
 
   const setPlaybackSpeed = useCallback((speed: number) => {
     setPlaybackSpeedState(speed);
-    TrackPlayer.setPlaybackSpeed(speed);
+    getBackend().setPlaybackSpeed(speed);
   }, []);
 
   const resetQueue = useCallback(async () => {
-    await scrobbleIfNeededRef.current(currentSongRef.current, {
-      listenedSeconds: Math.floor(TrackPlayer.getProgress().position),
-      startTime: scrobbleStartTimeRef.current,
-    });
+    await scrobbleOutgoingRef.current(
+      currentSongRef.current,
+      Math.floor(getBackend().getProgress().position)
+    );
     resetLastScrobbled();
     scrobbleStartTimeRef.current = 0;
-    TrackPlayer.pause();
-    TrackPlayer.clear();
+    getBackend().pause();
+    getBackend().clear();
     queueRef.current = [];
     queueSegmentsRef.current = [];
     originalQueueRef.current = null;
@@ -958,7 +1321,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentSong(null);
     setShuffleMode('off');
     setRepeatMode('off');
-    TrackPlayer.setRepeatMode(RepeatMode.Off);
+    getBackend().setRepeatMode('off');
     bumpQueue();
   }, [bumpQueue, resetLastScrobbled]);
 

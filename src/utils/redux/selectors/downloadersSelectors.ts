@@ -13,6 +13,7 @@ const emptyConnection: DownloaderConnection = { serverUrl: '', apiKey: '', isAut
 const defaultEntry: PerServerDownloadersState = {
   lidarr: emptyConnection,
   slskd: emptyConnection,
+  soulsync: emptyConnection,
 };
 
 export const selectDownloadersForActiveServer = createSelector(

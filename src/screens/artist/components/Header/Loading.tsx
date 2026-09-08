@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Skeleton } from 'moti/skeleton';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing } from '@/constants/design';
+import { controlSize, spacing } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LoadingArtistHeader: React.FC = () => {
@@ -70,21 +70,21 @@ const LoadingArtistHeader: React.FC = () => {
       {/* SHUFFLE / PLAY / DOWNLOAD */}
       <View style={styles.buttonRow}>
         <Skeleton
-          width={40}
-          height={40}
-          radius={20}
+          width={controlSize.detailSecondary}
+          height={controlSize.detailSecondary}
+          radius={rad.pillFor(controlSize.detailSecondary)}
           colorMode={colorMode}
         />
         <Skeleton
-          width={112}
-          height={48}
-          radius={22}
+          width={controlSize.detailPrimaryWidth}
+          height={controlSize.detailPrimaryHeight}
+          radius={rad.pillFor(controlSize.detailPrimaryHeight)}
           colorMode={colorMode}
         />
         <Skeleton
-          width={40}
-          height={40}
-          radius={20}
+          width={controlSize.detailSecondary}
+          height={controlSize.detailSecondary}
+          radius={rad.pillFor(controlSize.detailSecondary)}
           colorMode={colorMode}
         />
       </View>

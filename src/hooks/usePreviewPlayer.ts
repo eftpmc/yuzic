@@ -13,7 +13,7 @@ export function externalSongToTrack(song: ExternalSong, previewUrl: string): Son
     duration: '30',
     albumId: song.albumId,
     streamUrl: previewUrl,
-    isPreview: true,
+    contentKind: 'preview',
   };
 }
 

@@ -1,3 +1,5 @@
+import { PixelRatio } from 'react-native';
+
 /**
  * The spacing scale.
  *
@@ -13,12 +15,12 @@ export const spacing = {
   controlGap: 10,
   inlineGap: 8,
   /**
-   * Bottom padding for any scrolling list, so its last row clears the playing
-   * bar and the tab bar. Lists used 100, 120, 140 and 180 for this — the short
-   * ones hid their last row behind the player, which is a bug rather than a
-   * style, so there is one number now.
+   * Bottom breathing room for scrolling lists. Used to be 180 when the tab
+   * bar + playing bar were a floating overlay screens had to reserve room
+   * for — now that the tab bar is a real docked react-navigation tabBar,
+   * screens naturally end at its top edge and this is just visual padding.
    */
-  scrollClearance: 180,
+  scrollClearance: 24,
   xxs: 2,
   xs: 4,
   tight: 6,
@@ -55,6 +57,8 @@ export const statusColor = {
 export const sourceColor = {
   deezer: '#A238CA',
   lastfm: '#D51007',
+  listenbrainz: '#EB743B',
+  musicbrainz: '#BA478F',
 } as const;
 
 /**
@@ -105,22 +109,29 @@ export const stateLayer = {
  * Literal `borderRadius` ran to twelve distinct values — 2, 4, 5, 6, 8, 10, 11,
  * 12, 14, 16, 24, 60 — which is one per developer-day rather than a decision.
  *
- * These are the **default** values, always static. Small structural nudges
- * (`xs`/`sm`/`thumb`) are left this way on purpose — they don't drive the app's
- * shape and shouldn't jitter as the user tries presets. The scale below is
- * what an untouched preset renders.
+ * These are the **default** values, always static. The structural nudges
+ * (`xs`/`sm`) are left this way on purpose — they round the corner of a
+ * progress fill or a pressed row highlight, which is not shape the user is
+ * choosing when they pick a preset.
  *
- * User-facing shape (album covers, playing bar, player controls, library
- * tiles, buttons) reads its corners from {@link useRadius} instead, which
- * scales the same base numbers by whichever preset the user picked. This is
- * what {@link RadiusPreset} controls — it never reaches back to change these
+ * User-facing shape (album covers, row artwork, playing bar, player controls,
+ * library tiles, buttons) reads its corners from {@link useRadius} instead,
+ * which scales the same base numbers by whichever preset the user picked. This
+ * is what {@link RadiusPreset} controls — it never reaches back to change these
  * defaults, so anything unmigrated stays at "default" regardless of preset.
  */
 export type RadiusPreset = 'sharp' | 'default' | 'rounded';
 
 export const radius = {
+  /** Square by intent — a rule that spans the full width of a surface, where
+   * rounded ends would read as a detached bar rather than an edge. */
+  none: 0,
   xs: 4,
   sm: 6,
+  /** Artwork in a row — the thumbnail beside a track, a playlist, a search
+   * result. The single most repeated shape in the app, so it scales with the
+   * preset (via {@link useRadius}) rather than holding still while the cards
+   * around it move. */
   thumb: 6,
   md: 8,
   card: 12,
@@ -167,7 +178,7 @@ export function scaleRadius(base: number, preset: RadiusPreset): number {
  * Adding a role is fine. Adding one that differs from an existing role only in
  * size is how the drift starts again.
  */
-export const typography = {
+const TYPE_SCALE = {
   hero: { fontSize: 48, lineHeight: 52, fontWeight: '600' as const },
   display: { fontSize: 28, lineHeight: 34, fontWeight: '600' as const },
   screenTitle: { fontSize: 24, lineHeight: 30, fontWeight: '600' as const },
@@ -184,6 +195,76 @@ export const typography = {
   micro: { fontSize: 11, lineHeight: 14 },
 } as const;
 
+/**
+ * The same scale with its leading grown to match the user's text size.
+ *
+ * React Native scales `fontSize` by the system text size and leaves
+ * `lineHeight` exactly where it was written. At the default size that is
+ * invisible; at the accessibility sizes a 20pt role renders at 60pt inside a
+ * 25pt line box, and every title, subtitle and timestamp in the app is sliced
+ * off top and bottom. The now-playing screen was unreadable — the song title
+ * and both timestamps were fragments of glyphs.
+ *
+ * So the leading is scaled here by the same factor the platform is about to
+ * apply to the size, which keeps the ratio each role was drawn with. It reads
+ * the scale once, at module load: a role is a static style object, spread into
+ * `StyleSheet.create` at import time, and the alternative is a hook at every
+ * one of several hundred call sites. iOS and Android both restart the JS
+ * context when the system text size changes, so this is re-read in practice.
+ */
+export function withScaledLeading<T extends Record<string, { lineHeight: number }>>(
+  scale: T,
+  fontScale: number
+): T {
+  return Object.fromEntries(
+    Object.entries(scale).map(([role, style]) => [
+      role,
+      { ...style, lineHeight: Math.round(style.lineHeight * fontScale) },
+    ])
+  ) as T;
+}
+
+const SYSTEM_FONT_SCALE = PixelRatio.getFontScale();
+
+export const typography = withScaledLeading(TYPE_SCALE, SYSTEM_FONT_SCALE);
+
+/**
+ * How far text inside a fixed-height control may grow.
+ *
+ * Most of the app should scale all the way — a list, a screen, a sheet all
+ * have room to get taller. A few surfaces do not: the playing bar is a strip
+ * of a set height that the dock is built around, and an avatar is a circle
+ * with one letter in it. Left uncapped those grow until the bar owns half the
+ * screen and the letter spills out of its disc.
+ *
+ * `maxFontSizeMultiplier` is the per-`Text` ceiling for exactly this. It is a
+ * ceiling, not an opt-out: `allowFontScaling={false}` ignores the setting
+ * outright, which is why the two places still doing that were changed to this.
+ */
+export const fontScaleCap = {
+  /** Text laid into a control whose height is structural. */
+  control: 1.3,
+  /** A single glyph inside a disc — an avatar initial, a track number. */
+  glyph: 1.15,
+} as const;
+
+/**
+ * The scale again, for text that carries a `maxFontSizeMultiplier`.
+ *
+ * `maxFontSizeMultiplier` caps the rendered size and nothing else, so a role
+ * whose leading was grown by the full system scale ends up as a 1.3x line of
+ * text sitting in a 3x line box — the playing bar stopped clipping and started
+ * being half the screen tall instead. Leading has to stop where the size does,
+ * so a capped role reads its lineHeight from the same capped factor.
+ *
+ * Always used with the matching cap on the `Text` itself; one without the
+ * other is the mismatch this exists to close.
+ */
+export const cappedTypography = {
+  control: withScaledLeading(TYPE_SCALE, Math.min(SYSTEM_FONT_SCALE, fontScaleCap.control)),
+  glyph: withScaledLeading(TYPE_SCALE, Math.min(SYSTEM_FONT_SCALE, fontScaleCap.glyph)),
+} as const;
+
 export const controlSize = {
   /**
    * The smallest a tap target may be, in points.
@@ -196,12 +277,71 @@ export const controlSize = {
   minimumTarget: 44,
   iconDefault: 44,
   iconCompact: 36,
-  detailSecondary: 40,
+  /** The circles either side of a detail screen's play pill. The same height
+   *  as the pill on purpose: three controls on one row that stop at three
+   *  different heights read as three unrelated controls, and the eye picks the
+   *  mismatch out long before it names it. Only the widths differ. */
+  detailSecondary: 48,
+  /** The player's quietest controls — cast and queue, under the 68pt play
+   *  button. Drawn small deliberately; they borrowed `detailSecondary` back
+   *  when both happened to be 40. */
+  playerSecondary: 40,
+  /** A control that sits inline with text — the library's sort pill and the
+   *  toggle beside it, a recent-search chip. 34pt drawn, padded out to the
+   *  minimum tap target by `hitSlopFor`. */
+  inlineControl: 34,
   detailPrimaryWidth: 112,
   detailPrimaryHeight: 48,
+  /** The full-screen player's play button — the biggest control in the app,
+   *  and the one a thumb finds without looking. */
+  playerPrimary: 68,
   mediaRowArt: 64,
   compactMediaRowArt: 44,
   topBarHeight: 52,
+} as const;
+
+/**
+ * The glyph scale.
+ *
+ * Same rule as the type and shape scales, one axis over: pick by what the
+ * glyph is doing, not by how big it should be. Literal `size={n}` ran to 20
+ * distinct values across 294 icons, with the usual near-misses — 17 beside 18,
+ * 21 beside 20, 23 beside 24, 13 and 12 beside 14 — which is drift rather than
+ * a decision, and nothing linted it because `size` is a JSX attribute rather
+ * than a style property.
+ *
+ * Adding a role here is fine. Adding one that differs from an existing role
+ * only in size is how the app got thirteen font sizes.
+ */
+export const iconSize = {
+  /** A glyph inside a badge, on top of another control. */
+  marker: 10,
+  /** An inline marker beside a row's own text — a download arrow, a heart, a
+   *  warning triangle on a subtitle. */
+  badge: 14,
+  /** Sits inline with body text at its own size. */
+  inline: 16,
+  /** The default: a row action, a small control, a settings chevron. */
+  row: 18,
+  /** A control that carries a little more weight than a row action. */
+  control: 20,
+  /** The player's quieter transport — cast, queue, the controls flanking
+   *  shuffle and repeat. */
+  secondary: 22,
+  /** Navigation and header icons, and a detail screen's circle actions. */
+  header: 24,
+  /** A whole-sheet or whole-screen loader. `SpinningLoaderCircle` at 18 sits
+   *  inside a control instead; both numbers are the convention in AGENTS.md. */
+  loader: 26,
+  /** A large standalone control — the player's add button, a card's spinner. */
+  large: 28,
+  /** The player's skip buttons, either side of the 68pt play button. */
+  transport: 34,
+  /** The glyph an empty state is built around. */
+  emptyState: 40,
+  /** Oversized and faded, as texture rather than as an icon — the moon behind
+   *  the sleep timer, the dial behind playback speed. */
+  decorative: 96,
 } as const;
 
 /**
@@ -217,11 +357,62 @@ export function hitSlopFor(size: number) {
   return { top: pad, bottom: pad, left: pad, right: pad };
 }
 
-export const rowDensity = {
-  compact: { paddingVertical: 8, marginBottom: 0 },
-  standard: { paddingVertical: 10, marginBottom: 16 },
-  spacious: { paddingVertical: 13, marginBottom: 16 },
-} as const;
+/**
+ * The vertical rhythm of a list row — how much air it has above and below.
+ *
+ * This is the user's choice rather than a per-screen one, which is why it
+ * replaced the old fixed `rowDensity` scale: that had three densities a screen
+ * picked from and two of the three were never picked. The three roles here are
+ * the three shapes a row actually comes in, and each moves one step of the
+ * spacing scale per density, so the whole app loosens or tightens together
+ * instead of one list changing while the next holds still.
+ *
+ * Only the rhythm moves. Artwork and type stay the size they are at every
+ * density — a "compact" list that also shrank the covers would be a different
+ * design rather than a denser one.
+ *
+ * The `default` column is what every list rendered before the setting existed,
+ * so an untouched install does not move.
+ */
+export type ListDensity = 'compact' | 'default' | 'spacious';
+
+export const listDensity: Record<
+  ListDensity,
+  {
+    /** Gap below a row that stands on its own — an album, artist or playlist. */
+    rowGap: number;
+    /** Padding inside a compact row, which sits flush against the next one. */
+    rowPadding: number;
+    /** Padding inside a track row, which is compact but carries a whole
+     *  record's worth of them and needs the extra step. */
+    trackRowPadding: number;
+    /** Padding inside a library row. Its own role because the library draws
+     *  tighter than the rest of the app on purpose — 52pt artwork rather than
+     *  64pt, so a collection of five hundred stays scannable. Folding it into
+     *  `rowPadding` would have loosened every library list by two points the
+     *  moment the setting shipped. */
+    libraryRowPadding: number;
+  }
+> = {
+  compact: {
+    rowGap: spacing.sm,
+    rowPadding: spacing.xs,
+    trackRowPadding: spacing.sm,
+    libraryRowPadding: spacing.xs,
+  },
+  default: {
+    rowGap: spacing.lg,
+    rowPadding: spacing.sm,
+    trackRowPadding: spacing.md,
+    libraryRowPadding: spacing.tight,
+  },
+  spacious: {
+    rowGap: spacing.xl,
+    rowPadding: spacing.md,
+    trackRowPadding: spacing.roomy,
+    libraryRowPadding: spacing.controlGap,
+  },
+};
 
 export type SemanticThemeColors = {
   themeColor: string;

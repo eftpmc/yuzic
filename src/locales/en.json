@@ -49,12 +49,20 @@
         "invalidError": "URL must start with http:// or https://",
         "duplicatePrimaryError": "This is already the primary URL.",
         "duplicateError": "This URL is already in the list."
-      }
+      },
+      "privacyTitle": "Privacy",
+      "queueSync": "Sync queue across devices",
+      "queueSyncDescription": "Save what you’re playing to the server so another device can pick up where you left off.",
+      "nowPlayingShelf": "Show who else is listening",
+      "nowPlayingShelfDescription": "A Home row listing other users on this server and what they’re playing right now."
     },
     "appearance": {
       "title": "Appearance",
       "theme": {
         "title": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
         "subtitle": "Light, dark, or system"
       },
       "color": {
@@ -68,7 +76,8 @@
           "skip": "Skip",
           "favorite": "Favorite",
           "randomAlbum": "Random",
-          "addToPlaylist": "Add"
+          "addToPlaylist": "Add",
+          "cast": "Cast"
         }
       },
       "columns": {
@@ -112,7 +121,33 @@
           "label": "Rounded",
           "subtext": "Softer, more rounded corners."
         }
-      }
+      },
+      "translucentDock": "Translucent dock",
+      "translucentDockSubtext": "Float the tab bar over the page so content scrolls under it.",
+      "coverAccent": "Colour from artwork",
+      "coverAccentSubtext": "Tint album, artist, and player screens with a shade taken from the cover.",
+      "listDensity": {
+        "info": "How much space sits between rows in a list.",
+        "compact": {
+          "label": "Compact",
+          "subtext": "More rows on screen, less air between them."
+        },
+        "default": {
+          "label": "Default",
+          "subtext": "The app's usual spacing."
+        },
+        "spacious": {
+          "label": "Spacious",
+          "subtext": "Fewer rows on screen, easier to pick one out."
+        }
+      },
+      "homeSources": "Home shelves",
+      "homeSourcesServer": "On your server",
+      "homeSourcesServerSubtext": "Show random shelves and now-playing from your server.",
+      "homeSourcesListenbrainz": "ListenBrainz",
+      "homeSourcesListenbrainzSubtext": "Show ListenBrainz similar-artist shelves.",
+      "homeSourcesDeezer": "Deezer",
+      "homeSourcesDeezerSubtext": "Show Deezer discovery shelves (charts, top tracks, similar artists)."
     },
     "library": {
       "title": "Library",
@@ -136,7 +171,8 @@
         "daysAgo": "{{count}} day ago",
         "daysAgo_other": "{{count}} days ago",
         "lastSynced": "Last synced",
-        "syncOnAppStart": "Sync on app start"
+        "syncOnAppStart": "Sync on app start",
+        "syncOnAppStartSubtext": "Automatically sync your library each time you open the app"
       },
       "offlineChanges": {
         "title": "Pending offline changes",
@@ -150,8 +186,8 @@
         "discardBody": "This removes pending changes for the current server. Your local library will refresh on the next sync."
       },
       "downloads": {
-        "title": "Downloads",
-        "detailsTitle": "Download Details",
+        "title": "Offline downloads",
+        "detailsTitle": "Offline downloads",
         "moreInfo": "More info",
         "clearTitle": "Clear downloads?",
         "clearBody": "This will remove all downloaded songs from your device.",
@@ -205,7 +241,9 @@
         "autoDownloadLabel": "Auto-download new songs",
         "autoDownloadSubtext": "Automatically download songs added to your library for offline use",
         "autoDownloadStarted_one": "Auto-downloading {{count}} new song",
-        "autoDownloadStarted_other": "Auto-downloading {{count}} new songs"
+        "autoDownloadStarted_other": "Auto-downloading {{count}} new songs",
+        "wifiOnlyLabel": "Download on WiFi only",
+        "wifiOnlySubtext": "Hold downloads until you are on WiFi. Queued downloads resume automatically."
       },
       "downloadQuality": {
         "title": "Download Quality",
@@ -225,7 +263,14 @@
       "equalizer": {
         "title": "Equalizer",
         "reset": "Reset",
-        "presets": "Presets"
+        "presets": "Presets",
+        "flatSubtext": "Flat — the equalizer is bypassed entirely, so it costs nothing.",
+        "gainSubtext": "Gains up to {{limit}} dB. Applies to everything the player outputs.",
+        "presetFlat": "Flat",
+        "presetBass": "Bass boost",
+        "presetTreble": "Treble boost",
+        "presetVocal": "Vocal",
+        "presetLoudness": "Loudness"
       },
       "streamingQuality": {
         "wifi": "WiFi Quality",
@@ -250,7 +295,24 @@
       "showVolumeSliderSubtext": "Show an in-app volume slider on the player screen.",
       "autoplay": "Autoplay",
       "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
-      "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends."
+      "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends.",
+      "resumeLongTracks": "Resume long tracks",
+      "resumeLongTracksSubtext": "Audiobooks, DJ sets, podcast episodes — pick up where you left off.",
+      "cacheTitle": "Playback cache",
+      "clearCache": "Clear playback cache",
+      "clearCacheTitle": "Clear playback cache?",
+      "clearCacheBody": "Streamed audio held on this device will be fetched again next time you play it. Your downloads are not affected.",
+      "clearCacheConfirm": "Clear",
+      "clearCacheDone": "Playback cache cleared",
+      "audio": "Audio",
+      "crossfade": {
+        "label": "Crossfade",
+        "off": "Off",
+        "offSubtext": "Tracks follow one another with no overlap.",
+        "onSubtext": "Each track fades into the next over {{seconds}} seconds. Skipping still cuts straight across.",
+        "seguesLabel": "Fade through segues",
+        "seguesSubtext": "Albums that run tracks together are hard-cut at those joins by default, so a continuous mix stays continuous. Turn this on to fade everything regardless."
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -269,36 +331,17 @@
       "connectFailed": "Failed to connect to ListenBrainz.",
       "disconnected": "Disconnected from ListenBrainz.",
       "scrobble": "Scrobble",
-      "nowPlaying": "Now Playing"
+      "nowPlaying": "Now Playing",
+      "discovery": "Discovery",
+      "discoveryDescription": "Use ListenBrainz's public similar-artist graph on Home and artist pages. No account required — the artists you listen to are sent to ListenBrainz to find matches."
     },
     "musicbrainz": {
       "external": "External Artist & Album Data",
       "externalDescription": "Fill in artist and album pages with MusicBrainz data when they're not in your library. No account required."
     },
     "lastfm": {
-      "title": "Last.fm",
-      "apiKey": "API Key",
-      "apiSecret": "API Secret",
-      "apiKeyPlaceholder": "Your Last.fm API key",
-      "apiSecretPlaceholder": "Your Last.fm API secret",
-      "connectedAs": "Connected as",
-      "notConnected": "Not connected",
-      "connectWithLastfm": "Connect with Last.fm",
-      "iAuthorized": "I've authorized — get session",
-      "helperText": "Enter your Last.fm API key and secret, then tap Connect to authorize. Your tracks will be scrobbled automatically. Get API credentials at last.fm/api/account/create.",
-      "disconnect": "Disconnect",
-      "missingCredentials": "Enter API key and secret first.",
-      "credentialsTitle": "Credentials",
-      "credentialsHelper": "Create an app at last.fm/api/account/create to get these keys.",
-      "pendingInstruction": "A browser window has opened — authorize yuzic, then tap below.",
-      "scrobble": "Scrobble",
-      "nowPlaying": "Now Playing",
-      "connectFailed": "Failed to get token from Last.fm.",
-      "sessionFailed": "Failed to get session. Make sure you authorized the app.",
-      "connectionSuccessful": "Connected as {{username}}.",
-      "disconnected": "Disconnected from Last.fm.",
-      "similarArtists": "Similar Artists",
-      "similarArtistsDescription": "Show similar artists on artist pages using Last.fm data."
+      "enable": "Artist & Recommendation Data",
+      "enableDescription": "Use Last.fm to find similar artists and to seed playlist recommendations. No account required — artist names are sent to Last.fm to look them up."
     },
     "downloaders": {
       "title": "Downloaders",
@@ -327,7 +370,8 @@
       "cancelFailed": "Couldn't cancel that download.",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "queueTitle": "Download Queue",
       "lidarr": {
@@ -352,6 +396,13 @@
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "Prefer Free Upload Slot",
         "preferFreeSlotSubtext": "Pick peers whose slot is free over ones with a queue. Turn off to catch rare releases even if it means waiting."
+      },
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "Connection",
+        "credentialsHelper": "Your SoulSync server URL and API key. Generate a key in SoulSync under Settings → API Keys.",
+        "connectionFailed": "SoulSync connection failed",
+        "disconnected": "Disconnected from SoulSync."
       }
     },
     "deezer": {
@@ -440,7 +491,12 @@
       "restart": "Restart"
     },
     "serverUnreachableBanner": "Can't reach your server — showing local library data",
-    "searchPlaceholder": "Search…"
+    "searchPlaceholder": "Search…",
+    "save": "Save",
+    "saving": "Saving…",
+    "dismiss": "Dismiss",
+    "retry": "Retry",
+    "loadFailed": "Couldn't load. Check your connection."
   },
   "onboarding": {
     "home": {
@@ -541,7 +597,24 @@
       "playlists_one": "{{count}} playlist",
       "playlists_other": "{{count}} playlists",
       "tracks_one": "{{count}} song",
-      "tracks_other": "{{count}} songs"
+      "tracks_other": "{{count}} songs",
+      "stations_one": "{{count}} station",
+      "stations_other": "{{count}} stations",
+      "podcasts_one": "{{count}} podcast",
+      "podcasts_other": "{{count}} podcasts",
+      "shares_one": "{{count}} shared link",
+      "shares_other": "{{count}} shared links",
+      "episodes_one": "{{count}} episode",
+      "episodes_other": "{{count}} episodes"
+    },
+    "radio": {
+      "title": "Radio stations"
+    },
+    "podcasts": {
+      "title": "Podcasts"
+    },
+    "shares": {
+      "title": "Shared links"
     }
   },
   "home": {
@@ -558,19 +631,38 @@
       "mostRecent": "Most Recent",
       "mostPlayed": "Most Played",
       "releaseYear": "Release Year",
-      "recentlyAdded": "Recently Added"
+      "recentlyAdded": "Recently added"
     },
     "sortSheet": {
       "title": "Sort by"
     },
     "account": {
       "settings": "Settings",
-      "triggerScan": "Trigger Scan",
+      "triggerScan": "Scan library",
       "signOut": "Sign Out",
       "scanTriggered": "Scan triggered.",
       "scanFailed": "Could not trigger scan.",
       "signOutFailed": "Could not sign out cleanly.",
       "downloadCleanupFailed": "Couldn't clear downloads while signing out."
+    },
+    "displaySheet": {
+      "title": "Display",
+      "list": "List",
+      "grid": "Grid",
+      "columns": "Columns"
+    },
+    "downloadsBanner": {
+      "open": "Open downloads",
+      "summaryItem": "{{count}} on {{label}}",
+      "title_one": "{{count}} download in progress",
+      "title_other": "{{count}} downloads in progress"
+    },
+    "resumeBanner": {
+      "title": "Resume where you left off",
+      "resumeLabel": "Resume where you left off",
+      "fromDevice": "on {{device}}",
+      "subtitle_one": "{{count}} track queued {{from}}",
+      "subtitle_other": "{{count}} tracks queued {{from}}"
     }
   },
   "search": {
@@ -578,7 +670,7 @@
     "placeholder": "Search for music, artists, or playlists...",
     "noResults": "No results found",
     "searchError": "Couldn't reach the server — results may be incomplete",
-    "recentSearches": "Recent Searches",
+    "recentSearches": "Recent searches",
     "clearRecent": "Clear",
     "removeRecentSearch": "Remove \"{{query}}\" from recent searches",
     "recentlyOpened": "Recently opened",
@@ -596,7 +688,8 @@
       "mostPlayed": "Most Played",
       "popularOnDeezer": "Popular on Deezer",
       "similarArtists": "Similar artists",
-      "bio": "About"
+      "bio": "About",
+      "topSongs": "Top songs"
     },
     "showMore": "{{count}} more",
     "showUnowned": "{{count}} you don't own"
@@ -610,7 +703,8 @@
       "min": "{{mins}} min"
     },
     "play": "play",
-    "plays": "plays"
+    "plays": "plays",
+    "similarAlbums": "Similar albums"
   },
   "explore": {
     "sections": {
@@ -626,13 +720,36 @@
       "charts": "What's trending",
       "genre": "More {{genre}}",
       "topArtists": "Top artists",
-      "fromYourLibrary": "From your library"
+      "fromYourLibrary": "From your library",
+      "serverRandom": "Surprise me",
+      "serverRandomThemed": "Today's {{genre}}",
+      "serverNowPlaying": "Playing on your server",
+      "lbSimilarForYou": "Because you like {{artist}}",
+      "continuePlaying": "Pick back up"
     },
     "empty": {
       "recentlyAdded": "No albums in your library yet"
+    },
+    "sources": {
+      "server": "On your server"
     }
   },
   "playing": {
+    "output": {
+      "title": "Connect",
+      "thisDevice": "This device",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "Searching for devices…",
+      "noneFound": "No devices found on your network.",
+      "addManually": "Add device manually",
+      "addManuallyTitle": "Add device",
+      "addManuallyBody": "Enter the IP address of your DLNA device",
+      "connectFailed": "Could not connect to that device.",
+      "notFoundAtAddress": "No DLNA device found at that address.",
+      "playOnServer": "Play on {{server}}",
+      "jukeboxFailed": "Could not start playback on the server."
+    },
     "queue": {
       "title": "Queue",
       "playingFromAlbum": "Playing from {{album}}",
@@ -642,8 +759,14 @@
       "title": "Lyrics"
     },
     "aboutArtist": {
-      "header": "Artist",
-      "subtext": "Artist"
+      "header": "Artist"
+    },
+    "sleepTimer": {
+      "title": "Sleep timer",
+      "off": "Off",
+      "cancel": "Off",
+      "addMinutes_one": "+{{count}}m",
+      "addMinutes_other": "+{{count}}m"
     },
     "bar": {
       "noSong": "No song playing",
@@ -698,7 +821,8 @@
       "instantMix": "Instant Mix",
       "download": "Download",
       "downloading": "Downloading…",
-      "downloaded": "Downloaded"
+      "downloaded": "Downloaded",
+      "generatePlaylist": "Make a playlist from this"
     },
     "sections": {
       "media": "Media",
@@ -742,7 +866,10 @@
       "addToQueueFailed": "Failed to add to queue.",
       "playNext": "{{title}} will play next.",
       "playNextFailed": "Failed to queue song next.",
-      "instantMixFailed": "Failed to start instant mix"
+      "instantMixFailed": "Failed to start instant mix",
+      "playlistGenerated_one": "Playlist created with {{count}} track",
+      "playlistGenerated_other": "Playlist created with {{count}} tracks",
+      "playlistGenerationFailed": "Could not generate playlist"
     }
   },
   "externalAlbum": {
@@ -787,8 +914,19 @@
           "request_failed": "Could not reach Soulseek. Check the server and try again.",
           "search_failed": "Soulseek couldn't start the search.",
           "search_timeout": "The Soulseek search timed out."
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync needs an API key.",
+          "INVALID_KEY": "SoulSync rejected this API key.",
+          "BAD_REQUEST": "SoulSync could not read that request.",
+          "BAD_RESPONSE": "That address didn't answer like SoulSync. Check the URL.",
+          "HTTP_ERROR": "Could not reach SoulSync. Check the server and try again.",
+          "NOT_AVAILABLE": "SoulSync has no Soulseek connection configured."
         }
-      }
+      },
+      "soulsyncDesc": "Search Soulseek through SoulSync",
+      "addedToSoulsync": "Requested from SoulSync.",
+      "addedTrackToSoulsync": "Requested from SoulSync."
     },
     "header": {
       "songs": "{{count}} song",
@@ -809,7 +947,8 @@
       "downloaded": "Downloaded",
       "favorite": "Favorite",
       "unfavorite": "Unfavorite",
-      "viewExternal": "View External"
+      "viewExternal": "View External",
+      "share": "Share"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",
@@ -817,7 +956,8 @@
       "shuffledToQueue": "Shuffled {{title}} into queue",
       "addedToFavorites": "{{title}} added to favorites.",
       "removedFromFavorites": "{{title}} removed from favorites.",
-      "updateFavoritesFailed": "Failed to update favorites."
+      "updateFavoritesFailed": "Failed to update favorites.",
+      "shareFailed": "Could not create share link"
     },
     "sections": {
       "albumInfo": "Album Info"
@@ -858,7 +998,8 @@
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
       "rename": "Rename",
-      "delete": "Delete playlist"
+      "delete": "Delete playlist",
+      "share": "Share"
     },
     "sections": {
       "info": "Playlist Info"
@@ -880,7 +1021,8 @@
       "renamed": "Playlist renamed",
       "renameFailed": "Could not rename playlist",
       "deleted": "Playlist deleted",
-      "deleteFailed": "Could not delete playlist"
+      "deleteFailed": "Could not delete playlist",
+      "shareFailed": "Could not create share link"
     }
   },
   "artistOptions": {
@@ -910,5 +1052,159 @@
   },
   "externalSourcePicker": {
     "empty": "No sources could resolve this item."
+  },
+  "radio": {
+    "title": "Radio",
+    "empty": "No radio stations yet. Add one to get started.",
+    "add": "Add station",
+    "addTitle": "Add station",
+    "editTitle": "Edit station",
+    "deleteTitle": "Delete station?",
+    "deleteBody": "Remove \"{{name}}\"?",
+    "field": {
+      "name": "Name",
+      "streamUrl": "Stream URL",
+      "homepage": "Homepage (optional)"
+    }
+  },
+  "podcasts": {
+    "title": "Podcasts",
+    "field": {
+      "feedUrl": "Feed URL"
+    },
+    "empty": "No podcasts yet. Add one to start listening.",
+    "add": "Add podcast",
+    "addTitle": "Subscribe to a podcast",
+    "addHelp": "Paste the RSS feed URL for the show.",
+    "refresh": "Refresh",
+    "subscribeFailed": "Could not subscribe to that feed",
+    "unsubscribeTitle": "Unsubscribe?",
+    "unsubscribeBody": "Stop following \"{{title}}\"?",
+    "channelEmpty": "No episodes yet — try refreshing.",
+    "notFound": "Podcast not found.",
+    "play": "Play episode",
+    "download": "Download episode",
+    "downloadStarted": "Download started",
+    "unsubscribe": "Unsubscribe"
+  },
+  "shares": {
+    "title": "Shared links",
+    "empty": "You haven’t shared anything yet. Use the Share option on an album or playlist to create a link.",
+    "linkCopied": "Link copied",
+    "copy": "Copy link",
+    "share": "Share",
+    "deleteTitle": "Revoke share?",
+    "deleteBody": "The link will stop working immediately.",
+    "neverExpires": "Never expires",
+    "expired": "Expired",
+    "expiresOn": "Expires {{date}}",
+    "visits_one": "{{count}} visit",
+    "visits_other": "{{count}} visits",
+    "revoke": "Revoke"
+  },
+  "a11y": {
+    "detail": {
+      "play": "Play",
+      "shuffle": "Shuffle",
+      "playPreview": "Play preview",
+      "downloadToServer": "Download to your server",
+      "download": "Download",
+      "cancelDownload": "Cancel download",
+      "downloaded": "Downloaded",
+      "downloading": "Downloading"
+    },
+    "rows": {
+      "options": "Options for {{title}}"
+    },
+    "searchInput": "Search",
+    "queueBackToPlayer": "Back to the player",
+    "scanForDevices": "Scan for devices",
+    "dismissNotification": "Dismiss notification",
+    "account": "Account",
+    "common": {
+      "back": "Back",
+      "close": "Close",
+      "moreOptions": "More options",
+      "checkConnection": "Check connection"
+    },
+    "player": {
+      "close": "Close player",
+      "songOptions": "Song options",
+      "addToPlaylist": "Add to playlist",
+      "previous": "Previous track",
+      "next": "Next track",
+      "play": "Play",
+      "pause": "Pause",
+      "jumpBack": "Jump back {{seconds}} seconds",
+      "jumpForward": "Jump forward {{seconds}} seconds",
+      "shuffle": "Shuffle",
+      "shuffleMode": {
+        "off": "Off",
+        "shuffle": "On",
+        "smart": "Smart shuffle"
+      },
+      "repeat": "Repeat",
+      "repeatMode": {
+        "off": "Off",
+        "all": "Repeat all",
+        "one": "Repeat one track"
+      },
+      "outputDevice": "Output device",
+      "queue": "Queue",
+      "lyrics": "Lyrics",
+      "seekToLyric": "Play from this line",
+      "aboutArtist": "About the artist",
+      "goToArtist": "Go to artist",
+      "nowPlayingBar": "Now playing",
+      "noSongPlaying": "No song playing"
+    },
+    "search": {
+      "clear": "Clear search"
+    },
+    "playlist": {
+      "addSong": "Add {{title}} to this playlist",
+      "songAdded": "{{title}} already added",
+      "downloadSong": "Download {{title}}",
+      "create": "Create playlist"
+    },
+    "selection": {
+      "randomize": "Pick one at random"
+    },
+    "settings": {
+      "themeColor": "Theme colour {{color}}",
+      "clearProviderDownloads": "Delete all {{provider}} downloads",
+      "removeDownload": "Remove download {{title}}"
+    },
+    "onboarding": {
+      "serverOptions": "Options for {{url}}"
+    },
+    "topTrack": {
+      "playPreview": "Play a preview of {{title}}"
+    },
+    "equalizer": {
+      "band": "{{frequency}} hertz",
+      "reset": "Reset equalizer to flat",
+      "preset": "{{name}} equalizer preset",
+      "decibels": "{{gain}} decibels"
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "library": "Library"
+  },
+  "downloads": {
+    "title": "Download queue",
+    "noDownloaders": "No downloaders connected. Add one in Settings."
+  },
+  "media": {
+    "albumNotFound": "Album not found",
+    "artistNotFound": "Artist not found",
+    "playlistNotFound": "Playlist not found",
+    "genreNotFound": "Genre not found",
+    "notFound": "Not found",
+    "albumLoadFailed": "Couldn't load album. Check your connection.",
+    "artistLoadFailed": "Couldn't load artist. Check your connection.",
+    "playlistLoadFailed": "Couldn't load playlist. Check your connection."
   }
 }

@@ -7,7 +7,7 @@ import MediaListRow from '@/components/MediaListRow';
 import IconActionButton from '@/components/IconActionButton';
 import { useTheme } from '@/hooks/useTheme';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
-import { spacing, typography } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   searchHistoryEntryKey,
@@ -48,7 +48,7 @@ export default function RecentSearches({
         <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
           {t('search.recentSearches')}
         </Text>
-        <Touchable onPress={onClear} hitSlop={8}>
+        <Touchable onPress={onClear} hitSlop={hitSlopFor(iconSize.control)}>
           <Text style={[styles.clear, { color: colors.subtext }]}>{t('search.clearRecent')}</Text>
         </Touchable>
       </View>
@@ -59,7 +59,7 @@ export default function RecentSearches({
             <View
               key={searchHistoryEntryKey(entry)}
               testID="search-recent-chip"
-              style={[styles.chip, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
+              style={[styles.chip, { backgroundColor: colors.muted, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
             >
               <Touchable
                 style={styles.chipMain}
@@ -67,17 +67,18 @@ export default function RecentSearches({
                 accessibilityLabel={entry.text}
                 onPress={() => onQueryPress(entry.text)}
               >
-                <SearchIcon size={13} color={colors.subtext} />
+                <SearchIcon size={iconSize.badge} color={colors.subtext} />
                 <Text style={[styles.chipText, { color: colors.secondary }]} numberOfLines={1}>
                   {entry.text}
                 </Text>
               </Touchable>
               <Touchable
                 onPress={() => onRemove(searchHistoryEntryKey(entry))}
-                hitSlop={16}
+                hitSlop={hitSlopFor(14)}
+                accessibilityRole="button"
                 accessibilityLabel={t('search.removeRecentSearch', { query: entry.text })}
               >
-                <X size={14} color={colors.subtext} />
+                <X size={iconSize.badge} color={colors.subtext} />
               </Touchable>
             </View>
           ))}
@@ -104,7 +105,7 @@ export default function RecentSearches({
                 onPress={() => onEntityPress(entity)}
                 trailing={
                   <IconActionButton
-                    icon={<X size={18} color={colors.subtext} />}
+                    icon={<X size={iconSize.row} color={colors.subtext} />}
                     onPress={() => onRemove(searchHistoryEntryKey(entity))}
                     accessibilityLabel={t('search.removeRecentSearch', { query: entity.title })}
                     size="compact"

@@ -1,9 +1,10 @@
 import React, { ReactNode, useState } from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -23,6 +24,7 @@ type Props = {
 // per-mount state: the banner returns on the next visit, which is right for
 // transient conditions like connectivity.
 export default function StatusBanner({ icon, text, color, closable, style, testID }: Props) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
   const [dismissed, setDismissed] = useState(false);
@@ -41,12 +43,12 @@ export default function StatusBanner({ icon, text, color, closable, style, testI
       {closable && (
         <Touchable
           accessibilityRole="button"
-          accessibilityLabel="Dismiss notification"
+          accessibilityLabel={t('a11y.dismissNotification')}
           onPress={() => setDismissed(true)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={hitSlopFor(iconSize.badge)}
           testID={testID ? `${testID}-close` : undefined}
         >
-          <X size={14} color={textColor} />
+          <X size={iconSize.badge} color={textColor} />
         </Touchable>
       )}
     </View>

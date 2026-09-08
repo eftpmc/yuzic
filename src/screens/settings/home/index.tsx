@@ -8,24 +8,29 @@ import {
     Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Server, Library, Volume2, Palette, Puzzle, Download, Github, ShieldCheck, ScrollText } from 'lucide-react-native';
+import { Server, Library, Volume2, Palette, Puzzle, Download, CloudDownload, Github, ShieldCheck, ScrollText } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
 import { useTheme } from '@/hooks/useTheme';
 import Header from '../components/Header';
 import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
-import { radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Settings() {
     const { t } = useTranslation();
     const router = useRouter();
     const activeServer = useSelector(selectActiveServer);
+    // The queue screen has nothing to show without a downloader behind it —
+    // the row led to "No downloaders connected. Add one in Settings", from
+    // Settings, one row below the place that adds one.
+    const hasDownloader = useAnyDownloaderConnected();
 
     const { colors } = useTheme();
     const rad = useRadius();
@@ -58,7 +63,7 @@ export default function Settings() {
                 <SettingsCard style={styles.profileCard}>
                     <View style={styles.profileRow}>
                         <View style={[styles.avatar, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
-                            <Text style={styles.avatarText}>{avatarLetter}</Text>
+                            <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>{avatarLetter}</Text>
                         </View>
                         <View style={styles.profileInfo}>
                             <Text style={[styles.profileName, { color: colors.secondary }]}>
@@ -85,25 +90,25 @@ export default function Settings() {
                 <SettingsCard>
                     <SettingsRow
                         label={t('settings.rows.server')}
-                        leftIcon={<Server size={22} color={colors.secondary} />}
+                        leftIcon={<Server size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/serverView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.library')}
-                        leftIcon={<Library size={22} color={colors.secondary} />}
+                        leftIcon={<Library size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/libraryView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.player')}
-                        leftIcon={<Volume2 size={22} color={colors.secondary} />}
+                        leftIcon={<Volume2 size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/playerView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.appearance')}
-                        leftIcon={<Palette size={22} color={colors.secondary} />}
+                        leftIcon={<Palette size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/appearanceView')}
                     />
                 </SettingsCard>
@@ -111,15 +116,25 @@ export default function Settings() {
                 <SettingsCard>
                     <SettingsRow
                         label={t('settings.sections.integrations')}
-                        leftIcon={<Puzzle size={22} color={colors.secondary} />}
+                        leftIcon={<Puzzle size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/integrationsView')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.downloaders.title')}
-                        leftIcon={<Download size={22} color={colors.secondary} />}
+                        leftIcon={<Download size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/downloadersView')}
                     />
+                    {hasDownloader && (
+                        <>
+                            <SettingsDivider />
+                            <SettingsRow
+                                label={t('downloads.title')}
+                                leftIcon={<CloudDownload size={iconSize.secondary} color={colors.secondary} />}
+                                onPress={() => router.push('/downloadsView')}
+                            />
+                        </>
+                    )}
                 </SettingsCard>
 
                 {/* About */}
@@ -129,20 +144,20 @@ export default function Settings() {
                 <SettingsCard>
                     <SettingsRow
                         label={t('settings.rows.github')}
-                        leftIcon={<Github size={22} color={colors.secondary} />}
-                        onPress={() => openLink('https://github.com/eftpmc/yuzic')}
+                        leftIcon={<Github size={iconSize.secondary} color={colors.secondary} />}
+                        onPress={() => openLink('https://github.com/yuzicapp/yuzic')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.privacyPolicy')}
-                        leftIcon={<ShieldCheck size={22} color={colors.secondary} />}
-                        onPress={() => openLink('https://eftpmc.github.io/yuzic-web/privacypolicy/')}
+                        leftIcon={<ShieldCheck size={iconSize.secondary} color={colors.secondary} />}
+                        onPress={() => openLink('https://yuzicapp.github.io/yuzic-web/privacypolicy/')}
                     />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.termsOfUse')}
-                        leftIcon={<ScrollText size={22} color={colors.secondary} />}
-                        onPress={() => openLink('https://eftpmc.github.io/yuzic-web/tos/')}
+                        leftIcon={<ScrollText size={iconSize.secondary} color={colors.secondary} />}
+                        onPress={() => openLink('https://yuzicapp.github.io/yuzic-web/tos/')}
                     />
                 </SettingsCard>
 
@@ -183,7 +198,7 @@ const styles = StyleSheet.create({
         marginRight: spacing.md,
     },
     avatarText: {
-        ...typography.sectionTitle,
+        ...cappedTypography.glyph.sectionTitle,
         fontWeight: '700',
         color: '#fff',
     },

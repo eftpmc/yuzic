@@ -36,7 +36,7 @@ import {
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -178,11 +178,11 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
             <Touchable
               testID="detail-back-button"
               accessibilityRole="button"
-              accessibilityLabel="Go back"
-              style={[styles.backButton, { borderRadius: rad.pill }]}
+              accessibilityLabel={t('a11y.common.back')}
+              style={[styles.backButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={24} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
             </Touchable>
           </View>
         )}
@@ -202,24 +202,24 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           onPress={() => { void play(true) }}
           disabled={songsLoading}
           style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-          accessibilityLabel="Shuffle genre"
+          accessibilityLabel={t('a11y.detail.shuffle')}
         >
           {songsLoading ? (
-            <SpinningLoaderCircle size={18} color={colors.secondary} />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
           ) : (
-            <Shuffle size={18} color={colors.secondary} />
+            <Shuffle size={iconSize.row} color={colors.secondary} />
           )}
         </DetailCircleAction>
 
         <DetailPlayAction
           onPress={() => { void play(false) }}
           disabled={songsLoading}
-          accessibilityLabel="Play genre"
+          accessibilityLabel={t('a11y.detail.play')}
         >
           {songsLoading ? (
-            <SpinningLoaderCircle size={18} color="#fff" />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.onThemeColor} />
           ) : (
-            <Play size={24} color="#fff" fill="#fff" />
+            <Play size={iconSize.header} color={colors.onThemeColor} fill={colors.onThemeColor} />
           )}
         </DetailPlayAction>
 
@@ -227,20 +227,20 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
           onPress={() => { void handleDownloadAll() }}
           disabled={isDownloadingAll || isDownloading}
           style={isDarkMode ? styles.secondaryButtonDark : styles.secondaryButton}
-          accessibilityLabel={
+          accessibilityLabel={t(
             isDownloadingAll || isDownloading
-              ? 'Downloading genre'
+              ? 'a11y.detail.downloading'
               : isFullyDownloaded
-                ? 'Downloaded'
-                : 'Download all genre songs'
-          }
+                ? 'a11y.detail.downloaded'
+                : 'a11y.detail.download'
+          )}
         >
           {isDownloadingAll || isDownloading ? (
-            <SpinningLoaderCircle size={18} color={colors.secondary} />
+            <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
           ) : isFullyDownloaded ? (
-            <Check size={18} color={colors.secondary} />
+            <Check size={iconSize.row} color={colors.secondary} />
           ) : (
-            <Download size={18} color={colors.secondary} />
+            <Download size={iconSize.row} color={colors.secondary} />
           )}
         </DetailCircleAction>
       </DetailActionRow>
@@ -253,12 +253,16 @@ export const GenreHeaderBar: React.FC<Props> = ({ genre, albums }) => (
 )
 
 function GenreOptionsButton({ genre, albums }: { genre: string; albums: AlbumBase[] }) {
+  const { t } = useTranslation()
   const { colors } = useTheme()
   const optionsSheetRef = useSheetRef()
   return (
     <>
-      <DetailHeaderIconButton onPress={() => optionsSheetRef.current?.present()}>
-        <Ellipsis size={24} color={colors.secondary} />
+      <DetailHeaderIconButton
+        accessibilityLabel={t('a11y.common.moreOptions')}
+        onPress={() => optionsSheetRef.current?.present()}
+      >
+        <Ellipsis size={iconSize.header} color={colors.secondary} />
       </DetailHeaderIconButton>
       <GenreOptions ref={optionsSheetRef} genre={genre} albums={albums} />
     </>

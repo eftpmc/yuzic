@@ -12,15 +12,16 @@ import { Check } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { selectServerById } from '@/utils/redux/selectors/serversSelectors';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
-import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
-import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
+import {
+  listServerLibraries,
+  libraryScopePatch,
+  type Library,
+} from '@/utils/servers/registry';
 import type { RootState } from '@/utils/redux/store';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography, onDark } from '@/constants/design';
+import { iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
-
-type Library = { id: string; name: string };
 
 export default function LibrariesOnboarding() {
   const { t } = useTranslation();
@@ -48,12 +49,7 @@ export default function LibrariesOnboarding() {
 
     const load = async () => {
       try {
-        let result: Library[] = [];
-        if (server.type === 'navidrome') {
-          result = await getMusicFolders(server);
-        } else if (server.type === 'jellyfin' || server.type === 'emby') {
-          result = await getMusicLibraries(server);
-        }
+        const result = await listServerLibraries(server);
         if (!cancelled) setLibraries(result);
       } catch {
         if (!cancelled) setError(true);
@@ -78,14 +74,11 @@ export default function LibrariesOnboarding() {
 
   const handleContinue = () => {
     if (!server) return;
-    const authPatch = server.type === 'navidrome'
-      ? { musicFolderIds: selectedIds }
-      : { parentIds: selectedIds };
     dispatch(updateServer({
       id: server.id,
-      patch: { auth: { ...server.auth, ...authPatch } as any },
+      patch: { auth: { ...server.auth, ...libraryScopePatch(server, selectedIds) } as any },
     }));
-    router.replace('/(home)/(tabs)');
+    router.replace('/(home)/(tabs)/(home)');
   };
 
   return (
@@ -97,7 +90,7 @@ export default function LibrariesOnboarding() {
         </Text>
 
         {isLoading ? (
-          <SpinningLoaderCircle size={26} color={onDark.text} />
+          <SpinningLoaderCircle size={iconSize.loader} color={onDark.text} />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('onboarding.libraries.loadError')}</Text>
@@ -109,7 +102,7 @@ export default function LibrariesOnboarding() {
           <View style={styles.optionList}>
             <Touchable onPress={selectAll} style={[styles.optionRow, { borderRadius: rad.md }]}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
-                {isAll && <Check size={14} color="#000" />}
+                {isAll && <Check size={iconSize.badge} color="#000" />}
               </View>
               <Text style={styles.optionText}>{t('onboarding.libraries.allLibraries')}</Text>
             </Touchable>
@@ -123,7 +116,7 @@ export default function LibrariesOnboarding() {
                   style={[styles.optionRow, { borderRadius: rad.md }]}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                    {selected && <Check size={14} color="#000" />}
+                    {selected && <Check size={iconSize.badge} color="#000" />}
                   </View>
                   <Text style={styles.optionText} numberOfLines={1}>
                     {lib.name}

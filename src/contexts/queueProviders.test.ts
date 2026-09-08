@@ -120,7 +120,7 @@ describe('createAudiomuseQueueFillProvider', () => {
       { itemId: 'missing' },
     ]);
     const get = jest.fn(async (id: string) => (id === 'missing' ? null : song(id)));
-    const api = fakeApi({ songs: { get, scrobble: jest.fn(), buildStreamUrl: jest.fn() } });
+    const api = fakeApi({ songs: { get, scrobble: jest.fn(), buildStreamUrl: jest.fn(), streamableCodecs: ['mp3'], scrobbleKind: 'scrobble' as const } });
     const provider = createAudiomuseQueueFillProvider(config, api);
 
     const result = await provider.fetchExtension({
@@ -136,7 +136,7 @@ describe('createAudiomuseQueueFillProvider', () => {
     const refs = ['a', 'b', 'c', 'd', 'e'].map(id => ({ itemId: id }));
     (getAudiomuseQueueExtension as jest.Mock).mockResolvedValue(refs);
     const get = jest.fn(async (id: string) => song(id));
-    const api = fakeApi({ songs: { get, scrobble: jest.fn(), buildStreamUrl: jest.fn() } });
+    const api = fakeApi({ songs: { get, scrobble: jest.fn(), buildStreamUrl: jest.fn(), streamableCodecs: ['mp3'], scrobbleKind: 'scrobble' as const } });
     const provider = createAudiomuseQueueFillProvider(config, api);
 
     const result = await provider.fetchExtension({

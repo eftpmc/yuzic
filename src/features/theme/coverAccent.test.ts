@@ -4,6 +4,8 @@ import {
   createAccentCache,
   darken,
   pickAccent,
+  toWashAccent,
+  vividness,
   withAlpha,
 } from './coverAccent'
 
@@ -111,5 +113,86 @@ describe('accentWashColors', () => {
     const stops = accentWashColors('#3366ff')
     expect(stops[0]).toBe('rgba(51, 102, 255, 1)')
     expect(stops[stops.length - 1]).toBe('rgba(51, 102, 255, 0)')
+  })
+})
+
+describe('vividness', () => {
+  it('scores a saturated mid-tone above a muted one', () => {
+    expect(vividness('#e0245e')).toBeGreaterThan(vividness('#8a7f72'))
+  })
+
+  it('scores grey at zero however light it is', () => {
+    expect(vividness('#808080')).toBe(0)
+    expect(vividness('#000000')).toBe(0)
+    expect(vividness('#ffffff')).toBe(0)
+  })
+
+  it('discounts a hue that is nearly black or nearly white', () => {
+    // Both are technically fully saturated red; only one of them looks red.
+    expect(vividness('#ff0000')).toBeGreaterThan(vividness('#0a0000'))
+    expect(vividness('#ff0000')).toBeGreaterThan(vividness('#fff5f5'))
+  })
+
+  it('scores anything it cannot parse at zero', () => {
+    expect(vividness('rebeccapurple')).toBe(0)
+  })
+})
+
+describe('pickAccent, choosing by colour rather than by rank', () => {
+  it('passes over a muddy iOS primary for a swatch with real colour in it', () => {
+    // The exact case the covers kept landing on: the commonest colour in the
+    // image is a brown, and the record's actual colour is somewhere else.
+    expect(pickAccent(
+      { platform: 'ios', primary: '#6b5a45', secondary: '#1e88e5', background: '#2b2b2b' } as any,
+      FALLBACK
+    )).toBe('#1e88e5')
+  })
+
+  it('prefers a vibrant swatch over the dominant one on Android', () => {
+    expect(pickAccent(
+      { platform: 'android', dominant: '#6b5a45', vibrant: '#d81b60' } as any,
+      FALLBACK
+    )).toBe('#d81b60')
+  })
+
+  it('keeps a genuinely monochrome cover monochrome', () => {
+    expect(pickAccent(
+      { platform: 'ios', primary: '#3a3a3a', secondary: '#5c5c5c', background: '#111111' } as any,
+      FALLBACK
+    )).toBe('#3a3a3a')
+  })
+})
+
+describe('toWashAccent', () => {
+  it('keeps the hue it was given', () => {
+    // A blue swatch stays blue: blue is the channel that stays largest.
+    const washed = toWashAccent('#4a6fa5')
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(washed.slice(i, i + 2), 16))
+    expect(b).toBeGreaterThan(g)
+    expect(g).toBeGreaterThan(r)
+  })
+
+  it('lands in the band that stays readable under white text', () => {
+    for (const hex of ['#ff2d55', '#0a1f0a', '#f5c542', '#4a6fa5']) {
+      const washed = toWashAccent(hex)
+      const [r, g, b] = [1, 3, 5].map(i => parseInt(washed.slice(i, i + 2), 16))
+      const lightness = (Math.max(r, g, b) + Math.min(r, g, b)) / 2 / 255
+      expect(lightness).toBeGreaterThanOrEqual(0.15)
+      expect(lightness).toBeLessThanOrEqual(0.33)
+    }
+  })
+
+  it('lifts a washed-out swatch instead of dimming it further', () => {
+    // The old behaviour darkened everything, taking the little colour a muted
+    // swatch had with it.
+    expect(vividness(toWashAccent('#8a7f72'))).toBeGreaterThan(vividness(darken('#8a7f72')))
+  })
+
+  it('leaves a grey cover grey rather than inventing a hue for it', () => {
+    expect(toWashAccent('#808080')).toBe(darken('#808080'))
+  })
+
+  it('returns anything it cannot parse untouched', () => {
+    expect(toWashAccent('rebeccapurple')).toBe('rebeccapurple')
   })
 })

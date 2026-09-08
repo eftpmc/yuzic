@@ -10,6 +10,7 @@ import { setGridColumns } from '@/utils/redux/slices/settingsSlice';
 import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 const MIN_COLUMNS = 2;
 const MAX_COLUMNS = 5;
@@ -28,7 +29,7 @@ export const GridColumns: React.FC = () => {
         <Text style={[styles.label, { color: colors.secondary }]}>
           {t('settings.appearance.gridColumns.label')}
         </Text>
-        <View style={[styles.badge, { backgroundColor: themeColor + '22', borderRadius: rad.card }]}>
+        <View style={[styles.badge, { backgroundColor: withAlpha(themeColor, 0.13), borderRadius: rad.card }]}>
           <Text style={[styles.badgeText, { color: themeColor }]}>{gridColumns}</Text>
         </View>
       </View>

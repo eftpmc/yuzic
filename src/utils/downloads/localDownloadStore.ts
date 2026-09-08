@@ -5,6 +5,24 @@ import type { DownloadedCollectionEntry, DownloadedTrackEntry } from './download
 const TRACKS_KEY = 'downloads.tracks.v1';
 const COLLECTIONS_KEY = 'downloads.collections.v1';
 const JOBS_KEY = 'downloads.jobs.v1';
+const RESUMABLES_KEY = 'downloads.resumables.v1';
+
+/**
+ * Enough to pick a half-finished download back up.
+ *
+ * This is expo's own `DownloadResumable.savable()` shape, keyed by track. It
+ * is what lets an interrupted download continue from the bytes already on
+ * disk rather than starting the file again — without it, backgrounding the
+ * app during a 40MB track threw those 40MB away.
+ */
+export type PersistedResumable = {
+  trackId: string;
+  url: string;
+  fileUri: string;
+  resumeData?: string;
+  /** So a stale entry from a since-changed server can be discarded. */
+  savedAt: number;
+};
 
 export type PersistedDownloadJob = {
   id: string;
@@ -59,8 +77,17 @@ export function writeDownloadJobs(jobs: PersistedDownloadJob[]) {
   writeJsonArray(JOBS_KEY, jobs);
 }
 
+export function readResumables(): PersistedResumable[] {
+  return readJsonArray<PersistedResumable>(RESUMABLES_KEY);
+}
+
+export function writeResumables(resumables: PersistedResumable[]) {
+  writeJsonArray(RESUMABLES_KEY, resumables);
+}
+
 export function clearDownloadsSnapshot() {
   mmkv.remove(TRACKS_KEY);
   mmkv.remove(COLLECTIONS_KEY);
   mmkv.remove(JOBS_KEY);
+  mmkv.remove(RESUMABLES_KEY);
 }

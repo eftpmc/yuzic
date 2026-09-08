@@ -25,7 +25,7 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 interface Props {
   album: ExternalAlbumBase;
@@ -39,8 +39,10 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
   const { colors } = useTheme();
 
   const downloaders = useDownloaderStates();
+  // A downloader appears only if it takes the unit being asked for: Lidarr has
+  // no way to fetch one track, SoulSync no way to take a whole album.
   const available = downloaders.filter(
-    (d) => d.isConnected && (!track || !!d.def.downloadTrack)
+    (d) => d.isConnected && !!(track ? d.def.downloadTrack : d.def.downloadAlbum)
   );
 
   const [loadingId, setLoadingId] = useState<DownloaderId | null>(null);
@@ -54,7 +56,7 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
     try {
       const result = track
         ? await def.downloadTrack!(config, { title: track.title, artist: track.artist })
-        : await def.downloadAlbum(config, album);
+        : await def.downloadAlbum!(config, album);
       const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
       const fallback = t('externalAlbum.download.failed');
       toast[result.success ? 'success' : 'error'](
@@ -100,7 +102,7 @@ const DownloadSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
             dimRow={anyLoading}
             trailing={
               loadingId === downloader.def.id
-                ? <SpinningLoaderCircle size={18} color={colors.subtext} />
+                ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} />
                 : null
             }
           />

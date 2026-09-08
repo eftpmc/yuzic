@@ -6,14 +6,18 @@ import {
   ChevronRight,
   Disc3,
   Download,
+  Link2,
   ListMusic,
   Music2,
+  Podcast,
+  Radio,
   Tags,
   Users,
 } from 'lucide-react-native'
 
+import { useApi } from '@/api'
 import { useTheme } from '@/hooks/useTheme'
-import { spacing, typography } from '@/constants/design'
+import { iconSize, spacing, typography } from '@/constants/design'
 import CoverMosaic from './CoverMosaic'
 import { useLibrarySummary, type LibraryEntryKey } from './useLibrarySummary'
 import type { LibraryCollectionType } from './librarySort'
@@ -59,12 +63,54 @@ const LibraryEntryRows: React.FC = () => {
   const { t } = useTranslation()
   const { colors } = useTheme()
   const summary = useLibrarySummary()
+  const api = useApi()
 
   const openCollection = (type: LibraryCollectionType) =>
     navigation.push('libraryCollectionView', { type })
 
   const size = 20
   const color = colors.subtext
+
+  // Provider-only surfaces stay out of the list on servers that can't back
+  // them — a Jellyfin user should never see a Radio row that goes nowhere.
+  const browseEntries: Entry[] = [
+    {
+      key: 'genres',
+      labelKey: 'library.genres.title',
+      icon: <Tags size={size} color={color} />,
+      onPress: () => navigation.push('genresView'),
+    },
+    {
+      key: 'downloaded',
+      labelKey: 'home.filters.downloaded',
+      icon: <Download size={size} color={color} />,
+      onPress: () => openCollection('downloaded'),
+    },
+  ]
+  if (api.radio) {
+    browseEntries.push({
+      key: 'radio',
+      labelKey: 'library.radio.title',
+      icon: <Radio size={size} color={color} />,
+      onPress: () => navigation.push('radio'),
+    })
+  }
+  if (api.podcasts) {
+    browseEntries.push({
+      key: 'podcasts',
+      labelKey: 'library.podcasts.title',
+      icon: <Podcast size={size} color={color} />,
+      onPress: () => navigation.push('podcasts'),
+    })
+  }
+  if (api.shares) {
+    browseEntries.push({
+      key: 'shares',
+      labelKey: 'library.shares.title',
+      icon: <Link2 size={size} color={color} />,
+      onPress: () => navigation.push('shares'),
+    })
+  }
 
   const sections: Section[] = [
     {
@@ -100,20 +146,7 @@ const LibraryEntryRows: React.FC = () => {
     {
       key: 'browse',
       labelKey: 'library.sections.browse',
-      entries: [
-        {
-          key: 'genres',
-          labelKey: 'library.genres.title',
-          icon: <Tags size={size} color={color} />,
-          onPress: () => navigation.push('genresView'),
-        },
-        {
-          key: 'downloaded',
-          labelKey: 'home.filters.downloaded',
-          icon: <Download size={size} color={color} />,
-          onPress: () => openCollection('downloaded'),
-        },
-      ],
+      entries: browseEntries,
     },
   ]
 
@@ -153,13 +186,18 @@ const LibraryEntryRows: React.FC = () => {
                     <Text style={[styles.label, { color: colors.secondary }]} numberOfLines={1}>
                       {t(entry.labelKey)}
                     </Text>
-                    {count !== undefined && count > 0 && (
+                    {/* Zero is a count, not the absence of one. "0 items"
+                        under Downloaded says the feature exists and you have
+                        none of it; the row going silent said nothing, and read
+                        the same as Radio — which genuinely has no count,
+                        because fetching one costs a request. */}
+                    {count !== undefined && (
                       <Text style={[styles.count, { color: colors.subtext }]} numberOfLines={1}>
                         {t(COUNT_KEY[entry.key], { count })}
                       </Text>
                     )}
                   </View>
-                  <ChevronRight size={18} color={colors.subtext} />
+                  <ChevronRight size={iconSize.row} color={colors.subtext} />
                 </View>
               </Touchable>
             )
@@ -179,6 +217,9 @@ const COUNT_KEY: Record<LibraryEntryKey, string> = {
   tracks: 'library.count.tracks',
   genres: 'library.count.genres',
   downloaded: 'library.count.items',
+  radio: 'library.count.stations',
+  podcasts: 'library.count.podcasts',
+  shares: 'library.count.shares',
 }
 
 export default LibraryEntryRows
@@ -203,7 +244,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
-    paddingVertical: spacing.lg,
+    // A minimum rather than padding alone: rows with a count are two lines
+    // and rows without are one, so padding by itself made a 15pt height
+    // difference between neighbours and left the dividers unevenly spaced.
+    // The floor clears the art with room to breathe, so every row matches
+    // whether or not it has a subtitle.
+    minHeight: MOSAIC_SIZE + spacing.sm * 2,
+    paddingVertical: spacing.sm,
   },
   labels: { flexShrink: 1, minWidth: 0, gap: spacing.xxs },
   count: { ...typography.caption },

@@ -21,6 +21,7 @@ import { useApi } from '@/api';
 import {
   selectShowSourceHeaders,
   selectDeezerDiscoveryEnabled,
+  selectLastfmEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   selectIsAudiomuseConfigured,
@@ -32,11 +33,11 @@ import { usePlayableSongResolver } from '@/hooks/songs';
 import { useIsOffline } from '@/hooks/useIsOffline';
 import { useSheetRef } from '@/utils/useSheetRef';
 import * as deezer from '@/api/deezer';
-import { getLastFmSimilarArtists } from '@/api/rawarr/lastfm/getSimilarArtists';
-import { RAWARR_URL } from '@/constants/rawarr';
+import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists';
+import { LASTFM_API_KEY } from '@/constants/keys';
 import { QueryKeys } from '@/enums/queryKeys';
 import DownloadSheet from '@/components/options/DownloadSheet';
-import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
+import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
 
@@ -44,18 +45,18 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { sourceColor, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LOCAL_COUNT = 8;
 const EXTERNAL_COUNT = 8;
 
 async function fetchExternalRecs(artistNames: string[]): Promise<ExternalSong[]> {
-  if (!artistNames.length) return [];
+  if (!artistNames.length || !LASTFM_API_KEY) return [];
 
   try {
     const similarResults = await Promise.all(
-      artistNames.map(name => getLastFmSimilarArtists(RAWARR_URL, name, 15))
+      artistNames.map(name => getLastFmSimilarArtists(LASTFM_API_KEY, name, 15))
     );
 
     const seen = new Set<string>(artistNames.map(n => n.toLowerCase()));
@@ -165,10 +166,18 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
       onPress={() => void handlePress()}
       variant="compact"
       trailing={
-        <Touchable onPress={() => void handleAdd()} hitSlop={10} style={styles.actionBtn} disabled={adding || added}>
+        <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t(added ? 'a11y.playlist.songAdded' : 'a11y.playlist.addSong', { title: song.title })}
+          accessibilityState={{ disabled: adding || added }}
+          onPress={() => void handleAdd()}
+          hitSlop={hitSlopFor(iconSize.row)}
+          style={styles.actionBtn}
+          disabled={adding || added}
+        >
           {added
-            ? <CheckCircle size={22} color={colors.placeholder} />
-            : <CirclePlus size={22} color={(adding || added) ? colors.placeholder : colors.subtext} />
+            ? <CheckCircle size={iconSize.secondary} color={colors.placeholder} />
+            : <CirclePlus size={iconSize.secondary} color={(adding || added) ? colors.placeholder : colors.subtext} />
           }
         </Touchable>
       }
@@ -185,6 +194,7 @@ type ExternalRowProps = {
 };
 
 const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownload }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { toggle } = usePreviewPlayer();
   const hasPreview = !!song.previewUrl;
@@ -199,13 +209,16 @@ const ExternalRow: React.FC<ExternalRowProps> = ({ song, hasDownloader, onDownlo
       variant="compact"
       trailing={
         <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.playlist.downloadSong', { title: song.title })}
+          accessibilityState={{ disabled: !hasDownloader }}
           onPress={() => hasDownloader && onDownload(song)}
           disabled={!hasDownloader}
-          hitSlop={10}
+          hitSlop={hitSlopFor(iconSize.row)}
           style={styles.actionBtn}
         >
           <CloudDownload
-            size={22}
+            size={iconSize.secondary}
             color={hasDownloader ? colors.subtext : colors.muted}
           />
         </Touchable>
@@ -296,7 +309,7 @@ export const LocalRecommendedSection: React.FC<LocalRecommendedSectionProps> = (
         title={t('playlist.recommended.local')}
         action={
           <IconActionButton
-            icon={<RefreshCw size={17} color={colors.subtext} />}
+            icon={<RefreshCw size={iconSize.row} color={colors.subtext} />}
             onPress={onRefresh}
             accessibilityLabel={t('playlist.recommended.refresh')}
             size="compact"
@@ -328,7 +341,8 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const isOffline = useIsOffline();
   const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
-  const hasDownloader = useAnyDownloaderConnected();
+  const lastfmEnabled = useSelector(selectLastfmEnabled);
+  const hasDownloader = useAnyAlbumDownloaderConnected();
   const downloadSheetRef = useSheetRef();
   const [albumForDownload, setAlbumForDownload] = useState<ExternalAlbumBase | null>(null);
 
@@ -350,7 +364,16 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const externalQuery = useQuery({
     queryKey: externalQueryKey,
     queryFn: () => fetchExternalRecs(playlistArtistNames),
-    enabled: deezerEnabled && !isOffline && playlistArtistNames.length > 0,
+    // This row is two services in a trench coat: Last.fm expands the seed
+    // artists into similar ones, Deezer turns those into playable tracks. It
+    // needs both to have been turned on — plus a bundled Last.fm key to
+    // expand with — so it asks for all three before calling anyone.
+    enabled:
+      deezerEnabled &&
+      lastfmEnabled &&
+      !isOffline &&
+      playlistArtistNames.length > 0 &&
+      Boolean(LASTFM_API_KEY),
     staleTime: 1000 * 60 * 60 * 6,
     networkMode: 'online',
   });
@@ -378,7 +401,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
     }
   }, [downloadSheetRef, hasDownloader, t]);
 
-  if (!deezerEnabled || isOffline || playlistArtistNames.length === 0) return null;
+  if (!deezerEnabled || !lastfmEnabled || isOffline || playlistArtistNames.length === 0 || !LASTFM_API_KEY) return null;
 
   return (
     <View style={styles.section}>
@@ -393,7 +416,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         }
         action={
           <IconActionButton
-            icon={<RefreshCw size={17} color={colors.subtext} />}
+            icon={<RefreshCw size={iconSize.row} color={colors.subtext} />}
             onPress={onRefreshExternal}
             loading={externalQuery.isFetching}
             accessibilityLabel={t('playlist.recommended.refresh')}

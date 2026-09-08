@@ -18,6 +18,20 @@ export enum QueryKeys {
 	ExploreSimilarArtists = 'explore-similar-artists',
 	ExploreSimilarArtistAlbums = 'explore-similar-artist-albums',
 	ExploreSimilarContent = 'explore-similar-content',
+	SimilarArtists = 'server-similar-artists',
+	SimilarAlbums = 'server-similar-albums',
+	Bookmarks = 'server-bookmarks',
+	/** v2: the entry became { songs, themed } — the persisted cache outlives an
+	 * app upgrade, and a v1 array read through the new shape is an empty shelf. */
+	ServerRandom = 'server-random-shelf-v2',
+	/** v2: entries carry a resolved `cover` where they used to carry a raw
+	 * `coverArt` id. Same reason as above — persisted v1 rows have no cover. */
+	ServerNowPlaying = 'server-now-playing-v2',
+	LbSimilarForYou = 'lb-similar-for-you',
+	ArtistMbid = 'artist-mbid-lookup',
+	Podcasts = 'server-podcasts',
+	Radio = 'server-radio-stations',
+	Shares = 'server-shares',
 	ExploreGenreRow = 'explore-genre-row',
 	ExternalAlbumPreviews = 'external-album-previews',
 	LidarrQueue = 'lidarr-queue',
@@ -27,6 +41,8 @@ export enum QueryKeys {
 	ExploreBecauseYouListened = 'explore-because-you-listened',
 	ExploreDeezerCharts = 'explore-deezer-charts',
 	ExploreTopArtists = 'explore-top-artists',
+	ServerArtistTopSongs = 'server-artist-top-songs',
+	ServerSimilarAlbums = 'server-similar-albums',
 	LocalArtistTopTracks = 'local-artist-top-tracks',
 	LocalArtistExternalDiscography = 'local-artist-external-discography',
 }

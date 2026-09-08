@@ -6,9 +6,6 @@ import PlaylistOptions from '@/components/options/PlaylistOptions';
 
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { incrementPlay } from '@/utils/redux/slices/statsSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
@@ -26,7 +23,7 @@ import {
   DetailMetaText,
   DetailPlayAction,
 } from '@/components/DetailHeader';
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type Props = {
   playlist: Playlist;
@@ -39,8 +36,6 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
 
-  const dispatch = useDispatch();
-  const activeServer = useSelector(selectActiveServer);
   const { playSongInCollection } = usePlayingActions();
   const { downloadPlaylistById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
 
@@ -72,21 +67,22 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
     await downloadPlaylistById(playlist.id, songs);
   }, [songs, isPlaylistDownloading, isPlaylistDownloaded, downloadPlaylistById, cancelCollectionDownloads, playlist.id]);
 
+  // No play is counted here. Pressing play is not listening: these used to
+  // credit songs[0] — and its album and artist — the instant the button was
+  // hit, so the first track of every playlist was counted twice once the real
+  // listen scrobbled, and shuffling credited a track that usually never
+  // played at all. The player attributes the playlist itself when a listen
+  // actually passes the threshold, which is also what finally made playlists
+  // started from anywhere else count.
   const handleShuffle = useCallback(() => {
     if (!songs.length) return;
     playSongInCollection(songs[0], playlist, true);
-    if (activeServer) {
-      dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
-    }
-  }, [songs, playlist, playSongInCollection, activeServer, dispatch]);
+  }, [songs, playlist, playSongInCollection]);
 
   const handlePlay = useCallback(() => {
     if (!songs.length) return;
     playSongInCollection(songs[0], playlist);
-    if (activeServer) {
-      dispatch(incrementPlay({ serverId: activeServer.id, songId: songs[0].id, albumId: songs[0].albumId, artistId: songs[0].artistId, playlistId: playlist.id }));
-    }
-  }, [songs, playlist, playSongInCollection, activeServer, dispatch]);
+  }, [songs, playlist, playSongInCollection]);
 
   return (
     <>
@@ -94,8 +90,11 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
         title={playlist.title}
         cover={playlist.cover}
         rightAction={
-          <DetailHeaderIconButton onPress={onOptions ?? (() => optionsSheetRef.current?.present())}>
-            <Ellipsis size={24} color={colors.secondary} />
+          <DetailHeaderIconButton
+            accessibilityLabel={t('a11y.common.moreOptions')}
+            onPress={onOptions ?? (() => optionsSheetRef.current?.present())}
+          >
+            <Ellipsis size={iconSize.header} color={colors.secondary} />
           </DetailHeaderIconButton>
         }
         meta={
@@ -110,26 +109,30 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
         }
         actions={
           <DetailActionRow style={{ marginBottom: spacing.lg }}>
-            <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle playlist">
-              <Shuffle size={18} color={colors.secondary} />
+            <DetailCircleAction onPress={handleShuffle} accessibilityLabel={t('a11y.detail.shuffle')}>
+              <Shuffle size={iconSize.row} color={colors.secondary} />
             </DetailCircleAction>
 
-            <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play playlist">
-              <Play size={24} color="#fff" fill="#fff" />
+            <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
+              <Play size={iconSize.header} color={colors.onThemeColor} fill={colors.onThemeColor} />
             </DetailPlayAction>
 
             <DetailCircleAction
               onPress={() => void toggleDownload()}
-              accessibilityLabel={
-                isPlaylistDownloading ? 'Cancel download' : isPlaylistDownloaded ? 'Downloaded' : 'Download playlist'
-              }
+              accessibilityLabel={t(
+                isPlaylistDownloading
+                  ? 'a11y.detail.cancelDownload'
+                  : isPlaylistDownloaded
+                    ? 'a11y.detail.downloaded'
+                    : 'a11y.detail.download'
+              )}
             >
               {isPlaylistDownloading ? (
-                <DownloadProgressRing progress={downloadFraction} size={18} />
+                <DownloadProgressRing progress={downloadFraction} size={iconSize.row} />
               ) : isPlaylistDownloaded ? (
-                <Check size={18} color={colors.secondary} />
+                <Check size={iconSize.row} color={colors.secondary} />
               ) : (
-                <Download size={18} color={colors.secondary} />
+                <Download size={iconSize.row} color={colors.secondary} />
               )}
             </DetailCircleAction>
           </DetailActionRow>
@@ -142,13 +145,17 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
 };
 
 export const PlaylistHeaderBar: React.FC<Props> = ({ playlist, onOptions }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   return (
     <DetailHeaderBar
       title={playlist.title}
       rightAction={
-        <DetailHeaderIconButton onPress={onOptions}>
-          <Ellipsis size={24} color={colors.secondary} />
+        <DetailHeaderIconButton
+          accessibilityLabel={t('a11y.common.moreOptions')}
+          onPress={onOptions}
+        >
+          <Ellipsis size={iconSize.header} color={colors.secondary} />
         </DetailHeaderIconButton>
       }
     />

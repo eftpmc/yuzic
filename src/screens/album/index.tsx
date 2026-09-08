@@ -15,7 +15,7 @@ import StatusBanner from '@/components/StatusBanner';
 import AlbumContent from './components/Content';
 import LoadingAlbumContent from './components/Content/Loading';
 import { DETAIL_BAR_HEIGHT } from '@/components/DetailHeader'
-import { spacing } from '@/constants/design';
+import { iconSize, spacing } from '@/constants/design';
 
 type RouteParams = {
   id?: string;
@@ -69,7 +69,7 @@ const AlbumScreen: React.FC = () => {
     if (!localResult.album) {
       return (
         <NotFoundView
-          message={localResult.error ? "Couldn't load album. Check your connection." : 'Album not found'}
+          message={localResult.error ? t('media.albumLoadFailed') : t('media.albumNotFound')}
         />
       );
     }
@@ -81,7 +81,7 @@ const AlbumScreen: React.FC = () => {
             style={[styles.degradedBanner, { top: insets.top + DETAIL_BAR_HEIGHT }]}
           >
             <StatusBanner
-              icon={<CloudOff size={14} color={colors.subtext} />}
+              icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
               text={t('common.serverUnreachableBanner')}
               closable
               testID="server-unreachable-banner"
@@ -94,7 +94,7 @@ const AlbumScreen: React.FC = () => {
   }
 
   if (!albumId && !(artist && title)) {
-    return <NotFoundView message="Album not found" />;
+    return <NotFoundView message={t('media.albumNotFound')} />;
   }
   if (externalResult.isLoading) {
     return (
@@ -104,7 +104,7 @@ const AlbumScreen: React.FC = () => {
     );
   }
   if (externalResult.error || !externalResult.album) {
-    return <NotFoundView message="Couldn't load album. Check your connection." />;
+    return <NotFoundView message={t('media.albumLoadFailed')} />;
   }
 
   return (

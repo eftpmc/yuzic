@@ -23,7 +23,7 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { spacing, typography, onDark } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Servers() {
@@ -40,12 +40,12 @@ export default function Servers() {
     const handleSelectServer = (id: string) => {
         if (id === activeServerId) {
             dispatch(setActiveServer(id));
-            router.replace('/(home)/(tabs)');
+            router.replace('/(home)/(tabs)/(home)');
             return;
         }
 
         dispatch(setActiveServer(id));
-        router.replace('/(home)/(tabs)');
+        router.replace('/(home)/(tabs)/(home)');
     };
 
     const handleAddServer = () => {
@@ -113,11 +113,13 @@ export default function Servers() {
                 </Touchable>
 
                 <Touchable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('a11y.onboarding.serverOptions', { url: item.serverUrl })}
                     style={[styles.menuButton, { borderRadius: rad.md }]}
-                    hitSlop={10}
+                    hitSlop={hitSlopFor(iconSize.row)}
                     onPress={() => confirmDelete(item.id, item.serverUrl)}
                 >
-                    <Ellipsis size={18} color={onDark.mutedText} />
+                    <Ellipsis size={iconSize.row} color={onDark.mutedText} />
                 </Touchable>
             </View>
         );
@@ -251,7 +253,7 @@ const styles = StyleSheet.create({
     },
 
     bottomContent: {
-        marginBottom: Platform.OS === 'ios' ? 40 : 20,
+        marginBottom: Platform.OS === 'ios' ? spacing.xxxl : spacing.roomy,
     },
 
     addButton: {

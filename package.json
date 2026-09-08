@@ -1,7 +1,7 @@
 {
   "name": "yuzic",
   "main": "expo-router/entry",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -29,7 +29,7 @@
       "^expo-modules-core/(.*)$": "<rootDir>/node_modules/expo-modules-core/$1"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|expo-modules-core|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|immer)/)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|expo-modules-core|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|immer|react-redux)/)"
     ]
   },
   "dependencies": {
@@ -40,7 +40,6 @@
     "@react-native-community/slider": "5.1.2",
     "@react-navigation/native": "^7.0.0",
     "@reduxjs/toolkit": "^2.5.0",
-    "@rntp/player": "^5.6.0",
     "@shopify/flash-list": "2.0.2",
     "@tanstack/query-async-storage-persister": "^5.90.19",
     "@tanstack/react-query": "^5.90.16",
@@ -88,7 +87,8 @@
     "react-native-worklets": "^0.8.1",
     "react-redux": "^9.2.0",
     "reanimated-color-picker": "^4.2.0",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "yuzic-engine": "github:yuzicapp/yuzic-engine#fe257790dab6ee9e1278ecd4944c16411826852c"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

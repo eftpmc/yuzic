@@ -1,0 +1,668 @@
+import React, { useCallback, useState } from 'react';
+import { Text, View, StyleSheet } from 'react-native';
+import { useSelector } from 'react-redux';
+import { toast } from '@backpackapp-io/react-native-toast';
+
+import SettingsCard from '../components/SettingsCard';
+import SettingsCardHeader from '../components/SettingsCardHeader';
+import SettingsRow from '../components/SettingsRow';
+import { useApi } from '@/api';
+import { useLibrary } from '@/contexts/LibraryContext';
+import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { useTheme } from '@/hooks/useTheme';
+import { spacing, typography } from '@/constants/design';
+
+/**
+ * Development-only: drives yuzic-engine directly, bypassing the player.
+ *
+ * The engine is a separate project being built to replace `@rntp/player`
+ * (see github.com/yuzicapp/yuzic-engine). It has a large unit-test suite, but
+ * nothing had ever called it across the React Native bridge — and the bugs
+ * found so far were all of the kind that only appear when something really
+ * builds or really runs. This is the smallest surface that exercises the whole
+ * path: JS → Expo module → audio session → cache → decoder → graph → output.
+ *
+ * Not wired into playback, and not shown in release builds. It goes away with
+ * the rest of the scaffolding once the engine actually replaces the player.
+ */
+const EngineSmokeTest: React.FC = () => {
+  const { colors } = useTheme();
+  const api = useApi();
+  const { tracks } = useLibrary();
+  const activeServer = useSelector(selectActiveServer);
+  const [log, setLog] = useState<string[]>([]);
+
+
+  const say = useCallback((line: string) => {
+    setLog(previous => [...previous.slice(-6), line]);
+  }, []);
+
+  const loadEngine = useCallback(() => {
+    // Required lazily: if the native module is missing this throws, and it
+    // should surface as a line in the log rather than a blank screen at import
+    // time.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('yuzic-engine') as typeof import('yuzic-engine');
+  }, []);
+
+  const probe = useCallback(async () => {
+    setLog([]);
+    try {
+      const { YuzicEngine } = loadEngine();
+      say(`module: ${YuzicEngine ? 'found' : 'missing'}`);
+      await YuzicEngine.setup({ progressIntervalMs: 1000 });
+      say('setup: ok — audio session claimed');
+      toast.success('Engine responded');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Engine did not respond');
+    }
+  }, [loadEngine, say]);
+
+  const playFirstTrack = useCallback(async () => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library to play');
+        return;
+      }
+      const url = api.songs.buildStreamUrl(track.id, 'high');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 1000 });
+      say(`playing: ${track.title}`);
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      // "play() returned" only means nothing threw. Position advancing is the
+      // evidence that bytes are being fetched, decoded and rendered — a silent
+      // graph reports zero forever.
+      const stop = YuzicEngine.addListener(event => {
+        if (event.type === 'progress') {
+          const { positionSec, durationSec, bufferedSec } = event.progress;
+          // bufferedSec used to be hardcoded to zero. Shown here because a
+          // buffering figure pinned at zero looks exactly like a stall, and
+          // that is the failure worth being able to see.
+          say(
+            `progress ${positionSec.toFixed(1)}s / ${durationSec.toFixed(1)}s ` +
+              `(buffered ${bufferedSec.toFixed(1)}s)`
+          );
+        }
+        if (event.type === 'stateChange') say(`state: ${event.state}`);
+        if (event.type === 'error') say(`error: ${event.code} ${event.message}`);
+      });
+      setTimeout(stop, 12_000);
+
+      await YuzicEngine.play();
+      say('play() returned — watching progress');
+      toast.success('Engine playing');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Engine playback failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * Times a seek into a region the cache has not fetched.
+   *
+   * This is the half of `docs/architecture.md` open question 3 that a stub
+   * server cannot answer: cancellation is unit-tested, but "how long until the
+   * first sample at the new position" only means something against a real
+   * server over a real network.
+   *
+   * The seek target is deliberately most of the way into the track, so it is
+   * far beyond anything the two-second read-ahead has pulled. Measured from
+   * just before `seekTo` to the first progress event that actually lands near
+   * the target — progress reported at the *old* position is the engine not
+   * having moved yet, and counting it would flatter the number.
+   */
+  const seekProbe = useCallback(async (quality: 'original' | 'high') => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library to seek');
+        return;
+      }
+      // Which transport this exercises is decided here and nowhere else, which
+      // is exactly how it is easy to get wrong. `original` sends format=raw:
+      // the server serves the file, honours `Range`, and a seek is a ranged
+      // GET. Every other quality sends format/maxBitRate, so the server
+      // transcodes, refuses ranges, and a forward seek is a reconnection with
+      // `timeOffset` — a different code path with a different cost. See
+      // docs/architecture.md §10 in the engine.
+      const url = api.songs.buildStreamUrl(track.id, quality);
+      say(quality === 'original' ? 'transport: direct (ranged)' : 'transport: transcoded (320k)');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      await YuzicEngine.play();
+      say(`playing: ${track.title}`);
+
+      // Let it settle into steady playback first. Seeking during the initial
+      // buffering would measure the open, not the seek.
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
+      const before = await YuzicEngine.getProgress();
+      if (!before.durationSec) {
+        say('duration unknown — cannot pick a seek target');
+        return;
+      }
+      const target = before.durationSec * 0.8;
+      say(`at ${before.positionSec.toFixed(1)}s, buffered ${before.bufferedSec.toFixed(1)}s`);
+      say(`seeking to ${target.toFixed(1)}s`);
+
+      const started = Date.now();
+      let settled = false;
+      const stop = YuzicEngine.addListener(event => {
+        if (settled || event.type !== 'progress') return;
+        // Within five seconds of the target counts as arrived; the engine
+        // resumes at the requested frame, not exactly on it.
+        if (Math.abs(event.progress.positionSec - target) > 5) return;
+        settled = true;
+        say(`first sample at ${Date.now() - started}ms`);
+        say(`buffered there: ${event.progress.bufferedSec.toFixed(1)}s`);
+        stop();
+      });
+
+      await YuzicEngine.seekTo(target);
+      say('seekTo() returned — waiting for audio');
+
+      setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          stop();
+          say('no sample within 15s — the seek did not arrive');
+        }
+      }, 15_000);
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Seek probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * Does "next" light up when a track is appended behind the one playing?
+   *
+   * Android now holds one track per voice, so ExoPlayer's timeline can never
+   * answer whether there is a next track — the queue does, and
+   * `getAvailableCommands` is overridden to say so. But Media3 only re-reads
+   * that when the *player* fires an event, and appending to the queue touches
+   * no player method at all.
+   *
+   * Every other route to a second track is masked: `setQueue` and
+   * `skipToIndex` both call `setMediaItem`, and changing repeat mode sets it on
+   * the player. Each of those fires an event that refreshes the command set as
+   * a side effect, so they would pass whether or not the invalidation works.
+   * This probe is deliberately the one path with nothing to hide behind — play
+   * a queue of exactly one, then append, and touch nothing else.
+   *
+   * Read the result on the notification or lock screen, not here: the question
+   * is whether the next button becomes enabled without any other state change.
+   * It is expected to FAIL as written — that is the point. It exists so the fix
+   * has a success condition that can be observed rather than argued about.
+   */
+  const appendCommandProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pair = tracks.slice(0, 2);
+      if (pair.length < 2 || !activeServer) {
+        say('need two tracks in the library');
+        return;
+      }
+      const items = pair.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }));
+      if (items.some(item => !item.uri)) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      // No crossfade: a fade would start a second voice and fire player events,
+      // which is exactly the masking this probe is built to avoid. Zero is what
+      // disables it — `shouldBeginTransition` returns false on a non-positive
+      // duration whatever the mode says.
+      await YuzicEngine.setCrossfade({ durationSec: 0, mode: 'always' });
+      await YuzicEngine.setQueue([items[0]], 0);
+      await YuzicEngine.play();
+      say(`playing a queue of one: ${items[0].title}`);
+      say('check the notification — "next" should be disabled');
+
+      await new Promise(resolve => setTimeout(resolve, 6000));
+
+      await YuzicEngine.append([items[1]]);
+      say(`appended: ${items[1].title}`);
+      say('check again — did "next" become enabled?');
+      say('no other engine call was made in between');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Append probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * Drives an actual crossfade between two tracks.
+   *
+   * This is the feature the whole graph architecture exists for — two sources
+   * overlapping, which no single-output player can do — and until now nothing
+   * had made one happen outside a unit test. Rather than wait several minutes
+   * for a track to end, it seeks to just before the crossover so the engine's
+   * own tick decides to begin the transition, the same way it would in the
+   * middle of an album.
+   *
+   * The evidence is the track-change event: the engine fires it at the fade's
+   * midpoint, not at its start, so `previousListenedSec` arriving with a
+   * plausible figure means the overlap really was scheduled and timed.
+   */
+  const crossfadeProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pair = tracks.slice(0, 2);
+      if (pair.length < 2 || !activeServer) {
+        say('need two tracks in the library');
+        return;
+      }
+      const queue = pair.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+        title: track.title,
+        artist: track.artist,
+        durationSec: Number(track.duration) || undefined,
+      }));
+      if (queue.some(item => !item.uri)) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const fadeSec = 8;
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      await YuzicEngine.setCrossfade({ durationSec: fadeSec, mode: 'always' });
+      await YuzicEngine.setQueue(queue, 0);
+      await YuzicEngine.play();
+      say(`1: ${queue[0].title}`);
+      say(`2: ${queue[1].title}`);
+
+      const stop = YuzicEngine.addListener(event => {
+        if (event.type === 'trackChange') {
+          say(`crossover → index ${event.index}`);
+          say(`listened ${event.previousListenedSec?.toFixed(1) ?? '?'}s of track 1`);
+          stop();
+        }
+        if (event.type === 'error') say(`error: ${event.code} ${event.message}`);
+      });
+      setTimeout(stop, 60_000);
+
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      const progress = await YuzicEngine.getProgress();
+      if (!progress.durationSec) {
+        say('duration unknown — cannot place the crossover');
+        return;
+      }
+      // Land a few seconds before the fade would start, so the engine begins
+      // the transition on its own rather than being told to.
+      const target = Math.max(0, progress.durationSec - fadeSec - 4);
+      say(`seeking to ${target.toFixed(1)}s of ${progress.durationSec.toFixed(1)}s`);
+      await YuzicEngine.seekTo(target);
+      say(`waiting for the fade (${fadeSec}s)`);
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Crossfade probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * Exercises the queue editing the host cannot switch to the engine without.
+   *
+   * These were declared in `AudioEngine.ts` from the start and implemented by
+   * nothing, which is what stood between yuzic and deleting its current
+   * player — it edits its queue through every one of them.
+   *
+   * `getQueue` is the reason this is a device probe and not a unit test. It is
+   * the only call that sends tracks *back* across the bridge, and the module's
+   * own header records the last time a declared shape typechecked and then
+   * threw at runtime. A compiler cannot tell us this works.
+   */
+  const queueProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const pool = tracks.slice(0, 4);
+      if (pool.length < 4 || !activeServer) {
+        say('need four tracks in the library');
+        return;
+      }
+      const items = pool.map(track => ({
+        id: track.id,
+        uri: api.songs.buildStreamUrl(track.id, 'original') ?? '',
+        title: track.title,
+        durationSec: Number(track.duration) || undefined,
+      }));
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 1000 });
+      await YuzicEngine.setQueue(items, 1);
+
+      const shown = async (label: string) => {
+        const queue = await YuzicEngine.getQueue();
+        const index = await YuzicEngine.getActiveIndex();
+        say(`${label}: [${queue.map(t => t.title.slice(0, 6)).join(', ')}] @${index}`);
+        return queue;
+      };
+
+      const initial = await shown('set');
+      if (initial.length !== 4) {
+        say(`getQueue returned ${initial.length}, expected 4`);
+        return;
+      }
+
+      // Each of these should leave the *same* track active — index 1 to begin
+      // with — which is the whole rule the editing is built around.
+      await YuzicEngine.insertAt(0, [items[3]]);
+      await shown('insert@0');
+      await YuzicEngine.removeAt(0);
+      await shown('remove@0');
+      await YuzicEngine.move(3, 0);
+      await shown('move 3→0');
+
+      await YuzicEngine.setRepeatMode('all');
+      say('repeat: all');
+      await YuzicEngine.clearQueue();
+      const emptied = await YuzicEngine.getQueue();
+      say(`cleared: ${emptied.length} items`);
+      toast.success('Queue editing works');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Queue probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * Exercises the disk cache, which has never run.
+   *
+   * `configureCache`, `cacheStats`, `clearCache` and `evict` were declared for
+   * months and implemented by nothing — calling one failed with "function not
+   * found". They exist now, and this is the first thing to actually call them.
+   *
+   * The claim under test is that audio survives a track ending: play, stop,
+   * and see whether the bytes are still counted. A cache whose numbers go back
+   * to zero is an in-memory cache wearing a disk cache's name, which is
+   * exactly what this replaced.
+   */
+  const cacheProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library');
+        return;
+      }
+      // Original: only the ranged path is cached, by design — a transcoded
+      // stream's bytes are not the file.
+      const url = api.songs.buildStreamUrl(track.id, 'original');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 500 });
+
+      // From a known-empty state, so the numbers below are this track's and
+      // not whatever a previous probe left behind.
+      await YuzicEngine.clearCache();
+      const empty = await YuzicEngine.cacheStats();
+      say(`cleared: ${empty.entryCount} entries, ${empty.usedBytes}B`);
+      if (empty.usedBytes !== 0) say('clearCache left bytes behind');
+
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      await YuzicEngine.play();
+      say(`playing: ${track.title}`);
+
+      await new Promise(resolve => setTimeout(resolve, 6000));
+      const warm = await YuzicEngine.cacheStats();
+      const mb = (warm.usedBytes / (1024 * 1024)).toFixed(2);
+      say(`after 6s: ${warm.entryCount} entries, ${mb}MB`);
+
+      // Stopping ends the track. The bytes must not go with it — that is the
+      // whole difference between this and what came before.
+      await YuzicEngine.stop();
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const afterStop = await YuzicEngine.cacheStats();
+      say(`after stop: ${afterStop.entryCount} entries, ` +
+        `${(afterStop.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
+
+      if (afterStop.usedBytes === 0 || afterStop.entryCount === 0) {
+        say('cache emptied when the track stopped');
+        toast.error('Cache did not persist');
+        return;
+      }
+      say('kept across the track ending');
+
+      // `evict` last, and by MediaId rather than URL — the engine keys the
+      // cache on the id precisely so a rotating Subsonic or Jellyfin token
+      // cannot orphan an entry. Exercised here because the rest of this probe
+      // passing was being read as "the cache methods work" while this one had
+      // only ever been compiled.
+      await YuzicEngine.evict(track.id);
+      const afterEvict = await YuzicEngine.cacheStats();
+      say(`after evict: ${afterEvict.entryCount} entries, ` +
+        `${(afterEvict.usedBytes / (1024 * 1024)).toFixed(2)}MB`);
+
+      if (afterEvict.entryCount < afterStop.entryCount) {
+        say('evict dropped the track it was given');
+        toast.success('Disk cache holds');
+      } else {
+        // Distinguishable from a thrown error: this is the call returning
+        // cleanly and changing nothing, which is the failure this codebase
+        // keeps producing and the one a passing probe would hide.
+        say('evict returned but removed nothing');
+        toast.error('evict did nothing');
+      }
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Cache probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  /**
+   * The speed control, which has never run.
+   *
+   * `setSpeed` splices an `AVAudioUnitTimePitch` between the EQ and the output
+   * and is bypassed at 1.0, so the interesting question is not whether the
+   * number is accepted — it is whether audio still reaches the output once the
+   * node stops being bypassed. A disconnected graph is silent rather than
+   * broken-looking, which is the failure this is shaped to catch: position
+   * keeps advancing while nothing is heard.
+   *
+   * So it watches progress *rate* rather than the setting. At 2x the playhead
+   * should cover roughly twice the wall-clock time; at 0.5x roughly half. A
+   * node that swallowed the audio would leave the rate at zero.
+   */
+  const speedProbe = useCallback(async () => {
+    setLog([]);
+    try {
+      const track = tracks[0];
+      if (!track || !activeServer) {
+        say('no track in the library');
+        return;
+      }
+      const url = api.songs.buildStreamUrl(track.id, 'original');
+      if (!url) {
+        say('no stream url — is a server connected?');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 250 });
+      await YuzicEngine.setQueue([{
+        id: track.id,
+        uri: url,
+        title: track.title,
+        durationSec: Number(track.duration) || undefined,
+      }], 0);
+      await YuzicEngine.play();
+      say(`playing: ${track.title}`);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      /** Playhead seconds covered per second of wall clock. */
+      const rateOver = async (seconds: number) => {
+        const before = await YuzicEngine.getProgress();
+        const startedAt = Date.now();
+        await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+        const after = await YuzicEngine.getProgress();
+        const elapsed = (Date.now() - startedAt) / 1000;
+        return (after.positionSec - before.positionSec) / elapsed;
+      };
+
+      await YuzicEngine.setSpeed(1.0);
+      say(`1.0x → ${(await rateOver(3)).toFixed(2)}x measured`);
+
+      await YuzicEngine.setSpeed(2.0);
+      const fast = await rateOver(3);
+      say(`2.0x → ${fast.toFixed(2)}x measured`);
+
+      await YuzicEngine.setSpeed(0.5);
+      const slow = await rateOver(3);
+      say(`0.5x → ${slow.toFixed(2)}x measured`);
+
+      await YuzicEngine.setSpeed(1.0);
+      await YuzicEngine.stop();
+
+      // Silence is the failure worth naming: a rate near zero at 2x means the
+      // node is in the chain and nothing is getting through it.
+      if (fast < 0.2) say('no audio at 2x — the speed node broke the graph');
+      else if (fast > 1.5 && slow < 0.8) {
+        say('speed follows the setting');
+        toast.success('Speed control works');
+      } else say('rates did not track the setting');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Speed probe failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  const publishBrowseTree = useCallback(async () => {
+    setLog([]);
+    try {
+      const playable = tracks.slice(0, 20).filter(track => activeServer);
+      if (playable.length === 0) {
+        say('no tracks to publish');
+        return;
+      }
+
+      const { YuzicEngine } = loadEngine();
+      await YuzicEngine.setup({ progressIntervalMs: 1000 });
+
+      // Grouped by album, because a flat list of every track is what CarPlay's
+      // list limit exists to prevent — and because choosing a track inside an
+      // album is what the engine's selection rule is built around.
+      const albums = new Map<string, typeof playable>();
+      for (const track of playable) {
+        const name = track.albumTitle || 'Unknown album';
+        albums.set(name, [...(albums.get(name) ?? []), track]);
+      }
+
+      await YuzicEngine.setBrowseTree({
+        id: 'root',
+        title: 'yuzic',
+        children: [...albums].map(([name, albumTracks]) => ({
+          id: `album:${name}`,
+          title: name,
+          subtitle: albumTracks[0]?.artist,
+          children: albumTracks.map(track => ({
+            id: `track:${track.id}`,
+            title: track.title,
+            subtitle: track.artist,
+            playable: {
+              id: track.id,
+              uri: api.songs.buildStreamUrl(track.id, 'high') ?? '',
+              title: track.title,
+              artist: track.artist,
+              album: track.albumTitle,
+              durationSec: Number(track.duration) || undefined,
+            },
+          })),
+        })),
+      });
+      say(`published ${albums.size} albums, ${playable.length} tracks`);
+      toast.success('Browse tree published');
+    } catch (error) {
+      say(`failed: ${(error as Error)?.message ?? String(error)}`);
+      toast.error('Browse tree failed');
+    }
+  }, [api, tracks, activeServer, loadEngine, say]);
+
+  if (!__DEV__) return null;
+
+  return (
+    <>
+      <SettingsCardHeader subtle title="yuzic-engine (dev)" />
+      <SettingsCard>
+        <SettingsRow label="Probe the native module" onPress={probe} />
+        <SettingsRow label="Play the first library track" onPress={playFirstTrack} />
+        <SettingsRow label="Seek: direct stream (ranged)" onPress={() => seekProbe('original')} />
+        <SettingsRow label="Seek: transcoded stream (320k)" onPress={() => seekProbe('high')} />
+        <SettingsRow label="Crossfade two tracks" onPress={crossfadeProbe} />
+        <SettingsRow label="Edit the queue (insert/remove/move)" onPress={queueProbe} />
+        <SettingsRow label="Append: does &quot;next&quot; light up?" onPress={appendCommandProbe} />
+        <SettingsRow label="Disk cache: does it survive a track" onPress={cacheProbe} />
+        <SettingsRow label="Speed: 1x / 2x / 0.5x" onPress={speedProbe} />
+        <SettingsRow label="Publish the CarPlay browse tree" onPress={publishBrowseTree} />
+      </SettingsCard>
+      {log.length > 0 && (
+        <View style={styles.log}>
+          {log.map((line, index) => (
+            <Text key={index} style={[styles.line, { color: colors.subtext }]}>
+              {line}
+            </Text>
+          ))}
+        </View>
+      )}
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  log: {
+    paddingHorizontal: spacing.page,
+    paddingTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  line: {
+    ...typography.rowSubtitle,
+    fontVariant: ['tabular-nums'],
+  },
+});
+
+export default EngineSmokeTest;

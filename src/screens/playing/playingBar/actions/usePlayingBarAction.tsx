@@ -8,11 +8,18 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { useAlbums } from '@/hooks/albums';
 import { useApi } from '@/api';
 import { useIsOffline } from '@/hooks/useIsOffline';
-import { onDark } from '@/constants/design';
+import { useTheme } from '@/hooks/useTheme';
+import { iconSize } from '@/constants/design';
 
 export type PlayingBarActionConfig = {
   id: PlayingBarAction;
   icon: React.ReactNode;
+  /** What the control is called out loud. The dock draws it as a bare glyph,
+   *  so this is the only thing a screen reader has to go on. */
+  label: string;
+  /** Set where the glyph is a state as well as an action, so "Favorite" is
+   *  announced as on or off rather than as the same word either way. */
+  selected?: boolean;
   onPress: () => void;
 };
 
@@ -26,6 +33,11 @@ export function usePlayingBarAction(
   options?: UsePlayingBarActionOptions
 ): PlayingBarActionConfig | null {
   const { t } = useTranslation();
+  // The action used to sit on a filled accent circle, so its icon was always
+  // white. It is a plain secondary control on the dock now and takes the
+  // theme's muted colour like every other quiet glyph.
+  const { colors } = useTheme();
+  const iconColor = colors.subtext;
   const { skipToNext, currentSong, playSongInCollection } = usePlaying();
   const { albums } = useAlbums();
   const api = useApi();
@@ -39,18 +51,24 @@ export function usePlayingBarAction(
     !!currentSong &&
     starredSongs.some(s => s.id === currentSong.id);
 
+  const label = (key: PlayingBarAction) =>
+    t(`settings.appearance.playingBarAction.actions.${key}`);
+
   switch (id) {
     case 'skip':
       return {
         id,
-        icon: <SkipForward size={20} color={onDark.text} />,
+        icon: <SkipForward size={iconSize.control} color={iconColor} />,
+        label: label('skip'),
         onPress: skipToNext,
       };
 
     case 'favorite':
       return {
         id,
-        icon: <Heart size={20} color={onDark.text} fill={isFavorite ? onDark.text : 'none'} />,
+        icon: <Heart size={iconSize.control} color={iconColor} fill={isFavorite ? iconColor : 'none'} />,
+        label: label('favorite'),
+        selected: isFavorite,
         onPress: async () => {
           if (!currentSong) return;
 
@@ -85,7 +103,8 @@ export function usePlayingBarAction(
     case 'randomAlbum':
       return {
         id,
-        icon: <Dices size={20} color={onDark.text} />,
+        icon: <Dices size={iconSize.control} color={iconColor} />,
+        label: label('randomAlbum'),
         onPress: async () => {
           if (!albums.length) return;
           if (isOffline) {
@@ -112,14 +131,16 @@ export function usePlayingBarAction(
     case 'addToPlaylist':
       return {
         id,
-        icon: <PlusCircle size={20} color={onDark.text} />,
+        icon: <PlusCircle size={iconSize.control} color={iconColor} />,
+        label: label('addToPlaylist'),
         onPress: options?.presentAddToPlaylist ?? (() => {}),
       };
 
     case 'cast':
       return {
         id,
-        icon: <Cast size={20} color={onDark.text} />,
+        icon: <Cast size={iconSize.control} color={iconColor} />,
+        label: label('cast'),
         onPress: options?.presentCast ?? (() => {}),
       };
 

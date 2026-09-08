@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import TrackPlayer, { Event } from '@rntp/player';
+import { getBackend } from '@/features/player/activeBackend';
+import { getMediaItemUrl } from './playableMedia';
 
 // ─── DLNA ────────────────────────────────────────────────────────────────────
 
@@ -72,9 +73,15 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
 
   // When track changes, push new URL to the active renderer.
   useEffect(() => {
-    const sub = TrackPlayer.addEventListener(Event.MediaItemTransition, async (event) => {
-      if (!event.item?.url) return;
-      const url = event.item.url as string;
+    // The backend's trackChange carries no payload — it says *that* the track
+    // moved, not to what — so the new item is read back rather than unpacked
+    // from the event. Same source of truth either way, and it avoids a second
+    // definition of "the current track" that could disagree with the UI's.
+    const unsubscribe = getBackend().addListener(async (event) => {
+      if (event.type !== 'trackChange') return;
+      const item = getBackend().getActiveMediaItem();
+      const url = item ? getMediaItemUrl(item) : '';
+      if (!url) return;
 
       const device = activeDeviceRef.current;
       if (!device) return;
@@ -90,7 +97,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
         console.warn('[Cast] DLNA track update failed', err);
       }
     });
-    return () => sub.remove();
+    return unsubscribe;
   }, []);
 
   // ── DLNA connect/disconnect ──────────────────────────────────────────────
@@ -98,11 +105,12 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
   const connectToDevice = useCallback(async (device: DlnaDevice) => {
     setIsConnecting(true);
     try {
-      const currentTrack = TrackPlayer.getActiveMediaItem();
-      if (!currentTrack?.url) throw new Error('No active track to cast');
+      const currentTrack = getBackend().getActiveMediaItem();
+      const currentUrl = currentTrack ? getMediaItemUrl(currentTrack) : '';
+      if (!currentUrl) throw new Error('No active track to cast');
 
       const uriRes = await soapAction(device.avTransportUrl, 'AVTransport', 'SetAVTransportURI',
-        `<InstanceID>0</InstanceID><CurrentURI>${xmlEscape(currentTrack.url as string)}</CurrentURI><CurrentURIMetaData></CurrentURIMetaData>`
+        `<InstanceID>0</InstanceID><CurrentURI>${xmlEscape(currentUrl)}</CurrentURI><CurrentURIMetaData></CurrentURIMetaData>`
       );
       if (!uriRes.ok) {
         const body = await uriRes.text();
@@ -119,7 +127,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`Play ${playRes.status}`);
       }
 
-      await TrackPlayer.setVolume(0);
+      getBackend().setVolume(0);
       setActiveDevice(device);
     } finally {
       setIsConnecting(false);
@@ -135,7 +143,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
         console.warn('[Cast] DLNA stop on disconnect failed', err);
       }
     }
-    await TrackPlayer.setVolume(1);
+    getBackend().setVolume(1);
     setActiveDevice(null);
   }, []);
 

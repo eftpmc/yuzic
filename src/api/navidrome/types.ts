@@ -12,6 +12,7 @@ export interface SubsonicSong {
   title?: string;
   artist?: string;
   artistId?: string;
+  album?: string;
   albumId?: string;
   coverArt?: string;
   duration?: number;
@@ -124,6 +125,96 @@ export interface SubsonicResponseBody {
     lastFmUrl?: string;
   };
   similarSongs?: { song?: SubsonicSong[] };
+  topSongs?: { song?: SubsonicSong[] };
+  internetRadioStations?: {
+    internetRadioStation?: Array<{
+      id?: string;
+      name?: string;
+      streamUrl?: string;
+      homepageUrl?: string;
+    }>;
+  };
+  shares?: {
+    share?: Array<{
+      id?: string;
+      url?: string;
+      description?: string;
+      created?: string;
+      expires?: string;
+      visitCount?: number;
+    }>;
+  };
+  bookmarks?: {
+    bookmark?: Array<{
+      position?: number;
+      comment?: string;
+      changed?: string;
+      entry?: { id?: string };
+    }>;
+  };
+  playQueue?: {
+    current?: string;
+    position?: number;
+    changed?: string;
+    changedBy?: string;
+    entry?: Array<{ id?: string }>;
+  };
+  randomSongs?: { song?: SubsonicSong[] };
+  podcasts?: {
+    channel?: Array<{
+      id?: string;
+      url?: string;
+      title?: string;
+      description?: string;
+      coverArt?: string;
+      originalImageUrl?: string;
+      status?: string;
+      errorMessage?: string;
+      episode?: Array<{
+        id?: string;
+        streamId?: string;
+        channelId?: string;
+        title?: string;
+        description?: string;
+        publishDate?: string;
+        status?: string;
+        duration?: number;
+        coverArt?: string;
+        contentType?: string;
+        bitRate?: number;
+        path?: string;
+      }>;
+    }>;
+  };
+  newestPodcasts?: {
+    episode?: Array<{
+      id?: string;
+      streamId?: string;
+      channelId?: string;
+      title?: string;
+      description?: string;
+      publishDate?: string;
+      status?: string;
+      duration?: number;
+      coverArt?: string;
+    }>;
+  };
+  nowPlaying?: {
+    entry?: Array<
+      SubsonicSong & { username?: string; minutesAgo?: number }
+    >;
+  };
+  artistInfo2?: {
+    biography?: string;
+    musicBrainzId?: string;
+    lastFmUrl?: string;
+    similarArtist?: Array<{
+      id?: string;
+      name?: string;
+      coverArt?: string;
+      albumCount?: number;
+    }>;
+  };
   searchResult3?: {
     album?: SubsonicSearchAlbumEntry[];
     artist?: SubsonicArtist[];

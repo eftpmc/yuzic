@@ -15,6 +15,10 @@ import type { SectionConfig } from './hooks/useDailyLayout'
 export function buildResumeSections(): SectionConfig[] {
   return [
     { key: 'quickPicks', type: 'quickPicks' },
+    // ContinuePlaying self-hides when the bookmark map is empty, so this
+    // row costs nothing on a fresh account and earns its place when the
+    // user is halfway through an audiobook.
+    { key: 'continuePlaying', type: 'continuePlaying' },
     { key: 'recentlyPlayed', type: 'recentlyPlayed' },
   ]
 }

@@ -1,13 +1,18 @@
 import React, { memo } from 'react'
 import { StyleSheet, Text } from 'react-native'
 import { Play } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 import MediaListRow from '@/components/MediaListRow'
 import { useTheme } from '@/hooks/useTheme'
 import { formatSongDuration } from '@/utils/formatDuration'
 import type { ExternalSong } from '@/types'
 import Touchable from '@/components/Touchable'
-import { typography } from '@/constants/design'
+import { hitSlopFor, iconSize, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
+
+/** The preview affordance on an external top-track row, drawn small on purpose
+ *  — it sits inside a row rather than beside one. `hitSlopFor` pads it out. */
+const PREVIEW_BUTTON_SIZE = 28
 
 type Props = {
   song: ExternalSong
@@ -17,6 +22,7 @@ type Props = {
 }
 
 function TopTrackRow({ song, index, artistName, onPress }: Props) {
+  const { t } = useTranslation()
   const { colors } = useTheme()
   const rad = useRadius()
   const duration = formatSongDuration(song.duration)
@@ -36,12 +42,14 @@ function TopTrackRow({ song, index, artistName, onPress }: Props) {
       trailing={
         song.previewUrl ? (
           <Touchable
-            style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pill }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.topTrack.playPreview', { title: song.title })}
+            style={[styles.previewButton, { backgroundColor: colors.card, borderRadius: rad.pillFor(PREVIEW_BUTTON_SIZE) }]}
             onPress={onPress}
             disabled={!onPress}
-            hitSlop={8}
+            hitSlop={hitSlopFor(iconSize.badge)}
           >
-            <Play size={13} color={colors.secondary} fill={colors.secondary} />
+            <Play size={iconSize.badge} color={colors.secondary} fill={colors.secondary} />
           </Touchable>
         ) : undefined
       }
@@ -58,8 +66,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   previewButton: {
-    width: 28,
-    height: 28,
+    width: PREVIEW_BUTTON_SIZE,
+    height: PREVIEW_BUTTON_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { radius, sourceColor, spacing, statusColor, typography } from '@/constants/design'
+import { iconSize, sourceColor, spacing, statusColor, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
-import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation } from '@react-navigation/native'
 import { Ellipsis, Globe } from 'lucide-react-native'
@@ -14,6 +14,9 @@ import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import { useArtistAlbums, useSimilarArtists } from '@/hooks/artists'
 import { useArtistTopTracks } from '@/hooks/artists/useArtistTopTracks'
+import TopSongsSection from './TopSongsSection'
+import { useServerSimilarArtists } from '@/hooks/artists/useServerSimilarArtists'
+import { useLBSimilarArtists } from '@/hooks/artists/useLBSimilarArtists'
 import { useArtistExternalDiscography } from '@/hooks/artists/useArtistExternalDiscography'
 import { matchAlbumToLibrary } from '@/hooks/libraryMatch'
 import { compareByReleaseYearDesc, releaseYearLabel } from './discography'
@@ -25,12 +28,12 @@ import PopularOnDeezerSection from './PopularOnDeezerSection'
 import BioSection from './BioSection'
 import { findArtistsWithSharedGenres, type LocalArtistSummary } from './localSimilarArtists'
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
-import { useDeezerSimilarArtistsEnabled, useDeezerTopTracksEnabled } from '@/features/home/hooks/useDeezerEnabled'
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import { useSelector } from 'react-redux'
-import { selectLastFmSimilarArtistsEnabled } from '@/utils/redux/selectors/lastfmSelectors'
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
 import { selectLibraryAlbums } from '@/utils/redux/selectors/librarySelectors'
 import Touchable from '@/components/Touchable'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 type Props = {
   localArtist: Artist | null
@@ -39,6 +42,7 @@ type Props = {
 
 type ArtistContentItem =
   | { kind: 'mostPlayed'; id: string }
+  | { kind: 'topSongs'; id: string }
   | { kind: 'popularOnDeezer'; id: string }
   | { kind: 'section'; id: string; title: string }
   | { kind: 'localAlbum'; id: string; album: AlbumBase }
@@ -110,8 +114,7 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
   const itemSize = Math.min(132, Math.max(112, (screenWidth - 56) / 2.7))
 
   const { navigateToArtist } = useMatchedNavigation()
-  const deezerEnabled = useDeezerSimilarArtistsEnabled()
-  const lastfmEnabled = useSelector(selectLastFmSimilarArtistsEnabled)
+  const deezerEnabled = useDeezerDiscoveryEnabled()
   const libraryAlbums = useSelector(selectLibraryAlbums)
 
   const { similarArtists: deezerSimilar } = useArtistTopTracks({
@@ -120,17 +123,40 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
     enabled: deezerEnabled,
   })
 
+  // The Last.fm read path uses the bundled api_key; if the build has one,
+  // the hook returns results and this section renders. If it doesn't, the
+  // hook stays disabled and this branch is silently skipped.
   const { data: lastfmSimilar = [] } = useSimilarArtists({
     mbid: artist.mbid,
     name: artist.name,
     excludeName: artist.name,
     limit: 8,
-    enabled: lastfmEnabled,
   })
+
+  // ListenBrainz similar-artists: MBID-only, no auth required. Runs whenever
+  // the local artist carries an MBID (which most do via server metadata).
+  const { data: lbSimilar = [] } = useLBSimilarArtists(
+    artist.mbid ? { mbid: artist.mbid, excludeName: artist.name } : null,
+    8
+  )
 
   const localSimilar = useMemo(
     () => findArtistsWithSharedGenres(artist.id, libraryAlbums),
     [artist.id, libraryAlbums]
+  )
+
+  // Server-native similar (Navidrome getArtistInfo2 / Jellyfin+Emby /Similar).
+  // Falls back to nothing when the server adapter doesn't implement it, so
+  // there is no toggle: it either has data or it doesn't render.
+  const { data: serverSimilar = [] } = useServerSimilarArtists(artist.id, 12)
+
+  // Drop server-similar entries that the local-similar shelf already covers —
+  // both usually surface the same shared-genre neighbours, and showing two
+  // identical rows for the same artist is worse than showing one.
+  const localSimilarIds = useMemo(() => new Set(localSimilar.map(a => a.id)), [localSimilar])
+  const dedupedServerSimilar = useMemo(
+    () => serverSimilar.filter(a => !localSimilarIds.has(a.id)),
+    [serverSimilar, localSimilarIds]
   )
 
   return (
@@ -142,6 +168,15 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
         badge={{ color: LOCAL_COLOR, letter: 'L' }}
         onPressItem={item => navigation.push('artistView', { id: item.id })}
       />
+      {dedupedServerSimilar.length > 0 && (
+        <SimilarArtistsSubSection
+          data={dedupedServerSimilar}
+          itemSize={itemSize}
+          keyPrefix="server"
+          badge={{ color: LOCAL_COLOR, letter: 'S' }}
+          onPressItem={item => navigation.push('artistView', { id: item.id })}
+        />
+      )}
       {deezerEnabled && deezerSimilar.length > 0 && (
         <SimilarArtistsSubSection
           data={deezerSimilar}
@@ -151,12 +186,21 @@ function LocalSimilarArtistsSection({ artist }: { artist: Artist }) {
           onPressItem={item => navigateToArtist(item)}
         />
       )}
-      {lastfmEnabled && lastfmSimilar.length > 0 && (
+      {lastfmSimilar.length > 0 && (
         <SimilarArtistsSubSection
           data={lastfmSimilar}
           itemSize={itemSize}
           keyPrefix="lastfm"
           badge={{ color: sourceColor.lastfm, letter: 'L' }}
+          onPressItem={item => navigateToArtist(item)}
+        />
+      )}
+      {lbSimilar.length > 0 && (
+        <SimilarArtistsSubSection
+          data={lbSimilar}
+          itemSize={itemSize}
+          keyPrefix="lb"
+          badge={{ color: sourceColor.listenbrainz, letter: 'B' }}
           onPressItem={item => navigateToArtist(item)}
         />
       )}
@@ -181,9 +225,11 @@ function ExternalSimilarArtistsSection({ similarArtists }: { similarArtists: Ext
 }
 
 export default function ArtistContent({ localArtist, externalArtist }: Props) {
+  const scrollClearance = useScrollClearance()
   const navigation = useNavigation<any>()
   const { navigateToAlbum } = useMatchedNavigation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { t } = useTranslation()
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(INITIAL_RELEASE_ROWS)
   const [visibleSinglesCount, setVisibleSinglesCount] = useState(INITIAL_RELEASE_ROWS)
@@ -206,6 +252,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
 
     if (localArtist) {
       rows.push({ kind: 'mostPlayed', id: 'most-played' })
+      rows.push({ kind: 'topSongs', id: 'server-top-songs' })
       rows.push({ kind: 'popularOnDeezer', id: 'popular-on-deezer' })
 
       const albums = localAlbums.filter(album => !isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
@@ -303,6 +350,10 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       return localArtist ? <MostPlayedSection artist={localArtist} /> : null
     }
 
+    if (item.kind === 'topSongs') {
+      return localArtist ? <TopSongsSection artist={localArtist} /> : null
+    }
+
     if (item.kind === 'popularOnDeezer') {
       return (
         <PopularOnDeezerSectionResolver
@@ -356,10 +407,10 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
             }
           }}
         >
-          <View style={[styles.showMoreIcon, { backgroundColor: colors.card }]}>
+          <View style={[styles.showMoreIcon, { backgroundColor: colors.card, borderRadius: rad.thumb }]}>
             {isUnowned
-              ? <Globe size={18} color={colors.secondary} />
-              : <Ellipsis size={18} color={colors.secondary} />
+              ? <Globe size={iconSize.row} color={colors.secondary} />
+              : <Ellipsis size={iconSize.row} color={colors.secondary} />
             }
           </View>
           <Text style={[styles.showMoreText, { color: colors.secondary }]}>
@@ -386,7 +437,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         subtextOverride={releaseYearLabel(item.album) ?? undefined}
       />
     )
-  }, [colors, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, setShowUnownedAlbums, setShowUnownedSingles, t])
+  }, [colors, rad.thumb, localArtist, externalArtist, navigation, navigateToAlbum, setVisibleAlbumsCount, setVisibleSinglesCount, setShowUnownedAlbums, setShowUnownedSingles, t])
 
   return (
     <DetailScreen bar={<ArtistHeaderBar localArtist={localArtist} externalArtist={externalArtist} />}>
@@ -398,7 +449,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: Platform.OS === 'android' ? 180 : 140,
+          paddingBottom: scrollClearance,
           backgroundColor: colors.background,
         }}
         {...scroll}
@@ -416,11 +467,11 @@ function PopularOnDeezerSectionResolver({ localArtist, externalArtist }: {
   localArtist: Artist | null
   externalArtist: ExternalArtist | null
 }) {
-  const deezerTopTracksEnabled = useDeezerTopTracksEnabled()
+  const deezerEnabled = useDeezerDiscoveryEnabled()
   const { topTracks: localTopTracks } = useArtistTopTracks({
     name: localArtist?.name ?? '',
     mbid: localArtist?.mbid,
-    enabled: !!localArtist && deezerTopTracksEnabled,
+    enabled: !!localArtist && deezerEnabled,
   })
 
   if (localArtist) {
@@ -447,11 +498,11 @@ function BioSectionResolver({ localArtist, externalArtist }: {
   localArtist: Artist | null
   externalArtist: ExternalArtist | null
 }) {
-  const deezerTopTracksEnabled = useDeezerTopTracksEnabled()
+  const deezerEnabled = useDeezerDiscoveryEnabled()
   const { biography: localBiography } = useArtistTopTracks({
     name: localArtist?.name ?? '',
     mbid: localArtist?.mbid,
-    enabled: !!localArtist && deezerTopTracksEnabled,
+    enabled: !!localArtist && deezerEnabled,
   })
 
   return <BioSection biography={localArtist ? localBiography : externalArtist?.biography} />
@@ -507,7 +558,6 @@ const styles = StyleSheet.create({
   showMoreIcon: {
     width: 64,
     height: 64,
-    borderRadius: radius.sm,
     marginRight: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',

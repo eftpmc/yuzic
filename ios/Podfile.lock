@@ -3301,34 +3301,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNTPPlayer (5.6.0):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - RNWorklets (0.8.3):
     - boost
     - DoubleConversion
@@ -3431,6 +3403,22 @@ PODS:
     - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
+  - YuzicEngine (0.0.0):
+    - ExpoModulesCore
+    - YuzicEngine/Core (= 0.0.0)
+  - YuzicEngine/Core (0.0.0):
+    - ExpoModulesCore
+    - YuzicEngine/Ogg
+    - YuzicEngine/Opus
+    - YuzicEngine/Vorbis
+  - YuzicEngine/Ogg (0.0.0):
+    - ExpoModulesCore
+  - YuzicEngine/Opus (0.0.0):
+    - ExpoModulesCore
+    - YuzicEngine/Ogg
+  - YuzicEngine/Vorbis (0.0.0):
+    - ExpoModulesCore
+    - YuzicEngine/Ogg
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -3554,10 +3542,10 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - "RNTPPlayer (from `../node_modules/@rntp/player`)"
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - SocketRocket (~> 0.7.1)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
+  - YuzicEngine (from `../node_modules/yuzic-engine/ios`)
 
 SPEC REPOS:
   trunk:
@@ -3817,12 +3805,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNTPPlayer:
-    :path: "../node_modules/@rntp/player"
   RNWorklets:
     :path: "../node_modules/react-native-worklets"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
+  YuzicEngine:
+    :path: "../node_modules/yuzic-engine/ios"
 
 SPEC CHECKSUMS:
   APNGKit: eb7e111277527cfd47636f797c9c8e7aab5d9601
@@ -3863,7 +3851,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   Gifu: 9f7e52357d41c0739709019eb80a71ad9aab1b6d
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: 1a09f19eb4520ff275c833929c62c77653bac4a5
+  hermes-engine: 625aef4a997647f3704cf031671caf77cb4f9538
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -3953,7 +3941,6 @@ SPEC CHECKSUMS:
   RNReanimated: 4e6187f2ba1e30e6ddc7c8fc9f19b2dd2b6b2532
   RNScreens: afaf526a9c804c3b4503f950cf3e67ed81e29ada
   RNSVG: 595abfa0f9ac26d56afcaaedf4e37a00f54cab71
-  RNTPPlayer: d2adebcdf06d20aa617c42f6c11fbc8ff99aa43f
   RNWorklets: 534af667da0c0049e0060ae43f03c7df8cc9a6e0
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
@@ -3961,6 +3948,7 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: b669e79fa0f8d3f6f5e35372345f54b99e06b13c
+  YuzicEngine: 9b3416dbf1bad48983a3f59fdfe60250d1b06127
 
 PODFILE CHECKSUM: 0a9d7fe2b7d7051d8f049cc799931b185ca60dc3
 

@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useIsFetching } from '@tanstack/react-query'
+import { useScrollToTop } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
-import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors'
+import {
+  selectShowSourceHeaders,
+  selectHomeServerSectionsEnabled,
+  selectListenbrainzDiscoveryEnabled,
+} from '@/utils/redux/selectors/settingsSelectors'
 
 import QuickPicksSection from './components/QuickPicksSection'
 import RecentlyPlayed from './components/RecentlyPlayed'
@@ -16,9 +21,18 @@ import BecauseYouListenedSection from './components/BecauseYouListenedSection'
 import TopArtistsSection from './components/TopArtistsSection'
 import DeezerChartsSection from './components/DeezerChartsSection'
 import GenreSection from './components/GenreSection'
+import ServerRandomSection from './components/ServerRandomSection'
+import ServerNowPlayingSection from './components/ServerNowPlayingSection'
+import LBSimilarForYouSection from './components/LBSimilarForYouSection'
+import ContinuePlayingSection from './components/ContinuePlayingSection'
+import SourceGroup from './components/SourceGroup'
+import { ResumeQueueBanner } from './components/ResumeQueueBanner'
+import { DownloadsInProgressBanner } from './components/DownloadsInProgressBanner'
+import { useApi } from '@/api'
 import type { SectionConfig } from '@/features/home/hooks/useDailyLayout'
 import { sourceColor, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 function renderSection(config: SectionConfig, refreshKey: number) {
   switch (config.type) {
@@ -26,6 +40,8 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <QuickPicksSection key={config.key} refreshKey={refreshKey} />
     case 'recentlyPlayed':
       return <RecentlyPlayed key={config.key} />
+    case 'continuePlaying':
+      return <ContinuePlayingSection key={config.key} />
     case 'recentlyAdded':
       return <RecentlyAdded key={config.key} />
     case 'mostPlayed':
@@ -38,6 +54,12 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <BecauseYouListenedSection key={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
     case 'genre':
       return <GenreSection key={config.key} genre={config.genre!} refreshKey={refreshKey} />
+    case 'serverRandom':
+      return <ServerRandomSection key={config.key} sectionKey={config.key} refreshKey={refreshKey} />
+    case 'serverNowPlaying':
+      return <ServerNowPlayingSection key={config.key} sectionKey={config.key} />
+    case 'lbSimilarArtistsForYou':
+      return <LBSimilarForYouSection key={config.key} sectionKey={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
     default:
       return null
   }
@@ -45,12 +67,23 @@ function renderSection(config: SectionConfig, refreshKey: number) {
 
 export default function Home() {
   const { t } = useTranslation()
+  const scrollClearance = useScrollClearance()
+
+  // Re-tapping the active tab returns to the top of the feed, the way every
+  // iOS tab bar behaves. React Navigation drives this off the same `tabPress`
+  // the custom tab bar already emits, so the two stay in step.
+  const scrollRef = useRef<ScrollView>(null)
+  useScrollToTop(scrollRef)
+
   const { colors } = useTheme()
   const rad = useRadius()
   const [refreshKey, setRefreshKey] = useState(0)
-  const { resume, library, deezer } = useDailyLayout(refreshKey)
+  const { resume, library, server, listenbrainz, deezer } = useDailyLayout(refreshKey)
   const deezerEnabled = useDeezerDiscoveryEnabled()
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
+  const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled)
+  const listenbrainzDiscoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled)
+  const api = useApi()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Track active query count so the spinner clears when fetches complete rather
@@ -89,14 +122,40 @@ export default function Home() {
     setRefreshKey(k => k + 1)
   }, [clearRefreshing])
 
+  // Server discovery is on whenever the adapter provides it — no per-user
+  // toggle, matching how radio and shares appear only where the server can
+  // back them. Everything that leaves the device for a third party — Deezer,
+  // ListenBrainz — waits for its own integration setting first; the Home
+  // toggles below only decide whether an already-permitted source gets a
+  // shelf here.
   const activeSources = [
+    {
+      id: 'server',
+      label: t('explore.sources.server'),
+      // Your own server is not a third-party brand, so it gets the app's own
+      // accent rather than borrowing ListenBrainz's orange — which is what it
+      // used to do, leaving two headers on one screen badged identically.
+      color: colors.themeColor,
+      letter: 'S',
+      sections: server,
+      enabled: Boolean(api.discovery) && homeServerEnabled,
+    },
+    {
+      id: 'listenbrainz',
+      label: 'ListenBrainz',
+      color: sourceColor.listenbrainz,
+      letter: 'B',
+      sections: listenbrainz,
+      enabled: listenbrainzDiscoveryEnabled,
+    },
     { id: 'deezer', label: 'Deezer', color: sourceColor.deezer, letter: 'D', sections: deezer, enabled: deezerEnabled },
   ]
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingBottom: spacing.scrollClearance }]}
+      contentContainerStyle={[styles.content, { paddingBottom: scrollClearance }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -106,6 +165,9 @@ export default function Home() {
         />
       }
     >
+      <ResumeQueueBanner />
+      <DownloadsInProgressBanner />
+
       {resume.map(config => renderSection(config, refreshKey))}
 
       {library.length > 0 && (
@@ -121,20 +183,28 @@ export default function Home() {
 
       {activeSources.map(source => {
         if (!source.enabled || source.sections.length === 0) return null
+        // The shelves under a source decide for themselves whether they have
+        // anything; the group withholds the heading until one of them says it
+        // does, so a source that renders nothing takes its label with it.
         return (
-          <React.Fragment key={source.id}>
-            <View style={styles.sourceHeader}>
-              {showSourceHeaders && (
-                <View style={[styles.sourceBadge, { backgroundColor: source.color, borderRadius: rad.pill }]}>
-                  <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
-                </View>
-              )}
-              <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
-                {source.label}
-              </Text>
-            </View>
+          <SourceGroup
+            key={source.id}
+            sectionKeys={source.sections.map(config => config.key)}
+            header={
+              <View style={styles.sourceHeader}>
+                {showSourceHeaders && (
+                  <View style={[styles.sourceBadge, { backgroundColor: source.color, borderRadius: rad.pill }]}>
+                    <Text style={styles.sourceBadgeLetter}>{source.letter}</Text>
+                  </View>
+                )}
+                <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
+                  {source.label}
+                </Text>
+              </View>
+            }
+          >
             {source.sections.map(config => renderSection(config, refreshKey))}
-          </React.Fragment>
+          </SourceGroup>
         )
       })}
     </ScrollView>

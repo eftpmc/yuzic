@@ -14,8 +14,9 @@ import { AVAILABLE_LANGUAGES } from '@/constants/languages';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { withAlpha } from '@/features/theme/coverAccent';
 
 interface LanguageBottomSheetProps {
   selected: string;
@@ -64,7 +65,7 @@ const LanguageBottomSheet = forwardRef<
                 styles.pickerItem,
                 {
                   backgroundColor: isSelected
-                    ? themeColor + '22'
+                    ? withAlpha(themeColor, 0.13)
                     : 'transparent',
                   borderRadius: rad.md,
                 },
@@ -73,7 +74,7 @@ const LanguageBottomSheet = forwardRef<
             >
               <View style={styles.pickerLeft}>
                 <Languages
-                  size={18}
+                  size={iconSize.row}
                   color={isSelected ? themeColor : colors.subtext}
                   style={{ marginRight: spacing.controlGap }}
                 />
@@ -89,7 +90,7 @@ const LanguageBottomSheet = forwardRef<
 
               {isSelected && (
                 <Check
-                  size={20}
+                  size={iconSize.control}
                   color={themeColor}
                 />
               )}

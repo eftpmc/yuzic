@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Platform, Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { Text, View, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +16,7 @@ import { useStarredSongs } from '@/hooks/starred';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import AlbumRecommendedSection from '../AlbumRecommendedSection';
+import SimilarAlbumsSection from '../SimilarAlbumsSection';
 import {
   ALBUM_ESTIMATED_ROW_HEIGHT,
   ALBUM_DISC_HEADER_HEIGHT,
@@ -24,7 +25,9 @@ import {
   ALBUM_RECOMMENDATION_VISIBLE_TILES,
 } from '@/constants/album';
 import { spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 import { DetailScreen } from '@/components/DetailHeader';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 type Props = {
   album: Album;
@@ -37,8 +40,10 @@ type SkeletonItem = { type: 'skeleton'; id: string };
 type ListItem = DiscHeader | SongItem | SkeletonItem;
 
 const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
+  const scrollClearance = useScrollClearance();
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const rad = useRadius();
   const navigation = useNavigation<any>();
   const artistAlbums = useArtistAlbums(album.artist?.id ?? '');
   const { songs: starredSongs } = useStarredSongs();
@@ -54,8 +59,17 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
     return artistAlbums.filter(a => a.id !== album.id);
   }, [artistAlbums, album.id]);
 
-  const footer = useMemo(() => {
+  /**
+   * How long the record is, under the last track rather than above the first.
+   *
+   * A sleeve prints the running time on the back, and the same reason applies
+   * here: between the play button and the track list it was a line of small
+   * grey type standing between the reader and the thing they came for. Under
+   * the final track it closes the list off instead, where a total belongs.
+   */
+  const stats = useMemo(() => {
     const songs = album.songs ?? [];
+    if (songsLoading || songs.length === 0) return null;
     const totalSec = songs.reduce((acc, s) => acc + (Number(s.duration) || 0), 0);
     const hrs = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
@@ -65,12 +79,18 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
     const songLabel = t(songs.length === 1 ? 'common.song' : 'common.songs');
     const playLabel = t(albumPlayCount === 1 ? 'album.play' : 'album.plays');
     return (
+      <View style={styles.statsHeader}>
+        <Text style={[styles.statsText, { color: colors.subtext }]}>
+          {songs.length} {songLabel} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${playLabel}` : ''}
+        </Text>
+      </View>
+    );
+  }, [album.songs, songsLoading, albumPlayCount, colors, t]);
+
+  const footer = useMemo(() => {
+    return (
       <View>
-        <View style={styles.statsFooter}>
-          <Text style={[styles.statsText, { color: colors.subtext }]}>
-            {songs.length} {songLabel} · {duration}{albumPlayCount > 0 ? ` · ${albumPlayCount} ${playLabel}` : ''}
-          </Text>
-        </View>
+        {stats}
         {moreAlbums.length > 0 && (
           <View style={styles.moreSection}>
             <Text style={[styles.moreSectionTitle, { color: colors.secondary }]}>
@@ -88,13 +108,14 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
                   title={a.title}
                   subtitle={a.subtext || String(a.year || '')}
                   size={tileWidth}
-                  radius={6}
+                  radius={rad.card}
                   onPress={() => navigation.push('albumView', { id: a.id })}
                 />
               ))}
             </ScrollView>
           </View>
         )}
+        <SimilarAlbumsSection albumId={album.id} />
         {album.artist?.name && (
           <AlbumRecommendedSection
             artistName={album.artist.name}
@@ -103,7 +124,7 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
         )}
       </View>
     );
-  }, [album.songs, album.artist, album.id, albumPlayCount, colors, moreAlbums, tileWidth, navigation, t]);
+  }, [album.artist, album.id, colors, moreAlbums, stats, tileWidth, navigation, t, rad.card]);
 
   const items = useMemo<ListItem[]>(() => {
     if (songsLoading) {
@@ -174,9 +195,11 @@ const LocalAlbumBody: React.FC<Props> = ({ album, songsLoading }) => {
           (layout as { size?: number }).size =
             item.type === 'disc-header' ? ALBUM_DISC_HEADER_HEIGHT : ALBUM_ESTIMATED_ROW_HEIGHT;
         }}
-        ListHeaderComponent={<AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />}
+        ListHeaderComponent={
+          <AlbumHeader localAlbum={album} externalAlbum={null} showNavigation={false} />
+        }
         ListFooterComponent={footer}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 180 : 140 }}
+        contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
         {...scroll}
       />
@@ -193,10 +216,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  statsFooter: {
+  statsHeader: {
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingBottom: spacing.xs,
   },
   statsText: {
     ...typography.caption,

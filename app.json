@@ -2,10 +2,10 @@
   "expo": {
     "name": "Yuzic",
     "slug": "yuzic",
-    "version": "1.4.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "myapp",
+    "scheme": "yuzic",
     "userInterfaceStyle": "automatic",
     "ios": {
       "buildNumber": "1",
@@ -55,15 +55,16 @@
           "android": {
             "kotlinVersion": "2.0.21",
             "javaVersion": "21",
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
             "usesCleartextTraffic": true
           },
           "ios": {
             "deploymentTarget": "16.0"
           }
         }
-      ]
+      ],
+      "yuzic-engine"
     ],
     "experiments": {
       "typedRoutes": true

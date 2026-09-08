@@ -14,13 +14,9 @@
       "library": "ライブラリ",
       "player": "再生",
       "appearance": "外観",
-      "scrobbling": "スクロブル",
-      "downloaders": "ダウンローダー",
-      "listenBrainz": "ListenBrainz",
       "github": "GitHub",
       "privacyPolicy": "プライバシーポリシー",
-      "termsOfUse": "利用規約",
-      "version": "バージョン"
+      "termsOfUse": "利用規約"
     },
     "profile": {
       "unknownUser": "不明なユーザー",
@@ -53,12 +49,20 @@
         "invalidError": "URLは http:// または https:// で始まる必要があります。",
         "duplicatePrimaryError": "これはすでにプライマリURLです。",
         "duplicateError": "このURLはすでにリストにあります。"
-      }
+      },
+      "privacyTitle": "プライバシー",
+      "queueSync": "デバイス間でキューを同期",
+      "queueSyncDescription": "再生中の内容をサーバーに保存し、別のデバイスで続きから再生できるようにします。",
+      "nowPlayingShelf": "他に聴いている人を表示",
+      "nowPlayingShelfDescription": "このサーバーの他のユーザーと、そのユーザーが今再生している曲をホームに表示します。"
     },
     "appearance": {
       "title": "外観",
       "theme": {
         "title": "テーマ",
+        "light": "ライト",
+        "dark": "ダーク",
+        "system": "システム",
         "subtitle": "ライト／ダーク／システム"
       },
       "color": {
@@ -72,7 +76,8 @@
           "skip": "スキップ",
           "favorite": "お気に入り",
           "randomAlbum": "ランダム",
-          "addToPlaylist": "追加"
+          "addToPlaylist": "追加",
+          "cast": "キャスト"
         }
       },
       "columns": {
@@ -116,7 +121,33 @@
           "label": "ラウンド",
           "subtext": "より柔らかく丸い角。"
         }
-      }
+      },
+      "translucentDock": "半透明のドック",
+      "translucentDockSubtext": "タブバーをページの上に浮かせ、コンテンツがその下をスクロールするようにします。",
+      "coverAccent": "アートワークから配色",
+      "coverAccentSubtext": "アルバム・アーティスト・プレイヤー画面をカバーから取った色で染めます。",
+      "listDensity": {
+        "info": "リストの行と行のあいだの間隔です。",
+        "compact": {
+          "label": "コンパクト",
+          "subtext": "行の間隔を詰めて、より多くの行を表示します。"
+        },
+        "default": {
+          "label": "標準",
+          "subtext": "アプリの通常の間隔です。"
+        },
+        "spacious": {
+          "label": "ゆったり",
+          "subtext": "表示される行は減りますが、1行ずつ選びやすくなります。"
+        }
+      },
+      "homeSources": "ホームの棚",
+      "homeSourcesServer": "サーバー",
+      "homeSourcesServerSubtext": "サーバーのランダムな棚と再生中を表示します。",
+      "homeSourcesListenbrainz": "ListenBrainz",
+      "homeSourcesListenbrainzSubtext": "ListenBrainz の類似アーティストの棚を表示します。",
+      "homeSourcesDeezer": "Deezer",
+      "homeSourcesDeezerSubtext": "Deezer のディスカバリー棚（チャート、人気曲、類似アーティスト）を表示します。"
     },
     "library": {
       "title": "ライブラリ",
@@ -140,7 +171,8 @@
         "daysAgo": "{{count}} 日前",
         "daysAgo_other": "{{count}} 日前",
         "lastSynced": "最終同期",
-        "syncOnAppStart": "起動時に同期"
+        "syncOnAppStart": "起動時に同期",
+        "syncOnAppStartSubtext": "アプリを開くたびにライブラリを自動的に同期します"
       },
       "offlineChanges": {
         "title": "保留中のオフライン変更",
@@ -154,8 +186,8 @@
         "discardBody": "現在のサーバーの保留中の変更を削除します。ローカルライブラリは次回同期時に更新されます。"
       },
       "downloads": {
-        "title": "ダウンロード",
-        "detailsTitle": "ダウンロード詳細",
+        "title": "オフラインダウンロード",
+        "detailsTitle": "オフラインダウンロード",
         "moreInfo": "詳細を見る",
         "clearTitle": "ダウンロードを削除しますか？",
         "clearBody": "端末に保存されたダウンロード曲をすべて削除します。",
@@ -208,7 +240,9 @@
         "locationNote": "ダウンロードはアプリの非公開ストレージに保存されており、端末のファイルマネージャーからは参照できません。表示・削除にはこの画面をご利用ください。",
         "autoDownloadLabel": "新しい曲を自動ダウンロード",
         "autoDownloadSubtext": "ライブラリに追加された曲を自動的にダウンロードしてオフラインで再生できるようにします",
-        "autoDownloadStarted_other": "新しい曲{{count}}件を自動ダウンロード中"
+        "autoDownloadStarted_other": "新しい曲{{count}}件を自動ダウンロード中",
+        "wifiOnlyLabel": "WiFi接続時のみダウンロード",
+        "wifiOnlySubtext": "WiFiに接続するまでダウンロードを保留します。キューは自動的に再開されます。"
       },
       "downloadQuality": {
         "title": "ダウンロード音質",
@@ -228,7 +262,14 @@
       "equalizer": {
         "title": "イコライザー",
         "reset": "リセット",
-        "presets": "プリセット"
+        "presets": "プリセット",
+        "flatSubtext": "フラット — イコライザーは完全にバイパスされ、負荷はありません。",
+        "gainSubtext": "ゲインは最大{{limit}} dBです。プレーヤーの出力すべてに適用されます。",
+        "presetFlat": "フラット",
+        "presetBass": "低音強調",
+        "presetTreble": "高音強調",
+        "presetVocal": "ボーカル",
+        "presetLoudness": "ラウドネス"
       },
       "streamingQuality": {
         "wifi": "WiFi音質",
@@ -253,7 +294,24 @@
       "showVolumeSliderSubtext": "プレイヤー画面にアプリ内の音量スライダーを表示します。",
       "autoplay": "自動再生",
       "autoplaySubtextAudiomuse": "AudioMuse-AIを使って、キューが終わった後も音響的に似た曲を再生し続けます。",
-      "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。"
+      "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。",
+      "resumeLongTracks": "長いトラックを再開",
+      "resumeLongTracksSubtext": "オーディオブック、DJ セット、ポッドキャストのエピソードを続きから再生します。",
+      "cacheTitle": "再生キャッシュ",
+      "clearCache": "再生キャッシュを削除",
+      "clearCacheTitle": "再生キャッシュを削除しますか？",
+      "clearCacheBody": "この端末に保持されたストリーム音声は、次回再生時に再取得されます。ダウンロード済みの曲には影響しません。",
+      "clearCacheConfirm": "削除",
+      "clearCacheDone": "再生キャッシュを削除しました",
+      "audio": "オーディオ",
+      "crossfade": {
+        "label": "クロスフェード",
+        "off": "オフ",
+        "offSubtext": "曲は重ならずにそのまま次へ進みます。",
+        "onSubtext": "各曲が{{seconds}}秒かけて次の曲へフェードします。スキップした場合はそのまま切り替わります。",
+        "seguesLabel": "連続した曲もフェードする",
+        "seguesSubtext": "曲が途切れなくつながるアルバムは、既定ではそのつなぎ目で切り替えるため、連続したミックスはそのまま保たれます。すべてフェードするにはオンにしてください。"
+      }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
@@ -272,7 +330,9 @@
       "credentialsTitle": "認証情報",
       "credentialsHelper": "listenbrainz.org/profile のユーザー名とユーザートークン。",
       "scrobble": "スクロブル",
-      "nowPlaying": "再生中"
+      "nowPlaying": "再生中",
+      "discovery": "ディスカバリー",
+      "discoveryDescription": "ホームやアーティストページで ListenBrainz の公開類似アーティストデータを使います。アカウント不要 — 照合のため、聴いているアーティスト名が ListenBrainz に送信されます。"
     },
     "downloaders": {
       "title": "ダウンローダー",
@@ -301,7 +361,8 @@
       "cancelFailed": "ダウンロードをキャンセルできませんでした。",
       "serverUrlPlaceholder": {
         "lidarr": "http://node:8686",
-        "slskd": "http://slskd:5030"
+        "slskd": "http://slskd:5030",
+        "soulsync": "http://soulsync:8008"
       },
       "lidarr": {
         "title": "Lidarr",
@@ -326,15 +387,22 @@
         "preferFreeSlot": "空きスロットを優先",
         "preferFreeSlotSubtext": "アップロード枠が空いているピアを優先します。オフにすると待ってでも希少なリリースを取得します。"
       },
-      "queueTitle": "ダウンロードキュー"
-    },
-    "integrations": {
-      "enabled": "有効",
-      "disabled": "無効"
+      "queueTitle": "ダウンロードキュー",
+      "soulsync": {
+        "title": "SoulSync",
+        "credentialsTitle": "接続",
+        "credentialsHelper": "SoulSync サーバーの URL と API キー。SoulSync の Settings → API Keys で生成できます。",
+        "connectionFailed": "SoulSync への接続に失敗しました",
+        "disconnected": "SoulSync から切断しました。"
+      }
     },
     "musicbrainz": {
       "external": "外部アーティスト・アルバムデータ",
       "externalDescription": "ライブラリにないアーティストやアルバムのページを MusicBrainz のデータで補完します。アカウント不要。"
+    },
+    "lastfm": {
+      "enable": "アーティスト・おすすめデータ",
+      "enableDescription": "Last.fm を使って類似アーティストを探し、プレイリストのおすすめの起点にします。アカウント不要 — 検索のためアーティスト名が Last.fm に送信されます。"
     },
     "deezer": {
       "discovery": "ディスカバリー",
@@ -383,48 +451,6 @@
       "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。",
       "markAsPlayed": "再生済みにする",
       "markAsPlayedDescription": "サーバーの再生回数を更新します。"
-    },
-    "discovery": {
-      "title": "ディスカバリー",
-      "sections": {
-        "about": {
-          "title": "ディスカバリー",
-          "body": "ディスカバリーではライブラリをもとにアーティストやアルバムを提案します。似ているアーティスト、好みに合いそうなアルバム、新譜などが表示されます。"
-        },
-        "how": {
-          "title": "仕組み",
-          "body": "ライブラリ内のアーティストから Rawarr/LastFM で類似アーティストを探し、Deezer でアーティストとアルバムを解決して Explore に表示します。"
-        },
-        "sync": {
-          "title": "同期と更新",
-          "body": "サーバーに接続するとディスカバリーは同期されます。ディスカバリーでの更新は読み込済みデータのシャッフルのみで再取得は行いません。失敗した場合はメッセージが表示され、「再試行」をタップできます。"
-        }
-      }
-    },
-    "lastfm": {
-      "title": "Last.fm",
-      "apiKey": "APIキー",
-      "apiSecret": "APIシークレット",
-      "apiKeyPlaceholder": "Last.fmのAPIキー",
-      "apiSecretPlaceholder": "Last.fmのAPIシークレット",
-      "connectedAs": "接続中のアカウント",
-      "notConnected": "未接続",
-      "connectWithLastfm": "Last.fmと連携",
-      "iAuthorized": "承認しました — セッションを取得",
-      "helperText": "Last.fmのAPIキーとシークレットを入力し、連携をタップして承認してください。再生した曲は自動的にスクロブルされます。APIキーは last.fm/api/account/create で取得できます。",
-      "disconnect": "連携を解除",
-      "missingCredentials": "先にAPIキーとシークレットを入力してください。",
-      "credentialsTitle": "認証情報",
-      "credentialsHelper": "last.fm/api/account/create でアプリを作成してこれらのキーを取得してください。",
-      "pendingInstruction": "ブラウザが開きました — yuzicを承認してから下をタップしてください。",
-      "scrobble": "スクロブル",
-      "nowPlaying": "再生中",
-      "connectFailed": "Last.fmからトークンを取得できませんでした。",
-      "sessionFailed": "セッションを取得できませんでした。アプリを承認したか確認してください。",
-      "connectionSuccessful": "{{username}} として接続しました。",
-      "disconnected": "Last.fmとの連携を解除しました。",
-      "similarArtists": "類似アーティスト",
-      "similarArtistsDescription": "Last.fmのデータを使ってアーティストページに類似アーティストを表示します。"
     }
   },
   "common": {
@@ -464,7 +490,12 @@
     "less": "閉じる",
     "playbackError": "曲を再生できません",
     "serverUnreachableBanner": "サーバーに接続できません — ローカルのデータを表示中",
-    "searchPlaceholder": "検索…"
+    "searchPlaceholder": "検索…",
+    "save": "保存",
+    "saving": "保存中…",
+    "dismiss": "閉じる",
+    "retry": "再試行",
+    "loadFailed": "読み込めませんでした。接続を確認してください。"
   },
   "onboarding": {
     "home": {
@@ -536,11 +567,6 @@
       "switchToList": "リスト表示に切り替え",
       "switchToGrid": "グリッド表示に切り替え"
     },
-    "shuffle": {
-      "all": "すべてシャッフル",
-      "favorites": "お気に入りをシャッフル",
-      "downloaded": "ダウンロード済みをシャッフル"
-    },
     "genres": {
       "title": "ジャンル",
       "albumCount_one": "{{count}} 枚のアルバム",
@@ -570,7 +596,24 @@
       "playlists_one": "{{count}} 件のプレイリスト",
       "playlists_other": "{{count}} 件のプレイリスト",
       "tracks_one": "{{count}} 曲",
-      "tracks_other": "{{count}} 曲"
+      "tracks_other": "{{count}} 曲",
+      "episodes_one": "{{count}} 本のエピソード",
+      "episodes_other": "{{count}} 本のエピソード",
+      "stations_one": "{{count}} 局のラジオ",
+      "stations_other": "{{count}} 局のラジオ",
+      "podcasts_one": "{{count}} 本のポッドキャスト",
+      "podcasts_other": "{{count}} 本のポッドキャスト",
+      "shares_one": "{{count}} 件の共有リンク",
+      "shares_other": "{{count}} 件の共有リンク"
+    },
+    "radio": {
+      "title": "ラジオ局"
+    },
+    "podcasts": {
+      "title": "ポッドキャスト"
+    },
+    "shares": {
+      "title": "共有リンク"
     }
   },
   "home": {
@@ -580,21 +623,18 @@
       "artists": "アーティスト",
       "playlists": "プレイリスト",
       "tracks": "トラック",
-      "downloaded": "ダウンロード済み",
-      "genres": "ジャンル"
+      "downloaded": "ダウンロード済み"
     },
     "sort": {
       "alphabetical": "アルファベット順",
       "mostRecent": "最近再生",
       "mostPlayed": "よく再生",
       "releaseYear": "リリース年",
-      "recentlyAdded": "最近追加",
-      "lastModified": "更新順"
+      "recentlyAdded": "最近追加"
     },
     "sortSheet": {
       "title": "並び替え"
     },
-    "empty": "コンテンツがありません。",
     "account": {
       "settings": "設定",
       "triggerScan": "スキャンを実行",
@@ -603,6 +643,23 @@
       "scanFailed": "スキャンを開始できませんでした。",
       "signOutFailed": "サインアウトできませんでした。",
       "downloadCleanupFailed": "サインアウト中にダウンロードを削除できませんでした。"
+    },
+    "displaySheet": {
+      "title": "表示",
+      "list": "リスト",
+      "grid": "グリッド",
+      "columns": "列数"
+    },
+    "downloadsBanner": {
+      "open": "ダウンロードを開く",
+      "summaryItem": "{{label}}に{{count}}件",
+      "title_other": "{{count}}件のダウンロード中"
+    },
+    "resumeBanner": {
+      "title": "続きから再生",
+      "resumeLabel": "続きから再生",
+      "fromDevice": "{{device}}で",
+      "subtitle_other": "{{from}}{{count}}曲がキューにあります"
     }
   },
   "search": {
@@ -619,21 +676,17 @@
       "album": "アルバム",
       "artist": "アーティスト",
       "playlist": "プレイリスト"
-    },
-    "chips": {
-      "local": "ローカル",
-      "external": "外部",
-      "song": "曲",
-      "album": "アルバム",
-      "artist": "アーティスト",
-      "playlist": "プレイリスト",
-      "deezer": "Deezer"
     }
   },
   "media": {
     "albumNotFound": "アルバムが見つかりません",
     "artistNotFound": "アーティストが見つかりません。",
-    "playlistNotFound": "プレイリストが見つかりません。"
+    "playlistNotFound": "プレイリストが見つかりません。",
+    "genreNotFound": "ジャンルが見つかりません。",
+    "notFound": "見つかりません。",
+    "albumLoadFailed": "アルバムを読み込めませんでした。接続を確認してください。",
+    "artistLoadFailed": "アーティストを読み込めませんでした。接続を確認してください。",
+    "playlistLoadFailed": "プレイリストを読み込めませんでした。接続を確認してください。"
   },
   "artist": {
     "sections": {
@@ -642,39 +695,56 @@
       "mostPlayed": "よく聴いた曲",
       "popularOnDeezer": "Deezerで人気",
       "similarArtists": "似ているアーティスト",
-      "bio": "概要"
+      "bio": "概要",
+      "topSongs": "人気の曲"
     },
     "showMore": "あと{{count}}件",
     "showUnowned": "未所持の{{count}}件"
   },
   "explore": {
     "sections": {
-      "dial": "ダイアル",
       "quickPicks": "クイックピック",
       "recentlyPlayed": "最近再生",
       "recentlyAdded": "最近追加",
       "mostPlayed": "最も再生された",
-      "newReleases": "新着リリース",
       "becauseYouListened": "{{artist}}に似た音楽",
       "becauseYouListenedLabel": "似たアーティスト：",
       "charts": "今トレンド",
       "genre": "もっと{{genre}}",
-      "albumsForYou": "あなたへのアルバム",
-      "artistsForYou": "あなたへのアーティスト",
       "searchArtists": "アーティストを検索…",
       "searchGenres": "ジャンルを検索…",
       "genrePrefix": "その他",
       "topArtists": "人気アーティスト",
-      "fromYourLibrary": "ライブラリから"
+      "fromYourLibrary": "ライブラリから",
+      "serverRandom": "おまかせ",
+      "serverRandomThemed": "今日の{{genre}}",
+      "serverNowPlaying": "サーバーで再生中",
+      "lbSimilarForYou": "{{artist}} が好きなあなたへ",
+      "continuePlaying": "続きから"
     },
     "empty": {
-      "recentSongs": "再生するとここに表示されます",
-      "recentlyAdded": "ライブラリにアルバムがありません",
-      "albumsForYou": "アルバムを探しています...",
-      "artistsForYou": "アーティストを探しています..."
+      "recentlyAdded": "ライブラリにアルバムがありません"
+    },
+    "sources": {
+      "server": "サーバー内"
     }
   },
   "playing": {
+    "output": {
+      "title": "接続",
+      "thisDevice": "このデバイス",
+      "airplay": "AirPlay",
+      "dlnaSection": "DLNA / UPnP",
+      "searching": "デバイスを検索中…",
+      "noneFound": "ネットワーク上にデバイスが見つかりません。",
+      "addManually": "デバイスを手動で追加",
+      "addManuallyTitle": "デバイスを追加",
+      "addManuallyBody": "DLNA デバイスの IP アドレスを入力してください",
+      "connectFailed": "そのデバイスに接続できませんでした。",
+      "notFoundAtAddress": "そのアドレスに DLNA デバイスは見つかりません。",
+      "playOnServer": "{{server}} で再生",
+      "jukeboxFailed": "サーバーでの再生を開始できませんでした。"
+    },
     "queue": {
       "title": "キュー",
       "playingFromAlbum": "{{album}} から再生",
@@ -684,8 +754,13 @@
       "title": "歌詞"
     },
     "aboutArtist": {
-      "header": "アーティスト",
-      "subtext": "アーティスト"
+      "header": "アーティスト"
+    },
+    "sleepTimer": {
+      "title": "スリープタイマー",
+      "off": "オフ",
+      "cancel": "オフ",
+      "addMinutes_other": "+{{count}}分"
     },
     "bar": {
       "noSong": "再生中の曲はありません",
@@ -740,7 +815,8 @@
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
-      "goToArtist": "アーティストへ移動"
+      "goToArtist": "アーティストへ移動",
+      "generatePlaylist": "この曲からプレイリストを作成"
     },
     "sections": {
       "media": "メディア",
@@ -784,7 +860,10 @@
       "addToQueueFailed": "キューへの追加に失敗しました。",
       "playNext": "{{title}} を次に再生します。",
       "playNextFailed": "次の再生予約に失敗しました。",
-      "instantMixFailed": "インスタントミックスの開始に失敗しました"
+      "instantMixFailed": "インスタントミックスの開始に失敗しました",
+      "playlistGenerated_one": "{{count}} 曲のプレイリストを作成しました",
+      "playlistGenerated_other": "{{count}} 曲のプレイリストを作成しました",
+      "playlistGenerationFailed": "プレイリストを作成できませんでした"
     }
   },
   "externalAlbum": {
@@ -829,17 +908,24 @@
           "request_failed": "Soulseek に接続できません。サーバーを確認してもう一度お試しください。",
           "search_failed": "Soulseek で検索を開始できませんでした。",
           "search_timeout": "Soulseek の検索がタイムアウトしました。"
+        },
+        "soulsync": {
+          "AUTH_REQUIRED": "SoulSync には API キーが必要です。",
+          "INVALID_KEY": "SoulSync がこの API キーを拒否しました。",
+          "BAD_REQUEST": "SoulSync がこのリクエストを解釈できませんでした。",
+          "BAD_RESPONSE": "そのアドレスは SoulSync の応答を返しませんでした。URL を確認してください。",
+          "HTTP_ERROR": "SoulSync に接続できません。サーバーを確認して再試行してください。",
+          "NOT_AVAILABLE": "SoulSync に Soulseek 接続が設定されていません。"
         }
-      }
+      },
+      "soulsyncDesc": "SoulSync 経由で Soulseek を検索",
+      "addedToSoulsync": "SoulSync にリクエストしました。",
+      "addedTrackToSoulsync": "SoulSync にリクエストしました。"
     },
     "header": {
       "songs": "{{count}} 曲",
       "songs_other": "{{count}} 曲",
       "externalMetadata": "外部メタデータ"
-    },
-    "info": {
-      "title": "外部アルバムについて",
-      "body": "アルバムのメタデータとトラックのプレビューは Deezer が提供しています。Deezer API 利用規約に基づく 30 秒のクリップです。"
     }
   },
   "albumOptions": {
@@ -850,14 +936,13 @@
       "addToEnd": "末尾に追加",
       "shuffleToQueue": "シャッフルで追加",
       "goToAlbum": "アルバムへ",
-      "goToExternalAlbum": "外部アルバムへ",
-      "goToExternalArtist": "外部アーティストへ",
       "viewExternal": "外部で表示",
       "download": "ダウンロード",
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "favorite": "お気に入り",
-      "unfavorite": "お気に入り解除"
+      "unfavorite": "お気に入り解除",
+      "share": "共有"
     },
     "toasts": {
       "addedNext": "{{title}}を次に再生",
@@ -865,7 +950,8 @@
       "shuffledToQueue": "{{title}}をシャッフルで追加",
       "addedToFavorites": "{{title}} をお気に入りに追加しました。",
       "removedFromFavorites": "{{title}} をお気に入りから削除しました。",
-      "updateFavoritesFailed": "お気に入りの更新に失敗しました。"
+      "updateFavoritesFailed": "お気に入りの更新に失敗しました。",
+      "shareFailed": "共有リンクを作成できませんでした"
     },
     "sections": {
       "albumInfo": "アルバム情報"
@@ -891,7 +977,8 @@
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "delete": "プレイリストを削除",
-      "rename": "名前を変更"
+      "rename": "名前を変更",
+      "share": "共有"
     },
     "sections": {
       "info": "プレイリスト情報"
@@ -909,7 +996,8 @@
       "deleted": "プレイリストを削除しました",
       "deleteFailed": "プレイリストを削除できませんでした",
       "renamed": "プレイリスト名を変更しました",
-      "renameFailed": "プレイリスト名を変更できませんでした"
+      "renameFailed": "プレイリスト名を変更できませんでした",
+      "shareFailed": "共有リンクを作成できませんでした"
     },
     "rename": {
       "title": "プレイリスト名を変更",
@@ -927,7 +1015,6 @@
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "goToArtist": "アーティストへ",
-      "goToExternalArtist": "外部アーティストへ",
       "viewExternal": "外部で表示"
     },
     "sections": {
@@ -951,7 +1038,8 @@
       "min": "{{mins}}分"
     },
     "play": "回再生",
-    "plays": "回再生"
+    "plays": "回再生",
+    "similarAlbums": "似ているアルバム"
   },
   "externalSourcePicker": {
     "empty": "この項目を解決できるソースがありません。"
@@ -970,5 +1058,149 @@
       "addedToEnd": "{{genre}}をキューに追加",
       "shuffledToQueue": "{{genre}}をシャッフルで追加"
     }
+  },
+  "shares": {
+    "title": "共有リンク",
+    "empty": "まだ何も共有していません。アルバムまたはプレイリストの「共有」からリンクを作成できます。",
+    "linkCopied": "リンクをコピーしました",
+    "copy": "リンクをコピー",
+    "share": "共有",
+    "deleteTitle": "共有を取り消しますか？",
+    "deleteBody": "リンクはただちに使用できなくなります。",
+    "neverExpires": "無期限",
+    "expired": "期限切れ",
+    "expiresOn": "{{date}} に期限切れ",
+    "visits_one": "{{count}} 回の閲覧",
+    "visits_other": "{{count}} 回の閲覧",
+    "revoke": "取り消す"
+  },
+  "radio": {
+    "title": "ラジオ",
+    "empty": "ラジオ局がまだありません。追加して始めましょう。",
+    "add": "ラジオ局を追加",
+    "addTitle": "ラジオ局を追加",
+    "editTitle": "ラジオ局を編集",
+    "deleteTitle": "ラジオ局を削除しますか？",
+    "deleteBody": "「{{name}}」を削除しますか？",
+    "field": {
+      "name": "名前",
+      "streamUrl": "ストリーム URL",
+      "homepage": "ホームページ（任意）"
+    }
+  },
+  "podcasts": {
+    "title": "ポッドキャスト",
+    "field": {
+      "feedUrl": "フィード URL"
+    },
+    "empty": "ポッドキャストがまだありません。追加して聴き始めましょう。",
+    "add": "ポッドキャストを追加",
+    "addTitle": "ポッドキャストを購読",
+    "addHelp": "番組の RSS フィード URL を貼り付けてください。",
+    "refresh": "更新",
+    "subscribeFailed": "このフィードを購読できませんでした",
+    "unsubscribeTitle": "購読を解除しますか？",
+    "unsubscribeBody": "「{{title}}」のフォローを解除しますか？",
+    "channelEmpty": "エピソードがまだありません。更新してみてください。",
+    "notFound": "ポッドキャストが見つかりません。",
+    "play": "エピソードを再生",
+    "download": "エピソードをダウンロード",
+    "downloadStarted": "ダウンロードを開始しました",
+    "unsubscribe": "登録解除"
+  },
+  "a11y": {
+    "detail": {
+      "play": "再生",
+      "shuffle": "シャッフル",
+      "playPreview": "試聴を再生",
+      "downloadToServer": "サーバーにダウンロード",
+      "download": "ダウンロード",
+      "cancelDownload": "ダウンロードをキャンセル",
+      "downloaded": "ダウンロード済み",
+      "downloading": "ダウンロード中"
+    },
+    "rows": {
+      "options": "{{title}}のオプション"
+    },
+    "searchInput": "検索",
+    "queueBackToPlayer": "プレーヤーに戻る",
+    "scanForDevices": "デバイスを検索",
+    "dismissNotification": "通知を閉じる",
+    "account": "アカウント",
+    "common": {
+      "back": "戻る",
+      "close": "閉じる",
+      "moreOptions": "その他のオプション",
+      "checkConnection": "接続を確認"
+    },
+    "player": {
+      "close": "プレーヤーを閉じる",
+      "songOptions": "曲のオプション",
+      "addToPlaylist": "プレイリストに追加",
+      "previous": "前の曲",
+      "next": "次の曲",
+      "play": "再生",
+      "pause": "一時停止",
+      "jumpBack": "{{seconds}}秒戻る",
+      "jumpForward": "{{seconds}}秒進む",
+      "shuffle": "シャッフル",
+      "shuffleMode": {
+        "off": "オフ",
+        "shuffle": "オン",
+        "smart": "スマートシャッフル"
+      },
+      "repeat": "リピート",
+      "repeatMode": {
+        "off": "オフ",
+        "all": "全曲リピート",
+        "one": "1曲リピート"
+      },
+      "outputDevice": "出力デバイス",
+      "queue": "再生キュー",
+      "lyrics": "歌詞",
+      "seekToLyric": "この行から再生",
+      "aboutArtist": "アーティストについて",
+      "goToArtist": "アーティストへ移動",
+      "nowPlayingBar": "再生中",
+      "noSongPlaying": "再生中の曲はありません"
+    },
+    "search": {
+      "clear": "検索をクリア"
+    },
+    "playlist": {
+      "addSong": "{{title}}をこのプレイリストに追加",
+      "songAdded": "{{title}}は追加済み",
+      "downloadSong": "{{title}}をダウンロード",
+      "create": "プレイリストを作成"
+    },
+    "selection": {
+      "randomize": "ランダムに選ぶ"
+    },
+    "settings": {
+      "themeColor": "テーマカラー {{color}}",
+      "clearProviderDownloads": "{{provider}}のダウンロードをすべて削除",
+      "removeDownload": "ダウンロード{{title}}を削除"
+    },
+    "onboarding": {
+      "serverOptions": "{{url}}のオプション"
+    },
+    "topTrack": {
+      "playPreview": "{{title}}の試聴を再生"
+    },
+    "equalizer": {
+      "band": "{{frequency}} ヘルツ",
+      "reset": "イコライザーをフラットに戻す",
+      "preset": "{{name}} イコライザープリセット",
+      "decibels": "{{gain}} デシベル"
+    }
+  },
+  "tabs": {
+    "home": "ホーム",
+    "search": "検索",
+    "library": "ライブラリ"
+  },
+  "downloads": {
+    "title": "ダウンロードキュー",
+    "noDownloaders": "ダウンローダーが接続されていません。設定から追加してください。"
   }
 }

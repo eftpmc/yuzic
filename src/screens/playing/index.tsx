@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,18 +10,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectShowSleepTimer, selectShowPlaybackSpeed, selectShowVolumeSlider } from '@/utils/redux/selectors/settingsSelectors';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
 import Animated, {
     useSharedValue,
+    type SharedValue,
     useAnimatedStyle,
+    useAnimatedScrollHandler,
     withTiming,
+    withSpring,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { PLAYER_SPRING, usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
 import { useAlbum } from '@/hooks/albums';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import PlaylistList from '@/components/PlaylistList';
 import PlayingMain from './components/PlayingMain';
 import Controls from './components/Controls';
@@ -36,7 +41,7 @@ import VolumeCard from './components/VolumeCard';
 import { ChevronDown, Ellipsis } from 'lucide-react-native';
 import { useSheetRef } from '@/utils/useSheetRef';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, onDark, spacing } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing } from '@/constants/design';
 
 interface PlayingScreenProps {
     onClose: () => void;
@@ -65,14 +70,24 @@ const LyricsPreviewCardResolver: React.FC<{
     );
 };
 
-const usePlayingTransitions = (mode: PlayingViewMode) => {
+const MODE_FADE_MS = 300;
+
+const usePlayingTransitions = (
+    mode: PlayingViewMode,
+    coverVisibility: SharedValue<number>,
+) => {
     const playerOpacity = useSharedValue(1);
     const queueOpacity = useSharedValue(0);
 
     useEffect(() => {
-        playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: 300 });
-        queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: 300 });
-    }, [mode, playerOpacity, queueOpacity]);
+        playerOpacity.value = withTiming(mode === "player" ? 1 : 0, { duration: MODE_FADE_MS });
+        queueOpacity.value = withTiming(mode === "queue" ? 1 : 0, { duration: MODE_FADE_MS });
+        // The cover art is not ours to fade — the host draws it above this
+        // screen so it can travel to and from the bar — so it is told to go
+        // with the player it belongs to. Without this it stayed put: a
+        // full-width square of artwork sitting on top of the queue.
+        coverVisibility.value = withTiming(mode === "player" ? 1 : 0, { duration: MODE_FADE_MS });
+    }, [mode, playerOpacity, queueOpacity, coverVisibility]);
 
     const playerStyle = useAnimatedStyle(() => ({
         opacity: playerOpacity.value,
@@ -101,6 +116,7 @@ const usePlayingTransitions = (mode: PlayingViewMode) => {
 const PlayingScreen: React.FC<PlayingScreenProps> = ({
     onClose,
 }) => {
+    const { t } = useTranslation();
     const router = useRouter();
     const { currentSong } = usePlayingState();
     const api = useApi();
@@ -114,15 +130,71 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
     const lyricsSheetRef = useSheetRef();
     const outputDeviceSheetRef = useSheetRef();
 
+    const { expansion, scrollY, coverVisibility, isOpen } = usePlayerExpansion();
+
+    const handleScroll = useAnimatedScrollHandler(event => {
+        scrollY.value = event.contentOffset.y;
+    });
+
     const [mode, setMode] = useState<PlayingViewMode>("player");
+    // The queue is a whole draggable list — a gesture handler and a reanimated
+    // context per row — and it used to mount with the player whether or not
+    // anyone asked for it, on a screen whose mount time is what the user feels
+    // when they tap the playing bar. Mount it the first time the queue is
+    // actually opened; after that it stays, so the crossfade back and forth
+    // costs nothing.
+    const [queueMounted, setQueueMounted] = useState(false);
     const { playerStyle, queueStyle } =
-        usePlayingTransitions(mode);
+        usePlayingTransitions(mode, coverVisibility);
+
+    // The player screen is kept mounted between openings, so without this the
+    // next tap on the bar would reopen it on whatever was last on screen —
+    // the queue, with its cover hidden, which is not what tapping the artwork
+    // in the dock asks for. Snap rather than fade: by the time the player is
+    // closed the cover is already undrawn, and it has to be back before the
+    // next drag lifts it out of the bar.
+    useEffect(() => {
+        if (isOpen) return;
+        setMode("player");
+        coverVisibility.value = 1;
+    }, [isOpen, coverVisibility]);
+
+    const changeMode = useCallback((next: PlayingViewMode) => {
+        if (next === "queue") setQueueMounted(true);
+        setMode(next);
+    }, []);
 
     const { width, height } = useWindowDimensions();
     const isTablet = width >= 768;
     const layoutWidth = width - 24;
     const contentWidth = isTablet ? 500 : width - 48;
     const playerMinHeight = height - insets.top - insets.bottom;
+
+    // Dragging the player down puts it back in the dock, but the same finger
+    // on the same surface also scrolls the cards below the fold. The list wins
+    // whenever it has somewhere to go: only a downward drag from the very top
+    // moves the player, which is the rule every music app's player follows and
+    // the one thumbs already expect.
+    const dragToClose = useMemo(
+        () =>
+            Gesture.Simultaneous(
+                Gesture.Pan()
+                    .onUpdate(event => {
+                        if (scrollY.value > 0 || event.translationY <= 0) return;
+                        expansion.value = Math.max(0, Math.min(1, 1 - event.translationY / height));
+                    })
+                    .onEnd(event => {
+                        if (expansion.value >= 1) return;
+                        const closing = expansion.value < 0.75 || event.velocityY > 700;
+                        expansion.value = withSpring(closing ? 0 : 1, PLAYER_SPRING);
+                    }),
+                // Hands the scroll view's own gesture to RNGH so the two are
+                // siblings that may both run, rather than the pan swallowing
+                // every touch before the list ever sees it.
+                Gesture.Native(),
+            ),
+        [expansion, height, scrollY],
+    );
 
     useEffect(() => {
         if (!currentSong?.id) return;
@@ -136,11 +208,14 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 try {
                     const res = await api.lyrics.getBySongId(currentSong.id);
                     if (cancelled) return;
-                    if (res?.synced && res.lines.length > 0) {
+                    if (res && res.lines.length > 0) {
                         setLyrics(res);
                         setLyricsAvailable(true);
                     }
                 } catch {
+                    // A track without lyrics is the common case, not a fault —
+                    // the panel just stays closed. Nothing to tell the user and
+                    // nothing to retry, so this stays silent on purpose.
                 }
             })();
         });
@@ -160,7 +235,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         if (artistId) {
             onClose();
             router.push({
-                pathname: '/(home)/artistView',
+                pathname: '/artistView',
                 params: { id: artistId },
             });
         }
@@ -186,21 +261,30 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         backgroundColor="transparent"
                         translucent
                     />
-                    <Animated.View
-                        style={[queueStyle, { alignItems: 'center', justifyContent: 'flex-start' }]}
-                        pointerEvents={mode === "queue" ? 'auto' : 'none'}
-                    >
-                        <Queue
-                            onBack={() => setMode("player")}
-                            width={layoutWidth}
-                        />
-                    </Animated.View>
+                    {queueMounted && (
+                        <Animated.View
+                            style={[queueStyle, { alignItems: 'center', justifyContent: 'flex-start' }]}
+                            pointerEvents={mode === "queue" ? 'auto' : 'none'}
+                        >
+                            <Queue
+                                onBack={() => changeMode("player")}
+                                width={layoutWidth}
+                            />
+                        </Animated.View>
+                    )}
 
                     <Animated.View
                         style={[playerStyle, { flex: 1, width: '100%' }]}
                         pointerEvents={mode === "player" ? 'auto' : 'none'}
                     >
-                        <BottomSheetScrollView
+                        <GestureDetector gesture={dragToClose}>
+                        <Animated.ScrollView
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
+                            // An iOS rubber-band at the top would be competing
+                            // with the drag that collapses the player, and the
+                            // two together read as neither working.
+                            bounces={false}
                             style={styles.scrollView}
                             contentContainerStyle={[
                                 styles.scrollContent,
@@ -213,20 +297,22 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                     <Touchable
                                         testID="playing-close"
                                         accessibilityRole="button"
-                                        accessibilityLabel="Close player"
+                                        accessibilityLabel={t('a11y.player.close')}
                                         onPress={onClose}
                                         style={styles.headerButton}
                                         hitSlop={hitSlopFor(40)}
                                     >
-                                        <ChevronDown size={28} color={onDark.text} />
+                                        <ChevronDown size={iconSize.large} color={onDark.text} />
                                     </Touchable>
 
                                     <Touchable
+                                        accessibilityRole="button"
+                                        accessibilityLabel={t('a11y.player.songOptions')}
                                         onPress={() => songOptionsRef.current?.present()}
                                         style={styles.headerButton}
                                         hitSlop={hitSlopFor(40)}
                                     >
-                                        <Ellipsis size={24} color={onDark.text} />
+                                        <Ellipsis size={iconSize.header} color={onDark.text} />
                                     </Touchable>
                                 </View>
 
@@ -248,19 +334,23 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                         styles.bottomControlsRow,
                                         {
                                             width: contentWidth,
-                                            paddingBottom: insets.bottom + 12,
+                                            paddingBottom: insets.bottom + spacing.md,
                                         },
                                     ]}
                                 >
                                     <BottomControls
                                         mode={mode}
-                                        setMode={setMode}
+                                        setMode={changeMode}
                                         onOpenOutputSheet={() => outputDeviceSheetRef.current?.present()}
                                     />
                                 </View>
                             </View>
 
-                            {lyricsAvailable && lyrics && (
+                            {/* The preview card exists to follow the current
+                                line, which unsynced lyrics have no notion of —
+                                they open in the sheet from the player's own
+                                control instead. */}
+                            {lyricsAvailable && lyrics?.synced && (
                                 <LyricsPreviewCardResolver
                                     lyrics={lyrics}
                                     contentWidth={contentWidth}
@@ -290,7 +380,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                                 contentWidth={contentWidth}
                                 onPress={artistId ? navigateToArtist : undefined}
                             />
-                        </BottomSheetScrollView>
+                        </Animated.ScrollView>
+                        </GestureDetector>
                     </Animated.View>
 
                 </View>
@@ -363,10 +454,13 @@ const styles = StyleSheet.create({
     },
     bottomControlsRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: spacing.md,
-        paddingBottom: spacing.md,
+        // A step below the transport row, not crowded under it: 12pt left the
+        // pair reading as part of the play button's row while carrying twice
+        // that much empty space beneath them. `justifyContent` was
+        // `space-between` over a single flex child, which is the shape this
+        // row had before the two controls became a centred cluster.
+        paddingTop: spacing.xl,
     },
 });
 

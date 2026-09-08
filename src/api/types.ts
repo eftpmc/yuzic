@@ -4,6 +4,8 @@ import {
   Album,
   AlbumBase,
   Artist,
+  CoverSource,
+  ExternalArtistBase,
   Song,
   SongBase,
 } from "@/types";
@@ -21,6 +23,40 @@ export interface SongsApi {
   get(id: string): Promise<Song | null>;
   scrobble(songId: string, timestamp: number): Promise<void>;
   buildStreamUrl(songId: string, quality: AudioQuality, codec?: PreferredCodec): string;
+  /**
+   * What `scrobble()` amounts to on this server, which is the whole difference
+   * between the two labels the Settings row can carry: Subsonic's scrobble.view
+   * is a listen the server may forward onward to Last.fm/ListenBrainz, while
+   * MediaBrowser's PlayedItems only moves a play count (its own scrobble plugin
+   * reads the session events instead). Same call, two honest descriptions.
+   */
+  scrobbleKind: 'scrobble' | 'markPlayed';
+  /**
+   * The codecs this server will transcode a stream into, so a setting for one
+   * is only offered where it does something. Subsonic's stream.view takes a
+   * format but yuzic asks it for mp3 only, so Navidrome declares `['mp3']` and
+   * the Opus switch stays off the Playback screen; MediaBrowser servers take an
+   * `AudioCodec` and declare both. Callers read this rather than the server
+   * type — a provider that gains Opus support declares it here and the switch
+   * appears with no change to the screen.
+   */
+  streamableCodecs: readonly PreferredCodec[];
+  /**
+   * "I am playing this right now", however the provider spells it: Subsonic's
+   * scrobble.view with submission=false, a session-start event on
+   * Jellyfin/Emby. Every provider that can express it implements this, so the
+   * caller announces a track without knowing which server it is talking to.
+   */
+  reportNowPlaying?(songId: string): Promise<void>;
+  /**
+   * Session playback reporting for servers that scrobble on the strength of it
+   * (Jellyfin / Emby's Last.fm plugin reads these events, not scrobble.view or
+   * PlayedItems). Optional — Navidrome's Subsonic path already forwards to
+   * Last.fm through scrobble() and doesn't need session pings.
+   */
+  reportPlaybackStart?(songId: string, positionMs: number): Promise<void>;
+  reportPlaybackProgress?(songId: string, positionMs: number, isPaused: boolean): Promise<void>;
+  reportPlaybackStop?(songId: string, positionMs: number): Promise<void>;
 }
 
 export interface TracksApi {
@@ -30,6 +66,18 @@ export interface TracksApi {
 
 export interface SimilarApi {
   getSimilarSongs(songId: string): Promise<Song[]>;
+  /**
+   * Similar artists from the server's own metadata graph — Navidrome pulls
+   * these from Last.fm server-side (getArtistInfo2), Jellyfin/Emby from
+   * their tag graph (/Items/{id}/Similar). Distinct from the app's
+   * Deezer/Last.fm/AudioMuse sources: users on a server without those
+   * integrations still get similar-artists. Uses ExternalArtistBase for
+   * the same reason Deezer/Last.fm do — the record needs just enough to
+   * navigate and tile, and the caller uses matched-navigation to resolve
+   * an id that already lives in the local library when it does.
+   */
+  getSimilarArtists?(artistId: string, limit?: number): Promise<ExternalArtistBase[]>;
+  getSimilarAlbums?(albumId: string, limit?: number): Promise<AlbumBase[]>;
 }
 
 export interface ApiAdapter {
@@ -44,6 +92,174 @@ export interface ApiAdapter {
   similar: SimilarApi;
   lyrics: LyricsApi;
   search: SearchApi;
+  /**
+   * User-managed internet radio stations. Only implemented for servers that
+   * expose it (Subsonic/Navidrome); UI checks presence rather than provider
+   * name so a future adapter can opt in without touching the caller.
+   */
+  radio?: RadioApi;
+  /** Public shareable URLs for albums/playlists/tracks (Subsonic shares). */
+  shares?: SharesApi;
+  /** Per-track resume positions — audiobooks, podcasts, long mixes. */
+  bookmarks?: BookmarksApi;
+  /** Server-persisted play queue for cross-device continuity. */
+  queue?: QueueApi;
+  /** Home-shelf discovery reads (random songs / who else is listening). */
+  discovery?: DiscoveryApi;
+  /** Podcast channels + episodes managed by the server. */
+  podcasts?: PodcastsApi;
+  /**
+   * Playback on the machine running the server rather than on this device.
+   * Present only where the server exposes it — and even then the *user* may
+   * not be allowed to drive it, so callers probe `status()` before offering
+   * it rather than trusting presence alone.
+   */
+  jukebox?: JukeboxApi;
+}
+
+export type JukeboxState = {
+  /** Index into the jukebox's own playlist, not the app's queue. */
+  currentIndex: number;
+  playing: boolean;
+  /** 0.0–1.0. */
+  gain: number;
+  /** Seconds into the current track. Servers that omit it report 0. */
+  positionSeconds: number;
+};
+
+/**
+ * Server-side playback. Every call returns the resulting state, so a caller
+ * that drives the jukebox never has to follow a command with a read.
+ */
+export interface JukeboxApi {
+  /** Throws when the server has the feature but this user may not use it. */
+  status(): Promise<JukeboxState>;
+  setPlaylist(songIds: string[]): Promise<JukeboxState>;
+  start(): Promise<JukeboxState>;
+  stop(): Promise<JukeboxState>;
+  /** Jump to `index` in the jukebox playlist, optionally `offsetSeconds` in. */
+  skip(index: number, offsetSeconds?: number): Promise<JukeboxState>;
+  clear(): Promise<JukeboxState>;
+  setGain(gain: number): Promise<JukeboxState>;
+}
+
+export type PodcastEpisodeStatus = 'new' | 'downloading' | 'completed' | 'skipped' | 'error';
+
+export type PodcastEpisode = {
+  id: string;
+  streamId: string | null;
+  channelId: string;
+  title: string;
+  description?: string;
+  publishDate?: string;
+  status: PodcastEpisodeStatus;
+  /** Present only when the episode is downloaded and playable — the app
+   * routes playback through buildStreamUrl(playableStreamId). */
+  playableStreamId: string | null;
+  durationSeconds?: number;
+  coverArt?: string;
+};
+
+export type PodcastChannel = {
+  id: string;
+  url: string;
+  title: string;
+  description?: string;
+  coverArt?: string;
+  status: string;
+  errorMessage?: string;
+  episodes: PodcastEpisode[];
+};
+
+export interface PodcastsApi {
+  list(includeEpisodes?: boolean): Promise<PodcastChannel[]>;
+  newestEpisodes(count?: number): Promise<PodcastEpisode[]>;
+  subscribe(rssUrl: string): Promise<void>;
+  unsubscribe(channelId: string): Promise<void>;
+  deleteEpisode(episodeId: string): Promise<void>;
+  downloadEpisode(episodeId: string): Promise<void>;
+  refreshAll(): Promise<void>;
+}
+
+export type NowPlayingEntry = {
+  songId: string;
+  title: string;
+  artist: string;
+  albumTitle?: string;
+  albumId?: string;
+  /** Resolved by the adapter, like every other cover the app renders. This
+   * used to be a raw Subsonic coverArt id, which no consumer could turn into
+   * an image — so the shelf drew rows of bare text. */
+  cover: CoverSource;
+  username: string;
+  minutesAgo?: number;
+};
+
+export interface DiscoveryApi {
+  getRandomSongs(opts?: { size?: number; genre?: string; fromYear?: number; toYear?: number }): Promise<Song[]>;
+  getNowPlaying(): Promise<NowPlayingEntry[]>;
+}
+
+export type ServerPlayQueue = {
+  songIds: string[];
+  currentSongId?: string;
+  positionMs?: number;
+  changed?: string;
+  changedBy?: string;
+};
+
+export interface QueueApi {
+  get(): Promise<ServerPlayQueue | null>;
+  save(input: { songIds: string[]; currentSongId?: string; positionMs?: number }): Promise<void>;
+}
+
+export type Bookmark = {
+  songId: string;
+  /** Playback position in milliseconds. */
+  positionMs: number;
+  comment?: string;
+  changed?: string;
+};
+
+export interface BookmarksApi {
+  list(): Promise<Bookmark[]>;
+  /** Creates or replaces the bookmark for `songId` — Subsonic upserts on the
+   * same call, no distinct update method. */
+  create(input: { songId: string; positionMs: number; comment?: string }): Promise<void>;
+  remove(songId: string): Promise<void>;
+}
+
+export type InternetRadioStation = {
+  id: string;
+  name: string;
+  streamUrl: string;
+  homepageUrl?: string;
+};
+
+export interface RadioApi {
+  list(): Promise<InternetRadioStation[]>;
+  create(input: { name: string; streamUrl: string; homepageUrl?: string }): Promise<void>;
+  update(input: { id: string; name: string; streamUrl: string; homepageUrl?: string }): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
+export type Share = {
+  id: string;
+  url: string;
+  description?: string;
+  created?: string;
+  expires?: string;
+  visitCount?: number;
+};
+
+export interface SharesApi {
+  list(): Promise<Share[]>;
+  /** Creates a public share URL for an album/playlist/track id and returns
+   * the created record. Nullable so callers can toast an error instead of
+   * throwing — the URL is what they actually need. */
+  create(input: { itemId: string; description?: string; expiresAtMs?: number | null }): Promise<Share | null>;
+  update(input: { id: string; description?: string; expiresAtMs?: number | null }): Promise<void>;
+  remove(id: string): Promise<void>;
 }
 
 export interface AuthApi {
@@ -68,6 +284,13 @@ export interface AlbumsApi {
 export interface ArtistsApi {
   list(): Promise<Artist[]>;
   get(id: string): Promise<Artist>;
+  /**
+   * Server-derived "top songs" for one artist — Subsonic's getTopSongs uses
+   * Last.fm playcount rankings, Jellyfin/Emby fall back to per-user play
+   * count. Distinct from the app's own MostPlayed section (that reads local
+   * stats), which is only useful once the user has played anything.
+   */
+  getTopSongs?(artistName: string, limit?: number): Promise<Song[]>;
 }
 
 export interface GenresApi {
@@ -106,7 +329,17 @@ export type LyricLine = {
 
 export type LyricsResult = {
   provider: "jellyfin" | "navidrome" | "emby";
-  synced: true;
+  /**
+   * Whether `startMs` on each line means anything.
+   *
+   * This was the literal type `true`, which read as "we only support synced
+   * lyrics" but landed as "unsynced lyrics are silently dropped" — both
+   * adapters returned null the moment a track's lyrics had no timings, so a
+   * plain `.txt` or an untimed tag showed nothing at all. Unsynced lyrics are
+   * still lyrics; they just can't be followed along, so every line arrives
+   * with `startMs: 0` and the UI shows them as a plain block.
+   */
+  synced: boolean;
   lines: LyricLine[];
 };
 

@@ -45,6 +45,8 @@ const EMPTY_ADAPTER: ApiAdapter = {
     get: async () => null,
     scrobble: async () => {},
     buildStreamUrl: () => '',
+    scrobbleKind: 'scrobble',
+    streamableCodecs: ['mp3'],
   },
   tracks: {
     list: async () => [],

@@ -13,15 +13,15 @@ import {
   selectListenBrainzAuthenticated,
   selectListenBrainzConfig,
   selectListenBrainzScrobbleEnabled,
-  selectListenBrainzNowPlayingEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
+import { selectListenbrainzDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
+import { setListenbrainzDiscoveryEnabled } from '@/utils/redux/slices/settingsSlice';
 import {
   setUsername,
   setToken,
   setAuthenticated,
   disconnect,
   setScrobbleEnabled,
-  setNowPlayingEnabled,
 } from '@/utils/redux/slices/listenbrainzSlice';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import * as listenbrainz from '@/api/listenbrainz';
@@ -37,15 +37,23 @@ const ListenBrainzView: React.FC = () => {
   const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
   const config = useSelector(selectListenBrainzConfig);
   const scrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
-  const nowPlayingEnabled = useSelector(selectListenBrainzNowPlayingEnabled);
+  const discoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
 
   const toggleScrobble = useCallback((v: boolean) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }, [dispatch, serverId]);
-  const toggleNowPlaying = useCallback((v: boolean) => { dispatch(setNowPlayingEnabled({ serverId, value: v })); }, [dispatch, serverId]);
+  const toggleDiscovery = useCallback((v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
 
+  // Discovery reads the public similar-artist graph, which takes no account —
+  // so it sits above the credentials rather than inside the connected-only
+  // block, and it is off until it is switched on like every other source that
+  // talks to somebody else's server.
+  const discoveryItems = useMemo(() => [
+    { label: t('settings.listenBrainz.discovery'), subtext: t('settings.listenBrainz.discoveryDescription'), value: discoveryEnabled, onValueChange: toggleDiscovery },
+  ], [t, discoveryEnabled, toggleDiscovery]);
+
+  // Now-playing follows scrobble; see the note in settingsSelectors.
   const scrobbleItems = useMemo(() => [
     { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: toggleScrobble },
-    { label: t('settings.scrobbling.nowPlaying'), subtext: t('settings.scrobbling.nowPlayingDescription'), value: nowPlayingEnabled, onValueChange: toggleNowPlaying },
-  ], [t, scrobbleEnabled, nowPlayingEnabled, toggleScrobble, toggleNowPlaying]);
+  ], [t, scrobbleEnabled, toggleScrobble]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -112,6 +120,8 @@ const ListenBrainzView: React.FC = () => {
 
   return (
     <SettingsScreen title={t('settings.listenBrainz.title')}>
+      <SettingsToggleGroup items={discoveryItems} />
+
       <SettingsAuthCard
         fields={[
           { label: t('settings.listenBrainz.username'), value: username, onChangeText: v => dispatch(setUsername({ serverId, value: v.trim() })), placeholder: t('settings.listenBrainz.usernamePlaceholder') },

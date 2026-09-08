@@ -12,22 +12,25 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors';
+import { canJumpWithin } from '@/utils/playback/contentKind';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
+import { cappedTypography, controlSize, fontScaleCap, hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import haptics from '@/utils/haptics';
 
 const JUMP_SECONDS = 15;
 
-const HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
+const HIT_SLOP = hitSlopFor(iconSize.control);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boolean; isBuffering: boolean; onPress: () => void }) {
+  const { t } = useTranslation();
   const scale = useSharedValue(1);
   const rad = useRadius();
   const reduced = useReducedMotion();
@@ -38,16 +41,18 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
 
   return (
     <AnimatedPressable
+      accessibilityRole="button"
+      accessibilityLabel={isPlaying ? t('a11y.player.pause') : t('a11y.player.play')}
       onPress={onPress}
       onPressIn={() => { if (!reduced) scale.value = withTiming(0.91, { duration: 80 }); }}
       onPressOut={() => { if (!reduced) scale.value = withTiming(1, { duration: 150 }); }}
-      style={[styles.playButton, { borderRadius: rad.pill }, animStyle]}
+      style={[styles.playButton, { borderRadius: rad.pillFor(controlSize.playerPrimary) }, animStyle]}
     >
       {isBuffering
-        ? <SpinningLoaderCircle size={18} color="#000" />
+        ? <SpinningLoaderCircle size={iconSize.row} color="#000" />
         : isPlaying
-          ? <Pause size={26} color="#000" fill="#000" />
-          : <Play size={26} color="#000" fill="#000" />
+          ? <Pause size={iconSize.loader} color="#000" fill="#000" />
+          : <Play size={iconSize.loader} color="#000" fill="#000" />
       }
     </AnimatedPressable>
   );
@@ -55,26 +60,57 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
 
 type ToggleBadge = 'none' | 'dot' | 'sparkle';
 
+/**
+ * Shuffle and repeat, on and off.
+ *
+ * Both used to draw at full white in either state, so the only thing saying
+ * shuffle was on was the 4pt dot under the icon — which is a confirmation of a
+ * signal, not a signal. Dimming the off state gives the icon itself something
+ * to say, and leaves the dot doing the job it is good at.
+ */
+function toggleColor(active: boolean): string {
+  return active ? onDark.text : onDark.subtext;
+}
+
+/**
+ * A control with more than two states says which one it is in through
+ * `accessibilityValue`, not through its label: "Shuffle, smart shuffle" reads
+ * as one control in a named mode, where a label that changed with the mode
+ * would read as a different button each time the user cycled it.
+ */
 function ToggleButton({
   badge,
+  label,
+  value,
+  active,
   onPress,
   children,
 }: {
   badge: ToggleBadge;
+  label: string;
+  value: string;
+  active: boolean;
   onPress: () => void;
   children: React.ReactNode;
 }) {
   const rad = useRadius();
   return (
     <View style={styles.toggleWrapper}>
-      <Touchable onPress={onPress} hitSlop={HIT_SLOP}>
+      <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityValue={{ text: value }}
+        accessibilityState={{ selected: active }}
+        onPress={onPress}
+        hitSlop={HIT_SLOP}
+      >
         {children}
       </Touchable>
       {badge !== 'none' && (
         <View style={styles.activeBadgeSlot}>
           {badge === 'dot'
             ? <View style={[styles.activeDot, { borderRadius: rad.pill }, styles.activeDotVisible]} />
-            : <Sparkle size={9} color={onDark.text} fill={onDark.text} />
+            : <Sparkle size={iconSize.marker} color={onDark.text} fill={onDark.text} />
           }
         </View>
       )}
@@ -83,26 +119,36 @@ function ToggleButton({
 }
 
 function JumpButton({ direction, onPress }: { direction: 'back' | 'forward'; onPress: () => void }) {
+  const { t } = useTranslation();
   const Icon = direction === 'back' ? RotateCcw : RotateCw;
   const label = direction === 'back' ? `−${JUMP_SECONDS}s` : `+${JUMP_SECONDS}s`;
   return (
     <Touchable
-      accessibilityLabel={direction === 'back' ? `Jump back ${JUMP_SECONDS} seconds` : `Jump forward ${JUMP_SECONDS} seconds`}
+      accessibilityRole="button"
+      accessibilityLabel={t(
+        direction === 'back' ? 'a11y.player.jumpBack' : 'a11y.player.jumpForward',
+        { seconds: JUMP_SECONDS }
+      )}
       onPress={onPress}
       hitSlop={HIT_SLOP}
     >
       <View style={styles.jumpWrapper}>
-        <Icon size={28} color={onDark.text} />
-        <Text style={styles.jumpLabel} allowFontScaling={false}>{label}</Text>
+        <Icon size={iconSize.large} color={onDark.text} />
+        <Text style={styles.jumpLabel} maxFontSizeMultiplier={fontScaleCap.glyph}>{label}</Text>
       </View>
     </Touchable>
   );
 }
 
 const Controls: React.FC = () => {
-  const { isPlaying, isBuffering, shuffleMode, repeatMode } = usePlayingState();
+  const { t } = useTranslation();
+  const { isPlaying, isBuffering, shuffleMode, repeatMode, currentSong } = usePlayingState();
   const { pauseSong, resumeSong, skipToNext, skipToPrevious, cycleShuffleMode, toggleRepeat, jumpBy } = usePlayingActions();
   const showJumpButtons = useSelector(selectShowJumpButtons);
+  // Jump 15s within a live stream has nothing to skip past — a radio station
+  // has no internal position. Hide the buttons on that kind rather than let
+  // them look tappable and do nothing.
+  const canJump = canJumpWithin(currentSong);
 
   const handlePlayPause = useCallback(() => {
     haptics.primary();
@@ -121,29 +167,48 @@ const Controls: React.FC = () => {
     <View style={styles.container}>
       <ToggleButton
         badge={shuffleMode === 'smart' ? 'sparkle' : shuffleMode === 'shuffle' ? 'dot' : 'none'}
+        label={t('a11y.player.shuffle')}
+        value={t(`a11y.player.shuffleMode.${shuffleMode}`)}
+        active={shuffleMode !== 'off'}
         onPress={handleShuffle}
       >
-        <Shuffle size={23} color={onDark.text} />
+        <Shuffle size={iconSize.header} color={toggleColor(shuffleMode !== 'off')} />
       </ToggleButton>
 
-      <Touchable onPress={handleSkipPrev} hitSlop={HIT_SLOP}>
-        <SkipBack size={34} color={onDark.text} fill={onDark.text} />
+      <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={t('a11y.player.previous')}
+        onPress={handleSkipPrev}
+        hitSlop={HIT_SLOP}
+      >
+        <SkipBack size={iconSize.transport} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
-      {showJumpButtons && <JumpButton direction="back" onPress={handleJumpBack} />}
+      {showJumpButtons && canJump && <JumpButton direction="back" onPress={handleJumpBack} />}
 
       <PlayPauseButton isPlaying={isPlaying} isBuffering={isBuffering} onPress={handlePlayPause} />
 
-      {showJumpButtons && <JumpButton direction="forward" onPress={handleJumpForward} />}
+      {showJumpButtons && canJump && <JumpButton direction="forward" onPress={handleJumpForward} />}
 
-      <Touchable onPress={handleSkipNext} hitSlop={HIT_SLOP}>
-        <SkipForward size={34} color={onDark.text} fill={onDark.text} />
+      <Touchable
+        accessibilityRole="button"
+        accessibilityLabel={t('a11y.player.next')}
+        onPress={handleSkipNext}
+        hitSlop={HIT_SLOP}
+      >
+        <SkipForward size={iconSize.transport} color={onDark.text} fill={onDark.text} />
       </Touchable>
 
-      <ToggleButton badge={repeatMode !== 'off' ? 'dot' : 'none'} onPress={handleRepeat}>
+      <ToggleButton
+        badge={repeatMode !== 'off' ? 'dot' : 'none'}
+        label={t('a11y.player.repeat')}
+        value={t(`a11y.player.repeatMode.${repeatMode}`)}
+        active={repeatMode !== 'off'}
+        onPress={handleRepeat}
+      >
         {repeatMode === 'one'
-          ? <Repeat1 size={23} color={onDark.text} />
-          : <Repeat size={23} color={onDark.text} />
+          ? <Repeat1 size={iconSize.header} color={toggleColor(true)} />
+          : <Repeat size={iconSize.header} color={toggleColor(repeatMode !== 'off')} />
         }
       </ToggleButton>
     </View>
@@ -160,8 +225,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   playButton: {
-    width: 68,
-    height: 68,
+    width: controlSize.playerPrimary,
+    height: controlSize.playerPrimary,
     backgroundColor: onDark.text,
     alignItems: 'center',
     justifyContent: 'center',
@@ -192,7 +257,7 @@ const styles = StyleSheet.create({
     minWidth: 36,
   },
   jumpLabel: {
-    ...typography.micro,
+    ...cappedTypography.glyph.micro,
     color: onDark.text,
     fontWeight: '600',
     marginTop: spacing.xxs,

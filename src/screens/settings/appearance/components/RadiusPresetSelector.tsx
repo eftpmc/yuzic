@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react-native';
 
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, typography, type RadiusPreset } from '@/constants/design';
+import { iconSize, spacing, type RadiusPreset, typography } from '@/constants/design';
 import { selectRadiusPreset, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setRadiusPreset } from '@/utils/redux/slices/settingsSlice';
 import Touchable from '@/components/Touchable';
@@ -69,7 +69,7 @@ export const RadiusPresetSelector: React.FC = () => {
                     {t(`settings.appearance.radiusPreset.${preset}.subtext`)}
                   </Text>
                 </View>
-                {isActive && <Check size={20} color={themeColor} />}
+                {isActive && <Check size={iconSize.control} color={themeColor} />}
               </Touchable>
               {index < presets.length - 1 && <SettingsDivider />}
             </React.Fragment>

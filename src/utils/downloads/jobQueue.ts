@@ -28,7 +28,31 @@ export type JobRunDeps<TTrack, TJob extends QueueJob<TTrack>> = {
   prepare?: () => Promise<void>;
   concurrency: number;
   maxAttempts: number;
+  /**
+   * How many times a failing track is retried inside a single pass before the
+   * job it belongs to is given up on for that pass.
+   *
+   * A dropped connection is not the same fault as a dead link, and the queue
+   * used to treat them identically: one rejected track failed the whole job,
+   * which then sat until something external — an app foreground, a change of
+   * network — happened to run the queue again. On a connection that is flaky
+   * rather than absent, that is a download that simply stops, which is the
+   * failure every other client in this space is known for.
+   */
+  trackRetries?: number;
+  /** Backoff before retry `attempt` (0-based). Injectable so tests don't wait. */
+  retryDelayMs?: (attempt: number) => number;
+  /** Defaults to setTimeout; injectable for the same reason. */
+  delay?: (ms: number) => Promise<void>;
 };
+
+const DEFAULT_TRACK_RETRIES = 3;
+
+/** 1s, 2s, 4s — long enough for a handover to finish, short enough to feel
+ *  like the download simply carried on. */
+const defaultRetryDelayMs = (attempt: number) => 1000 * 2 ** attempt;
+
+const defaultDelay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 export type DownloadJobRunner<TTrack, TJob extends QueueJob<TTrack>> = {
   run: (deps: JobRunDeps<TTrack, TJob>) => Promise<void>;
@@ -57,15 +81,37 @@ export function createDownloadJobRunner<
       const job = deps.getJobs().find(candidate => !failedJobIds.has(candidate.id));
       if (!job) break;
 
+      const trackRetries = deps.trackRetries ?? DEFAULT_TRACK_RETRIES;
+      const retryDelayMs = deps.retryDelayMs ?? defaultRetryDelayMs;
+      const delay = deps.delay ?? defaultDelay;
+
       let failed = false;
-      for (let i = 0; i < job.tracks.length; i += deps.concurrency) {
+      for (let i = 0; i < job.tracks.length && !failed; i += deps.concurrency) {
         const chunk = job.tracks.slice(i, i + deps.concurrency);
-        const results = await Promise.allSettled(
-          chunk.map(track => deps.downloadTrack(track, job.collectionId))
-        );
-        if (results.some(result => result.status === 'rejected')) {
-          failed = true;
-          break;
+
+        // Retry only what actually failed, so one dead track in a chunk of
+        // three doesn't drag the other two through the backoff with it.
+        let pending = chunk;
+        for (let attempt = 0; ; attempt++) {
+          const results = await Promise.allSettled(
+            pending.map(track => deps.downloadTrack(track, job.collectionId))
+          );
+          const stillFailing = pending.filter((_, index) => results[index].status === 'rejected');
+          if (stillFailing.length === 0) break;
+
+          if (attempt >= trackRetries) {
+            failed = true;
+            break;
+          }
+
+          await delay(retryDelayMs(attempt));
+
+          // The queue can be cleared, or this job cancelled, while we were
+          // waiting. Resuming into a job nobody is asking for any more would
+          // redownload tracks the user just deleted.
+          if (!deps.getJobs().some(candidate => candidate.id === job.id)) return;
+
+          pending = stillFailing;
         }
       }
 

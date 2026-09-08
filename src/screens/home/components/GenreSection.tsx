@@ -34,7 +34,8 @@ import {
   HOME_GENRE_ARTIST_LIMIT,
 } from '@/constants/home';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[-_/]+/g, ' ').trim()
@@ -126,6 +127,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
   const { t } = useTranslation()
   const { navigateToAlbum } = useMatchedNavigation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { albums: libraryAlbums } = useAlbums()
   const { artists: libraryArtists } = useArtists()
   const libraryGenres = useSelector(selectLibraryGenres)
@@ -206,13 +208,13 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
       title={item.title}
       subtitle={item.subtext}
       size={gridItemWidth}
-      radius={6}
+      radius={rad.card}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
         navigateToAlbum(item)
       }}
     />
-  ), [navigateToAlbum, gridItemWidth])
+  ), [navigateToAlbum, gridItemWidth, rad.card])
 
   const isEmpty = !query.isLoading && albums.length === 0
 
@@ -223,7 +225,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
           <Text style={[styles.titlePrefix, { color: colors.secondary }]}>
             {t('explore.sections.genrePrefix')}
           </Text>
-          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={8}>
+          <Touchable onPress={() => sheetRef.current?.present()} hitSlop={hitSlopFor(iconSize.control)}>
             <Text
               style={[styles.genreName, { color: colors.secondary, borderBottomColor: colors.secondary }]}
               numberOfLines={1}

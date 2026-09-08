@@ -9,6 +9,9 @@ import { useRadius } from '@/hooks/useRadius';
 export type IconSelectItem = {
   id: string;
   icon: React.ReactElement<{ color?: string }>;
+  /** What this option is called. The card draws options as bare glyphs, so
+   *  without it the whole row reads as a set of unnamed buttons. */
+  label: string;
 };
 
 type Props = {
@@ -26,12 +29,15 @@ const SettingsIconSelectCard: React.FC<Props> = ({ title, items, selected, onSel
     <SettingsCard>
       <View style={styles.inner}>
         <Text style={[styles.title, { color: colors.subtext }]}>{title}</Text>
-        <View style={styles.row}>
+        <View style={styles.row} accessibilityRole="radiogroup">
           {items.map(item => {
             const active = selected === item.id;
             return (
               <Touchable
                 key={item.id}
+                accessibilityRole="radio"
+                accessibilityLabel={item.label}
+                accessibilityState={{ selected: active, checked: active }}
                 onPress={() => onSelect(item.id)}
                 style={[
                   styles.button,

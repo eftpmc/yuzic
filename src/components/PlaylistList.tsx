@@ -39,7 +39,7 @@ import { useApi } from '@/api';
 import { staleTime } from '@/constants/staleTime';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, radius, spacing, typography } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type PlaylistListProps = {
@@ -176,7 +176,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           <MediaImage
             cover={item.cover ?? { kind: 'none' }}
             size="thumb"
-            style={styles.playlistCover}
+            style={[styles.playlistCover, { borderRadius: rad.thumb }]}
           />
 
           <Text style={[styles.optionText, { color: colors.secondary }]}>
@@ -184,13 +184,13 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
           </Text>
 
           <Check
-            size={24}
+            size={iconSize.header}
             color={themeColor}
             style={{ opacity: isChecked ? 1 : 0 }}
           />
         </Touchable>
       );
-    }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor]);
+    }, [selectedIds, membershipLoading, togglePlaylist, colors.secondary, themeColor, rad.thumb]);
 
     const handleCreatePlaylist = async () => {
       if (!newPlaylistName.trim()) return;
@@ -261,8 +261,14 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             },
           ]}
         >
-          <Touchable onPress={onClose} style={styles.cancelButton} hitSlop={hitSlopFor(32)}>
-            <X size={20} color={colors.secondary} strokeWidth={2.5} />
+          <Touchable
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.common.close')}
+            onPress={onClose}
+            style={styles.cancelButton}
+            hitSlop={hitSlopFor(32)}
+          >
+            <X size={iconSize.control} color={colors.secondary} strokeWidth={2.5} />
           </Touchable>
 
           <Text style={[styles.headerTitle, { color: colors.secondary }]}>
@@ -272,7 +278,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
 
         <View style={styles.content}>
           <View style={[styles.searchContainer, { backgroundColor: colors.muted, borderRadius: rad.md }]}>
-            <Search size={20} color={colors.placeholder} />
+            <Search size={iconSize.control} color={colors.placeholder} />
             <TextInput
               style={[styles.searchInput, { color: colors.secondary }]}
               placeholder={t('playlistList.searchPlaceholder')}
@@ -290,8 +296,12 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
-            <Touchable onPress={handleCreatePlaylist}>
-              <Plus size={26} color={colors.secondary} />
+            <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.playlist.create')}
+              onPress={handleCreatePlaylist}
+            >
+              <Plus size={iconSize.loader} color={colors.secondary} />
             </Touchable>
           </View>
 
@@ -320,7 +330,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             onPress={handleDone}
           >
             {membershipLoading ? (
-              <SpinningLoaderCircle size={18} color="#fff" />
+              <SpinningLoaderCircle size={iconSize.row} color="#fff" />
             ) : (
               <Text style={styles.doneButtonText}>{t('common.done')}</Text>
             )}
@@ -389,7 +399,6 @@ const styles = StyleSheet.create({
   playlistCover: {
     width: 48,
     height: 48,
-    borderRadius: radius.sm,
     marginRight: spacing.md,
   },
   optionText: {

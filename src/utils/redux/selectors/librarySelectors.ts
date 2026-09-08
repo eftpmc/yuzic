@@ -2,10 +2,10 @@ import { createSelector } from '@reduxjs/toolkit';
 import { AlbumBase, Artist, SongBase } from '@/types';
 import { RootState } from '../store';
 
-export const selectLibraryAlbums = (state: RootState) => state.library.albums;
-export const selectLibraryArtists = (state: RootState) => state.library.artists;
-export const selectLibraryPlaylists = (state: RootState) => state.library.playlists;
-export const selectLibraryTracks = (state: RootState) => state.library.tracks;
+export const selectLibraryAlbums = (state: RootState) => state.libraryAlbums.albums;
+export const selectLibraryArtists = (state: RootState) => state.libraryArtists.artists;
+export const selectLibraryPlaylists = (state: RootState) => state.libraryPlaylists.playlists;
+export const selectLibraryTracks = (state: RootState) => state.libraryTracks.tracks;
 export const selectLibraryGenres = createSelector(
   [(state: RootState) => state.library.genres, (state: RootState) => state.servers.activeServerId],
   (genresByServer, activeServerId): string[] => {

@@ -9,6 +9,17 @@ import { spacing } from '@/constants/design'
 export const LIST_ITEM_INSET = 4
 
 /**
+ * The margin a grid cell carries on each side.
+ *
+ * This lived in the settings slice, with a `setGridSpacing` reducer nothing
+ * ever dispatched — so it was a stored, persisted, rehydrated 8 that no user
+ * could reach and no screen could change. It is the spacing token it always
+ * was. The helpers below still take it as an argument, since the arithmetic is
+ * worth testing across widths rather than at one value.
+ */
+export const GRID_SPACING = spacing.sm
+
+/**
  * Horizontal padding for a library list's content container.
  *
  * Sized so the thing you actually look at — a row's thumbnail in list mode, a

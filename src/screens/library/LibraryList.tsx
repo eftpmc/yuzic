@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useDispatch, useSelector } from 'react-redux'
@@ -6,23 +6,23 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpDown, Grid2x2, List } from 'lucide-react-native'
 
 import { useTheme } from '@/hooks/useTheme'
-import { hitSlopFor, spacing, typography } from '@/constants/design'
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
 import {
-  selectIsGridView,
+  selectLibraryViewMode,
   selectGridColumns,
-  selectGridSpacing,
 } from '@/utils/redux/selectors/settingsSelectors'
-import { setIsGridView } from '@/utils/redux/slices/settingsSlice'
-import { gridItemWidth, libraryGutter } from './layout'
+import { setIsGridView, setLibraryViewMode } from '@/utils/redux/slices/settingsSlice'
+import { gridItemWidth, libraryGutter, GRID_SPACING } from './layout'
 import AlbumItem from './components/Items/AlbumItem'
 import ArtistItem from './components/Items/ArtistItem'
 import PlaylistItem from './components/Items/PlaylistItem'
 import TrackItem from './components/Items/TrackItem'
 import SortBottomSheet from './components/SortBottomSheet'
 import { useSheetRef } from '@/utils/useSheetRef'
-import type { LibraryItem, SortOrder } from './librarySort'
+import type { LibraryCollectionType, LibraryItem, SortOrder } from './librarySort'
 import Touchable from '@/components/Touchable'
+import { useScrollClearance } from '@/hooks/useScrollClearance'
 
 type Props = {
   items: LibraryItem[]
@@ -31,6 +31,9 @@ type Props = {
   sortLabel: string
   /** Rendered above the sort row — entry points on the tab, actions on a screen. */
   header?: React.ReactNode
+  /** Which collection this is, so grid-or-list is remembered per kind rather
+   *  than once for all of them. Null for a list that isn't one of them. */
+  collection?: LibraryCollectionType | null
 }
 
 /**
@@ -45,20 +48,39 @@ const LibraryList: React.FC<Props> = ({
   onSortChange,
   sortLabel,
   header,
+  collection = null,
 }) => {
   const { t } = useTranslation()
+  const scrollClearance = useScrollClearance()
   const { colors } = useTheme()
   const rad = useRadius()
   const dispatch = useDispatch()
-  const isGridView = useSelector(selectIsGridView)
+  const isGridView = useSelector(selectLibraryViewMode(collection))
   const gridColumns = useSelector(selectGridColumns)
-  const gridSpacing = useSelector(selectGridSpacing)
   const { width: screenWidth } = useWindowDimensions()
 
   const sortSheetRef = useSheetRef()
 
-  const gutter = libraryGutter(isGridView, gridSpacing)
-  const gridWidth = gridItemWidth(screenWidth, gridColumns, gridSpacing, gutter)
+  const gutter = libraryGutter(isGridView, GRID_SPACING)
+  const gridWidth = gridItemWidth(screenWidth, gridColumns, GRID_SPACING, gutter)
+
+  /**
+   * Whether a row should say what kind of thing it is.
+   *
+   * "Album • Various Artists" earns the prefix on Home, where one shelf mixes
+   * albums with artists and playlists and the word is the only thing telling
+   * them apart. On a screen that is nothing but albums it is the same word on
+   * every row, and it is spending the line the artist name needs — in a
+   * three-up grid the prefix always fitted and the artist almost never did.
+   *
+   * Read off the items rather than passed in, so `downloaded` — the one
+   * collection that really is mixed — keeps its labels without the callers
+   * having to know which collections those are.
+   */
+  const showTypeLabel = useMemo(() => {
+    const kinds = new Set(items.map(item => item.kind))
+    return kinds.size > 1
+  }, [items])
 
   const renderItem = useCallback(({ item }: { item: LibraryItem }) => {
     switch (item.kind) {
@@ -66,9 +88,10 @@ const LibraryList: React.FC<Props> = ({
         return (
           <AlbumItem
             album={item.data}
+            showTypeLabel={showTypeLabel}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
       case 'artist':
@@ -77,11 +100,11 @@ const LibraryList: React.FC<Props> = ({
             artist={item.data}
             id={item.data.id}
             name={item.data.name}
-            subtext={item.data.subtext}
+            subtext={showTypeLabel ? item.data.subtext : undefined}
             cover={item.data.cover}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
       case 'playlist':
@@ -90,11 +113,11 @@ const LibraryList: React.FC<Props> = ({
             playlist={item.data}
             id={item.data.id}
             title={item.data.title}
-            subtext={item.data.subtext}
+            subtext={showTypeLabel ? item.data.subtext : undefined}
             cover={item.data.cover}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
       case 'track':
@@ -103,11 +126,11 @@ const LibraryList: React.FC<Props> = ({
             song={item.data}
             isGridView={isGridView}
             gridWidth={gridWidth}
-            gridSpacing={gridSpacing}
+            gridSpacing={GRID_SPACING}
           />
         )
     }
-  }, [isGridView, gridWidth, gridSpacing])
+  }, [isGridView, gridWidth, GRID_SPACING, showTypeLabel])
 
   return (
     <>
@@ -125,25 +148,29 @@ const LibraryList: React.FC<Props> = ({
             {header}
             <View style={styles.sortRow}>
               <Touchable
-                style={[styles.sortButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
+                style={[styles.sortButton, { backgroundColor: colors.muted, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
                 onPress={() => sortSheetRef.current?.present()}
                 accessibilityRole="button"
               >
-                <ArrowUpDown size={17} color={colors.secondary} />
+                <ArrowUpDown size={iconSize.row} color={colors.secondary} />
                 <Text style={[styles.sortLabel, { color: colors.secondary }]}>
                   {sortLabel}
                 </Text>
               </Touchable>
               <Touchable
-                style={[styles.gridButton, { backgroundColor: colors.muted, borderRadius: rad.pill }]}
-                hitSlop={hitSlopFor(34)}
-                onPress={() => dispatch(setIsGridView(!isGridView))}
+                style={[styles.gridButton, { backgroundColor: colors.muted, borderRadius: rad.pillFor(controlSize.inlineControl) }]}
+                hitSlop={hitSlopFor(controlSize.inlineControl)}
+                onPress={() => dispatch(
+                  collection
+                    ? setLibraryViewMode({ collection, isGridView: !isGridView })
+                    : setIsGridView(!isGridView)
+                )}
                 accessibilityRole="button"
                 accessibilityLabel={isGridView ? t('library.view.switchToList') : t('library.view.switchToGrid')}
               >
                 {isGridView
-                  ? <List size={17} color={colors.secondary} />
-                  : <Grid2x2 size={17} color={colors.secondary} />
+                  ? <List size={iconSize.row} color={colors.secondary} />
+                  : <Grid2x2 size={iconSize.row} color={colors.secondary} />
                 }
               </Touchable>
             </View>
@@ -151,7 +178,7 @@ const LibraryList: React.FC<Props> = ({
         }
         contentContainerStyle={[
           styles.list,
-          { paddingHorizontal: gutter },
+          { paddingHorizontal: gutter, paddingBottom: scrollClearance },
         ]}
         showsVerticalScrollIndicator={false}
       />
@@ -168,7 +195,7 @@ const LibraryList: React.FC<Props> = ({
 export default LibraryList
 
 const styles = StyleSheet.create({
-  list: { paddingTop: 0, paddingBottom: spacing.scrollClearance },
+  list: { paddingTop: 0 },
   sortRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -186,8 +213,8 @@ const styles = StyleSheet.create({
   },
   sortLabel: { ...typography.caption },
   gridButton: {
-    width: 34,
-    height: 34,
+    width: controlSize.inlineControl,
+    height: controlSize.inlineControl,
     alignItems: 'center',
     justifyContent: 'center',
   },

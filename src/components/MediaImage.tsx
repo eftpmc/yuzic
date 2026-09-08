@@ -87,13 +87,14 @@ export function MediaImage({
     );
   }
 
+  // Loading is not the same state as "there is no artwork", and it should not
+  // look like it. The placeholder art is a picture-with-a-slash glyph — the
+  // universal sign for a broken image — and sitting it behind every cover
+  // meant a slow grid read as nine failures for the second or two before the
+  // covers faded in. Behind a load in progress goes a plain surface instead;
+  // the glyph is kept for the branch above, where there really is nothing.
   return (
-    <View style={[style, { overflow: 'hidden' }]}>
-      <Image
-        source={placeholder}
-        style={{ position: 'absolute', width: '100%', height: '100%' }}
-        resizeMode="cover"
-      />
+    <View style={[style, { overflow: 'hidden', backgroundColor: colors.card }]}>
       <TurboImage
         source={{ uri: sourceUri, cacheKey: cacheKey ?? sourceUri }}
         style={{ width: '100%', height: '100%' }}

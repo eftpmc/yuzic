@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native'
 import { spacing, typography } from '@/constants/design'
+import { SECTION_H_PADDING } from '@/features/home/constants'
 
 /**
  * Home's shelves sit on the same page inset as every other screen.
@@ -8,8 +9,12 @@ import { spacing, typography } from '@/constants/design'
  * to the spacing scale by hiding behind a constant — the lint rule sees a
  * literal, not an identifier. Home is the first screen anyone opens, so it was
  * the worst place to be the odd one out.
+ *
+ * Re-exported rather than redeclared: half the shelves import it from here and
+ * half from `features/home/constants`, and for a while those were two separate
+ * numbers that only happened to agree.
  */
-export const SECTION_H_PADDING = spacing.page
+export { SECTION_H_PADDING }
 export const SECTION_GAP = spacing.md
 export const SECTION_VISIBLE_ITEMS = 2.5
 

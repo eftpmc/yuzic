@@ -1,4 +1,4 @@
-import type { MediaItem } from '@rntp/player';
+import type { MediaItem } from '../../features/player/mediaItem';
 import { Song } from '@/types';
 import { buildCover } from './buildCover';
 

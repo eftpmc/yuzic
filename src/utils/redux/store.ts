@@ -7,9 +7,13 @@ import downloadersReducer from './slices/downloadersSlice';
 import audiomuseReducer from './slices/audiomuseSlice';
 import settingsReducer from './slices/settingsSlice';
 import listenbrainzReducer from './slices/listenbrainzSlice';
-import lastfmReducer from './slices/lastfmSlice';
+import playbackReducer from './slices/playbackSlice';
 import statsReducer from './slices/statsSlice';
 import libraryReducer from './slices/librarySlice';
+import libraryAlbumsReducer from './slices/libraryAlbumsSlice';
+import libraryArtistsReducer from './slices/libraryArtistsSlice';
+import libraryPlaylistsReducer from './slices/libraryPlaylistsSlice';
+import libraryTracksReducer from './slices/libraryTracksSlice';
 import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
 import searchHistoryReducer, { normalizeSearchHistoryEntries } from './slices/searchHistorySlice';
@@ -28,7 +32,27 @@ const settingsMigrate = (state: any, currentVersion: number): Promise<any> => {
     scope === 'client+external' ? 'client' :
     scope === 'server+external' ? 'server' :
     scope ?? 'server';
-  return Promise.resolve({ ...state, syncOnAppStart: true, searchScope: migratedScope });
+
+  // v3 strips the sub-toggle fields the consolidation pass retired
+  // (now-playing follows scrobble, Deezer sub-features follow discovery).
+  // Leaving them in the persisted payload keeps the redux state carrying
+  // dead keys forever, and any code that later resurrects a `deezerSamples-
+  // Enabled` field for a different purpose would read a stale value.
+  const {
+    serverNowPlayingEnabled: _snp,
+    deezerTopTracksEnabled: _dtt,
+    deezerSimilarArtistsEnabled: _dsa,
+    deezerAlbumRecommendationsEnabled: _dar,
+    deezerSamplesEnabled: _ds,
+    deezerPlaylistRecommendationsEnabled: _dpr,
+    ...cleaned
+  } = state ?? {};
+
+  return Promise.resolve({
+    ...cleaned,
+    syncOnAppStart: true,
+    searchScope: migratedScope,
+  });
 };
 
 // v1 gave history entries a shape (query vs. opened entity); before that each
@@ -50,11 +74,33 @@ const audiomusePersistConfig = { key: 'audiomuse', storage };
 const settingsPersistConfig = {
   key: 'settings',
   storage,
-  version: 2,
+  version: 3,
   migrate: settingsMigrate,
 };
-const listenbrainzPersistConfig = { key: 'listenbrainz', storage };
-const lastfmPersistConfig = { key: 'lastfm', storage };
+// Strips the per-server nowPlayingEnabled key the consolidation pass
+// retired — same reasoning as the settings v3 migration.
+const listenbrainzMigrate = (state: any, currentVersion: number): Promise<any> => {
+  if (state?._persist?.version === currentVersion) return Promise.resolve(state);
+  const byServer = state?.byServer;
+  if (!byServer) return Promise.resolve(state);
+  const cleaned: Record<string, any> = {};
+  for (const [serverId, entry] of Object.entries(byServer)) {
+    const { nowPlayingEnabled: _np, ...rest } = (entry as any) ?? {};
+    cleaned[serverId] = rest;
+  }
+  return Promise.resolve({ ...state, byServer: cleaned });
+};
+
+const listenbrainzPersistConfig = {
+  key: 'listenbrainz',
+  storage,
+  version: 1,
+  migrate: listenbrainzMigrate,
+};
+// Playback is written on every track change and (throttled) every few seconds
+// during play; a wipe on version bump is fine — the loss is at most whatever
+// was mid-play when the app got the update.
+const playbackPersistConfig = { key: 'playback', storage, throttle: 3000 };
 const offlineMutationsPersistConfig = { key: 'offlineMutations', storage };
 const searchHistoryPersistConfig = {
   key: 'searchHistory',
@@ -63,23 +109,50 @@ const searchHistoryPersistConfig = {
   migrate: searchHistoryMigrate,
 };
 
+// Persist throttling. redux-persist writes on every dispatched action that
+// mutates the slice; for slices that carry thousands of entries (library) or
+// change on every second (playback), that's a JSON.stringify + MMKV write per
+// action — measurable on cold-boot and playback. Throttling batches writes
+// without changing any consumer's behavior.
+//
+//   library / libraryStarred: 1s — sync writes update every album/track in a
+//     single tick, so 1s covers a full sync.
+//   playback: 3s — the position tick is throttled inside
+//     usePlaybackPersistence to ~5s, but the queue slice also gets rewrites
+//     from track advances; 3s catches both without piling up.
+//   stats: 1s — an incrementPlay dispatch happens once per track change.
 const statsPersistConfig = {
   key: 'stats',
   storage,
   version: 3,
   migrate: resetMigrate,
+  throttle: 1000,
 };
+// The library shell now carries only genres (a tiny Record<serverId, string[]>).
+// Bumping to v3 wipes any pre-split payload that still had albums/artists/etc.
+// in-tree so the new per-collection slices start clean and this one doesn't
+// pay JSON.parse for a duplicate of them on cold boot.
 const libraryPersistConfig = {
   key: 'library',
   storage,
-  version: 2,
+  version: 3,
   migrate: resetMigrate,
+  throttle: 1000,
 };
+// Each collection persists independently so their JSON.parse on cold boot
+// happens in parallel and one big blob (tracks) doesn't block the others.
+// Throttle matches the shared library slice; a full sync writes each of
+// these once per tick.
+const libraryAlbumsPersistConfig = { key: 'libraryAlbums', storage, throttle: 1000 };
+const libraryArtistsPersistConfig = { key: 'libraryArtists', storage, throttle: 1000 };
+const libraryPlaylistsPersistConfig = { key: 'libraryPlaylists', storage, throttle: 1000 };
+const libraryTracksPersistConfig = { key: 'libraryTracks', storage, throttle: 1000 };
 // Kept separate from libraryPersistConfig: starred toggles on every heart tap and
 // must not re-serialize/re-write the full albums/artists/tracks catalog each time.
 const libraryStarredPersistConfig = {
   key: 'libraryStarred',
   storage,
+  throttle: 1000,
 };
 
 export const rootReducer = combineReducers({
@@ -88,9 +161,13 @@ export const rootReducer = combineReducers({
     audiomuse: audiomuseReducer,
     settings: settingsReducer,
     listenbrainz: listenbrainzReducer,
-    lastfm: lastfmReducer,
+    playback: playbackReducer,
     stats: statsReducer,
     library: libraryReducer,
+    libraryAlbums: libraryAlbumsReducer,
+    libraryArtists: libraryArtistsReducer,
+    libraryPlaylists: libraryPlaylistsReducer,
+    libraryTracks: libraryTracksReducer,
     libraryStarred: libraryStarredReducer,
     offlineMutations: offlineMutationsReducer,
     searchHistory: searchHistoryReducer,
@@ -102,9 +179,13 @@ const persistedReducer = combineReducers({
     audiomuse: persistReducer(audiomusePersistConfig, audiomuseReducer),
     settings: persistReducer(settingsPersistConfig, settingsReducer),
     listenbrainz: persistReducer(listenbrainzPersistConfig, listenbrainzReducer),
-    lastfm: persistReducer(lastfmPersistConfig, lastfmReducer),
+    playback: persistReducer(playbackPersistConfig, playbackReducer),
     stats: persistReducer(statsPersistConfig, statsReducer),
     library: persistReducer(libraryPersistConfig, libraryReducer),
+    libraryAlbums: persistReducer(libraryAlbumsPersistConfig, libraryAlbumsReducer),
+    libraryArtists: persistReducer(libraryArtistsPersistConfig, libraryArtistsReducer),
+    libraryPlaylists: persistReducer(libraryPlaylistsPersistConfig, libraryPlaylistsReducer),
+    libraryTracks: persistReducer(libraryTracksPersistConfig, libraryTracksReducer),
     libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),
     offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
     searchHistory: persistReducer(searchHistoryPersistConfig, searchHistoryReducer),

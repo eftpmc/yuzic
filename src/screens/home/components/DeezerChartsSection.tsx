@@ -21,12 +21,14 @@ import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types'
 import { spacing, typography } from '@/constants/design'
+import { useRadius } from '@/hooks/useRadius'
 
 type Props = { refreshKey?: number }
 
 export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
   const { t } = useTranslation()
   const { colors } = useTheme()
+  const rad = useRadius()
   const { width: screenWidth } = useWindowDimensions()
   const dayKey = getDayKey()
   const isEnabled = useDeezerDiscoveryEnabled()
@@ -55,13 +57,13 @@ export default function DeezerChartsSection({ refreshKey = 0 }: Props) {
       title={item.title}
       subtitle={item.subtext}
       size={gridItemWidth}
-      radius={6}
+      radius={rad.card}
       onPress={() => {
         prefetchCovers([item.cover], 'detail')
         navigateToAlbum(item)
       }}
     />
-  ), [navigateToAlbum, gridItemWidth])
+  ), [navigateToAlbum, gridItemWidth, rad.card])
 
   return (
     <View style={styles.container}>

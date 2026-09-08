@@ -20,6 +20,7 @@ import {
 import { ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
   FadeIn,
   useAnimatedStyle,
@@ -32,7 +33,7 @@ import { MediaImage } from '@/components/MediaImage';
 import { useCoverAccent } from '@/features/theme/useCoverAccent';
 import { ACCENT_WASH_LOCATIONS, accentWashColors } from '@/features/theme/coverAccent';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, spacing, typography } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import type { CoverSource } from '@/types';
 import Touchable from '@/components/Touchable';
@@ -164,6 +165,7 @@ export function DetailScreen({ bar, children }: DetailScreenProps) {
 }
 
 export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBarProps) {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useTheme();
   const rad = useRadius();
@@ -180,13 +182,13 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
     <View pointerEvents="box-none" style={styles.headerRow}>
       <BarButton
         testID="detail-back-button"
-        accessibilityLabel="Go back"
+        accessibilityLabel={t('a11y.common.back')}
         onPress={() => navigation.goBack()}
         scrim={floating ? (isDarkMode ? SCRIM_DARK : SCRIM_LIGHT) : undefined}
       >
         {/* A chevron's ink is a "<": its geometric centre sits right of where
             the eye puts it, so centring it in the disc reads as pushed over. */}
-        <ChevronLeft size={24} color={colors.secondary} style={styles.chevron} />
+        <ChevronLeft size={iconSize.header} color={colors.secondary} style={styles.chevron} />
       </BarButton>
 
       <Animated.View pointerEvents="none" style={[styles.headerTitleWrapper, fadeStyle]}>
@@ -200,7 +202,7 @@ export function DetailHeaderBar({ title, subtitle, rightAction }: DetailHeaderBa
         ) : null}
       </Animated.View>
 
-      {rightAction ?? <View style={[styles.headerButton, { borderRadius: rad.pill }]} />}
+      {rightAction ?? <View style={[styles.headerButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]} />}
     </View>
   );
 }
@@ -339,14 +341,19 @@ type DetailCircleActionProps = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 };
 
 export function DetailCircleAction({ children, onPress, disabled, style, accessibilityLabel }: DetailCircleActionProps) {
   const { colors } = useTheme();
+  const rad = useRadius();
   return (
     <Touchable
-      style={[styles.secondaryButton, { backgroundColor: colors.card }, style]}
+      style={[
+        styles.secondaryButton,
+        { backgroundColor: colors.card, borderRadius: rad.pillFor(controlSize.detailSecondary) },
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
@@ -363,7 +370,7 @@ type DetailPlayActionProps = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 };
 
 export function DetailPlayAction({ children, onPress, disabled, style, accessibilityLabel }: DetailPlayActionProps) {
@@ -371,7 +378,11 @@ export function DetailPlayAction({ children, onPress, disabled, style, accessibi
   const rad = useRadius();
   return (
     <Touchable
-      style={[styles.playButton, { backgroundColor: colors.themeColor, borderRadius: rad.pill }, style]}
+      style={[
+        styles.playButton,
+        { backgroundColor: colors.themeColor, borderRadius: rad.pillFor(controlSize.detailPrimaryHeight) },
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
@@ -397,7 +408,7 @@ const SCRIM_LIGHT = 'rgba(255, 255, 255, 0.6)';
 type BarButtonProps = {
   children: React.ReactNode;
   onPress?: () => void;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
   testID?: string;
   scrim?: string;
 };
@@ -410,9 +421,13 @@ function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: Bar
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={[styles.headerButton, { borderRadius: rad.pill }, scrim ? { backgroundColor: scrim } : null]}
+      style={[
+        styles.headerButton,
+        { borderRadius: rad.pillFor(controlSize.iconCompact) },
+        scrim ? { backgroundColor: scrim } : null,
+      ]}
       feedback="control"
-      hitSlop={8}
+      hitSlop={hitSlopFor(iconSize.header)}
     >
       {children}
     </Touchable>
@@ -422,10 +437,10 @@ function BarButton({ children, onPress, accessibilityLabel, testID, scrim }: Bar
 type DetailHeaderIconButtonProps = {
   children: React.ReactNode;
   onPress?: () => void;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 };
 
-export function DetailHeaderIconButton({ children, onPress, accessibilityLabel = 'More options' }: DetailHeaderIconButtonProps) {
+export function DetailHeaderIconButton({ children, onPress, accessibilityLabel }: DetailHeaderIconButtonProps) {
   const { isDarkMode } = useTheme();
   const floating = useContext(DetailScrollContext);
   return (
@@ -541,7 +556,6 @@ const styles = StyleSheet.create({
   secondaryButton: {
     width: controlSize.detailSecondary,
     height: controlSize.detailSecondary,
-    borderRadius: controlSize.detailSecondary / 2,
     justifyContent: 'center',
     alignItems: 'center',
   },

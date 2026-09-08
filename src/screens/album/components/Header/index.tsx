@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { spacing, statusColor } from '@/constants/design';
+import { iconSize, spacing, statusColor } from '@/constants/design';
 import {
   StyleSheet,
 } from 'react-native';
@@ -26,7 +26,7 @@ import { useDownload } from '@/contexts/DownloadContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatDuration } from '@/utils/formatDuration';
-import { useAnyDownloaderConnected } from '@/features/downloaders/registry';
+import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
@@ -82,14 +82,16 @@ export const AlbumHeaderBar: React.FC<Props> = ({ localAlbum, externalAlbum }) =
 };
 
 function LocalOptionsButton({ album }: { album: Album }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const optionsSheetRef = useSheetRef();
   return (
     <>
       <DetailHeaderIconButton
+        accessibilityLabel={t('a11y.common.moreOptions')}
         onPress={() => optionsSheetRef.current?.present()}
       >
-        <Ellipsis size={24} color={colors.secondary} />
+        <Ellipsis size={iconSize.header} color={colors.secondary} />
       </DetailHeaderIconButton>
       <AlbumOptions ref={optionsSheetRef} album={album} hideGoToAlbum />
     </>
@@ -196,7 +198,7 @@ function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
   if (albumStatus.kind === 'in_library') {
     return (
       <StatusBanner
-        icon={<Link size={14} color={statusColor.success} />}
+        icon={<Link size={iconSize.badge} color={statusColor.success} />}
         text={t('externalAlbum.serverStatus.onServer')}
         color={statusColor.success}
         style={styles.serverStatusRow}
@@ -205,7 +207,7 @@ function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
   }
   return (
     <StatusBanner
-      icon={<SpinningLoaderCircle size={14} color={statusColor.downloading} />}
+      icon={<SpinningLoaderCircle size={iconSize.badge} color={statusColor.downloading} />}
       text={t('externalAlbum.serverStatus.downloadingToServer', { progress: albumStatus.progress })}
       color={statusColor.downloading}
       style={styles.serverStatusRow}
@@ -214,6 +216,7 @@ function ExternalServerStatusRow({ album }: { album: ExternalAlbum }) {
 }
 
 function LocalActionRow({ album }: { album: Album }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { playSongInCollection } = usePlayingActions();
   const { downloadAlbumById, cancelCollectionDownloads, getCollectionDownloadState } = useDownload();
@@ -260,28 +263,32 @@ function LocalActionRow({ album }: { album: Album }) {
 
   return (
     <DetailActionRow>
-      <DetailCircleAction onPress={handleShuffle} accessibilityLabel="Shuffle album">
-        <Shuffle size={18} color={colors.secondary} />
+      <DetailCircleAction onPress={handleShuffle} accessibilityLabel={t('a11y.detail.shuffle')}>
+        <Shuffle size={iconSize.row} color={colors.secondary} />
       </DetailCircleAction>
 
-      <DetailPlayAction onPress={handlePlay} accessibilityLabel="Play album">
-        <Play size={20} color="#fff" fill="#fff" />
+      <DetailPlayAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.play')}>
+        <Play size={iconSize.control} color={colors.onThemeColor} fill={colors.onThemeColor} />
       </DetailPlayAction>
 
       <DetailCircleAction
         onPress={() => void toggleDownload()}
-        accessibilityLabel={
-          isAlbumDownloading ? 'Cancel download' : isAlbumDownloaded ? 'Downloaded' : 'Download album'
-        }
+        accessibilityLabel={t(
+          isAlbumDownloading
+            ? 'a11y.detail.cancelDownload'
+            : isAlbumDownloaded
+              ? 'a11y.detail.downloaded'
+              : 'a11y.detail.download'
+        )}
       >
         {isAlbumDownloading ? (
-          <DownloadProgressRing progress={downloadFraction} size={18} />
+          <DownloadProgressRing progress={downloadFraction} size={iconSize.row} />
         ) : isAlbumDownloaded ? (
           <Animated.View style={checkmarkStyle}>
-            <Check size={18} color={colors.secondary} />
+            <Check size={iconSize.row} color={colors.secondary} />
           </Animated.View>
         ) : (
-          <Download size={18} color={colors.secondary} />
+          <Download size={iconSize.row} color={colors.secondary} />
         )}
       </DetailCircleAction>
     </DetailActionRow>
@@ -289,8 +296,9 @@ function LocalActionRow({ album }: { album: Album }) {
 }
 
 function ExternalActionRow({ album }: { album: ExternalAlbum }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
-  const canDownload = useAnyDownloaderConnected();
+  const canDownload = useAnyAlbumDownloaderConnected();
   const { playSongInCollection } = usePlayingActions();
   const albumStatus = useExternalAlbumStatus(album);
   const previews = useExternalAlbumPreviews(album);
@@ -329,17 +337,17 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         <DetailPlayAction
           onPress={handleDownload}
           disabled={!canDownload || albumStatus.kind !== 'none'}
-          accessibilityLabel="Download album to server"
+          accessibilityLabel={t('a11y.detail.downloadToServer')}
         >
           <CloudDownload
-            size={20}
+            size={iconSize.control}
             color={!canDownload || albumStatus.kind !== 'none' ? 'rgba(255,255,255,0.4)' : '#fff'}
           />
         </DetailPlayAction>
 
         {previewSongs.length > 0 && (
-          <DetailCircleAction onPress={handlePlay} accessibilityLabel="Play preview">
-            <Play size={18} color={colors.secondary} fill={colors.secondary} />
+          <DetailCircleAction onPress={handlePlay} accessibilityLabel={t('a11y.detail.playPreview')}>
+            <Play size={iconSize.row} color={colors.secondary} fill={colors.secondary} />
           </DetailCircleAction>
         )}
       </DetailActionRow>

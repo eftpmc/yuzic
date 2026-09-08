@@ -2,30 +2,40 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { ChevronLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '@/hooks/useTheme'
 import Touchable from '@/components/Touchable'
-import { spacing, typography } from '@/constants/design'
+import { iconSize, spacing, typography } from '@/constants/design'
 
 type Props = {
   message?: string
 }
 
-export default function NotFoundView({ message = 'Not found' }: Props) {
+export default function NotFoundView({ message }: Props) {
+  const { t } = useTranslation()
   const navigation = useNavigation<any>()
   const { colors } = useTheme()
+  // Defaulted here rather than in the signature so the fallback is translated
+  // too — a default parameter can't reach `t`.
+  const text = message ?? t('media.notFound')
 
   return (
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
-        <Touchable onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <ChevronLeft size={24} color={colors.secondary} />
+        <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.common.back')}
+          onPress={() => navigation.goBack()}
+          style={styles.headerButton}
+        >
+          <ChevronLeft size={iconSize.header} color={colors.secondary} />
         </Touchable>
         <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.body}>
-        <Text style={[styles.message, { color: colors.secondary }]}>{message}</Text>
+        <Text style={[styles.message, { color: colors.secondary }]}>{text}</Text>
       </View>
     </SafeAreaView>
   )

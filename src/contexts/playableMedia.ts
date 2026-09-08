@@ -1,4 +1,4 @@
-import type { MediaItem } from '@rntp/player';
+import type { MediaItem } from '../features/player/mediaItem';
 
 import type { Song } from '@/types';
 
@@ -41,7 +41,6 @@ export function mediaItemToFallbackSong(item: MediaItem): Song | null {
     duration: String(item.duration ?? 0),
     streamUrl,
     cover: { kind: 'none' },
-    isPreview: false,
   } as Song;
 }
 

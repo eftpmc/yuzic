@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from '@backpackapp-io/react-native-toast';
 
 import { useApi } from '@/api';
-import * as lastfm from '@/api/lastfm';
 import * as listenbrainz from '@/api/listenbrainz';
 import { FAVORITES_ID } from '@/constants/favorites';
 import { QueryKeys } from '@/enums/queryKeys';
@@ -17,7 +16,6 @@ import {
   type OfflineMutation,
   type ScrobbleDestination,
 } from '@/utils/offline/offlineMutations';
-import { selectLastFmConfig } from '@/utils/redux/selectors/lastfmSelectors';
 import { selectListenBrainzConfig } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { selectOfflineMutationQueue } from '@/utils/redux/selectors/offlineMutationsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -34,7 +32,6 @@ const RETRY_POLL_MS = 30_000;
 type ReplayContext = {
   api: ReturnType<typeof useApi>;
   listenBrainzConfig: ReturnType<typeof selectListenBrainzConfig> | null;
-  lastFmConfig: ReturnType<typeof selectLastFmConfig> | null;
 };
 
 async function replayScrobble(
@@ -57,16 +54,6 @@ async function replayScrobble(
         listenedAt: Math.floor(mutation.startedAt / 1000),
         durationSeconds: mutation.durationSeconds,
         durationPlayedSeconds: mutation.listenedSeconds,
-        album: mutation.album,
-      });
-      break;
-    case 'lastfm':
-      if (!ctx.lastFmConfig) throw new Error('Last.fm is not configured');
-      await lastfm.submitScrobble(ctx.lastFmConfig, {
-        artist: mutation.artist,
-        track: mutation.track,
-        timestamp: Math.floor(mutation.startedAt / 1000),
-        duration: mutation.durationSeconds,
         album: mutation.album,
       });
       break;
@@ -104,19 +91,17 @@ export default function OfflineMutationReplayer() {
   const activeServer = useSelector(selectActiveServer);
   const queue = useSelector(selectOfflineMutationQueue);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
-  const lastFmConfig = useSelector(selectLastFmConfig);
   const isOffline = useIsOffline();
   const isReplayingRef = useRef(false);
 
-  // Both configs are per-server, and the queue is already filtered to the
-  // active server, so these always belong to the mutations being replayed.
+  // The listenBrainz config is per-server, and the queue is already filtered
+  // to the active server, so it always belongs to the mutations being replayed.
   const configuredDestinations: Record<ScrobbleDestination, boolean> = useMemo(
     () => ({
       server: true,
       listenbrainz: !!listenBrainzConfig?.token,
-      lastfm: !!lastFmConfig?.sessionKey,
     }),
-    [listenBrainzConfig?.token, lastFmConfig?.sessionKey]
+    [listenBrainzConfig?.token]
   );
 
   // nextRetryAt only matters once it's in the past, and nothing else in this
@@ -156,7 +141,7 @@ export default function OfflineMutationReplayer() {
 
       for (const mutation of pending) {
         try {
-          await replayMutation({ api, listenBrainzConfig, lastFmConfig }, mutation);
+          await replayMutation({ api, listenBrainzConfig }, mutation);
           dispatch(removeOfflineMutation(mutation.id));
           syncedCount += 1;
           if (affectsLibraryQueries(mutation)) syncedLibraryCount += 1;
@@ -206,7 +191,7 @@ export default function OfflineMutationReplayer() {
     });
   }, [
     activeServer, api, dispatch, isOffline, queryClient, queue, retryTick,
-    listenBrainzConfig, lastFmConfig, configuredDestinations,
+    listenBrainzConfig, configuredDestinations,
   ]);
 
   return null;

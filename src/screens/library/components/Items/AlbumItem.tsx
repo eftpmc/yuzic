@@ -9,12 +9,15 @@ import LibraryItem from './LibraryItem';
 
 interface ItemProps {
   album: AlbumBase;
+  /** False on a screen of nothing but albums, where `subtext`'s "Album • "
+   *  prefix is the same word on every row and costs the artist its space. */
+  showTypeLabel?: boolean;
   isGridView: boolean;
   gridWidth: number;
   gridSpacing?: number;
 }
 
-const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpacing }) => {
+const AlbumItem: React.FC<ItemProps> = ({ album, showTypeLabel = true, isGridView, gridWidth, gridSpacing }) => {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
   const [optionsMounted, setOptionsMounted] = useState(false);
@@ -40,7 +43,7 @@ const AlbumItem: React.FC<ItemProps> = ({ album, isGridView, gridWidth, gridSpac
         testID="library-album-item"
         cover={album.cover}
         title={album.title}
-        subtext={album.subtext}
+        subtext={showTypeLabel ? album.subtext : album.artist?.name ?? ''}
         isGridView={isGridView}
         gridWidth={gridWidth}
         gridSpacing={gridSpacing}

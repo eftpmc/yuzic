@@ -9,7 +9,8 @@ import {
   SongsApi,
   TracksApi,
   AuthApi,
-  LyricsApi
+  LyricsApi,
+  JukeboxState
 } from "../types";
 import { FAVORITES_ID } from "@/constants/favorites";
 import { buildFavoritesPlaylist } from "@/utils/builders/buildFavoritesPlaylist";
@@ -45,11 +46,54 @@ import { getGenres } from "./genres/getGenres";
 
 import { getLyricsBySongId } from "./lyrics/getLyricsBySongId";
 import { getSong } from "./songs/getSong";
-import { scrobble } from "./songs/scrobble";
+import { scrobble, nowPlaying } from "./songs/scrobble";
 import { getTracks } from "./tracks/getTracks";
 import { getSimilarSongs } from "./similar/getSimilarSongs";
+import { getSimilarArtists as getNavidromeSimilarArtists } from "./similar/getSimilarArtists";
+import {
+  getInternetRadioStations,
+  createInternetRadioStation,
+  updateInternetRadioStation,
+  deleteInternetRadioStation,
+} from "./radio/getInternetRadioStations";
+import {
+  getShares,
+  createShare,
+  deleteShare,
+  updateShare,
+} from "./shares/getShares";
+import { getTopSongs } from "./artists/getTopSongs";
+import {
+  getBookmarks,
+  createBookmark,
+  deleteBookmark,
+} from "./bookmarks/getBookmarks";
+import { getPlayQueue, savePlayQueue } from "./queue/getPlayQueue";
+import * as jukeboxApi from "./jukebox";
+import { getRandomSongs } from "./discovery/random";
+import { getNowPlaying } from "./discovery/nowPlaying";
+import {
+  getPodcasts,
+  getNewestPodcasts,
+  createPodcastChannel,
+  deletePodcastChannel,
+  deletePodcastEpisode,
+  downloadPodcastEpisode,
+  refreshPodcasts,
+} from "./podcasts/getPodcasts";
 
 import { search as searchNavidrome } from "./search/search";
+
+/** The Subsonic wire shape, renamed to the contract's terms — `position` is
+ *  seconds, and the adapter boundary is where that stops being implied. */
+function toJukeboxState(status: jukeboxApi.JukeboxStatus): JukeboxState {
+  return {
+    currentIndex: status.currentIndex,
+    playing: status.playing,
+    gain: status.gain,
+    positionSeconds: status.position,
+  };
+}
 
 export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const { id: serverId, serverUrl, fallbackUrls, username, auth: providerAuth, basicAuth } = server;
@@ -125,6 +169,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
       if (!artist) throw new Error("Artist not found");
       return artist;
     },
+    getTopSongs: async (artistName, limit) => getTopSongs(client, artistName, limit),
   };
 
   const genres: GenresApi = {
@@ -201,7 +246,10 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
   const songs: SongsApi = {
     get: async (id: string) => getSong(client, id),
     scrobble: async (songId, timestamp) => scrobble(client, songId, timestamp),
+    reportNowPlaying: async (songId) => nowPlaying(client, songId),
     buildStreamUrl: (songId, quality) => client.buildStreamUrl(songId, quality),
+    scrobbleKind: 'scrobble',
+    streamableCodecs: ['mp3'],
   };
 
   const tracks: TracksApi = {
@@ -211,6 +259,7 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
 
   const similar: SimilarApi = {
     getSimilarSongs: async (songId: string) => getSimilarSongs(client, songId),
+    getSimilarArtists: async (artistId, limit) => getNavidromeSimilarArtists(client, artistId, limit),
   };
 
   const lyrics: LyricsApi = {
@@ -219,6 +268,68 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
 
   const search = {
     search: async (query: string) => searchNavidrome(client, query),
+  };
+
+  const radio = {
+    list: async () => getInternetRadioStations(client),
+    create: async (input: { name: string; streamUrl: string; homepageUrl?: string }) =>
+      createInternetRadioStation(client, input),
+    update: async (input: { id: string; name: string; streamUrl: string; homepageUrl?: string }) =>
+      updateInternetRadioStation(client, input),
+    remove: async (id: string) => deleteInternetRadioStation(client, id),
+  };
+
+  const shares = {
+    list: async () => getShares(client),
+    create: async (input: { itemId: string; description?: string; expiresAtMs?: number | null }) =>
+      createShare(client, input),
+    update: async (input: { id: string; description?: string; expiresAtMs?: number | null }) =>
+      updateShare(client, input),
+    remove: async (id: string) => deleteShare(client, id),
+  };
+
+  const bookmarks = {
+    list: async () => getBookmarks(client),
+    create: async (input: { songId: string; positionMs: number; comment?: string }) =>
+      createBookmark(client, input),
+    remove: async (songId: string) => deleteBookmark(client, songId),
+  };
+
+  const queue = {
+    get: async () => getPlayQueue(client),
+    save: async (input: { songIds: string[]; currentSongId?: string; positionMs?: number }) =>
+      savePlayQueue(client, input),
+  };
+
+  const discovery = {
+    getRandomSongs: async (opts?: { size?: number; genre?: string; fromYear?: number; toYear?: number }) =>
+      getRandomSongs(client, opts),
+    getNowPlaying: async () => getNowPlaying(client),
+  };
+
+  // Subsonic's jukebox is admin-granted per user: the endpoint exists on every
+  // Navidrome, and answers error 50 for a user without the role. Presence here
+  // therefore means "this server speaks jukebox", not "you may use it" — the
+  // output picker probes status() before it offers the row.
+  const jukebox = {
+    status: async () => toJukeboxState(await jukeboxApi.getStatus(client)),
+    setPlaylist: async (songIds: string[]) => toJukeboxState(await jukeboxApi.setPlaylist(client, songIds)),
+    start: async () => toJukeboxState(await jukeboxApi.start(client)),
+    stop: async () => toJukeboxState(await jukeboxApi.stop(client)),
+    skip: async (index: number, offsetSeconds?: number) =>
+      toJukeboxState(await jukeboxApi.skip(client, index, offsetSeconds)),
+    clear: async () => toJukeboxState(await jukeboxApi.clear(client)),
+    setGain: async (gain: number) => toJukeboxState(await jukeboxApi.setGain(client, gain)),
+  };
+
+  const podcasts = {
+    list: async (includeEpisodes?: boolean) => getPodcasts(client, { includeEpisodes }),
+    newestEpisodes: async (count?: number) => getNewestPodcasts(client, count),
+    subscribe: async (rssUrl: string) => createPodcastChannel(client, rssUrl),
+    unsubscribe: async (channelId: string) => deletePodcastChannel(client, channelId),
+    deleteEpisode: async (episodeId: string) => deletePodcastEpisode(client, episodeId),
+    downloadEpisode: async (episodeId: string) => downloadPodcastEpisode(client, episodeId),
+    refreshAll: async () => refreshPodcasts(client),
   };
 
   return {
@@ -232,6 +343,13 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     tracks,
     similar,
     lyrics,
-    search
+    search,
+    radio,
+    shares,
+    bookmarks,
+    queue,
+    discovery,
+    podcasts,
+    jukebox,
   };
 };

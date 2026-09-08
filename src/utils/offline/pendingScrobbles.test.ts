@@ -12,9 +12,9 @@ const NOW = 1_700_000_000_000;
 
 function scrobble(overrides: Partial<Extract<OfflineMutation, { type: 'scrobble' }>> = {}) {
   return {
-    id: 'scrobble:lastfm:song-1:1',
+    id: 'scrobble:listenbrainz:song-1:1',
     type: 'scrobble' as const,
-    destination: 'lastfm' as ScrobbleDestination,
+    destination: 'listenbrainz' as ScrobbleDestination,
     serverId: 'server-1',
     createdAt: NOW,
     songId: 'song-1',
@@ -28,7 +28,6 @@ function scrobble(overrides: Partial<Extract<OfflineMutation, { type: 'scrobble'
 const allConfigured: Record<ScrobbleDestination, boolean> = {
   server: true,
   listenbrainz: true,
-  lastfm: true,
 };
 
 describe('queued scrobbles', () => {
@@ -44,10 +43,10 @@ describe('queued scrobbles', () => {
   });
 
   it('keeps the same play queued once per destination', () => {
-    const lastfmEntry = scrobble({ id: 'a', destination: 'lastfm' });
+    const serverEntry = scrobble({ id: 'a', destination: 'server' });
     const lbEntry = scrobble({ id: 'b', destination: 'listenbrainz' });
 
-    const queue = enqueueOfflineMutation(enqueueOfflineMutation([], lastfmEntry), lbEntry);
+    const queue = enqueueOfflineMutation(enqueueOfflineMutation([], serverEntry), lbEntry);
 
     expect(queue).toHaveLength(2);
   });
@@ -123,11 +122,11 @@ describe('buildScrobbleMutation', () => {
   });
 
   it('gives each destination its own queue entry', () => {
+    const server = buildScrobbleMutation({ ...details, destination: 'server' }, NOW);
     const lb = buildScrobbleMutation({ ...details, destination: 'listenbrainz' }, NOW);
-    const fm = buildScrobbleMutation({ ...details, destination: 'lastfm' }, NOW);
 
-    expect(lb.id).not.toBe(fm.id);
-    expect(enqueueOfflineMutation([lb], fm)).toHaveLength(2);
+    expect(server.id).not.toBe(lb.id);
+    expect(enqueueOfflineMutation([server], lb)).toHaveLength(2);
   });
 });
 
@@ -137,7 +136,7 @@ describe('shouldDropMutation', () => {
   });
 
   it('drops a scrobble past the submission window', () => {
-    // Last.fm rejects these outright, so retrying only keeps a dead entry.
+    // Servers reject these outright, so retrying only keeps a dead entry.
     const stale = scrobble({ startedAt: NOW - MAX_SCROBBLE_AGE_MS - 1 });
 
     expect(shouldDropMutation(stale, NOW, allConfigured)).toBe(true);
@@ -151,18 +150,18 @@ describe('shouldDropMutation', () => {
 
   it('drops a scrobble for a service the user disconnected', () => {
     expect(
-      shouldDropMutation(scrobble({ destination: 'lastfm' }), NOW, {
+      shouldDropMutation(scrobble({ destination: 'listenbrainz' }), NOW, {
         ...allConfigured,
-        lastfm: false,
+        listenbrainz: false,
       })
     ).toBe(true);
   });
 
   it('keeps a scrobble for a service that is still connected', () => {
     expect(
-      shouldDropMutation(scrobble({ destination: 'listenbrainz' }), NOW, {
-        ...allConfigured,
-        lastfm: false,
+      shouldDropMutation(scrobble({ destination: 'server' }), NOW, {
+        server: true,
+        listenbrainz: false,
       })
     ).toBe(false);
   });
@@ -180,7 +179,6 @@ describe('shouldDropMutation', () => {
       shouldDropMutation(star, NOW + MAX_SCROBBLE_AGE_MS * 10, {
         server: false,
         listenbrainz: false,
-        lastfm: false,
       })
     ).toBe(false);
   });

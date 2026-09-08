@@ -1,8 +1,37 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
-import type { RadiusPreset } from '@/constants/design';
+import type { ListDensity, RadiusPreset } from '@/constants/design';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
+
+/**
+ * The collections that remember their own grid/list choice.
+ *
+ * Mirrors `LibraryCollectionType` in screens/library/librarySort, kept here as
+ * its own type so the settings slice doesn't reach up into a screen for it.
+ */
+export type LibraryViewKey =
+  | 'playlists'
+  | 'albums'
+  | 'artists'
+  | 'tracks'
+  | 'downloaded';
+
+/**
+ * What each collection shows before the user says otherwise.
+ *
+ * Artwork is the thing you scan an album or artist list for, so those are
+ * grids. A track is a title — the art beside it is its album's, repeated once
+ * per song on the record — so tracks and the mixed downloads list are rows,
+ * where the title gets the width instead of a caption under a thumbnail.
+ */
+export const LIBRARY_VIEW_DEFAULTS: Record<LibraryViewKey, boolean> = {
+  playlists: true,
+  albums: true,
+  artists: true,
+  tracks: false,
+  downloaded: false,
+};
 export type AudioQuality = 'low' | 'medium' | 'high' | 'original';
 export type PreferredCodec = 'mp3' | 'opus';
 export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'addToPlaylist' | 'cast';
@@ -20,9 +49,33 @@ export interface SettingsState {
    * constants/design.ts continues to hold defaults for unmigrated surfaces.
    */
   radiusPreset: RadiusPreset;
+  /**
+   * How much air sits between rows in a list. Live-reactive the same way the
+   * radius preset is — rows read it through `useListDensity()`.
+   */
+  listDensity: ListDensity;
+  /**
+   * Tint a detail screen with a colour taken from its cover art. On by
+   * default: it is most of what makes an album page look like that album.
+   * Off gives every screen the flat theme background instead.
+   */
+  coverAccentEnabled: boolean;
   gridColumns: number;
-  gridSpacing: number;
   isGridView: boolean;
+  /**
+   * Per-collection overrides for {@link isGridView}.
+   *
+   * One flag used to drive every collection screen, so switching Tracks to a
+   * list — which is what a list of 500 songs wants, since a three-up grid
+   * truncates every title and shows the same artwork nine times — also flipped
+   * Albums and Artists, where the grid is the right drawing. The kinds want
+   * different answers, so they get to hold different ones.
+   *
+   * Absent keys fall back to `LIBRARY_VIEW_DEFAULTS` and then to `isGridView`,
+   * which is what keeps this additive: a user upgrading with no overrides
+   * stored sees the per-kind defaults, not a reset.
+   */
+  libraryViewModes: Partial<Record<LibraryViewKey, boolean>>;
 
   playingBarAction: PlayingBarAction;
   showQualityBadge: boolean;
@@ -44,23 +97,48 @@ export interface SettingsState {
   preferredCodec: PreferredCodec;
   /** Auto-download songs newly added to the library after a sync. */
   autoDownloadNewSongs: boolean;
+  /** Hold downloads until the device is on WiFi. Downloads are the one thing
+   *  the app does that can run up a phone bill on its own, and auto-download
+   *  runs without anyone asking, so this defaults to on. */
+  downloadOnWifiOnly: boolean;
 
   language: AppLanguage;
 
-  /* Scrobbling */
+  /* Scrobbling. Now-playing follows scrobble — if a user opts out of one
+   * they opt out of the other; broadcasting "listening now" only to hide
+   * the finished listen was never a real user intent. */
   serverScrobbleEnabled: boolean;
-  serverNowPlayingEnabled: boolean;
 
-  /* Integrations */
+  /* Integrations. Deezer has three distinct dimensions (Home shelves,
+   * search results, external browse); everything else that used to be a
+   * sub-toggle (top tracks, similar artists, album recs, samples, playlist
+   * recs) follows deezerDiscoveryEnabled since they're all "should we ask
+   * Deezer to fill a discovery surface". */
   deezerDiscoveryEnabled: boolean;
   deezerSearchEnabled: boolean;
   deezerExternalEnabled: boolean;
-  deezerTopTracksEnabled: boolean;
-  deezerSimilarArtistsEnabled: boolean;
-  deezerAlbumRecommendationsEnabled: boolean;
-  deezerSamplesEnabled: boolean;
-  deezerPlaylistRecommendationsEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
+  /**
+   * ListenBrainz's public similar-artist graph (Home shelf, artist page).
+   * Needs no account, but it is still a third-party service being told which
+   * artists this user listens to, so it waits to be asked for like every
+   * other external source rather than being on because it happens to be free.
+   */
+  listenbrainzDiscoveryEnabled: boolean;
+  /** Last.fm read-only metadata (similar artists, recommendation seeds). */
+  lastfmEnabled: boolean;
+
+  /* Privacy / behavior opt-outs. */
+  queueSyncEnabled: boolean;
+  serverNowPlayingShelfEnabled: boolean;
+  resumeLongTracksEnabled: boolean;
+
+  /* Home discovery source visibility. The server tier gets its own toggle
+   * because nothing else governs it; the two external families are steered by
+   * the integration settings that decide whether we may call them at all
+   * (deezerDiscoveryEnabled, listenbrainzDiscoveryEnabled) rather than by a
+   * second switch that could sit on while the first one is off. */
+  homeServerSectionsEnabled: boolean;
 
   /* Player controls */
   showSleepTimer: boolean;
@@ -68,7 +146,21 @@ export interface SettingsState {
   showJumpButtons: boolean;
   showVolumeSlider: boolean;
   autoplayEnabled: boolean;
+  /**
+   * Seconds of overlap between tracks. `0` is off, which is the default —
+   * crossfade is a taste, not an improvement, and a player that fades by
+   * default is one that has decided for you.
+   */
+  crossfadeSeconds: number;
+  /** Fade through segues too, rather than hard-cutting where they join. */
+  crossfadeAlways: boolean;
+  /** Per-band gains in dB, in `EQ_FREQUENCIES` order. All zero is flat. */
+  equalizerGains: number[];
   hapticsEnabled: boolean;
+  /** Float the tab dock over the content behind a blur instead of having it
+   * take layout space. Off by default: it only shows on screens long enough
+   * to scroll under the dock, and it costs every list a taller bottom inset. */
+  translucentDock: boolean;
   /** When true, respect the system's reduce-motion setting; when false, always animate. */
   respectReducedMotion: boolean;
 
@@ -81,9 +173,11 @@ const initialState: SettingsState = {
   themeMode: 'system',
   themeColor: '#ff7f7f',
   radiusPreset: 'default',
+  listDensity: 'default',
+  coverAccentEnabled: true,
   gridColumns: 3,
-  gridSpacing: 8,
   isGridView: true,
+  libraryViewModes: {},
   playingBarAction: 'skip',
   showQualityBadge: false,
   showSourceHeaders: true,
@@ -97,28 +191,38 @@ const initialState: SettingsState = {
   downloadQuality: 'high',
   preferredCodec: 'mp3',
   autoDownloadNewSongs: false,
+  downloadOnWifiOnly: true,
 
   language: DEFAULT_LANGUAGE,
 
   serverScrobbleEnabled: true,
-  serverNowPlayingEnabled: true,
 
   deezerDiscoveryEnabled: false,
   deezerSearchEnabled: false,
   deezerExternalEnabled: false,
-  deezerTopTracksEnabled: false,
-  deezerSimilarArtistsEnabled: false,
-  deezerAlbumRecommendationsEnabled: false,
-  deezerSamplesEnabled: false,
-  deezerPlaylistRecommendationsEnabled: false,
   musicbrainzExternalEnabled: false,
+  listenbrainzDiscoveryEnabled: false,
+  lastfmEnabled: false,
+
+  // Default-on: cross-device continuity and resume are what the user
+  // asked for by pausing an audiobook or opening the app on a tablet.
+  // Both hide themselves behind a clear settings row when off.
+  queueSyncEnabled: true,
+  serverNowPlayingShelfEnabled: true,
+  resumeLongTracksEnabled: true,
+
+  homeServerSectionsEnabled: true,
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
   showJumpButtons: false,
   showVolumeSlider: false,
   autoplayEnabled: false,
+  crossfadeSeconds: 0,
+  crossfadeAlways: false,
+  equalizerGains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   hapticsEnabled: true,
+  translucentDock: false,
   respectReducedMotion: true,
 
   lastSyncedAt: null,
@@ -139,14 +243,26 @@ const settingsSlice = createSlice({
     setRadiusPreset(state, action: PayloadAction<RadiusPreset>) {
       state.radiusPreset = action.payload;
     },
+    setListDensity(state, action: PayloadAction<ListDensity>) {
+      state.listDensity = action.payload;
+    },
+    setCoverAccentEnabled(state, action: PayloadAction<boolean>) {
+      state.coverAccentEnabled = action.payload;
+    },
     setGridColumns(state, action: PayloadAction<number>) {
       state.gridColumns = action.payload;
     },
-    setGridSpacing(state, action: PayloadAction<number>) {
-      state.gridSpacing = action.payload;
-    },
     setIsGridView(state, action: PayloadAction<boolean>) {
       state.isGridView = action.payload;
+    },
+    setLibraryViewMode(
+      state,
+      action: PayloadAction<{ collection: LibraryViewKey; isGridView: boolean }>
+    ) {
+      state.libraryViewModes = {
+        ...state.libraryViewModes,
+        [action.payload.collection]: action.payload.isGridView,
+      };
     },
     setPlayingBarAction(
       state,
@@ -191,6 +307,9 @@ const settingsSlice = createSlice({
     setAutoDownloadNewSongs(state, action: PayloadAction<boolean>) {
       state.autoDownloadNewSongs = action.payload;
     },
+    setDownloadOnWifiOnly(state, action: PayloadAction<boolean>) {
+      state.downloadOnWifiOnly = action.payload;
+    },
 
     setLanguage(state, action: PayloadAction<AppLanguage>) {
       state.language = action.payload;
@@ -198,9 +317,6 @@ const settingsSlice = createSlice({
 
     setServerScrobbleEnabled(state, action: PayloadAction<boolean>) {
       state.serverScrobbleEnabled = action.payload;
-    },
-    setServerNowPlayingEnabled(state, action: PayloadAction<boolean>) {
-      state.serverNowPlayingEnabled = action.payload;
     },
 
     setDeezerDiscoveryEnabled(state, action: PayloadAction<boolean>) {
@@ -215,20 +331,24 @@ const settingsSlice = createSlice({
     setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
       state.musicbrainzExternalEnabled = action.payload;
     },
-    setDeezerTopTracksEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerTopTracksEnabled = action.payload;
+    setListenbrainzDiscoveryEnabled(state, action: PayloadAction<boolean>) {
+      state.listenbrainzDiscoveryEnabled = action.payload;
     },
-    setDeezerSimilarArtistsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerSimilarArtistsEnabled = action.payload;
+    setLastfmEnabled(state, action: PayloadAction<boolean>) {
+      state.lastfmEnabled = action.payload;
     },
-    setDeezerAlbumRecommendationsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerAlbumRecommendationsEnabled = action.payload;
+
+    setQueueSyncEnabled(state, action: PayloadAction<boolean>) {
+      state.queueSyncEnabled = action.payload;
     },
-    setDeezerSamplesEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerSamplesEnabled = action.payload;
+    setServerNowPlayingShelfEnabled(state, action: PayloadAction<boolean>) {
+      state.serverNowPlayingShelfEnabled = action.payload;
     },
-    setDeezerPlaylistRecommendationsEnabled(state, action: PayloadAction<boolean>) {
-      state.deezerPlaylistRecommendationsEnabled = action.payload;
+    setResumeLongTracksEnabled(state, action: PayloadAction<boolean>) {
+      state.resumeLongTracksEnabled = action.payload;
+    },
+    setHomeServerSectionsEnabled(state, action: PayloadAction<boolean>) {
+      state.homeServerSectionsEnabled = action.payload;
     },
 
     setShowSleepTimer(state, action: PayloadAction<boolean>) {
@@ -246,8 +366,20 @@ const settingsSlice = createSlice({
     setHapticsEnabled(state, action: PayloadAction<boolean>) {
       state.hapticsEnabled = action.payload;
     },
+    setTranslucentDock(state, action: PayloadAction<boolean>) {
+      state.translucentDock = action.payload;
+    },
     setRespectReducedMotion(state, action: PayloadAction<boolean>) {
       state.respectReducedMotion = action.payload;
+    },
+    setCrossfadeSeconds(state, action: PayloadAction<number>) {
+      state.crossfadeSeconds = action.payload;
+    },
+    setCrossfadeAlways(state, action: PayloadAction<boolean>) {
+      state.crossfadeAlways = action.payload;
+    },
+    setEqualizerGains(state, action: PayloadAction<number[]>) {
+      state.equalizerGains = action.payload;
     },
     setAutoplayEnabled(state, action: PayloadAction<boolean>) {
       state.autoplayEnabled = action.payload;
@@ -268,9 +400,11 @@ export const {
   setThemeMode,
   setThemeColor,
   setRadiusPreset,
+  setListDensity,
+  setCoverAccentEnabled,
   setGridColumns,
-  setGridSpacing,
   setIsGridView,
+  setLibraryViewMode,
   setPlayingBarAction,
   setShowQualityBadge,
   setShowSourceHeaders,
@@ -281,26 +415,31 @@ export const {
   setCellularStreamQuality,
   setDownloadQuality,
   setAutoDownloadNewSongs,
+  setDownloadOnWifiOnly,
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
-  setServerNowPlayingEnabled,
   setDeezerDiscoveryEnabled,
   setDeezerSearchEnabled,
   setDeezerExternalEnabled,
   setMusicbrainzExternalEnabled,
-  setDeezerTopTracksEnabled,
-  setDeezerSimilarArtistsEnabled,
-  setDeezerAlbumRecommendationsEnabled,
-  setDeezerSamplesEnabled,
-  setDeezerPlaylistRecommendationsEnabled,
+  setListenbrainzDiscoveryEnabled,
+  setLastfmEnabled,
+  setQueueSyncEnabled,
+  setServerNowPlayingShelfEnabled,
+  setResumeLongTracksEnabled,
+  setHomeServerSectionsEnabled,
   setShowSleepTimer,
   setShowJumpButtons,
   setShowVolumeSlider,
   setHapticsEnabled,
+  setTranslucentDock,
   setRespectReducedMotion,
   setShowPlaybackSpeed,
   setAutoplayEnabled,
+  setCrossfadeSeconds,
+  setCrossfadeAlways,
+  setEqualizerGains,
   setLastSyncedAt,
   setSyncOnAppStart,
   resetSettings,

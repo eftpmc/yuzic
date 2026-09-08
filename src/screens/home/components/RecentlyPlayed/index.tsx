@@ -1,21 +1,25 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { selectAlbumLastPlayedAt, selectPlaylistLastPlayedAt } from '@/utils/redux/selectors/statsSelectors';
 import { useAlbums } from '@/hooks/albums';
 import { usePlaylists } from '@/hooks/playlists';
-import { useTheme } from '@/hooks/useTheme';
 import MediaTile from '../MediaTile';
+import SectionShelfHeader from '../SectionShelfHeader';
+import { SECTION_H_PADDING } from '../sectionStyles';
 import { useTranslation } from 'react-i18next';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { AlbumBase, PlaylistBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
 import { useSheetRef } from '@/utils/useSheetRef';
-import { spacing, typography } from '@/constants/design';
+import { spacing } from '@/constants/design';
+import { useRadius } from '@/hooks/useRadius';
 
-const H_PADDING = 12;
+// The shelf's own inset has to be the shared one: its heading comes from
+// SectionShelfHeader, which is inset with every other shelf on the screen.
+const H_PADDING = SECTION_H_PADDING;
 const GAP = 10;
 const VISIBLE_ITEMS = 3.2;
 const MAX_ITEMS = 12;
@@ -39,6 +43,7 @@ const RecentTile = memo(function RecentTile({ item, itemWidth }: TileProps) {
   const navigation = useNavigation<any>();
   const sheetRef = useSheetRef();
   const [optionsMounted, setOptionsMounted] = useState(false);
+  const rad = useRadius();
 
   const handlePress = useCallback(() => {
     if (item.kind === 'album') {
@@ -65,7 +70,7 @@ const RecentTile = memo(function RecentTile({ item, itemWidth }: TileProps) {
           title={item.data.title}
           subtitle={item.data.subtext}
           size={itemWidth}
-          radius={item.kind === 'playlist' ? 6 : 8}
+          radius={rad.card}
           onPress={handlePress}
           onLongPress={handleLongPress}
         />
@@ -81,7 +86,7 @@ const RecentTile = memo(function RecentTile({ item, itemWidth }: TileProps) {
 
 export default function RecentlyPlayed() {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
   const itemWidth = getItemWidth(width);
 
@@ -113,14 +118,29 @@ export default function RecentlyPlayed() {
   const coversToPrefetch = useMemo(() => items.map(i => i.data.cover), [items]);
   usePrefetchCovers(coversToPrefetch, 'grid');
 
+  // The shelf stops at twelve. "Most recently played first" is a sort order
+  // the library list already has, so the heading leads there rather than to a
+  // screen built for this one shelf — the whole library in that order, not
+  // just the dozen that fit. The list keeps its own name; the sort control is
+  // what says how it is ordered.
+  const openAll = useCallback(
+    () => navigation.push('libraryCollectionView', {
+      sort: 'recent',
+    }),
+    [navigation]
+  );
+
   // Hide the section entirely until there's play history to surface.
   if (items.length < MIN_ITEMS) return null;
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.secondary }]}>
-        {t('explore.sections.recentlyPlayed')}
-      </Text>
+      <SectionShelfHeader
+        testID="home-recently-played-see-all"
+        title={t('explore.sections.recentlyPlayed')}
+        seeAllLabel={t('library.seeAll')}
+        onSeeAll={openAll}
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -139,11 +159,6 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
-  },
-  title: {
-    ...typography.sectionTitle,
-    marginBottom: spacing.md,
-    marginLeft: H_PADDING,
   },
   scrollContent: {
     paddingHorizontal: H_PADDING,

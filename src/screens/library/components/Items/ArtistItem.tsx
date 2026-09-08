@@ -10,7 +10,9 @@ interface ItemProps {
   artist?: Artist;
   id: string;
   name: string;
-  subtext: string;
+  /** Undefined on a screen of nothing but artists, where the server's subtext
+   *  is the literal word "Artist" under every name. */
+  subtext?: string;
   cover: CoverSource;
   isGridView: boolean;
   gridWidth: number;
@@ -34,7 +36,7 @@ const ArtistItem: React.FC<ItemProps> = ({
   const artistForOptions = useMemo(() => artist ?? {
     id,
     name,
-    subtext,
+    subtext: subtext ?? '',
     cover,
     albumIds: [],
   }, [artist, cover, id, name, subtext]);

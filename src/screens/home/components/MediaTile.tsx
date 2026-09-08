@@ -53,5 +53,10 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.caption,
     marginTop: spacing.xxs,
+    // Reserved, not measured. Shelves mix items that have a second line with
+    // items that don't — an artist with a description sits beside one with
+    // none — and without a floor the two tiles put their titles on different
+    // baselines, which reads as a broken row rather than as missing data.
+    minHeight: typography.caption.lineHeight,
   },
 });
