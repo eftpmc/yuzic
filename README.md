@@ -43,8 +43,10 @@ Yuzic provides a Navidrome demo but requires a self-hosted Subsonic, Jellyfin, o
   between them; the library, queue, and downloads are scoped per server.
 - **Offline & downloads** — download songs, albums, and playlists to the
   device; edits made offline replay when you're back online.
-- **Playback** — streaming with per-network quality (up to lossless),
-  equalizer, sleep timer, playback speed, autoplay, and resume for long tracks.
+- **Playback** — Yuzic's own audio engine: streaming with per-network quality
+  (up to lossless), crossfade with a gapless-aware mode, a ten-band equalizer,
+  replay gain, sleep timer, playback speed, autoplay, and resume for long
+  tracks.
 - **Radio, podcasts, and shares** — where your server supports them.
 - **Play it elsewhere** — DLNA/UPnP renderers on the local network, AirPlay on
   iOS, or the server's own speakers where it offers a jukebox.
@@ -104,7 +106,6 @@ music you already have onto this device.
 | [AGENTS.md](AGENTS.md) | Release/version rules and the app's UI conventions |
 
 ## Future
-- Crossfading
 - Apple TV app
 - Apple watch
 - F-droid
