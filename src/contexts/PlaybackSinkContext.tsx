@@ -3,7 +3,7 @@ import { getBackend } from '@/features/player/activeBackend';
 
 import { useApi } from '@/api';
 import type { JukeboxState } from '@/api/types';
-import { useCast } from './CastContext';
+import { useDlna } from './DlnaContext';
 import type { DiscoveredDevice } from '@/hooks/useDlnaDiscovery';
 import {
   LOCAL_SINK,
@@ -62,7 +62,7 @@ export const usePlaybackSink = () => useContext(PlaybackSinkContext);
  * Which output is selected, and where transport commands go.
  *
  * This exists because "is something casting?" was being asked four different
- * ways: `if (activeDevice) castPause()` in the player, a three-term negation
+ * ways: `if (activeDevice) dlnaPause()` in the player, a three-term negation
  * in the output sheet to decide whether "This device" was the selected row,
  * and a fifth copy would have arrived with every new output. One selected
  * sink answers all of them, and `ownsPlayback` says whether the local player
@@ -70,7 +70,7 @@ export const usePlaybackSink = () => useContext(PlaybackSinkContext);
  */
 export function PlaybackSinkProvider({ children }: { children: React.ReactNode }) {
   const api = useApi();
-  const { connectToDevice, disconnectDevice, castPause, castResume, castSeek } = useCast();
+  const { connectToDevice, disconnectDevice, dlnaPause, dlnaResume, dlnaSeek } = useDlna();
 
   const [sink, setSink] = useState<PlaybackSink>(LOCAL_SINK);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -156,31 +156,31 @@ export function PlaybackSinkProvider({ children }: { children: React.ReactNode }
 
   const sinkPause = useCallback(async () => {
     const current = sinkRef.current;
-    if (current.kind === 'dlna') return castPause();
+    if (current.kind === 'dlna') return dlnaPause();
     if (current.kind === 'jukebox') {
       const next = await api.jukebox?.stop();
       if (next) setJukeboxState(next);
     }
-  }, [api, castPause]);
+  }, [api, dlnaPause]);
 
   const sinkResume = useCallback(async () => {
     const current = sinkRef.current;
-    if (current.kind === 'dlna') return castResume();
+    if (current.kind === 'dlna') return dlnaResume();
     if (current.kind === 'jukebox') {
       const next = await api.jukebox?.start();
       if (next) setJukeboxState(next);
     }
-  }, [api, castResume]);
+  }, [api, dlnaResume]);
 
   const sinkSeek = useCallback(async (positionSeconds: number) => {
     const current = sinkRef.current;
-    if (current.kind === 'dlna') return castSeek(positionSeconds);
+    if (current.kind === 'dlna') return dlnaSeek(positionSeconds);
     if (current.kind === 'jukebox') {
       const index = jukeboxState?.currentIndex ?? 0;
       const next = await api.jukebox?.skip(index, positionSeconds);
       if (next) setJukeboxState(next);
     }
-  }, [api, castSeek, jukeboxState]);
+  }, [api, dlnaSeek, jukeboxState]);
 
   const sinkLoadQueue = useCallback(async (songIds: string[], index: number, play: boolean) => {
     if (sinkRef.current.kind !== 'jukebox' || !api.jukebox) return;
