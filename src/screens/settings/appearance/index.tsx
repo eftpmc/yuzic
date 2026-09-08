@@ -18,9 +18,10 @@ import {
   selectTranslucentDock,
   selectRespectReducedMotion,
   selectCoverAccentEnabled,
-  selectHomeServerSectionsEnabled,
-  selectListenbrainzDiscoveryEnabled,
-  selectDeezerDiscoveryEnabled,
+  selectShowSleepTimer,
+  selectShowPlaybackSpeed,
+  selectShowJumpButtons,
+  selectShowVolumeSlider,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setShowQualityBadge,
@@ -29,9 +30,10 @@ import {
   setTranslucentDock,
   setRespectReducedMotion,
   setCoverAccentEnabled,
-  setHomeServerSectionsEnabled,
-  setListenbrainzDiscoveryEnabled,
-  setDeezerDiscoveryEnabled,
+  setShowSleepTimer,
+  setShowPlaybackSpeed,
+  setShowJumpButtons,
+  setShowVolumeSlider,
 } from '@/utils/redux/slices/settingsSlice';
 
 const AppearanceSettings: React.FC = () => {
@@ -43,23 +45,55 @@ const AppearanceSettings: React.FC = () => {
   const translucentDock = useSelector(selectTranslucentDock);
   const respectReducedMotion = useSelector(selectRespectReducedMotion);
   const coverAccentEnabled = useSelector(selectCoverAccentEnabled);
-  const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled);
-  const homeListenbrainzEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
-  const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
+  const showSleepTimer = useSelector(selectShowSleepTimer);
+  const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);
+  const showJumpButtons = useSelector(selectShowJumpButtons);
+  const showVolumeSlider = useSelector(selectShowVolumeSlider);
 
   const toggleQualityBadge = useCallback((v: boolean) => { dispatch(setShowQualityBadge(v)); }, [dispatch]);
   const toggleSourceHeaders = useCallback((v: boolean) => { dispatch(setShowSourceHeaders(v)); }, [dispatch]);
   const toggleHaptics = useCallback((v: boolean) => { dispatch(setHapticsEnabled(v)); }, [dispatch]);
   const toggleReducedMotion = useCallback((v: boolean) => { dispatch(setRespectReducedMotion(v)); }, [dispatch]);
   const toggleCoverAccent = useCallback((v: boolean) => { dispatch(setCoverAccentEnabled(v)); }, [dispatch]);
-  const toggleHomeServer = useCallback((v: boolean) => { dispatch(setHomeServerSectionsEnabled(v)); }, [dispatch]);
-  // Same lever the Integrations screen shows, on purpose: a shelf that
-  // appears here is a call to ListenBrainz, so there is one switch for both
-  // rather than a display toggle that can sit on while the source is off —
-  // which is how the Deezer row beside it already behaves.
-  const toggleHomeListenbrainz = useCallback((v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
-  const toggleHomeDeezer = useCallback((v: boolean) => { dispatch(setDeezerDiscoveryEnabled(v)); }, [dispatch]);
   const toggleTranslucentDock = useCallback((v: boolean) => { dispatch(setTranslucentDock(v)); }, [dispatch]);
+
+  const toggleSleepTimer = useCallback((v: boolean) => { dispatch(setShowSleepTimer(v)); }, [dispatch]);
+  const togglePlaybackSpeed = useCallback((v: boolean) => { dispatch(setShowPlaybackSpeed(v)); }, [dispatch]);
+  const toggleJumpButtons = useCallback((v: boolean) => { dispatch(setShowJumpButtons(v)); }, [dispatch]);
+  const toggleVolumeSlider = useCallback((v: boolean) => { dispatch(setShowVolumeSlider(v)); }, [dispatch]);
+
+  // Which controls the player screen draws. The strings still live under
+  // `settings.player.*` because that is where they were written and a key is
+  // not worth a four-locale rename; the setting itself belongs here.
+  const playerControlItems = useMemo(() => [
+    {
+      label: t('settings.player.showSleepTimer'),
+      subtext: t('settings.player.showSleepTimerSubtext'),
+      value: showSleepTimer,
+      onValueChange: toggleSleepTimer,
+    },
+    {
+      label: t('settings.player.showPlaybackSpeed'),
+      subtext: t('settings.player.showPlaybackSpeedSubtext'),
+      value: showPlaybackSpeed,
+      onValueChange: togglePlaybackSpeed,
+    },
+    {
+      label: t('settings.player.showJumpButtons'),
+      subtext: t('settings.player.showJumpButtonsSubtext'),
+      value: showJumpButtons,
+      onValueChange: toggleJumpButtons,
+    },
+    {
+      label: t('settings.player.showVolumeSlider'),
+      subtext: t('settings.player.showVolumeSliderSubtext'),
+      value: showVolumeSlider,
+      onValueChange: toggleVolumeSlider,
+    },
+  ], [
+    t, showSleepTimer, showPlaybackSpeed, showJumpButtons, showVolumeSlider,
+    toggleSleepTimer, togglePlaybackSpeed, toggleJumpButtons, toggleVolumeSlider,
+  ]);
 
   const feelItems = useMemo(() => [
     {
@@ -103,34 +137,20 @@ const AppearanceSettings: React.FC = () => {
     onValueChange: toggleSourceHeaders,
   }], [t, showSourceHeaders, toggleSourceHeaders]);
 
-  const homeSourceItems = useMemo(() => [
-    {
-      label: t('settings.appearance.homeSourcesServer'),
-      subtext: t('settings.appearance.homeSourcesServerSubtext'),
-      value: homeServerEnabled,
-      onValueChange: toggleHomeServer,
-    },
-    {
-      label: t('settings.appearance.homeSourcesListenbrainz'),
-      subtext: t('settings.appearance.homeSourcesListenbrainzSubtext'),
-      value: homeListenbrainzEnabled,
-      onValueChange: toggleHomeListenbrainz,
-    },
-    {
-      label: t('settings.appearance.homeSourcesDeezer'),
-      subtext: t('settings.appearance.homeSourcesDeezerSubtext'),
-      value: deezerEnabled,
-      onValueChange: toggleHomeDeezer,
-    },
-  ], [t, homeServerEnabled, homeListenbrainzEnabled, deezerEnabled, toggleHomeServer, toggleHomeListenbrainz, toggleHomeDeezer]);
-
   return (
     <SettingsScreen title={t('settings.appearance.title')}>
       <LanguageSelector />
       <ThemeModeSelector />
       <ThemeColor />
+      {/*
+        "Playing" is which controls the player screen draws, which is a
+        question about what the app looks like — so it belongs here, next to
+        the playing-bar action, rather than in Playback beside crossfade and
+        the equalizer. Playback is what you hear; Appearance is what you see.
+      */}
       <SettingsCardHeader subtle title={t('settings.appearance.playing')} />
       <SettingsToggleGroup items={qualityBadgeItems} />
+      <SettingsToggleGroup items={playerControlItems} />
       <PlayingBarActionSelector />
       <SettingsCardHeader subtle title={t('settings.appearance.display')} />
       <SettingsToggleGroup items={sourceHeaderItems} />
@@ -138,8 +158,6 @@ const AppearanceSettings: React.FC = () => {
       <GridColumns />
       <RadiusPresetSelector />
       <ListDensitySelector />
-      <SettingsCardHeader subtle title={t('settings.appearance.homeSources')} />
-      <SettingsToggleGroup items={homeSourceItems} />
       <SettingsCardHeader subtle title={t('settings.appearance.feel')} />
       <SettingsToggleGroup items={feelItems} />
     </SettingsScreen>

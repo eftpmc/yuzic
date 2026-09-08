@@ -39,7 +39,7 @@ function soapAction(url: string, service: string, action: string, body: string):
 
 // ─── Context type ─────────────────────────────────────────────────────────────
 
-interface CastContextType {
+interface DlnaContextType {
   // DLNA
   activeDevice: DlnaDevice | null;
   isConnecting: boolean;
@@ -47,24 +47,24 @@ interface CastContextType {
   disconnectDevice(): Promise<void>;
 
   // Shared controls (routed to whichever protocol is active)
-  castPause(): Promise<void>;
-  castResume(): Promise<void>;
-  castSeek(position: number): Promise<void>;
+  dlnaPause(): Promise<void>;
+  dlnaResume(): Promise<void>;
+  dlnaSeek(position: number): Promise<void>;
 }
 
-const CastContext = createContext<CastContextType>({
+const DlnaContext = createContext<DlnaContextType>({
   activeDevice: null,
   isConnecting: false,
   connectToDevice: async () => {},
   disconnectDevice: async () => {},
-  castPause: async () => {},
-  castResume: async () => {},
-  castSeek: async () => {},
+  dlnaPause: async () => {},
+  dlnaResume: async () => {},
+  dlnaSeek: async () => {},
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-export function CastProvider({ children }: { children: React.ReactNode }) {
+export function DlnaProvider({ children }: { children: React.ReactNode }) {
   // DLNA state
   const [activeDevice, setActiveDevice] = useState<DlnaDevice | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -94,7 +94,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
           <Speed>1</Speed>
         `);
       } catch (err) {
-        console.warn('[Cast] DLNA track update failed', err);
+        console.warn('[DLNA] track update failed', err);
       }
     });
     return unsubscribe;
@@ -149,7 +149,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
 
   // ── Shared controls ──────────────────────────────────────────────────────
 
-  const castPause = useCallback(async () => {
+  const dlnaPause = useCallback(async () => {
     const device = activeDeviceRef.current;
     if (!device) return;
     try {
@@ -159,7 +159,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const castResume = useCallback(async () => {
+  const dlnaResume = useCallback(async () => {
     const device = activeDeviceRef.current;
     if (!device) return;
     try {
@@ -172,7 +172,7 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const castSeek = useCallback(async (position: number) => {
+  const dlnaSeek = useCallback(async (position: number) => {
     const device = activeDeviceRef.current;
     if (!device) return;
     const h = Math.floor(position / 3600);
@@ -191,13 +191,13 @@ export function CastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <CastContext.Provider value={{
+    <DlnaContext.Provider value={{
       activeDevice, isConnecting, connectToDevice, disconnectDevice,
-      castPause, castResume, castSeek,
+      dlnaPause, dlnaResume, dlnaSeek,
     }}>
       {children}
-    </CastContext.Provider>
+    </DlnaContext.Provider>
   );
 }
 
-export const useCast = () => useContext(CastContext);
+export const useDlna = () => useContext(DlnaContext);

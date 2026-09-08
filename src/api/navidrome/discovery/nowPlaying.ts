@@ -28,6 +28,6 @@ export async function getNowPlaying(client: NavidromeClient): Promise<NowPlaying
       }));
   } catch (error) {
     console.error('Navidrome getNowPlaying failed:', error);
-    return [];
+    throw error;
   }
 }

@@ -49,6 +49,6 @@ export async function getTopSongs(
       });
   } catch (error) {
     console.error('Navidrome getTopSongs failed:', error);
-    return [];
+    throw error;
   }
 }

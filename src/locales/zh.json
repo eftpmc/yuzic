@@ -451,6 +451,9 @@
       "nowPlayingDescription": "实时显示正在播放的内容。",
       "markAsPlayed": "标记为已播放",
       "markAsPlayedDescription": "更新服务器上的播放次数。"
+    },
+    "home": {
+      "title": "主页"
     }
   },
   "common": {

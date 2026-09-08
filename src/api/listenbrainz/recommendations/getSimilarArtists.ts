@@ -56,7 +56,8 @@ export async function getLBSimilarArtists(
         score: Number(r.score ?? 0),
         comment: r.comment?.trim() || undefined,
       }));
-  } catch {
-    return [];
+  } catch (error) {
+    console.error('ListenBrainz getSimilarArtists failed:', error);
+    throw error;
   }
 }

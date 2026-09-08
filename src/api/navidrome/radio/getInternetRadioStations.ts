@@ -28,7 +28,7 @@ export async function getInternetRadioStations(
       }));
   } catch (error) {
     console.error('Navidrome getInternetRadioStations failed:', error);
-    return [];
+    throw error;
   }
 }
 

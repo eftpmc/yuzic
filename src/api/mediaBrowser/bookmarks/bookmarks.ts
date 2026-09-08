@@ -46,6 +46,6 @@ export async function getBookmarksFromUserData(client: MediaBrowserClient): Prom
       .filter((b): b is Bookmark => b !== null);
   } catch (error) {
     console.error('mediaBrowser bookmarks read failed:', error);
-    return [];
+    throw error;
   }
 }

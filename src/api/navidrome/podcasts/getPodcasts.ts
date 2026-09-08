@@ -84,7 +84,7 @@ export async function getPodcasts(
       }));
   } catch (error) {
     console.error('Navidrome getPodcasts failed:', error);
-    return [];
+    throw error;
   }
 }
 
@@ -101,7 +101,7 @@ export async function getNewestPodcasts(
       .filter((e): e is PodcastEpisode => e !== null);
   } catch (error) {
     console.error('Navidrome getNewestPodcasts failed:', error);
-    return [];
+    throw error;
   }
 }
 

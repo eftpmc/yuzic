@@ -451,6 +451,9 @@
       "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。",
       "markAsPlayed": "再生済みにする",
       "markAsPlayedDescription": "サーバーの再生回数を更新します。"
+    },
+    "home": {
+      "title": "ホーム"
     }
   },
   "common": {

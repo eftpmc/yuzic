@@ -43,6 +43,6 @@ export async function getSong(
     };
   } catch (error) {
     console.error(`Failed to fetch ${client.brand.label} song:`, error);
-    return null;
+    throw error;
   }
 }

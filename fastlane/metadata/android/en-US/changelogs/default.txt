@@ -1,0 +1,8 @@
+Fixes for playback on a weak connection, and a tidier Settings.
+
+- Songs no longer cut off part-way through when the network stalls
+- A brief drop no longer ends the track — playback picks the file back up
+- Screens say when they failed to load instead of looking empty
+- A Deezer or Last.fm outage no longer reports your server as unreachable
+- The equalizer has its own screen, so scrolling past it can't move a band
+- Home shelf sources moved to Home; player controls moved to Appearance

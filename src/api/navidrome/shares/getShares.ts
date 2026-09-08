@@ -24,7 +24,7 @@ export async function getShares(client: NavidromeClient): Promise<Share[]> {
       }));
   } catch (error) {
     console.error('Navidrome getShares failed:', error);
-    return [];
+    throw error;
   }
 }
 
@@ -52,7 +52,7 @@ export async function createShare(
     };
   } catch (error) {
     console.error('Navidrome createShare failed:', error);
-    return null;
+    throw error;
   }
 }
 

@@ -45,6 +45,6 @@ export async function getSimilarSongs(
       });
   } catch (error) {
     console.error("Navidrome getSimilarSongs failed:", error);
-    return [];
+    throw error;
   }
 }
