@@ -1,9 +1,8 @@
-Yuzic now has its own audio engine. Playback was rebuilt around an audio graph rather than a single player.
+Fixes for playback on a weak connection, and a tidier Settings.
 
-- Crossfade, with a gapless-aware mode
-- Ten-band equalizer and replay gain
-- Android Auto plays the quality you chose
-- A unified Downloads screen, with progress and cancel
-- A sleep timer that fades out rather than cutting
-- Appearance settings for density, corners and glyph scale
-- Screen reader labels on every control you can reach
+- Songs no longer cut off part-way through when the network stalls
+- A brief drop no longer ends the track — playback picks the file back up
+- Screens say when they failed to load instead of looking empty
+- A Deezer or Last.fm outage no longer reports your server as unreachable
+- The equalizer has its own screen, so scrolling past it can't move a band
+- Home shelf sources moved to Home; player controls moved to Appearance
