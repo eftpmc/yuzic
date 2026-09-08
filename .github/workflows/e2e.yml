@@ -64,6 +64,13 @@ jobs:
       # would then be testing a dev client's launcher. Release embeds the JS
       # bundle, so the simulator runs the app the way a person would get it.
       # No signing is involved for a simulator destination.
+      #
+      # `DEBUG_INFORMATION_FORMAT=dwarf` drops the dSYM bundle, which nothing
+      # here reads: the flows either pass or hand back a screenshot, and no
+      # crash log gets symbolicated. It is several gigabytes and a `lipo` of
+      # every architecture at the end of an otherwise finished build — the
+      # step that ran this machine out of disk when the same build was
+      # verified locally.
       - name: Build for the simulator
         run: |
           set -o pipefail
@@ -74,6 +81,7 @@ jobs:
             -sdk iphonesimulator \
             -derivedDataPath ios/build \
             CODE_SIGNING_ALLOWED=NO \
+            DEBUG_INFORMATION_FORMAT=dwarf \
             build \
             > /tmp/xcodebuild-e2e.log 2>&1 || {
               echo "::error::Simulator build failed — last 100 lines follow, full log uploaded."

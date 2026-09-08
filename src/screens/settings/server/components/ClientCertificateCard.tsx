@@ -60,17 +60,23 @@ const ClientCertificateCard: React.FC<Props> = ({ server }) => {
 
   const onImport = useCallback(async () => {
     setError(null);
-    const picked = await DocumentPicker.getDocumentAsync({
-      // PKCS#12 goes by two extensions and three mime types depending on who
-      // wrote the file, so the type filter is deliberately loose and the real
-      // check is whether it decrypts.
-      type: ['application/x-pkcs12', 'application/octet-stream', '*/*'],
-      copyToCacheDirectory: true,
-    });
-    if (picked.canceled || !picked.assets?.[0]) return;
-
     setBusy(true);
+    // The picker call is inside the `try`, not before it. It was outside, and
+    // a rejection there — the module unavailable, no view controller to
+    // present from — went nowhere at all: the sheet did not open and the
+    // screen said nothing, which is the failure-reported-as-nothing shape
+    // this codebase has spent a lot of effort removing elsewhere.
     try {
+      const picked = await DocumentPicker.getDocumentAsync({
+        // A single loose filter. iOS turns each entry into a `UTType` and a
+        // MIME type it cannot map is not a filter it can apply, so naming
+        // `application/x-pkcs12` here narrows nothing and risks the whole
+        // call. The real check is whether the file decrypts.
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
+      if (picked.canceled || !picked.assets?.[0]) return;
+
       const asset = picked.assets[0];
       const pkcs12Base64 = await new File(asset.uri).base64();
       await saveClientCertificate(server.id, { pkcs12Base64, password });
