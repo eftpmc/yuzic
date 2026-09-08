@@ -88,7 +88,7 @@
     "react-redux": "^9.2.0",
     "reanimated-color-picker": "^4.2.0",
     "redux-persist": "^6.0.0",
-    "yuzic-engine": "github:yuzicapp/yuzic-engine#8c2f6aead6e1e0c9c1240286af5a1a6bc81bc4ac"
+    "yuzic-engine": "github:yuzicapp/yuzic-engine#fe257790dab6ee9e1278ecd4944c16411826852c"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
