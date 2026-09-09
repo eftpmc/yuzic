@@ -42,8 +42,17 @@ jobs:
           key: gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/**/*.gradle*') }}
           restore-keys: gradle-
 
+      # --omit=dev, not a plain `npm ci`. expo-dev-client and the launcher and
+      # menu packages under it are devDependencies, but autolinking looks at
+      # what is *installed* rather than at which list it came from — so a plain
+      # install compiles expo.modules.devlauncher and devmenu into the release
+      # APK. They were in the shipped 2.0.1 build for exactly this reason, and
+      # F-Droid's scanner reads dev-launcher code in a release artifact as a
+      # reason to call it non-free (rfp#3562). Excluding them in
+      # `expo.autolinking` instead would be wrong: that key has no notion of
+      # build type, so it would break `expo run:android` for development too.
       - name: Install Node dependencies
-        run: npm ci
+        run: npm ci --omit=dev
 
       - name: Decode Android keystore
         run: |
