@@ -95,3 +95,58 @@ jobs:
     if: needs.detect-version-bump.outputs.changed == 'true' && github.event_name == 'push'
     uses: ./.github/workflows/ios-build.yml
     secrets: inherit
+
+  # The draft is created before the builds and in parallel with them, so it
+  # cannot carry their output — which is why 2.0.1 and 2.0.2 sat empty on the
+  # releases page with the binaries reachable only from a workflow run that
+  # expires. This runs after both and puts the same three files on the release
+  # that the builds already uploaded as artifacts.
+  #
+  # `always()` so a half-failed release still publishes the half that worked:
+  # one platform failing is not a reason to leave the other's build stranded,
+  # and that has happened twice. The per-file `if` guards handle the missing
+  # one. The release still has to be finished by hand — this attaches the
+  # artifacts and leaves the notes to a person.
+  attach-artifacts:
+    name: Attach builds to the release
+    needs: [detect-version-bump, draft-release, build-android, build-ios]
+    if: always() && needs.detect-version-bump.outputs.changed == 'true' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Attach whatever built
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          VERSION: ${{ needs.detect-version-bump.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p upload
+
+          # Named as the store listings and the README's download links expect,
+          # rather than as Gradle's `app-release.*` output. `|| true` on the
+          # find keeps a missing platform from tripping `set -e`, and the copies
+          # are written as `if` blocks rather than `&&` chains for the same
+          # reason: a false test at the end of a step fails the step.
+          IPA=$(find artifacts -name '*.ipa' | head -1 || true)
+          APK=$(find artifacts -name '*.apk' | head -1 || true)
+          AAB=$(find artifacts -name '*.aab' | head -1 || true)
+
+          if [ -n "$IPA" ]; then cp "$IPA" upload/Yuzic.ipa; echo "ipa: $IPA"; else echo "no ipa (iOS did not produce one)"; fi
+          if [ -n "$APK" ]; then cp "$APK" upload/Yuzic.apk; echo "apk: $APK"; else echo "no apk (Android did not produce one)"; fi
+          if [ -n "$AAB" ]; then cp "$AAB" upload/Yuzic.aab; echo "aab: $AAB"; else echo "no aab (Android did not produce one)"; fi
+
+          if [ -z "$(ls -A upload)" ]; then
+            echo "No build artifacts found — both platforms failed. Nothing to attach."
+            exit 0
+          fi
+
+          # --clobber so a re-run replaces rather than fails on an existing name.
+          gh release upload "$VERSION" upload/* --clobber
+          echo "Attached: $(ls upload | tr '\n' ' ')"
