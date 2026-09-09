@@ -1,11 +1,14 @@
 import { applyClientCertificate, type ClientCertificateTarget } from './applyClientCertificate';
 import { loadClientCertificate } from './clientCertificateStore';
+import { Platform } from 'react-native';
 
 jest.mock('./clientCertificateStore', () => ({
   loadClientCertificate: jest.fn(),
 }));
 
 jest.mock('react-native', () => ({ Platform: { OS: 'ios' } }));
+
+const mockPlatform = Platform as { OS: string };
 
 const load = loadClientCertificate as jest.MockedFunction<typeof loadClientCertificate>;
 
@@ -20,9 +23,13 @@ function engine(): ClientCertificateTarget & { calls: (string | null)[][] } {
 }
 
 describe('applyClientCertificate', () => {
-  beforeEach(() => load.mockReset());
+  beforeEach(() => {
+    load.mockReset();
+    mockPlatform.OS = 'ios';
+  });
 
-  it('hands a stored certificate to the engine', async () => {
+  it('hands a stored certificate to the engine on Android too', async () => {
+    mockPlatform.OS = 'android';
     load.mockResolvedValue({ pkcs12Base64: 'blob', password: 'pw' });
     const target = engine();
 
