@@ -15,7 +15,7 @@
     "test:e2e:onboarding": "maestro test .maestro/onboarding-demo.yaml",
     "test:e2e:details": "maestro test .maestro/detail-flows.yaml",
     "lint": "expo lint",
-    "postinstall": "patch-package"
+    "postinstall": "if [ -e node_modules/.bin/patch-package ]; then patch-package --error-on-fail; fi"
   },
   "overrides": {
     "lucide-react-native": {
