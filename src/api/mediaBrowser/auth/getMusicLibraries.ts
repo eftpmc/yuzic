@@ -1,5 +1,6 @@
 import { Server } from '@/types';
 import { MediaBrowserItemsResponse } from '../types';
+import { serverFetch } from '@/features/mtls/serverFetch';
 
 export async function getMusicLibraries(server: Server): Promise<{ id: string; name: string }[]> {
   const { serverUrl, auth } = server;
@@ -8,7 +9,7 @@ export async function getMusicLibraries(server: Server): Promise<{ id: string; n
   if (!serverUrl || !token || !userId) return [];
 
   try {
-    const res = await fetch(`${serverUrl}/Users/${encodeURIComponent(userId)}/Views`, {
+    const res = await serverFetch(`${serverUrl}/Users/${encodeURIComponent(userId)}/Views`, {
       headers: { 'X-Emby-Token': token },
     });
     // A refused or errored response is not a server without music. Returning

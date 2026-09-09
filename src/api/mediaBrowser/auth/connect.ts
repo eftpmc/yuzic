@@ -1,4 +1,5 @@
 import { MediaBrowserBrand } from "../brand";
+import { serverFetch } from '@/features/mtls/serverFetch';
 
 type ConnectResult =
   | { success: true; token: string; userId: string }
@@ -12,7 +13,7 @@ export async function connect(
   basicAuth?: { username: string; password: string }
 ): Promise<ConnectResult> {
   try {
-    const res = await fetch(`${serverUrl}/Users/AuthenticateByName`, {
+    const res = await serverFetch(`${serverUrl}/Users/AuthenticateByName`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

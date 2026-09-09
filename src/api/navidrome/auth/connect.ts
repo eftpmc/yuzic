@@ -1,6 +1,7 @@
 import { buildTokenParams } from "../client";
 import { SubsonicResponse } from "../types";
 import i18n from '@/i18n';
+import { serverFetch } from '@/features/mtls/serverFetch';
 
 const API_VERSION = "1.16.0";
 const CLIENT_NAME = "Yuzic";
@@ -35,7 +36,7 @@ export async function connect(
     : {};
 
   try {
-    const res = await fetch(url, { headers });
+    const res = await serverFetch(url, { headers });
     if (!res.ok) {
       return { success: false, message: i18n.t('onboarding.connect.serverErrorStatus', { status: res.status }) };
     }

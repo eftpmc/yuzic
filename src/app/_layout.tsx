@@ -39,6 +39,8 @@ import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
 import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useClientCertificate } from '@/features/mtls/useClientCertificate';
+
 
 const LIBRARY_LOAD_FAILED_TOAST_ID = 'library-load-failed';
 
@@ -184,6 +186,11 @@ function AppShell() {
   const rad = useRadius();
   const language = useSelector(selectLanguage);
   useImageMemoryCleanup();
+  // Mounted here, not on the settings screen that owns the import UI: the
+  // certificate has to be applied at startup and re-applied on every change of
+  // active server, both of which happen with Settings closed. Mounted only
+  // there, a server switch left the previous server's identity in place.
+  useClientCertificate();
 
   useEffect(() => {
     if (i18n.language !== language) {

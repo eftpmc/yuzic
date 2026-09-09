@@ -66,23 +66,32 @@ The user imports a PKCS#12 bundle (`.p12`/`.pfx`) plus its password under
   blob — `clientCertificateStore.ts` wraps `expo-secure-store`. A certificate's
   private key must not land in a redux-persist snapshot, so the store is the
   only path to it and nothing else keeps a copy.
-- **It reaches the engine, and only the engine.** `applyClientCertificate`
-  calls `YuzicEngine.setClientCertificate`, which swaps the engine's
-  `URLSession` (`ios/Core/HTTPTrackReaderFactory.swift`). That covers the audio
-  stream. **The API clients do not use it**: `src/api/navidrome/client.ts` and
-  `src/api/mediaBrowser/client.ts` call global `fetch`, which has no client
-  identity, so an mTLS-gated server fails to log in and no track is ever
-  requested. Closing #59 means giving the API layer a certificate-aware
-  transport too — a native call, since RN's `fetch` cannot present one.
+- **It reaches both transports.** `applyClientCertificate` calls
+  `YuzicEngine.setClientCertificate`, which points *two* sessions at the
+  identity: the engine's audio `URLSession`
+  (`ios/Core/HTTPTrackReaderFactory.swift`) and a plain-request one
+  (`ios/Core/ClientCertificateHTTP.swift`). The app's server calls go through
+  `src/features/mtls/serverFetch.ts`, which routes to the engine's
+  `clientCertificateRequest` while a certificate is set and to the global
+  `fetch` otherwise. Both halves are required: a certificate on only the audio
+  transport is unreachable, because the login that precedes every track is the
+  request an mTLS server refuses first. That was the state this shipped in once
+  — it typechecked, tested and ran while being unusable.
+- **Only the music server's requests take that path.** `fetchWithTimeout`, and
+  through it Deezer, Last.fm, MusicBrainz and the rest, keep using the plain
+  `fetch` on purpose: those are third parties, and presenting the person's
+  client certificate to them would hand an identity issued for their own server
+  to someone else.
 - **iOS only, and absent rather than broken on Android.** There is no Android
   implementation, so `applyClientCertificate` returns `unsupported` before
   touching the bridge and the card renders that string instead of a picker.
-  Issue #59's request for the Android Keystore needs the engine's Android side,
-  not just this screen.
-- **`useClientCertificate` is only mounted by `ClientCertificateCard`**, though
-  its own docstring says "mounted once, near the root". Until it is mounted at
-  the root, the certificate is applied when the settings screen is open and not
-  re-applied on a server switch or at startup.
+  Android's half is an OkHttp client over the same KeyManager and arrives with
+  both methods or neither; `Tools/parity.py` in the engine declares both gaps.
+- **`useClientCertificate` is mounted in `src/app/_layout.tsx`**, at the root.
+  It has to be: the certificate is applied at startup and re-applied whenever
+  the active server changes, both of which happen with Settings closed. Mounted
+  only by the settings card — as it was — a server switch left the previous
+  server's identity in place.
 
 ---
 

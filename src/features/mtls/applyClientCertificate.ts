@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 import { loadClientCertificate } from './clientCertificateStore';
+import { setClientCertificateActive } from './serverFetch';
+
 
 /**
  * Hand the active server's client certificate to the audio engine, or clear it.
@@ -38,14 +40,20 @@ export async function applyClientCertificate(
     const stored = serverId ? await loadClientCertificate(serverId) : null;
     if (!stored) {
       await engine.setClientCertificate(null, null);
+      setClientCertificateActive(false);
       return { ok: true, applied: false };
     }
     await engine.setClientCertificate(stored.pkcs12Base64, stored.password);
+    // Only after the engine has accepted it. Routing the API requests through
+    // the certificate transport before that would send them at a session with
+    // no identity, which fails in exactly the way this feature exists to fix.
+    setClientCertificateActive(true);
     return { ok: true, applied: true };
   } catch (error) {
     // The engine rejects a blob it cannot decrypt. Leaving a half-applied
     // certificate in place would be worse than none: clear it so the failure
     // is a clean "no certificate" rather than an identity nobody chose.
+    setClientCertificateActive(false);
     try {
       await engine.setClientCertificate(null, null);
     } catch {
