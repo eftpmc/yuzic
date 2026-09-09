@@ -56,6 +56,9 @@ Yuzic provides a Navidrome demo but requires a self-hosted Subsonic, Jellyfin, o
   density, grid columns, and artwork-tinted screens.
 - **Localised** — English, French, Japanese, and Chinese.
 - **Privacy-first** — every outside service is off until you turn it on.
+- **Client certificates (iOS)** — for a server behind a reverse proxy doing
+  mutual TLS: import the PKCS#12 your server issued you and Yuzic presents it
+  for the API and the audio alike. Not yet on Android.
 
 ## Servers
 

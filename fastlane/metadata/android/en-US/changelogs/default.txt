@@ -1,8 +1,8 @@
-Playback fixes, most of them for a weak connection.
+Playback holds up better on a stream that goes bad part-way through.
 
-- Tracks no longer cut out and go quiet on a patchy connection
-- A crossfaded track no longer stops the queue when it finishes
-- Playing again works after a stream fails or a headphone disconnects
-- The player says "buffering" instead of going silent while it retries
-- Fewer requests to your server while music is playing
-- A failed download is no longer cached as silence
+- A transcoded stream that breaks is picked back up instead of losing the track
+- Playback recovers where it used to stop and stay stopped
+- Fixes carried over from the audio engine
+
+Client certificates, for a server behind mutual TLS, are on iOS in this
+release. Android support still to come.

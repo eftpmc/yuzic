@@ -1,6 +1,7 @@
 import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
 import { qualityToStreamParams } from '@/utils/audio/streamQuality';
 import { tryWithFailover, orderedUrls } from '@/utils/servers/urlFailover';
+import { serverFetch } from '@/features/mtls/serverFetch';
 
 // md5 does not ship TypeScript declarations in this project.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -77,7 +78,7 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 30_000);
       try {
-        const res = await fetch(`${url}/rest/${endpoint}?${params}`, {
+        const res = await serverFetch(`${url}/rest/${endpoint}?${params}`, {
           method: options.method ?? "GET",
           headers: proxyHeader,
           signal: controller.signal,

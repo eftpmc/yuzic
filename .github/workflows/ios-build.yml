@@ -27,8 +27,12 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
+      # --omit=dev for the same reason as the Android workflow: autolinking
+      # links what is installed, not what is in `dependencies`, so a plain
+      # `npm ci` puts expo-dev-client's pods into a release IPA. Development
+      # builds run `expo run:ios` locally and install everything as usual.
       - name: Install Node dependencies
-        run: npm ci
+        run: npm ci --omit=dev
 
       - name: Cache CocoaPods
         uses: actions/cache@v4

@@ -54,7 +54,18 @@
       "queueSync": "Sync queue across devices",
       "queueSyncDescription": "Save what you’re playing to the server so another device can pick up where you left off.",
       "nowPlayingShelf": "Show who else is listening",
-      "nowPlayingShelfDescription": "A Home row listing other users on this server and what they’re playing right now."
+      "nowPlayingShelfDescription": "A Home row listing other users on this server and what they’re playing right now.",
+      "clientCertificate": {
+        "title": "Client certificate",
+        "description": "For a server that asks the client to prove who it is. Choose the PKCS#12 file (.p12 or .pfx) your server issued you.",
+        "passwordPlaceholder": "Certificate password",
+        "choose": "Choose certificate",
+        "installed": "Certificate installed",
+        "remove": "Remove certificate",
+        "rejected": "That certificate could not be read. Check the password and try again.",
+        "readFailed": "That file could not be read.",
+        "unsupported": "Client certificates are not supported on this platform yet."
+      }
     },
     "appearance": {
       "title": "Appearance",

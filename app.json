@@ -64,7 +64,8 @@
           }
         }
       ],
-      "yuzic-engine"
+      "yuzic-engine",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

@@ -2,6 +2,8 @@ import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
 import { qualityToStreamParams } from '@/utils/audio/streamQuality';
 import { tryWithFailover, orderedUrls } from '@/utils/servers/urlFailover';
 import { MediaBrowserBrand } from './brand';
+import { serverFetch } from '@/features/mtls/serverFetch';
+
 
 export interface MediaBrowserClientConfig {
   /** Primary server URL. Used verbatim when no serverId/fallbackUrls given. */
@@ -45,7 +47,7 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 30_000);
     try {
-      return await fetch(`${url}${path}`, {
+      return await serverFetch(`${url}${path}`, {
         ...fetchOptions,
         headers,
         signal: controller.signal,

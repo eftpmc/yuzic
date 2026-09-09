@@ -54,7 +54,18 @@
       "queueSync": "跨设备同步播放队列",
       "queueSyncDescription": "将正在播放的内容保存到服务器，以便在其他设备上从上次的位置继续播放。",
       "nowPlayingShelf": "显示其他正在收听的人",
-      "nowPlayingShelfDescription": "在首页显示此服务器上的其他用户以及他们正在播放的内容。"
+      "nowPlayingShelfDescription": "在首页显示此服务器上的其他用户以及他们正在播放的内容。",
+      "clientCertificate": {
+        "title": "客户端证书",
+        "description": "适用于要求客户端证明身份的服务器。请选择服务器签发给你的 PKCS#12 文件（.p12 或 .pfx）。",
+        "passwordPlaceholder": "证书密码",
+        "choose": "选择证书",
+        "installed": "已安装证书",
+        "remove": "移除证书",
+        "rejected": "无法读取该证书。请检查密码后重试。",
+        "readFailed": "无法读取该文件。",
+        "unsupported": "此平台尚不支持客户端证书。"
+      }
     },
     "appearance": {
       "title": "外观",

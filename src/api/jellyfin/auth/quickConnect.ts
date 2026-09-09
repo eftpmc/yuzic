@@ -1,10 +1,12 @@
+import { serverFetch } from '@/features/mtls/serverFetch';
+
 const CLIENT_HEADERS = `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"`;
 
 export async function initiateQuickConnect(
   serverUrl: string,
   basicAuth?: { username: string; password: string }
 ): Promise<{ secret: string; code: string }> {
-  const res = await fetch(`${serverUrl}/QuickConnect/Initiate`, {
+  const res = await serverFetch(`${serverUrl}/QuickConnect/Initiate`, {
     method: 'POST',
     headers: {
       'X-Emby-Authorization': CLIENT_HEADERS,
@@ -23,7 +25,7 @@ export async function pollQuickConnect(
   basicAuth?: { username: string; password: string }
 ): Promise<boolean> {
   try {
-    const res = await fetch(`${serverUrl}/QuickConnect/Connect?Secret=${encodeURIComponent(secret)}`, {
+    const res = await serverFetch(`${serverUrl}/QuickConnect/Connect?Secret=${encodeURIComponent(secret)}`, {
       headers: {
         'X-Emby-Authorization': CLIENT_HEADERS,
         ...(basicAuth ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) } : {}),
@@ -42,7 +44,7 @@ export async function authenticateWithQuickConnect(
   secret: string,
   basicAuth?: { username: string; password: string }
 ): Promise<{ token: string; userId: string; username: string }> {
-  const res = await fetch(`${serverUrl}/Users/AuthenticateWithQuickConnect`, {
+  const res = await serverFetch(`${serverUrl}/Users/AuthenticateWithQuickConnect`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
