@@ -56,6 +56,34 @@ A Jellyfin user never sees a Radio row rather than seeing one that goes
 nowhere — the Library index builds its rows from what the adapter offers
 (`src/screens/library/LibraryEntryRows.tsx`).
 
+### Client certificates (mTLS)
+
+For a server behind a reverse proxy that asks the *client* to prove who it is.
+The user imports a PKCS#12 bundle (`.p12`/`.pfx`) plus its password under
+**Settings → Server**; `src/features/mtls/` holds it and applies it.
+
+- **Stored in the OS keystore**, not in Redux and not in the persisted settings
+  blob — `clientCertificateStore.ts` wraps `expo-secure-store`. A certificate's
+  private key must not land in a redux-persist snapshot, so the store is the
+  only path to it and nothing else keeps a copy.
+- **It reaches the engine, and only the engine.** `applyClientCertificate`
+  calls `YuzicEngine.setClientCertificate`, which swaps the engine's
+  `URLSession` (`ios/Core/HTTPTrackReaderFactory.swift`). That covers the audio
+  stream. **The API clients do not use it**: `src/api/navidrome/client.ts` and
+  `src/api/mediaBrowser/client.ts` call global `fetch`, which has no client
+  identity, so an mTLS-gated server fails to log in and no track is ever
+  requested. Closing #59 means giving the API layer a certificate-aware
+  transport too — a native call, since RN's `fetch` cannot present one.
+- **iOS only, and absent rather than broken on Android.** There is no Android
+  implementation, so `applyClientCertificate` returns `unsupported` before
+  touching the bridge and the card renders that string instead of a picker.
+  Issue #59's request for the Android Keystore needs the engine's Android side,
+  not just this screen.
+- **`useClientCertificate` is only mounted by `ClientCertificateCard`**, though
+  its own docstring says "mounted once, near the root". Until it is mounted at
+  the root, the certificate is applied when the settings screen is open and not
+  re-applied on a server switch or at startup.
+
 ---
 
 ## Integrations
