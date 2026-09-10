@@ -23,6 +23,7 @@ import SettingsRow from '../components/SettingsRow';
 import Touchable from '@/components/Touchable';
 import { cappedTypography, fontScaleCap, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 export default function Settings() {
     const { t } = useTranslation();
@@ -35,6 +36,12 @@ export default function Settings() {
 
     const { colors } = useTheme();
     const rad = useRadius();
+    // The version line is the last thing on this screen, so it is what sits
+    // behind the tabs when the dock is translucent and takes no layout space.
+    // The flat `spacing.scrollClearance` is only the breathing room; the hook
+    // adds the dock's real height, which changes with the safe-area inset and
+    // with whether a track is playing.
+    const scrollClearance = useScrollClearance();
     const appVersion = Constants.expoConfig?.version ?? '—';
 
     if (!activeServer) return null;
@@ -59,7 +66,7 @@ export default function Settings() {
         >
             <Header title={t('settings.title')} />
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollClearance }]}>
                 {/*
                   The card repeats what the sheet you arrived from already
                   showed — the same avatar, name, badge and host. Rather than
