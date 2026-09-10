@@ -111,7 +111,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
         {/* Actions */}
-        <Touchable style={styles.row} onPress={handleSettings}>
+        <Touchable testID="account-settings" style={styles.row} onPress={handleSettings}>
           <Settings size={iconSize.row} color={colors.subtext} />
           <Text style={[styles.rowText, { color: colors.secondary }]}>{t('home.account.settings')}</Text>
         </Touchable>

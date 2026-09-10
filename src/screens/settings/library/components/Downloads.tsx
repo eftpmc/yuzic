@@ -61,6 +61,7 @@ const Downloads: React.FC = () => {
       />
       <SettingsDivider />
       <SettingsRow
+        testID="downloads-more-info"
         label={t('settings.library.downloads.moreInfo')}
         onPress={() => router.push('/settings/downloadsInfoView')}
       />

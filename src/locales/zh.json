@@ -1222,6 +1222,7 @@
   },
   "downloads": {
     "title": "下载队列",
-    "noDownloaders": "未连接下载器。请在设置中添加。"
+    "noDownloaders": "未连接下载器。请在设置中添加。",
+    "jobFailed": "无法完成“{{title}}”的下载。它仍在队列中，将重试。"
   }
 }

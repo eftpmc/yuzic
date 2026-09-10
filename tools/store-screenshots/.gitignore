@@ -1,0 +1,11 @@
+# Generated store screenshots — raw captures and composited output.
+# Regenerate with tools/store-screenshots/capture.sh
+raw/
+out/
+
+# The original marketing PSDs and the shipped PNGs they produced, copied from
+# Documents/Graphics/yuzic on the desktop. Kept locally as the ground truth to
+# compare a regenerated shot against, but they are ~50MB of source art that the
+# app repo does not need — the frames and fonts already extracted into assets/
+# are what the generator actually uses.
+reference/

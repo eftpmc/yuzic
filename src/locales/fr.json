@@ -1226,6 +1226,7 @@
   },
   "downloads": {
     "title": "File d'attente de téléchargement",
-    "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages."
+    "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages.",
+    "jobFailed": "Impossible de terminer le téléchargement de « {{title}} ». Il reste en file d'attente et sera réessayé."
   }
 }

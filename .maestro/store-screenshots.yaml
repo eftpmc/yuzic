@@ -1,0 +1,481 @@
+appId: com.arinora.rawarr
+---
+# Drives the app to each screen the store listing shows and captures a raw
+# screenshot. Composited into framed marketing images by compose.py — do not
+# retouch the output by hand.
+#
+# Screenshots land in ../tools/store-screenshots/raw/<device>/ via the
+# MAESTRO_SHOT_DIR env var that capture.sh sets.
+#
+# Content is pinned to specific titles rather than "tap the first row", so the
+# marketing shots stay the same as the library grows and reorders.
+
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      id: "home-tab"
+    timeout: 120000
+
+# 1 — Home
+- tapOn:
+    id: "home-tab"
+- assertVisible:
+    id: "home-screen"
+- extendedWaitUntil:
+    visible:
+      id: "home-recently-played-see-all"
+    timeout: 60000
+- swipe:
+    direction: DOWN
+    duration: 400
+- takeScreenshot: "${MAESTRO_SHOT_DIR}/home"
+
+# 2 — Now playing: "READY TO COOK UP" by Future.
+# Reached through search because it is a specific track, not whatever happens
+# to sort first in the library.
+- tapOn:
+    id: "search-tab"
+- assertVisible:
+    id: "search-screen"
+- tapOn:
+    id: "search-input"
+- inputText: "Ready to Cook Up"
+- extendedWaitUntil:
+    visible:
+      id: "search-result-song"
+      text: "READY TO COOK UP"
+    timeout: 60000
+- tapOn:
+    id: "search-result-song"
+    text: "READY TO COOK UP"
+- extendedWaitUntil:
+    visible:
+      id: "playing-bar"
+    timeout: 30000
+# The keyboard covers the mini player bar (and the tab bar, so tapping a tab
+# hits a keyboard key instead). Drag the results to dismiss it — the search
+# ScrollView sets keyboardDismissMode="on-drag". The drag is confined to the
+# results area above the keyboard; a swipe that crosses the keys triggers the
+# QuickPath tutorial popover, which then swallows the next tap.
+- swipe:
+    start: "50%,45%"
+    end: "50%,25%"
+    duration: 400
+# Leave the search screen before checking the mini bar: `playSong` resolves the
+# track asynchronously, so the bar can still be showing whatever was playing
+# before, and opening it then captures the wrong song. Waiting for the title on
+# the *home* screen is unambiguous — on search, the same text is also sitting in
+# the result row that was just tapped.
+#
+# Match the title's own node (`playing-bar-title`), not a bare `text:` and not
+# `id: playing-bar` + `text:` together. A bare `text:` fails on iPad, where the
+# hierarchy Maestro reads does not surface the bar's title as a matchable text
+# node; combining `id` and `text` is worse, since both must hold on the SAME
+# node and the title is a child of the bar, so it matches on neither device.
+- tapOn:
+    id: "home-tab"
+- extendedWaitUntil:
+    visible:
+      id: "playing-bar-title"
+      text: "READY TO COOK UP"
+    timeout: 60000
+- tapOn:
+    id: "playing-bar"
+- extendedWaitUntil:
+    visible:
+      id: "playing-screen"
+    timeout: 30000
+# Let the artwork fade in before capturing, otherwise the cover is still blank.
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "${MAESTRO_SHOT_DIR}/player"
+
+# 3 — Search results, kept busy on purpose.
+# The full player is a modal presented over the tabs, so it has to be dismissed
+# explicitly. Tapping a tab underneath it does nothing and the next assert fails.
+#
+# The close tap is retried because it is racing the lyrics fetch. When lyrics
+# arrive the scroll content's paddingBottom goes 24 -> 100 and a preview card
+# mounts, which reflows the sheet under the chevron. Maestro resolves the
+# element's coordinates and then taps, so a reflow in between lands the tap on
+# empty space — and it still reports COMPLETED, because something was tapped.
+# Only the assertion that follows can tell, which is why this retries rather
+# than asserting once.
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "playing-close"
+      - extendedWaitUntil:
+          notVisible:
+            id: "playing-screen"
+          timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "playing-bar"
+    timeout: 30000
+- tapOn:
+    id: "search-tab"
+- assertVisible:
+    id: "search-screen"
+- tapOn:
+    id: "search-input"
+- eraseText
+# A short, common query returns many more rows than a full song title.
+- inputText: "Love"
+- extendedWaitUntil:
+    visible:
+      id: "search-screen"
+    timeout: 30000
+# Dismiss the keyboard so results fill the screen instead of the top half.
+# Confined above the keyboard — see the note on the first swipe.
+- swipe:
+    start: "50%,45%"
+    end: "50%,25%"
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "${MAESTRO_SHOT_DIR}/search"
+
+# 4 — Artist detail: Lil Uzi Vert.
+# Reached through the library rather than search: a `text` matcher for the name
+# would also match the text sitting in the search input.
+- tapOn:
+    id: "library-tab"
+- runFlow:
+    when:
+      visible:
+        id: "detail-back-button"
+    commands:
+      - tapOn:
+          id: "detail-back-button"
+- scrollUntilVisible:
+    element:
+      id: "library-entry-artists"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "library-entry-artists"
+- extendedWaitUntil:
+    visible:
+      id: "library-artist-item"
+    timeout: 60000
+# Match the artist's own title node, not its text. Every grid cell shares the
+# `library-artist-item` testID, so a specific artist could otherwise only be
+# reached by `text:` — and on iPad the grid is three across, where
+# scrollUntilVisible steps a whole row per scroll and went clean past this name
+# to the end of a 44-artist list without ever matching it.
+- scrollUntilVisible:
+    element:
+      id: "library-artist-item-Lil Uzi Vert"
+    direction: DOWN
+    timeout: 60000
+- tapOn:
+    id: "library-artist-item-Lil Uzi Vert"
+- extendedWaitUntil:
+    visible:
+      id: "artist-screen"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "${MAESTRO_SHOT_DIR}/artist"
+
+# 5 — Downloads / offline, with real content in the list.
+# Download a few albums rather than the artist's whole discography: 133 songs
+# does not finish in any sane timeout, and a handful of albums is what the
+# store shot shows anyway.
+# Maestro has no `accessibilityLabel` matcher — `text` matches the a11y label
+# too, which is how these icon-only buttons are reachable at all.
+- tapOn:
+    id: "library-tab"
+- runFlow:
+    when:
+      visible:
+        id: "detail-back-button"
+    commands:
+      - tapOn:
+          id: "detail-back-button"
+# The albums entry sits in the "Collection" section, below the fold on this
+# device — assert-visible alone fails without scrolling to it first.
+- scrollUntilVisible:
+    element:
+      id: "library-entry-albums"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "library-entry-albums"
+- extendedWaitUntil:
+    visible:
+      id: "library-album-item"
+    timeout: 60000
+
+# Three albums, one at a time. Written out rather than looped: `repeat` does not
+# expose a loop counter (`${loopIndex}` resolves to the literal string
+# "undefined" and Maestro then dies on NumberFormatException), so each index has
+# to be a constant.
+- runFlow:
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 0
+      # Wait for a real track row, not just the button. `toggleDownload`
+      # returns early when `songs` is empty, so tapping while the album is
+      # still loading silently does nothing and the "Downloaded" wait below
+      # then hangs for its full timeout.
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- runFlow:
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 1
+      # Wait for a real track row, not just the button. `toggleDownload`
+      # returns early when `songs` is empty, so tapping while the album is
+      # still loading silently does nothing and the "Downloaded" wait below
+      # then hangs for its full timeout.
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- runFlow:
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 2
+      # Wait for a real track row, not just the button. `toggleDownload`
+      # returns early when `songs` is empty, so tapping while the album is
+      # still loading silently does nothing and the "Downloaded" wait below
+      # then hangs for its full timeout.
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+# Five more albums, iPad only. The settings downloads screen is the iPad's
+# screen 5, and at 2732px tall three rows leave most of the frame black — the
+# shipped reference has about ten. The phone stops at three: its screen 5 is
+# the library collection, where three rows already fill the shot.
+
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'ipad'}
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 3
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'ipad'}
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 4
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'ipad'}
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 5
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'ipad'}
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 6
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'ipad'}
+    commands:
+      - tapOn:
+          id: "library-album-item"
+          index: 7
+      - extendedWaitUntil:
+          visible:
+            id: "song-row"
+          timeout: 60000
+      - tapOn:
+          text: "Download"
+      - extendedWaitUntil:
+          visible:
+            text: "Downloaded"
+          timeout: 180000
+      - tapOn:
+          id: "detail-back-button"
+      - extendedWaitUntil:
+          visible:
+            id: "library-album-item"
+          timeout: 30000
+
+- tapOn:
+    id: "library-tab"
+- runFlow:
+    when:
+      visible:
+        id: "detail-back-button"
+    commands:
+      - tapOn:
+          id: "detail-back-button"
+# Phone: the library's Downloaded collection — three album rows fill the frame,
+# which is what its shipped reference shows.
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'phone'}
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "library-entry-downloaded"
+          direction: DOWN
+          timeout: 30000
+      - tapOn:
+          id: "library-entry-downloaded"
+# iPad: Settings > Offline downloads instead. Three albums as a library list
+# fill only the top ~11% of a 2732px screen and the `bottom` layout crops
+# exactly that strip away, leaving the shot almost empty; switching that
+# collection to a grid only moved the void down. The shipped iPad reference is
+# a different screen entirely — the settings one, whose per-item rows (size,
+# date, delete) plus the provider header fill the frame at this height.
+#
+# Navigated by tapping, not by `openLink`: a scheme URL raises iOS's
+# "Open in Yuzic?" alert, which is a system alert outside the app's hierarchy,
+# so Maestro can neither see it nor tap through it — and it then blocks every
+# later assertion, including the launch check.
+- runFlow:
+    when:
+      true: ${SHOT_DEVICE == 'ipad'}
+    commands:
+      - tapOn:
+          text: "Account"
+      - tapOn:
+          id: "account-settings"
+      - tapOn:
+          id: "settings-row-library"
+      - scrollUntilVisible:
+          element:
+            id: "downloads-more-info"
+          direction: DOWN
+          timeout: 30000
+      - tapOn:
+          id: "downloads-more-info"
+      - extendedWaitUntil:
+          visible:
+            id: "downloads-info-screen"
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: "download-info-row"
+          timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "${MAESTRO_SHOT_DIR}/downloads"

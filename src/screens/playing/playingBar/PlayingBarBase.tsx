@@ -308,6 +308,7 @@ export default function PlayingBarBase({ variant }: Props) {
 
       <View style={styles.details}>
         <Text
+          testID="playing-bar-title"
           numberOfLines={1}
           maxFontSizeMultiplier={fontScaleCap.control}
           style={[

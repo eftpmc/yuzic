@@ -1216,7 +1216,8 @@
   },
   "downloads": {
     "title": "Download queue",
-    "noDownloaders": "No downloaders connected. Add one in Settings."
+    "noDownloaders": "No downloaders connected. Add one in Settings.",
+    "jobFailed": "Couldn't finish downloading “{{title}}”. It stays queued and will retry."
   },
   "media": {
     "albumNotFound": "Album not found",

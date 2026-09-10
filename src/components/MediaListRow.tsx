@@ -30,6 +30,12 @@ type Props = {
   variant?: 'default' | 'compact';
   rowStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
+  /**
+   * Marks the row for UI tests. Rows built on this component (songs, search
+   * results) otherwise have no stable handle at all and can only be reached by
+   * their title text, which changes with the library.
+   */
+  testID?: string;
 };
 
 export default function MediaListRow({
@@ -46,6 +52,7 @@ export default function MediaListRow({
   variant = 'default',
   rowStyle,
   style,
+  testID,
 }: Props) {
   const { colors } = useTheme();
   const rad = useRadius();
@@ -64,6 +71,7 @@ export default function MediaListRow({
         ]}
       >
         <Touchable
+          testID={testID}
           accessibilityRole={onPress ? 'button' : undefined}
           accessibilityLabel={onPress ? title : undefined}
           accessibilityState={{ disabled: disabled || !onPress }}
