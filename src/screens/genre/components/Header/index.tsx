@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
-import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native'
+import { ChevronLeft, Ellipsis, Shuffle, Play } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
 import { toast } from '@backpackapp-io/react-native-toast'
@@ -35,6 +35,8 @@ import {
 } from '@/components/DetailHeader'
 import GenreOptions from '@/components/options/GenreOptions'
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import DownloadStateIcon from '@/components/DownloadStateIcon';
+import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import Touchable from '@/components/Touchable';
 import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -83,6 +85,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
     isDownloaded: isFullyDownloaded,
     isDownloading,
   } = getCollectionDownloadState(genreTrackIds)
+  const downloadFraction = useCollectionDownloadProgress(genreTrackIds)
 
   const fetchGenreSongs = async (): Promise<Song[]> => {
     if (!activeServer?.id || !albums.length) return []
@@ -235,13 +238,15 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
                 : 'a11y.detail.download'
           )}
         >
-          {isDownloadingAll || isDownloading ? (
-            <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
-          ) : isFullyDownloaded ? (
-            <Check size={iconSize.row} color={colors.secondary} />
-          ) : (
-            <Download size={iconSize.row} color={colors.secondary} />
-          )}
+          <DownloadStateIcon
+            isDownloaded={isFullyDownloaded}
+            isDownloading={isDownloadingAll || isDownloading}
+            // While `handleDownloadAll` is still enqueueing albums there is
+            // nothing to measure yet, so the spinner stands in until the
+            // tracks themselves start reporting.
+            progress={isDownloadingAll ? undefined : downloadFraction}
+            color={colors.secondary}
+          />
         </DetailCircleAction>
       </DetailActionRow>
     </>

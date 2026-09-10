@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { ChevronLeft, Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
+import { ChevronLeft, Ellipsis, Shuffle, Play } from 'lucide-react-native';
 import TurboImage from 'react-native-turbo-image';
 import { useSelector } from 'react-redux';
 import { MediaImage } from '@/components/MediaImage';
@@ -36,6 +36,8 @@ import {
   useDetailHeroTitleLayout,
 } from '@/components/DetailHeader';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
+import DownloadStateIcon from '@/components/DownloadStateIcon';
+import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -316,6 +318,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
     isDownloaded: isArtistFullyDownloaded,
     isDownloading: isArtistDownloading,
   } = getCollectionDownloadState(artistTrackIds);
+  const downloadFraction = useCollectionDownloadProgress(artistTrackIds);
 
   const handleDownloadAll = useCallback(async () => {
     if (isDownloadingAll || isArtistDownloading || isArtistFullyDownloaded || !artistAlbums.length) return;
@@ -366,13 +369,13 @@ function LocalActionRow({ artist }: { artist: Artist }) {
               : 'a11y.detail.download'
         )}
       >
-        {isDownloadingAll || isArtistDownloading ? (
-          <SpinningLoaderCircle size={iconSize.row} color={colors.secondary} />
-        ) : isArtistFullyDownloaded ? (
-          <Check size={iconSize.row} color={colors.secondary} />
-        ) : (
-          <Download size={iconSize.row} color={colors.secondary} />
-        )}
+        <DownloadStateIcon
+          isDownloaded={isArtistFullyDownloaded}
+          isDownloading={isDownloadingAll || isArtistDownloading}
+          // Nothing to measure while the albums are still being enqueued.
+          progress={isDownloadingAll ? undefined : downloadFraction}
+          color={colors.secondary}
+        />
       </DetailCircleAction>
     </DetailActionRow>
   );

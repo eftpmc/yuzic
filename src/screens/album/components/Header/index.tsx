@@ -1,15 +1,9 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { iconSize, spacing, statusColor } from '@/constants/design';
 import {
   StyleSheet,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withSpring,
-} from 'react-native-reanimated';
-import { Ellipsis, Shuffle, Play, Check, Download, CloudDownload, Link } from 'lucide-react-native';
+import { Ellipsis, Shuffle, Play, CloudDownload, Link } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
@@ -18,7 +12,7 @@ import AlbumOptions from '@/components/options/AlbumOptions';
 import DownloadSheet from '@/components/options/DownloadSheet';
 import StatusBanner from '@/components/StatusBanner';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import DownloadProgressRing from '@/components/DownloadProgressRing';
+import DownloadStateIcon from '@/components/DownloadStateIcon';
 import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -227,23 +221,6 @@ function LocalActionRow({ album }: { album: Album }) {
     getCollectionDownloadState(songIds);
   const downloadFraction = useCollectionDownloadProgress(songIds);
 
-  const checkmarkScale = useSharedValue(isAlbumDownloaded ? 1 : 0);
-
-  useEffect(() => {
-    if (isAlbumDownloaded) {
-      checkmarkScale.value = withSequence(
-        withSpring(1.2, { damping: 8, stiffness: 200 }),
-        withSpring(1, { damping: 10, stiffness: 200 })
-      );
-    } else {
-      checkmarkScale.value = 0;
-    }
-  }, [isAlbumDownloaded, checkmarkScale]);
-
-  const checkmarkStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: checkmarkScale.value }],
-  }));
-
   const toggleDownload = useCallback(async () => {
     if (isAlbumDownloading) {
       await cancelCollectionDownloads(album.id);
@@ -281,15 +258,12 @@ function LocalActionRow({ album }: { album: Album }) {
               : 'a11y.detail.download'
         )}
       >
-        {isAlbumDownloading ? (
-          <DownloadProgressRing progress={downloadFraction} size={iconSize.row} />
-        ) : isAlbumDownloaded ? (
-          <Animated.View style={checkmarkStyle}>
-            <Check size={iconSize.row} color={colors.secondary} />
-          </Animated.View>
-        ) : (
-          <Download size={iconSize.row} color={colors.secondary} />
-        )}
+        <DownloadStateIcon
+          isDownloaded={isAlbumDownloaded}
+          isDownloading={isAlbumDownloading}
+          progress={downloadFraction}
+          color={colors.secondary}
+        />
       </DetailCircleAction>
     </DetailActionRow>
   );
