@@ -109,6 +109,7 @@ export default function Settings() {
                     />
                     <SettingsDivider />
                     <SettingsRow
+                        testID="settings-row-library"
                         label={t('settings.rows.library')}
                         leftIcon={<Library size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/libraryView')}

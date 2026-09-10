@@ -138,6 +138,17 @@ const MAX_JOB_ATTEMPTS = 5;
 const BACKGROUND_FILE_OPTIONS = {
   sessionType: FileSystem.FileSystemSessionType.BACKGROUND,
 };
+// A background session needs `com.apple.nsurlsessiond`, which is reached over
+// XPC. When that connection cannot be set up the session fails every task it
+// is given — the app sees `NSURLErrorDomain Code=-1 "unknown error"` on each
+// one, with the real cause (`NSCocoaErrorDomain Code=4097 "connection to
+// service named com.apple.nsurlsessiond"`) only in the system log. The iOS
+// Simulator has no nsurlsessiond at all, so every download there fails this
+// way; on device the daemon can also be briefly unreachable. A foreground
+// session has no such dependency, so it is what we retry on.
+const FOREGROUND_FILE_OPTIONS = {
+  sessionType: FileSystem.FileSystemSessionType.FOREGROUND,
+};
 
 type DownloadState = {
   tracks: LocalDownloadedTrackEntry[];
@@ -427,22 +438,37 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         resolvedTrack.streamUrl,
       );
 
-      const resumable = FileSystem.createDownloadResumable(
-        resolvedTrack.streamUrl,
-        stagingPath,
-        BACKGROUND_FILE_OPTIONS,
-        progress => reportDownloadProgress(
-          track.id,
-          progress.totalBytesWritten,
-          progress.totalBytesExpectedToWrite,
-        ),
-        saved?.resumeData,
-      );
-      activeDownloadsRef.current.set(track.id, resumable);
+      const runWithSession = async (options: typeof BACKGROUND_FILE_OPTIONS) => {
+        const resumable = FileSystem.createDownloadResumable(
+          resolvedTrack.streamUrl!,
+          stagingPath,
+          options,
+          progress => reportDownloadProgress(
+            track.id,
+            progress.totalBytesWritten,
+            progress.totalBytesExpectedToWrite,
+          ),
+          saved?.resumeData,
+        );
+        activeDownloadsRef.current.set(track.id, resumable);
+        return saved
+          ? await resumable.resumeAsync()
+          : await resumable.downloadAsync();
+      };
 
-      const result = saved
-        ? await resumable.resumeAsync()
-        : await resumable.downloadAsync();
+      let result;
+      try {
+        result = await runWithSession(BACKGROUND_FILE_OPTIONS);
+      } catch (error) {
+        // Every task on a session whose daemon is unreachable fails, so a
+        // second attempt on the same session type would fail identically.
+        // Drop to a foreground session once before giving up.
+        console.warn(
+          `Background download session failed for track ${track.id}; retrying in the foreground`,
+          error,
+        );
+        result = await runWithSession(FOREGROUND_FILE_OPTIONS);
+      }
       // downloadAsync resolves undefined when cancelAsync() was called —
       // not an error, just nothing to record.
       if (!result) return;
@@ -580,7 +606,13 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       onJobDropped: (job, attempts) => {
         console.warn(`Download job ${job.id} dropped after ${attempts} failed attempts`);
         removeJob(job.id);
-        toast.error(t('externalAlbum.download.failed'));
+        // `externalAlbum.download.failed` used to be reused here. That string
+        // belongs to the download-to-server flow, so a local album that gave
+        // up said "Download failed." with no subject and no next step, on a
+        // screen that has nothing to do with an external downloader.
+        toast.error(t('downloads.jobFailed', {
+          title: job.tracks[0]?.title ?? '',
+        }));
       },
       prepare: async () => {
         await ensureDownloadDir();

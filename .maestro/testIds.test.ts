@@ -40,7 +40,7 @@ function sourceText(): string {
   // keeps gitignored build output out.
   return execFileSync(
     'git',
-    ['grep', '-h', '--untracked', '--exclude-standard', '-E', 'testID=', '--', 'src'],
+    ['grep', '-h', '--untracked', '--exclude-standard', '-E', '[Tt]estID=', '--', 'src'],
     { cwd: ROOT, encoding: 'utf8' }
   );
 }
@@ -49,13 +49,20 @@ function sourceText(): string {
  * The text of every testID assignment: the quoted string of `testID="x"`, or
  * the whole braced expression of `testID={...}`, found by brace depth so a
  * `${}` inside a template literal doesn't end it early.
+ *
+ * The marker matches any prop *ending* in `testID=`/`TestID=`, not just the
+ * bare attribute. A component that forwards a second id to a child element
+ * names that prop something else by necessity — `LibraryItem` takes both
+ * `testID` (the cell) and `titleTestID` (the title text inside it) — and the
+ * ids it produces are just as real as the ones on a bare `testID`. Matching
+ * only `testID=` made those invisible here, so a flow that used one failed
+ * this check even though the id existed.
  */
 function testIdExpressions(source: string): string[] {
   const expressions: string[] = [];
-  const marker = 'testID=';
 
-  for (let i = source.indexOf(marker); i !== -1; i = source.indexOf(marker, i + 1)) {
-    const start = i + marker.length;
+  for (const marker of source.matchAll(/\b[A-Za-z]*[Tt]estID=/g)) {
+    const start = (marker.index ?? 0) + marker[0].length;
     if (source[start] === '"') {
       const end = source.indexOf('"', start + 1);
       if (end !== -1) expressions.push(source.slice(start, end + 1));

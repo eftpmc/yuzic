@@ -1,0 +1,111 @@
+{
+  "_comment": "Caption + capture spec for the store screenshots. Edit text here, never in Photoshop.",
+
+  "_layouts": [
+    "Three device placements, measured out of the original PSDs:",
+    "  top      - logo + caption at the top, device below and cropped off the bottom edge",
+    "  centered - big logo centred above the device, no caption, device shown whole",
+    "  bottom   - device at the top cropped off the TOP edge, logo + caption underneath",
+    "The centred layout uses the 208px logo; top and bottom use the 148px one."
+  ],
+
+  "appearance": "dark",
+
+  "devices": {
+    "phone": {
+      "simulator": "iPhone 11 Pro Max",
+      "canvas": [1242, 2688],
+      "frame": "phone_frame.png",
+      "aperture": [69, 63, 902, 1955],
+      "headline_size": 141,
+      "headline_leading": 150,
+      "subline_size": 72,
+      "subline_leading": 90,
+      "layouts": {
+        "top": {
+          "frame_pos": [101, 1075],
+          "logo_pos": [146, 323],
+          "logo_size": 148,
+          "headline_pos": [136, 540],
+          "subline_pos": [146, 853]
+        },
+        "centered": {
+          "frame_pos": [101, 431],
+          "logo_pos": [517, 114],
+          "logo_size": 208
+        },
+        "bottom": {
+          "frame_pos": [101, -449],
+          "logo_pos": [150, 1775],
+          "logo_size": 148,
+          "headline_pos": [140, 1993],
+          "subline_pos": [146, 2305]
+        }
+      }
+    },
+
+    "ipad": {
+      "simulator": "iPad Pro (12.9-inch) (6th generation)",
+      "canvas": [2064, 2752],
+      "export": [2048, 2732],
+      "frame": "ipad_frame.png",
+      "aperture": [109, 81, 1615, 2155],
+      "headline_size": 141,
+      "headline_leading": 150,
+      "subline_size": 72,
+      "subline_leading": 90,
+      "layouts": {
+        "top": {
+          "frame_pos": [121, 993],
+          "logo_pos": [240, 284],
+          "logo_size": 148,
+          "headline_pos": [230, 501],
+          "subline_pos": [240, 814]
+        },
+        "centered": {
+          "frame_pos": [113, 379],
+          "logo_pos": [928, 88],
+          "logo_size": 208
+        },
+        "bottom": {
+          "frame_pos": [115, -539],
+          "logo_pos": [215, 1887],
+          "logo_size": 148,
+          "headline_pos": [205, 2105],
+          "subline_pos": [211, 2417]
+        }
+      }
+    }
+  },
+
+  "screens": [
+    {
+      "id": "home",
+      "layout": "top",
+      "headline": "Your music,\non a phone",
+      "headline_ipad": "Your music,\non an ipad",
+      "subline": "Revolutionary.."
+    },
+    {
+      "id": "player",
+      "layout": "centered"
+    },
+    {
+      "id": "search",
+      "layout": "top",
+      "headline": "You can\nsearch too",
+      "subline": "And click the three dots.."
+    },
+    {
+      "id": "artist",
+      "layout": "centered"
+    },
+    {
+      "id": "downloads",
+      "layout": "bottom",
+      "headline": "And of course\nits offline",
+      "subline": "Theres more too, I just won\u2019t\nshow you",
+      "subline_ipad": "Theres more too, I just won\u2019t show you"
+    }
+  ]
+}

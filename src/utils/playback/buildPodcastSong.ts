@@ -27,6 +27,10 @@ export function podcastEpisodeToSong(
       : { kind: 'letter', name: channel?.title ?? episode.title },
     duration: String(episode.durationSeconds ?? 0),
     streamUrl,
+    // Kept so the URL can be rebuilt later without storing the signed one.
+    // Not the episode id: the server assigns this only once it has downloaded
+    // the episode, which is why `handlePlay` guards on it.
+    streamId: episode.playableStreamId ?? undefined,
     contentKind: 'podcastEpisode',
   };
 }

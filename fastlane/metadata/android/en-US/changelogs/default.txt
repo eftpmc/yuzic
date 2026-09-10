@@ -1,6 +1,6 @@
-Search and your library keep working when your server can't be reached.
+Swipe the cover art to change track, and playback speed that remembers.
 
-- Searching offline now returns your synced library instead of nothing
-- Radio, podcasts and shares say they're offline rather than failing to load
-- Client certificates now work on Android, not only iOS
-- The lock screen and car display no longer show the previous track after a crossfade
+- Swipe the cover on the player to go to the next or previous track
+- Playback speed is now remembered separately for music and for podcasts, and survives a restart
+- Continue Playing can resume a podcast episode instead of skipping it
+- Fixed downloads that could stop silently and reset with no explanation

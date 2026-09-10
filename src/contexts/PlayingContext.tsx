@@ -31,13 +31,14 @@ import { usePlaybackSink } from './PlaybackSinkContext';
 import { ownsPlayback } from '@/features/player/playbackSink';
 import { useScrobbling } from '@/hooks/useScrobbling';
 import { useCarPlayBrowseTree } from '@/hooks/useCarPlayBrowseTree';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   selectPreferredCodec,
   selectAutoplayEnabled,
   selectCrossfadeSeconds,
   selectCrossfadeAlways,
   selectEqualizerGains,
+  selectPlaybackSpeeds,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
 import { useStreamQuality } from '@/hooks/useStreamQuality';
@@ -60,6 +61,8 @@ import {
 import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 import { buildRestoredQueue } from './restoreQueue';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
+import { clampSpeed, speedFor, speedProfileFor } from '@/utils/playback/speedProfile';
+import { setPlaybackSpeedForProfile } from '@/utils/redux/slices/settingsSlice';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { useQueueSync } from '@/hooks/useQueueSync';
 import { usePlaybackPersistence } from '@/hooks/usePlaybackPersistence';
@@ -285,6 +288,13 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [repeatMode, setRepeatMode] = useState<RepeatModeState>('off');
   const [shuffleMode, setShuffleMode] = useState<ShuffleMode>('off');
   const [playbackSpeed, setPlaybackSpeedState] = useState(1.0);
+  // Read on every track change, which happens off the React render path, so
+  // a ref rather than the state value — the same pattern the bookmark map uses.
+  const playbackSpeedRef = useRef(1.0);
+  const playbackSpeeds = useSelector(selectPlaybackSpeeds);
+  const dispatch = useDispatch();
+  const playbackSpeedsRef = useRef(playbackSpeeds);
+  useEffect(() => { playbackSpeedsRef.current = playbackSpeeds; }, [playbackSpeeds]);
   const [volume, setVolumeState] = useState(1.0);
   const [queueVersion, setQueueVersion] = useState(0);
 
@@ -777,6 +787,17 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const resumeSeconds = bookmarksRef.current.getResumePosition(songFromQueue.id);
     if (resumeSeconds && Math.floor(getBackend().getProgress().position) < 2) {
       getBackend().seekTo(resumeSeconds);
+    }
+
+    // Rate follows the kind of thing being played, not whatever was last set.
+    // One global speed meant a podcast at 1.5x carried into the next song, and
+    // reset to 1x on every launch — both wrong for the same reason, which is
+    // that talking and music are not listened to at the same rate.
+    const nextSpeed = speedFor(songFromQueue, playbackSpeedsRef.current);
+    if (nextSpeed !== playbackSpeedRef.current) {
+      playbackSpeedRef.current = nextSpeed;
+      setPlaybackSpeedState(nextSpeed);
+      getBackend().setPlaybackSpeed(nextSpeed);
     }
 
     submitNowPlayingRef.current(songFromQueue);
@@ -1299,9 +1320,18 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const setPlaybackSpeed = useCallback((speed: number) => {
-    setPlaybackSpeedState(speed);
-    getBackend().setPlaybackSpeed(speed);
-  }, []);
+    const clamped = clampSpeed(speed);
+    playbackSpeedRef.current = clamped;
+    setPlaybackSpeedState(clamped);
+    getBackend().setPlaybackSpeed(clamped);
+    // Remembered against the kind of thing playing, so choosing 1.5x for a
+    // podcast does not follow the user into the next song — and survives a
+    // relaunch, which a listener halfway through a series expects.
+    dispatch(setPlaybackSpeedForProfile({
+      profile: speedProfileFor(currentSongRef.current),
+      speed: clamped,
+    }));
+  }, [dispatch]);
 
   const resetQueue = useCallback(async () => {
     await scrobbleOutgoingRef.current(

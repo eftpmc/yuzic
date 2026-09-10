@@ -11,6 +11,7 @@ import {
   setPlaybackBookmark,
 } from '@/utils/redux/slices/playbackSlice';
 import { isPodcastEpisode } from '@/utils/playback/contentKind';
+import { needsSnapshot, toBookmarkSnapshot } from '@/utils/playback/bookmarkSnapshot';
 
 /**
  * Bookmarks in yuzic:
@@ -95,7 +96,14 @@ export function useBookmarkManager() {
     }
 
     const positionMs = Math.floor(positionSeconds * 1000);
-    dispatch(setPlaybackBookmark({ songId: song.id, positionMs }));
+    dispatch(setPlaybackBookmark({
+      songId: song.id,
+      positionMs,
+      // Only for content the library cannot describe later. A library track
+      // is joined by id, so snapshotting it would freeze a title the user may
+      // since have re-tagged.
+      snapshot: needsSnapshot(song) ? toBookmarkSnapshot(song) : undefined,
+    }));
 
     if (supportsServer) {
       api.bookmarks!.create({ songId: song.id, positionMs }).catch(() => {});

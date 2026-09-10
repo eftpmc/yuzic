@@ -12,6 +12,7 @@ import {
   LIBRARY_VIEW_DEFAULTS,
 } from '@/utils/redux/slices/settingsSlice';
 import type { ListDensity, RadiusPreset } from '@/constants/design';
+import type { SpeedProfile } from '@/utils/playback/speedProfile';
 
 export const selectSettings = (state: RootState) => state.settings;
 
@@ -208,3 +209,11 @@ const FLAT_GAINS: number[] = FLAT_EQ.map(band => band.gainDb);
 
 export const selectEqualizerGains = (state: RootState): number[] =>
   state.settings.equalizerGains ?? FLAT_GAINS;
+
+/**
+ * Remembered rates per kind of listening. Read through `speedFor`, never
+ * straight off this — a user upgrading has a blob written before the key
+ * existed, and an undefined rate reaching the engine is silence.
+ */
+export const selectPlaybackSpeeds = (state: RootState): Partial<Record<SpeedProfile, number>> =>
+  state.settings.playbackSpeeds ?? {};

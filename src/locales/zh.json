@@ -795,6 +795,10 @@
       "updateFavoritesFailed": "更新收藏失败。",
       "randomAlbum": "正在播放随机专辑：{{title}}",
       "loadAlbumFailed": "加载专辑失败。"
+    },
+    "speed": {
+      "title": "播放速度",
+      "spokenTitle": "语音速度"
     }
   },
   "playlist": {
@@ -1183,7 +1187,8 @@
       "aboutArtist": "关于歌手",
       "goToArtist": "前往歌手页面",
       "nowPlayingBar": "正在播放",
-      "noSongPlaying": "没有正在播放的歌曲"
+      "noSongPlaying": "没有正在播放的歌曲",
+      "coverArt": "专辑封面。滑动可切换曲目。"
     },
     "search": {
       "clear": "清除搜索"
@@ -1222,6 +1227,7 @@
   },
   "downloads": {
     "title": "下载队列",
-    "noDownloaders": "未连接下载器。请在设置中添加。"
+    "noDownloaders": "未连接下载器。请在设置中添加。",
+    "jobFailed": "无法完成“{{title}}”的下载。它仍在队列中，将重试。"
   }
 }
