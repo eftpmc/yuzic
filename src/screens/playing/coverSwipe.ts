@@ -33,6 +33,11 @@ export function resolveCoverSwipe(
   velocityX: number,
   coverWidth: number,
 ): SwipeOutcome {
+  // Runs inside a gesture's `onEnd`, which is on the UI thread. Without this
+  // the call throws `Tried to synchronously call a non-worklet function` at
+  // the end of the first swipe — invisible to typecheck, lint and jest, all of
+  // which run it happily on the JS thread.
+  'worklet';
   const far = Math.abs(translationX) > coverWidth * SWIPE_DISTANCE_RATIO;
   const fast = Math.abs(velocityX) > SWIPE_VELOCITY;
 
