@@ -119,7 +119,7 @@ const DownloadsInfoScreen: React.FC = () => {
   }, [t, clearDownloadsForProvider, activeServer?.type, activeServer?.id]);
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="downloads-info-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.library.downloads.detailsTitle')} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
@@ -168,7 +168,7 @@ const DownloadsInfoScreen: React.FC = () => {
                     </Touchable>
                   </View>
                 )}
-                <View style={[styles.row, { backgroundColor: colors.card, borderRadius: rad.md }]}>
+                <View testID="download-info-row" style={[styles.row, { backgroundColor: colors.card, borderRadius: rad.md }]}>
                   <View style={styles.coverCell}>
                     <MediaImage cover={item.cover} size="thumb" style={[styles.cover, { borderRadius: rad.md }]} />
                   </View>

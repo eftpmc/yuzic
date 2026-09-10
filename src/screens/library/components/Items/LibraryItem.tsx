@@ -29,6 +29,14 @@ type Props = {
   onPress: () => void;
   onLongPress: () => void;
   testID?: string;
+  /**
+   * An id for the title text itself, distinct from the cell's `testID`.
+   *
+   * Every cell in a collection shares one `testID`, so a *specific* item can
+   * otherwise only be addressed by its text — which is layout-dependent, and
+   * fails on a multi-column grid where a scroll steps a whole row at a time.
+   */
+  titleTestID?: string;
 };
 
 const LibraryItem: React.FC<Props> = ({
@@ -42,6 +50,7 @@ const LibraryItem: React.FC<Props> = ({
   onPress,
   onLongPress,
   testID,
+  titleTestID,
 }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -75,7 +84,7 @@ const LibraryItem: React.FC<Props> = ({
       />
 
       <View style={isGridView ? styles.gridText : styles.listText}>
-        <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
+        <Text testID={titleTestID} style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>
           {title}
         </Text>
         {subtext !== undefined && (

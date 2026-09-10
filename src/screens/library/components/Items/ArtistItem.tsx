@@ -59,6 +59,13 @@ const ArtistItem: React.FC<ItemProps> = ({
     <>
       <LibraryItem
         testID="library-artist-item"
+        // The name as its own addressable id. Every cell otherwise shares one
+        // testID and the name is only a `title` prop, so a specific artist can
+        // only be reached by `text:` — which is layout-dependent: the iPad
+        // grid is three across, and scrollUntilVisible steps a whole row at a
+        // time, so it scrolls clean past the wanted name to the end of the
+        // list without ever matching it.
+        titleTestID={`library-artist-item-${name}`}
         cover={cover}
         title={name}
         subtext={subtext}

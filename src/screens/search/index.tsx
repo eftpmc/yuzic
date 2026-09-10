@@ -80,6 +80,10 @@ const Search = () => {
   const { searchResults, handleSearchWithFilters, clearSearch, isLoading, hasError, degraded } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mirrors `query` for the focus effect, which must not be re-created on every
+  // keystroke but still needs to read the current value.
+  const queryRef = useRef(query);
+  queryRef.current = query;
 
   /**
    * Open the keyboard when the tab is opened with nothing typed.
@@ -97,7 +101,11 @@ const Search = () => {
    */
   useFocusEffect(
     useCallback(() => {
-      if (query.trim() !== '') return;
+      // Read through a ref: this callback is deliberately not re-created as the
+      // query changes (see below), so reading `query` directly would always see
+      // the empty string it was created with and autofocus even when results
+      // are on screen — exactly what the gate is meant to prevent.
+      if (queryRef.current.trim() !== '') return;
       const frame = requestAnimationFrame(() => searchInputRef.current?.focus());
       return () => cancelAnimationFrame(frame);
       // Intentionally not reacting to `query`: this fires on focus, and
@@ -284,6 +292,7 @@ const Search = () => {
       return (
         <MediaListRow
           title={result.title}
+          testID="search-result-song"
           subtitle={result.subtext}
           cover={result.cover}
           onPress={() => { void handleSongPress(result); }}
@@ -431,6 +440,13 @@ const Search = () => {
         ref={scrollRef}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollClearance }]}
         keyboardShouldPersistTaps="handled"
+        // Scrolling the results puts the keyboard away, the way every other
+        // iOS search screen behaves. Without this the keyboard covers the
+        // bottom half of the results (and the mini player) for as long as the
+        // query is on screen, and there is no gesture that dismisses it:
+        // `keyboardShouldPersistTaps="handled"` deliberately swallows taps on
+        // empty space, so the field can only be dismissed by submitting.
+        keyboardDismissMode="on-drag"
       >
         {query.trim() === ''
           ? (
