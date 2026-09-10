@@ -87,6 +87,7 @@ const SongRow: React.FC<Props> = ({
     <>
       <MediaListRow
         title={song.title}
+        testID="song-row"
         subtitle={`${song.artist || t('songOptions.unknownArtist')}${!isAlbumCompact ? ` • ${formatSongDuration(song.duration)}` : ''}`}
         cover={song.cover}
         onPress={handlePress}

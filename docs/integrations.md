@@ -183,6 +183,7 @@ without a manual pull (`src/features/downloaders/DownloadersQueueContext.tsx`).
 | --- | --- | --- | --- | --- |
 | [Lidarr](https://lidarr.audio) | Lidarr | ✅ | — (Lidarr is album-oriented) | Server URL + API key (Lidarr → Settings → General) |
 | [slskd](https://github.com/slskd/slskd) (Soulseek) | Soulseek | ✅ | ✅ | Server URL + API key, plus its own search preferences |
+| [SoulSync](https://github.com/Nezreka/SoulSync) | SoulSync | — (no album endpoint) | ✅ | Server URL + API key |
 
 Registry and the shared `DownloaderDefinition` shape:
 `src/features/downloaders/registry.ts`. A downloader is offered on an external
@@ -320,6 +321,25 @@ Nothing else on the Last.fm API is called — see
 slskd downloads also reach MusicBrainz (`src/api/slskd/mb/canonicalize.ts`) to
 turn an MBID into a canonical artist/album/track list before matching filenames
 against it.
+
+### SoulSync — your instance, `/api/v1`
+
+`Authorization: Bearer`. `src/api/soulsync/`. The query-param form (`?api_key=`)
+is also accepted, but a key in a URL ends up in logs and history, so the header
+is the one used.
+
+Every reply is wrapped in the same `{ success, data, error }` envelope whatever
+the HTTP status says; the client unwraps it so callers see `data` or an Error.
+
+| Endpoint | Used for |
+| --- | --- |
+| `GET /downloads?limit=1` | Connection test — SoulSync has no dedicated status endpoint, so the queue read doubles as one |
+| `POST /request` | Requesting a track. One free-text query; SoulSync runs its own search-match-download pipeline behind it |
+| `GET /downloads?limit=100` | The in-app transfer queue, and spotting finished items |
+| `POST /downloads/{id}/cancel` | Cancelling — takes the peer username in the body, since a transfer is addressed by id *and* peer |
+
+SoulSync is track-only: it exposes no album endpoint, which is why
+`downloadAlbum` is optional on `DownloaderDefinition`.
 
 ## What we don't call
 

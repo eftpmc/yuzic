@@ -200,6 +200,7 @@ const ArtistOptions = forwardRef<
       onChange={(index) => setIsSheetOpen(index >= 0)}
     >
       <BottomSheetScrollView
+        testID="artist-options-sheet"
         style={sheetBg}
         contentContainerStyle={optionSheetStyles.sheetContent}
       >

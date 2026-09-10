@@ -15,16 +15,17 @@ import { useRadius } from '@/hooks/useRadius';
   status?: 'connected' | 'disconnected' | 'enabled' | 'disabled';
   selected?: boolean;
   checked?: boolean;
+  testID?: string;
 };
 
-const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, status, selected, checked }) => {
+const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, status, selected, checked, testID }) => {
   const { colors } = useTheme();
   const rad = useRadius();
   const isRadio = selected !== undefined;
   const isCheckbox = checked !== undefined;
 
   return (
-    <Touchable style={styles.row} onPress={onPress}>
+    <Touchable testID={testID} style={styles.row} onPress={onPress}>
       <View style={styles.left}>
         {leftIcon && (
           <View style={styles.iconContainer}>
