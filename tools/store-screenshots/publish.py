@@ -64,6 +64,34 @@ def check(device: str, spec: dict) -> list[str]:
     return problems
 
 
+# Play's listing graphics, checked here even though this script does not
+# produce them. `supply` refuses a wrongly-sized image by aborting the ENTIRE
+# edit — the AAB and the track update go with it — so a 4167x4167 icon lost a
+# whole release after a 24-minute Gradle build. Uploaded only when
+# `skip_upload_images` is false in the Fastfile; the check stays regardless, so
+# turning that flag on can never be the thing that discovers a bad asset.
+PLAY_GRAPHICS = {
+    "icon.png": (512, 512),
+    "featureGraphic.png": (1024, 500),
+}
+
+
+def check_play_graphics() -> list[str]:
+    problems = []
+    base = REPO / "fastlane/metadata/android/en-US/images"
+    for name, expected in PLAY_GRAPHICS.items():
+        path = base / name
+        if not path.exists():
+            continue
+        size = Image.open(path).size
+        if size != expected:
+            problems.append(
+                f"{path.relative_to(REPO)} is {size[0]}x{size[1]}, "
+                f"Play wants {expected[0]}x{expected[1]}"
+            )
+    return problems
+
+
 def publish(device: str, spec: dict) -> int:
     spec["ios"].mkdir(parents=True, exist_ok=True)
     spec["android"].mkdir(parents=True, exist_ok=True)
@@ -84,6 +112,7 @@ def main() -> int:
     problems = []
     for device, spec in TARGETS.items():
         problems += check(device, spec)
+    problems += check_play_graphics()
 
     if problems:
         for p in problems:
