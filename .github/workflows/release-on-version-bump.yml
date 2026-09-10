@@ -123,7 +123,13 @@ jobs:
       - name: Attach whatever built
         env:
           GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          # `gh` reads GH_REPO, not GITHUB_REPOSITORY. Without it, `gh release
+          # upload` shells out to git to work out which repo it is talking to,
+          # and this job never checks the repo out — so it died with "fatal:
+          # not a git repository" *after* both platforms had built and shipped,
+          # leaving 2.1.1 an empty draft with three artifacts stranded on the
+          # run. Setting GITHUB_REPOSITORY here looks right and does nothing.
+          GH_REPO: ${{ github.repository }}
           VERSION: ${{ needs.detect-version-bump.outputs.version }}
         run: |
           set -euo pipefail
