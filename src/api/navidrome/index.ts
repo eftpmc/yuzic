@@ -332,6 +332,15 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     refreshAll: async () => refreshPodcasts(client),
   };
 
+  const user = {
+    // Navidrome always answers `getAvatar` with an image — a gravatar when the
+    // account has one, its own generated fallback otherwise — so this is
+    // offered unconditionally rather than probed. A server that 404s it lands
+    // in the image loader's normal failure path and the caller falls back to
+    // the initial disc, which is the same outcome as returning null here.
+    avatarUrl: () => client.buildAvatarUrl(),
+  };
+
   return {
     auth,
     albums,
@@ -351,5 +360,6 @@ export const createNavidromeAdapter = (server: Server): ApiAdapter => {
     discovery,
     podcasts,
     jukebox,
+    user,
   };
 };

@@ -116,6 +116,14 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
     return `${streamBaseUrl}/Audio/${songId}/stream.${ext}?AudioCodec=${codec}&MaxStreamingBitrate=${bitrate}&${brand.streamTokenParam}=${token}`;
   }
 
+  function buildAvatarUrl(): string {
+    const base = failoverHint ? orderedUrls(failoverHint)[0] ?? baseUrl : baseUrl;
+    // Jellyfin/Emby serve the user's own image off the user resource. No token
+    // in the URL: primary images are public on these servers, and the image
+    // loader cannot send the `X-Emby-Token` header this client normally does.
+    return `${base}/Users/${userId}/Images/Primary`;
+  }
+
   return {
     request,
     requestText,
@@ -124,6 +132,7 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
     userId,
     parentId,
     buildStreamUrl,
+    buildAvatarUrl,
     brand,
   };
 }

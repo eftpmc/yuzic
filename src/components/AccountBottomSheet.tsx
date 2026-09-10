@@ -9,13 +9,13 @@ import { useApi } from '@/api';
 import { disconnect } from '@/utils/redux/slices/serversSlice';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, iconSize, radius, spacing, typography } from '@/constants/design';
+import UserAvatar from '@/components/UserAvatar';
+import { controlSize, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -36,12 +36,10 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
   const username = activeServer?.username;
   const serverUrl = activeServer?.serverUrl;
   const type = activeServer?.type;
-  const themeColor = useSelector(selectThemeColor);
 
   const queryClient = useQueryClient();
   const { pauseSong, resetQueue } = usePlayingActions();
 
-  const initial = username?.[0]?.toUpperCase() ?? '?';
   const cleanUrl = serverUrl?.replace(/^https?:\/\//, '');
   const close = () => (ref as any)?.current?.dismiss();
 
@@ -90,9 +88,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
       <BottomSheetView style={styles.container}>
         {/* Profile */}
         <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}>
-            <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>{initial}</Text>
-          </View>
+          <UserAvatar username={username} size={controlSize.avatarSheet} borderRadius={rad.pill} />
           <View style={styles.headerInfo}>
             <Text style={[styles.username, { color: colors.secondary }]}>{username}</Text>
             <View style={styles.serverMeta}>
@@ -145,17 +141,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     marginBottom: spacing.lg,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    ...cappedTypography.glyph.navigationTitle,
-    fontWeight: '700',
-    color: '#fff',
   },
   headerInfo: {
     flex: 1,

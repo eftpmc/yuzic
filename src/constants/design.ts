@@ -298,6 +298,18 @@ export const controlSize = {
   mediaRowArt: 64,
   compactMediaRowArt: 44,
   topBarHeight: 52,
+  /**
+   * The account's own picture, at the three places it is drawn.
+   *
+   * A scale rather than three literals, because these were three separate
+   * numbers in three files before the avatar became one component and the
+   * near-misses had already started: 44 in the sheet against 48 in the card
+   * would have been a fourth. Each is the size that surface already drew, so
+   * adding the picture moved no layout.
+   */
+  avatarTabHeader: 32,
+  avatarSheet: 44,
+  avatarProfileCard: 52,
 } as const;
 
 /**
