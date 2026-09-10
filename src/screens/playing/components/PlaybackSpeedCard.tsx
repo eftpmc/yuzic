@@ -2,8 +2,10 @@ import React, { useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Gauge } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { usePlayingActions, usePlayingState } from '@/contexts/PlayingContext';
+import { speedProfileFor } from '@/utils/playback/speedProfile';
 import {
   PLAYBACK_DEFAULT_SPEED,
   PLAYBACK_MAX_SPEED,
@@ -18,11 +20,15 @@ import { withAlpha } from '@/features/theme/coverAccent';
 type Props = { contentWidth: number };
 
 export default function PlaybackSpeedCard({ contentWidth }: Props) {
+  const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
   const rad = useRadius();
-  const { playbackSpeed } = usePlayingState();
+  const { playbackSpeed, currentSong } = usePlayingState();
   const { setPlaybackSpeed } = usePlayingActions();
   const isAltered = playbackSpeed !== 1.0;
+  // The card says which speed is being changed, because there are now two and
+  // a control that silently edits one of them is a control you cannot trust.
+  const isSpoken = speedProfileFor(currentSong) === 'spoken';
 
   const decrease = useCallback(() => {
     const next = Math.round((playbackSpeed - PLAYBACK_SPEED_STEP) * 100) / 100;
@@ -66,7 +72,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
           color={isAltered ? themeColor : 'rgba(255,255,255,0.5)'}
         />
         <Text style={[styles.label, isAltered && { color: themeColor }]}>
-          Playback Speed
+          {t(isSpoken ? 'playing.speed.spokenTitle' : 'playing.speed.title')}
         </Text>
       </View>
 

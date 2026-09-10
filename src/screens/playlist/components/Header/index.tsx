@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Ellipsis, Shuffle, Play, Check, Download } from 'lucide-react-native';
+import { Ellipsis, Shuffle, Play } from 'lucide-react-native';
 
 import { Playlist } from '@/types';
 import PlaylistOptions from '@/components/options/PlaylistOptions';
@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSheetRef } from '@/utils/useSheetRef';
 import { formatDuration } from '@/utils/formatDuration';
-import DownloadProgressRing from '@/components/DownloadProgressRing';
+import DownloadStateIcon from '@/components/DownloadStateIcon';
 import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import {
   DetailActionRow,
@@ -127,13 +127,12 @@ const PlaylistHeader: React.FC<Props> = ({ playlist, showNavigation = true, onOp
                     : 'a11y.detail.download'
               )}
             >
-              {isPlaylistDownloading ? (
-                <DownloadProgressRing progress={downloadFraction} size={iconSize.row} />
-              ) : isPlaylistDownloaded ? (
-                <Check size={iconSize.row} color={colors.secondary} />
-              ) : (
-                <Download size={iconSize.row} color={colors.secondary} />
-              )}
+              <DownloadStateIcon
+                isDownloaded={isPlaylistDownloaded}
+                isDownloading={isPlaylistDownloading}
+                progress={downloadFraction}
+                color={colors.secondary}
+              />
             </DetailCircleAction>
           </DetailActionRow>
         }

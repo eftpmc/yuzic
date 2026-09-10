@@ -44,6 +44,17 @@ export interface Song extends SongBase {
     streamUrl: string;
     /** See {@link ContentKind}. Absent → treated as `'song'`. */
     contentKind?: ContentKind;
+    /**
+     * The server-side id `buildStreamUrl` was given, where that is not `id`.
+     *
+     * A podcast episode's id is namespaced (`podcast:…`) and its playable
+     * stream lives under a different id the server only assigns once it has
+     * downloaded the episode. Anything needing to rebuild the stream URL
+     * later — a resume shelf, an offline retry — needs that id rather than
+     * the one the queue is keyed by, and the credentialled URL is not safe to
+     * store.
+     */
+    streamId?: string;
     /** Source server ID; omitted when unknown. */
     sourceServerId?: string;
     /** Source server provider; omitted when unknown. */

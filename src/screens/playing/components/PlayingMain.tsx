@@ -1,10 +1,11 @@
-import React, { memo, useCallback, useRef } from 'react';
+import React, { memo, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
 } from 'react-native';
-import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { useAnimatedReaction, runOnJS, withSpring, withTiming } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 
 import { usePlayingState, usePlayingProgress, usePlayingActions } from '@/contexts/PlayingContext';
@@ -14,6 +15,7 @@ import { selectShowQualityBadge } from '@/utils/redux/selectors/settingsSelector
 import { hasFiniteDuration } from '@/utils/playback/contentKind';
 import { CirclePlus } from 'lucide-react-native';
 import { usePlayerExpansion } from '@/features/player/PlayerExpansion';
+import { resolveCoverSwipe } from '../coverSwipe';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -24,6 +26,15 @@ type PlayingMainProps = {
   onPressOptions?: () => void;
   onPressAdd?: () => void;
 };
+
+// A swipe is unreachable with a screen reader on, so the same two outcomes are
+// offered as named actions. `increment`/`decrement` are what an `adjustable`
+// role advertises, which is how VoiceOver and TalkBack already expect to move
+// through a value.
+const SWIPE_A11Y_ACTIONS = [
+  { name: 'increment' as const },
+  { name: 'decrement' as const },
+];
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -73,9 +84,10 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentSong } = usePlayingState();
+  const { skipToNext, skipToPrevious } = usePlayingActions();
   const rad = useRadius();
   const showQualityBadge = useSelector(selectShowQualityBadge);
-  const { expansion, fullCover, scrollY } = usePlayerExpansion();
+  const { expansion, fullCover, scrollY, coverSwipeX } = usePlayerExpansion();
 
   // The cover itself is drawn by the player host, one layer up, so a single
   // image can travel between here and the playing bar instead of one being
@@ -100,10 +112,50 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
     [measureCoverSlot],
   );
 
+  const handleAccessibilityAction = useCallback(
+    (event: { nativeEvent: { actionName: string } }) => {
+      if (event.nativeEvent.actionName === 'increment') void skipToNext();
+      else if (event.nativeEvent.actionName === 'decrement') void skipToPrevious();
+    },
+    [skipToNext, skipToPrevious],
+  );
+
+  const swipe = useMemo(
+    () =>
+      Gesture.Pan()
+        // Horizontal only. The player's own drag-to-close pan and the scroll
+        // view underneath both want vertical movement, so this one refuses it
+        // outright rather than racing them for it: without the Y limit a
+        // diagonal drag can start a skip and close the player at once.
+        .activeOffsetX([-12, 12])
+        .failOffsetY([-14, 14])
+        .onUpdate(event => {
+          coverSwipeX.value = event.translationX;
+        })
+        .onEnd(event => {
+          const outcome = resolveCoverSwipe(event.translationX, event.velocityX, width);
+          if (outcome === 'cancel') {
+            coverSwipeX.value = withSpring(0, { damping: 18, stiffness: 220 });
+            return;
+          }
+          // Carry the cover the rest of the way out before the track changes,
+          // then put it back at rest under the incoming artwork. Snapping to
+          // zero on the same frame as the skip reads as the cover flinching.
+          coverSwipeX.value = withTiming(
+            outcome === 'next' ? -width : width,
+            { duration: 140 },
+            finished => {
+              if (finished) coverSwipeX.value = 0;
+            },
+          );
+          runOnJS(outcome === 'next' ? skipToNext : skipToPrevious)();
+        }),
+    [coverSwipeX, width, skipToNext, skipToPrevious],
+  );
+
   if (!currentSong) {
     return null;
   }
-
   const qualityLabel = (() => {
     const parts: string[] = [];
     if (currentSong.mimeType) {
@@ -117,15 +169,25 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
 
   return (
     <View style={[styles.root, { width }]}>
-      <View
-        ref={coverSlotRef}
-        onLayout={measureCoverSlot}
-        // Keeps its surface colour rather than going transparent: the
-        // travelling cover lands exactly on top of it, and a song whose
-        // artwork will not load still has the plain square it always had
-        // instead of a hole where the cover should be.
-        style={[styles.cover, { width, height: width, borderRadius: rad.card }]}
-      />
+      <GestureDetector gesture={swipe}>
+        <View
+          ref={coverSlotRef}
+          onLayout={measureCoverSlot}
+          // Keeps its surface colour rather than going transparent: the
+          // travelling cover lands exactly on top of it, and a song whose
+          // artwork will not load still has the plain square it always had
+          // instead of a hole where the cover should be.
+          style={[styles.cover, { width, height: width, borderRadius: rad.card }]}
+          // The square is what the finger swipes, but the cover the eye
+          // follows is drawn by the host with pointerEvents="none" — so this
+          // is also what a screen reader finds. Name it for what it does.
+          accessible
+          accessibilityRole="adjustable"
+          accessibilityLabel={t('a11y.player.coverArt')}
+          accessibilityActions={SWIPE_A11Y_ACTIONS}
+          onAccessibilityAction={handleAccessibilityAction}
+        />
+      </GestureDetector>
 
       <View style={styles.titleRow}>
         <View style={styles.textContainer}>
