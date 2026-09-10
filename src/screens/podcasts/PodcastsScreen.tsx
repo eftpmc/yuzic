@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { toast } from '@backpackapp-io/react-native-toast';
-import { AlertTriangle, Plus, Podcast as PodcastIcon, RefreshCw, Trash2 } from 'lucide-react-native';
+import { AlertTriangle, CloudOff, Plus, Podcast as PodcastIcon, RefreshCw, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { PodcastChannel } from '@/api/types';
@@ -26,6 +26,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 import { hitSlopFor, iconSize, spacing, statusColor } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useServerReachable } from '@/features/connectivity/useServerReachable';
 import type { CoverSource } from '@/types';
 
 export default function PodcastsScreen() {
@@ -34,6 +35,7 @@ export default function PodcastsScreen() {
   const api = useApi();
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
+  const serverReachable = useServerReachable();
   const scrollClearance = useScrollClearance();
   const [adding, setAdding] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,7 +43,7 @@ export default function PodcastsScreen() {
   const channelsQuery = useQuery<PodcastChannel[]>({
     queryKey: [QueryKeys.Podcasts],
     queryFn: async () => (await api.podcasts?.list(false)) ?? [],
-    enabled: Boolean(api.podcasts),
+    enabled: Boolean(api.podcasts) && serverReachable,
     staleTime: 1000 * 60 * 15,
   });
 
@@ -171,7 +173,12 @@ export default function PodcastsScreen() {
         }
       />
 
-      {channelsQuery.isLoading ? (
+      {!serverReachable && !(channelsQuery.data ?? []).length ? (
+        <EmptyState
+          icon={<CloudOff size={iconSize.emptyState} color={colors.subtext} />}
+          message={t('common.offline.serverOnlyFeature')}
+        />
+      ) : channelsQuery.isLoading ? (
         <View style={styles.listContent}>
           {[...Array(8)].map((_, i) => <SkeletonListRow key={i} />)}
         </View>

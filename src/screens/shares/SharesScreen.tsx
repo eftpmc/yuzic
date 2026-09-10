@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@backpackapp-io/react-native-toast';
-import { Link2, Share2, Trash2 } from 'lucide-react-native';
+import { CloudOff, Link2, Share2, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { Share } from '@/api/types';
@@ -17,6 +17,7 @@ import { useScrollClearance } from '@/hooks/useScrollClearance';
 import { useListDensity } from '@/hooks/useListDensity';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useServerReachable } from '@/features/connectivity/useServerReachable';
 import { shareItem } from '@/utils/share';
 
 function formatDate(value: string | undefined): string {
@@ -46,11 +47,12 @@ export default function SharesScreen() {
   const density = useListDensity();
   const api = useApi();
   const queryClient = useQueryClient();
+  const serverReachable = useServerReachable();
 
   const sharesQuery = useQuery<Share[]>({
     queryKey: [QueryKeys.Shares],
     queryFn: async () => (await api.shares?.list()) ?? [],
-    enabled: Boolean(api.shares),
+    enabled: Boolean(api.shares) && serverReachable,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -149,7 +151,12 @@ export default function SharesScreen() {
         title={t('shares.title')}
         subtitle={shareCount > 0 ? t('library.count.shares', { count: shareCount }) : undefined}
       />
-      {sharesQuery.isLoading ? (
+      {!serverReachable && !(sharesQuery.data ?? []).length ? (
+        <EmptyState
+          icon={<CloudOff size={iconSize.emptyState} color={colors.subtext} />}
+          message={t('common.offline.serverOnlyFeature')}
+        />
+      ) : sharesQuery.isLoading ? (
         <View style={styles.listContent}>
           {[...Array(6)].map((_, i) => <SkeletonListRow key={i} />)}
         </View>

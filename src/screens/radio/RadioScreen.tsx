@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@backpackapp-io/react-native-toast';
-import { Pencil, Plus, Radio as RadioIcon, Trash2 } from 'lucide-react-native';
+import { CloudOff, Pencil, Plus, Radio as RadioIcon, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
 import type { InternetRadioStation } from '@/api/types';
@@ -16,6 +16,7 @@ import EmptyState from '@/components/EmptyState';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import { controlSize, hitSlopFor, iconSize, spacing } from '@/constants/design';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useServerReachable } from '@/features/connectivity/useServerReachable';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 import { useTheme } from '@/hooks/useTheme';
@@ -37,6 +38,7 @@ export default function RadioScreen() {
   const { colors } = useTheme();
   const api = useApi();
   const queryClient = useQueryClient();
+  const serverReachable = useServerReachable();
   const scrollClearance = useScrollClearance();
   const { playSong } = usePlayingActions();
   const [editing, setEditing] = useState<Editing | null>(null);
@@ -44,7 +46,7 @@ export default function RadioScreen() {
   const stationsQuery = useQuery({
     queryKey: [QueryKeys.Radio],
     queryFn: async () => (await api.radio?.list()) ?? [],
-    enabled: Boolean(api.radio),
+    enabled: Boolean(api.radio) && serverReachable,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -148,7 +150,12 @@ export default function RadioScreen() {
         }
       />
 
-      {stationsQuery.isLoading ? (
+      {!serverReachable && !stationsQuery.data?.length ? (
+        <EmptyState
+          icon={<CloudOff size={iconSize.emptyState} color={colors.subtext} />}
+          message={t('common.offline.serverOnlyFeature')}
+        />
+      ) : stationsQuery.isLoading ? (
         <View style={styles.listContent}>
           {[...Array(8)].map((_, i) => (
             <SkeletonListRow key={i} artSize={controlSize.compactMediaRowArt} />

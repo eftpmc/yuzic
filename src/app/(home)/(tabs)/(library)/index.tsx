@@ -8,10 +8,14 @@ import { useScrollToTop } from '@react-navigation/native'
 import { useTheme } from '@/hooks/useTheme'
 import { useAccountSheet } from '@/contexts/AccountSheetContext'
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors'
+import { useServerReachable } from '@/features/connectivity/useServerReachable'
 
 import TabHeader from '@/components/TabHeader'
+import StatusBanner from '@/components/StatusBanner'
 import LibraryEntryRows from '@/screens/library/LibraryEntryRows'
 import { useScrollClearance } from '@/hooks/useScrollClearance'
+import { iconSize, spacing } from '@/constants/design'
+import { CloudOff } from 'lucide-react-native'
 
 /**
  * The library index: one entry point per way of browsing the collection.
@@ -32,6 +36,7 @@ export default function LibraryScreen() {
   const activeServer = useSelector(selectActiveServer)
   const username = activeServer?.username
   const { openAccountSheet } = useAccountSheet()
+  const serverReachable = useServerReachable()
 
   const scrollRef = useRef<ScrollView>(null)
   useScrollToTop(scrollRef)
@@ -53,6 +58,14 @@ export default function LibraryScreen() {
         contentContainerStyle={{ paddingBottom: scrollClearance }}
         showsVerticalScrollIndicator={false}
       >
+        {!serverReachable && (
+          <StatusBanner
+            icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
+            text={t('library.offlineBanner')}
+            style={styles.offlineBanner}
+            testID="library-offline-banner"
+          />
+        )}
         <LibraryEntryRows />
       </ScrollView>
     </SafeAreaView>
@@ -61,4 +74,8 @@ export default function LibraryScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  offlineBanner: {
+    marginHorizontal: spacing.page,
+    marginBottom: spacing.sm,
+  },
 })

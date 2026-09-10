@@ -247,6 +247,39 @@ dispatch it into a slice like the others. If it's per-server, key by
 payload), gate the fetch behind a stale-time check via `queryClient.fetchQuery`
 so a re-sync inside the 30-min window returns the cached value.
 
+## 5. Reachability — offline, and the server being gone
+
+Two different signals, and using the wrong one is the recurring bug:
+
+- **`useIsOffline`** — the device has no network (NetInfo).
+- **`useServerUnreachable`** — the device is online but the *music server* is
+  not: Tailscale down, server rebooting, DNS moved. NetInfo reports online, so
+  nothing offline-related engages on its own and every request instead hangs to
+  its own timeout. `ServerReachabilityWatcher` pings while the flag is set and
+  clears it on the first success.
+
+`useServerReachable()` in `features/connectivity` is the two of them together,
+and is what a surface should ask when the question is "can I call the server".
+
+Three shapes of consumer:
+
+1. **Has a synced fallback** (albums, artists, playlists, tracks, starred) —
+   `useOfflineFirstQuery`. It folds both signals in, serves library data when
+   the server can't be asked, and returns `degraded` so the screen can say the
+   data is local rather than fresh.
+2. **Has a local equivalent but isn't a query** — search. See
+   `contexts/searchLegs.ts`: the legs are decided before any fetch, and a
+   *server* scope falls back to the local index rather than to nothing.
+3. **Has no local equivalent** (radio, podcasts, shares, the server-backed Home
+   shelves) — gate `enabled` on `useServerReachable()` and render an offline
+   empty state. These have nothing to degrade *to*, so the honest answer is to
+   say so rather than spin into a load failure.
+
+**A skipped leg is not a failed leg.** Anything that reports both needs two
+flags: attempting a request that cannot land, catching the timeout, and calling
+it an error is how offline search came to show a red banner over results that
+had actually succeeded.
+
 ## Where things live
 
 ```

@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useServerReachable } from '@/features/connectivity/useServerReachable';
 import { getDayKey, getDailySeed, seededShuffle } from '@/features/home/hooks/useDailyLayout';
 import { presentableGenres } from '@/features/home/genres';
 import { onePerAlbum } from '@/features/home/randomDraw';
@@ -56,6 +57,11 @@ export default function ServerRandomSection({ sectionKey, refreshKey = 0 }: Prop
   const { colors } = useTheme();
   const rad = useRadius();
   const api = useApi();
+  // The shelf is server-backed, so it needs the server to be reachable, not
+  // merely supported. Offline (or with the server unreachable) it hides
+  // instead of holding a skeleton over a request that cannot land.
+  const serverReachable = useServerReachable();
+  const discoveryAvailable = Boolean(api.discovery) && serverReachable;
   const { playSongs } = usePlayingActions();
   const { width: screenWidth } = useWindowDimensions();
   const genres = useSelector(selectLibraryGenres);
@@ -100,16 +106,16 @@ export default function ServerRandomSection({ sectionKey, refreshKey = 0 }: Prop
       // heading drops the genre so it still describes what is under it.
       return { songs: await draw(), themed: false };
     },
-    enabled: Boolean(api.discovery),
+    enabled: discoveryAvailable,
     staleTime: 1000 * 60 * 60 * 4,
   });
 
   const data = query.data?.songs ?? [];
-  const isLoading = Boolean(api.discovery) && query.isLoading;
+  const isLoading = discoveryAvailable && query.isLoading;
   const hasEnough = data.length >= MIN_ITEMS;
   const isThemed = Boolean(themeGenre) && (query.data?.themed ?? false);
 
-  useSourceSectionPresence(sectionKey, Boolean(api.discovery) && (isLoading || hasEnough));
+  useSourceSectionPresence(sectionKey, discoveryAvailable && (isLoading || hasEnough));
 
   const handlePlay = useCallback((index: number) => {
     if (data.length === 0) return;

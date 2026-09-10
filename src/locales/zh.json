@@ -492,7 +492,8 @@
       "noConnection": "无网络连接",
       "syncedChanges": "离线更改已同步",
       "syncQueuedChangesFailed": "部分离线更改无法同步",
-      "notAvailable": "离线时不可用"
+      "notAvailable": "离线时不可用",
+      "serverOnlyFeature": "离线时不可用 — 此内容存储在您的服务器上"
     },
     "oneSecond": "稍等片刻。",
     "playingSimilar": "正在播放相似音乐",
@@ -580,6 +581,7 @@
     }
   },
   "library": {
+    "offlineBanner": "离线 — 显示已同步的音乐库和下载内容",
     "title": "媒体库",
     "view": {
       "switchToList": "切换到列表视图",
@@ -685,6 +687,7 @@
     "placeholder": "搜索音乐、歌手或播放列表...",
     "noResults": "未找到结果",
     "searchError": "无法连接服务器 — 结果可能不完整",
+    "searchLocalOnly": "无法连接服务器 — 仅显示您的音乐库",
     "recentSearches": "最近搜索",
     "clearRecent": "清除",
     "removeRecentSearch": "从最近搜索中删除“{{query}}”",

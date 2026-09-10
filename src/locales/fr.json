@@ -493,7 +493,8 @@
       "noConnection": "Pas de connexion internet",
       "syncedChanges": "Modifications hors ligne synchronisées",
       "syncQueuedChangesFailed": "Certaines modifications hors ligne n'ont pas pu être synchronisées",
-      "notAvailable": "Indisponible hors ligne"
+      "notAvailable": "Indisponible hors ligne",
+      "serverOnlyFeature": "Indisponible hors ligne — ce contenu est sur votre serveur"
     },
     "oneSecond": "Un instant.",
     "playingSimilar": "Lecture de musique similaire",
@@ -581,6 +582,7 @@
     }
   },
   "library": {
+    "offlineBanner": "Hors ligne — affichage de votre bibliothèque synchronisée et de vos téléchargements",
     "title": "Bibliothèque",
     "view": {
       "switchToList": "Passer à la vue liste",
@@ -688,6 +690,7 @@
     "placeholder": "Rechercher de la musique, des artistes ou des listes de lecture...",
     "noResults": "Aucun résultat trouvé",
     "searchError": "Impossible de joindre le serveur — les résultats peuvent être incomplets",
+    "searchLocalOnly": "Affichage de votre bibliothèque uniquement — serveur injoignable",
     "recentSearches": "Recherches récentes",
     "clearRecent": "Effacer",
     "removeRecentSearch": "Supprimer « {{query}} » des recherches récentes",
