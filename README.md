@@ -63,14 +63,23 @@ Yuzic provides a Navidrome demo but requires a self-hosted Subsonic, Jellyfin, o
 ## Servers
 
 You need one music server. Navidrome (or any Subsonic-compatible server),
-Jellyfin, and Emby are supported; Navidrome also has a built-in public demo you
-can try the app against without hosting anything.
+Jellyfin, and Emby are supported, each signed into with a username and
+password. Navidrome also has a built-in public demo you can try the app against
+without hosting anything.
 
-| Server | Auth | Demo | Radio | Podcasts | Shares | Queue sync | Resume positions |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Navidrome / Subsonic | Username + password | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Jellyfin | Username + password | — | — | — | — | — | ✅ |
-| Emby | Username + password | — | — | — | — | — | ✅ |
+Everything not listed below — your library, playlists, favourites, search,
+lyrics, similar artists, and offline downloads — works the same on all three.
+What differs is the extras each server exposes:
+
+| Capability | Navidrome / Subsonic | Jellyfin | Emby |
+| --- | --- | --- | --- |
+| Resume positions | ✅ | ✅ | ✅ |
+| Radio | ✅ | — | — |
+| Podcasts | ✅ | — | — |
+| Shares | ✅ | — | — |
+| Jukebox — play on the server's own speakers | ✅ | — | — |
+| Queue sync across devices | ✅ | — | — |
+| Discovery shelves | ✅ | — | — |
 
 Provider-only surfaces are hidden rather than shown broken — a Jellyfin user
 doesn't get a Radio row that goes nowhere.
@@ -80,24 +89,25 @@ doesn't get a Radio row that goes nowhere.
 All optional, all off until you turn them on, all under
 **Settings → Integrations**.
 
-| Integration | Account needed | What it adds |
+| Integration | What it adds | Setup |
 | --- | --- | --- |
-| Deezer | No | Discovery shelves, search results, external artist/album pages, top tracks, similar artists, recommendations, 30s previews |
-| MusicBrainz | No | Canonical artist and album metadata for things not in your library |
-| Last.fm | No | Similar artists and playlist-recommendation seeds |
-| ListenBrainz | Token, for scrobbling | Scrobbling and now-playing; separately, the public similar-artist graph for discovery |
-| AudioMuse-AI | Self-hosted instance | Acoustic-similarity autoplay and playlist generation |
+| Deezer | Discovery shelves, search results, external artist/album pages, top tracks, similar artists, recommendations, 30s previews | Just turn it on |
+| MusicBrainz | Canonical artist and album metadata for things not in your library | Just turn it on |
+| Last.fm | Similar artists and playlist-recommendation seeds | Just turn it on |
+| ListenBrainz | Scrobbling and now-playing; separately, the public similar-artist graph for discovery | Token, for scrobbling |
+| AudioMuse-AI | Acoustic-similarity autoplay and playlist generation | Your own instance |
 
 ## Downloaders
 
 Optional, self-hosted, configured per server under **Settings → Downloaders**.
 These add music to *your server* — separate from offline downloads, which copy
-music you already have onto this device.
+music you already have onto this device. Both take a server URL and an API key.
 
-| Downloader | Albums | Tracks | Needs |
-| --- | --- | --- | --- |
-| [Lidarr](https://lidarr.audio) | ✅ | — | Server URL + API key |
-| [slskd](https://github.com/slskd/slskd) (Soulseek) | ✅ | ✅ | Server URL + API key |
+| Downloader | Albums | Tracks |
+| --- | --- | --- |
+| [Lidarr](https://lidarr.audio) | ✅ | — |
+| [slskd](https://github.com/slskd/slskd) (Soulseek) | ✅ | ✅ |
+| [SoulSync](https://github.com/Nezreka/SoulSync) | — | ✅ |
 
 ## Documentation
 
@@ -110,8 +120,8 @@ music you already have onto this device.
 
 ## Future
 - Apple TV app
-- Apple watch
-- F-droid
+- Apple Watch and Wear OS
+- F-Droid
 - Plex
 - Lyrion
 
