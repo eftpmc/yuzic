@@ -495,7 +495,8 @@
       "noConnection": "No internet connection",
       "syncedChanges": "Offline changes synced",
       "syncQueuedChangesFailed": "Some offline changes could not sync",
-      "notAvailable": "Not available offline"
+      "notAvailable": "Not available offline",
+      "serverOnlyFeature": "Not available offline — this lives on your server"
     },
     "oneSecond": "One moment.",
     "playingSimilar": "Playing similar music",
@@ -581,6 +582,7 @@
     }
   },
   "library": {
+    "offlineBanner": "Offline — showing your synced library and downloads",
     "title": "Library",
     "view": {
       "switchToList": "Switch to list view",
@@ -688,6 +690,7 @@
     "placeholder": "Search for music, artists, or playlists...",
     "noResults": "No results found",
     "searchError": "Couldn't reach the server — results may be incomplete",
+    "searchLocalOnly": "Showing your library only — can't reach the server",
     "recentSearches": "Recent searches",
     "clearRecent": "Clear",
     "removeRecentSearch": "Remove \"{{query}}\" from recent searches",

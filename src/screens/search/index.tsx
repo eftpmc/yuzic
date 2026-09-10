@@ -77,7 +77,7 @@ const Search = () => {
 
   const [query, setQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const { searchResults, handleSearchWithFilters, clearSearch, isLoading, hasError } = useSearch();
+  const { searchResults, handleSearchWithFilters, clearSearch, isLoading, hasError, degraded } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -417,10 +417,10 @@ const Search = () => {
         </View>
       </View>
 
-      {hasSearched && !isLoading && hasError && (
+      {hasSearched && !isLoading && (hasError || degraded) && (
         <StatusBanner
           icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
-          text={t('search.searchError')}
+          text={hasError ? t('search.searchError') : t('search.searchLocalOnly')}
           closable
           style={styles.errorBanner}
           testID="search-error-banner"

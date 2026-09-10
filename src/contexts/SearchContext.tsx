@@ -19,6 +19,8 @@ import * as deezer from '@/api/deezer';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
+import { useIsOffline } from '@/hooks/useIsOffline';
+import { useServerUnreachable } from '@/features/connectivity/serverReachability';
 
 import { useTracks } from '@/hooks/tracks';
 import { useApi } from '@/api';
@@ -33,6 +35,7 @@ import {
 } from '@/utils/downloads/collectionState';
 
 import { dedupeAndSort, type SearchResult } from './searchRanking';
+import { planSearchLegs } from './searchLegs';
 
 export type { SearchResult } from './searchRanking';
 
@@ -49,6 +52,12 @@ interface SearchContextType {
   isLoading: boolean;
   /** True when the most recent search failed to reach the server/external source, so results shown (if any) may be incomplete. */
   hasError: boolean;
+  /**
+   * True when the remote legs of the search were deliberately skipped because
+   * the server can't be reached, so what's shown is the local library only.
+   * Distinct from `hasError`: nothing failed, it was never attempted.
+   */
+  degraded: boolean;
   handleSearchWithFilters: (query: string, filters: SearchFilters) => Promise<void>;
 }
 
@@ -164,6 +173,17 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
 
   const searchScope = useSelector(selectSearchScope);
 
+  // Whether the remote halves of a search can be attempted at all. Offline is
+  // the device having no network; serverUnreachable is the device being online
+  // while the music server isn't (VPN down, server rebooting) — the case that
+  // otherwise leaves every keystroke hanging until its own timeout.
+  const isOffline = useIsOffline();
+  const serverUnreachable = useServerUnreachable();
+  const canReachServer = !isOffline && !serverUnreachable;
+  // Deezer is a public API, so it only needs the device to be online — an
+  // unreachable *music server* says nothing about whether Deezer is up.
+  const canReachExternal = !isOffline;
+
   const {
     downloadedTracks,
     getAllDownloadedCollections,
@@ -199,6 +219,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [degraded, setDegraded] = useState(false);
 
   const searchRequestIdRef = useRef(0);
 
@@ -291,6 +312,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     setSearchResults([]);
     setIsLoading(false);
     setHasError(false);
+    setDegraded(false);
   }, []);
 
   const handleSearchWithFilters = useCallback(async (query: string, filters: SearchFilters) => {
@@ -299,6 +321,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       setSearchResults([]);
       setIsLoading(false);
       setHasError(false);
+      setDegraded(false);
       return;
     }
     setIsLoading(true);
@@ -307,28 +330,47 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       const lowerQuery = query.toLowerCase();
       const results: SearchResult[] = [];
 
-      if (filters.local) {
-        if (searchScope.includes('client')) {
-          results.push(...await searchLibrary(query));
-        }
-        if (requestId !== searchRequestIdRef.current) return;
-        if (searchScope.includes('server')) {
-          try { results.push(...await searchServer(query)); } catch { errored = true; }
-        }
-        if (requestId !== searchRequestIdRef.current) return;
-      }
+      // Decide the legs up front rather than at each call site. A leg that
+      // cannot land is not attempted at all: each one would otherwise hang to
+      // its own timeout on every keystroke and then land in the same `catch`
+      // as a real failure, so local results that succeeded were shown
+      // underneath an error banner.
+      const legs = planSearchLegs({
+        filters,
+        searchScope,
+        serverReachable: canReachServer,
+        deviceOnline: canReachExternal,
+      });
 
-      if (filters.deezer) {
+      if (legs.client) {
+        results.push(...await searchLibrary(query));
+      }
+      if (requestId !== searchRequestIdRef.current) return;
+
+      if (legs.server) {
+        try { results.push(...await searchServer(query)); } catch { errored = true; }
+      }
+      if (requestId !== searchRequestIdRef.current) return;
+
+      if (legs.external) {
         try { results.push(...await searchExternal(query)); } catch { errored = true; }
       }
       if (requestId !== searchRequestIdRef.current) return;
 
       setSearchResults(dedupeAndSort(results, lowerQuery));
       setHasError(errored);
+      setDegraded(legs.degraded);
     } finally {
       if (requestId === searchRequestIdRef.current) setIsLoading(false);
     }
-  }, [searchExternal, searchLibrary, searchScope, searchServer]);
+  }, [
+    canReachExternal,
+    canReachServer,
+    searchExternal,
+    searchLibrary,
+    searchScope,
+    searchServer,
+  ]);
 
   const value = useMemo<SearchContextType>(() => ({
     searchResults,
@@ -337,6 +379,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     clearSearch,
     isLoading,
     hasError,
+    degraded,
     handleSearchWithFilters,
   }), [
     searchResults,
@@ -345,6 +388,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     clearSearch,
     isLoading,
     hasError,
+    degraded,
     handleSearchWithFilters,
   ]);
 
