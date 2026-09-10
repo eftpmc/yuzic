@@ -1,6 +1,7 @@
 Swipe the cover art to change track, and playback speed that remembers.
 
 - Swipe the cover on the player to go to the next or previous track
-- Playback speed is now remembered separately for music and for podcasts, and survives a restart
+- Playback speed is now remembered separately for music and podcasts, and survives a restart
 - Continue Playing can resume a podcast episode instead of skipping it
-- Fixed downloads that could stop silently and reset with no explanation
+- Download buttons show real progress and the same finish everywhere
+- Fixed downloads that could stop silently with no explanation
