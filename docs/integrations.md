@@ -66,27 +66,26 @@ The user imports a PKCS#12 bundle (`.p12`/`.pfx`) plus its password under
   blob — `clientCertificateStore.ts` wraps `expo-secure-store`. A certificate's
   private key must not land in a redux-persist snapshot, so the store is the
   only path to it and nothing else keeps a copy.
-- **It reaches both transports.** `applyClientCertificate` calls
-  `YuzicEngine.setClientCertificate`, which points *two* sessions at the
-  identity: the engine's audio `URLSession`
-  (`ios/Core/HTTPTrackReaderFactory.swift`) and a plain-request one
-  (`ios/Core/ClientCertificateHTTP.swift`). The app's server calls go through
-  `src/features/mtls/serverFetch.ts`, which routes to the engine's
-  `clientCertificateRequest` while a certificate is set and to the global
-  `fetch` otherwise. Both halves are required: a certificate on only the audio
-  transport is unreachable, because the login that precedes every track is the
-  request an mTLS server refuses first. That was the state this shipped in once
-  — it typechecked, tested and ran while being unusable.
+- **It reaches both transports on both native platforms.** `applyClientCertificate`
+  calls `YuzicEngine.setClientCertificate`, which points the engine's audio and
+  plain-request transports at the same identity: on iOS, the audio
+  `URLSession` (`ios/Core/HTTPTrackReaderFactory.swift`) and
+  `ClientCertificateHTTP` (`ios/Core/ClientCertificateHTTP.swift`); on Android,
+  Media3's `OkHttpDataSource` and `ClientCertificateTransport`. The app's server
+  calls go through `src/features/mtls/serverFetch.ts`, which routes to the
+  engine's `clientCertificateRequest` while a certificate is set and to the
+  global `fetch` otherwise. Both halves are required: a certificate on only the
+  audio transport is unreachable, because the login that precedes every track
+  is the request an mTLS server refuses first. That was the state this shipped
+  in once — it typechecked, tested and ran while being unusable.
 - **Only the music server's requests take that path.** `fetchWithTimeout`, and
   through it Deezer, Last.fm, MusicBrainz and the rest, keep using the plain
   `fetch` on purpose: those are third parties, and presenting the person's
   client certificate to them would hand an identity issued for their own server
   to someone else.
-- **iOS only, and absent rather than broken on Android.** There is no Android
-  implementation, so `applyClientCertificate` returns `unsupported` before
-  touching the bridge and the card renders that string instead of a picker.
-  Android's half is an OkHttp client over the same KeyManager and arrives with
-  both methods or neither; `Tools/parity.py` in the engine declares both gaps.
+- **Available on iOS and Android.** Both engines implement the pair of bridge
+  methods together; `Tools/parity.py` in the engine verifies their matching
+  signatures and retains only Android cache resizing as the declared gap.
 - **`useClientCertificate` is mounted in `src/app/_layout.tsx`**, at the root.
   It has to be: the certificate is applied at startup and re-applied whenever
   the active server changes, both of which happen with Settings closed. Mounted

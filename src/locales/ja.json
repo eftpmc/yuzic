@@ -492,7 +492,8 @@
       "noConnection": "インターネット接続なし",
       "syncedChanges": "オフラインの変更を同期しました",
       "syncQueuedChangesFailed": "一部のオフライン変更を同期できませんでした",
-      "notAvailable": "オフラインでは利用できません"
+      "notAvailable": "オフラインでは利用できません",
+      "serverOnlyFeature": "オフラインでは利用できません — これはサーバー上にあります"
     },
     "oneSecond": "少々お待ちください。",
     "playingSimilar": "類似の音楽を再生中",
@@ -580,6 +581,7 @@
     }
   },
   "library": {
+    "offlineBanner": "オフライン — 同期済みのライブラリとダウンロードを表示しています",
     "title": "ライブラリ",
     "view": {
       "switchToList": "リスト表示に切り替え",
@@ -685,6 +687,7 @@
     "placeholder": "音楽、アーティスト、プレイリストを検索...",
     "noResults": "結果が見つかりません",
     "searchError": "サーバーに接続できませんでした — 結果が不完全な場合があります",
+    "searchLocalOnly": "サーバーに接続できないため、ライブラリのみを表示しています",
     "recentSearches": "最近の検索",
     "clearRecent": "クリア",
     "removeRecentSearch": "「{{query}}」を最近の検索から削除",

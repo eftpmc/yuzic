@@ -33,7 +33,7 @@ let certificateActive = false;
  * is exactly one active server at a time, so there is exactly one answer.
  */
 export function setClientCertificateActive(active: boolean): void {
-  certificateActive = Platform.OS === 'ios' && active;
+  certificateActive = (Platform.OS === 'ios' || Platform.OS === 'android') && active;
 }
 
 export function isClientCertificateActive(): boolean {

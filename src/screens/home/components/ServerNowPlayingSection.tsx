@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { useTheme } from '@/hooks/useTheme';
 import { QueryKeys } from '@/enums/queryKeys';
+import { useServerReachable } from '@/features/connectivity/useServerReachable';
 import { selectServerNowPlayingShelfEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import MediaListRow from '@/components/MediaListRow';
@@ -50,7 +51,11 @@ export default function ServerNowPlayingSection({ sectionKey }: Props) {
   const activeServer = useSelector(selectActiveServer);
   const ownUsername = activeServer?.username?.trim().toLowerCase() ?? null;
 
-  const enabled = Boolean(api.discovery) && shelfEnabled;
+  // Also gated on the server actually being reachable: this shelf polls every
+  // 90s, so an unreachable server means a request hanging to its own timeout
+  // on repeat, forever, behind a shelf that can never render.
+  const serverReachable = useServerReachable();
+  const enabled = Boolean(api.discovery) && shelfEnabled && serverReachable;
 
   const query = useQuery<NowPlayingEntry[]>({
     queryKey: [QueryKeys.ServerNowPlaying],

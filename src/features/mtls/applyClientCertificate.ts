@@ -30,11 +30,10 @@ export async function applyClientCertificate(
   engine: ClientCertificateTarget,
   serverId: string | null
 ): Promise<ApplyResult> {
-  // Android's half of mutual TLS is not built — the method is absent there
-  // rather than inert, so calling it would reject at the bridge. Checked here
-  // rather than swallowing that rejection, so "not supported yet" and "your
-  // certificate is wrong" stay different answers.
-  if (Platform.OS !== 'ios') return { ok: false, reason: 'unsupported' };
+  // The engine implements this on both native platforms. Keep a non-native
+  // surface out of the bridge so a future web build can report unsupported
+  // truthfully instead of trying to require a native module.
+  if (Platform.OS !== 'ios' && Platform.OS !== 'android') return { ok: false, reason: 'unsupported' };
 
   try {
     const stored = serverId ? await loadClientCertificate(serverId) : null;

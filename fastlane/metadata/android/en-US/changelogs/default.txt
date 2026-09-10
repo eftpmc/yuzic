@@ -1,8 +1,6 @@
-Playback holds up better on a stream that goes bad part-way through.
+Search and your library keep working when your server can't be reached.
 
-- A transcoded stream that breaks is picked back up instead of losing the track
-- Playback recovers where it used to stop and stay stopped
-- Fixes carried over from the audio engine
-
-Client certificates, for a server behind mutual TLS, are on iOS in this
-release. Android support still to come.
+- Searching offline now returns your synced library instead of nothing
+- Radio, podcasts and shares say they're offline rather than failing to load
+- Client certificates now work on Android, not only iOS
+- The lock screen and car display no longer show the previous track after a crossfade
