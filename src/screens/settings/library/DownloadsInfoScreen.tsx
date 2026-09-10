@@ -22,11 +22,16 @@ import SettingsInfoRow from '../components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useScrollClearance } from '@/hooks/useScrollClearance';
 
 const DownloadsInfoScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
+  // Same reason as the settings index: the flat constant is breathing room
+  // only, and the translucent dock takes no layout space, so the last download
+  // row would sit behind the tabs.
+  const scrollClearance = useScrollClearance();
   const activeServer = useSelector(selectActiveServer);
   const {
     removeDownloadByCollectionId,
@@ -121,7 +126,7 @@ const DownloadsInfoScreen: React.FC = () => {
   return (
     <SafeAreaView testID="downloads-info-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={t('settings.library.downloads.detailsTitle')} />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollClearance }]}>
 
         <SettingsCard>
           <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
