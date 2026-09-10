@@ -40,7 +40,7 @@ const NEUTRAL_GRADIENT: [string, string] = ['#121212', '#000'];
  * the other. They are one surface now, at a position the finger can hold.
  */
 export default function PlayerHost() {
-  const { expansion, barCover, fullCover, scrollY, coverVisibility, isOpen, hasOpened, collapse } =
+  const { expansion, barCover, fullCover, scrollY, coverVisibility, coverSwipeX, isOpen, hasOpened, collapse } =
     usePlayerExpansion();
   const { height, width } = useWindowDimensions();
   // The travelling cover is laid out once at a fixed size and only ever
@@ -164,7 +164,16 @@ export default function PlayerHost() {
       opacity: ready ? coverVisibility.value : 0,
       borderRadius: interpolate(e, [0, 1], [barRadius, cardRadius], Extrapolation.CLAMP) / scale,
       transform: [
-        { translateX: interpolate(e, [0, 1], [from.x, to.x], Extrapolation.CLAMP) },
+        {
+          // The swipe offset is scaled by `e` so it is at full strength on the
+          // open player and nothing at all in the dock: the same cover draws
+          // both, and a half-collapsed player should not carry a drag with it.
+          // Divided by `scale` because it is applied inside the scaled frame,
+          // so a raw value would move by scale-times the distance the finger did.
+          translateX:
+            interpolate(e, [0, 1], [from.x, to.x], Extrapolation.CLAMP) +
+            (coverSwipeX.value * e) / scale,
+        },
         { translateY: interpolate(e, [0, 1], [from.y, toY], Extrapolation.CLAMP) },
         { scale },
       ],

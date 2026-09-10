@@ -5,7 +5,9 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import type { Song } from '@/types';
+import { useApi } from '@/api';
 import { usePlayingActions } from '@/contexts/PlayingContext';
+import { songFromBookmarkSnapshot } from '@/utils/playback/bookmarkSnapshot';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { selectLibraryTracks } from '@/utils/redux/selectors/librarySelectors';
@@ -38,6 +40,7 @@ export default function ContinuePlayingSection() {
   const rad = useRadius();
   const { width: screenWidth } = useWindowDimensions();
   const { playSong } = usePlayingActions();
+  const api = useApi();
   const tracks = useSelector(selectLibraryTracks);
   const bookmarks = useSelector(selectPersistedPlaybackBookmarks);
 
@@ -46,16 +49,34 @@ export default function ContinuePlayingSection() {
     [screenWidth]
   );
 
-  // Bookmarks map is keyed by song id; join to the library and order by
-  // most-recent updatedAt. Any bookmark for a track no longer in the
-  // library is dropped — a stale entry with no title/cover is worse than
-  // a shorter row.
+  // Bookmarks map is keyed by song id; ordered by most-recent updatedAt.
+  //
+  // Two sources, because there are two kinds of entry. A library track is
+  // joined against the synced library, which stays authoritative for
+  // re-tagging and artwork — and a bookmark for a track no longer there is
+  // dropped, since a row with no title is worse than a shorter shelf.
+  //
+  // A podcast episode is never in that library: `buildPodcastSong` namespaces
+  // its id with `podcast:` exactly so it cannot collide with a real track, so
+  // the join can never match and every podcast bookmark used to fall through
+  // the same "no longer in the library" branch. Those carry a snapshot
+  // written beside the position, which is what draws them here.
   const entries = useMemo<Entry[]>(() => {
     const byId = new Map(tracks.map((t) => [t.id, t as unknown as Song]));
     return Object.entries(bookmarks)
       .map(([songId, entry]) => {
         const song = byId.get(songId);
-        return song ? { song, positionMs: entry.positionMs, updatedAt: entry.updatedAt } : null;
+        if (song) return { song, positionMs: entry.positionMs, updatedAt: entry.updatedAt };
+        if (entry.snapshot) {
+          return {
+            // The URL is rebuilt when the tile is tapped — the stored snapshot
+            // deliberately holds no credentialled one.
+            song: songFromBookmarkSnapshot(songId, entry.snapshot, ''),
+            positionMs: entry.positionMs,
+            updatedAt: entry.updatedAt,
+          };
+        }
+        return null;
       })
       .filter((e): e is Entry & { updatedAt: number } => e !== null)
       .sort((a, b) => b.updatedAt - a.updatedAt)
@@ -65,8 +86,19 @@ export default function ContinuePlayingSection() {
   const handlePress = useCallback((entry: Entry) => {
     // Player auto-resumes to the saved position when it loads — see
     // useBookmarkManager wiring in PlayingContext.
+    //
+    // A snapshot entry arrives with no stream URL, deliberately: the stored
+    // one would be signed with the user's token and this state is persisted.
+    // Build a fresh one now, from the id the snapshot did keep.
+    if (!entry.song.streamUrl && entry.song.streamId) {
+      void playSong({
+        ...entry.song,
+        streamUrl: api.songs.buildStreamUrl(entry.song.streamId, 'high'),
+      });
+      return;
+    }
     void playSong(entry.song);
-  }, [playSong]);
+  }, [api.songs, playSong]);
 
   const renderEntry = useCallback(({ item }: { item: Entry }) => (
     <MediaTile

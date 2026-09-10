@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
 import type { ListDensity, RadiusPreset } from '@/constants/design';
+import { clampSpeed, type SpeedProfile } from '@/utils/playback/speedProfile';
 
 export type LibrarySortOrder = 'title' | 'recent' | 'userplays' | 'year';
 
@@ -143,6 +144,18 @@ export interface SettingsState {
   /* Player controls */
   showSleepTimer: boolean;
   showPlaybackSpeed: boolean;
+  /**
+   * Remembered playback rate per kind of listening — see
+   * `utils/playback/speedProfile`. Two entries rather than one because a
+   * listener wants one speed for talking and another for music; a single
+   * global rate followed you out of a podcast into the next song and reset to
+   * 1× on every launch.
+   *
+   * Partial on purpose: a user upgrading has a settings blob written before
+   * this key existed, and every read goes through `speedFor`, which falls
+   * back rather than handing the engine an undefined rate.
+   */
+  playbackSpeeds: Partial<Record<SpeedProfile, number>>;
   showJumpButtons: boolean;
   showVolumeSlider: boolean;
   autoplayEnabled: boolean;
@@ -215,6 +228,7 @@ const initialState: SettingsState = {
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
+  playbackSpeeds: {},
   showJumpButtons: false,
   showVolumeSlider: false,
   autoplayEnabled: false,
@@ -357,6 +371,16 @@ const settingsSlice = createSlice({
     setShowPlaybackSpeed(state, action: PayloadAction<boolean>) {
       state.showPlaybackSpeed = action.payload;
     },
+
+    /** Remember a rate for one kind of listening. Clamped here so a bad value
+     *  cannot reach the engine even if something writes one. */
+    setPlaybackSpeedForProfile(
+      state,
+      action: PayloadAction<{ profile: SpeedProfile; speed: number }>
+    ) {
+      if (!state.playbackSpeeds) state.playbackSpeeds = {};
+      state.playbackSpeeds[action.payload.profile] = clampSpeed(action.payload.speed);
+    },
     setShowJumpButtons(state, action: PayloadAction<boolean>) {
       state.showJumpButtons = action.payload;
     },
@@ -436,6 +460,7 @@ export const {
   setTranslucentDock,
   setRespectReducedMotion,
   setShowPlaybackSpeed,
+  setPlaybackSpeedForProfile,
   setAutoplayEnabled,
   setCrossfadeSeconds,
   setCrossfadeAlways,

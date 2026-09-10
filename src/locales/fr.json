@@ -799,6 +799,10 @@
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
       "randomAlbum": "Lecture d'un album aléatoire : {{title}}",
       "loadAlbumFailed": "Échec du chargement de l'album."
+    },
+    "speed": {
+      "title": "Vitesse de lecture",
+      "spokenTitle": "Vitesse (parlé)"
     }
   },
   "playlist": {
@@ -1187,7 +1191,8 @@
       "aboutArtist": "À propos de l'artiste",
       "goToArtist": "Aller à l'artiste",
       "nowPlayingBar": "Lecture en cours",
-      "noSongPlaying": "Aucun morceau en lecture"
+      "noSongPlaying": "Aucun morceau en lecture",
+      "coverArt": "Pochette. Balayez pour changer de piste."
     },
     "search": {
       "clear": "Effacer la recherche"

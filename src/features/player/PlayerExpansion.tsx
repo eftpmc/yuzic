@@ -90,6 +90,13 @@ type PlayerExpansionValue = {
    * it into the cover's opacity.
    */
   coverVisibility: SharedValue<number>;
+  /**
+   * Horizontal offset of the travelling cover while it is being swiped, in
+   * screen points. Lives here rather than on the playing screen because the
+   * cover itself is drawn by the host: the screen owns the *gesture* and the
+   * host owns the *view*, so the offset has to cross between them.
+   */
+  coverSwipeX: SharedValue<number>;
   expand: () => void;
   collapse: () => void;
   /** True from the moment the player starts opening until it is fully closed.
@@ -117,6 +124,7 @@ export const PlayerExpansionProvider: React.FC<{ children: ReactNode }> = ({ chi
   const fullCover = useSharedValue<CoverRect>(EMPTY_COVER_RECT);
   const scrollY = useSharedValue(0);
   const coverVisibility = useSharedValue(1);
+  const coverSwipeX = useSharedValue(0);
 
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -150,13 +158,14 @@ export const PlayerExpansionProvider: React.FC<{ children: ReactNode }> = ({ chi
       fullCover,
       scrollY,
       coverVisibility,
+      coverSwipeX,
       expand,
       collapse,
       isOpen,
       hasOpened,
       prepare,
     }),
-    [expansion, barCover, fullCover, scrollY, coverVisibility, expand, collapse, isOpen, hasOpened, prepare],
+    [expansion, barCover, fullCover, scrollY, coverVisibility, coverSwipeX, expand, collapse, isOpen, hasOpened, prepare],
   );
 
   return (

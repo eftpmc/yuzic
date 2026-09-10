@@ -1,6 +1,38 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+import type { ContentKind, CoverSource } from '@/types';
 import type { RepeatModeState, ShuffleMode } from '@/contexts/PlayingContext';
+
+/**
+ * Enough of a track to draw it in a "pick back up" row without looking it up.
+ *
+ * Only stored for content that is not in the synced library — a podcast
+ * episode, whose id is namespaced so it can never join against it. A library
+ * track is drawn from the library, which stays authoritative for title
+ * changes, re-tagging and artwork.
+ *
+ * Carries `streamId` rather than `streamUrl`: the URL is credentialled and
+ * this slice is written to disk. See {@link PlaybackState.bookmarks}.
+ */
+export interface BookmarkSnapshot {
+  title: string;
+  artist: string;
+  /** Serialised the same way a Song's cover is, so surfaces render it with the
+   *  ordinary MediaImage path rather than a second code path. */
+  cover?: CoverSource;
+  /** Seconds, as `Song['duration']` carries it. */
+  duration?: string;
+  contentKind?: ContentKind;
+  /**
+   * The server-side id the stream URL is built from. For a podcast episode
+   * this is `playableStreamId`, which is not the episode id — an episode only
+   * has one once the server has downloaded it.
+   */
+  streamId?: string;
+  /** For a podcast episode: the channel it belongs to, so a surface can offer
+   *  a way back to the show. */
+  channelId?: string;
+}
 
 /**
  * The app's own memory of what it was playing — queue, current position,
@@ -36,8 +68,28 @@ export interface PlaybackState {
    * `updatedAt` lets "Continue Playing" surfaces order by recency without
    * a second index — the map is small enough (dozens of entries at most,
    * since it only holds long-form) that a full sort is free.
+   *
+   * `snapshot` is what a surface needs to *draw* the entry. Library tracks
+   * do not need it — they are joined against the synced library by id — but
+   * a podcast episode is not in that library and never will be: its id is
+   * namespaced (`podcast:…`) precisely so it cannot collide with one. Without
+   * a snapshot a podcast bookmark is unrenderable, which is why Continue
+   * Playing silently dropped every one of them.
+   *
+   * Deliberately not the whole Song. `streamUrl` carries an auth token
+   * (`buildStreamUrl` puts `t`/`s` in the query string) and this slice is
+   * persisted to disk, so storing it would write credentials into app
+   * storage and pin them to whatever they were when the bookmark was made.
+   * The URL is rebuilt from `streamId` at play time instead.
    */
-  bookmarks: Record<string, { positionMs: number; updatedAt: number }>;
+  bookmarks: Record<
+    string,
+    {
+      positionMs: number;
+      updatedAt: number;
+      snapshot?: BookmarkSnapshot;
+    }
+  >;
 }
 
 const initialState: PlaybackState = {
@@ -107,7 +159,11 @@ const playbackSlice = createSlice({
      */
     setPlaybackBookmark(
       state,
-      action: PayloadAction<{ songId: string; positionMs: number | null }>
+      action: PayloadAction<{
+        songId: string;
+        positionMs: number | null;
+        snapshot?: BookmarkSnapshot;
+      }>
     ) {
       if (action.payload.positionMs === null || action.payload.positionMs <= 0) {
         delete state.bookmarks[action.payload.songId];
@@ -115,6 +171,10 @@ const playbackSlice = createSlice({
         state.bookmarks[action.payload.songId] = {
           positionMs: Math.floor(action.payload.positionMs),
           updatedAt: Date.now(),
+          // Kept when this write does not carry one, so a caller that only
+          // knows the position cannot blank out a snapshot written earlier.
+          snapshot:
+            action.payload.snapshot ?? state.bookmarks[action.payload.songId]?.snapshot,
         };
       }
       state.updatedAt = Date.now();
@@ -128,7 +188,14 @@ const playbackSlice = createSlice({
       for (const [songId, positionMs] of Object.entries(action.payload)) {
         const existing = state.bookmarks[songId];
         if (existing && existing.updatedAt > now - 60_000) continue;
-        state.bookmarks[songId] = { positionMs, updatedAt: existing?.updatedAt ?? now - 60_000 };
+        state.bookmarks[songId] = {
+          positionMs,
+          updatedAt: existing?.updatedAt ?? now - 60_000,
+          // The server knows positions, not how to draw a row. Anything we
+          // already had stays — otherwise reconnecting would strip the
+          // snapshots and empty the shelf of exactly the entries that need one.
+          snapshot: existing?.snapshot,
+        };
       }
       state.updatedAt = now;
     },

@@ -801,6 +801,10 @@
       "updateFavoritesFailed": "Failed to update favorites.",
       "randomAlbum": "Playing random album: {{title}}",
       "loadAlbumFailed": "Failed to load album."
+    },
+    "speed": {
+      "title": "Playback Speed",
+      "spokenTitle": "Speed (spoken)"
     }
   },
   "playlist": {
@@ -1177,7 +1181,8 @@
       "aboutArtist": "About the artist",
       "goToArtist": "Go to artist",
       "nowPlayingBar": "Now playing",
-      "noSongPlaying": "No song playing"
+      "noSongPlaying": "No song playing",
+      "coverArt": "Cover art. Swipe to change track."
     },
     "search": {
       "clear": "Clear search"
