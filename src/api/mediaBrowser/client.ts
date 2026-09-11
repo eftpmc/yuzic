@@ -2,6 +2,7 @@ import type { AudioQuality } from '@/utils/redux/slices/settingsSlice';
 import { qualityToStreamParams } from '@/utils/audio/streamQuality';
 import { tryWithFailover, orderedUrls } from '@/utils/servers/urlFailover';
 import { MediaBrowserBrand } from './brand';
+import { mediaBrowserClientHeader } from './clientHeader';
 import { serverFetch } from '@/features/mtls/serverFetch';
 
 
@@ -18,8 +19,6 @@ export interface MediaBrowserClientConfig {
   basicAuth?: { username: string; password: string };
 }
 
-const CLIENT_HEADERS = 'MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"';
-
 export type MediaBrowserClient = ReturnType<typeof createMediaBrowserClient>;
 
 export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand: MediaBrowserBrand) {
@@ -34,7 +33,7 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
 
   const defaultHeaders: Record<string, string> = {
     "X-Emby-Token": token,
-    "X-Emby-Authorization": `${CLIENT_HEADERS}, Token="${token}"`,
+    "X-Emby-Authorization": `${mediaBrowserClientHeader()}, Token="${token}"`,
     ...proxyHeader,
   };
 

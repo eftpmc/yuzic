@@ -5,6 +5,7 @@ export type CoverSource =
   | { kind: 'navidrome'; coverArtId: string }
   | { kind: 'jellyfin'; itemId: string; }
   | { kind: 'emby'; itemId: string; tag?: string }
+  | { kind: 'plex'; path: string }
   | { kind: 'url'; url: string }
   | { kind: 'musicbrainz'; releaseGroupId: string }
   | { kind: 'coverartarchive'; mbid: string; mbidType: 'release' | 'release-group' | 'unknown' }

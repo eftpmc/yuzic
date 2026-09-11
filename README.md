@@ -3,7 +3,7 @@
 
   # Yuzic
 
-  A free, open-source music player for Navidrome, Jellyfin, Emby, and other Subsonic-compatible servers — on iPhone, iPad, and Android.
+  A free, open-source music player for Navidrome, Jellyfin, Emby, Plex, local files, and other Subsonic-compatible servers — on iPhone, iPad, and Android.
 
   [![App Store](https://img.shields.io/itunes/v/6740042497?logo=app-store&logoColor=white&label=App%20Store&color=0D96F6)](https://apps.apple.com/us/app/yuzic-navidrome-jellyfin/id6740042497)
   [![Google Play](https://img.shields.io/badge/Google%20Play-Download-414141?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.arinora.rawarr)
@@ -13,7 +13,7 @@
 
 ## Features
 
-- **Your music, your server** — connect Navidrome, Jellyfin, Emby, or another Subsonic-compatible server.
+- **Your music, your way** — connect Navidrome, Jellyfin, Emby, Plex, another Subsonic-compatible server, or import files privately from this device.
 - **Native playback** — streaming up to lossless quality, crossfade, replay gain, a ten-band equalizer, sleep timer, playback speed, and autoplay.
 - **Works offline** — download songs, albums, and playlists; changes made offline sync when you reconnect.
 - **A complete library** — browse artists, albums, tracks, playlists, and genres; search on-device or through your server.

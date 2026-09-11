@@ -544,7 +544,9 @@
       "providerDescription": {
         "navidrome": "A lightweight, self-hosted music server.",
         "jellyfin": "A full-featured media server for music, movies, and TV.",
-        "emby": "A personal media server for music, movies, and TV."
+        "emby": "A personal media server for music, movies, and TV.",
+        "plex": "Connect a Plex Music library with your Plex account.",
+        "local": "Import music files stored on this device."
       },
       "serverUrlRequired": "Server URL is required.",
       "serverConnectionFailed": "Failed to connect to the server.",
@@ -568,7 +570,29 @@
       "missingCredentials": "Please enter both username and password.",
       "authFailed": "Authentication failed.",
       "apiNotResponding": "Server connected, but API is not responding.",
-      "connectError": "An error occurred while connecting."
+      "connectError": "An error occurred while connecting.",
+      "proxy": {
+        "toggle": "Reverse proxy authentication",
+        "usernamePlaceholder": "Proxy username",
+        "passwordPlaceholder": "Proxy password",
+        "insecureWarning": "Proxy credentials can be exposed over an insecure HTTP connection. Use HTTPS instead."
+      },
+      "codeAuth": {
+        "enterCode": "Enter this code to sign in",
+        "waiting": "Waiting for approval…",
+        "expired": "That code expired. Start again to get a new one.",
+        "unavailable": "Code sign-in is unavailable right now.",
+        "usePassword": "Use username and password",
+        "jellyfin": {
+          "instruction": "Open Quick Connect in Jellyfin and enter this code.",
+          "action": "Sign in with Quick Connect"
+        },
+        "plex": {
+          "instruction": "Open Plex in a browser or the Plex app and enter this code.",
+          "action": "Sign in with Plex",
+          "useCode": "Use Plex sign-in instead"
+        }
+      }
     },
     "libraries": {
       "title": "Choose Libraries",
@@ -579,6 +603,19 @@
       "useAll": "Use All Libraries",
       "continueWith": "Continue with {{count}} Library",
       "continueWith_other": "Continue with {{count}} Libraries"
+    },
+    "local": {
+      "libraryName": "On this device",
+      "title": "Your local music",
+      "subtitle": "Choose audio files to copy into Yuzic’s private library. They stay on this device and play without a server.",
+      "supported": "Supports MP3, FLAC, M4A, and MP4 files with readable tags.",
+      "choose": "Choose audio files",
+      "finish": "Finish",
+      "imported": "Imported {{count}} file",
+      "imported_other": "Imported {{count}} files",
+      "unsupported": "Skipped {{count}} unsupported file",
+      "unsupported_other": "Skipped {{count}} unsupported files",
+      "importFailed": "Couldn’t import those files."
     }
   },
   "library": {
