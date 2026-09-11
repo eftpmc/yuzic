@@ -115,6 +115,30 @@ export interface ApiAdapter {
    * it rather than trusting presence alone.
    */
   jukebox?: JukeboxApi;
+  /**
+   * The signed-in user's own profile picture. Optional because not every
+   * server has one to give; callers fall back to the initial-in-a-disc that
+   * the app drew before this existed.
+   */
+  user?: UserApi;
+}
+
+/**
+ * The account behind the current session.
+ *
+ * Only the avatar for now. It is a *URL builder* rather than a fetch, because
+ * the image is drawn by the same `<Image>` pipeline as cover art — the caller
+ * wants something to put in a `source`, not bytes to hold in JS.
+ */
+export interface UserApi {
+  /**
+   * Where to fetch the signed-in user's avatar, or null when this server
+   * cannot supply one.
+   *
+   * Carries auth in the URL for the same reason cover art does: the image
+   * loader issues the request itself and does not go through the client.
+   */
+  avatarUrl(): string | null;
 }
 
 export type JukeboxState = {

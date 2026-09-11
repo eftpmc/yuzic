@@ -107,9 +107,21 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
     return `${streamBaseUrl}/rest/stream.view?${params}`;
   }
 
+  function buildAvatarUrl(): string {
+    // Same failover treatment as a stream: the avatar is fetched by the image
+    // loader against whichever URL was last confirmed alive.
+    const base = failoverHint ? orderedUrls(failoverHint)[0] ?? baseUrl : baseUrl;
+    const auth = buildTokenParams(username, password);
+    // `f=json` is deliberately omitted — the response is a PNG, and asking for
+    // JSON makes Navidrome answer with an error document instead of an image.
+    const params = buildParams(auth, { username }, { format: null });
+    return `${base}/rest/getAvatar.view?${params}`;
+  }
+
   return {
     request,
     buildStreamUrl,
+    buildAvatarUrl,
     serverUrl: baseUrl,
     username,
     password,

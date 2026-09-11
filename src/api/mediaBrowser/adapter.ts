@@ -244,6 +244,10 @@ export const createMediaBrowserAdapter = (
     remove: async (songId: string) => clearPlaybackPosition(client, songId),
   };
 
+  const user = {
+    avatarUrl: () => client.buildAvatarUrl(),
+  };
+
   return {
     auth,
     albums,
@@ -257,5 +261,6 @@ export const createMediaBrowserAdapter = (
     lyrics,
     search: searchApi,
     bookmarks,
+    user,
   };
 };

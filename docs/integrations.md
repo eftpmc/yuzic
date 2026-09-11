@@ -51,6 +51,7 @@ UI shows them only when the active server's adapter provides them:
 | Server-side play queue sync | `queue` | ✅ | — |
 | Random songs + who else is listening | `discovery` | ✅ | — |
 | Podcasts | `podcasts` | ✅ | — |
+| Account avatar | `user` | ✅ (`getAvatar`) | ✅ (`/Users/{id}/Images/Primary`) |
 
 A Jellyfin user never sees a Radio row rather than seeing one that goes
 nowhere — the Library index builds its rows from what the adapter offers

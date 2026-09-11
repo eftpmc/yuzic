@@ -25,6 +25,7 @@ import {
   coverHandedOver,
   usePlayerExpansion,
 } from '@/features/player/PlayerExpansion';
+import { settleFromBar } from '@/features/player/settle';
 import { useTheme } from '@/hooks/useTheme';
 import {
   selectPlayingBarAction,
@@ -190,13 +191,16 @@ const variantStyles = {
 };
 
 /**
- * How far up the bar has to be dragged to count as a full open, and how fast a
- * flick has to be to count regardless of distance. A short sharp flick is how
- * most people open a player; a slow drag past a third of the screen is the
- * other way, and anything less falls back to the dock.
+ * The faintest the bar is drawn while the player is rising over it.
+ *
+ * Not zero, deliberately. By the quarter of the travel where this is reached
+ * the player's own surface is on its way over the dock, so the bar has
+ * something in front of it and does not need to be invisible to be unseen — and
+ * a value that can never reach zero is a bar that can never *disappear*, which
+ * is the failure mode of #211. The thresholds themselves live in
+ * `features/player/settle.ts` with the rest of the drag's arithmetic.
  */
-const OPEN_AT = 0.3;
-const OPEN_VELOCITY = -700;
+const BAR_MIN_OPACITY = 0.02;
 
 export default function PlayingBarBase({ variant }: Props) {
   const { t } = useTranslation();
@@ -208,6 +212,10 @@ export default function PlayingBarBase({ variant }: Props) {
   const { currentSong, isPlaying, isBuffering } = usePlayingState();
   const { pauseSong, resumeSong } = usePlayingActions();
   const { expansion, barCover, fullCover, expand, prepare } = usePlayerExpansion();
+
+  // Whether the drag below actually moved the player. A gesture that decided
+  // nothing must not settle as though it decided something — see `settle.ts`.
+  const dragMoved = useSharedValue(false);
 
   const stylesForVariant = variantStyles[variant];
   const playlistSheetRef = useSheetRef();
@@ -257,23 +265,37 @@ export default function PlayingBarBase({ variant }: Props) {
         .activeOffsetY([-10, 10])
         .failOffsetX([-24, 24])
         .onBegin(() => {
+          dragMoved.value = false;
           runOnJS(prepare)();
           runOnJS(measureCover)();
         })
         .onUpdate(event => {
+          dragMoved.value = true;
           expansion.value = Math.min(1, Math.max(0, -event.translationY / height));
         })
-        .onEnd(event => {
-          const opening = expansion.value > OPEN_AT || event.velocityY < OPEN_VELOCITY;
-          expansion.value = withSpring(opening ? 1 : 0, PLAYER_SPRING);
+        // `onFinalize` rather than `onEnd`, so a cancelled or interrupted drag
+        // settles too. An exit that names no end is what leaves the bar faded
+        // out with the music still playing (#211).
+        .onFinalize(event => {
+          expansion.value = withSpring(
+            settleFromBar(expansion.value, event.velocityY, dragMoved.value),
+            PLAYER_SPRING,
+          );
         }),
-    [currentSong, expansion, height, measureCover, prepare],
+    [currentSong, dragMoved, expansion, height, measureCover, prepare],
   );
 
   // The bar's own contents step aside early in the travel, leaving the cover
   // to make the journey on its own.
+  //
+  // Floored at the point the full player has actually covered the bar, so this
+  // can only ever hide the bar *behind something*. Fading to a true zero is
+  // what turned a stuck intermediate expansion into a bar that had vanished
+  // outright (#211): invisible, mounted, and still holding its slot in the
+  // dock. The gestures above now always settle, so nothing should park here —
+  // and if something ever does, it looks wrong rather than gone.
   const barFadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(expansion.value, [0, 0.25], [1, 0], Extrapolation.CLAMP),
+    opacity: interpolate(expansion.value, [0, 0.25], [1, BAR_MIN_OPACITY], Extrapolation.CLAMP),
   }));
 
   // The thumbnail is handed over to the player host as soon as the host can
