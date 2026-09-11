@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useSelector } from 'react-redux';
 
 import { useApi } from '@/api';
@@ -42,7 +43,7 @@ export default function UserAvatar({
   const activeServerId = useSelector(selectActiveServerId);
   const [failed, setFailed] = useState(false);
 
-  const uri = useMemo(() => {
+  const buildUri = useCallback(() => {
     void activeServerId;
     try {
       return api.user?.avatarUrl() ?? null;
@@ -52,10 +53,33 @@ export default function UserAvatar({
       return null;
     }
   }, [api, activeServerId]);
+  const [uri, setUri] = useState(buildUri);
+  // Unlike Navidrome's signed URL, MediaBrowser avatar URLs are stable. Keep a
+  // separate reload generation so focus refreshes those images too instead of
+  // depending on a provider to change its URL.
+  const [reloadGeneration, setReloadGeneration] = useState(0);
 
-  // A changed server gives the new image one clean attempt. This is an effect
-  // rather than a state update during render, which React rejects in strict
-  // render paths.
+  // An active-server switch needs its own source immediately; a focus effect
+  // alone would leave the previous account visible until the next navigation.
+  const previousServerId = useRef(activeServerId);
+  useEffect(() => {
+    if (previousServerId.current === activeServerId) return;
+    previousServerId.current = activeServerId;
+    setUri(buildUri());
+    setFailed(false);
+    setReloadGeneration(generation => generation + 1);
+  }, [activeServerId, buildUri]);
+
+  // Tab screens stay mounted, so a header can otherwise retain the source it
+  // created before the user updated their picture on the server. Keep the
+  // existing signed URL — rebuilding Navidrome's would defeat its cache on each
+  // tab switch — and explicitly reload it. This also refreshes deterministic
+  // Jellyfin/Emby URLs without provider-specific cache busters.
+  useFocusEffect(useCallback(() => {
+    setFailed(false);
+    setReloadGeneration(generation => generation + 1);
+  }, []));
+
   useEffect(() => setFailed(false), [uri]);
 
   const initial = username?.[0]?.toUpperCase() || '?';
@@ -87,7 +111,9 @@ export default function UserAvatar({
         {initial}
       </Text>
       <Image
-        source={{ uri }}
+        testID="user-avatar-image"
+        key={`${uri}:${reloadGeneration}`}
+        source={{ uri, cache: reloadGeneration ? 'reload' : 'default' }}
         style={[styles.image, { borderRadius, position: 'absolute' }]}
         // The letter stays underneath while the picture loads, so the header
         // never has a hole in it on a cold start.
