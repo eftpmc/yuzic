@@ -34,4 +34,31 @@ describe('buildTrackItem', () => {
       streamUrl: '/documents/downloads/audio/song-1.mp3',
     }).url).toEqual({ uri: 'file:///documents/downloads/audio/song-1.mp3' });
   });
+
+  it('omits headers and artworkHeaders when none are supplied', () => {
+    const item = buildTrackItem(baseSong);
+    expect(item).not.toHaveProperty('headers');
+    expect(item).not.toHaveProperty('artworkHeaders');
+  });
+
+  it('omits headers and artworkHeaders when the extra carries none', () => {
+    const item = buildTrackItem(baseSong, {});
+    expect(item).not.toHaveProperty('headers');
+    expect(item).not.toHaveProperty('artworkHeaders');
+  });
+
+  it('carries audio and artwork headers through when supplied', () => {
+    const item = buildTrackItem(baseSong, {
+      headers: { Authorization: 'Basic abc' },
+      artworkHeaders: { Authorization: 'Basic abc' },
+    });
+    expect(item.headers).toEqual({ Authorization: 'Basic abc' });
+    expect(item.artworkHeaders).toEqual({ Authorization: 'Basic abc' });
+  });
+
+  it('carries one header field independently of the other', () => {
+    const item = buildTrackItem(baseSong, { headers: { Authorization: 'Basic abc' } });
+    expect(item.headers).toEqual({ Authorization: 'Basic abc' });
+    expect(item).not.toHaveProperty('artworkHeaders');
+  });
 });

@@ -22,6 +22,17 @@ function cleanBaseUrl(url: string): string {
 }
 
 /**
+ * The `Authorization: Basic` header for a reverse proxy in front of a server,
+ * or nothing when there is no Basic auth to send. The single construction of
+ * this value — the base64 of `user:pass` — lives here so a stream/artwork
+ * request built elsewhere reuses it rather than re-deriving credentials.
+ */
+export function plexBasicAuthHeader(basicAuth?: BasicAuth): Record<string, string> | undefined {
+  if (!basicAuth) return undefined;
+  return { Authorization: `Basic ${global.btoa(`${basicAuth.username}:${basicAuth.password}`)}` };
+}
+
+/**
  * Plex's server API is JSON when `Accept: application/json` is set. The
  * persistent client id is required by Plex and is deliberately the same
  * per-install identity MediaBrowser uses, never a launch-generated id.
@@ -35,8 +46,7 @@ export function plexHeaders(token?: string, basicAuth?: BasicAuth): Record<strin
     'X-Plex-Client-Identifier': getInstallationId(),
   };
   if (token) headers['X-Plex-Token'] = token;
-  if (basicAuth) headers.Authorization = `Basic ${global.btoa(`${basicAuth.username}:${basicAuth.password}`)}`;
-  return headers;
+  return { ...headers, ...plexBasicAuthHeader(basicAuth) };
 }
 
 export function createPlexClient(config: PlexClientConfig) {
