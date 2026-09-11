@@ -54,6 +54,10 @@ export default function UserAvatar({
     }
   }, [api, activeServerId]);
   const [uri, setUri] = useState(buildUri);
+  // Unlike Navidrome's signed URL, MediaBrowser avatar URLs are stable. Keep a
+  // separate reload generation so focus refreshes those images too instead of
+  // depending on a provider to change its URL.
+  const [reloadGeneration, setReloadGeneration] = useState(0);
 
   // An active-server switch needs its own source immediately; a focus effect
   // alone would leave the previous account visible until the next navigation.
@@ -62,15 +66,19 @@ export default function UserAvatar({
     if (previousServerId.current === activeServerId) return;
     previousServerId.current = activeServerId;
     setUri(buildUri());
+    setFailed(false);
+    setReloadGeneration(generation => generation + 1);
   }, [activeServerId, buildUri]);
 
   // Tab screens stay mounted, so a header can otherwise retain the source it
-  // created before the user updated their picture on the server. A focus gives
-  // the native image loader a new authenticated URL while keeping all avatar
-  // surfaces on the same shared component.
+  // created before the user updated their picture on the server. Keep the
+  // existing signed URL — rebuilding Navidrome's would defeat its cache on each
+  // tab switch — and explicitly reload it. This also refreshes deterministic
+  // Jellyfin/Emby URLs without provider-specific cache busters.
   useFocusEffect(useCallback(() => {
-    setUri(buildUri());
-  }, [buildUri]));
+    setFailed(false);
+    setReloadGeneration(generation => generation + 1);
+  }, []));
 
   useEffect(() => setFailed(false), [uri]);
 
@@ -104,7 +112,8 @@ export default function UserAvatar({
       </Text>
       <Image
         testID="user-avatar-image"
-        source={{ uri }}
+        key={`${uri}:${reloadGeneration}`}
+        source={{ uri, cache: reloadGeneration ? 'reload' : 'default' }}
         style={[styles.image, { borderRadius, position: 'absolute' }]}
         // The letter stays underneath while the picture loads, so the header
         // never has a hole in it on a cold start.

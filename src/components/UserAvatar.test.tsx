@@ -33,22 +33,24 @@ describe('UserAvatar', () => {
   beforeEach(() => {
     focusEffect = undefined;
     mockAvatarUrl.mockReset()
-      .mockReturnValueOnce('https://music.example/avatar-old.png')
-      .mockReturnValueOnce('https://music.example/avatar-current.png');
+      .mockReturnValue('https://music.example/avatar.png');
   });
 
-  it('rebuilds the avatar source when its screen is focused again', async () => {
+  it('reloads a stable avatar URL when its screen is focused again', async () => {
     const view = await render(<UserAvatar username="Zack" size={controlSize.avatarTabHeader} borderRadius={16} />);
 
     expect(view.getByTestId('user-avatar-image').props.source).toEqual({
-      uri: 'https://music.example/avatar-old.png',
+      uri: 'https://music.example/avatar.png',
+      cache: 'default',
     });
     expect(focusEffect).toBeDefined();
 
     await act(async () => focusEffect?.());
 
+    expect(mockAvatarUrl).toHaveBeenCalledTimes(1);
     expect(view.getByTestId('user-avatar-image').props.source).toEqual({
-      uri: 'https://music.example/avatar-current.png',
+      uri: 'https://music.example/avatar.png',
+      cache: 'reload',
     });
   });
 });
