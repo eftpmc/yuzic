@@ -15,9 +15,10 @@ updated in the same commit.
 
 **Keep them in sync.** A new integration, downloader, or outside endpoint
 belongs in `docs/integrations.md`, and a new load-bearing pattern in
-`docs/architecture.md` — in the same change, not afterwards. `README.md`
-carries the user-facing summary of the servers/integrations/downloaders
-tables; update it when that set changes.
+`docs/architecture.md` — in the same change, not afterwards. `README.md` is
+the concise user-facing product overview and download entry point. Update it
+when a headline product promise or supported-server set changes; keep detailed
+support boundaries in `docs/`.
 
 ## Branch model
 
