@@ -6,6 +6,12 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
+import type { CoverSource } from '@/types/Cover';
+import {
+  enterCoverSlideWhenTrackChanges,
+  type CoverSlide,
+  type CoverSlideDirection,
+} from '@/screens/playing/coverTransition';
 import {
   useAnimatedReaction,
   useSharedValue,
@@ -68,6 +74,11 @@ export function coverHandedOver(
   return expansion > CLOSED_EPSILON && bar.size > 0 && full.size > 0;
 }
 
+type CoverSlideState = CoverSlide & {
+  /** The old image remains visible until playback has actually changed tracks. */
+  outgoingCover: CoverSource | null;
+};
+
 type PlayerExpansionValue = {
   /** 0 = collapsed to the bar, 1 = full screen. */
   expansion: SharedValue<number>;
@@ -97,6 +108,11 @@ type PlayerExpansionValue = {
    * host owns the *view*, so the offset has to cross between them.
    */
   coverSwipeX: SharedValue<number>;
+  /** The two-stage visual state for an accepted track swipe. */
+  coverSlide: CoverSlideState | null;
+  beginCoverSlide: (direction: CoverSlideDirection, songId: string, cover: CoverSource | null) => void;
+  enterCoverSlide: (currentSongId: string | undefined) => void;
+  finishCoverSlide: () => void;
   expand: () => void;
   collapse: () => void;
   /** True from the moment the player starts opening until it is fully closed.
@@ -128,6 +144,21 @@ export const PlayerExpansionProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const [coverSlide, setCoverSlide] = useState<CoverSlideState | null>(null);
+
+  const beginCoverSlide = useCallback(
+    (direction: CoverSlideDirection, songId: string, cover: CoverSource | null) => {
+      setCoverSlide({ direction, phase: 'exiting', outgoingSongId: songId, outgoingCover: cover });
+    },
+    [],
+  );
+  const enterCoverSlide = useCallback((currentSongId: string | undefined) => {
+    setCoverSlide(slide => slide && {
+      ...slide,
+      ...enterCoverSlideWhenTrackChanges(slide, currentSongId),
+    });
+  }, []);
+  const finishCoverSlide = useCallback(() => setCoverSlide(null), []);
 
   // One place decides what "open" means, so a tap, a drag that never
   // completed, and a spring settling back to zero all agree about it.
@@ -159,13 +190,21 @@ export const PlayerExpansionProvider: React.FC<{ children: ReactNode }> = ({ chi
       scrollY,
       coverVisibility,
       coverSwipeX,
+      coverSlide,
+      beginCoverSlide,
+      enterCoverSlide,
+      finishCoverSlide,
       expand,
       collapse,
       isOpen,
       hasOpened,
       prepare,
     }),
-    [expansion, barCover, fullCover, scrollY, coverVisibility, coverSwipeX, expand, collapse, isOpen, hasOpened, prepare],
+    [
+      expansion, barCover, fullCover, scrollY, coverVisibility, coverSwipeX,
+      coverSlide, beginCoverSlide, enterCoverSlide, finishCoverSlide,
+      expand, collapse, isOpen, hasOpened, prepare,
+    ],
   );
 
   return (
