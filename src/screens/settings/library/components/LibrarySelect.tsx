@@ -49,7 +49,7 @@ const LibrarySelect: React.FC = () => {
     sync(true);
   }, [activeServer?.id, selectedIds, sync]);
 
-  if (!activeServer) return null;
+  if (!activeServer || activeServer.type === 'local') return null;
 
   const isAll = selectedIds.length === 0;
   const items = [

@@ -170,6 +170,11 @@
         "info": "Choisissez la bibliothèque musicale à utiliser",
         "all": "Toutes les bibliothèques"
       },
+      "localFiles": {
+        "title": "Fichiers locaux",
+        "import": "Importer des fichiers audio",
+        "description": "Ajoutez de la musique à la bibliothèque privée de Yuzic sur cet appareil."
+      },
       "discovery": {
         "title": "Découverte",
         "info": "Comment la découverte suggère des artistes et albums de votre bibliothèque.",

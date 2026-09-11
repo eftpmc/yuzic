@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
+
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { FileMusic } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
-import { importLocalFiles } from '@/api/local/store';
+import { pickAndImportLocalFiles } from '@/api/local/pickAndImport';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, spacing, typography } from '@/constants/design';
@@ -24,13 +24,8 @@ export default function LocalImport() {
   const pick = async () => {
     setImporting(true);
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['audio/mpeg', 'audio/flac', 'audio/mp4', 'audio/x-m4a'],
-        multiple: true,
-        copyToCacheDirectory: true,
-      });
-      if (result.canceled) return;
-      const outcome = await importLocalFiles(result.assets);
+      const outcome = await pickAndImportLocalFiles();
+      if (!outcome) return;
       if (outcome.imported) toast.success(t('onboarding.local.imported', { count: outcome.imported }));
       if (outcome.unsupported) toast.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
       if (outcome.failed) toast.error(t('onboarding.local.importFailed'));

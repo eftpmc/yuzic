@@ -258,9 +258,10 @@ approximated with unrelated API calls.
 
 ### Local files
 
-The local provider has no network endpoint. Import is explicit: selected files
-are copied into private app storage, metadata is read once, then the compact
-index (catalog, local playlists, favourites, and `file://` paths) persists in
+The local provider has no network endpoint. Import is explicit, during onboarding
+or later under **Settings → Library → Local files**: selected files are copied
+into private app storage, metadata is read once, then the compact index
+(catalog, local playlists, favourites, and `file://` paths) persists in
 MMKV. Re-importing a file creates a distinct private copy; deleting files from
 the system picker source cannot break the imported copy.
 

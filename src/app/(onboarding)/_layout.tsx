@@ -9,6 +9,7 @@ export default function OnboardingLayout() {
             <Stack.Screen name="address" options={{ headerShown: false }} />
             <Stack.Screen name="credentials" options={{ headerShown: false }} />
             <Stack.Screen name="libraries" options={{ headerShown: false }} />
+            <Stack.Screen name="local" options={{ headerShown: false }} />
         </Stack>
     );
 }
