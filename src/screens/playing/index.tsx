@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { PLAYER_SPRING, usePlayerExpansion } from '@/features/player/PlayerExpansion';
+import { settleFromPlayer } from '@/features/player/settle';
 import { useApi } from '@/api';
 import { LyricsResult } from '@/api/types';
 import { useAlbum } from '@/hooks/albums';
@@ -132,6 +133,11 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
     const { expansion, scrollY, coverVisibility, isOpen } = usePlayerExpansion();
 
+    // Whether the pan below has actually moved the player, as opposed to being
+    // a scroll that its sibling gesture handled. A gesture that decided nothing
+    // must not settle as though it decided something — see `settle.ts`.
+    const dragMoved = useSharedValue(false);
+
     const handleScroll = useAnimatedScrollHandler(event => {
         scrollY.value = event.contentOffset.y;
     });
@@ -179,21 +185,34 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         () =>
             Gesture.Simultaneous(
                 Gesture.Pan()
+                    .onBegin(() => {
+                        dragMoved.value = false;
+                    })
                     .onUpdate(event => {
                         if (scrollY.value > 0 || event.translationY <= 0) return;
+                        dragMoved.value = true;
                         expansion.value = Math.max(0, Math.min(1, 1 - event.translationY / height));
                     })
-                    .onEnd(event => {
-                        if (expansion.value >= 1) return;
-                        const closing = expansion.value < 0.75 || event.velocityY > 700;
-                        expansion.value = withSpring(closing ? 0 : 1, PLAYER_SPRING);
+                    // `onFinalize`, not `onEnd`: a gesture that is cancelled or
+                    // interrupted — by the scroll view winning, by another
+                    // animation, by the touch being stolen — never reaches
+                    // `onEnd` at all, and that is the exit that used to leave
+                    // `expansion` parked at an intermediate value with the
+                    // playing bar faded to invisible (#211). `onFinalize` runs
+                    // for every ending, so there is exactly one way out and it
+                    // always names 0 or 1.
+                    .onFinalize(event => {
+                        expansion.value = withSpring(
+                            settleFromPlayer(expansion.value, event.velocityY, dragMoved.value),
+                            PLAYER_SPRING,
+                        );
                     }),
                 // Hands the scroll view's own gesture to RNGH so the two are
                 // siblings that may both run, rather than the pan swallowing
                 // every touch before the list ever sees it.
                 Gesture.Native(),
             ),
-        [expansion, height, scrollY],
+        [dragMoved, expansion, height, scrollY],
     );
 
     useEffect(() => {

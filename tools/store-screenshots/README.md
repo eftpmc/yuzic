@@ -6,16 +6,24 @@ instead of retaking them by hand in Photoshop.
 ```sh
 ./capture.sh            # phone + ipad
 ./capture.sh phone
-python3 publish.py      # copy the result into fastlane's metadata tree
+python3 publish.py      # copy framed creatives into Fastlane metadata
+python3 publish.py --readme  # copy clean phone captures into README assets
 ```
 
 Output lands in `out/phone/` and `out/ipad/` as `1.png`…`5.png`.
 
-`publish.py` is the step between generating a screenshot and a release actually
-shipping it: `deliver` and `supply` each want their own directory layout and
-filenames, and neither reads `out/`. It also asserts the store sizes before
-copying — App Store Connect rejects a wrong size *after* the whole build has
-run, which is an expensive way to find out. `--check` verifies without writing.
+`publish.py` separates the two published outputs from the same capture:
+
+- `python3 publish.py` copies the framed, captioned composites into Fastlane's
+  store-listing metadata tree.
+- `python3 publish.py --readme` copies four clean, unframed phone captures into
+  `assets/screenshots/` for the README gallery. It never reads or writes a
+  Fastlane path.
+
+`deliver` and `supply` each want their own directory layout and filenames, and
+neither reads `out/`. Both commands assert their respective inputs before
+writing; `--check` verifies store sizes and `--check-readme` validates the raw
+README captures without writing.
 
 Both upload steps are enabled in `fastlane/Fastfile`, so a version bump on
 `master` replaces the live listing images. **Play caps each device type at 8
