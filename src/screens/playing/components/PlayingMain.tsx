@@ -16,6 +16,7 @@ import { hasFiniteDuration } from '@/utils/playback/contentKind';
 import { CirclePlus } from 'lucide-react-native';
 import { usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import { resolveCoverSwipe } from '../coverSwipe';
+import { canStartCoverSlide } from '../coverTransition';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -83,11 +84,14 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
   onPressAdd
 }) => {
   const { t } = useTranslation();
-  const { currentSong } = usePlayingState();
-  const { skipToNext, skipToPrevious } = usePlayingActions();
+  const { currentSong, currentIndex, repeatMode } = usePlayingState();
+  const { skipToNext, skipToPrevious, getQueue } = usePlayingActions();
+  const currentSongId = currentSong?.id;
+  const currentCover = currentSong?.cover ?? null;
+  const queueLength = getQueue().length;
   const rad = useRadius();
   const showQualityBadge = useSelector(selectShowQualityBadge);
-  const { expansion, fullCover, scrollY, coverSwipeX } = usePlayerExpansion();
+  const { expansion, fullCover, scrollY, coverSwipeX, beginCoverSlide } = usePlayerExpansion();
 
   // The cover itself is drawn by the player host, one layer up, so a single
   // image can travel between here and the playing bar instead of one being
@@ -134,23 +138,31 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
         })
         .onEnd(event => {
           const outcome = resolveCoverSwipe(event.translationX, event.velocityX, width);
-          if (outcome === 'cancel') {
+          if (
+            !currentSongId || outcome === 'cancel' ||
+            !canStartCoverSlide(outcome, currentIndex, queueLength, repeatMode)
+          ) {
             coverSwipeX.value = withSpring(0, { damping: 18, stiffness: 220 });
             return;
           }
-          // Carry the cover the rest of the way out before the track changes,
-          // then put it back at rest under the incoming artwork. Snapping to
-          // zero on the same frame as the skip reads as the cover flinching.
+          // The old image gets its own exit. Only after that finishes can the
+          // queue select the next track; PlayerHost then puts that new image on
+          // the opposite edge and brings it in. Calling skip immediately was
+          // why the old implementation merely recoiled instead of becoming a
+          // real carousel transition.
+          runOnJS(beginCoverSlide)(outcome, currentSongId, currentCover);
           coverSwipeX.value = withTiming(
             outcome === 'next' ? -width : width,
             { duration: 140 },
             finished => {
-              if (finished) coverSwipeX.value = 0;
+              if (finished) runOnJS(outcome === 'next' ? skipToNext : skipToPrevious)();
             },
           );
-          runOnJS(outcome === 'next' ? skipToNext : skipToPrevious)();
         }),
-    [coverSwipeX, width, skipToNext, skipToPrevious],
+    [
+      beginCoverSlide, coverSwipeX, currentCover, currentIndex, currentSongId,
+      queueLength, repeatMode, skipToNext, skipToPrevious, width,
+    ],
   );
 
   if (!currentSong) {

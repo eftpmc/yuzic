@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
   interpolate,
+  runOnJS,
   useAnimatedStyle,
+  withTiming,
   Extrapolation,
 } from 'react-native-reanimated';
 import ImageColors from 'react-native-image-colors';
@@ -18,6 +20,8 @@ import PlayingScreen from '@/screens/playing';
 import PlayingBackground from '@/screens/playing/components/PlayingBackground';
 import { radius } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+
+import { coverSlideOffset } from '@/screens/playing/coverTransition';
 
 import { coverHandedOver, usePlayerExpansion } from './PlayerExpansion';
 
@@ -40,8 +44,10 @@ const NEUTRAL_GRADIENT: [string, string] = ['#121212', '#000'];
  * the other. They are one surface now, at a position the finger can hold.
  */
 export default function PlayerHost() {
-  const { expansion, barCover, fullCover, scrollY, coverVisibility, coverSwipeX, isOpen, hasOpened, collapse } =
-    usePlayerExpansion();
+  const {
+    expansion, barCover, fullCover, scrollY, coverVisibility, coverSwipeX,
+    coverSlide, enterCoverSlide, finishCoverSlide, isOpen, hasOpened, collapse,
+  } = usePlayerExpansion();
   const { height, width } = useWindowDimensions();
   // The travelling cover is laid out once at a fixed size and only ever
   // scaled, so its width and height stay static styles rather than becoming
@@ -53,6 +59,26 @@ export default function PlayerHost() {
 
   const [currentGradient, setCurrentGradient] = useState<[string, string]>(['#000', '#000']);
   const [nextGradient, setNextGradient] = useState<[string, string]>(['#000', '#000']);
+
+  // A queue command changes React state asynchronously. Keep the old artwork
+  // on screen while it leaves, then place the replacement beyond the opposite
+  // edge before animating it in. A single image with its offset reset to zero
+  // can only ever look like a recoil — it cannot show both halves of a swipe.
+  useEffect(() => {
+    if (
+      !coverSlide || coverSlide.phase !== 'exiting' ||
+      !currentSong?.id || currentSong.id === coverSlide.outgoingSongId
+    ) return;
+
+    coverSwipeX.value = coverSlideOffset(coverSlide.direction, 'entering', width);
+    enterCoverSlide(currentSong.id);
+    const frame = requestAnimationFrame(() => {
+      coverSwipeX.value = withTiming(0, { duration: 220 }, finished => {
+        if (finished) runOnJS(finishCoverSlide)();
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [coverSlide, coverSwipeX, currentSong?.id, enterCoverSlide, finishCoverSlide, width]);
 
   const extractColors = useCallback(async (uri: string) => {
     const cached = gradientCache.get(uri);
@@ -180,6 +206,10 @@ export default function PlayerHost() {
     };
   });
 
+  const displayedCover = coverSlide?.phase === 'exiting'
+    ? coverSlide.outgoingCover
+    : currentSong?.cover;
+
   return (
     <View
       style={StyleSheet.absoluteFill}
@@ -207,7 +237,7 @@ export default function PlayerHost() {
         * shows the same placeholder when there is nothing to show. Building a
         * URL here by hand meant the host missed the server subscription that
         * makes those URLs resolve at all. */}
-      {currentSong?.cover && (
+      {displayedCover && (
         <Animated.View
           style={[
             styles.travellingCover,
@@ -216,7 +246,7 @@ export default function PlayerHost() {
           ]}
           pointerEvents="none"
         >
-          <MediaImage cover={currentSong.cover} size="detail" style={styles.coverFill} />
+          <MediaImage cover={displayedCover} size="detail" style={styles.coverFill} />
         </Animated.View>
       )}
     </View>

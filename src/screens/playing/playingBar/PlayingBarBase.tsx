@@ -36,7 +36,7 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, onDark, radius, spacing, typography } from '@/constants/design';
+import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, onDark, radius, spacing } from '@/constants/design';
 
 type Variant = 'ios' | 'android';
 
@@ -262,7 +262,12 @@ export default function PlayingBarBase({ variant }: Props) {
     () =>
       Gesture.Pan()
         .enabled(currentSong != null)
-        .activeOffsetY([-10, 10])
+        // A tap belongs to the pressable. This pan activates only after a
+        // deliberate upward pull, and fails as soon as it becomes a downward
+        // movement, so ordinary finger settling cannot cancel `onPress` and
+        // make the player briefly rise then fall back into the dock.
+        .activeOffsetY(-18)
+        .failOffsetY(18)
         .failOffsetX([-24, 24])
         .onBegin(() => {
           dragMoved.value = false;
