@@ -1,6 +1,7 @@
-Original-quality FLAC playback, account pictures, and a more reliable player.
+Plex support, protected artwork, easier local imports, and connection fixes.
 
-- iOS now plays FLAC streams at original quality
-- Your account picture appears throughout the app
-- Fixed a player drag that could leave the mini player hidden
-- Refreshed the project gallery and simplified its README
+- Play from Plex servers, including those behind a Basic-auth reverse proxy
+- Lock-screen and Now Playing artwork now loads from authenticated servers
+- Import local audio files any time from Settings > Library
+- Fixed signing in to Jellyfin 12 servers
+- Complete Plex libraries with correct pagination across albums and playlists
