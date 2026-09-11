@@ -21,6 +21,15 @@ describe('createMediaBrowserClient', () => {
     expect(emby.buildStreamUrl('song-1', 'high', 'mp3')).toContain('api_key=tok-123');
   });
 
+  it('authenticates avatar URLs with the brand-specific token parameter', () => {
+    const jellyfin = new URL(createMediaBrowserClient(baseConfig, JELLYFIN_BRAND).buildAvatarUrl());
+    const emby = new URL(createMediaBrowserClient(baseConfig, EMBY_BRAND).buildAvatarUrl());
+
+    expect(jellyfin.pathname).toBe('/Users/user-1/Images/Primary');
+    expect(jellyfin.searchParams.get('X-Emby-Token')).toBe('tok-123');
+    expect(emby.searchParams.get('api_key')).toBe('tok-123');
+  });
+
   it('labels API errors with the brand name', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,

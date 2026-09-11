@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -44,7 +44,6 @@ export default function UserAvatar({
 
   const uri = useMemo(() => {
     void activeServerId;
-    setFailed(false);
     try {
       return api.user?.avatarUrl() ?? null;
     } catch {
@@ -53,6 +52,11 @@ export default function UserAvatar({
       return null;
     }
   }, [api, activeServerId]);
+
+  // A changed server gives the new image one clean attempt. This is an effect
+  // rather than a state update during render, which React rejects in strict
+  // render paths.
+  useEffect(() => setFailed(false), [uri]);
 
   const initial = username?.[0]?.toUpperCase() || '?';
   const frame = [
@@ -76,9 +80,15 @@ export default function UserAvatar({
 
   return (
     <View style={frame}>
+      <Text
+        style={[styles.initial, { fontSize: size * 0.45 }]}
+        maxFontSizeMultiplier={fontScaleCap.glyph}
+      >
+        {initial}
+      </Text>
       <Image
         source={{ uri }}
-        style={[styles.image, { borderRadius }]}
+        style={[styles.image, { borderRadius, position: 'absolute' }]}
         // The letter stays underneath while the picture loads, so the header
         // never has a hole in it on a cold start.
         onError={() => setFailed(true)}

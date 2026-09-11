@@ -118,10 +118,12 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
 
   function buildAvatarUrl(): string {
     const base = failoverHint ? orderedUrls(failoverHint)[0] ?? baseUrl : baseUrl;
-    // Jellyfin/Emby serve the user's own image off the user resource. No token
-    // in the URL: primary images are public on these servers, and the image
-    // loader cannot send the `X-Emby-Token` header this client normally does.
-    return `${base}/Users/${userId}/Images/Primary`;
+    // The React Native Image loader cannot send the request headers used by
+    // API calls. Carry the same brand-specific token that stream URLs use.
+    // Without it, authenticated Jellyfin/Emby installations reject this image
+    // even though the account request that produced the client succeeded.
+    const params = new URLSearchParams({ [brand.streamTokenParam]: token });
+    return `${base}/Users/${userId}/Images/Primary?${params}`;
   }
 
   return {
