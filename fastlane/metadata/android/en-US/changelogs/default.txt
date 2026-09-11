@@ -1,7 +1,6 @@
-Swipe the cover art to change track, and playback speed that remembers.
+Original-quality FLAC playback, account pictures, and a more reliable player.
 
-- Swipe the cover on the player to go to the next or previous track
-- Playback speed is now remembered separately for music and podcasts, and survives a restart
-- Continue Playing can resume a podcast episode instead of skipping it
-- Download buttons show real progress and the same finish everywhere
-- Fixed downloads that could stop silently with no explanation
+- iOS now plays FLAC streams at original quality
+- Your account picture appears throughout the app
+- Fixed a player drag that could leave the mini player hidden
+- Refreshed the project gallery and simplified its README
