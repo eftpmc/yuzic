@@ -567,7 +567,24 @@
       "missingCredentials": "请同时输入用户名和密码。",
       "authFailed": "认证失败。",
       "apiNotResponding": "服务器已连接，但 API 无响应。",
-      "connectError": "连接时发生错误。"
+      "connectError": "连接时发生错误。",
+      "proxy": {
+        "toggle": "反向代理认证",
+        "usernamePlaceholder": "代理用户名",
+        "passwordPlaceholder": "代理密码",
+        "insecureWarning": "代理凭据可能会在不安全的 HTTP 连接上泄露。请改用 HTTPS。"
+      },
+      "codeAuth": {
+        "enterCode": "输入此代码以登录",
+        "waiting": "正在等待授权…",
+        "expired": "此代码已过期。请重新开始以获取新代码。",
+        "unavailable": "当前无法使用验证码登录。",
+        "usePassword": "使用用户名和密码",
+        "jellyfin": {
+          "instruction": "在 Jellyfin 中打开 Quick Connect 并输入此代码。",
+          "action": "使用 Quick Connect 登录"
+        }
+      }
     },
     "libraries": {
       "title": "选择媒体库",

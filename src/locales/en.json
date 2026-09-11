@@ -568,7 +568,24 @@
       "missingCredentials": "Please enter both username and password.",
       "authFailed": "Authentication failed.",
       "apiNotResponding": "Server connected, but API is not responding.",
-      "connectError": "An error occurred while connecting."
+      "connectError": "An error occurred while connecting.",
+      "proxy": {
+        "toggle": "Reverse proxy authentication",
+        "usernamePlaceholder": "Proxy username",
+        "passwordPlaceholder": "Proxy password",
+        "insecureWarning": "Proxy credentials can be exposed over an insecure HTTP connection. Use HTTPS instead."
+      },
+      "codeAuth": {
+        "enterCode": "Enter this code to sign in",
+        "waiting": "Waiting for approval…",
+        "expired": "That code expired. Start again to get a new one.",
+        "unavailable": "Code sign-in is unavailable right now.",
+        "usePassword": "Use username and password",
+        "jellyfin": {
+          "instruction": "Open Quick Connect in Jellyfin and enter this code.",
+          "action": "Sign in with Quick Connect"
+        }
+      }
     },
     "libraries": {
       "title": "Choose Libraries",

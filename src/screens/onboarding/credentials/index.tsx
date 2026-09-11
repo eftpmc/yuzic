@@ -16,19 +16,10 @@ import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import {
-    initiateQuickConnect,
-    pollQuickConnect,
-    authenticateWithQuickConnect,
-} from '@/api/jellyfin/auth/quickConnect';
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, spacing, statusColor, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
-
-// Quick Connect codes expire server-side; without a client-side ceiling too,
-// polling would continue forever showing "waiting for approval" with no
-// indication the code had gone stale.
-const QUICK_CONNECT_TIMEOUT_MS = 10 * 60 * 1000;
+import { useCodeAuth } from './useCodeAuth';
 
 export default function Credentials() {
     const { t } = useTranslation();
@@ -47,19 +38,27 @@ export default function Credentials() {
     const [proxyUsername, setProxyUsername] = useState('');
     const [proxyPassword, setProxyPassword] = useState('');
 
-    // Quick Connect state (Jellyfin only)
-    const [quickConnectMode, setQuickConnectMode] = useState(false);
-    const [quickCode, setQuickCode] = useState('');
-    const [, setQuickSecret] = useState('');
-    const [isPolling, setIsPolling] = useState(false);
-    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const pollStartedAtRef = useRef(0);
-
     const passwordRef = useRef<TextInput>(null);
     const proxyUsernameRef = useRef<TextInput>(null);
     const proxyPasswordRef = useRef<TextInput>(null);
 
-    const isJellyfin = type === 'jellyfin';
+    const buildBasicAuth = (): BasicAuth | undefined => {
+        const u = proxyUsername.trim();
+        const p = proxyPassword.trim();
+        return u && p ? { username: u, password: p } : undefined;
+    };
+
+    // Whether this provider can sign in by code at all. Presence-gated, so a
+    // provider that gains the flow gets the row with no change to this screen
+    // and one that lacks it never renders it.
+    const codeAuth = type ? SERVER_PROVIDERS[type]?.codeAuth : undefined;
+    const { phase, start: startCodeAuth, cancel: cancelCodeAuth } = useCodeAuth({
+        codeAuth,
+        serverUrl,
+        basicAuth: buildBasicAuth(),
+    });
+
+    const inCodeAuth = phase.status !== 'idle';
 
     const insecureWithProxy =
         proxyUsername.trim().length > 0 &&
@@ -69,17 +68,6 @@ export default function Credentials() {
     useEffect(() => {
         if (!type || !serverUrl) router.replace('/(onboarding)/servers');
     }, [router, type, serverUrl]);
-
-    // Clean up polling on unmount
-    useEffect(() => {
-        return () => { if (pollIntervalRef.current) clearInterval(pollIntervalRef.current); };
-    }, []);
-
-    const buildBasicAuth = (): BasicAuth | undefined => {
-        const u = proxyUsername.trim();
-        const p = proxyPassword.trim();
-        return u && p ? { username: u, password: p } : undefined;
-    };
 
     const saveServer = (auth: ProviderAuth, usernameOverride?: string) => {
         const id = nanoid();
@@ -93,6 +81,24 @@ export default function Credentials() {
         dispatch(setActiveServer(id));
         router.push(`/(onboarding)/libraries?serverId=${id}`);
     };
+
+    // The hook owns the state machine; this screen only reacts to it landing on
+    // a terminal phase.
+    useEffect(() => {
+        if (phase.status === 'approved') {
+            saveServer(phase.auth, phase.username);
+            return;
+        }
+        if (phase.status === 'failed') {
+            toast.error(
+                phase.reason === 'expired'
+                    ? t('onboarding.credentials.codeAuth.expired')
+                    : phase.message || t('onboarding.credentials.codeAuth.unavailable')
+            );
+            cancelCodeAuth();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [phase]);
 
     // ── Username / password ──────────────────────────────────────────────────
 
@@ -124,69 +130,6 @@ export default function Credentials() {
         }
     };
 
-    // ── Quick Connect ────────────────────────────────────────────────────────
-
-    const stopPolling = () => {
-        if (pollIntervalRef.current) {
-            clearInterval(pollIntervalRef.current);
-            pollIntervalRef.current = null;
-        }
-        setIsPolling(false);
-    };
-
-    const handleStartQuickConnect = async () => {
-        if (!serverUrl) return;
-        setQuickConnectMode(true);
-        setIsTesting(true);
-        try {
-            const { secret, code } = await initiateQuickConnect(serverUrl, buildBasicAuth());
-            setQuickCode(code);
-            setQuickSecret(secret);
-            setIsPolling(true);
-            pollStartedAtRef.current = Date.now();
-
-            pollIntervalRef.current = setInterval(async () => {
-                if (Date.now() - pollStartedAtRef.current > QUICK_CONNECT_TIMEOUT_MS) {
-                    stopPolling();
-                    toast.error('Quick Connect code expired. Please try again.');
-                    setQuickConnectMode(false);
-                    setQuickCode('');
-                    setQuickSecret('');
-                    return;
-                }
-
-                const authenticated = await pollQuickConnect(serverUrl, secret, buildBasicAuth());
-                if (!authenticated) return;
-
-                stopPolling();
-                try {
-                    const { token, userId, username } = await authenticateWithQuickConnect(
-                        serverUrl, secret, buildBasicAuth()
-                    );
-                    const auth: ProviderAuth = { token, userId };
-                    saveServer(auth, username);
-                } catch (err: any) {
-                    toast.error(err?.message ?? 'Authentication failed');
-                    setQuickConnectMode(false);
-                    setQuickCode('');
-                    setQuickSecret('');
-                }
-            }, 3000);
-        } catch (err: any) {
-            toast.error(err?.message ?? 'Quick Connect unavailable');
-            setQuickConnectMode(false);
-        } finally {
-            setIsTesting(false);
-        }
-    };
-
-    const handleCancelQuickConnect = () => {
-        stopPolling();
-        setQuickConnectMode(false);
-        setQuickCode('');
-        setQuickSecret('');
-    };
-
     // ────────────────────────────────────────────────────────────────────────
 
     return (
@@ -196,30 +139,30 @@ export default function Credentials() {
                     <Text style={styles.title}>{t('onboarding.credentials.title')}</Text>
                     <Text style={styles.subtitle}>{t('onboarding.credentials.subtitle')}</Text>
 
-                    {quickConnectMode ? (
-                        // ── Quick Connect panel ──────────────────────────────
-                        <View style={styles.quickConnectPanel}>
-                            <Text style={styles.quickConnectLabel}>
-                                Enter this code on your Jellyfin server
+                    {inCodeAuth ? (
+                        // ── Code sign-in panel ───────────────────────────────
+                        <View style={styles.codeAuthPanel}>
+                            <Text style={styles.codeAuthLabel}>
+                                {t('onboarding.credentials.codeAuth.enterCode')}
                             </Text>
-                            {quickCode ? (
-                                <Text style={styles.quickConnectCode}>{quickCode}</Text>
+                            {phase.status === 'waiting' ? (
+                                <Text style={styles.codeAuthCode}>{phase.code}</Text>
                             ) : (
                                 <View style={{ marginVertical: spacing.roomy }}>
                                   <SpinningLoaderCircle size={iconSize.loader} color={onDark.text} />
                                 </View>
                             )}
-                            {isPolling && quickCode ? (
-                                <View style={styles.quickConnectWaiting}>
+                            {phase.status === 'waiting' ? (
+                                <View style={styles.codeAuthWaiting}>
                                     <SpinningLoaderCircle size={iconSize.inline} color={onDark.mutedText} />
-                                    <Text style={styles.quickConnectWaitingText}>
-                                        Waiting for approval…
+                                    <Text style={styles.codeAuthWaitingText}>
+                                        {t('onboarding.credentials.codeAuth.waiting')}
                                     </Text>
                                 </View>
                             ) : null}
-                            <Text style={styles.quickConnectHint}>
-                                Go to your Jellyfin dashboard → Quick Connect, then enter the code above.
-                            </Text>
+                            {codeAuth ? (
+                                <Text style={styles.codeAuthHint}>{t(codeAuth.instructionKey)}</Text>
+                            ) : null}
                         </View>
                     ) : (
                         // ── Username / password form ──────────────────────────
@@ -260,7 +203,7 @@ export default function Credentials() {
                                 onPress={() => setProxyExpanded(v => !v)}
                             >
                                 <Shield size={iconSize.inline} color={onDark.mutedText} style={styles.proxyToggleIcon} />
-                                <Text style={styles.proxyToggleText}>Reverse proxy auth</Text>
+                                <Text style={styles.proxyToggleText}>{t('onboarding.credentials.proxy.toggle')}</Text>
                                 {proxyExpanded ? <ChevronUp size={iconSize.inline} color={onDark.mutedText} /> : <ChevronDown size={iconSize.inline} color={onDark.mutedText} />}
                             </Touchable>
 
@@ -270,7 +213,7 @@ export default function Credentials() {
                                         <View style={[styles.warningRow, { borderRadius: rad.md }]}>
                                             <TriangleAlert size={iconSize.inline} color={statusColor.warningText} />
                                             <Text style={styles.warningText}>
-                                                Basic auth over HTTP sends credentials unencrypted. Use HTTPS.
+                                                {t('onboarding.credentials.proxy.insecureWarning')}
                                             </Text>
                                         </View>
                                     )}
@@ -279,7 +222,7 @@ export default function Credentials() {
                                         <TextInput
                                             ref={proxyUsernameRef}
                                             style={styles.input}
-                                            placeholder="Proxy username"
+                                            placeholder={t('onboarding.credentials.proxy.usernamePlaceholder')}
                                             placeholderTextColor={onDark.mutedText}
                                             value={proxyUsername}
                                             onChangeText={setProxyUsername}
@@ -293,7 +236,7 @@ export default function Credentials() {
                                         <TextInput
                                             ref={proxyPasswordRef}
                                             style={styles.input}
-                                            placeholder="Proxy password"
+                                            placeholder={t('onboarding.credentials.proxy.passwordPlaceholder')}
                                             placeholderTextColor={onDark.mutedText}
                                             secureTextEntry
                                             value={proxyPassword}
@@ -306,15 +249,15 @@ export default function Credentials() {
                                 </View>
                             )}
 
-                            {/* Quick Connect option — Jellyfin only */}
-                            {isJellyfin && (
+                            {/* Code sign-in, where the provider offers one */}
+                            {codeAuth && (
                                 <Touchable
-                                    style={styles.quickConnectToggle}
-                                    onPress={handleStartQuickConnect}
+                                    style={styles.codeAuthToggle}
+                                    onPress={startCodeAuth}
                                     disabled={isTesting}
                                 >
                                     <QrCode size={iconSize.inline} color={onDark.mutedText} style={styles.proxyToggleIcon} />
-                                    <Text style={styles.proxyToggleText}>Use Quick Connect</Text>
+                                    <Text style={styles.proxyToggleText}>{t(codeAuth.actionKey)}</Text>
                                     <ChevronRight size={iconSize.inline} color={onDark.mutedText} />
                                 </Touchable>
                             )}
@@ -323,7 +266,7 @@ export default function Credentials() {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    {!quickConnectMode && (
+                    {!inCodeAuth && (
                         <Touchable
                             style={[styles.nextButton, { borderRadius: rad.pill }, isTesting && styles.nextButtonDisabled]}
                             onPress={handleNext}
@@ -338,10 +281,10 @@ export default function Credentials() {
 
                     <Touchable
                         style={[styles.backButton, { borderRadius: rad.pill }]}
-                        onPress={quickConnectMode ? handleCancelQuickConnect : () => router.back()}
+                        onPress={inCodeAuth ? cancelCodeAuth : () => router.back()}
                     >
                         <Text style={styles.backButtonText}>
-                            {quickConnectMode ? 'Use password instead' : t('common.back')}
+                            {inCodeAuth ? t('onboarding.credentials.codeAuth.usePassword') : t('common.back')}
                         </Text>
                     </Touchable>
                 </View>
@@ -375,7 +318,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         marginBottom: spacing.xs,
     },
-    quickConnectToggle: {
+    codeAuthToggle: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: spacing.controlGap,
@@ -396,33 +339,33 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     warningText: { ...typography.caption, flex: 1, color: statusColor.warningText },
-    // Quick Connect panel
-    quickConnectPanel: {
+    // Code sign-in panel
+    codeAuthPanel: {
         alignItems: 'center',
         paddingVertical: spacing.xl,
         gap: 16,
     },
-    quickConnectLabel: {
+    codeAuthLabel: {
         ...typography.body,
         color: onDark.mutedText,
         textAlign: 'center',
     },
-    quickConnectCode: {
+    codeAuthCode: {
         ...typography.hero,
         fontWeight: '700',
         color: onDark.text,
         letterSpacing: 8,
     },
-    quickConnectWaiting: {
+    codeAuthWaiting: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
     },
-    quickConnectWaitingText: {
+    codeAuthWaitingText: {
         ...typography.rowSubtitle,
         color: onDark.mutedText,
     },
-    quickConnectHint: {
+    codeAuthHint: {
         ...typography.caption,
         color: onDark.mutedText,
         textAlign: 'center',

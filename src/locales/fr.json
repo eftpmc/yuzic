@@ -568,7 +568,24 @@
       "missingCredentials": "Veuillez saisir le nom d'utilisateur et le mot de passe.",
       "authFailed": "Échec de l'authentification.",
       "apiNotResponding": "Serveur connecté, mais l'API ne répond pas.",
-      "connectError": "Une erreur s'est produite lors de la connexion."
+      "connectError": "Une erreur s'est produite lors de la connexion.",
+      "proxy": {
+        "toggle": "Authentification du proxy inverse",
+        "usernamePlaceholder": "Nom d’utilisateur du proxy",
+        "passwordPlaceholder": "Mot de passe du proxy",
+        "insecureWarning": "Les identifiants du proxy peuvent être exposés sur une connexion HTTP non sécurisée. Utilisez HTTPS."
+      },
+      "codeAuth": {
+        "enterCode": "Saisissez ce code pour vous connecter",
+        "waiting": "En attente de validation…",
+        "expired": "Ce code a expiré. Recommencez pour en obtenir un nouveau.",
+        "unavailable": "La connexion par code est indisponible pour le moment.",
+        "usePassword": "Utiliser un nom d’utilisateur et un mot de passe",
+        "jellyfin": {
+          "instruction": "Ouvrez Quick Connect dans Jellyfin et saisissez ce code.",
+          "action": "Se connecter avec Quick Connect"
+        }
+      }
     },
     "libraries": {
       "title": "Choisir les bibliothèques",
