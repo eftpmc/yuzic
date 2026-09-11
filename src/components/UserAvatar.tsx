@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useSelector } from 'react-redux';
 
 import { useApi } from '@/api';
@@ -42,7 +43,7 @@ export default function UserAvatar({
   const activeServerId = useSelector(selectActiveServerId);
   const [failed, setFailed] = useState(false);
 
-  const uri = useMemo(() => {
+  const buildUri = useCallback(() => {
     void activeServerId;
     try {
       return api.user?.avatarUrl() ?? null;
@@ -52,10 +53,25 @@ export default function UserAvatar({
       return null;
     }
   }, [api, activeServerId]);
+  const [uri, setUri] = useState(buildUri);
 
-  // A changed server gives the new image one clean attempt. This is an effect
-  // rather than a state update during render, which React rejects in strict
-  // render paths.
+  // An active-server switch needs its own source immediately; a focus effect
+  // alone would leave the previous account visible until the next navigation.
+  const previousServerId = useRef(activeServerId);
+  useEffect(() => {
+    if (previousServerId.current === activeServerId) return;
+    previousServerId.current = activeServerId;
+    setUri(buildUri());
+  }, [activeServerId, buildUri]);
+
+  // Tab screens stay mounted, so a header can otherwise retain the source it
+  // created before the user updated their picture on the server. A focus gives
+  // the native image loader a new authenticated URL while keeping all avatar
+  // surfaces on the same shared component.
+  useFocusEffect(useCallback(() => {
+    setUri(buildUri());
+  }, [buildUri]));
+
   useEffect(() => setFailed(false), [uri]);
 
   const initial = username?.[0]?.toUpperCase() || '?';
@@ -87,6 +103,7 @@ export default function UserAvatar({
         {initial}
       </Text>
       <Image
+        testID="user-avatar-image"
         source={{ uri }}
         style={[styles.image, { borderRadius, position: 'absolute' }]}
         // The letter stays underneath while the picture loads, so the header
