@@ -23,6 +23,17 @@ export interface BrowseItem {
   artworkUrl?: string;
   /** Set on playable rows. Its absence is what makes a row a folder. */
   url?: string;
+  /**
+   * Ephemeral request headers for a header-authenticated server (a Plex behind
+   * a Basic-auth proxy). `headers` fetches the audio, `artworkHeaders` the
+   * now-playing art once the leaf plays. Set only on playable rows and only
+   * when the active server needs them. Note the *browse-tree thumbnail*
+   * (`artworkUrl`) cannot carry headers — the engine's `BrowseNode` has no
+   * field for it — so protected-server art may not render in the browse list,
+   * though it does on the now-playing screen via `artworkHeaders`.
+   */
+  headers?: Record<string, string>;
+  artworkHeaders?: Record<string, string>;
   /** Seconds. */
   duration?: number;
   children?: BrowseItem[];

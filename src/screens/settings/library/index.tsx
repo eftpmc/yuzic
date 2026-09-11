@@ -6,6 +6,7 @@ import Downloads from './components/Downloads';
 import DownloadQuality from './components/DownloadQuality';
 import LibrarySelect from './components/LibrarySelect';
 import PendingOfflineChanges from './components/PendingOfflineChanges';
+import LocalFileImport from './components/LocalFileImport';
 
 const LibrarySettings: React.FC = () => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ const LibrarySettings: React.FC = () => {
       <Stats />
       <Downloads />
       <DownloadQuality />
+      <LocalFileImport />
       <LibrarySelect />
     </SettingsScreen>
   );

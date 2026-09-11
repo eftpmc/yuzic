@@ -55,6 +55,8 @@ function toBrowseNode(item: BrowseItem): BrowseNode {
           title: item.title,
           artist: item.artist,
           durationSec: item.duration,
+          ...(item.headers ? { headers: item.headers } : {}),
+          ...(item.artworkHeaders ? { artworkHeaders: item.artworkHeaders } : {}),
         }
       : undefined,
   };

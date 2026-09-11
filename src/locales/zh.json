@@ -170,6 +170,11 @@
         "info": "选择要使用的音乐库",
         "all": "所有库"
       },
+      "localFiles": {
+        "title": "本地文件",
+        "import": "导入音频文件",
+        "description": "将音乐添加到此设备上 Yuzic 的私有音乐库。"
+      },
       "discovery": {
         "title": "发现",
         "info": "发现功能会从你的媒体库中为你推荐歌手和专辑。",
@@ -543,7 +548,9 @@
       "providerDescription": {
         "navidrome": "轻量级自托管音乐服务器。",
         "jellyfin": "全功能媒体服务器，支持音乐、电影和电视节目。",
-        "emby": "个人媒体服务器，支持音乐、电影和电视节目。"
+        "emby": "个人媒体服务器，支持音乐、电影和电视节目。",
+        "plex": "使用 Plex 帐户连接 Plex 音乐库。",
+        "local": "导入存储在此设备上的音乐文件。"
       },
       "serverUrlRequired": "请输入服务器地址。",
       "serverConnectionFailed": "无法连接到服务器。",
@@ -567,7 +574,29 @@
       "missingCredentials": "请同时输入用户名和密码。",
       "authFailed": "认证失败。",
       "apiNotResponding": "服务器已连接，但 API 无响应。",
-      "connectError": "连接时发生错误。"
+      "connectError": "连接时发生错误。",
+      "proxy": {
+        "toggle": "反向代理认证",
+        "usernamePlaceholder": "代理用户名",
+        "passwordPlaceholder": "代理密码",
+        "insecureWarning": "代理凭据可能会在不安全的 HTTP 连接上泄露。请改用 HTTPS。"
+      },
+      "codeAuth": {
+        "enterCode": "输入此代码以登录",
+        "waiting": "正在等待授权…",
+        "expired": "此代码已过期。请重新开始以获取新代码。",
+        "unavailable": "当前无法使用验证码登录。",
+        "usePassword": "使用用户名和密码",
+        "jellyfin": {
+          "instruction": "在 Jellyfin 中打开 Quick Connect 并输入此代码。",
+          "action": "使用 Quick Connect 登录"
+        },
+        "plex": {
+          "instruction": "在浏览器或 Plex 应用中打开 Plex，然后输入此代码。",
+          "action": "使用 Plex 登录",
+          "useCode": "请改用 Plex 登录"
+        }
+      }
     },
     "libraries": {
       "title": "选择媒体库",
@@ -578,6 +607,19 @@
       "useAll": "使用所有媒体库",
       "continueWith": "继续（{{count}} 个媒体库）",
       "continueWith_other": "继续（{{count}} 个媒体库）"
+    },
+    "local": {
+      "libraryName": "在此设备上",
+      "title": "你的本地音乐",
+      "subtitle": "选择要复制到 Yuzic 私有音乐库的音频文件。它们会保留在此设备上，无需服务器即可播放。",
+      "supported": "支持带有可读取标签的 MP3、FLAC、M4A 和 MP4 文件。",
+      "choose": "选择音频文件",
+      "finish": "完成",
+      "imported": "已导入 {{count}} 个文件",
+      "imported_other": "已导入 {{count}} 个文件",
+      "unsupported": "已跳过 {{count}} 个不支持的文件",
+      "unsupported_other": "已跳过 {{count}} 个不支持的文件",
+      "importFailed": "无法导入这些文件。"
     }
   },
   "library": {

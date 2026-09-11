@@ -200,7 +200,9 @@ export function buildDownloadRows({
     navidrome: 0,
     jellyfin: 1,
     emby: 2,
-    unknown: 3,
+    plex: 3,
+    local: 4,
+    unknown: 5,
   };
 
   return [...normalized, ...trackRows].sort((a, b) => {

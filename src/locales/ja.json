@@ -170,6 +170,11 @@
         "info": "使用する音楽ライブラリを選択",
         "all": "すべてのライブラリ"
       },
+      "localFiles": {
+        "title": "ローカルファイル",
+        "import": "オーディオファイルを読み込む",
+        "description": "このデバイス上の Yuzic のプライベートライブラリに音楽を追加します。"
+      },
       "discovery": {
         "title": "ディスカバリー",
         "info": "ディスカバリーがライブラリからアーティストとアルバムを提案する方法です。",
@@ -543,7 +548,9 @@
       "providerDescription": {
         "navidrome": "軽量なセルフホスト型音楽サーバー。",
         "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。",
-        "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。"
+        "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。",
+        "plex": "Plex アカウントで Plex Music ライブラリに接続します。",
+        "local": "このデバイスに保存された音楽ファイルを読み込みます。"
       },
       "serverUrlRequired": "サーバーURLを入力してください。",
       "serverConnectionFailed": "サーバーに接続できませんでした。",
@@ -567,7 +574,29 @@
       "missingCredentials": "ユーザー名とパスワードを入力してください。",
       "authFailed": "認証に失敗しました。",
       "apiNotResponding": "接続はできましたが、APIが応答しません。",
-      "connectError": "接続中にエラーが発生しました。"
+      "connectError": "接続中にエラーが発生しました。",
+      "proxy": {
+        "toggle": "リバースプロキシ認証",
+        "usernamePlaceholder": "プロキシのユーザー名",
+        "passwordPlaceholder": "プロキシのパスワード",
+        "insecureWarning": "安全でない HTTP 接続ではプロキシ認証情報が漏洩する可能性があります。HTTPS を使用してください。"
+      },
+      "codeAuth": {
+        "enterCode": "このコードを入力してサインイン",
+        "waiting": "承認を待っています…",
+        "expired": "コードの有効期限が切れました。もう一度開始して新しいコードを取得してください。",
+        "unavailable": "現在、コードによるサインインは利用できません。",
+        "usePassword": "ユーザー名とパスワードを使用",
+        "jellyfin": {
+          "instruction": "Jellyfin で Quick Connect を開き、このコードを入力してください。",
+          "action": "Quick Connect でサインイン"
+        },
+        "plex": {
+          "instruction": "ブラウザまたは Plex アプリで Plex を開き、このコードを入力してください。",
+          "action": "Plex でサインイン",
+          "useCode": "代わりに Plex サインインを使用してください"
+        }
+      }
     },
     "libraries": {
       "title": "ライブラリを選択",
@@ -578,6 +607,19 @@
       "useAll": "すべてのライブラリを使う",
       "continueWith": "{{count}} 件のライブラリで続行",
       "continueWith_other": "{{count}} 件のライブラリで続行"
+    },
+    "local": {
+      "libraryName": "このデバイス上",
+      "title": "ローカルの音楽",
+      "subtitle": "Yuzic のプライベートライブラリにコピーする音声ファイルを選択してください。ファイルはこのデバイスに残り、サーバーなしで再生できます。",
+      "supported": "読み取り可能なタグを含む MP3、FLAC、M4A、MP4 ファイルに対応しています。",
+      "choose": "音声ファイルを選択",
+      "finish": "完了",
+      "imported": "{{count}} 件のファイルを読み込みました",
+      "imported_other": "{{count}} 件のファイルを読み込みました",
+      "unsupported": "未対応のファイル {{count}} 件をスキップしました",
+      "unsupported_other": "未対応のファイル {{count}} 件をスキップしました",
+      "importFailed": "ファイルを読み込めませんでした。"
     }
   },
   "library": {

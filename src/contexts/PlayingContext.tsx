@@ -21,6 +21,7 @@ import { Album, Playlist, Song, SongBase } from '@/types';
 import shuffleArray from '@/utils/shuffleArray';
 import { useApi } from '@/api';
 import { buildTrackItem } from '@/utils/builders/buildTrackItem';
+import { mediaHeadersForSong } from '@/features/player/mediaHeaders';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, segmentAt, tagSegment, shiftSegmentsAfterInsert } from './playingQueue';
@@ -62,6 +63,7 @@ import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 import { buildRestoredQueue } from './restoreQueue';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
 import { clampSpeed, speedFor, speedProfileFor } from '@/utils/playback/speedProfile';
+import { streamSourceId } from '@/utils/playback/streamId';
 import { setPlaybackSpeedForProfile } from '@/utils/redux/slices/settingsSlice';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { useQueueSync } from '@/hooks/useQueueSync';
@@ -74,7 +76,7 @@ import {
   selectPersistedPlaybackRepeatMode,
   selectPersistedPlaybackShuffleMode,
 } from '@/utils/redux/selectors/playbackSelectors';
-import { selectActiveServerId as selectActiveServerIdSel } from '@/utils/redux/selectors/serversSelectors';
+import { selectActiveServerId as selectActiveServerIdSel, selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectLibraryTracks } from '@/utils/redux/selectors/librarySelectors';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
 
@@ -231,8 +233,6 @@ const PlayingProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
-const toMediaItems = (songs: Song[]): MediaItem[] => songs.map(buildTrackItem);
-
 export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
   const isPlaying = usePlayerIsPlaying();
@@ -258,6 +258,27 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const preferredCodec = useSelector(selectPreferredCodec);
   const preferredCodecRef = useRef(preferredCodec);
   preferredCodecRef.current = preferredCodec;
+  // The active server, read through a ref so the header-attachment helpers
+  // below see the current one without rebuilding every transport handler.
+  // Its Basic-auth credentials are the source of the ephemeral request headers
+  // a protected Plex needs on both the stream and the artwork fetch.
+  const activeServer = useSelector(selectActiveServer);
+  const activeServerRef = useRef(activeServer);
+  activeServerRef.current = activeServer;
+
+  // Every Song->MediaItem crossing in this file goes through these two, so the
+  // header-attachment happens in exactly one place regardless of which
+  // consumer (foreground play, queue add, autoplay fill, play-next, restore)
+  // built the queue. Unprotected servers get an item identical to before.
+  const buildItem = useCallback(
+    (song: Song): MediaItem =>
+      buildTrackItem(song, mediaHeadersForSong(activeServerRef.current, song)),
+    []
+  );
+  const toMediaItems = useCallback(
+    (songs: Song[]): MediaItem[] => songs.map(buildItem),
+    [buildItem]
+  );
   const autoplayEnabled = useSelector(selectAutoplayEnabled);
 
   // Selected as primitives and rebuilt here rather than selected as objects.
@@ -701,7 +722,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     return unsubscribe;
-  }, [t]);
+  }, [t, toMediaItems]);
 
   useEffect(() => {
     return getBackend().addListener(event => {
@@ -838,7 +859,15 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     // every quality except Original, where iOS has no Vorbis decoder and the
     // track failed outright. Transcoding it is a smaller loss than silence.
     const quality = playableQuality(song, streamQualityRef.current);
-    const freshUrl = api.songs.buildStreamUrl(song.id, quality, preferredCodecRef.current);
+    // A provider can expose a playable resource under a different id from the
+    // queue item (Plex direct-play parts are the concrete case). `streamId`
+    // survives queue persistence precisely so the credentialled URL can be
+    // rebuilt here without asking provider-specific code what an id means.
+    const freshUrl = api.songs.buildStreamUrl(
+      streamSourceId(song),
+      quality,
+      preferredCodecRef.current
+    );
     return freshUrl ? { ...song, streamUrl: freshUrl } : song;
   }, [api, getLocalPath]);
   // Keep ref in sync during render so effects/handlers always have the latest version
@@ -862,7 +891,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
     if (seekToPosition !== undefined && seekToPosition > 0) getBackend().seekTo(seekToPosition);
     if (play) getBackend().play();
-  }, [resetLastScrobbled, sinkLoadQueue]);
+  }, [resetLastScrobbled, sinkLoadQueue, toMediaItems]);
   // Assigned during render, not in an effect. React runs effects in the order
   // they are declared, and the auto-restore effect is declared far above this
   // one — so on first mount it called the placeholder this ref was
@@ -902,7 +931,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     } finally {
       isFillingRef.current = false;
     }
-  }, [bumpQueue]);
+  }, [bumpQueue, toMediaItems]);
   useEffect(() => { fillQueueIfLowRef.current = fillQueueIfLow; }, [fillQueueIfLow]);
 
   // Smart Shuffle's one-shot injection: fetches related tracks and shuffles
@@ -1052,7 +1081,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
     getBackend().addMediaItems(toMediaItems(toAdd));
     bumpQueue();
-  }, [bumpQueue, resolvePlayableSong]);
+  }, [bumpQueue, resolvePlayableSong, toMediaItems]);
 
   const shuffleCollectionToQueue = useCallback((collection: Album | Playlist) => {
     const existingIds = new Set(queueRef.current.map(s => s.id));
@@ -1071,7 +1100,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
     getBackend().addMediaItems(toMediaItems(toAdd));
     bumpQueue();
-  }, [bumpQueue, resolvePlayableSong]);
+  }, [bumpQueue, resolvePlayableSong, toMediaItems]);
 
   const skipToNext = useCallback(async () => {
     await scrobbleOutgoingRef.current(
@@ -1183,9 +1212,9 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       contextId: playableSong.id,
       contextType: 'adhoc',
     });
-    getBackend().addMediaItems([buildTrackItem(playableSong)]);
+    getBackend().addMediaItems([buildItem(playableSong)]);
     bumpQueue();
-  }, [bumpQueue, resolvePlayableSong]);
+  }, [bumpQueue, resolvePlayableSong, buildItem]);
 
   const playNext = useCallback((song: Song) => {
     if (!currentSongRef.current) return;
@@ -1196,7 +1225,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (update.removedIndex !== null) {
       getBackend().moveMediaItem(update.removedIndex, update.insertIndex);
     } else {
-      getBackend().insertMediaItem(update.insertIndex, buildTrackItem(playableSong));
+      getBackend().insertMediaItem(update.insertIndex, buildItem(playableSong));
       queueSegmentsRef.current = tagSegment(
         shiftSegmentsAfterInsert(queueSegmentsRef.current, update.insertIndex, 1),
         update.insertIndex,
@@ -1208,7 +1237,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     currentIndexRef.current = update.currentIndex;
     setCurrentIndex(update.currentIndex);
     bumpQueue();
-  }, [bumpQueue, resolvePlayableSong]);
+  }, [bumpQueue, resolvePlayableSong, buildItem]);
 
   // AudioMuse-AI first when configured, native similar-songs as fallback —
   // same tiered provider Autoplay and Smart Shuffle use, so "Play Similar"

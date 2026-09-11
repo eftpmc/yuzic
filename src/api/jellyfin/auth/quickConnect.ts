@@ -1,6 +1,5 @@
 import { serverFetch } from '@/features/mtls/serverFetch';
-
-const CLIENT_HEADERS = `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"`;
+import { mediaBrowserClientHeader } from '@/api/mediaBrowser/clientHeader';
 
 export async function initiateQuickConnect(
   serverUrl: string,
@@ -9,7 +8,7 @@ export async function initiateQuickConnect(
   const res = await serverFetch(`${serverUrl}/QuickConnect/Initiate`, {
     method: 'POST',
     headers: {
-      'X-Emby-Authorization': CLIENT_HEADERS,
+      'X-Emby-Authorization': mediaBrowserClientHeader(),
       ...(basicAuth ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) } : {}),
     },
   });
@@ -27,7 +26,7 @@ export async function pollQuickConnect(
   try {
     const res = await serverFetch(`${serverUrl}/QuickConnect/Connect?Secret=${encodeURIComponent(secret)}`, {
       headers: {
-        'X-Emby-Authorization': CLIENT_HEADERS,
+        'X-Emby-Authorization': mediaBrowserClientHeader(),
         ...(basicAuth ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) } : {}),
       },
     });
@@ -48,7 +47,7 @@ export async function authenticateWithQuickConnect(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Emby-Authorization': CLIENT_HEADERS,
+      'X-Emby-Authorization': mediaBrowserClientHeader(),
       ...(basicAuth ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) } : {}),
     },
     body: JSON.stringify({ Secret: secret }),

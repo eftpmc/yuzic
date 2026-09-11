@@ -2,6 +2,8 @@ import type { Server } from '@/types';
 import { createNavidromeAdapter } from './navidrome';
 import { createJellyfinAdapter } from './jellyfin';
 import { createEmbyAdapter } from './emby';
+import { createPlexAdapter } from './plex';
+import { createLocalAdapter } from './local';
 
 function serverOf(type: Server['type']): Server {
   return {
@@ -18,6 +20,8 @@ const adapters = {
   navidrome: () => createNavidromeAdapter(serverOf('navidrome')),
   jellyfin: () => createJellyfinAdapter(serverOf('jellyfin')),
   emby: () => createEmbyAdapter(serverOf('emby')),
+  plex: () => createPlexAdapter(serverOf('plex')),
+  local: () => createLocalAdapter(serverOf('local')),
 };
 
 /**
@@ -32,6 +36,9 @@ describe('adapter capability declarations', () => {
     expect(adapters.navidrome().songs.streamableCodecs).toEqual(['mp3']);
     expect(adapters.jellyfin().songs.streamableCodecs).toContain('opus');
     expect(adapters.emby().songs.streamableCodecs).toContain('opus');
+    // Plex direct-plays its part URI; it does not expose a codec choice.
+    expect(adapters.plex().songs.streamableCodecs).toEqual([]);
+    expect(adapters.local().songs.streamableCodecs).toEqual([]);
   });
 
   it('says what scrobbling amounts to, so the Server row is worded honestly', () => {
@@ -40,12 +47,15 @@ describe('adapter capability declarations', () => {
     // PlayedItems only moves a play count.
     expect(adapters.jellyfin().songs.scrobbleKind).toBe('markPlayed');
     expect(adapters.emby().songs.scrobbleKind).toBe('markPlayed');
+    expect(adapters.plex().songs.scrobbleKind).toBe('scrobble');
+    expect(adapters.local().songs.scrobbleKind).toBe('scrobble');
   });
 
-  it('announces now-playing on every provider, however each spells it', () => {
-    for (const make of Object.values(adapters)) {
+  it('announces now-playing where the provider has a remote session to update', () => {
+    for (const make of [adapters.navidrome, adapters.jellyfin, adapters.emby, adapters.plex]) {
       expect(make().songs.reportNowPlaying).toBeDefined();
     }
+    expect(adapters.local().songs.reportNowPlaying).toBeUndefined();
   });
 
   it('offers queue sync and the now-playing shelf only where the server backs them', () => {
@@ -53,7 +63,7 @@ describe('adapter capability declarations', () => {
     expect(adapters.navidrome().queue).toBeDefined();
     expect(adapters.navidrome().discovery).toBeDefined();
 
-    for (const make of [adapters.jellyfin, adapters.emby]) {
+    for (const make of [adapters.jellyfin, adapters.emby, adapters.plex, adapters.local]) {
       expect(make().queue).toBeUndefined();
       expect(make().discovery).toBeUndefined();
     }

@@ -1,7 +1,7 @@
 {
   "name": "yuzic",
   "main": "expo-router/entry",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -26,7 +26,8 @@
     "preset": "jest-expo",
     "moduleNameMapper": {
       "^expo-modules-core$": "<rootDir>/node_modules/expo-modules-core",
-      "^expo-modules-core/(.*)$": "<rootDir>/node_modules/expo-modules-core/$1"
+      "^expo-modules-core/(.*)$": "<rootDir>/node_modules/expo-modules-core/$1",
+      "^@missingcore/audio-metadata$": "<rootDir>/__mocks__/audio-metadata.js"
     },
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|expo-modules-core|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|immer|react-redux)/)"
@@ -35,6 +36,7 @@
   "dependencies": {
     "@backpackapp-io/react-native-toast": "^0.13.0",
     "@gorhom/bottom-sheet": "^5.2.8",
+    "@missingcore/audio-metadata": "^1.3.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "^12.0.1",
     "@react-native-community/slider": "5.1.2",
@@ -89,7 +91,7 @@
     "react-redux": "^9.2.0",
     "reanimated-color-picker": "^4.2.0",
     "redux-persist": "^6.0.0",
-    "yuzic-engine": "^1.0.4"
+    "yuzic-engine": "^1.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

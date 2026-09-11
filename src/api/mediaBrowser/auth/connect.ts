@@ -1,4 +1,5 @@
 import { MediaBrowserBrand } from "../brand";
+import { mediaBrowserClientHeader } from "../clientHeader";
 import { serverFetch } from '@/features/mtls/serverFetch';
 
 type ConnectResult =
@@ -17,11 +18,12 @@ export async function connect(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Emby-Authorization":
-          `MediaBrowser Client="Yuzic", Device="Mobile", DeviceId="yuzic-device", Version="1.0.0"`,
+        "X-Emby-Authorization": mediaBrowserClientHeader(),
         ...(basicAuth ? { Authorization: 'Basic ' + btoa(`${basicAuth.username}:${basicAuth.password}`) } : {}),
       },
-      body: JSON.stringify({ Username: username, Pw: password }),
+      // Jellyfin 12 rejects a password login whose body omits the application
+      // identity, even when the conventional client header names it.
+      body: JSON.stringify({ Username: username, Pw: password, App: 'Yuzic' }),
     });
 
     if (!res.ok) {
