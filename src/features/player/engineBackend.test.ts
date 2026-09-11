@@ -111,6 +111,36 @@ describe('translating between the app and the engine', () => {
       duration: 180,
     });
   });
+
+  it('wires audio and artwork headers into the two distinct engine fields', () => {
+    const track = toEngineTrack(item({
+      headers: { Authorization: 'Basic abc' },
+      artworkHeaders: { Authorization: 'Basic abc' },
+    }));
+    expect(track.headers).toEqual({ Authorization: 'Basic abc' });
+    expect(track.artworkHeaders).toEqual({ Authorization: 'Basic abc' });
+  });
+
+  it('leaves both header fields absent when the item carries none', () => {
+    const track = toEngineTrack(item());
+    expect(track).not.toHaveProperty('headers');
+    expect(track).not.toHaveProperty('artworkHeaders');
+  });
+
+  it('preserves both header fields across a round trip', () => {
+    const back = toMediaItem(toEngineTrack(item({
+      headers: { Authorization: 'Basic abc' },
+      artworkHeaders: { Authorization: 'Basic def' },
+    })));
+    expect(back.headers).toEqual({ Authorization: 'Basic abc' });
+    expect(back.artworkHeaders).toEqual({ Authorization: 'Basic def' });
+  });
+
+  it('keeps header fields absent across a round trip when unset', () => {
+    const back = toMediaItem(toEngineTrack(item()));
+    expect(back).not.toHaveProperty('headers');
+    expect(back).not.toHaveProperty('artworkHeaders');
+  });
 });
 
 describe('progress, in the shape the app expects', () => {

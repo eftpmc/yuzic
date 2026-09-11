@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { getBackend } from '@/features/player/activeBackend';
 import { getMediaItemUrl } from './playableMedia';
+import type { MediaItem } from '@/features/player/mediaItem';
 
 // ─── DLNA ────────────────────────────────────────────────────────────────────
 
@@ -8,6 +9,17 @@ export interface DlnaDevice {
   name: string;
   udn: string;
   avTransportUrl: string;
+}
+
+/**
+ * DLNA casts a bare URL to a renderer over SOAP and has no way to send request
+ * headers with it. A track that needs an `Authorization` header — a Plex behind
+ * a Basic-auth proxy — would 401 at the renderer, so it must not be cast as a
+ * URL that silently fails. Gate on the header the resolution path attaches
+ * rather than re-deriving the server type here.
+ */
+function requiresHeadersToPlay(item: MediaItem | null): boolean {
+  return !!item?.headers && Object.keys(item.headers).length > 0;
 }
 
 function xmlEscape(s: string): string {
@@ -80,6 +92,10 @@ export function DlnaProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = getBackend().addListener(async (event) => {
       if (event.type !== 'trackChange') return;
       const item = getBackend().getActiveMediaItem();
+      // A header-authenticated track cannot be cast as a bare URL — the
+      // renderer would 401. Leave it playing locally rather than pushing a URL
+      // that will fail silently on the device.
+      if (requiresHeadersToPlay(item)) return;
       const url = item ? getMediaItemUrl(item) : '';
       if (!url) return;
 
@@ -106,6 +122,12 @@ export function DlnaProvider({ children }: { children: React.ReactNode }) {
     setIsConnecting(true);
     try {
       const currentTrack = getBackend().getActiveMediaItem();
+      // See requiresHeadersToPlay: a Basic-auth Plex stream can't be cast to a
+      // URL-only renderer. Fail the connect explicitly rather than casting a
+      // URL that 401s with nothing to explain the silence.
+      if (requiresHeadersToPlay(currentTrack)) {
+        throw new Error('This server needs authentication that casting cannot send');
+      }
       const currentUrl = currentTrack ? getMediaItemUrl(currentTrack) : '';
       if (!currentUrl) throw new Error('No active track to cast');
 

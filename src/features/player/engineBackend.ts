@@ -118,6 +118,12 @@ export function toEngineTrack(item: MediaItem): Track {
     // Absent, not zero: the engine treats an unknown duration differently from
     // a zero one when it clamps a crossfade.
     durationSec: item.duration,
+    // Ephemeral request headers for a header-authenticated server (Plex behind
+    // a Basic-auth proxy). Two distinct fields: the engine fetches the stream
+    // and the artwork independently. Set only when present, so an unprotected
+    // server's Track is byte-for-byte what it was.
+    ...(item.headers ? { headers: item.headers } : {}),
+    ...(item.artworkHeaders ? { artworkHeaders: item.artworkHeaders } : {}),
   };
 }
 
@@ -131,6 +137,8 @@ export function toMediaItem(track: Track): MediaItem {
     duration: track.durationSec,
     url: track.uri,
     artworkUrl: track.artworkUri,
+    ...(track.headers ? { headers: track.headers } : {}),
+    ...(track.artworkHeaders ? { artworkHeaders: track.artworkHeaders } : {}),
   };
 }
 

@@ -62,6 +62,7 @@ import {
   type LocalDownloadedTrackEntry,
 } from '@/utils/downloads/restore';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
+import { mediaHeadersForSong } from '@/features/player/mediaHeaders';
 import { selectDownloadOnWifiOnly, selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
 import { useNetworkType } from '@/hooks/useNetworkType';
 import { streamSourceId } from '@/utils/playback/streamId';
@@ -439,11 +440,17 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         resolvedTrack.streamUrl,
       );
 
+      // A header-authenticated server (Plex behind Basic auth) rejects a bare
+      // download URL — the credentials ride in a request header, not the query
+      // string. Attach them to the file-download session the same way playback
+      // does, resolved against the active server. Unprotected servers add none.
+      const requestHeaders = mediaHeadersForSong(activeServer, resolvedTrack).headers;
+
       const runWithSession = async (options: typeof BACKGROUND_FILE_OPTIONS) => {
         const resumable = FileSystem.createDownloadResumable(
           resolvedTrack.streamUrl!,
           stagingPath,
-          options,
+          requestHeaders ? { ...options, headers: requestHeaders } : options,
           progress => reportDownloadProgress(
             track.id,
             progress.totalBytesWritten,
@@ -540,7 +547,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
       setTrackDownloading(track.id, false);
     }
-  }, [activeServer?.id, activeServer?.type, clearDownloadProgress, isTrackDownloaded, isTrackDownloading, reportDownloadProgress, resolveTrack, setResumables, setTrackDownloading, updateCollections, updateTracks]);
+  }, [activeServer, clearDownloadProgress, isTrackDownloaded, isTrackDownloading, reportDownloadProgress, resolveTrack, setResumables, setTrackDownloading, updateCollections, updateTracks]);
 
   const removeJob = useCallback((jobId: string) => {
     updateJobs(jobs => jobs.filter(job => job.id !== jobId));

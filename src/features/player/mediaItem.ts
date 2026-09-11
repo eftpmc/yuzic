@@ -42,6 +42,21 @@ export interface MediaItem {
    * stream endpoints are the case that needs it.
    */
   mimeType?: string;
+  /**
+   * Request headers sent with the *audio* fetch, for a server that
+   * authenticates a stream by header rather than by signing the URL — a Plex
+   * behind a Basic-auth reverse proxy is the concrete case. Ephemeral by
+   * design: attached at playback-resolution time, never persisted on a Song,
+   * a queue snapshot or a cache key, and kept out of the URL query string.
+   */
+  headers?: Record<string, string>;
+  /**
+   * The same idea for the *artwork* fetch. A separate field because the engine
+   * fetches cover art independently of the stream and wires them to two
+   * distinct `Track` fields; for Plex Basic auth both carry the same
+   * Authorization header.
+   */
+  artworkHeaders?: Record<string, string>;
 }
 
 /** What to do when the queue runs out. */

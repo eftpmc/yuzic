@@ -7,6 +7,7 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { Album, AlbumBase, Playlist, Server, Song, SongBase } from '@/types';
 import { buildCover } from '@/utils/builders/buildCover';
 import { normalizeMediaUrl } from '@/utils/builders/buildTrackItem';
+import { mediaHeadersForSong } from '@/features/player/mediaHeaders';
 import { streamSourceId } from '@/utils/playback/streamId';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -21,8 +22,9 @@ const CARPLAY_ALBUM_LIMIT = 50;
 const CARPLAY_PLAYLIST_LIMIT = 50;
 const CARPLAY_TRACK_LIMIT = 100;
 
-function toPlayableBrowseItem(song: Song): BrowseItem | null {
+function toPlayableBrowseItem(song: Song, server?: Server | null): BrowseItem | null {
   if (!song.streamUrl) return null;
+  const { headers, artworkHeaders } = mediaHeadersForSong(server, song);
   return {
     mediaId: song.id,
     title: song.title,
@@ -30,6 +32,8 @@ function toPlayableBrowseItem(song: Song): BrowseItem | null {
     artworkUrl: buildCover(song.cover, 'grid') ?? undefined,
     url: normalizeMediaUrl(song.streamUrl),
     duration: Number(song.duration) || undefined,
+    ...(headers ? { headers } : {}),
+    ...(artworkHeaders ? { artworkHeaders } : {}),
   };
 }
 
@@ -205,7 +209,7 @@ export function useCarPlayBrowseTree() {
 
     const favoriteItems = starred
       .slice(0, 100)
-      .map(toPlayableBrowseItem)
+      .map(song => toPlayableBrowseItem(song, activeServer))
       .filter((item): item is BrowseItem => Boolean(item));
     if (favoriteItems.length) {
       categories.push({ mediaId: 'favorites', title: 'Favorites', items: favoriteItems });
@@ -232,7 +236,7 @@ export function useCarPlayBrowseTree() {
           artworkUrl: buildCover(album.cover, 'grid') ?? undefined,
           children: songs
             .slice(0, CARPLAY_TRACK_LIMIT)
-            .map(toPlayableBrowseItem)
+            .map(song => toPlayableBrowseItem(song, activeServer))
             .filter((item): item is BrowseItem => Boolean(item)),
         };
       })
@@ -250,7 +254,7 @@ export function useCarPlayBrowseTree() {
         artworkUrl: buildCover(playlist.cover, 'grid') ?? undefined,
         children: playlist.songs
           .slice(0, CARPLAY_TRACK_LIMIT)
-          .map(toPlayableBrowseItem)
+          .map(song => toPlayableBrowseItem(song, activeServer))
           .filter((item): item is BrowseItem => Boolean(item)),
       }))
       .filter(item => item.children?.length);
@@ -263,5 +267,5 @@ export function useCarPlayBrowseTree() {
     } catch {
       // best-effort
     }
-  }, [activeServer?.id, albums, hydratedPlaylists, queryClient, starred, tracksByAlbumId]);
+  }, [activeServer, albums, hydratedPlaylists, queryClient, starred, tracksByAlbumId]);
 }
