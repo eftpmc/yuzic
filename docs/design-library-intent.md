@@ -56,10 +56,12 @@ global opt-in, off by default. A wrong file in the library is worse than a
 tap. This is the direct answer to the glue-layer failure mode ("Aurral
 regularly grabs the wrong tracks").
 
-**P4 — Leverage the server first.** When the media server already provides a
-capability (scrobble forwarding, similarity via plugins, play-queue sync),
-prefer the server's version and don't duplicate it client-side. The server is
-the user's chosen hub; yuzic should amplify it, not compete with it.
+**P4 — Providers are peers; features own composition.** No provider receives
+global priority because it is a server, external service, or built-in
+integration. Each product feature explicitly defines whether its available
+providers are selected, blended, used as fallbacks, or used only to enrich
+missing data. Local/private remains the default baseline, but after the user
+intentionally enables another source, the server does not automatically win.
 
 **P5 — Contributors add integrations as leaf modules.** A new integration is
 one module + one registry entry. The review surface is that module. Nothing
@@ -138,13 +140,70 @@ Consumers ask the slot, not the provider:
 
 - The Wants router asks "who fills `acquisition.track`?" — it does not know
   slskd exists.
-- The Home mix asks "who fills `similarity.songs`?" — the server adapter says
-  yes via `getSimilarSongs2`, which means a Navidrome AudioMuse plugin or any
-  future server-side intelligence flows through with **zero yuzic changes**
-  (P4).
-- The Integrations settings screen generates itself from the registry, and
-  doubles as an honest data-flow statement: each module lists what it sends,
-  to whom, and which features it lights up (P2).
+- The Home mix asks "who fills `similarity.songs`?" The server adapter may say
+  yes via `getSimilarSongs2`, direct AudioMuse may provide acoustic results,
+  and Last.fm may provide behavioral results. The **Home mix feature** decides
+  whether to blend those sources, let the user select one, or keep them as
+  separate shelves. The slot only exposes availability; it never implies a
+  global provider order.
+- The Connections screen generates itself from the registry and doubles as an
+  honest data-flow statement: each module lists what it sends, to whom, and
+  which features currently use it (P2).
+
+### Three layers: connection, capability, feature
+
+These concerns must stay separate:
+
+1. **Connection** — can yuzic talk to the service? Owns credentials, endpoint,
+   account identity, health, reconnect, and disconnect.
+2. **Capability** — what can that connected service do? Declared by slots such
+   as `scrobble`, `similarity.songs`, or `acquisition.track`.
+3. **Feature** — what does the user want yuzic to do? Scrobbling, Daily Mix,
+   lyrics, and Complete My Library each choose how to use one or more available
+   capabilities.
+
+A connection makes capabilities *available*; it does not enable every feature
+or authorize every possible data flow. Connecting ListenBrainz for Weekly
+Exploration must not silently enable direct scrobbling.
+
+### Feature composition policies
+
+There is deliberately no global provider priority. Different product features
+need different semantics:
+
+| Feature | Default policy |
+|---|---|
+| Scrobbling | Exactly one route per destination; avoid duplicate listens |
+| Lyrics | Ordered fallback; user can change the order |
+| Similar songs | Blend and dedupe, or user selects a source |
+| Home discovery | Each shelf declares its own source(s) |
+| Metadata/artwork enrichment | Fill missing fields; never replace trusted local tags silently |
+| Acquisition | Ask at action time; never silently reroute on failure |
+| Playlist recommendations | Preserve and display provenance |
+
+Internally, a feature can use an explicit policy such as `exclusive`,
+`fallback`, `blend`, `enrich`, or `ask`. These are architecture semantics, not
+a requirement to expose a complicated rules editor to users. Safe defaults
+remain simple; advanced control appears only where it has product value.
+
+### Settings are feature-oriented
+
+Users configure goals, not implementation topology. Primary settings live under
+features such as **Home shelves**, **Discovery**, **Scrobbling**, **Lyrics**,
+**Acquisition**, and **Playlist import**. Each feature page shows the providers
+relevant to that job and can authenticate one in place. A user who chooses
+ListenBrainz from Scrobbling should connect it there without navigating into a
+generic integration screen and back out again.
+
+The existing **Integrations** page becomes **Connections**. It remains useful,
+but its role is operational: connected account/endpoint, credential health,
+features using the connection, data sent, reconnect, and disconnect. It does
+not own whether a Home shelf appears or where scrobbles go; the corresponding
+feature page owns that behavior.
+
+This is especially important for Wants: without providers it is an informative
+wishlist. From the Wants screen, the user can choose to enhance it by connecting
+an acquisition service there, in context.
 
 ### Module contract
 
@@ -306,17 +365,20 @@ Rules:
    redux-persist). Downloader API keys and the LB token currently persist in
    MMKV via redux-persist; migrate them to secure storage under the same
    pattern. One-time migration on upgrade, transparent to the user.
-3. **Scrobble ownership is explicit (P4).** Navidrome can forward scrobbles
-   to Last.fm *and* ListenBrainz server-side; yuzic can also scrobble LB
-   directly. Both on = double listens, corrupting the listening history that
-   recommendations depend on. Design: the `scrobble` slot allows **one owner
-   per destination**. The server adapter claims Last.fm/LB forwarding when
-   the server reports it configured (Navidrome exposes this; where a server
-   can't report it, we ask the user once). Enabling direct LB scrobbling
-   while the server forwards → one clear prompt: "Your server already
-   scrobbles to ListenBrainz. Direct scrobbling would double-count — use the
-   server's?" Default: server wins.
-4. **Multi-server scoping stays.** Downloader configs are already
+3. **Scrobble ownership is explicit.** Navidrome may forward scrobbles to
+   Last.fm and ListenBrainz server-side; yuzic can also scrobble to ListenBrainz
+   directly. Both on = double listens, corrupting the history that
+   recommendations depend on. Scrobbling therefore uses an `exclusive` feature
+   policy per destination. Where the server can report forwarding state, yuzic
+   displays it; where it cannot, yuzic asks the user. It does **not** presume
+   the server wins: the user chooses the route on the Scrobbling feature page,
+   with the duplicate-risk explained.
+4. **Authentication is contextual and reusable.** A feature page can initiate
+   the connection it needs. The resulting connection is stored centrally and
+   can be reused by other features, but those features remain disabled until
+   the user enables them independently. Authentication grants availability,
+   not blanket permission.
+5. **Multi-server scoping stays.** Downloader configs are already
    per-server; integration configs follow the same scoping (a user's home
    Navidrome and remote Jellyfin may have different companion stacks).
 
