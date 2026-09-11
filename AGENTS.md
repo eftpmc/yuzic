@@ -133,6 +133,13 @@ which failed on *both* platforms without a byte reaching either store — after 
   non-interactive mode` *before* uploading the binary. `force: true` is what
   makes screenshot upload survivable; without it, enabling screenshots loses
   the build as well as the screenshots.
+- **Fastlane before 2.239.0 duplicates screenshots.** App Store Connect can
+  leave a new image in `UPLOAD_COMPLETE` briefly without assigning its checksum.
+  Older `deliver` versions treated that in-flight image as missing and uploaded
+  it again, so the 2.2.2 Apple listing showed two copies of every screenshot
+  while Play's listing was correct. Keep the Gemfile lower bound at 2.239.0 or
+  newer; that release waits for the checksum/status and removes failed pending
+  uploads before retrying (fastlane #30094/#30150).
 
 Run `python3 tools/store-screenshots/publish.py --check` before a release. It
 asserts the exact store sizes for the screenshots *and* for Play's icon and
