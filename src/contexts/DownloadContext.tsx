@@ -64,6 +64,7 @@ import {
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectDownloadOnWifiOnly, selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
 import { useNetworkType } from '@/hooks/useNetworkType';
+import { streamSourceId } from '@/utils/playback/streamId';
 
 export type DownloadedTrack = DownloadedTrackEntry & {
   localPath: string;
@@ -410,7 +411,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
     const fullSong = await api.tracks.get(track.id).catch(() => null);
     const base = fullSong ?? (track.streamUrl ? track : null);
     if (!base) return null;
-    const freshUrl = api.songs.buildStreamUrl(base.id, downloadQuality);
+    const freshUrl = api.songs.buildStreamUrl(streamSourceId(base), downloadQuality);
     return freshUrl ? { ...base, streamUrl: freshUrl } : base;
   }, [api, downloadQuality]);
 

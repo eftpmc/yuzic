@@ -7,6 +7,7 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { Album, AlbumBase, Playlist, Server, Song, SongBase } from '@/types';
 import { buildCover } from '@/utils/builders/buildCover';
 import { normalizeMediaUrl } from '@/utils/builders/buildTrackItem';
+import { streamSourceId } from '@/utils/playback/streamId';
 import { QueryKeys } from '@/enums/queryKeys';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useApi } from '@/api';
@@ -63,13 +64,13 @@ function isAlbumDetail(album: Album | AlbumBase): album is Album {
 function buildStreamUrl(
   api: ApiAdapter,
   server: Server | null | undefined,
-  songId: string,
+  song: Pick<Song, 'id' | 'streamId'>,
   quality: AudioQuality,
   codec: PreferredCodec
 ): string | null {
   if (!server?.isAuthenticated) return null;
   // Empty is what an adapter with nothing behind it returns.
-  return api.songs.buildStreamUrl(songId, quality, codec) || null;
+  return api.songs.buildStreamUrl(streamSourceId(song), quality, codec) || null;
 }
 
 function toPlayableSong(
@@ -79,7 +80,7 @@ function toPlayableSong(
   quality: AudioQuality,
   codec: PreferredCodec
 ): Song | null {
-  const streamUrl = buildStreamUrl(api, server, track.id, quality, codec);
+  const streamUrl = buildStreamUrl(api, server, track, quality, codec);
   if (!streamUrl) return null;
 
   return {

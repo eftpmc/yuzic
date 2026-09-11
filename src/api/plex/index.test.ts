@@ -45,4 +45,28 @@ describe('Plex adapter', () => {
       albums: [], artists: [], songs: [expect.objectContaining({ id: '7', title: 'Track', streamId: '/library/parts/7' })],
     });
   });
+  it("paginates catalog requests instead of silently stopping at Plex’s first page", async () => {
+    mockRequest.mockImplementation(async (path: string, init?: RequestInit) => {
+      if (path === "/library/sections") return { MediaContainer: { Directory: [{ key: "1" }] } };
+      const start = (init?.headers as Record<string, string> | undefined)?.["X-Plex-Container-Start"];
+      return start === "0"
+        ? { MediaContainer: { totalSize: 3, Metadata: [
+          { type: "track", ratingKey: "1", title: "One", Media: [{ Part: [{ key: "/library/parts/1" }] }] },
+          { type: "track", ratingKey: "2", title: "Two", Media: [{ Part: [{ key: "/library/parts/2" }] }] },
+        ] } }
+        : { MediaContainer: { totalSize: 3, Metadata: [
+          { type: "track", ratingKey: "3", title: "Three", Media: [{ Part: [{ key: "/library/parts/3" }] }] },
+        ] } };
+    });
+
+    await expect(createPlexAdapter(server).tracks.list()).resolves.toHaveLength(3);
+    expect(mockRequest).toHaveBeenNthCalledWith(1, "/library/sections");
+    expect(mockRequest).toHaveBeenNthCalledWith(2, "/library/sections/1/all?type=10", {
+      headers: { "X-Plex-Container-Start": "0", "X-Plex-Container-Size": "200" },
+    });
+    expect(mockRequest).toHaveBeenNthCalledWith(3, "/library/sections/1/all?type=10", {
+      headers: { "X-Plex-Container-Start": "2", "X-Plex-Container-Size": "200" },
+    });
+  });
+
 });

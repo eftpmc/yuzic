@@ -62,6 +62,7 @@ import { buildFillRequest, shouldFillQueue } from './autoplayFill';
 import { buildRestoredQueue } from './restoreQueue';
 import { canFillQueueFrom } from '@/utils/playback/contentKind';
 import { clampSpeed, speedFor, speedProfileFor } from '@/utils/playback/speedProfile';
+import { streamSourceId } from '@/utils/playback/streamId';
 import { setPlaybackSpeedForProfile } from '@/utils/redux/slices/settingsSlice';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { useQueueSync } from '@/hooks/useQueueSync';
@@ -843,7 +844,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     // survives queue persistence precisely so the credentialled URL can be
     // rebuilt here without asking provider-specific code what an id means.
     const freshUrl = api.songs.buildStreamUrl(
-      song.streamId ?? song.id,
+      streamSourceId(song),
       quality,
       preferredCodecRef.current
     );

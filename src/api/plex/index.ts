@@ -15,12 +15,41 @@ import type {
 import type { Playlist, PlaylistBase, Server } from '@/types';
 import type { PlexMetadata, PlexResponse } from './types';
 import { createPlexClient } from './client';
+import type { PlexClient } from './client';
 import { normalizePlexAlbum, normalizePlexAlbumWithSongs, normalizePlexArtist, normalizePlexSong, plexCover } from './normalize';
 
 const FAVORITE_RATING = 10;
+const PAGE_SIZE = 200;
 
 function metadata(response: PlexResponse): PlexMetadata[] {
   return response.MediaContainer?.Metadata ?? [];
+}
+
+/**
+ * Plex returns a page even when a catalog has thousands of entries; its API
+ * requires X-Plex-Container headers rather than an implicit unlimited list.
+ * Keep paging here so every catalog consumer cannot accidentally ship a
+ * first-page-only view.
+ */
+async function pagedMetadata(client: PlexClient, path: string): Promise<PlexMetadata[]> {
+  const result: PlexMetadata[] = [];
+  let start = 0;
+
+  while (true) {
+    const response = await client.request<PlexResponse>(path, {
+      headers: {
+        'X-Plex-Container-Start': String(start),
+        'X-Plex-Container-Size': String(PAGE_SIZE),
+      },
+    });
+    const page = metadata(response);
+    result.push(...page);
+
+    const total = Number(response.MediaContainer?.totalSize);
+    if (!page.length || !Number.isFinite(total) || result.length >= total) return result;
+
+    start += page.length;
+  }
 }
 
 function sectionIds(server: Server): string[] {
@@ -45,10 +74,10 @@ export function createPlexAdapter(server: Server): ApiAdapter {
   async function libraryItems(type: number, extra = ''): Promise<PlexMetadata[]> {
     const ids = sections.length ? sections : (await client.request<PlexResponse>('/library/sections')).MediaContainer?.Directory?.map(s => String(s.key)).filter(Boolean) ?? [];
     const responses = await Promise.all(ids.map(section =>
-      client.request<PlexResponse>(`/library/sections/${encodeURIComponent(section)}/all?type=${type}${extra}`)
+      pagedMetadata(client, `/library/sections/${encodeURIComponent(section)}/all?type=${type}${extra}`)
     ));
     const seen = new Set<string>();
-    return responses.flatMap(metadata).filter(item => {
+    return responses.flat().filter(item => {
       const key = String(item.ratingKey ?? '');
       return key && !seen.has(key) && (seen.add(key), true);
     });
@@ -60,7 +89,7 @@ export function createPlexAdapter(server: Server): ApiAdapter {
   }
 
   async function itemTracks(id: string): Promise<PlexMetadata[]> {
-    return metadata(await client.request<PlexResponse>(`/library/metadata/${encodeURIComponent(id)}/children`));
+    return pagedMetadata(client, `/library/metadata/${encodeURIComponent(id)}/children`);
   }
 
   const auth: AuthApi = {
@@ -149,14 +178,14 @@ export function createPlexAdapter(server: Server): ApiAdapter {
   };
 
   const playlists: PlaylistsApi = {
-    list: async () => metadata(await client.request<PlexResponse>('/playlists?playlistType=audio')).map((p): PlaylistBase => ({
+    list: async () => (await pagedMetadata(client, '/playlists?playlistType=audio')).map((p): PlaylistBase => ({
       id: String(p.ratingKey), title: p.title ?? 'Untitled playlist', cover: plexCover(p.thumb),
       subtext: `Playlist • ${p.leafCount ?? 0} songs`, created: new Date((p.addedAt ?? 0) * 1000), changed: new Date((p.updatedAt ?? p.addedAt ?? 0) * 1000),
     })),
     get: async (id) => {
       const base = metadata(await client.request<PlexResponse>(`/playlists/${encodeURIComponent(id)}`))[0];
       if (!base) throw new Error('Playlist not found');
-      const entries = metadata(await client.request<PlexResponse>(`/playlists/${encodeURIComponent(id)}/items`));
+      const entries = await pagedMetadata(client, `/playlists/${encodeURIComponent(id)}/items`);
       return { id, title: base.title ?? 'Untitled playlist', cover: plexCover(base.thumb), subtext: `Playlist • ${entries.length} songs`, created: new Date((base.addedAt ?? 0) * 1000), changed: new Date((base.updatedAt ?? base.addedAt ?? 0) * 1000), songs: entries.map(entry => normalizePlexSong(entry, client)) } as Playlist;
     },
     create: async () => { throw new Error('Creating Plex playlists is not available yet.'); },
