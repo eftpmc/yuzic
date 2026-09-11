@@ -106,8 +106,11 @@ appId: com.arinora.rawarr
 - retry:
     maxRetries: 3
     commands:
+      # The full-player sheet is always dismissed from the top-left chevron.
+      # Use its stable screen position instead of a resolved element coordinate:
+      # lyrics can reflow the scroll content between resolution and the tap.
       - tapOn:
-          id: "playing-close"
+          point: "9%,7%"
       - extendedWaitUntil:
           notVisible:
             id: "playing-screen"

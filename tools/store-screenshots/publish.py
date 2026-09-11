@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""Copy the generated store screenshots into fastlane's metadata tree.
+"""Copy generated screenshots to their published destinations.
 
 `deliver` (iOS) and `supply` (Android) each expect their own directory layout
-and their own filenames, and neither reads `tools/store-screenshots/out/`. This
-is the one step between generating a screenshot and a release actually shipping
-it, so it lives with the generator rather than being done by hand.
+and filenames, and neither reads `tools/store-screenshots/out/`. `--readme`
+copies four clean, unframed captures from `raw/phone/` into the README gallery.
+Both sets originate from the same Maestro capture; neither is maintained by hand.
 
-    python3 publish.py            # both platforms
-    python3 publish.py --check    # verify only, write nothing
+    python3 publish.py            # store listing images only
+    python3 publish.py --check    # verify store-listing inputs, write nothing
+    python3 publish.py --readme   # update the README gallery only
+    python3 publish.py --check-readme
 
-iOS filenames are ordered by their leading number — deliver sorts
-alphabetically and uses that as the listing order, so `1.png` … `5.png` would
-be fine, but the device name has to be in the frame folder, not the filename.
-Android takes any name and orders by sort, so the same digits work there.
+`--readme` never reads or writes Fastlane metadata.
+
+For iOS, filenames are ordered by their leading number — deliver sorts
+alphabetically and uses that as listing order. Android takes any name and sorts
+by it, so the same digits work there.
 """
 from __future__ import annotations
 
@@ -26,6 +29,14 @@ from PIL import Image
 HERE = pathlib.Path(__file__).parent
 REPO = HERE.parent.parent
 OUT = HERE / "out"
+RAW = HERE / "raw"
+README_DESTINATION = REPO / "assets/screenshots"
+README_SCREENSHOTS = {
+    "home": "home.png",
+    "player": "player.png",
+    "artist": "artist.png",
+    "downloads": "downloads.png",
+}
 
 # App Store Connect rejects anything that is not one of its exact sizes, so the
 # expected size is asserted here rather than discovered at upload time — a
@@ -92,7 +103,7 @@ def check_play_graphics() -> list[str]:
     return problems
 
 
-def publish(device: str, spec: dict) -> int:
+def publish_store(device: str, spec: dict) -> int:
     spec["ios"].mkdir(parents=True, exist_ok=True)
     spec["android"].mkdir(parents=True, exist_ok=True)
     copied = 0
@@ -104,10 +115,51 @@ def publish(device: str, spec: dict) -> int:
     return copied
 
 
+def check_readme() -> list[str]:
+    problems = []
+    for shot_id in README_SCREENSHOTS:
+        source = RAW / "phone" / f"{shot_id}.png"
+        if not source.exists():
+            problems.append(f"missing {source.relative_to(REPO)}")
+            continue
+        try:
+            Image.open(source).verify()
+        except OSError as error:
+            problems.append(f"invalid {source.relative_to(REPO)}: {error}")
+    return problems
+
+
+def publish_readme() -> int:
+    """Copy clean phone captures only; never touch Fastlane paths."""
+    README_DESTINATION.mkdir(parents=True, exist_ok=True)
+    copied = 0
+    for shot_id, destination_name in README_SCREENSHOTS.items():
+        source = RAW / "phone" / f"{shot_id}.png"
+        shutil.copy2(source, README_DESTINATION / destination_name)
+        copied += 1
+    return copied
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--check", action="store_true", help="verify sizes, write nothing")
+    ap.add_argument("--check", action="store_true", help="verify store-listing inputs, write nothing")
+    ap.add_argument("--readme", action="store_true", help="update the README gallery only")
+    ap.add_argument("--check-readme", action="store_true", help="verify README-gallery inputs, write nothing")
     args = ap.parse_args()
+
+    if args.readme or args.check_readme:
+        problems = check_readme()
+        if problems:
+            for problem in problems:
+                print(f"  ! {problem}", file=sys.stderr)
+            print("\nRun ./capture.sh phone first.", file=sys.stderr)
+            return 1
+        if args.check_readme:
+            print("README screenshots present and valid")
+            return 0
+        copied = publish_readme()
+        print(f"  README: {copied} clean phone captures -> {README_DESTINATION.relative_to(REPO)}")
+        return 0
 
     problems = []
     for device, spec in TARGETS.items():
@@ -115,19 +167,19 @@ def main() -> int:
     problems += check_play_graphics()
 
     if problems:
-        for p in problems:
-            print(f"  ! {p}", file=sys.stderr)
+        for problem in problems:
+            print(f"  ! {problem}", file=sys.stderr)
         print("\nRun ./capture.sh first.", file=sys.stderr)
         return 1
 
     if args.check:
-        print("all screenshots present and correctly sized")
+        print("all store screenshots present and correctly sized")
         return 0
 
     for device, spec in TARGETS.items():
-        n = publish(device, spec)
-        print(f"  {device}: {n} -> {spec['ios'].relative_to(REPO)}")
-        print(f"  {device}: {n} -> {spec['android'].relative_to(REPO)}")
+        copied = publish_store(device, spec)
+        print(f"  {device}: {copied} -> {spec['ios'].relative_to(REPO)}")
+        print(f"  {device}: {copied} -> {spec['android'].relative_to(REPO)}")
     return 0
 
 
