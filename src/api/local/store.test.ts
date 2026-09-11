@@ -27,7 +27,7 @@ describe('local-library import', () => {
       { uri: 'file:///cache/notes.txt', name: 'notes.txt' },
     ]);
 
-    expect(result).toEqual({ imported: 1, unsupported: 1 });
+    expect(result).toEqual({ imported: 1, unsupported: 1, failed: 0 });
     expect(FileSystem.copyAsync).toHaveBeenCalledWith(expect.objectContaining({
       from: 'file:///cache/Track.flac',
       to: expect.stringMatching(/^file:\/\/\/documents\/local-library\/local-[\w-]+\.flac$/),
@@ -39,6 +39,26 @@ describe('local-library import', () => {
       title: 'Track', artist: 'Artist', albumTitle: 'Album', trackNumber: 2,
       sourceServerType: 'local', streamUrl: expect.stringContaining('/local-library/'),
     }));
+  });
+
+  it('retains valid imports and cleans up only malformed files in a mixed batch', async () => {
+    (getAudioMetadata as jest.Mock)
+      .mockResolvedValueOnce({ metadata: { name: 'Good', artist: 'Artist', album: 'Album' } })
+      .mockRejectedValueOnce(new Error('Malformed audio'));
+
+    const result = await importLocalFiles([
+      { uri: 'file:///cache/Good.mp3', name: 'Good.mp3' },
+      { uri: 'file:///cache/Broken.mp3', name: 'Broken.mp3' },
+    ]);
+
+    expect(result).toEqual({ imported: 1, unsupported: 0, failed: 1 });
+    expect(readLocalLibrary().tracks).toHaveLength(1);
+    expect(readLocalLibrary().tracks[0].title).toBe('Good');
+    expect(FileSystem.deleteAsync).toHaveBeenCalledTimes(1);
+    expect(FileSystem.deleteAsync).toHaveBeenCalledWith(
+      expect.stringContaining('.mp3'),
+      { idempotent: true },
+    );
   });
 
   it('persists local favourites with the index', async () => {

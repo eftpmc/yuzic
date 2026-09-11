@@ -315,7 +315,13 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     libraryScope: { key: 'sectionIds', legacyKey: 'sectionId' },
     listLibraries: async (server) => {
       const token = server.auth?.token as string | undefined;
-      const client = createPlexClient({ serverUrl: server.serverUrl, token, basicAuth: server.basicAuth });
+      const client = createPlexClient({
+        serverUrl: server.serverUrl,
+        serverId: server.id,
+        fallbackUrls: server.fallbackUrls,
+        token,
+        basicAuth: server.basicAuth,
+      });
       const response = await client.request<any>('/library/sections');
       return (response.MediaContainer?.Directory ?? [])
         .filter((section: any) => section.type === 'artist')
@@ -325,7 +331,9 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       const token = auth.token as string | undefined;
       if (!token) return false;
       try {
-        await createPlexClient({ serverUrl: url, token, basicAuth }).request('/identity');
+        // /identity is public; a protected section endpoint verifies both the
+        // Plex account token and any configured proxy credentials.
+        await createPlexClient({ serverUrl: url, token, basicAuth }).request('/library/sections');
         return true;
       } catch { return false; }
     },
@@ -345,7 +353,13 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     buildCoverUrl: (server, cover) => {
       if (cover.kind !== 'plex' || !server.serverUrl) return null;
       const token = server.auth?.token as string | undefined;
-      return createPlexClient({ serverUrl: server.serverUrl, token, basicAuth: server.basicAuth }).buildImageUrl(cover.path);
+      return createPlexClient({
+        serverUrl: server.serverUrl,
+        serverId: server.id,
+        fallbackUrls: server.fallbackUrls,
+        token,
+        basicAuth: server.basicAuth,
+      }).buildImageUrl(cover.path);
     },
   },
 

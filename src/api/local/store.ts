@@ -56,11 +56,12 @@ async function ensureDirectory(): Promise<void> {
  * Unsupported formats are rejected at import time rather than indexed with
  * invented metadata or played unreliably later.
  */
-export async function importLocalFiles(assets: { uri: string; name?: string }[]): Promise<{ imported: number; unsupported: number }> {
+export async function importLocalFiles(assets: { uri: string; name?: string }[]): Promise<{ imported: number; unsupported: number; failed: number }> {
   await ensureDirectory();
   const snapshot = readLocalLibrary();
   let imported = 0;
   let unsupported = 0;
+  let failed = 0;
 
   for (const asset of assets) {
     const ext = extension(asset.name ?? asset.uri);
@@ -68,9 +69,9 @@ export async function importLocalFiles(assets: { uri: string; name?: string }[])
 
     const id = `local:${nanoid()}`;
     const destination = `${DIRECTORY}${id.replace(':', '-')}.${ext}`;
-    await FileSystem.copyAsync({ from: asset.uri, to: destination });
 
     try {
+      await FileSystem.copyAsync({ from: asset.uri, to: destination });
       const tags = await getAudioMetadata(destination, ['name', 'artist', 'album', 'albumArtist', 'track', 'year']);
       const metadata = tags.metadata;
       const artist = metadata.artist || metadata.albumArtist || 'Unknown Artist';
@@ -79,6 +80,7 @@ export async function importLocalFiles(assets: { uri: string; name?: string }[])
       const albumId = `local:album:${encodeURIComponent(`${artist}\u0000${albumTitle}`.toLocaleLowerCase())}`;
       const info = await FileSystem.getInfoAsync(destination);
       const now = new Date().toISOString();
+      if (!info.exists) throw new Error('Copied local audio file is missing.');
       snapshot.tracks.push({
         id,
         title: metadata.name || labelFromUri(asset.name ?? asset.uri),
@@ -98,18 +100,16 @@ export async function importLocalFiles(assets: { uri: string; name?: string }[])
         mimeType: ext === 'm4a' || ext === 'mp4' ? 'audio/mp4' : `audio/${ext}`,
         sourceServerType: 'local',
       });
-      // `getInfoAsync` is intentionally still read: an inaccessible copy must
-      // not become a ghost catalog item even if the tag parser happened to
-      // return a value from a stale cache.
-      if (!info.exists) throw new Error('Copied local audio file is missing.');
       imported += 1;
-    } catch (error) {
+    } catch {
+      // One corrupt or revoked picker asset must not discard earlier imports.
+      // Clean up only this asset's private copy and continue the batch.
       await FileSystem.deleteAsync(destination, { idempotent: true }).catch(() => {});
-      throw error;
+      failed += 1;
     }
   }
   write(snapshot);
-  return { imported, unsupported };
+  return { imported, unsupported, failed };
 }
 
 export function setLocalStarred(id: string, starred: boolean): void {

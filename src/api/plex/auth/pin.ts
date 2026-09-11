@@ -1,5 +1,5 @@
 import { fetchWithTimeout } from '@/api/fetchWithTimeout';
-import { plexHeaders } from '../client';
+import { createPlexClient, plexHeaders } from '../client';
 import type { PlexPinResponse } from '../types';
 import type { BasicAuth } from '@/types';
 
@@ -27,9 +27,13 @@ export async function beginPlexPin(_serverUrl: string, _basicAuth?: BasicAuth) {
   return { code: pin.code, handle: String(pin.id) };
 }
 
-export async function pollPlexPin(handle: string, _serverUrl: string, _basicAuth?: BasicAuth) {
+export async function pollPlexPin(handle: string, serverUrl: string, basicAuth?: BasicAuth) {
   const pin = await accountRequest<PlexPinResponse>(`/api/v2/pins/${encodeURIComponent(handle)}`);
   if (!pin.authToken) return null;
+  // Account approval proves only that Plex issued a token. The selected server
+  // can still reject that account or sit behind a proxy, so verify a protected
+  // server resource before onboarding persists an authenticated record.
+  await createPlexClient({ serverUrl, token: pin.authToken, basicAuth }).request('/library/sections');
   const user = await accountRequest<PlexUserResponse>('/api/v2/user', {
     headers: { 'X-Plex-Token': pin.authToken },
   });

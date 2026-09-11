@@ -33,6 +33,7 @@ export default function LocalImport() {
       const outcome = await importLocalFiles(result.assets);
       if (outcome.imported) toast.success(t('onboarding.local.imported', { count: outcome.imported }));
       if (outcome.unsupported) toast.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
+      if (outcome.failed) toast.error(t('onboarding.local.importFailed'));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('onboarding.local.importFailed'));
     } finally { setImporting(false); }

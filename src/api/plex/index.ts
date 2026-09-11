@@ -33,7 +33,13 @@ function sectionIds(server: Server): string[] {
 /** Plex is a distinct protocol, deliberately not a MediaBrowser brand. */
 export function createPlexAdapter(server: Server): ApiAdapter {
   const token = server.auth?.token as string | undefined;
-  const client = createPlexClient({ serverUrl: server.serverUrl, token, basicAuth: server.basicAuth });
+  const client = createPlexClient({
+    serverUrl: server.serverUrl,
+    serverId: server.id,
+    fallbackUrls: server.fallbackUrls,
+    token,
+    basicAuth: server.basicAuth,
+  });
   const sections = sectionIds(server);
 
   async function libraryItems(type: number, extra = ''): Promise<PlexMetadata[]> {
