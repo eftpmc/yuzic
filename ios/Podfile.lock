@@ -3407,20 +3407,23 @@ PODS:
     - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
-  - YuzicEngine (0.0.0):
+  - YuzicEngine (1.0.4):
     - ExpoModulesCore
-    - YuzicEngine/Core (= 0.0.0)
-  - YuzicEngine/Core (0.0.0):
+    - YuzicEngine/Core (= 1.0.4)
+  - YuzicEngine/Core (1.0.4):
     - ExpoModulesCore
+    - YuzicEngine/FLAC
     - YuzicEngine/Ogg
     - YuzicEngine/Opus
     - YuzicEngine/Vorbis
-  - YuzicEngine/Ogg (0.0.0):
+  - YuzicEngine/FLAC (1.0.4):
     - ExpoModulesCore
-  - YuzicEngine/Opus (0.0.0):
+  - YuzicEngine/Ogg (1.0.4):
+    - ExpoModulesCore
+  - YuzicEngine/Opus (1.0.4):
     - ExpoModulesCore
     - YuzicEngine/Ogg
-  - YuzicEngine/Vorbis (0.0.0):
+  - YuzicEngine/Vorbis (1.0.4):
     - ExpoModulesCore
     - YuzicEngine/Ogg
 
@@ -3960,7 +3963,7 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: b669e79fa0f8d3f6f5e35372345f54b99e06b13c
-  YuzicEngine: 9b3416dbf1bad48983a3f59fdfe60250d1b06127
+  YuzicEngine: 34cea83ea2a09566b75a30f04ca567123d54bace
 
 PODFILE CHECKSUM: 0a9d7fe2b7d7051d8f049cc799931b185ca60dc3
 
