@@ -1,11 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { fontScaleCap, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
+import UserAvatar from '@/components/UserAvatar';
+import { controlSize, hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 /** Header shared by the Home, Library and Search tabs: screen title plus the
@@ -20,7 +19,6 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
-  const themeColor = useSelector(selectThemeColor);
 
   return (
     <View style={styles.container}>
@@ -30,13 +28,11 @@ export default function TabHeader({ title, username, onAccountPress }: Props) {
         <Touchable
           accessibilityLabel={t('a11y.account')}
           accessibilityRole="button"
-          style={[styles.avatar, { backgroundColor: themeColor, borderRadius: rad.pill }]}
+          style={styles.avatar}
           onPress={onAccountPress}
           hitSlop={hitSlopFor(iconSize.large)}
         >
-          <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>
-            {username?.[0]?.toUpperCase() ?? '?'}
-          </Text>
+          <UserAvatar username={username} size={controlSize.avatarTabHeader} borderRadius={rad.pill} />
         </Touchable>
       </View>
     </View>
@@ -60,13 +56,5 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginLeft: spacing.md,
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: '#fff',
-    fontWeight: '600',
   },
 });

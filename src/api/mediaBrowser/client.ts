@@ -116,6 +116,16 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
     return `${streamBaseUrl}/Audio/${songId}/stream.${ext}?AudioCodec=${codec}&MaxStreamingBitrate=${bitrate}&${brand.streamTokenParam}=${token}`;
   }
 
+  function buildAvatarUrl(): string {
+    const base = failoverHint ? orderedUrls(failoverHint)[0] ?? baseUrl : baseUrl;
+    // The React Native Image loader cannot send the request headers used by
+    // API calls. Carry the same brand-specific token that stream URLs use.
+    // Without it, authenticated Jellyfin/Emby installations reject this image
+    // even though the account request that produced the client succeeded.
+    const params = new URLSearchParams({ [brand.streamTokenParam]: token });
+    return `${base}/Users/${userId}/Images/Primary?${params}`;
+  }
+
   return {
     request,
     requestText,
@@ -124,6 +134,7 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
     userId,
     parentId,
     buildStreamUrl,
+    buildAvatarUrl,
     brand,
   };
 }

@@ -21,7 +21,8 @@ import SettingsCard from '../components/SettingsCard';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, iconSize, radius, spacing, typography } from '@/constants/design';
+import UserAvatar from '@/components/UserAvatar';
+import { controlSize, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 
@@ -47,7 +48,6 @@ export default function Settings() {
     if (!activeServer) return null;
 
     const { type, username, serverUrl } = activeServer;
-    const avatarLetter = username?.[0]?.toUpperCase() || 'U';
     const cleanUrl = serverUrl?.replace(/^https?:\/\//, '') || t('settings.profile.noServer');
 
     const openLink = async (url: string) => {
@@ -82,9 +82,12 @@ export default function Settings() {
                 >
                 <SettingsCard style={styles.profileCard}>
                     <View style={styles.profileRow}>
-                        <View style={[styles.avatar, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
-                            <Text style={styles.avatarText} maxFontSizeMultiplier={fontScaleCap.glyph}>{avatarLetter}</Text>
-                        </View>
+                        <UserAvatar
+                            username={username}
+                            size={controlSize.avatarProfileCard}
+                            borderRadius={rad.pill}
+                            style={styles.avatar}
+                        />
                         <View style={styles.profileInfo}>
                             <Text style={[styles.profileName, { color: colors.secondary }]}>
                                 {username || t('settings.profile.unknownUser')}
@@ -235,16 +238,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     avatar: {
-        width: 52,
-        height: 52,
-        justifyContent: 'center',
-        alignItems: 'center',
         marginRight: spacing.md,
-    },
-    avatarText: {
-        ...cappedTypography.glyph.sectionTitle,
-        fontWeight: '700',
-        color: '#fff',
     },
     profileInfo: {
         flex: 1,
