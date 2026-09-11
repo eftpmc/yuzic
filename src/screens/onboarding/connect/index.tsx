@@ -40,6 +40,22 @@ export default function Connect() {
             toast.error(t('onboarding.connect.selectTypeFirst'));
             return;
         }
+        if (selectedType === 'local') {
+            const id = nanoid();
+            dispatch(addServer({
+                id,
+                type: 'local',
+                // A local server still occupies the normal Server record; this
+                // stable pseudo-URL is display-only and never fetched.
+                serverUrl: 'local://device',
+                username: t('onboarding.local.libraryName'),
+                auth: {},
+                isAuthenticated: true,
+            }));
+            dispatch(setActiveServer(id));
+            router.push('/(onboarding)/local' as never);
+            return;
+        }
         router.push({
             pathname: '/(onboarding)/address',
             params: { type: selectedType },
@@ -202,11 +218,13 @@ const styles = StyleSheet.create({
     },
     serverTypeContainer: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 12,
         marginBottom: spacing.xs,
     },
     serverTypeButton: {
-        flex: 1,
+        flexGrow: 1,
+        flexBasis: '28%',
         paddingVertical: spacing.md,
         borderWidth: 1,
         borderColor: onDark.mutedText,

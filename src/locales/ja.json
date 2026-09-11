@@ -543,7 +543,9 @@
       "providerDescription": {
         "navidrome": "軽量なセルフホスト型音楽サーバー。",
         "jellyfin": "音楽・映画・テレビに対応した多機能メディアサーバー。",
-        "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。"
+        "emby": "音楽・映画・テレビに対応したパーソナルメディアサーバー。",
+        "plex": "Plex アカウントで Plex Music ライブラリに接続します。",
+        "local": "このデバイスに保存された音楽ファイルを読み込みます。"
       },
       "serverUrlRequired": "サーバーURLを入力してください。",
       "serverConnectionFailed": "サーバーに接続できませんでした。",
@@ -583,6 +585,11 @@
         "jellyfin": {
           "instruction": "Jellyfin で Quick Connect を開き、このコードを入力してください。",
           "action": "Quick Connect でサインイン"
+        },
+        "plex": {
+          "instruction": "ブラウザまたは Plex アプリで Plex を開き、このコードを入力してください。",
+          "action": "Plex でサインイン",
+          "useCode": "代わりに Plex サインインを使用してください"
         }
       }
     },
@@ -595,6 +602,19 @@
       "useAll": "すべてのライブラリを使う",
       "continueWith": "{{count}} 件のライブラリで続行",
       "continueWith_other": "{{count}} 件のライブラリで続行"
+    },
+    "local": {
+      "libraryName": "このデバイス上",
+      "title": "ローカルの音楽",
+      "subtitle": "Yuzic のプライベートライブラリにコピーする音声ファイルを選択してください。ファイルはこのデバイスに残り、サーバーなしで再生できます。",
+      "supported": "読み取り可能なタグを含む MP3、FLAC、M4A、MP4 ファイルに対応しています。",
+      "choose": "音声ファイルを選択",
+      "finish": "完了",
+      "imported": "{{count}} 件のファイルを読み込みました",
+      "imported_other": "{{count}} 件のファイルを読み込みました",
+      "unsupported": "未対応のファイル {{count}} 件をスキップしました",
+      "unsupported_other": "未対応のファイル {{count}} 件をスキップしました",
+      "importFailed": "ファイルを読み込めませんでした。"
     }
   },
   "library": {

@@ -544,7 +544,9 @@
       "providerDescription": {
         "navidrome": "Un serveur musical léger et auto-hébergé.",
         "jellyfin": "Un serveur multimédia complet pour la musique, les films et les séries.",
-        "emby": "Un serveur multimédia personnel pour la musique, les films et les séries."
+        "emby": "Un serveur multimédia personnel pour la musique, les films et les séries.",
+        "plex": "Connectez une bibliothèque musicale Plex avec votre compte Plex.",
+        "local": "Importez des fichiers musicaux stockés sur cet appareil."
       },
       "serverUrlRequired": "L'URL du serveur est requise.",
       "serverConnectionFailed": "Échec de la connexion au serveur.",
@@ -584,6 +586,11 @@
         "jellyfin": {
           "instruction": "Ouvrez Quick Connect dans Jellyfin et saisissez ce code.",
           "action": "Se connecter avec Quick Connect"
+        },
+        "plex": {
+          "instruction": "Ouvrez Plex dans un navigateur ou l’app Plex et saisissez ce code.",
+          "action": "Se connecter avec Plex",
+          "useCode": "Utilisez plutôt la connexion Plex"
         }
       }
     },
@@ -596,6 +603,19 @@
       "useAll": "Utiliser toutes les bibliothèques",
       "continueWith": "Continuer avec {{count}} bibliothèque",
       "continueWith_other": "Continuer avec {{count}} bibliothèques"
+    },
+    "local": {
+      "libraryName": "Sur cet appareil",
+      "title": "Votre musique locale",
+      "subtitle": "Choisissez des fichiers audio à copier dans la bibliothèque privée de Yuzic. Ils restent sur cet appareil et se lisent sans serveur.",
+      "supported": "Prend en charge les fichiers MP3, FLAC, M4A et MP4 avec des tags lisibles.",
+      "choose": "Choisir des fichiers audio",
+      "finish": "Terminer",
+      "imported": "{{count}} fichier importé",
+      "imported_other": "{{count}} fichiers importés",
+      "unsupported": "{{count}} fichier non pris en charge ignoré",
+      "unsupported_other": "{{count}} fichiers non pris en charge ignorés",
+      "importFailed": "Impossible d’importer ces fichiers."
     }
   },
   "library": {

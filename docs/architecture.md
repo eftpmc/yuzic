@@ -9,9 +9,10 @@ one of these trunks.
 
 ## 1. `ApiAdapter` — optional feature capabilities
 
-Every server yuzic supports (Navidrome, Jellyfin, Emby) implements one
-`ApiAdapter` from `src/api/types.ts`. The base surface (auth, albums, artists,
-genres, playlists, starred, songs, tracks, similar, lyrics, search) is required.
+Every server yuzic supports (Navidrome, Jellyfin, Emby, Plex, and local files)
+implements one `ApiAdapter` from `src/api/types.ts`. The base surface (auth,
+albums, artists, genres, playlists, starred, songs, tracks, similar, lyrics,
+search) is required.
 Anything a provider-specific feature reaches for is an **optional** field:
 
 ```ts
@@ -84,6 +85,33 @@ version of a feature (e.g. Jellyfin's `PlaybackPositionTicks` is a per-item
 resume position, not a dedicated bookmarks table), the adapter is where the
 translation lives. See `api/mediaBrowser/bookmarks/bookmarks.ts` for how the
 Jellyfin/Emby bookmarks are dressed up as Subsonic-style `Bookmark[]`.
+
+### Local files are a provider, not an offline special case
+
+`local` is a normal `ServerType` and `src/api/local/` returns a normal adapter.
+Onboarding creates one local server record with the display-only URL
+`local://device`, then the import screen uses the platform document picker and
+copies approved files into Yuzic's private documents directory. The index keeps
+only compact tag-derived catalog data and the private file URI in MMKV; it does
+not request broad media-library permission or expose a device-wide scan.
+
+This keeps every catalog, search, playlists, starred, and player consumer on
+the same adapter path. `file://` is returned by `songs.buildStreamUrl`; no
+active-server exception is allowed elsewhere. A local library is intentionally
+device-local: it is not a server sync or a replacement for offline downloads
+from another server.
+
+### Provider code authorization and installation identity
+
+Provider configuration may expose an optional `codeAuth` lifecycle
+(`begin → display code → poll → complete`). The credentials screen only asks
+whether that capability exists; Jellyfin Quick Connect and Plex PIN sign-in are
+provider implementations, not `ServerType` branches in the UI.
+
+`utils/installationId.ts` persists one random ID under
+`app.installationId.v1`. It is used for MediaBrowser's client identity and
+Plex's `X-Plex-Client-Identifier`; it must remain stable across launches and
+must never be the old shared literal `yuzic-device`.
 
 ## 2. `playbackSlice` — the source of truth for playback state
 
@@ -290,6 +318,8 @@ src/api/                — providers + shared surfaces
                           re-export these; only auth + brand differ)
   mediaBrowser/adapter.ts — the adapter both brands share
   jellyfin/, emby/      — brand bindings over that adapter (3 lines each)
+  plex/                 — Plex JSON adapter, PIN sign-in, direct-part streaming
+  local/                — private-file importer, MMKV index, local adapter
   audiomuse/            — the acoustic-similarity service client
   listenbrainz/         — read-only recs client (scrobble is separate)
   lastfm/               — bundled-key read-only client (similar-artists)

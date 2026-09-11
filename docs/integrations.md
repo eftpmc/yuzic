@@ -23,6 +23,8 @@ presence-gating rule — see [architecture.md](architecture.md).
 | Navidrome (any Subsonic-compatible server) | `navidrome` | username + password (Subsonic token auth) | Yes — `demo.navidrome.org` |
 | Jellyfin | `jellyfin` | username + password → access token | No |
 | Emby | `emby` | username + password → access token | No |
+| Plex | `plex` | Plex PIN code sign-in → account token | No |
+| Local files | `local` | no account; select files from this device | — |
 
 Configured during onboarding, and afterwards in **Settings → Server**. Each
 server also carries optional **fallback URLs** (tried in order when the primary
@@ -34,7 +36,12 @@ per-provider facts that aren't API calls (demo credentials, cover URLs, and
 which `auth` key stores the chosen libraries). Adapters: `src/api/navidrome/`
 for Subsonic, and `src/api/mediaBrowser/adapter.ts` for both Jellyfin and Emby,
 which speak the same API and differ only by brand — `src/api/jellyfin/` and
-`src/api/emby/` are thin bindings over it.
+`src/api/emby/` are thin bindings over it. Plex is a separate JSON API in
+`src/api/plex/`; it direct-plays the selected media part and reports its own
+timeline events. Local files live in `src/api/local/`: Yuzic copies files chosen
+through the document picker into private app storage and indexes supported MP3,
+FLAC, M4A, and MP4 tags. It does not scan the device or ask for broad media
+permissions.
 
 ### What each server can back
 
@@ -223,6 +230,39 @@ configured makes **no** requests to any of these hosts.
 - **Auth.** Bearer/token headers where the service needs one (see the tables);
   Deezer and MusicBrainz are unauthenticated; Last.fm uses a bundled read-only
   `api_key` with no signing or session.
+
+### Plex — your server and `https://plex.tv`
+
+Plex is connected with a browser-approved PIN rather than its server's
+username/password form. Yuzic sends its persistent per-install
+`X-Plex-Client-Identifier` with every Plex request, asks `plex.tv` for a PIN,
+polls it until Plex returns the account token, then verifies that token against
+the selected server. Tokens are stored in the server credential record; they
+are never put in URLs except where Plex requires the token on a direct media or
+artwork URL.
+
+| Endpoint | Used for |
+| --- | --- |
+| `POST https://plex.tv/api/v2/pins?strong=true` | Starting browser PIN sign-in |
+| `GET https://plex.tv/api/v2/pins/{id}` | Polling PIN approval |
+| `GET https://plex.tv/api/v2/user` | Account display name after approval |
+| `GET /identity` | Server reachability/token check |
+| `GET /library/sections`, `/library/sections/{id}/all`, `/library/metadata/{id}` | Music catalog and item children |
+| `GET /hubs/search?query=` | Library search |
+| `GET /playlists?playlistType=audio`, `/playlists/{id}/items` | Reading audio playlists |
+| `PUT /:/rate`, `GET /:/scrobble`, `GET /:/timeline` | Favourites and playback events |
+
+Plex playlist editing, lyrics, and server-provided similar tracks are not
+advertised as supported: their UI actions fail explicitly rather than being
+approximated with unrelated API calls.
+
+### Local files
+
+The local provider has no network endpoint. Import is explicit: selected files
+are copied into private app storage, metadata is read once, then the compact
+index (catalog, local playlists, favourites, and `file://` paths) persists in
+MMKV. Re-importing a file creates a distinct private copy; deleting files from
+the system picker source cannot break the imported copy.
 
 ### Deezer — `https://api.deezer.com`
 

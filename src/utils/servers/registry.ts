@@ -1,6 +1,8 @@
 import NavidromeIcon from '@assets/images/navidrome.png';
 import JellyfinIcon from '@assets/images/jellyfin.png';
 import EmbyIcon from '@assets/images/emby.png';
+import PlexIcon from '@assets/images/plex.png';
+import LocalFilesIcon from '@assets/images/local-files.png';
 
 import { createNavidromeClient, buildTokenParams } from '@/api/navidrome/client';
 import { ping as pingNavidrome } from '@/api/navidrome/auth/ping';
@@ -17,6 +19,11 @@ import {
 
 import { createEmbyClient } from '@/api/emby/client';
 import { createEmbyAdapter } from '@/api/emby';
+
+import { createPlexClient } from '@/api/plex/client';
+import { createPlexAdapter } from '@/api/plex';
+import { beginPlexPin, pollPlexPin } from '@/api/plex/auth/pin';
+import { createLocalAdapter } from '@/api/local';
 
 import { getMusicFolders } from '@/api/navidrome/auth/getMusicFolders';
 import { getMusicLibraries } from '@/api/mediaBrowser/auth/getMusicLibraries';
@@ -299,6 +306,49 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
     },
   },
 
+  plex: {
+    type: 'plex',
+    label: 'Plex',
+    get description() { return i18n.t('onboarding.connect.providerDescription.plex'); },
+    icon: PlexIcon,
+    capabilities: { supportsDemo: false },
+    libraryScope: { key: 'sectionIds', legacyKey: 'sectionId' },
+    listLibraries: async (server) => {
+      const token = server.auth?.token as string | undefined;
+      const client = createPlexClient({ serverUrl: server.serverUrl, token, basicAuth: server.basicAuth });
+      const response = await client.request<any>('/library/sections');
+      return (response.MediaContainer?.Directory ?? [])
+        .filter((section: any) => section.type === 'artist')
+        .map((section: any) => ({ id: String(section.key), name: section.title ?? 'Music' }));
+    },
+    ping: async (url, _username, auth, basicAuth) => {
+      const token = auth.token as string | undefined;
+      if (!token) return false;
+      try {
+        await createPlexClient({ serverUrl: url, token, basicAuth }).request('/identity');
+        return true;
+      } catch { return false; }
+    },
+    // Plex’s account token comes from PIN authorization. Keeping password auth
+    // explicitly unavailable is safer than silently sending a password to an
+    // endpoint Plex does not use.
+    connect: async () => ({ success: false, message: i18n.t('onboarding.credentials.codeAuth.plex.useCode') }),
+    createAdapter: (server) => createPlexAdapter(server),
+    codeAuth: {
+      begin: async ({ serverUrl, basicAuth }) => beginPlexPin(serverUrl, basicAuth),
+      poll: async ({ serverUrl, handle, basicAuth }) => pollPlexPin(String(handle), serverUrl, basicAuth),
+      pollIntervalMs: 2000,
+      timeoutMs: 10 * 60 * 1000,
+      instructionKey: 'onboarding.credentials.codeAuth.plex.instruction',
+      actionKey: 'onboarding.credentials.codeAuth.plex.action',
+    },
+    buildCoverUrl: (server, cover) => {
+      if (cover.kind !== 'plex' || !server.serverUrl) return null;
+      const token = server.auth?.token as string | undefined;
+      return createPlexClient({ serverUrl: server.serverUrl, token, basicAuth: server.basicAuth }).buildImageUrl(cover.path);
+    },
+  },
+
   emby: {
     type: 'emby',
     label: 'Emby',
@@ -344,6 +394,20 @@ export const SERVER_PROVIDERS: Record<ServerType, ServerProviderConfig> = {
       const params = new URLSearchParams(paramObj);
       return `${baseUrl}/Items/${cover.itemId}/Images/Primary?${params}`;
     },
+  },
+
+  local: {
+    type: 'local',
+    label: 'Local files',
+    get description() { return i18n.t('onboarding.connect.providerDescription.local'); },
+    icon: LocalFilesIcon,
+    capabilities: { supportsDemo: false },
+    libraryScope: { key: 'localLibraryIds', legacyKey: 'localLibraryId' },
+    listLibraries: async () => [{ id: 'device', name: i18n.t('onboarding.local.libraryName') }],
+    ping: async () => true,
+    connect: async () => ({ success: true, auth: {} }),
+    createAdapter: (server) => createLocalAdapter(server),
+    buildCoverUrl: (_server, cover) => cover.kind === 'url' ? cover.url : null,
   },
 };
 
