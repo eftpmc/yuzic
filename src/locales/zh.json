@@ -945,6 +945,7 @@
       "getSong": "获取歌曲",
       "want": "想要",
       "wanted": "已想要",
+      "arrived": "{{title}} 现已加入您的音乐库",
       "inLibrary": "已在库中",
       "downloading": "正在下载至服务器… {{progress}}%",
       "noServiceConnected": "请在设置中连接下载器以进行下载"

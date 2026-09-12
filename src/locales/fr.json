@@ -949,6 +949,7 @@
       "getSong": "Récupérer le titre",
       "want": "Souhaiter",
       "wanted": "Souhaité",
+      "arrived": "{{title}} est maintenant dans votre bibliothèque",
       "inLibrary": "Dans la bibliothèque",
       "downloading": "Téléchargement vers le serveur… {{progress}}%",
       "noServiceConnected": "Connectez un téléchargeur dans les réglages pour télécharger"

@@ -951,6 +951,7 @@
       "getSong": "Get Song",
       "want": "Want",
       "wanted": "Wanted",
+      "arrived": "{{title}} is now in your library",
       "inLibrary": "In Library",
       "downloading": "Downloading to server… {{progress}}%",
       "noServiceConnected": "Connect a downloader in Settings to download"

@@ -945,6 +945,7 @@
       "getSong": "曲を取得",
       "want": "ウォンツに追加",
       "wanted": "ウォンツ済み",
+      "arrived": "{{title}} がライブラリに追加されました",
       "inLibrary": "ライブラリ内",
       "downloading": "サーバーにダウンロード中… {{progress}}%",
       "noServiceConnected": "ダウンロードするには設定でダウンローダーを接続してください"
