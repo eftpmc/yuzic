@@ -1,6 +1,7 @@
 import type { MediaBrowserClient } from '../client';
 import type { MediaBrowserItemsResponse } from '../types';
 import type { AlbumBase, ExternalArtistBase } from '@/types';
+import { makeLocalId } from '@/types/EntityId';
 import { buildCoverWithTag } from '../brand';
 import { normalizeAlbum } from '../albums/getAlbums';
 
@@ -55,6 +56,7 @@ export async function getSimilarArtists(
   limit = 12
 ): Promise<ExternalArtistBase[]> {
   const items = await fetchSimilar(client, artistId, limit, 'MusicArtist');
+  const sourceServerId = client.serverId;
   return items
     .filter((s) => s.Id && s.Type === 'MusicArtist')
     .map((s) => ({
@@ -62,5 +64,9 @@ export async function getSimilarArtists(
       name: s.Name ?? 'Unknown Artist',
       cover: buildCoverWithTag(client.brand, s.Id, s.ImageTags?.Primary),
       subtext: '',
+      localId: sourceServerId
+        ? makeLocalId({ kind: 'artist', sourceServerId, serverItemId: s.Id! })
+        : undefined,
+      libraryState: 'in-library',
     }));
 }

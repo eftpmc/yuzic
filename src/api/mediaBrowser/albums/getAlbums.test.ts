@@ -7,6 +7,7 @@ function makeClient(overrides: Partial<MediaBrowserClient> = {}): MediaBrowserCl
     request: jest.fn().mockResolvedValue({ Items: [] }),
     requestText: jest.fn(),
     serverUrl: 'https://server.example',
+    serverId: undefined,
     token: 'tok',
     userId: 'user-1',
     parentId: undefined,
@@ -58,5 +59,27 @@ describe('getAlbums', () => {
     const albums = await getAlbums(client);
     expect(albums).toHaveLength(1);
     expect(albums[0].id).toBe('album-1');
+  });
+});
+
+describe('normalizeAlbum localId/libraryState', () => {
+  it('sets a stable localId and in-library libraryState when the client carries a serverId', () => {
+    const client = makeClient({ serverId: 'server-1' });
+    const album = normalizeAlbum(rawAlbum, client);
+    expect(album?.libraryState).toBe('in-library');
+    expect(album?.localId).toBe('local:album:srv:server-1:album-1');
+    expect(album?.artist.localId).toBe('local:artist:srv:server-1:artist-1');
+
+    // Stable: normalizing the same raw item against the same server again yields the same id.
+    const again = normalizeAlbum(rawAlbum, client);
+    expect(again?.localId).toBe(album?.localId);
+  });
+
+  it('leaves localId unset when the client has no serverId, rather than fabricating one', () => {
+    const client = makeClient({ serverId: undefined });
+    const album = normalizeAlbum(rawAlbum, client);
+    expect(album?.localId).toBeUndefined();
+    expect(album?.artist.localId).toBeUndefined();
+    expect(album?.libraryState).toBe('in-library');
   });
 });

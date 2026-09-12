@@ -1,5 +1,6 @@
 import { deezerClient } from './client';
 import type { CoverSource, ExternalAlbum, ExternalAlbumBase, ExternalArtistBase, ExternalSong } from '@/types';
+import { makeLocalId } from '@/types/EntityId';
 
 type DeezerImageEntity = {
   picture_xl?: string | null;
@@ -129,6 +130,8 @@ export function deezerArtistToExternal(artist: DeezerArtist): ExternalArtistBase
     biography: artist.description || undefined,
     externalSource: 'deezer',
     externalIds: { deezerId: id },
+    localId: makeLocalId({ kind: 'artist', externalSource: 'deezer', externalNativeId: id }),
+    libraryState: 'external',
   };
 }
 
@@ -153,6 +156,8 @@ export function deezerAlbumToExternal(
       artistDeezerId: artistId,
       upc: album.upc ?? null,
     },
+    localId: makeLocalId({ kind: 'album', externalSource: 'deezer', externalNativeId: id }),
+    libraryState: 'external',
   };
 }
 
@@ -171,6 +176,10 @@ function deezerTrackToExternal(track: DeezerTrack, album: DeezerAlbum): External
       deezerId: id,
       isrc: track.isrc ?? null,
     },
+    // ExternalSong does not carry localId/libraryState yet — those fields are
+    // only additive on Album/Artist (and their External* variants) and on
+    // Song/SongBase, not on ExternalSong. Adding them here would require a
+    // type change, which is out of scope for this population pass.
   };
 }
 

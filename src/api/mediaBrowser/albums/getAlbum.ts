@@ -1,4 +1,5 @@
 import { Album } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildCover } from "../brand";
 import { getAlbumSongs } from "./getAlbumSongs";
@@ -23,19 +24,25 @@ function normalizeAlbum(raw: MediaBrowserItemsResponse, client: MediaBrowserClie
   if (!artistItem) return null;
 
   const cover = buildCover(client.brand, a.Id);
+  const sourceServerId = client.serverId;
+  const artistId = artistItem.Id ?? "unknown";
 
   const artist = {
-    id: artistItem.Id ?? "unknown",
+    id: artistId,
     name: artistItem.Name ?? "Unknown Artist",
     cover: buildCover(client.brand, artistItem.Id),
     subtext: "Artist",
     mbid: artistItem.ProviderIds?.MusicBrainz ?? null,
+    localId: sourceServerId
+      ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: artistId })
+      : undefined,
   };
 
   const albumMbid = a.ProviderIds?.MusicBrainzAlbum ?? a.ProviderIds?.MusicBrainz ?? null;
+  const albumId = a.Id ?? "";
 
   return {
-    id: a.Id ?? "",
+    id: albumId,
     cover,
     title: a.Name ?? "Unknown Album",
     subtext: "",
@@ -48,6 +55,10 @@ function normalizeAlbum(raw: MediaBrowserItemsResponse, client: MediaBrowserClie
       .filter(Boolean),
     created: a.DateCreated ? new Date(a.DateCreated) : new Date(0),
     mbid: albumMbid,
+    localId: sourceServerId
+      ? makeLocalId({ kind: "album", sourceServerId, serverItemId: albumId })
+      : undefined,
+    libraryState: "in-library",
   };
 }
 

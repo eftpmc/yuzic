@@ -129,6 +129,8 @@ export function createMediaBrowserClient(config: MediaBrowserClientConfig, brand
     request,
     requestText,
     serverUrl: baseUrl,
+    /** Server identity used to build a stable `LocalId` for entities this client fetches. */
+    serverId,
     token,
     userId,
     parentId,

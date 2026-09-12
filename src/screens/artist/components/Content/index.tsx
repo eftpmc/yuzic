@@ -7,7 +7,6 @@ import { useNavigation } from '@react-navigation/native'
 import { Ellipsis, Globe } from 'lucide-react-native'
 import type { AlbumBase, Artist, ExternalAlbumBase, ExternalArtist, ExternalArtistBase } from '@/types'
 import AlbumRow from '@/components/rows/AlbumRow'
-import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow'
 import Header, { ArtistHeaderBar } from '../Header'
 import { DetailScreen } from '@/components/DetailHeader'
 import { useTheme } from '@/hooks/useTheme'
@@ -259,7 +258,7 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
       const singles = localAlbums.filter(album => isSingleOrEp(album, songCountByAlbumId.get(album.id) ?? 0))
 
       // Owned and unowned releases are kept in separate groups rather than
-      // merged chronologically — the row itself (ExternalAlbumRow) double-checks
+      // merged chronologically — the shared AlbumRow double-checks
       // "already in library" independently as a safety net if this dedup
       // misses an edge case. Unowned releases stay behind a "show unowned" tile
       // (reusing the pagination row's look) until the user opts in, so scanning
@@ -431,9 +430,9 @@ export default function ArtistContent({ localArtist, externalArtist }: Props) {
     }
 
     return (
-      <ExternalAlbumRow
+      <AlbumRow
         album={item.album}
-        onPress={(album) => navigateToAlbum(album)}
+        onPress={(album) => navigateToAlbum(album as ExternalAlbumBase)}
         subtextOverride={releaseYearLabel(item.album) ?? undefined}
       />
     )

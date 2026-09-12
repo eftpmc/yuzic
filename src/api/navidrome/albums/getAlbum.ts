@@ -1,4 +1,5 @@
 import { Album, CoverSource, Song } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { NavidromeClient } from "../client";
 import { getArtist } from "../artists/getArtist";
 import { getAlbumInfo } from "./getAlbumInfo";
@@ -24,6 +25,9 @@ export async function getAlbum(
     ? { kind: "navidrome", coverArtId: album.coverArt }
     : { kind: "none" };
 
+  const resolvedAlbumId = album.id ?? "";
+  const sourceServerId = client.serverId;
+
   const songs: Song[] = (album.song ?? [])
     .filter((s): s is typeof s & { id: string } => !!s?.id)
     .map((s) => ({
@@ -33,7 +37,7 @@ export async function getAlbum(
       artistId: s.artistId ?? "",
       duration: String(s.duration ?? 0),
       cover,
-      albumId: album.id ?? "",
+      albumId: resolvedAlbumId,
       albumTitle: album.name,
       streamUrl: client.buildStreamUrl(s.id),
       filePath: s.path ?? undefined,
@@ -51,21 +55,34 @@ export async function getAlbum(
         : s.genre
         ? [s.genre]
         : undefined,
+      localId: sourceServerId
+        ? makeLocalId({ kind: "track", sourceServerId, serverItemId: s.id })
+        : undefined,
+      libraryState: "in-library",
     }));
 
   return {
-    id: album.id ?? "",
+    id: resolvedAlbumId,
     cover,
     title: album.name ?? "Unknown Album",
     subtext:
       songs.length > 1
         ? `Album • ${artist.name}`
         : `Single • ${artist.name}`,
-    artist,
+    artist: {
+      ...artist,
+      localId: sourceServerId
+        ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: artist.id })
+        : undefined,
+    },
     year: album.year ?? 0,
     genres: album.genre ? [album.genre] : [],
     created: album.created ? new Date(album.created) : new Date(0),
     mbid: albumInfo.musicBrainzId,
     songs,
+    localId: sourceServerId
+      ? makeLocalId({ kind: "album", sourceServerId, serverItemId: resolvedAlbumId })
+      : undefined,
+    libraryState: "in-library",
   };
 }

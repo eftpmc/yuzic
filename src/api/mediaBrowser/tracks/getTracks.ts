@@ -1,4 +1,5 @@
 import { SongBase } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildSongCover } from "../brand";
 import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
@@ -6,9 +7,11 @@ import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
 function normalizeTrack(item: MediaBrowserItem, client: MediaBrowserClient): SongBase {
   const artistItem = item.ArtistItems?.[0];
   const cover = buildSongCover(client.brand, item.Id, item.AlbumId, item.AlbumPrimaryImageTag ?? undefined);
+  const id = item.Id ?? "";
+  const sourceServerId = client.serverId;
 
   return {
-    id: item.Id ?? "",
+    id,
     title: item.Name ?? "Unknown",
     artist: artistItem?.Name ?? "Unknown Artist",
     artistId: artistItem?.Id ?? "",
@@ -23,6 +26,10 @@ function normalizeTrack(item: MediaBrowserItem, client: MediaBrowserClient): Son
     serverLastPlayedAt: item.UserData?.LastPlayedDate
       ? new Date(item.UserData.LastPlayedDate).getTime()
       : undefined,
+    localId: sourceServerId
+      ? makeLocalId({ kind: "track", sourceServerId, serverItemId: id })
+      : undefined,
+    libraryState: "in-library",
   };
 }
 

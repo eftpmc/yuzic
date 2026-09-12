@@ -123,6 +123,8 @@ export function createNavidromeClient(config: NavidromeClientConfig) {
     buildStreamUrl,
     buildAvatarUrl,
     serverUrl: baseUrl,
+    /** Server identity used to build a stable `LocalId` for entities this client fetches. */
+    serverId,
     username,
     password,
   };

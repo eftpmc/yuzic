@@ -1,11 +1,12 @@
 import { SongBase } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { NavidromeClient } from "../client";
 import { SubsonicResponse, SubsonicSong } from "../types";
 import { getAlbumList } from "../albums/getAlbumList";
 
 const ALBUM_BATCH_SIZE = 15;
 
-function mapToSongBase(song: SubsonicSong & { id: string }): SongBase {
+function mapToSongBase(song: SubsonicSong & { id: string }, sourceServerId?: string): SongBase {
   return {
     id: song.id,
     title: song.title ?? 'Unknown',
@@ -22,6 +23,10 @@ function mapToSongBase(song: SubsonicSong & { id: string }): SongBase {
     dateAdded: song.created,
     serverPlayCount: song.playCount ?? undefined,
     serverLastPlayedAt: song.played ? (new Date(song.played).getTime() || undefined) : undefined,
+    localId: sourceServerId
+      ? makeLocalId({ kind: 'track', sourceServerId, serverItemId: song.id })
+      : undefined,
+    libraryState: 'in-library',
   };
 }
 
@@ -34,6 +39,7 @@ async function getTracksViaSearch(client: NavidromeClient): Promise<SongBase[]> 
   const PAGE = 500;
   const all = new Map<string, SongBase>();
   let offset = 0;
+  const sourceServerId = client.serverId;
 
   while (true) {
     const data = await client.request<SubsonicResponse>("search3.view", {
@@ -51,7 +57,7 @@ async function getTracksViaSearch(client: NavidromeClient): Promise<SongBase[]> 
 
     for (const song of songs) {
       if (!song?.id || all.has(song.id)) continue;
-      all.set(song.id, mapToSongBase(song as SubsonicSong & { id: string }));
+      all.set(song.id, mapToSongBase(song as SubsonicSong & { id: string }, sourceServerId));
     }
     if (songs.length < PAGE) break;
     offset += PAGE;
@@ -63,6 +69,7 @@ async function getTracksViaSearch(client: NavidromeClient): Promise<SongBase[]> 
 async function getTracksViaAlbumList(client: NavidromeClient): Promise<SongBase[]> {
   const albums = await getAlbumList(client, "alphabeticalByName");
   const all = new Map<string, SongBase>();
+  const sourceServerId = client.serverId;
 
   for (let i = 0; i < albums.length; i += ALBUM_BATCH_SIZE) {
     const batch = albums.slice(i, i + ALBUM_BATCH_SIZE);
@@ -86,7 +93,7 @@ async function getTracksViaAlbumList(client: NavidromeClient): Promise<SongBase[
           coverArt: song.coverArt ?? album.coverArt,
           created: song.created ?? album.created,
         };
-        all.set(song.id, mapToSongBase(withAlbumFallbacks));
+        all.set(song.id, mapToSongBase(withAlbumFallbacks, sourceServerId));
       }
     }
   }

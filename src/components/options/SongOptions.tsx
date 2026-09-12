@@ -1,15 +1,15 @@
 import React, { forwardRef, useMemo, useRef } from 'react';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle, Sparkles } from 'lucide-react-native';
+import { Heart, CirclePlus, Disc, Radio, Mic2, ListEnd, ListStart, CheckCircle, ArrowDownCircle, Sparkles, CloudDownload, Download, Play, ChevronRight } from 'lucide-react-native';
 import { useApi } from '@/api';
 import { selectIsAudiomuseConfigured, selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
 import { generateSimilarPlaylist } from '@/features/audiomuse/generatePlaylist';
 
-import { Song } from '@/types';
+import { ExternalAlbumBase, ExternalSong, Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { useSelector } from 'react-redux';
 import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
@@ -23,6 +23,12 @@ import { useIsOffline } from '@/hooks/useIsOffline';
 import { formatSongDuration } from '@/utils/formatDuration';
 import { useDownload } from '@/contexts/DownloadContext';
 import {
+  useAnyDownloaderConnected,
+  useAnyTrackDownloaderConnected,
+} from '@/features/downloaders/registry';
+import DownloadSheet from '@/components/options/DownloadSheet';
+import { useSheetRef } from '@/utils/useSheetRef';
+import {
   OptionSheetChipsRow,
   OptionSheetDivider,
   OptionSheetHeader,
@@ -32,13 +38,20 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { iconSize, statusColor } from '@/constants/design';
+import { iconSize, spacing, statusColor } from '@/constants/design';
 import haptics from '@/utils/haptics';
 
 type SongOptionsProps = {
-  selectedSong: Song;
-  onAddToPlaylist: () => void;
+  selectedSong: Song | ExternalSong;
+  /** Library-song-only: opens the add-to-playlist sheet. Ignored for external songs. */
+  onAddToPlaylist?: () => void;
   onNavigate?: () => void;
+  /** External-song-only: album context for its options sheet. */
+  albumTitle?: string;
+  /** External-song-only: album context for its options sheet. */
+  albumArtist?: string;
+  /** External-song-only: called (and the sheet dismissed) when "Play" is pressed. */
+  onPlay?: () => void;
 };
 
 function formatDate(value: string): string {
@@ -52,9 +65,59 @@ function formatDate(value: string): string {
   return `${month} ${day}, ${year}`;
 }
 
-const SongOptions = forwardRef<
+/**
+ * True when `song` came from an external catalog (Deezer/etc) rather than
+ * the user's library. `Song.streamUrl` is required on every library song and
+ * absent on `ExternalSong` — that difference is guaranteed by the type
+ * definitions, so it doubles as the discriminator without needing a new
+ * field on either type. Mirrors `isExternalSong` in `components/rows/SongRow`.
+ */
+function isExternalSongOrigin(song: Song | ExternalSong): song is ExternalSong {
+  return !('streamUrl' in song);
+}
+
+const SongOptions = forwardRef<BottomSheetModal, SongOptionsProps>(
+  ({ selectedSong, onAddToPlaylist, onNavigate, albumTitle, albumArtist, onPlay }, ref) => {
+    if (isExternalSongOrigin(selectedSong)) {
+      return (
+        <ExternalSongOptionsSheet
+          ref={ref}
+          song={selectedSong}
+          albumTitle={albumTitle ?? ''}
+          albumArtist={albumArtist ?? ''}
+          onPlay={onPlay}
+        />
+      );
+    }
+    return (
+      <LibrarySongOptionsSheet
+        ref={ref}
+        selectedSong={selectedSong}
+        onAddToPlaylist={onAddToPlaylist ?? (() => {})}
+        onNavigate={onNavigate}
+      />
+    );
+  }
+);
+
+SongOptions.displayName = 'SongOptions';
+
+export default SongOptions;
+
+// ---------------------------------------------------------------------------
+// Library song action set (unchanged from the pre-merge SongOptions body,
+// including the generateSimilarPlaylist wiring).
+// ---------------------------------------------------------------------------
+
+type LibrarySongOptionsProps = {
+  selectedSong: Song;
+  onAddToPlaylist: () => void;
+  onNavigate?: () => void;
+};
+
+const LibrarySongOptionsSheet = forwardRef<
   BottomSheetModal,
-  SongOptionsProps
+  LibrarySongOptionsProps
 >(({ selectedSong, onAddToPlaylist, onNavigate }, ref) => {
     const { t } = useTranslation();
     const { colors } = useTheme();
@@ -425,6 +488,121 @@ const SongOptions = forwardRef<
   }
 );
 
-SongOptions.displayName = 'SongOptions';
+LibrarySongOptionsSheet.displayName = 'LibrarySongOptionsSheet';
 
-export default SongOptions;
+// ---------------------------------------------------------------------------
+// External song action set (moved verbatim from the deleted
+// ExternalSongOptions, minus its own trigger button — the row now owns
+// that, mirroring the library branch's trigger/sheet split).
+// ---------------------------------------------------------------------------
+
+type ExternalSongOptionsSheetProps = {
+  song: ExternalSong;
+  albumTitle: string;
+  albumArtist: string;
+  onPlay?: () => void;
+};
+
+const ExternalSongOptionsSheet = forwardRef<
+  BottomSheetModal,
+  ExternalSongOptionsSheetProps
+>(({ song, albumTitle, albumArtist, onPlay }, ref) => {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const downloadSheetRef = useSheetRef();
+  const trackDownloadSheetRef = useSheetRef();
+  const snapPoints = useMemo(() => ['40%', '70%'], []);
+
+  const canDownload = useAnyDownloaderConnected();
+  const canDownloadTrack = useAnyTrackDownloaderConnected();
+
+  const sheetBg = useOptionSheetBackground();
+
+  const albumBase = useMemo<ExternalAlbumBase>(() => ({
+    id: song.albumId,
+    title: albumTitle,
+    artist: albumArtist,
+    cover: song.cover,
+    subtext: albumArtist,
+  }), [song.albumId, song.cover, albumTitle, albumArtist]);
+
+  const track = useMemo(() => ({
+    title: song.title,
+    artist: song.artist || albumArtist,
+  }), [song.title, song.artist, albumArtist]);
+
+  return (
+    <>
+      <BottomSheetModal
+        ref={ref}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
+        stackBehavior="push"
+      >
+        <BottomSheetScrollView
+          style={sheetBg}
+          contentContainerStyle={optionSheetStyles.sheetContent}
+        >
+          <OptionSheetHeader
+            cover={song.cover}
+            title={song.title}
+            subtitle={`${albumArtist} — ${albumTitle}`}
+          />
+
+          <OptionSheetDivider />
+
+          {onPlay && (
+            <OptionSheetRow
+              icon={<Play size={iconSize.loader} color={colors.secondary} fill={colors.secondary} />}
+              label={t('songOptions.actions.play')}
+              onPress={() => {
+                (ref as any)?.current?.dismiss();
+                onPlay();
+              }}
+            />
+          )}
+
+          {canDownloadTrack && (
+            <OptionSheetRow
+              icon={<Download size={iconSize.loader} color={colors.secondary} />}
+              label={t('externalAlbum.menu.downloadSong')}
+              onPress={() => trackDownloadSheetRef.current?.present()}
+              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
+            />
+          )}
+
+          {canDownload && (
+            <OptionSheetRow
+              icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
+              label={t('externalAlbum.menu.downloadToServer')}
+              onPress={() => downloadSheetRef.current?.present()}
+              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
+            />
+          )}
+
+          {(!!onPlay || canDownload) && <OptionSheetDivider />}
+
+          <OptionSheetSectionLabel label={t('songOptions.sections.media')} />
+          <OptionSheetInfoRow
+            label={t('songOptions.media.duration')}
+            value={formatSongDuration(song.duration)}
+          />
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+
+      <DownloadSheet album={albumBase} sheetRef={downloadSheetRef} />
+      <DownloadSheet album={albumBase} track={track} sheetRef={trackDownloadSheetRef} />
+    </>
+  );
+});
+
+ExternalSongOptionsSheet.displayName = 'ExternalSongOptionsSheet';
+
+const styles = StyleSheet.create({
+  chevron: { marginLeft: spacing.xs },
+});

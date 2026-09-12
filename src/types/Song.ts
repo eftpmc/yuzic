@@ -1,6 +1,8 @@
 import { CoverSource } from "./Cover";
 import { ServerType } from "./Server";
 import { ExternalCatalogSource, ExternalIds } from "./Album";
+import { LibraryState } from "./LibraryState";
+import { LocalId } from "./EntityId";
 
 export interface SongBase {
     id: string;
@@ -22,6 +24,12 @@ export interface SongBase {
     serverPlayCount?: number;
     /** Server-reported last played timestamp (ms) — populated during sync. */
     serverLastPlayedAt?: number;
+    /** Stable on-device identity — see {@link LocalId}. Additive/optional during migration. */
+    localId?: LocalId;
+    /** Additive external ids (mbid/deezerId/isrc/…). Optional during migration. */
+    externalIds?: ExternalIds;
+    /** Resolution state — see {@link LibraryState}. Absent → treated as 'in-library'. */
+    libraryState?: LibraryState;
 }
 
 /**

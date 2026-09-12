@@ -1,4 +1,5 @@
 import { Album, Song } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildCover, buildCoverWithTag } from "../brand";
 import { normalizeGenres } from "../utils/normalizeGenres";
@@ -13,6 +14,7 @@ export async function getAlbumsWithSongs(
     : "";
 
   const isEmby = client.brand.kind === "emby";
+  const sourceServerId = client.serverId;
 
   // Request 1: all album metadata
   const albumsRaw = await client.request<MediaBrowserItemsResponse>(
@@ -26,17 +28,21 @@ export async function getAlbumsWithSongs(
     if (!a.Id) continue;
     const artistItem = a.ArtistItems?.[0];
     const cover = buildCoverWithTag(client.brand, a.Id, a.ImageTags?.Primary ?? undefined);
+    const artistId = artistItem?.Id ?? "unknown";
     albumMap.set(a.Id, {
       id: a.Id,
       cover,
       title: a.Name ?? "Unknown Album",
       subtext: "",
       artist: {
-        id: artistItem?.Id ?? "unknown",
+        id: artistId,
         name: artistItem?.Name ?? "Unknown Artist",
         cover: isEmby ? { kind: "none" } : buildCover(client.brand, artistItem?.Id),
         subtext: "Artist",
         mbid: artistItem?.ProviderIds?.MusicBrainz ?? null,
+        localId: sourceServerId
+          ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: artistId })
+          : undefined,
       },
       year: a.ProductionYear ?? 0,
       genres: (a.Genres ?? [])
@@ -46,6 +52,10 @@ export async function getAlbumsWithSongs(
       created: a.DateCreated ? new Date(a.DateCreated) : new Date(0),
       mbid: a.ProviderIds?.MusicBrainzAlbum ?? a.ProviderIds?.MusicBrainz ?? null,
       songs: [],
+      localId: sourceServerId
+        ? makeLocalId({ kind: "album", sourceServerId, serverItemId: a.Id })
+        : undefined,
+      libraryState: "in-library",
     });
   }
 
@@ -88,6 +98,10 @@ export async function getAlbumsWithSongs(
       trackNumber: s.IndexNumber ?? undefined,
       dateAdded: s.DateCreated ?? undefined,
       genres: normalizeGenres(s.Genres),
+      localId: sourceServerId
+        ? makeLocalId({ kind: "track", sourceServerId, serverItemId: songId })
+        : undefined,
+      libraryState: "in-library",
     };
 
     const list = songsByAlbum.get(albumId) ?? [];

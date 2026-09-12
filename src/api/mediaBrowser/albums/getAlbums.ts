@@ -1,4 +1,5 @@
 import { AlbumBase } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildCoverWithTag } from "../brand";
 import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
@@ -13,13 +14,18 @@ export function normalizeAlbum(a: MediaBrowserItem, client: MediaBrowserClient):
     const cover = buildCoverWithTag(client.brand, albumId, a.ImageTags?.Primary ?? undefined);
 
     const artistItem = a.ArtistItems?.[0];
+    const sourceServerId = client.serverId;
+    const artistId = artistItem?.Id ?? "unknown";
 
     const artist = {
-      id: artistItem?.Id ?? "unknown",
+      id: artistId,
       name: artistItem?.Name ?? "Unknown Artist",
       cover: { kind: "none" as const },
       subtext: "Artist",
       mbid: artistItem?.ProviderIds?.MusicBrainz ?? null,
+      localId: sourceServerId
+        ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: artistId })
+        : undefined,
     };
 
     const albumMbid = a.ProviderIds?.MusicBrainzAlbum ?? a.ProviderIds?.MusicBrainz ?? null;
@@ -42,6 +48,10 @@ export function normalizeAlbum(a: MediaBrowserItem, client: MediaBrowserClient):
       mbid: albumMbid,
       serverPlayCount: a.UserData?.PlayCount ?? undefined,
       serverLastPlayedAt: serverLastPlayedAt && !isNaN(serverLastPlayedAt) ? serverLastPlayedAt : undefined,
+      localId: sourceServerId
+        ? makeLocalId({ kind: "album", sourceServerId, serverItemId: albumId })
+        : undefined,
+      libraryState: "in-library",
     };
   } catch (error) {
     console.error(`Failed to normalize album:`, error);

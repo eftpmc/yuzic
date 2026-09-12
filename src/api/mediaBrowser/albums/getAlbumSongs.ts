@@ -1,4 +1,5 @@
 import { Album, Song } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { normalizeGenres } from "../utils/normalizeGenres";
 import { MediaBrowserItem, MediaBrowserItemsResponse } from "../types";
@@ -15,6 +16,7 @@ function normalizeSongEntry(
   const ms = s.MediaSources?.[0];
   const audioStream = ms?.MediaStreams?.find((m) => m.Type === "Audio");
   const songId = s.Id ?? "";
+  const sourceServerId = client.serverId;
 
   return {
     id: songId,
@@ -35,6 +37,10 @@ function normalizeSongEntry(
     trackNumber: s.IndexNumber ?? undefined,
     dateAdded: s.DateCreated ?? undefined,
     genres: normalizeGenres(s.Genres),
+    localId: sourceServerId
+      ? makeLocalId({ kind: "track", sourceServerId, serverItemId: songId })
+      : undefined,
+    libraryState: "in-library",
   };
 }
 
