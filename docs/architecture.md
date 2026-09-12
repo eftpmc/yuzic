@@ -308,6 +308,44 @@ flags: attempting a request that cannot land, catching the timeout, and calling
 it an error is how offline search came to show a red banner over results that
 had actually succeeded.
 
+## 6. Entity model — `LibraryState`, `LocalId`, and one row per kind
+
+Every artist/album/track is *one* entity shape carrying a resolution state,
+not a `local` type shadowed by a parallel `External` type. This replaced four
+duplicated pairs (Album/Song rows, Album/Song options) and two album-screen
+bodies' worth of divergence.
+
+- **`LibraryState`** (`types/LibraryState.ts`) —
+  `'in-library' | 'wanted' | 'acquirable' | 'external'`. It is a *property* of
+  an entity, not a screen it lives on. The same `AlbumRow`/`SongRow` renders
+  any state; only the badge and primary action differ.
+- **`LocalId`** (`types/EntityId.ts`) — a stable, on-device identity built by
+  `makeLocalId()` from *origin* ids (server+item, or externalSource+nativeId),
+  **never** from display metadata. Identity is deliberately separate from
+  *matching* (`hooks/libraryMatch.ts`, which is mbid-first then normalized
+  title/artist): a server-originated and an external-originated record for the
+  same album have **different** `LocalId`s and are related by matching, not by
+  identity. `localId`/`externalIds`/`libraryState` are additive-optional on the
+  entity types, so adapters populate them incrementally without breaking
+  construction sites; server adapters stamp them from `client.serverId`
+  (guarded — a missing server id yields no id rather than a wrong one).
+- **`resolveLibraryState(facts)`** (`features/library/resolveLibraryState.ts`)
+  is the *pure* single source of truth for the state — precedence
+  in-library > wanted > acquirable > external, fallthrough to `external` (never
+  silently claims ownership). `useLibraryState()` assembles the facts.
+  `isWanted` is stubbed until the Wants system exists.
+- **`useExternalAlbumStatus` still exists on purpose.** `resolveLibraryState`
+  answers *which* state; `useExternalAlbumStatus` additionally polls the
+  downloader queues for in-flight **download progress %**, which the state enum
+  does not carry. The shared rows call it only for external-origin entities
+  (it no-ops on a null album), so a plain library row makes no queue calls.
+  This is a deliberate split of concerns, not leftover duplication.
+- **Two album bodies remain** (`LocalAlbumBody` vs `ExternalAlbumBody`) even
+  though the screen is one state-driven screen: external tracks resolve only to
+  30s previews with different playback capability, a real behavioural
+  difference the row layer already encodes but the list bodies keep explicit.
+  Converging them is a deferred, higher-risk option, not an accident.
+
 ## Where things live
 
 ```
