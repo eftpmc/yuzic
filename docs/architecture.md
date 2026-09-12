@@ -381,6 +381,38 @@ can do*, never *which product it is*.
   the provider list and replaced the two separate Integrations/Downloaders hubs.
   Per-provider detail screens and their deep-link routes are unchanged.
 
+## 8. Wants and Get — intent is not acquisition
+
+A **want** is a save-only declaration of intent; **Get** is the separate act of
+acquiring. The two are deliberately different code paths.
+
+- **`wantsSlice`** (`utils/redux/slices/wantsSlice.ts`) is per-server, persisted,
+  and **pure/save-only** — no reducer performs or triggers acquisition, so a
+  wishlist works with zero providers connected. A want carries `localId`,
+  `title`/`artist` (so it renders with no lookup), `externalIds`, `unit`,
+  `origin`, and an optional `jobRef` it only *references*.
+- **`libraryState:'wanted'`** flows through `resolveLibraryState` via
+  `useLibraryState` reading `selectIsWanted(localId)` — the resolver stays pure;
+  the hook is the only state source.
+- **Get** is `GetReviewSheet` (replaced the old fire-and-forget `DownloadSheet`):
+  it always opens a compact review (target server, unit-compatible provider
+  selection, a "Requesting…" line) and the confirm button is **disabled until a
+  provider is chosen**, so a job never starts from a hidden default. A per-unit
+  default provider (and, for Lidarr albums, a quality profile) persists **only**
+  when the user ticks "save as default"; a per-request override is request-only.
+- **Arrival is presence-based, not queue-based.** `findArrivedWants`
+  (`features/wants/arrival.ts`) matches wants against the *synced library index*
+  (reusing `libraryMatch`), and `useWantArrivalWatcher` removes a fulfilled want
+  + toasts once when its entity appears **by any route** (a Get, a manual copy, a
+  Bandcamp purchase). It is not gated on `jobRef`. The
+  `DownloadersQueueContext` poll still runs untouched — it *causes* the rescan
+  that makes arrival observable; only the completion *signal* moved off
+  queue-disappearance. There is no "Arrived" collection; Recently Added serves it.
+- **One Downloads screen** (`screens/downloads/`) shows on-device **Offline** and
+  server-side **Downloaders** as distinct sections (never conflated), the latter
+  surfacing all activity a provider reports including jobs started outside yuzic,
+  reading the single shared `useDownloadersQueue` poll.
+
 ## Where things live
 
 ```
