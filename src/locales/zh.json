@@ -939,6 +939,10 @@
       "title": "外部专辑",
       "downloadToServer": "下载至服务器",
       "downloadSong": "下载歌曲",
+      "get": "获取",
+      "getSong": "获取歌曲",
+      "want": "想要",
+      "wanted": "已想要",
       "inLibrary": "已在库中",
       "downloading": "正在下载至服务器… {{progress}}%",
       "noServiceConnected": "请在设置中连接下载器以进行下载"
@@ -995,6 +999,16 @@
       "songs_other": "{{count}} 首曲目",
       "externalMetadata": "外部元数据"
     }
+  },
+  "manualAddWant": {
+    "title": "添加到想要列表",
+    "unit": {
+      "track": "歌曲",
+      "album": "专辑"
+    },
+    "titleField": "标题",
+    "artistField": "艺术家",
+    "add": "添加"
   },
   "albumOptions": {
     "actions": {

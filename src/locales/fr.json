@@ -943,6 +943,10 @@
       "title": "Album externe",
       "downloadToServer": "Télécharger sur le serveur",
       "downloadSong": "Télécharger le titre",
+      "get": "Récupérer",
+      "getSong": "Récupérer le titre",
+      "want": "Souhaiter",
+      "wanted": "Souhaité",
       "inLibrary": "Dans la bibliothèque",
       "downloading": "Téléchargement vers le serveur… {{progress}}%",
       "noServiceConnected": "Connectez un téléchargeur dans les réglages pour télécharger"
@@ -999,6 +1003,16 @@
       "songs_other": "{{count}} morceaux",
       "externalMetadata": "Métadonnées externes"
     }
+  },
+  "manualAddWant": {
+    "title": "Ajouter aux souhaits",
+    "unit": {
+      "track": "Titre",
+      "album": "Album"
+    },
+    "titleField": "Titre",
+    "artistField": "Artiste",
+    "add": "Ajouter"
   },
   "albumOptions": {
     "actions": {

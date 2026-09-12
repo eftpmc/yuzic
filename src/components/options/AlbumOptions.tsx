@@ -11,7 +11,7 @@ import { useApi } from '@/api';
 import { shareItem } from '@/utils/share';
 
 import { Album, AlbumBase, ExternalAlbumBase } from '@/types';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
@@ -38,7 +38,10 @@ import {
 } from './OptionSheetPrimitives';
 import { iconSize, spacing, statusColor } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import haptics from '@/utils/haptics';
+import haptics, { selection as hapticsSelection } from '@/utils/haptics';
+import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { selectIsWanted } from '@/utils/redux/selectors/wantsSelectors';
+import { addWant, removeWant } from '@/utils/redux/slices/wantsSlice';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | ExternalAlbumBase | null;
@@ -417,6 +420,7 @@ const ExternalAlbumOptionsSheet = forwardRef<
 >(({ album }, ref) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const dispatch = useDispatch();
 
   const downloadSheetRef = useSheetRef();
   const snapPoints = useMemo(() => ['30%'], []);
@@ -425,6 +429,31 @@ const ExternalAlbumOptionsSheet = forwardRef<
 
   const canDownload = useAnyAlbumDownloaderConnected();
   const sheetBg = useOptionSheetBackground();
+
+  const activeServerId = useSelector(selectActiveServerId);
+  const isWanted = useSelector(
+    album.localId ? selectIsWanted(album.localId) : () => false
+  );
+
+  const handleToggleWant = () => {
+    if (!album.localId || !activeServerId) return;
+    hapticsSelection();
+    if (isWanted) {
+      dispatch(removeWant({ serverId: activeServerId, localId: album.localId }));
+    } else {
+      dispatch(addWant({
+        serverId: activeServerId,
+        want: {
+          localId: album.localId,
+          externalIds: album.externalIds,
+          unit: 'album',
+          title: album.title,
+          artist: album.artist,
+          origin: 'artist-page',
+        },
+      }));
+    }
+  };
 
   return (
     <>
@@ -452,19 +481,36 @@ const ExternalAlbumOptionsSheet = forwardRef<
               icon={<SpinningLoaderCircle size={iconSize.loader} color={statusColor.downloading} />}
               label={t('externalAlbum.menu.downloading', { progress: status.progress })}
             />
-          ) : canDownload ? (
-            <OptionSheetRow
-              icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
-              label={t('externalAlbum.menu.downloadToServer')}
-              onPress={() => downloadSheetRef.current?.present()}
-              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
-            />
           ) : (
-            <OptionSheetRow
-              icon={<CloudDownload size={iconSize.loader} color={colors.muted} />}
-              label={t('externalAlbum.menu.noServiceConnected')}
-              labelColor={colors.muted}
-            />
+            <>
+              {album.localId && (
+                <OptionSheetRow
+                  icon={
+                    <Heart
+                      size={iconSize.loader}
+                      color={isWanted ? statusColor.success : colors.secondary}
+                      fill={isWanted ? statusColor.success : 'none'}
+                    />
+                  }
+                  label={isWanted ? t('externalAlbum.menu.wanted') : t('externalAlbum.menu.want')}
+                  onPress={handleToggleWant}
+                />
+              )}
+              {canDownload ? (
+                <OptionSheetRow
+                  icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
+                  label={t('externalAlbum.menu.get')}
+                  onPress={() => downloadSheetRef.current?.present()}
+                  trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
+                />
+              ) : (
+                <OptionSheetRow
+                  icon={<CloudDownload size={iconSize.loader} color={colors.muted} />}
+                  label={t('externalAlbum.menu.noServiceConnected')}
+                  labelColor={colors.muted}
+                />
+              )}
+            </>
           )}
         </BottomSheetView>
       </BottomSheetModal>

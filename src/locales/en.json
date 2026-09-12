@@ -945,6 +945,10 @@
       "title": "External Album",
       "downloadToServer": "Download to Server",
       "downloadSong": "Download Song",
+      "get": "Get",
+      "getSong": "Get Song",
+      "want": "Want",
+      "wanted": "Wanted",
       "inLibrary": "In Library",
       "downloading": "Downloading to server… {{progress}}%",
       "noServiceConnected": "Connect a downloader in Settings to download"
@@ -1001,6 +1005,16 @@
       "songs_other": "{{count}} songs",
       "externalMetadata": "External metadata"
     }
+  },
+  "manualAddWant": {
+    "title": "Add to Wants",
+    "unit": {
+      "track": "Track",
+      "album": "Album"
+    },
+    "titleField": "Title",
+    "artistField": "Artist",
+    "add": "Add"
   },
   "albumOptions": {
     "actions": {

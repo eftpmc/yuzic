@@ -9,6 +9,7 @@ import {
   selectLidarrAuthenticated,
   selectSlskdAuthenticated,
 } from '@/utils/redux/selectors/downloadersSelectors';
+import { selectIsWanted } from '@/utils/redux/selectors/wantsSelectors';
 import { resolveLibraryState } from './resolveLibraryState';
 
 /**
@@ -21,6 +22,9 @@ export function useLibraryState(album: ExternalAlbumBase | null): LibraryState {
   const { albums: libraryAlbums } = useLibrary();
   const isLidarrConnected = useSelector(selectLidarrAuthenticated);
   const isSlskdConnected = useSelector(selectSlskdAuthenticated);
+  const isWanted = useSelector(
+    album?.localId ? selectIsWanted(album.localId) : () => false
+  );
 
   const isInLibrary = useMemo(() => {
     if (!album) return false;
@@ -34,11 +38,10 @@ export function useLibraryState(album: ExternalAlbumBase | null): LibraryState {
     () =>
       resolveLibraryState({
         isInLibrary,
-        // TODO(Phase C): read wantsSlice
-        isWanted: false,
+        isWanted,
         hasAcquisitionProvider,
         isExternalOrigin,
       }),
-    [isInLibrary, hasAcquisitionProvider, isExternalOrigin]
+    [isInLibrary, isWanted, hasAcquisitionProvider, isExternalOrigin]
   );
 }

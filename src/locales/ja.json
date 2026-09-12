@@ -939,6 +939,10 @@
       "title": "外部アルバム",
       "downloadToServer": "サーバーにダウンロード",
       "downloadSong": "曲をダウンロード",
+      "get": "取得",
+      "getSong": "曲を取得",
+      "want": "ウォンツに追加",
+      "wanted": "ウォンツ済み",
       "inLibrary": "ライブラリ内",
       "downloading": "サーバーにダウンロード中… {{progress}}%",
       "noServiceConnected": "ダウンロードするには設定でダウンローダーを接続してください"
@@ -995,6 +999,16 @@
       "songs_other": "{{count}} 曲",
       "externalMetadata": "外部メタデータ"
     }
+  },
+  "manualAddWant": {
+    "title": "ウォンツに追加",
+    "unit": {
+      "track": "曲",
+      "album": "アルバム"
+    },
+    "titleField": "タイトル",
+    "artistField": "アーティスト",
+    "add": "追加"
   },
   "albumOptions": {
     "actions": {
