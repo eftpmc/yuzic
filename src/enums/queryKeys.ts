@@ -28,6 +28,7 @@ export enum QueryKeys {
 	 * `coverArt` id. Same reason as above — persisted v1 rows have no cover. */
 	ServerNowPlaying = 'server-now-playing-v2',
 	LbSimilarForYou = 'lb-similar-for-you',
+	LbCreatedForPlaylists = 'lb-created-for-playlists',
 	ArtistMbid = 'artist-mbid-lookup',
 	Podcasts = 'server-podcasts',
 	Radio = 'server-radio-stations',

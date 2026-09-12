@@ -842,6 +842,11 @@
       "serverRandomThemed": "Today's {{genre}}",
       "serverNowPlaying": "Playing on your server",
       "lbSimilarForYou": "Because you like {{artist}}",
+      "lbCreatedFor": {
+        "dailyJams": "Daily Jams",
+        "weeklyJams": "Weekly Jams",
+        "weeklyExploration": "Weekly Exploration"
+      },
       "continuePlaying": "Pick back up"
     },
     "empty": {
@@ -1098,7 +1103,8 @@
       "favorite": "Favorite",
       "unfavorite": "Unfavorite",
       "viewExternal": "View External",
-      "share": "Share"
+      "share": "Share",
+      "generatePlaylist": "Make a playlist from this"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",
@@ -1107,7 +1113,10 @@
       "addedToFavorites": "{{title}} added to favorites.",
       "removedFromFavorites": "{{title}} removed from favorites.",
       "updateFavoritesFailed": "Failed to update favorites.",
-      "shareFailed": "Could not create share link"
+      "shareFailed": "Could not create share link",
+      "playlistGenerated_one": "Playlist created with {{count}} track",
+      "playlistGenerated_other": "Playlist created with {{count}} tracks",
+      "playlistGenerationFailed": "Could not generate playlist"
     },
     "sections": {
       "albumInfo": "Album Info"
@@ -1186,7 +1195,8 @@
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
       "goToArtist": "Go to Artist",
-      "viewExternal": "View External"
+      "viewExternal": "View External",
+      "generatePlaylist": "Make a playlist from this"
     },
     "sections": {
       "info": "Artist Info"
@@ -1195,7 +1205,12 @@
       "albums": "Albums",
       "plays": "Plays"
     },
-    "downloadAllFailed": "Some albums failed to download."
+    "downloadAllFailed": "Some albums failed to download.",
+    "toasts": {
+      "playlistGenerated_one": "Playlist created with {{count}} track",
+      "playlistGenerated_other": "Playlist created with {{count}} tracks",
+      "playlistGenerationFailed": "Could not generate playlist"
+    }
   },
   "external": {
     "notFound": "Couldn't find this in any connected source."

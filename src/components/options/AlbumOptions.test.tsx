@@ -70,6 +70,17 @@ jest.mock('@/api', () => ({
   useApi: () => ({ shares: undefined }),
 }));
 
+jest.mock('@/utils/redux/selectors/audiomuseSelectors', () => ({
+  selectAudiomuseConfig: () => ({}),
+}));
+
+const mockCanGeneratePlaylist = jest.fn(() => false);
+const mockGenerateForAlbum = jest.fn();
+jest.mock('@/features/audiomuse/generateFromEntity', () => ({
+  useCanGeneratePlaylist: () => mockCanGeneratePlaylist(),
+  generateForAlbum: (...args: unknown[]) => mockGenerateForAlbum(...args),
+}));
+
 jest.mock('@/contexts/PlayingContext', () => ({
   usePlaying: () => ({
     playSongInCollection: jest.fn(),
@@ -171,6 +182,8 @@ describe('AlbumOptions', () => {
     useExternalAlbumStatus.mockReset().mockReturnValue({ kind: 'none' });
     mockIsWanted.mockReset().mockReturnValue(false);
     mockDispatch.mockClear();
+    mockCanGeneratePlaylist.mockReset().mockReturnValue(false);
+    mockGenerateForAlbum.mockReset();
   });
 
   it('renders the library action set for a library album', async () => {
@@ -230,5 +243,17 @@ describe('AlbumOptions', () => {
     const view = await render(<AlbumOptions ref={null as any} album={noLocalIdAlbum} />);
     expect(view.queryByText('externalAlbum.menu.want')).toBeNull();
     expect(view.queryByText('externalAlbum.menu.wanted')).toBeNull();
+  });
+
+  it('hides "Make a playlist from this" for a library album when the playlist.generate slot is unfilled', async () => {
+    mockCanGeneratePlaylist.mockReturnValue(false);
+    const view = await render(<AlbumOptions ref={null as any} album={libraryAlbum} />);
+    expect(view.queryByText('albumOptions.actions.generatePlaylist')).toBeNull();
+  });
+
+  it('shows "Make a playlist from this" for a library album when the slot is filled', async () => {
+    mockCanGeneratePlaylist.mockReturnValue(true);
+    const view = await render(<AlbumOptions ref={null as any} album={libraryAlbum} />);
+    expect(view.getByText('albumOptions.actions.generatePlaylist')).toBeTruthy();
   });
 });

@@ -837,6 +837,11 @@
       "serverRandomThemed": "今日{{genre}}",
       "serverNowPlaying": "服务器上正在播放",
       "lbSimilarForYou": "因为你喜欢 {{artist}}",
+      "lbCreatedFor": {
+        "dailyJams": "每日金曲",
+        "weeklyJams": "每周金曲",
+        "weeklyExploration": "每周探索"
+      },
       "continuePlaying": "继续播放"
     },
     "empty": {
@@ -1092,7 +1097,8 @@
       "downloaded": "已下载",
       "favorite": "加入收藏",
       "unfavorite": "移出收藏",
-      "share": "共享"
+      "share": "共享",
+      "generatePlaylist": "以此生成播放列表"
     },
     "sections": {
       "albumInfo": "专辑信息"
@@ -1112,7 +1118,10 @@
       "addedToFavorites": "{{title}} 已加入收藏。",
       "removedFromFavorites": "{{title}} 已移出收藏。",
       "updateFavoritesFailed": "更新收藏失败。",
-      "shareFailed": "无法创建共享链接"
+      "shareFailed": "无法创建共享链接",
+      "playlistGenerated_one": "已生成包含 {{count}} 首曲目的播放列表",
+      "playlistGenerated_other": "已生成包含 {{count}} 首曲目的播放列表",
+      "playlistGenerationFailed": "无法生成播放列表"
     }
   },
   "playlistOptions": {
@@ -1165,7 +1174,8 @@
       "downloading": "下载中…",
       "downloaded": "已下载",
       "goToArtist": "前往歌手页面",
-      "viewExternal": "查看外部信息"
+      "viewExternal": "查看外部信息",
+      "generatePlaylist": "以此生成播放列表"
     },
     "sections": {
       "info": "歌手信息"
@@ -1174,7 +1184,12 @@
       "albums": "专辑数",
       "plays": "播放次数"
     },
-    "downloadAllFailed": "部分专辑下载失败。"
+    "downloadAllFailed": "部分专辑下载失败。",
+    "toasts": {
+      "playlistGenerated_one": "已生成包含 {{count}} 首曲目的播放列表",
+      "playlistGenerated_other": "已生成包含 {{count}} 首曲目的播放列表",
+      "playlistGenerationFailed": "无法生成播放列表"
+    }
   },
   "external": {
     "notFound": "在已连接的来源中找不到此内容。"

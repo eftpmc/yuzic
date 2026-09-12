@@ -840,6 +840,11 @@
       "serverRandomThemed": "{{genre}} du jour",
       "serverNowPlaying": "En écoute sur votre serveur",
       "lbSimilarForYou": "Parce que vous aimez {{artist}}",
+      "lbCreatedFor": {
+        "dailyJams": "Jams quotidiens",
+        "weeklyJams": "Jams hebdomadaires",
+        "weeklyExploration": "Exploration hebdomadaire"
+      },
       "continuePlaying": "Reprendre"
     },
     "empty": {
@@ -1096,7 +1101,8 @@
       "downloaded": "Téléchargé",
       "favorite": "Ajouter aux favoris",
       "unfavorite": "Retirer des favoris",
-      "share": "Partager"
+      "share": "Partager",
+      "generatePlaylist": "Créer une liste de lecture à partir de ceci"
     },
     "toasts": {
       "addedNext": "Lecture de {{title}} ensuite",
@@ -1105,7 +1111,10 @@
       "addedToFavorites": "{{title}} ajouté aux favoris.",
       "removedFromFavorites": "{{title}} retiré des favoris.",
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
-      "shareFailed": "Impossible de créer le lien de partage"
+      "shareFailed": "Impossible de créer le lien de partage",
+      "playlistGenerated_one": "Liste de lecture créée avec {{count}} morceau",
+      "playlistGenerated_other": "Liste de lecture créée avec {{count}} morceaux",
+      "playlistGenerationFailed": "Impossible de générer la liste de lecture"
     },
     "sections": {
       "albumInfo": "Informations sur l'album"
@@ -1169,7 +1178,8 @@
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
       "goToArtist": "Aller à l'artiste",
-      "viewExternal": "Voir externe"
+      "viewExternal": "Voir externe",
+      "generatePlaylist": "Créer une liste de lecture à partir de ceci"
     },
     "sections": {
       "info": "Informations sur l'artiste"
@@ -1178,7 +1188,12 @@
       "albums": "Albums",
       "plays": "Lectures"
     },
-    "downloadAllFailed": "Certains albums n'ont pas pu être téléchargés."
+    "downloadAllFailed": "Certains albums n'ont pas pu être téléchargés.",
+    "toasts": {
+      "playlistGenerated_one": "Liste de lecture créée avec {{count}} morceau",
+      "playlistGenerated_other": "Liste de lecture créée avec {{count}} morceaux",
+      "playlistGenerationFailed": "Impossible de générer la liste de lecture"
+    }
   },
   "external": {
     "notFound": "Introuvable dans les sources connectées."

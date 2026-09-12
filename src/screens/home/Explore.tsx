@@ -24,6 +24,7 @@ import GenreSection from './components/GenreSection'
 import ServerRandomSection from './components/ServerRandomSection'
 import ServerNowPlayingSection from './components/ServerNowPlayingSection'
 import LBSimilarForYouSection from './components/LBSimilarForYouSection'
+import LBCreatedForSection from './components/LBCreatedForSection'
 import ContinuePlayingSection from './components/ContinuePlayingSection'
 import SourceGroup from './components/SourceGroup'
 import { ResumeQueueBanner } from './components/ResumeQueueBanner'
@@ -60,6 +61,8 @@ function renderSection(config: SectionConfig, refreshKey: number) {
       return <ServerNowPlayingSection key={config.key} sectionKey={config.key} />
     case 'lbSimilarArtistsForYou':
       return <LBSimilarForYouSection key={config.key} sectionKey={config.key} artistName={config.artistName!} refreshKey={refreshKey} />
+    case 'lbCreatedFor':
+      return <LBCreatedForSection key={config.key} sectionKey={config.key} mixType={config.mixType!} refreshKey={refreshKey} />
     default:
       return null
   }
