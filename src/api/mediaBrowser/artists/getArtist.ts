@@ -1,4 +1,5 @@
 import { Artist } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildCover } from "../brand";
 import { MediaBrowserItemsResponse } from "../types";
@@ -25,13 +26,19 @@ export async function getArtist(
   const cover = buildCover(client.brand, artistRaw.Id);
 
   const mbid = artistRaw.ProviderIds?.MusicBrainz ?? null;
+  const id = artistRaw.Id ?? "";
+  const sourceServerId = client.serverId;
 
   return {
-    id: artistRaw.Id ?? "",
+    id,
     name: artistRaw.Name ?? "Unknown Artist",
     cover,
     subtext: "Artist",
     mbid,
     albumIds: [],
+    localId: sourceServerId
+      ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: id })
+      : undefined,
+    libraryState: "in-library",
   };
 }

@@ -1,4 +1,5 @@
 import { Artist, CoverSource } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { NavidromeClient } from "../client";
 import { SubsonicResponse } from "../types";
 
@@ -16,11 +17,18 @@ export async function getArtist(
     ? { kind: "navidrome", coverArtId: artist.coverArt }
     : { kind: "none" };
 
+  const id = artist.id ?? "";
+  const sourceServerId = client.serverId;
+
   return {
-    id: artist.id ?? "",
+    id,
     name: artist.name ?? "Unknown Artist",
     cover,
     subtext: "Artist",
     albumIds: [],
+    localId: sourceServerId
+      ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: id })
+      : undefined,
+    libraryState: "in-library",
   };
 }

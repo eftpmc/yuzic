@@ -1,4 +1,5 @@
 import { AlbumBase, Song } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildSongCover } from "../brand";
 import { normalizeGenres } from "../utils/normalizeGenres";
@@ -32,6 +33,7 @@ async function fetchGetStarredAlbums(client: MediaBrowserClient) {
 
 function normalizeStarredSongs(raw: MediaBrowserItemsResponse, client: MediaBrowserClient): Song[] {
   const items = raw?.Items ?? [];
+  const sourceServerId = client.serverId;
 
   return items.map((i) => {
     const ms = i.MediaSources?.[0];
@@ -55,6 +57,10 @@ function normalizeStarredSongs(raw: MediaBrowserItemsResponse, client: MediaBrow
       trackNumber: i.IndexNumber ?? undefined,
       dateAdded: i.DateCreated ?? undefined,
       genres: normalizeGenres(i.Genres),
+      localId: sourceServerId
+        ? makeLocalId({ kind: "track", sourceServerId, serverItemId: id })
+        : undefined,
+      libraryState: "in-library",
     };
   });
 }

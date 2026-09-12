@@ -1,4 +1,5 @@
 import { Artist } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { MediaBrowserClient } from "../client";
 import { buildCoverWithTag } from "../brand";
 import { MediaBrowserItemsResponse } from "../types";
@@ -21,19 +22,25 @@ export async function getArtists(client: MediaBrowserClient): Promise<GetArtists
 
   const raw = await client.request<MediaBrowserItemsResponse>(path);
   const items = raw?.Items ?? [];
+  const sourceServerId = client.serverId;
 
   return items.map((a) => {
     const cover = buildCoverWithTag(client.brand, a.Id, a.ImageTags?.Primary ?? undefined);
 
     const mbid = a.ProviderIds?.MusicBrainz ?? null;
+    const id = a.Id ?? "";
 
     return {
-      id: a.Id ?? "",
+      id,
       name: a.Name ?? "Unknown Artist",
       cover,
       subtext: "Artist",
       mbid,
       albumIds: [],
+      localId: sourceServerId
+        ? makeLocalId({ kind: "artist", sourceServerId, serverItemId: id })
+        : undefined,
+      libraryState: "in-library",
     };
   });
 }

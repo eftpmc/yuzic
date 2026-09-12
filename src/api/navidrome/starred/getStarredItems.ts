@@ -1,4 +1,5 @@
 import { AlbumBase, Song } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { NavidromeClient } from "../client";
 import { normalizeAlbumEntry } from "../albums/getAlbumList";
 import { SubsonicResponse } from "../types";
@@ -13,9 +14,10 @@ export async function getStarredItems(
 ): Promise<GetStarredItemsResult> {
   const raw = await client.request<SubsonicResponse>("getStarred.view");
   const starred = raw?.["subsonic-response"]?.starred ?? {};
+  const sourceServerId = client.serverId;
 
   return {
-    albums: (starred.album ?? []).map(normalizeAlbumEntry),
+    albums: (starred.album ?? []).map((a) => normalizeAlbumEntry(a, sourceServerId)),
     songs: (starred.song ?? [])
       .filter((s): s is typeof s & { id: string } => !!s?.id)
       .map((s) => ({
@@ -42,6 +44,10 @@ export async function getStarredItems(
         genres: Array.isArray(s.genres) && s.genres.length > 0
           ? s.genres.map((g) => (typeof g === "string" ? g : g?.name)).filter((g): g is string => !!g)
           : undefined,
+        localId: sourceServerId
+          ? makeLocalId({ kind: "track", sourceServerId, serverItemId: s.id })
+          : undefined,
+        libraryState: "in-library",
       })),
   };
 }

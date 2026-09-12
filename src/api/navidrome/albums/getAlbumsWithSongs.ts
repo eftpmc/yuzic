@@ -1,4 +1,5 @@
 import { Album, CoverSource, Song } from "@/types";
+import { makeLocalId } from "@/types/EntityId";
 import type { NavidromeClient } from "../client";
 import { getAlbumList } from "./getAlbumList";
 import { SubsonicResponse } from "../types";
@@ -9,6 +10,7 @@ export async function getAlbumsWithSongs(client: NavidromeClient): Promise<Album
   const albumList = await getAlbumList(client, "alphabeticalByName");
   if (albumList.length === 0) return [];
 
+  const sourceServerId = client.serverId;
   const results: Album[] = [];
 
   for (let i = 0; i < albumList.length; i += BATCH_SIZE) {
@@ -53,6 +55,10 @@ export async function getAlbumsWithSongs(client: NavidromeClient): Promise<Album
           genres: Array.isArray(s.genres) && s.genres.length > 0
             ? s.genres.map((g) => (typeof g === "string" ? g : g?.name)).filter((g): g is string => !!g)
             : s.genre ? [s.genre] : undefined,
+          localId: sourceServerId
+            ? makeLocalId({ kind: "track", sourceServerId, serverItemId: s.id })
+            : undefined,
+          libraryState: "in-library",
         }));
 
       const base = batch[j];
