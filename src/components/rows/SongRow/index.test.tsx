@@ -32,7 +32,11 @@ jest.mock('@/features/home/hooks/useDeezerEnabled', () => ({
   useDeezerDiscoveryEnabled: () => false,
 }));
 
-jest.mock('@/components/options/ExternalSongOptions', () => 'ExternalSongOptions');
+jest.mock('@/components/options/SongOptions', () => 'SongOptions');
+
+jest.mock('@/utils/useSheetRef', () => ({
+  useSheetRef: () => ({ current: null }),
+}));
 
 jest.mock('@backpackapp-io/react-native-toast', () => ({
   toast: Object.assign(jest.fn(), { error: jest.fn() }),

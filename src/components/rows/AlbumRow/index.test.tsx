@@ -22,7 +22,6 @@ jest.mock('@/utils/useSheetRef', () => ({
 }));
 
 jest.mock('@/components/options/AlbumOptions', () => 'AlbumOptions');
-jest.mock('@/components/options/ExternalAlbumOptions', () => 'ExternalAlbumOptions');
 jest.mock('@/components/MediaListRow', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Text: RNText, View: RNView } = require('react-native');

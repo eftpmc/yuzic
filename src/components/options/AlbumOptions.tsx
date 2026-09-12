@@ -1,26 +1,31 @@
 import React, { forwardRef, useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe, Share2 } from 'lucide-react-native';
+import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe, Share2, Link, CloudDownload, ChevronRight } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useApi } from '@/api';
 import { shareItem } from '@/utils/share';
 
-import { Album, AlbumBase } from '@/types';
+import { Album, AlbumBase, ExternalAlbumBase } from '@/types';
 import { useSelector } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
 import { useRouter } from 'expo-router';
 import { useEnabledExternalSources } from '@/features/sources/registry';
+import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
 import { useStarredAlbums, useStarAlbum, useUnstarAlbum } from '@/hooks/starred';
+import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
+import DownloadSheet from '@/components/options/DownloadSheet';
+import { useSheetRef } from '@/utils/useSheetRef';
 import {
   OptionSheetChipsRow,
   OptionSheetDivider,
@@ -31,19 +36,57 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { iconSize, statusColor } from '@/constants/design';
+import { iconSize, spacing, statusColor } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import haptics from '@/utils/haptics';
 
 export type AlbumOptionsProps = {
-  album: AlbumBase | Album | null;
-  /** Hide "Go to Album" when already on the album screen */
+  album: AlbumBase | Album | ExternalAlbumBase | null;
+  /** Hide "Go to Album" when already on the album screen (library albums only). */
   hideGoToAlbum?: boolean;
 };
 
-const AlbumOptions = forwardRef<
+/**
+ * True when `album` came from an external catalog (Deezer/etc) rather than
+ * the user's library. `ExternalAlbumBase.artist` is a plain string, while a
+ * library `AlbumBase`/`Album`'s `artist` is always an `ArtistRef` object —
+ * that shape difference is guaranteed to hold for both types, so it doubles
+ * as the discriminator without needing a new field on either type. Mirrors
+ * `isExternalAlbum` in `components/rows/AlbumRow`.
+ */
+function isExternalAlbumOrigin(
+  album: AlbumBase | Album | ExternalAlbumBase
+): album is ExternalAlbumBase {
+  return typeof album.artist === 'string';
+}
+
+const AlbumOptions = forwardRef<BottomSheetModal, AlbumOptionsProps>(
+  ({ album, hideGoToAlbum }, ref) => {
+    if (album && isExternalAlbumOrigin(album)) {
+      return <ExternalAlbumOptionsSheet ref={ref} album={album} />;
+    }
+    return (
+      <LibraryAlbumOptionsSheet ref={ref} album={album} hideGoToAlbum={hideGoToAlbum} />
+    );
+  }
+);
+
+AlbumOptions.displayName = 'AlbumOptions';
+
+export default AlbumOptions;
+
+// ---------------------------------------------------------------------------
+// Library album action set (unchanged from the pre-merge AlbumOptions body).
+// ---------------------------------------------------------------------------
+
+type LibraryAlbumOptionsProps = {
+  album: AlbumBase | Album | null;
+  hideGoToAlbum?: boolean;
+};
+
+const LibraryAlbumOptionsSheet = forwardRef<
   BottomSheetModal,
-  AlbumOptionsProps
+  LibraryAlbumOptionsProps
 >(({ album, hideGoToAlbum }, ref) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -356,6 +399,83 @@ const AlbumOptions = forwardRef<
   );
 });
 
-AlbumOptions.displayName = 'AlbumOptions';
+LibraryAlbumOptionsSheet.displayName = 'LibraryAlbumOptionsSheet';
 
-export default AlbumOptions;
+// ---------------------------------------------------------------------------
+// External album action set (moved verbatim from the deleted
+// ExternalAlbumOptions, minus its own trigger button — the row now owns
+// that, mirroring the library branch's trigger/sheet split).
+// ---------------------------------------------------------------------------
+
+type ExternalAlbumOptionsSheetProps = {
+  album: ExternalAlbumBase;
+};
+
+const ExternalAlbumOptionsSheet = forwardRef<
+  BottomSheetModal,
+  ExternalAlbumOptionsSheetProps
+>(({ album }, ref) => {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const downloadSheetRef = useSheetRef();
+  const snapPoints = useMemo(() => ['30%'], []);
+
+  const status = useExternalAlbumStatus(album);
+
+  const canDownload = useAnyAlbumDownloaderConnected();
+  const sheetBg = useOptionSheetBackground();
+
+  return (
+    <>
+      <BottomSheetModal
+        ref={ref}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        handleIndicatorStyle={{ backgroundColor: colors.border }}
+        backgroundStyle={[optionSheetStyles.sheetBackground, sheetBg]}
+      >
+        <BottomSheetView style={[optionSheetStyles.sheetContent, sheetBg]}>
+          <OptionSheetHeader cover={album.cover} title={album.title} subtitle={album.artist} />
+
+          <OptionSheetDivider />
+
+          {status.kind === 'in_library' ? (
+            <OptionSheetRow
+              icon={<Link size={iconSize.loader} color={statusColor.success} />}
+              label={t('externalAlbum.menu.inLibrary')}
+            />
+          ) : status.kind === 'downloading' ? (
+            <OptionSheetRow
+              icon={<SpinningLoaderCircle size={iconSize.loader} color={statusColor.downloading} />}
+              label={t('externalAlbum.menu.downloading', { progress: status.progress })}
+            />
+          ) : canDownload ? (
+            <OptionSheetRow
+              icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
+              label={t('externalAlbum.menu.downloadToServer')}
+              onPress={() => downloadSheetRef.current?.present()}
+              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
+            />
+          ) : (
+            <OptionSheetRow
+              icon={<CloudDownload size={iconSize.loader} color={colors.muted} />}
+              label={t('externalAlbum.menu.noServiceConnected')}
+              labelColor={colors.muted}
+            />
+          )}
+        </BottomSheetView>
+      </BottomSheetModal>
+
+      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
+    </>
+  );
+});
+
+ExternalAlbumOptionsSheet.displayName = 'ExternalAlbumOptionsSheet';
+
+const styles = StyleSheet.create({
+  chevron: { marginLeft: spacing.xs },
+});

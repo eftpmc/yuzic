@@ -23,7 +23,8 @@ import { useTranslation } from 'react-i18next';
 import { useDownloadState } from '@/contexts/DownloadContext';
 import { formatSongDuration } from '@/utils/formatDuration';
 import Touchable from '@/components/Touchable';
-import ExternalSongOptions from '@/components/options/ExternalSongOptions';
+import SongOptions from '@/components/options/SongOptions';
+import { useSheetRef } from '@/utils/useSheetRef';
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled';
 
 export type SongRowSong = Song | ExternalSong;
@@ -66,6 +67,7 @@ const ExternalSongRowView: React.FC<{
   const samplesEnabled = useDeezerDiscoveryEnabled();
   const density = useListDensity();
   const hasPreview = !!previewUrl;
+  const optionsSheetRef = useSheetRef();
 
   const handlePress = useCallback(() => {
     if (onPress) {
@@ -76,28 +78,40 @@ const ExternalSongRowView: React.FC<{
   }, [onPress, samplesEnabled, t]);
 
   return (
-    <MediaListRow
-      title={song.title}
-      subtitle={song.artist || albumArtist}
-      cover={song.cover}
-      onPress={handlePress}
-      showCover={false}
-      variant="compact"
-      rowStyle={{ paddingVertical: density.trackRowPadding }}
-      trailing={
-        <View style={styles.rowRight}>
-          {hasPreview && (
-            <PlayCircle size={iconSize.inline} color={colors.subtext} />
-          )}
-          <ExternalSongOptions
-            song={song}
-            albumTitle={albumTitle}
-            albumArtist={albumArtist}
-            onPlay={previewUrl ? onPress : undefined}
-          />
-        </View>
-      }
-    />
+    <>
+      <MediaListRow
+        title={song.title}
+        subtitle={song.artist || albumArtist}
+        cover={song.cover}
+        onPress={handlePress}
+        showCover={false}
+        variant="compact"
+        rowStyle={{ paddingVertical: density.trackRowPadding }}
+        trailing={
+          <View style={styles.rowRight}>
+            {hasPreview && (
+              <PlayCircle size={iconSize.inline} color={colors.subtext} />
+            )}
+            <Touchable
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.common.moreOptions')}
+              onPress={() => optionsSheetRef.current?.present()}
+              hitSlop={hitSlopFor(18)}
+            >
+              <Ellipsis size={iconSize.row} color={colors.secondary} />
+            </Touchable>
+          </View>
+        }
+      />
+
+      <SongOptions
+        ref={optionsSheetRef}
+        selectedSong={song}
+        albumTitle={albumTitle}
+        albumArtist={albumArtist}
+        onPlay={previewUrl ? onPress : undefined}
+      />
+    </>
   );
 };
 

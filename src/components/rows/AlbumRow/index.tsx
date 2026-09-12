@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 
 import { AlbumBase, ExternalAlbumBase } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import ExternalAlbumOptions from '@/components/options/ExternalAlbumOptions';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useTheme } from '@/hooks/useTheme';
@@ -71,14 +70,25 @@ const AlbumRow: React.FC<Props> = ({
       ) : null;
 
     return (
-      <MediaListRow
-        title={album.title}
-        subtitle={subtextOverride ?? album.subtext}
-        subtitleTrailing={statusBadge}
-        cover={album.cover}
-        onPress={handlePress}
-        trailing={<ExternalAlbumOptions album={album} />}
-      />
+      <>
+        <MediaListRow
+          title={album.title}
+          subtitle={subtextOverride ?? album.subtext}
+          subtitleTrailing={statusBadge}
+          cover={album.cover}
+          onPress={handlePress}
+          trailing={
+            <IconActionButton
+              icon={<Ellipsis size={iconSize.header} color={colors.secondary} />}
+              onPress={handleOptionsPress}
+              accessibilityLabel={t('a11y.common.moreOptions')}
+              size="compact"
+            />
+          }
+        />
+
+        <AlbumOptions ref={optionsSheetRef} album={album} />
+      </>
     );
   }
 
