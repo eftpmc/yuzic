@@ -28,6 +28,7 @@ export enum QueryKeys {
 	 * `coverArt` id. Same reason as above — persisted v1 rows have no cover. */
 	ServerNowPlaying = 'server-now-playing-v2',
 	LbSimilarForYou = 'lb-similar-for-you',
+	LbCreatedForPlaylists = 'lb-created-for-playlists',
 	ArtistMbid = 'artist-mbid-lookup',
 	Podcasts = 'server-podcasts',
 	Radio = 'server-radio-stations',
@@ -45,4 +46,9 @@ export enum QueryKeys {
 	ServerSimilarAlbums = 'server-similar-albums',
 	LocalArtistTopTracks = 'local-artist-top-tracks',
 	LocalArtistExternalDiscography = 'local-artist-external-discography',
+	MetadataArtistInfo = 'metadata-artist-info',
+	MetadataArtwork = 'metadata-artwork',
+	/** Local-first daily mix: play-stats seed + server-native similarity, zero
+	 * external calls (see LocalMixSection). */
+	LocalMix = 'local-mix',
 }

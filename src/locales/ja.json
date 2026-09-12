@@ -5,9 +5,10 @@
       "general": "一般",
       "plugins": "プラグイン",
       "connections": "接続",
-      "integrations": "連携",
-      "downloaders": "ダウンローダー",
       "about": "情報"
+    },
+    "connections": {
+      "sources": "ライブラリと発見のソース"
     },
     "rows": {
       "server": "サーバー",
@@ -163,6 +164,35 @@
       "homeSourcesListenbrainzSubtext": "ListenBrainz の類似アーティストの棚を表示します。",
       "homeSourcesDeezer": "Deezer",
       "homeSourcesDeezerSubtext": "Deezer のディスカバリー棚（チャート、人気曲、類似アーティスト）を表示します。"
+    },
+    "lyrics": {
+      "title": "歌詞",
+      "order": "フォールバック順序",
+      "serverEmbedded": "サーバー内蔵",
+      "serverEmbeddedSubtext": "常に最初に確認されます — サーバーがすでに持っている曲の歌詞です。",
+      "lrclib": "LRCLIB",
+      "lrclibSubtext": "無料・匿名の歌詞検索。デフォルトではオフ。サーバーに歌詞がない場合に使うには有効にしてください。"
+    },
+    "search": {
+      "title": "検索",
+      "sourcesSection": "検索ソース",
+      "explanation": "検索画面の「その他のソース」スコープが問い合わせるソース。ホームとは独立しています — ホームの棚を有効にしても検索が有効になるわけではなく、その逆も同様です。",
+      "deezer": "Deezer",
+      "deezerSubtext": "「その他のソース」での検索に Deezer のアルバムとアーティストを含めます。",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "「その他のソース」での検索に MusicBrainz のアルバムとアーティストを含めます。"
+    },
+    "metadata": {
+      "title": "メタデータ",
+      "explanation": "表示のみです。サーバーにないアーティスト情報やアートワークを補完します — サーバー上の何かを変更したり、タグやファイルを書き込んだりすることは一切ありません。ソースをオフにすると、サーバーが表示する内容そのものに戻ります。",
+      "artistInfoSection": "アーティスト情報",
+      "artworkSection": "アートワーク",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "アーティストの経歴とタグ。デフォルトではオフ。サーバーに経歴がない場合に使うには有効にしてください。",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "アーティスト画像。デフォルトではオフ。サーバーにアーティスト写真がない場合に使うには有効にしてください。",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "MusicBrainz IDによるアルバムカバー。デフォルトではオフ。サーバーにカバーがない場合に使うには有効にしてください。"
     },
     "library": {
       "title": "ライブラリ",
@@ -389,7 +419,9 @@
         "connectionFailed": "Lidarr の接続に失敗しました",
         "disconnected": "Lidarr から切断しました。",
         "credentialsTitle": "接続",
-        "credentialsHelper": "LidarrサーバーのURLとAPIキー。Lidarrの Settings → General にあります。"
+        "credentialsHelper": "LidarrサーバーのURLとAPIキー。Lidarrの Settings → General にあります。",
+        "qualityProfileTitle": "品質プロファイル",
+        "defaultQualityProfile": "デフォルトの品質プロファイル"
       },
       "slskd": {
         "title": "slskd",
@@ -470,7 +502,12 @@
       "scrobbleDescription": "再生済みトラックをプロフィールに記録する。",
       "nowPlayingDescription": "再生中の曲をリアルタイムで表示する。",
       "markAsPlayed": "再生済みにする",
-      "markAsPlayedDescription": "サーバーの再生回数を更新します。"
+      "markAsPlayedDescription": "サーバーの再生回数を更新します。",
+      "routeDisabled": "無効",
+      "routeDirect": "Yuzicから直接",
+      "throughServer": "サーバー経由",
+      "throughServerMarkAsPlayed": "サーバー経由(再生済みにする)",
+      "duplicateRiskNote": "「サーバー経由」を選択しても、Yuzicはサーバーが実際にスクロブルを転送しているかを確認できません。サーバー側でも独自にスクロブルを送信するよう設定されている場合や、同じアカウントで別のアプリがスクロブルしている場合、再生が二重に記録されることがあります。"
     },
     "home": {
       "title": "ホーム"
@@ -620,11 +657,24 @@
       "unsupported": "未対応のファイル {{count}} 件をスキップしました",
       "unsupported_other": "未対応のファイル {{count}} 件をスキップしました",
       "importFailed": "ファイルを読み込めませんでした。"
+    },
+    "discovery": {
+      "title": "ライブラリの外側も発見する",
+      "subtitle": "Yuzic は任意で Deezer と ListenBrainz におすすめ、似たアーティスト、アートワークを問い合わせることができます — どちらもアカウント不要です。",
+      "whatIsSent": "送信される内容：質問に必要なアーティスト名・アルバム名・トラック名のみです。これをオンにしない限り、それ以外のあなたやリスニング履歴に関する情報はこの端末から送信されません。",
+      "enable": "発見機能を有効にする",
+      "notNow": "後で"
     }
   },
   "library": {
     "offlineBanner": "オフライン — 同期済みのライブラリとダウンロードを表示しています",
     "title": "ライブラリ",
+    "downloads": {
+      "title": "ダウンロード"
+    },
+    "wants": {
+      "title": "ウォンツ"
+    },
     "view": {
       "switchToList": "リスト表示に切り替え",
       "switchToGrid": "グリッド表示に切り替え"
@@ -734,6 +784,16 @@
     "clearRecent": "クリア",
     "removeRecentSearch": "「{{query}}」を最近の検索から削除",
     "recentlyOpened": "最近開いた項目",
+    "scope": {
+      "library": "ライブラリ",
+      "other": "その他のソース"
+    },
+    "filters": {
+      "title": "フィルター",
+      "sources": "ソース",
+      "entityTypes": "対象",
+      "noSourcesEnabled": "検索ソースが有効になっていません。設定 › 検索 で有効にしてください。"
+    },
     "entityTypes": {
       "song": "曲",
       "album": "アルバム",
@@ -762,7 +822,9 @@
       "topSongs": "人気の曲"
     },
     "showMore": "あと{{count}}件",
-    "showUnowned": "未所持の{{count}}件"
+    "showUnowned": "未所持の{{count}}件",
+    "enrichedBioSource": "{{source}}より",
+    "enrichedArtworkSource": "{{source}}より"
   },
   "explore": {
     "sections": {
@@ -783,6 +845,12 @@
       "serverRandomThemed": "今日の{{genre}}",
       "serverNowPlaying": "サーバーで再生中",
       "lbSimilarForYou": "{{artist}} が好きなあなたへ",
+      "localMix": "あなたのミックス",
+      "lbCreatedFor": {
+        "dailyJams": "デイリージャム",
+        "weeklyJams": "ウィークリージャム",
+        "weeklyExploration": "ウィークリーエクスプロレーション"
+      },
       "continuePlaying": "続きから"
     },
     "empty": {
@@ -938,9 +1006,23 @@
       "title": "外部アルバム",
       "downloadToServer": "サーバーにダウンロード",
       "downloadSong": "曲をダウンロード",
+      "get": "取得",
+      "getSong": "曲を取得",
+      "want": "ウォンツに追加",
+      "wanted": "ウォンツ済み",
+      "arrived": "{{title}} がライブラリに追加されました",
       "inLibrary": "ライブラリ内",
       "downloading": "サーバーにダウンロード中… {{progress}}%",
       "noServiceConnected": "ダウンロードするには設定でダウンローダーを接続してください"
+    },
+    "review": {
+      "targetServer": "対象サーバー",
+      "noServer": "サーバーが選択されていません",
+      "requesting": "リクエスト内容",
+      "saveAsDefaultAlbums": "アルバムの既定として保存",
+      "saveAsDefaultTracks": "曲の既定として保存",
+      "qualityProfile": "品質プロファイル",
+      "confirmGet": "取得"
     },
     "serverStatus": {
       "onServer": "ライブラリ内",
@@ -995,6 +1077,21 @@
       "externalMetadata": "外部メタデータ"
     }
   },
+  "wants": {
+    "title": "ウォンツ",
+    "empty": "まだ何も保存されていません。欲しいトラックやアルバムを追加すると、ここに表示されます。",
+    "manualAdd": "ウォンツに追加"
+  },
+  "manualAddWant": {
+    "title": "ウォンツに追加",
+    "unit": {
+      "track": "曲",
+      "album": "アルバム"
+    },
+    "titleField": "タイトル",
+    "artistField": "アーティスト",
+    "add": "追加"
+  },
   "albumOptions": {
     "actions": {
       "play": "再生",
@@ -1009,7 +1106,8 @@
       "downloaded": "ダウンロード済み",
       "favorite": "お気に入り",
       "unfavorite": "お気に入り解除",
-      "share": "共有"
+      "share": "共有",
+      "generatePlaylist": "これでプレイリストを作成"
     },
     "toasts": {
       "addedNext": "{{title}}を次に再生",
@@ -1018,7 +1116,10 @@
       "addedToFavorites": "{{title}} をお気に入りに追加しました。",
       "removedFromFavorites": "{{title}} をお気に入りから削除しました。",
       "updateFavoritesFailed": "お気に入りの更新に失敗しました。",
-      "shareFailed": "共有リンクを作成できませんでした"
+      "shareFailed": "共有リンクを作成できませんでした",
+      "playlistGenerated_one": "{{count}}曲でプレイリストを作成しました",
+      "playlistGenerated_other": "{{count}}曲でプレイリストを作成しました",
+      "playlistGenerationFailed": "プレイリストを生成できませんでした"
     },
     "sections": {
       "albumInfo": "アルバム情報"
@@ -1082,7 +1183,8 @@
       "downloading": "ダウンロード中…",
       "downloaded": "ダウンロード済み",
       "goToArtist": "アーティストへ",
-      "viewExternal": "外部で表示"
+      "viewExternal": "外部で表示",
+      "generatePlaylist": "これでプレイリストを作成"
     },
     "sections": {
       "info": "アーティスト情報"
@@ -1091,7 +1193,12 @@
       "albums": "アルバム",
       "plays": "再生回数"
     },
-    "downloadAllFailed": "一部のアルバムのダウンロードに失敗しました。"
+    "downloadAllFailed": "一部のアルバムのダウンロードに失敗しました。",
+    "toasts": {
+      "playlistGenerated_one": "{{count}}曲でプレイリストを作成しました",
+      "playlistGenerated_other": "{{count}}曲でプレイリストを作成しました",
+      "playlistGenerationFailed": "プレイリストを生成できませんでした"
+    }
   },
   "external": {
     "notFound": "接続されたソースで見つかりませんでした。"
@@ -1260,6 +1367,9 @@
       "reset": "イコライザーをフラットに戻す",
       "preset": "{{name}} イコライザープリセット",
       "decibels": "{{gain}} デシベル"
+    },
+    "wants": {
+      "remove": "「{{title}}」をウォンツから削除"
     }
   },
   "tabs": {
@@ -1270,6 +1380,10 @@
   "downloads": {
     "title": "ダウンロードキュー",
     "noDownloaders": "ダウンローダーが接続されていません。設定から追加してください。",
-    "jobFailed": "「{{title}}」のダウンロードを完了できませんでした。キューに残り、再試行されます。"
+    "jobFailed": "「{{title}}」のダウンロードを完了できませんでした。キューに残り、再試行されます。",
+    "section": {
+      "offline": "オフライン",
+      "downloaders": "ダウンローダー"
+    }
   }
 }

@@ -346,6 +346,142 @@ bodies' worth of divergence.
   difference the row layer already encodes but the list bodies keep explicit.
   Converging them is a deferred, higher-risk option, not an accident.
 
+## 7. Integration modules — one capability-slot contract
+
+Providers (downloaders, external sources) converge on one `IntegrationModule`
+contract (`features/integrations/types.ts`) so a feature asks *what a provider
+can do*, never *which product it is*.
+
+- **`CapabilitySlot`** — the vocabulary of things a provider can fill
+  (`acquisition.track/album`, `resolution`, `similarity.songs/artists`,
+  `discovery.shelf`, `playlist.generate`, `lyrics`, `scrobble`,
+  `metadata.enrich`, `preview`). **`IntegrationModule`** = `{ id, label, auth,
+  slots: Partial<Record<CapabilitySlot, SlotImpl>>, options?, testConnection }`.
+  `slots` is partial for the same reason `ApiAdapter` fields are optional —
+  callers presence-check the capability, never the provider name.
+- **`SlotImpl` is intentionally `unknown`** for now: typing every slot's method
+  signature would couple the contract to providers that don't exist yet. Each
+  slot gains a concrete impl type when it's actually built.
+- **Existing registries were extended, not rewritten.** `DownloaderDefinition`
+  and `SourceDefinition` are now `IntegrationModule & { …operational fields }`
+  (their `id` re-narrowed to the closed union). Downloaders are `apiKey`-tier and
+  fill `acquisition.*`; sources are `none`-tier (keyless public APIs; a trivial
+  `{ok:true}` testConnection — enablement is a user setting, not a connection)
+  and fill `resolution` + `discovery.shelf`. A downloader's `fetchQueueWithDiff`
+  deliberately maps to **no** slot — it's operational progress reporting, not a
+  product capability.
+- **Server adapters stay their own concern.** An `ApiAdapter` is required core,
+  not an optional integration, so it does **not** become an `IntegrationModule`.
+  Instead `serverAdapterSlots()` (`features/integrations/capabilityRegistry.ts`)
+  surfaces its capabilities into the same slot vocabulary, and
+  `useSlotProviders(slot)` answers "who fills this right now?" across the active
+  server **and** connected modules — read-only availability; blend/select/
+  fallback policy stays with the calling feature.
+- **One Connections screen** (`screens/settings/connections/`) is generated from
+  the provider list and replaced the two separate Integrations/Downloaders hubs.
+  Per-provider detail screens and their deep-link routes are unchanged.
+
+## 8. Wants and Get — intent is not acquisition
+
+A **want** is a save-only declaration of intent; **Get** is the separate act of
+acquiring. The two are deliberately different code paths.
+
+- **`wantsSlice`** (`utils/redux/slices/wantsSlice.ts`) is per-server, persisted,
+  and **pure/save-only** — no reducer performs or triggers acquisition, so a
+  wishlist works with zero providers connected. A want carries `localId`,
+  `title`/`artist` (so it renders with no lookup), `externalIds`, `unit`,
+  `origin`, and an optional `jobRef` it only *references*.
+- **`libraryState:'wanted'`** flows through `resolveLibraryState` via
+  `useLibraryState` reading `selectIsWanted(localId)` — the resolver stays pure;
+  the hook is the only state source.
+- **Get** is `GetReviewSheet` (replaced the old fire-and-forget `DownloadSheet`):
+  it always opens a compact review (target server, unit-compatible provider
+  selection, a "Requesting…" line) and the confirm button is **disabled until a
+  provider is chosen**, so a job never starts from a hidden default. A per-unit
+  default provider (and, for Lidarr albums, a quality profile) persists **only**
+  when the user ticks "save as default"; a per-request override is request-only.
+- **Arrival is presence-based, not queue-based.** `findArrivedWants`
+  (`features/wants/arrival.ts`) matches wants against the *synced library index*
+  (reusing `libraryMatch`), and `useWantArrivalWatcher` removes a fulfilled want
+  + toasts once when its entity appears **by any route** (a Get, a manual copy, a
+  Bandcamp purchase). It is not gated on `jobRef`. The
+  `DownloadersQueueContext` poll still runs untouched — it *causes* the rescan
+  that makes arrival observable; only the completion *signal* moved off
+  queue-disappearance. There is no "Arrived" collection; Recently Added serves it.
+- **One Downloads screen** (`screens/downloads/`) shows on-device **Offline** and
+  server-side **Downloaders** as distinct sections (never conflated), the latter
+  surfacing all activity a provider reports including jobs started outside yuzic,
+  reading the single shared `useDownloadersQueue` poll.
+
+## 9. Feature-oriented settings — configure the goal, not the provider
+
+Settings pages are organized by what the user wants yuzic to *do*, not by which
+integration supplies it. `screens/settings/home/` set the precedent (pulling
+Home-affecting toggles out of the per-integration screens); Scrobbling, Lyrics,
+Metadata, and Search follow it. Each reuses the `SettingsScreen` shell and is a
+route leaf registered in `settings/_layout.tsx` with a row on the settings root.
+
+- **Scrobbling** (`screens/settings/scrobbling/`) — exactly one route *per
+  destination, per server*: `disabled | through-server | direct`, stored in
+  `settingsSlice.scrobbleRoutes[serverId]`. The single enum per destination makes
+  "at most one route" structural (no double-scrobble). Defaults are *derived at
+  read time* from the pre-existing booleans (`deriveScrobbleRoute`), so no
+  migration runs. **Last.fm offers only disabled/through-server** this cut
+  (direct needs a signed session — sequenced out). `useScrobbling` routes by the
+  enum; a duplicate-risk note shows on `through-server` (yuzic can't verify
+  server forwarding).
+- **Lyrics** (`screens/settings/lyrics/`, `features/lyrics/resolveLyrics.ts`) —
+  server-embedded first, then user-ordered external sources; `resolveLyrics`
+  returns the first non-empty result. **LRCLIB** (`api/lrclib/`) is the launch
+  external source: `none`-tier, no key, *one* source that prefers synced and
+  falls back to plain internally. Off by default → server-only behaviour is
+  unchanged until a user enables it.
+- **Metadata** (`screens/settings/metadata/`, `features/metadata/`) — independent
+  **Artist-information** and **Artwork** controls, each its own ordered
+  enabled-source chain (`resolveArtistInfo`, `resolveArtwork`). **Display-only and
+  gaps-only**: the resolvers never write to any server and only fill a field the
+  server left empty, so disabling instantly restores the server view. Launch
+  sources: Last.fm `artist.getInfo`; Deezer artist images + Cover Art Archive
+  covers. A small "via X" line, never per-item badges.
+- **Search** (`screens/settings/search/`, `contexts/searchLegs.ts`) — a segmented
+  **Your Library** (default, no external calls) / **Other sources** scope with a
+  Filters sheet for search-enabled sources and entity types. `planSearchLegs`
+  picks library **XOR** external by scope, so results are never mixed by default;
+  provenance is preserved and editions/ambiguous matches stay separate.
+  `searchSourcesEnabled` is independent of Home enablement (legacy
+  `deezerSearchEnabled` reconciled at read time, no migration).
+
+## 10. Discovery — local-first, provider mixes, and generated playlists
+
+Home discovery is off by default and layered so the local tier always works
+with zero external calls.
+
+- **Local-first mix** (`screens/home/components/LocalMixSection`) seeds from
+  on-device play-stats/genres (a deterministic daily seed via the existing
+  `getDailySeed`/`seededShuffle` — **no new recommendation algorithm**) and
+  expands through the server adapter's `api.similar.getSimilarSongs` (server-
+  native, includes the user's server plugins). It makes **zero external-service
+  calls** and is *not* gated behind the external-discovery toggles — it lives in
+  the local/server tier, presence-checked on play history + server similarity.
+- **ListenBrainz `createdfor` shelves**
+  (`api/listenbrainz/recommendations/getCreatedForPlaylists`,
+  `LBCreatedForSection`) fetch the user's daily-jams / weekly-jams /
+  weekly-exploration mixes (public endpoint) and render **one standalone shelf
+  each** under the compact ListenBrainz `SourceGroup` header — LB built the mix,
+  yuzic fetches and renders it (no mix-generator, no new slot; the raw CF
+  endpoint is deliberately not built). Off by default; unowned tracks get
+  Want/Get for free through the shared `SongRow`.
+- **`playlist.generate`** — the "Make a playlist from this" gesture
+  (`features/audiomuse/generateFromEntity`) derives a seed from a track, album,
+  or artist and calls the existing generator; **AudioMuse builds the playlist on
+  the server** (no yuzic-local playlist store). The gesture is gated on
+  `useCanGeneratePlaylist`/`useSlotFilled('playlist.generate')` and hidden when
+  no provider fills the slot. Track/entity-seeded only (mood-centroid deferred).
+- **Onboarding asks once** (`screens/onboarding/discovery`): a single transparent
+  opt-in for external discovery (Deezer/ListenBrainz, no accounts, exactly what
+  gets sent), guarded by `onboardingDiscoveryPrompted` so it shows once and only
+  inside the onboarding flow — existing users never see it.
+
 ## Where things live
 
 ```

@@ -6,8 +6,9 @@ import * as slskd from '@/api/slskd'
 import * as soulsync from '@/api/soulsync'
 import type { SlskdSearchPreferences } from '@/api/slskd'
 import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice'
-import type { ExternalAlbumBase } from '@/types'
+import type { ExternalAlbumBase, LidarrConfig } from '@/types'
 import { selectDownloadersForActiveServer } from '@/utils/redux/selectors/downloadersSelectors'
+import type { IntegrationModule, Health } from '@/features/integrations/types'
 
 export { downloadErrorKey } from './errorKeys'
 
@@ -30,6 +31,15 @@ export type DownloadResult =
   | { success: false; code?: string; message: string }
 
 /**
+ * Per-call knobs a downloader may honor for one Get, without changing any
+ * saved default. Only Lidarr album downloads currently read
+ * `qualityProfileId` — every other downloader ignores this bag entirely.
+ */
+export type DownloadOptions = {
+  qualityProfileId?: number
+}
+
+/**
  * The whole external album, not just its title and artist: Lidarr resolves the
  * release by MBID/Deezer id where available, and collapsing it to two strings
  * here would put it back on fuzzy name matching.
@@ -37,10 +47,16 @@ export type DownloadResult =
 export type AlbumDownloadRequest = ExternalAlbumBase
 export type TrackDownloadRequest = { title: string; artist: string }
 
-export type DownloaderDefinition = {
+/**
+ * Downloaders converge on the `IntegrationModule` contract (auth, slots,
+ * testConnection) while keeping their own operational fields — settings
+ * route, toast keys, and queue polling — that aren't product capabilities
+ * and so have no `CapabilitySlot` of their own.
+ */
+export type DownloaderDefinition = IntegrationModule & {
+  // Narrows `IntegrationModule.id: string` back to the closed downloader-id
+  // union so every existing consumer keyed on `DownloaderId` still compiles.
   id: DownloaderId
-  /** Display name shown to users (not translated — product names). */
-  label: string
   descriptionKey: string
   albumAddedKey: string
   trackAddedKey?: string
@@ -52,8 +68,13 @@ export type DownloaderDefinition = {
    * both. Callers presence-check the unit they need rather than assuming an
    * album is always on offer — `downloadAlbum` used to be required, which was
    * Lidarr's shape written into the contract for everyone.
+   *
+   * These stay as their own top-level fields (not read off `slots`) because
+   * every existing consumer calls them directly; `slots['acquisition.album']`
+   * / `slots['acquisition.track']` are an additional capability-view over the
+   * same methods, kept in sync below, not a replacement for them.
    */
-  downloadAlbum?(config: DownloaderConfig, req: AlbumDownloadRequest): Promise<DownloadResult>
+  downloadAlbum?(config: DownloaderConfig, req: AlbumDownloadRequest, options?: DownloadOptions): Promise<DownloadResult>
   downloadTrack?(config: DownloaderConfig, req: TrackDownloadRequest): Promise<DownloadResult>
   /**
    * Reads the transfer queue and reports which items disappeared since the
@@ -61,6 +82,10 @@ export type DownloaderDefinition = {
    * kick a server rescan so downloaded music appears without a manual pull.
    * Typed loosely because each downloader has its own record shape and the
    * watcher only needs the count of finished items.
+   *
+   * Downloader-operational, not a product capability: it's how a downloader
+   * reports progress on units it already fills, not a unit of its own — so it
+   * deliberately does not map to a `CapabilitySlot`.
    */
   fetchQueueWithDiff<T extends { id: string }>(
     config: DownloaderConfig,
@@ -68,14 +93,39 @@ export type DownloaderDefinition = {
   ): Promise<{ currentQueue: T[]; finishedItems: T[] }>
 }
 
+/** All three downloaders authenticate the same way: a server URL plus an API key. */
+const apiKeyAuth = { tier: 'apiKey' as const, configKeys: ['serverUrl', 'apiKey'] }
+
+function lidarrConfigOf(config: DownloaderConfig): LidarrConfig {
+  return { serverUrl: config.serverUrl, apiKey: config.apiKey }
+}
+
+const lidarrDownloadAlbum = (
+  config: DownloaderConfig,
+  album: AlbumDownloadRequest,
+  options?: DownloadOptions
+) =>
+  lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album), {
+    qualityProfileId: options?.qualityProfileId,
+  })
+
 const lidarrDownloader: DownloaderDefinition = {
   id: 'lidarr',
   label: 'Lidarr',
   descriptionKey: 'externalAlbum.download.lidarrDesc',
   albumAddedKey: 'externalAlbum.download.addedToLidarr',
   settingsRoute: '/settings/lidarrView',
-  downloadAlbum: (config, album) => lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album)),
+  auth: apiKeyAuth,
+  // Lidarr is album-only — no `acquisition.track` slot.
+  slots: {
+    'acquisition.album': lidarrDownloadAlbum,
+  },
+  downloadAlbum: lidarrDownloadAlbum,
   fetchQueueWithDiff: lidarr.fetchQueueWithDiff as DownloaderDefinition['fetchQueueWithDiff'],
+  testConnection: async (config: unknown): Promise<Health> => {
+    const ok = await lidarr.testConnection(lidarrConfigOf(config as DownloaderConfig))
+    return { ok: Boolean(ok) }
+  },
 }
 
 function soulsyncConfigOf(config: DownloaderConfig): soulsync.SoulSyncConfig {
@@ -90,6 +140,21 @@ function slskdConfigOf(config: DownloaderConfig): slskd.SlskdConfig {
   }
 }
 
+const slskdDownloadAlbum = (config: DownloaderConfig, album: AlbumDownloadRequest) =>
+  slskd.downloadAlbum(slskdConfigOf(config), {
+    title: album.title,
+    artist: album.artist,
+    // Preserve any MBID the resolver captured — the slskd side uses it to
+    // pull canonical strings from MusicBrainz before searching Soulseek.
+    mbid: album.externalIds?.mbid ?? null,
+  })
+
+const slskdDownloadTrack = (config: DownloaderConfig, req: TrackDownloadRequest) =>
+  slskd.downloadTrack(slskdConfigOf(config), {
+    title: req.title,
+    artist: req.artist,
+  })
+
 const slskdDownloader: DownloaderDefinition = {
   id: 'slskd',
   label: 'Soulseek',
@@ -97,19 +162,20 @@ const slskdDownloader: DownloaderDefinition = {
   albumAddedKey: 'externalAlbum.download.addedToSlskd',
   trackAddedKey: 'externalAlbum.download.addedTrackToSlskd',
   settingsRoute: '/settings/slskdView',
-  downloadAlbum: (config, album) => slskd.downloadAlbum(slskdConfigOf(config), {
-    title: album.title,
-    artist: album.artist,
-    // Preserve any MBID the resolver captured — the slskd side uses it to
-    // pull canonical strings from MusicBrainz before searching Soulseek.
-    mbid: album.externalIds?.mbid ?? null,
-  }),
-  downloadTrack: (config, req) => slskd.downloadTrack(slskdConfigOf(config), {
-    title: req.title,
-    artist: req.artist,
-  }),
+  auth: apiKeyAuth,
+  // slskd does both units.
+  slots: {
+    'acquisition.album': slskdDownloadAlbum,
+    'acquisition.track': slskdDownloadTrack,
+  },
+  downloadAlbum: slskdDownloadAlbum,
+  downloadTrack: slskdDownloadTrack,
   fetchQueueWithDiff: ((config: DownloaderConfig, previous: { id: string }[]) =>
     slskd.fetchQueueWithDiff(slskdConfigOf(config), previous as any)) as DownloaderDefinition['fetchQueueWithDiff'],
+  testConnection: async (config: unknown): Promise<Health> => {
+    const ok = await slskd.testConnection(slskdConfigOf(config as DownloaderConfig))
+    return { ok }
+  },
 }
 
 /**
@@ -118,6 +184,16 @@ const slskdDownloader: DownloaderDefinition = {
  * exposes no album endpoint — so this is the first downloader with no
  * `downloadAlbum`, and the reason that field became optional.
  */
+const soulsyncDownloadTrack = async (config: DownloaderConfig, req: TrackDownloadRequest): Promise<DownloadResult> => {
+  try {
+    await soulsync.downloadTrack(soulsyncConfigOf(config), req)
+    return { success: true }
+  } catch (error) {
+    const code = error instanceof soulsync.SoulSyncError ? error.code : undefined
+    return { success: false, code, message: (error as Error)?.message ?? 'SoulSync request failed' }
+  }
+}
+
 const soulsyncDownloader: DownloaderDefinition = {
   id: 'soulsync',
   label: 'SoulSync',
@@ -125,17 +201,18 @@ const soulsyncDownloader: DownloaderDefinition = {
   albumAddedKey: 'externalAlbum.download.addedToSoulsync',
   trackAddedKey: 'externalAlbum.download.addedTrackToSoulsync',
   settingsRoute: '/settings/soulsyncView',
-  downloadTrack: async (config, req) => {
-    try {
-      await soulsync.downloadTrack(soulsyncConfigOf(config), req)
-      return { success: true }
-    } catch (error) {
-      const code = error instanceof soulsync.SoulSyncError ? error.code : undefined
-      return { success: false, code, message: (error as Error)?.message ?? 'SoulSync request failed' }
-    }
+  auth: apiKeyAuth,
+  // SoulSync is track-only — no `acquisition.album` slot.
+  slots: {
+    'acquisition.track': soulsyncDownloadTrack,
   },
+  downloadTrack: soulsyncDownloadTrack,
   fetchQueueWithDiff: ((config: DownloaderConfig, previous: { id: string }[]) =>
     soulsync.fetchQueueWithDiff(soulsyncConfigOf(config), previous as any)) as DownloaderDefinition['fetchQueueWithDiff'],
+  testConnection: async (config: unknown): Promise<Health> => {
+    const ok = await soulsync.testConnection(soulsyncConfigOf(config as DownloaderConfig))
+    return { ok }
+  },
 }
 
 export const ALL_DOWNLOADERS: DownloaderDefinition[] = [

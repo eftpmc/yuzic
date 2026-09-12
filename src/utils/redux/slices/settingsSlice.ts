@@ -40,6 +40,31 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export type SearchScope = 'client' | 'server';
 export type AppLanguage = string;
 
+/**
+ * The scrobble targets a server can be routed to. Last.fm-direct is
+ * deliberately not modelled here this cut — Last.fm's real API needs a
+ * signed session (api_sig), which isn't built yet, so its route only ever
+ * takes 'disabled' | 'through-server'. ListenBrainz supports all three,
+ * because `api/listenbrainz` already scrobbles it directly with a token.
+ */
+export type ScrobbleDestinationKind = 'lastfm' | 'listenbrainz';
+export type ScrobbleRoute = 'disabled' | 'through-server' | 'direct';
+
+/**
+ * One route per destination per server — never both 'through-server' and
+ * 'direct' for the same destination, because there is only one field to hold
+ * either value. That is what keeps "exactly one route per destination" true
+ * by construction rather than by convention.
+ *
+ * Missing entries (a server that predates this feature) fall back to a
+ * default derived from the old `serverScrobbleEnabled` /
+ * ListenBrainz-per-server `scrobbleEnabled` booleans — see
+ * `selectors/scrobbleRoutingSelectors.ts`. There is deliberately no migration
+ * that writes this field on load; a stored route always wins once one exists,
+ * and everyone else keeps reading the derived default forever.
+ */
+export type ScrobbleRoutes = Partial<Record<ScrobbleDestinationKind, ScrobbleRoute>>;
+
 export interface SettingsState {
   /* UI */
   themeMode: ThemeMode;
@@ -90,6 +115,15 @@ export interface SettingsState {
 
   /* Onboarding */
   hasSeenGetStarted: boolean;
+  /**
+   * Whether the onboarding discovery opt-in step (E4) has been shown and
+   * answered — set true whether the user chose Enable or Not now. This is
+   * what makes the step ask-once: it is checked only inside the onboarding
+   * flow itself, so an existing user who already finished onboarding never
+   * sees it re-appear, and there is no separate "onboarding complete" flag
+   * to keep in sync with this one.
+   */
+  onboardingDiscoveryPrompted: boolean;
 
   /* Audio */
   wifiStreamQuality: AudioQuality;
@@ -110,6 +144,15 @@ export interface SettingsState {
    * the finished listen was never a real user intent. */
   serverScrobbleEnabled: boolean;
 
+  /**
+   * Per-server, per-destination scrobble route — see {@link ScrobbleRoutes}.
+   * Keyed by server id, same pattern as `libraryViewModes`. Absent for every
+   * server that existed before this field: `scrobbleRoutingSelectors` derives
+   * a route from `serverScrobbleEnabled` and ListenBrainz's own
+   * `scrobbleEnabled` in that case, so there is nothing to migrate here.
+   */
+  scrobbleRoutes: Record<string, ScrobbleRoutes>;
+
   /* Integrations. Deezer has three distinct dimensions (Home shelves,
    * search results, external browse); everything else that used to be a
    * sub-toggle (top tracks, similar artists, album recs, samples, playlist
@@ -119,6 +162,17 @@ export interface SettingsState {
   deezerSearchEnabled: boolean;
   deezerExternalEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
+  /**
+   * Which sources the user has opted into for the Search screen's "Other
+   * sources" scope — independent of Home/discovery enablement and of the
+   * per-source Settings pages above. Keyed by source id (`deezer`,
+   * `musicbrainz`). Absent keys read as off; `deezerSearchEnabled` (the
+   * older, search-specific Deezer flag) is reconciled at *read* time in
+   * `selectSearchSourceEnabled` rather than migrated here, so an existing
+   * user who already turned Deezer search on keeps seeing it on with no
+   * migration code and no double state to keep in sync.
+   */
+  searchSourcesEnabled: Record<string, boolean>;
   /**
    * ListenBrainz's public similar-artist graph (Home shelf, artist page).
    * Needs no account, but it is still a third-party service being told which
@@ -140,6 +194,34 @@ export interface SettingsState {
    * (deezerDiscoveryEnabled, listenbrainzDiscoveryEnabled) rather than by a
    * second switch that could sit on while the first one is off. */
   homeServerSectionsEnabled: boolean;
+
+  /**
+   * Lyrics fallback chain, external sources only — server-embedded lyrics
+   * are always tried first and are never part of this list (see
+   * `features/lyrics/resolveLyrics`).
+   *
+   * `lyricsExternalSourcesOrder` names every external source the user has
+   * touched, in their preferred try-order; `lyricsExternalSourcesEnabled`
+   * says which of those are actually on. Both default empty/off — LRCLIB,
+   * like every external source, is off until asked for, so a fresh install
+   * behaves exactly like before this feature existed (server-only).
+   */
+  lyricsExternalSourcesOrder: string[];
+  lyricsExternalSourcesEnabled: Record<string, boolean>;
+
+  /**
+   * `metadata.enrich` — display-only artist-info / artwork gap-filling
+   * (see `features/metadata`). Two entirely independent fallback chains,
+   * mirroring the lyrics pair above: a user can enable artist-info without
+   * artwork or vice versa. Both default empty/off, so a fresh install shows
+   * exactly the server's own data until the user opts in, and disabling
+   * either chain (clearing its enabled map) restores that server-only view
+   * with no code path change — the resolvers simply have nothing to try.
+   */
+  metadataArtistInfoOrder: string[];
+  metadataArtistInfoEnabled: Record<string, boolean>;
+  metadataArtworkOrder: string[];
+  metadataArtworkEnabled: Record<string, boolean>;
 
   /* Player controls */
   showSleepTimer: boolean;
@@ -198,6 +280,7 @@ const initialState: SettingsState = {
   librarySortOrder: 'title',
   searchScope: 'server',
   hasSeenGetStarted: false,
+  onboardingDiscoveryPrompted: false,
 
   wifiStreamQuality: 'original',
   cellularStreamQuality: 'high',
@@ -209,11 +292,13 @@ const initialState: SettingsState = {
   language: DEFAULT_LANGUAGE,
 
   serverScrobbleEnabled: true,
+  scrobbleRoutes: {},
 
   deezerDiscoveryEnabled: false,
   deezerSearchEnabled: false,
   deezerExternalEnabled: false,
   musicbrainzExternalEnabled: false,
+  searchSourcesEnabled: {},
   listenbrainzDiscoveryEnabled: false,
   lastfmEnabled: false,
 
@@ -225,6 +310,14 @@ const initialState: SettingsState = {
   resumeLongTracksEnabled: true,
 
   homeServerSectionsEnabled: true,
+
+  lyricsExternalSourcesOrder: [],
+  lyricsExternalSourcesEnabled: {},
+
+  metadataArtistInfoOrder: [],
+  metadataArtistInfoEnabled: {},
+  metadataArtworkOrder: [],
+  metadataArtworkEnabled: {},
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
@@ -304,6 +397,9 @@ const settingsSlice = createSlice({
     setHasSeenGetStarted(state, action: PayloadAction<boolean>) {
       state.hasSeenGetStarted = action.payload;
     },
+    setOnboardingDiscoveryPrompted(state, action: PayloadAction<boolean>) {
+      state.onboardingDiscoveryPrompted = action.payload;
+    },
 
     /* Audio */
     setWifiStreamQuality(state, action: PayloadAction<AudioQuality>) {
@@ -333,6 +429,24 @@ const settingsSlice = createSlice({
       state.serverScrobbleEnabled = action.payload;
     },
 
+    /**
+     * Sets exactly one destination's route for one server. A single field per
+     * destination is what makes "at most one route" structural rather than
+     * something call sites have to remember to enforce — setting 'direct'
+     * here already means it isn't 'through-server' any more.
+     */
+    setScrobbleRoute(
+      state,
+      action: PayloadAction<{ serverId: string; destination: ScrobbleDestinationKind; route: ScrobbleRoute }>
+    ) {
+      const { serverId, destination, route } = action.payload;
+      if (!state.scrobbleRoutes) state.scrobbleRoutes = {};
+      state.scrobbleRoutes[serverId] = {
+        ...state.scrobbleRoutes[serverId],
+        [destination]: route,
+      };
+    },
+
     setDeezerDiscoveryEnabled(state, action: PayloadAction<boolean>) {
       state.deezerDiscoveryEnabled = action.payload;
     },
@@ -344,6 +458,14 @@ const settingsSlice = createSlice({
     },
     setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
       state.musicbrainzExternalEnabled = action.payload;
+    },
+    /** Toggles one source's inclusion in Search's "Other sources" scope. */
+    setSearchSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      if (!state.searchSourcesEnabled) state.searchSourcesEnabled = {};
+      state.searchSourcesEnabled[action.payload.sourceId] = action.payload.enabled;
     },
     setListenbrainzDiscoveryEnabled(state, action: PayloadAction<boolean>) {
       state.listenbrainzDiscoveryEnabled = action.payload;
@@ -363,6 +485,58 @@ const settingsSlice = createSlice({
     },
     setHomeServerSectionsEnabled(state, action: PayloadAction<boolean>) {
       state.homeServerSectionsEnabled = action.payload;
+    },
+
+    setLyricsExternalSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      const { sourceId, enabled } = action.payload;
+      if (!state.lyricsExternalSourcesEnabled) state.lyricsExternalSourcesEnabled = {};
+      state.lyricsExternalSourcesEnabled[sourceId] = enabled;
+      // A source enabled for the first time joins the order at the end; one
+      // already present keeps its existing position rather than jumping to
+      // the back every time it's re-enabled.
+      if (!state.lyricsExternalSourcesOrder) state.lyricsExternalSourcesOrder = [];
+      if (enabled && !state.lyricsExternalSourcesOrder.includes(sourceId)) {
+        state.lyricsExternalSourcesOrder.push(sourceId);
+      }
+    },
+    /** Replaces the whole try-order (drag-to-reorder writes the full array). */
+    setLyricsExternalSourcesOrder(state, action: PayloadAction<string[]>) {
+      state.lyricsExternalSourcesOrder = action.payload;
+    },
+
+    setMetadataArtistInfoSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      const { sourceId, enabled } = action.payload;
+      if (!state.metadataArtistInfoEnabled) state.metadataArtistInfoEnabled = {};
+      state.metadataArtistInfoEnabled[sourceId] = enabled;
+      if (!state.metadataArtistInfoOrder) state.metadataArtistInfoOrder = [];
+      if (enabled && !state.metadataArtistInfoOrder.includes(sourceId)) {
+        state.metadataArtistInfoOrder.push(sourceId);
+      }
+    },
+    setMetadataArtistInfoOrder(state, action: PayloadAction<string[]>) {
+      state.metadataArtistInfoOrder = action.payload;
+    },
+
+    setMetadataArtworkSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      const { sourceId, enabled } = action.payload;
+      if (!state.metadataArtworkEnabled) state.metadataArtworkEnabled = {};
+      state.metadataArtworkEnabled[sourceId] = enabled;
+      if (!state.metadataArtworkOrder) state.metadataArtworkOrder = [];
+      if (enabled && !state.metadataArtworkOrder.includes(sourceId)) {
+        state.metadataArtworkOrder.push(sourceId);
+      }
+    },
+    setMetadataArtworkOrder(state, action: PayloadAction<string[]>) {
+      state.metadataArtworkOrder = action.payload;
     },
 
     setShowSleepTimer(state, action: PayloadAction<boolean>) {
@@ -435,6 +609,7 @@ export const {
   setLibrarySortOrder,
   setSearchScope,
   setHasSeenGetStarted,
+  setOnboardingDiscoveryPrompted,
   setWifiStreamQuality,
   setCellularStreamQuality,
   setDownloadQuality,
@@ -443,16 +618,24 @@ export const {
   setPreferredCodec,
   setLanguage,
   setServerScrobbleEnabled,
+  setScrobbleRoute,
   setDeezerDiscoveryEnabled,
   setDeezerSearchEnabled,
   setDeezerExternalEnabled,
   setMusicbrainzExternalEnabled,
+  setSearchSourceEnabled,
   setListenbrainzDiscoveryEnabled,
   setLastfmEnabled,
   setQueueSyncEnabled,
   setServerNowPlayingShelfEnabled,
   setResumeLongTracksEnabled,
   setHomeServerSectionsEnabled,
+  setLyricsExternalSourceEnabled,
+  setLyricsExternalSourcesOrder,
+  setMetadataArtistInfoSourceEnabled,
+  setMetadataArtistInfoOrder,
+  setMetadataArtworkSourceEnabled,
+  setMetadataArtworkOrder,
   setShowSleepTimer,
   setShowJumpButtons,
   setShowVolumeSlider,

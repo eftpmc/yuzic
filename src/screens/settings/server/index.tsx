@@ -16,13 +16,11 @@ import ClientCertificateCard from './components/ClientCertificateCard';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectSearchScope,
-  selectServerScrobbleEnabled,
   selectQueueSyncEnabled,
   selectServerNowPlayingShelfEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
   setSearchScope,
-  setServerScrobbleEnabled,
   setQueueSyncEnabled,
   setServerNowPlayingShelfEnabled,
   type SearchScope,
@@ -37,11 +35,9 @@ const ServerSettings: React.FC = () => {
 
   const searchScope = useSelector(selectSearchScope);
   const activeServer = useSelector(selectActiveServer);
-  const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
   const queueSyncEnabled = useSelector(selectQueueSyncEnabled);
   const nowPlayingShelfEnabled = useSelector(selectServerNowPlayingShelfEnabled);
 
-  const toggleScrobble = useCallback((v: boolean) => { dispatch(setServerScrobbleEnabled(v)); }, [dispatch]);
   const toggleQueueSync = useCallback((v: boolean) => { dispatch(setQueueSyncEnabled(v)); }, [dispatch]);
   const toggleNowPlayingShelf = useCallback((v: boolean) => { dispatch(setServerNowPlayingShelfEnabled(v)); }, [dispatch]);
 
@@ -75,17 +71,6 @@ const ServerSettings: React.FC = () => {
   // Now-playing follows scrobble; there was a separate row for it and the two
   // states were never independently useful — a user who doesn't want the
   // finished listen submitted doesn't want the in-progress broadcast either.
-  const scrobbleItems = useMemo(() => {
-    const isScrobble = api.songs.scrobbleKind === 'scrobble';
-    return [{
-      label: t(isScrobble ? 'settings.scrobbling.scrobble' : 'settings.scrobbling.markAsPlayed'),
-      subtext: t(isScrobble
-        ? 'settings.scrobbling.scrobbleDescription'
-        : 'settings.scrobbling.markAsPlayedDescription'),
-      value: serverScrobbleEnabled,
-      onValueChange: toggleScrobble,
-    }];
-  }, [t, api, serverScrobbleEnabled, toggleScrobble]);
   const [isLoading, setIsLoading] = useState(false);
 
   const serverUrl = activeServer?.serverUrl;
@@ -175,13 +160,6 @@ const ServerSettings: React.FC = () => {
         isSelected={key => searchScope === key}
         onSelect={key => dispatch(setSearchScope(key as SearchScope))}
       />
-
-      {activeServer && (
-        <>
-          <SettingsCardHeader subtle title={t('settings.scrobbling.title')} />
-          <SettingsToggleGroup items={scrobbleItems} />
-        </>
-      )}
 
       {privacyItems.length > 0 && (
         <>

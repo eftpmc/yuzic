@@ -1,10 +1,10 @@
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { ListEnd, Play, Shuffle, CheckCircle, ArrowDownCircle, User, Globe } from 'lucide-react-native';
+import { ListEnd, Play, Shuffle, CheckCircle, ArrowDownCircle, User, Globe, Sparkles } from 'lucide-react-native';
 
 import { Artist, Song } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -12,6 +12,9 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useEnabledExternalSources } from '@/features/sources/registry';
 import { selectArtistPlayCount } from '@/utils/redux/selectors/statsSelectors';
+import { selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
+import { useCanGeneratePlaylist, generateForArtist } from '@/features/audiomuse/generateFromEntity';
+import { useApi } from '@/api';
 import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useTranslation } from 'react-i18next';
@@ -55,6 +58,11 @@ const ArtistOptions = forwardRef<
   const enabledSources = useEnabledExternalSources();
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false);
+  const generatePlaylistInFlightRef = useRef(false);
+  const api = useApi();
+  const audiomuseConfig = useSelector(selectAudiomuseConfig);
+  const canGeneratePlaylist = useCanGeneratePlaylist();
 
   const snapPoints = useMemo(() => ['55%', '90%'], []);
   const playCount = useSelector(selectArtistPlayCount(artist?.id ?? ''));
@@ -168,6 +176,23 @@ const ArtistOptions = forwardRef<
     }
   };
 
+  const handleGeneratePlaylist = async () => {
+    if (generatePlaylistInFlightRef.current || !artist || !artistSongs.length) return;
+    generatePlaylistInFlightRef.current = true;
+    setIsGeneratingPlaylist(true);
+    try {
+      const result = await generateForArtist(api, audiomuseConfig, artist, artistSongs, { size: 25 });
+      toast.success(t('artistOptions.toasts.playlistGenerated', { count: result.trackCount }));
+      close();
+      router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
+    } catch {
+      toast.error(t('artistOptions.toasts.playlistGenerationFailed'));
+    } finally {
+      generatePlaylistInFlightRef.current = false;
+      setIsGeneratingPlaylist(false);
+    }
+  };
+
   if (!artist) {
     return (
       <BottomSheetModal
@@ -242,6 +267,16 @@ const ArtistOptions = forwardRef<
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
+
+        {canGeneratePlaylist && (
+          <OptionSheetRow
+            icon={<Sparkles size={iconSize.loader} color={colors.secondary} />}
+            label={t('artistOptions.actions.generatePlaylist')}
+            onPress={handleGeneratePlaylist}
+            disabled={isGeneratingPlaylist || playbackDisabled}
+            loading={isGeneratingPlaylist}
+          />
+        )}
         <OptionSheetRow
           icon={
             isDownloaded ? (

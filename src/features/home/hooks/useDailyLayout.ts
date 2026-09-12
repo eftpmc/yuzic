@@ -28,13 +28,17 @@ export type SectionType =
   | 'genre'
   | 'serverRandom'
   | 'serverNowPlaying'
+  | 'localMix'
   | 'lbSimilarArtistsForYou'
+  | 'lbCreatedFor'
 
 export type SectionConfig = {
   key: string
   type: SectionType
   artistName?: string
   genre?: string
+  /** lbCreatedFor only — which of the three periodic mixes this shelf is. */
+  mixType?: 'daily-jams' | 'weekly-jams' | 'weekly-exploration'
 }
 
 export function getDayKey(date = new Date()): string {
@@ -150,17 +154,32 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
     return [
       { key: 'serverRandom', type: 'serverRandom' },
       { key: 'serverNowPlaying', type: 'serverNowPlaying' },
+      // Local-first daily mix: play-stats seed + server-native similarity,
+      // zero external calls — so it lives in the server tier alongside the
+      // other always-on shelves rather than behind Deezer/LB's toggles.
+      { key: 'localMix', type: 'localMix' },
     ]
   }, [isOffline, hasLibrary])
 
   // ListenBrainz tier — the seed's MBID comes from the library where the
   // server carries one and from a MusicBrainz lookup where it doesn't, so a
-  // seed artist name is all this tier needs.
+  // seed artist name is all lbSimilarArtistsForYou needs. The createdfor
+  // mixes are account-based rather than library-seeded — LB already built
+  // them for whoever `username` points at — so they don't wait on a seed,
+  // only on being online; the section component itself withholds a shelf
+  // with no configured username or no matching mix.
   const listenbrainz = useMemo<SectionConfig[]>(() => {
-    if (isOffline || !hasLibrary || becauseSeeds.length === 0) return []
-    return [
-      { key: 'lbSimilarArtistsForYou', type: 'lbSimilarArtistsForYou', artistName: becauseSeeds[0] },
-    ]
+    if (isOffline) return []
+    const sections: SectionConfig[] = []
+    if (hasLibrary && becauseSeeds.length > 0) {
+      sections.push({ key: 'lbSimilarArtistsForYou', type: 'lbSimilarArtistsForYou', artistName: becauseSeeds[0] })
+    }
+    sections.push(
+      { key: 'lbCreatedForDailyJams', type: 'lbCreatedFor', mixType: 'daily-jams' },
+      { key: 'lbCreatedForWeeklyJams', type: 'lbCreatedFor', mixType: 'weekly-jams' },
+      { key: 'lbCreatedForWeeklyExploration', type: 'lbCreatedFor', mixType: 'weekly-exploration' },
+    )
+    return sections
   }, [isOffline, hasLibrary, becauseSeeds])
 
   return useMemo(

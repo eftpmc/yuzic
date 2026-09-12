@@ -15,6 +15,7 @@ import {
 import * as mb from '@/api/musicbrainz'
 import type { CoverSource, ExternalAlbum, ExternalAlbumBase, ExternalArtist } from '@/types'
 import { sourceColor } from '@/constants/design'
+import type { IntegrationModule, Health } from '@/features/integrations/types'
 
 export type SourceId = 'deezer' | 'musicbrainz'
 
@@ -33,16 +34,40 @@ export type SourceResolvedAlbum = {
   coverUrl?: string
 }
 
-export type SourceDefinition = {
+export type SourceDefinition = IntegrationModule & {
+  // Narrows `IntegrationModule.id: string` back to the closed source-id
+  // union so every existing consumer keyed on `SourceId` still compiles.
   id: SourceId
-  label: string
   color: string
+  /**
+   * Kept as their own top-level fields (not read off `slots`) because every
+   * existing consumer (ExternalResolutionProvider, useMatchedNavigation, the
+   * Home/Search source headers) calls them directly; `slots['resolution']`
+   * / `slots['discovery.shelf']` are an additional capability-view over the
+   * same methods, kept in sync below, not a replacement for them.
+   */
   resolveArtist(name: string): Promise<SourceResolvedArtist | null>
   resolveAlbum(artist: string, title: string): Promise<SourceResolvedAlbum | null>
   fetchAlbum(id: string): Promise<ExternalAlbum | null>
   fetchArtist(id: string, mbid?: string | null): Promise<ExternalArtist | null>
   fetchArtistAlbums(artistId: string, limit: number, artistName?: string): Promise<ExternalAlbumBase[]>
 }
+
+/**
+ * Both sources are keyless public APIs — no credentials, no server URL, no
+ * account. `'none'` still leaks query contents to the provider (§7 rule 1),
+ * so it isn't "no auth model", just the weakest tier.
+ */
+const noAuth = { tier: 'none' as const }
+
+/**
+ * There is nothing to authenticate for a keyless public source — it is
+ * reachable by construction. "Enabled" is a plain user setting
+ * (`selectDeezerExternalEnabled` / `selectMusicbrainzExternalEnabled`), not a
+ * connection, so this deliberately does not perform a network ping.
+ */
+const trivialTestConnection = async (): Promise<Health> => ({ ok: true })
+
 
 function urlFromCover(cover: CoverSource): string | undefined {
   return cover.kind === 'url' ? cover.url : undefined
@@ -52,6 +77,16 @@ const deezerSource: SourceDefinition = {
   id: 'deezer',
   label: 'Deezer',
   color: sourceColor.deezer,
+  auth: noAuth,
+  testConnection: trivialTestConnection,
+  // Deezer fills identity/metadata resolution (resolveArtist/resolveAlbum)
+  // and feeds Home's external discovery shelves — hence
+  // `useEnabledExternalSources` existing at all. Values are markers onto the
+  // existing resolve/fetch methods (`SlotImpl` is `unknown`), not a new API.
+  slots: {
+    resolution: resolveDeezerArtistByName,
+    'discovery.shelf': getDeezerArtistAlbums,
+  },
 
   async resolveArtist(name) {
     const artist = await resolveDeezerArtistByName(name)
@@ -124,6 +159,16 @@ const musicbrainzSource: SourceDefinition = {
   id: 'musicbrainz',
   label: 'MusicBrainz',
   color: '#BA478F',
+  auth: noAuth,
+  testConnection: trivialTestConnection,
+  // MusicBrainz fills identity/metadata resolution (resolveArtist/
+  // resolveAlbum) and feeds Home's external discovery shelves — hence
+  // `useEnabledExternalSources` existing at all. Values are markers onto the
+  // existing resolve/fetch methods (`SlotImpl` is `unknown`), not a new API.
+  slots: {
+    resolution: mb.searchArtist,
+    'discovery.shelf': mb.getArtistWithReleases,
+  },
 
   async resolveArtist(name) {
     const results = await mb.searchArtist(name, 5)

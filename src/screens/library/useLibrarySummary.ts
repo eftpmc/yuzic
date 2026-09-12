@@ -7,6 +7,7 @@ import { usePlaylists } from '@/hooks/playlists'
 import { useTracks } from '@/hooks/tracks'
 import { useDownload } from '@/contexts/DownloadContext'
 import { selectLibraryGenres } from '@/utils/redux/selectors/librarySelectors'
+import { selectWantCountForActiveServer } from '@/utils/redux/selectors/wantsSelectors'
 import { buildGenreRows } from '@/utils/library/genreList'
 import type { CoverSource } from '@/types'
 
@@ -17,6 +18,8 @@ export type LibraryEntryKey =
   | 'tracks'
   | 'genres'
   | 'downloaded'
+  | 'downloads'
+  | 'wants'
   | 'radio'
   | 'podcasts'
   | 'shares'
@@ -69,6 +72,7 @@ export function useLibrarySummary(): Record<LibraryEntryKey, LibraryEntrySummary
   const { tracks } = useTracks()
   const { getAllDownloadedCollections } = useDownload()
   const genres = useSelector(selectLibraryGenres)
+  const wantCount = useSelector(selectWantCountForActiveServer)
 
   return useMemo(() => {
     const genreRows = buildGenreRows(genres, albums)
@@ -112,6 +116,15 @@ export function useLibrarySummary(): Record<LibraryEntryKey, LibraryEntrySummary
       tracks: { count: tracks.length, covers: trackCovers },
       genres: { count: genreRows.length, covers: genreCovers },
       downloaded: { count: downloaded.length, covers: coversOf(downloaded) },
+      // The unified Downloads screen (offline + connected downloaders) has
+      // no single count worth summarizing here — it's two different kinds
+      // of activity, not one collection size — so it goes uncounted, same
+      // as Radio below.
+      downloads: { count: undefined, covers: [] },
+      // A save-only wishlist: worth a count (there is exactly one number
+      // that means anything here), never art — nothing in it is resolved
+      // to an on-device cover yet.
+      wants: { count: wantCount, covers: [] },
       // Radio has no count summary here — the list lives on the server, and
       // fetching it just to say "3 stations" on a row people don't click yet
       // isn't worth the request. The screen itself fetches on open.
@@ -119,5 +132,5 @@ export function useLibrarySummary(): Record<LibraryEntryKey, LibraryEntrySummary
       podcasts: { count: undefined, covers: [] },
       shares: { count: undefined, covers: [] },
     }
-  }, [albums, artists, playlists, tracks, genres, getAllDownloadedCollections])
+  }, [albums, artists, playlists, tracks, genres, getAllDownloadedCollections, wantCount])
 }

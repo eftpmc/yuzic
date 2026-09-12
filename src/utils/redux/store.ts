@@ -17,6 +17,7 @@ import libraryTracksReducer from './slices/libraryTracksSlice';
 import libraryStarredReducer from './slices/libraryStarredSlice';
 import offlineMutationsReducer from './slices/offlineMutationsSlice';
 import searchHistoryReducer, { normalizeSearchHistoryEntries } from './slices/searchHistorySlice';
+import wantsReducer from './slices/wantsSlice';
 
 // Returns undefined (→ initialState) only on version bump; otherwise passes state through.
 const resetMigrate = (state: any, currentVersion: number): Promise<any> => {
@@ -108,6 +109,9 @@ const searchHistoryPersistConfig = {
   version: 1,
   migrate: searchHistoryMigrate,
 };
+// Save-only intent store; a saved want is cheap and rare (user taps) so no
+// throttle is needed — matches downloaders/servers, which also write as-is.
+const wantsPersistConfig = { key: 'wants', storage };
 
 // Persist throttling. redux-persist writes on every dispatched action that
 // mutates the slice; for slices that carry thousands of entries (library) or
@@ -171,6 +175,7 @@ export const rootReducer = combineReducers({
     libraryStarred: libraryStarredReducer,
     offlineMutations: offlineMutationsReducer,
     searchHistory: searchHistoryReducer,
+    wants: wantsReducer,
 });
 
 const persistedReducer = combineReducers({
@@ -189,6 +194,7 @@ const persistedReducer = combineReducers({
     libraryStarred: persistReducer(libraryStarredPersistConfig, libraryStarredReducer),
     offlineMutations: persistReducer(offlineMutationsPersistConfig, offlineMutationsReducer),
     searchHistory: persistReducer(searchHistoryPersistConfig, searchHistoryReducer),
+    wants: persistReducer(wantsPersistConfig, wantsReducer),
 });
 
 const store = configureStore({

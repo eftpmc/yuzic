@@ -5,9 +5,10 @@
       "general": "General",
       "plugins": "Plugins",
       "connections": "Connections",
-      "integrations": "Integrations",
-      "downloaders": "Downloaders",
       "about": "About"
+    },
+    "connections": {
+      "sources": "Library & discovery sources"
     },
     "rows": {
       "server": "Server",
@@ -163,6 +164,35 @@
       "homeSourcesListenbrainzSubtext": "Show ListenBrainz similar-artist shelves.",
       "homeSourcesDeezer": "Deezer",
       "homeSourcesDeezerSubtext": "Show Deezer discovery shelves (charts, top tracks, similar artists)."
+    },
+    "lyrics": {
+      "title": "Lyrics",
+      "order": "Fallback order",
+      "serverEmbedded": "Server-embedded",
+      "serverEmbeddedSubtext": "Always checked first — the lyrics your server already has for a track.",
+      "lrclib": "LRCLIB",
+      "lrclibSubtext": "Free, anonymous lyrics lookup. Off by default; enable to use it when your server has none."
+    },
+    "search": {
+      "title": "Search",
+      "sourcesSection": "Search sources",
+      "explanation": "Which sources the \"Other sources\" scope on the Search screen may query. Independent of Home — enabling a source's Home shelves does not enable it for search, and vice versa.",
+      "deezer": "Deezer",
+      "deezerSubtext": "Include Deezer albums and artists when searching Other sources.",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "Include MusicBrainz albums and artists when searching Other sources."
+    },
+    "metadata": {
+      "title": "Metadata",
+      "explanation": "Display-only. Fills in artist info and artwork your server doesn't have — it never changes anything on your server, and never writes tags or files. Turn a source off to go back to exactly what your server shows.",
+      "artistInfoSection": "Artist information",
+      "artworkSection": "Artwork",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "Artist biography and tags. Off by default; enable to use it when your server has no biography.",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "Artist images. Off by default; enable to use it when your server has no artist photo.",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "Album covers via MusicBrainz ID. Off by default; enable to use it when your server has no cover."
     },
     "library": {
       "title": "Library",
@@ -399,7 +429,9 @@
         "credentialsTitle": "Connection",
         "credentialsHelper": "Your Lidarr server URL and API key. Found in Lidarr under Settings → General.",
         "connectionFailed": "Lidarr connection failed",
-        "disconnected": "Disconnected from Lidarr."
+        "disconnected": "Disconnected from Lidarr.",
+        "qualityProfileTitle": "Quality Profile",
+        "defaultQualityProfile": "Default Quality Profile"
       },
       "slskd": {
         "title": "slskd",
@@ -471,7 +503,12 @@
       "scrobbleDescription": "Log completed tracks to your profile.",
       "nowPlayingDescription": "Show what you're listening to in real time.",
       "markAsPlayed": "Mark as Played",
-      "markAsPlayedDescription": "Update play count on your server."
+      "markAsPlayedDescription": "Update play count on your server.",
+      "routeDisabled": "Disabled",
+      "routeDirect": "Direct from Yuzic",
+      "throughServer": "Through the server",
+      "throughServerMarkAsPlayed": "Through the server (mark as played)",
+      "duplicateRiskNote": "Yuzic can't confirm the server actually forwards scrobbles once \"Through the server\" is selected. If the server is also configured to send scrobbles on its own, or another app scrobbles the same account, plays may be counted twice."
     },
     "home": {
       "title": "Home"
@@ -621,11 +658,24 @@
       "unsupported": "Skipped {{count}} unsupported file",
       "unsupported_other": "Skipped {{count}} unsupported files",
       "importFailed": "Couldn’t import those files."
+    },
+    "discovery": {
+      "title": "Discover beyond your library",
+      "subtitle": "Yuzic can optionally ask Deezer and ListenBrainz for recommendations, similar artists, and album art — no account needed for either.",
+      "whatIsSent": "What gets sent: only the artist, album, or track names needed to ask the question — nothing else about you or your listening history leaves this device unless you turn this on.",
+      "enable": "Enable discovery",
+      "notNow": "Not now"
     }
   },
   "library": {
     "offlineBanner": "Offline — showing your synced library and downloads",
     "title": "Library",
+    "downloads": {
+      "title": "Downloads"
+    },
+    "wants": {
+      "title": "Wants"
+    },
     "view": {
       "switchToList": "Switch to list view",
       "switchToGrid": "Switch to grid view"
@@ -737,6 +787,16 @@
     "clearRecent": "Clear",
     "removeRecentSearch": "Remove \"{{query}}\" from recent searches",
     "recentlyOpened": "Recently opened",
+    "scope": {
+      "library": "Your Library",
+      "other": "Other sources"
+    },
+    "filters": {
+      "title": "Filters",
+      "sources": "Sources",
+      "entityTypes": "Include",
+      "noSourcesEnabled": "No search sources are enabled. Turn one on in Settings › Search."
+    },
     "entityTypes": {
       "song": "Song",
       "album": "Album",
@@ -755,7 +815,9 @@
       "topSongs": "Top songs"
     },
     "showMore": "{{count}} more",
-    "showUnowned": "{{count}} you don't own"
+    "showUnowned": "{{count}} you don't own",
+    "enrichedBioSource": "via {{source}}",
+    "enrichedArtworkSource": "via {{source}}"
   },
   "album": {
     "disc": "Disc {{number}}",
@@ -788,6 +850,12 @@
       "serverRandomThemed": "Today's {{genre}}",
       "serverNowPlaying": "Playing on your server",
       "lbSimilarForYou": "Because you like {{artist}}",
+      "localMix": "Your Mix",
+      "lbCreatedFor": {
+        "dailyJams": "Daily Jams",
+        "weeklyJams": "Weekly Jams",
+        "weeklyExploration": "Weekly Exploration"
+      },
       "continuePlaying": "Pick back up"
     },
     "empty": {
@@ -944,9 +1012,23 @@
       "title": "External Album",
       "downloadToServer": "Download to Server",
       "downloadSong": "Download Song",
+      "get": "Get",
+      "getSong": "Get Song",
+      "want": "Want",
+      "wanted": "Wanted",
+      "arrived": "{{title}} is now in your library",
       "inLibrary": "In Library",
       "downloading": "Downloading to server… {{progress}}%",
       "noServiceConnected": "Connect a downloader in Settings to download"
+    },
+    "review": {
+      "targetServer": "Target server",
+      "noServer": "No server selected",
+      "requesting": "Requesting",
+      "saveAsDefaultAlbums": "Save as default for albums",
+      "saveAsDefaultTracks": "Save as default for tracks",
+      "qualityProfile": "Quality Profile",
+      "confirmGet": "Get"
     },
     "serverStatus": {
       "onServer": "In Library",
@@ -1001,6 +1083,21 @@
       "externalMetadata": "External metadata"
     }
   },
+  "manualAddWant": {
+    "title": "Add to Wants",
+    "unit": {
+      "track": "Track",
+      "album": "Album"
+    },
+    "titleField": "Title",
+    "artistField": "Artist",
+    "add": "Add"
+  },
+  "wants": {
+    "title": "Wants",
+    "empty": "Nothing saved yet. Add a track or album you want and it will show up here.",
+    "manualAdd": "Add to Wants"
+  },
   "albumOptions": {
     "actions": {
       "play": "Play",
@@ -1015,7 +1112,8 @@
       "favorite": "Favorite",
       "unfavorite": "Unfavorite",
       "viewExternal": "View External",
-      "share": "Share"
+      "share": "Share",
+      "generatePlaylist": "Make a playlist from this"
     },
     "toasts": {
       "addedNext": "Playing {{title}} next",
@@ -1024,7 +1122,10 @@
       "addedToFavorites": "{{title}} added to favorites.",
       "removedFromFavorites": "{{title}} removed from favorites.",
       "updateFavoritesFailed": "Failed to update favorites.",
-      "shareFailed": "Could not create share link"
+      "shareFailed": "Could not create share link",
+      "playlistGenerated_one": "Playlist created with {{count}} track",
+      "playlistGenerated_other": "Playlist created with {{count}} tracks",
+      "playlistGenerationFailed": "Could not generate playlist"
     },
     "sections": {
       "albumInfo": "Album Info"
@@ -1103,7 +1204,8 @@
       "downloading": "Downloading…",
       "downloaded": "Downloaded",
       "goToArtist": "Go to Artist",
-      "viewExternal": "View External"
+      "viewExternal": "View External",
+      "generatePlaylist": "Make a playlist from this"
     },
     "sections": {
       "info": "Artist Info"
@@ -1112,7 +1214,12 @@
       "albums": "Albums",
       "plays": "Plays"
     },
-    "downloadAllFailed": "Some albums failed to download."
+    "downloadAllFailed": "Some albums failed to download.",
+    "toasts": {
+      "playlistGenerated_one": "Playlist created with {{count}} track",
+      "playlistGenerated_other": "Playlist created with {{count}} tracks",
+      "playlistGenerationFailed": "Could not generate playlist"
+    }
   },
   "external": {
     "notFound": "Couldn't find this in any connected source."
@@ -1254,6 +1361,9 @@
       "reset": "Reset equalizer to flat",
       "preset": "{{name}} equalizer preset",
       "decibels": "{{gain}} decibels"
+    },
+    "wants": {
+      "remove": "Remove {{title}} from Wants"
     }
   },
   "tabs": {
@@ -1264,7 +1374,11 @@
   "downloads": {
     "title": "Download queue",
     "noDownloaders": "No downloaders connected. Add one in Settings.",
-    "jobFailed": "Couldn't finish downloading “{{title}}”. It stays queued and will retry."
+    "jobFailed": "Couldn't finish downloading “{{title}}”. It stays queued and will retry.",
+    "section": {
+      "offline": "Offline",
+      "downloaders": "Downloaders"
+    }
   },
   "media": {
     "albumNotFound": "Album not found",

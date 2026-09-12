@@ -25,12 +25,14 @@ import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
 
 export default function Servers() {
     const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch();
     const rad = useRadius();
+    const onboardingDiscoveryPrompted = useSelector(selectOnboardingDiscoveryPrompted);
 
     const servers = useSelector((state: RootState) => state.servers.servers);
     const activeServerId = useSelector(
@@ -38,14 +40,12 @@ export default function Servers() {
     );
 
     const handleSelectServer = (id: string) => {
-        if (id === activeServerId) {
-            dispatch(setActiveServer(id));
-            router.replace('/(home)/(tabs)/(home)');
-            return;
-        }
-
         dispatch(setActiveServer(id));
-        router.replace('/(home)/(tabs)/(home)');
+        router.replace(
+            onboardingDiscoveryPrompted
+                ? '/(home)/(tabs)/(home)'
+                : '/(onboarding)/discovery'
+        );
     };
 
     const handleAddServer = () => {

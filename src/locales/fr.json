@@ -5,9 +5,10 @@
       "general": "Général",
       "plugins": "Extensions",
       "connections": "Connexions",
-      "integrations": "Intégrations",
-      "downloaders": "Téléchargeurs",
       "about": "À propos"
+    },
+    "connections": {
+      "sources": "Sources de bibliothèque et de découverte"
     },
     "rows": {
       "server": "Serveur",
@@ -163,6 +164,35 @@
       "homeSourcesListenbrainzSubtext": "Afficher les rayons d'artistes similaires de ListenBrainz.",
       "homeSourcesDeezer": "Deezer",
       "homeSourcesDeezerSubtext": "Afficher les rayons de découverte Deezer (classements, titres phares, artistes similaires)."
+    },
+    "lyrics": {
+      "title": "Paroles",
+      "order": "Ordre de repli",
+      "serverEmbedded": "Intégrées au serveur",
+      "serverEmbeddedSubtext": "Toujours vérifiées en premier — les paroles que votre serveur possède déjà pour un titre.",
+      "lrclib": "LRCLIB",
+      "lrclibSubtext": "Recherche de paroles gratuite et anonyme. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'en a pas."
+    },
+    "search": {
+      "title": "Recherche",
+      "sourcesSection": "Sources de recherche",
+      "explanation": "Quelles sources la portée « Autres sources » de l'écran Recherche peut interroger. Indépendant de l'écran d'accueil — activer les étagères d'une source sur l'accueil ne l'active pas pour la recherche, et inversement.",
+      "deezer": "Deezer",
+      "deezerSubtext": "Inclure les albums et artistes Deezer lors d'une recherche dans Autres sources.",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "Inclure les albums et artistes MusicBrainz lors d'une recherche dans Autres sources."
+    },
+    "metadata": {
+      "title": "Métadonnées",
+      "explanation": "Affichage uniquement. Complète les informations sur l'artiste et les pochettes que votre serveur n'a pas — cela ne modifie jamais rien sur votre serveur et n'écrit jamais de tags ni de fichiers. Désactivez une source pour revenir exactement à ce que montre votre serveur.",
+      "artistInfoSection": "Informations sur l'artiste",
+      "artworkSection": "Pochettes",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "Biographie et tags de l'artiste. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de biographie.",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "Images d'artiste. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de photo d'artiste.",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "Pochettes d'album via l'identifiant MusicBrainz. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de pochette."
     },
     "library": {
       "title": "Bibliothèque",
@@ -390,7 +420,9 @@
         "connectionFailed": "Échec de la connexion à Lidarr",
         "disconnected": "Déconnecté de Lidarr.",
         "credentialsTitle": "Connexion",
-        "credentialsHelper": "L'URL de votre serveur Lidarr et votre clé API. Dans Lidarr : Settings → General."
+        "credentialsHelper": "L'URL de votre serveur Lidarr et votre clé API. Dans Lidarr : Settings → General.",
+        "qualityProfileTitle": "Profil de qualité",
+        "defaultQualityProfile": "Profil de qualité par défaut"
       },
       "slskd": {
         "title": "slskd",
@@ -471,7 +503,12 @@
       "scrobbleDescription": "Enregistrer les titres écoutés sur votre profil.",
       "nowPlayingDescription": "Afficher ce que vous écoutez en temps réel.",
       "markAsPlayed": "Marquer comme écouté",
-      "markAsPlayedDescription": "Mettre à jour le nombre de lectures sur votre serveur."
+      "markAsPlayedDescription": "Mettre à jour le nombre de lectures sur votre serveur.",
+      "routeDisabled": "Désactivé",
+      "routeDirect": "Direct depuis Yuzic",
+      "throughServer": "Via le serveur",
+      "throughServerMarkAsPlayed": "Via le serveur (marquer comme écouté)",
+      "duplicateRiskNote": "Yuzic ne peut pas confirmer que le serveur transmet réellement les scrobbles une fois « Via le serveur » sélectionné. Si le serveur est aussi configuré pour envoyer des scrobbles de son côté, ou qu'une autre application scrobble le même compte, les écoutes peuvent être comptées deux fois."
     },
     "home": {
       "title": "Accueil"
@@ -621,11 +658,24 @@
       "unsupported": "{{count}} fichier non pris en charge ignoré",
       "unsupported_other": "{{count}} fichiers non pris en charge ignorés",
       "importFailed": "Impossible d’importer ces fichiers."
+    },
+    "discovery": {
+      "title": "Découvrir au-delà de votre bibliothèque",
+      "subtitle": "Yuzic peut, si vous le souhaitez, interroger Deezer et ListenBrainz pour des recommandations, artistes similaires et pochettes — aucun compte requis pour l’un ou l’autre.",
+      "whatIsSent": "Ce qui est envoyé : uniquement les noms d’artiste, d’album ou de titre nécessaires à la requête — rien d’autre sur vous ou votre écoute ne quitte cet appareil tant que vous n’activez pas cette option.",
+      "enable": "Activer la découverte",
+      "notNow": "Pas maintenant"
     }
   },
   "library": {
     "offlineBanner": "Hors ligne — affichage de votre bibliothèque synchronisée et de vos téléchargements",
     "title": "Bibliothèque",
+    "downloads": {
+      "title": "Téléchargements"
+    },
+    "wants": {
+      "title": "Souhaits"
+    },
     "view": {
       "switchToList": "Passer à la vue liste",
       "switchToGrid": "Passer à la vue grille"
@@ -737,6 +787,16 @@
     "clearRecent": "Effacer",
     "removeRecentSearch": "Supprimer « {{query}} » des recherches récentes",
     "recentlyOpened": "Ouverts récemment",
+    "scope": {
+      "library": "Votre bibliothèque",
+      "other": "Autres sources"
+    },
+    "filters": {
+      "title": "Filtres",
+      "sources": "Sources",
+      "entityTypes": "Inclure",
+      "noSourcesEnabled": "Aucune source de recherche n'est activée. Activez-en une dans Réglages › Recherche."
+    },
     "entityTypes": {
       "song": "Titre",
       "album": "Album",
@@ -765,7 +825,9 @@
       "topSongs": "Titres populaires"
     },
     "showMore": "{{count}} de plus",
-    "showUnowned": "{{count}} que vous ne possédez pas"
+    "showUnowned": "{{count}} que vous ne possédez pas",
+    "enrichedBioSource": "via {{source}}",
+    "enrichedArtworkSource": "via {{source}}"
   },
   "explore": {
     "sections": {
@@ -786,6 +848,12 @@
       "serverRandomThemed": "{{genre}} du jour",
       "serverNowPlaying": "En écoute sur votre serveur",
       "lbSimilarForYou": "Parce que vous aimez {{artist}}",
+      "localMix": "Votre mix",
+      "lbCreatedFor": {
+        "dailyJams": "Jams quotidiens",
+        "weeklyJams": "Jams hebdomadaires",
+        "weeklyExploration": "Exploration hebdomadaire"
+      },
       "continuePlaying": "Reprendre"
     },
     "empty": {
@@ -942,9 +1010,23 @@
       "title": "Album externe",
       "downloadToServer": "Télécharger sur le serveur",
       "downloadSong": "Télécharger le titre",
+      "get": "Récupérer",
+      "getSong": "Récupérer le titre",
+      "want": "Souhaiter",
+      "wanted": "Souhaité",
+      "arrived": "{{title}} est maintenant dans votre bibliothèque",
       "inLibrary": "Dans la bibliothèque",
       "downloading": "Téléchargement vers le serveur… {{progress}}%",
       "noServiceConnected": "Connectez un téléchargeur dans les réglages pour télécharger"
+    },
+    "review": {
+      "targetServer": "Serveur cible",
+      "noServer": "Aucun serveur sélectionné",
+      "requesting": "Demande",
+      "saveAsDefaultAlbums": "Enregistrer par défaut pour les albums",
+      "saveAsDefaultTracks": "Enregistrer par défaut pour les titres",
+      "qualityProfile": "Profil de qualité",
+      "confirmGet": "Récupérer"
     },
     "serverStatus": {
       "onServer": "Dans la bibliothèque",
@@ -999,6 +1081,21 @@
       "externalMetadata": "Métadonnées externes"
     }
   },
+  "wants": {
+    "title": "Souhaits",
+    "empty": "Rien d'enregistré pour l'instant. Ajoutez un titre ou un album que vous souhaitez et il apparaîtra ici.",
+    "manualAdd": "Ajouter aux souhaits"
+  },
+  "manualAddWant": {
+    "title": "Ajouter aux souhaits",
+    "unit": {
+      "track": "Titre",
+      "album": "Album"
+    },
+    "titleField": "Titre",
+    "artistField": "Artiste",
+    "add": "Ajouter"
+  },
   "albumOptions": {
     "actions": {
       "play": "Lire",
@@ -1013,7 +1110,8 @@
       "downloaded": "Téléchargé",
       "favorite": "Ajouter aux favoris",
       "unfavorite": "Retirer des favoris",
-      "share": "Partager"
+      "share": "Partager",
+      "generatePlaylist": "Créer une liste de lecture à partir de ceci"
     },
     "toasts": {
       "addedNext": "Lecture de {{title}} ensuite",
@@ -1022,7 +1120,10 @@
       "addedToFavorites": "{{title}} ajouté aux favoris.",
       "removedFromFavorites": "{{title}} retiré des favoris.",
       "updateFavoritesFailed": "Échec de la mise à jour des favoris.",
-      "shareFailed": "Impossible de créer le lien de partage"
+      "shareFailed": "Impossible de créer le lien de partage",
+      "playlistGenerated_one": "Liste de lecture créée avec {{count}} morceau",
+      "playlistGenerated_other": "Liste de lecture créée avec {{count}} morceaux",
+      "playlistGenerationFailed": "Impossible de générer la liste de lecture"
     },
     "sections": {
       "albumInfo": "Informations sur l'album"
@@ -1086,7 +1187,8 @@
       "downloading": "Téléchargement…",
       "downloaded": "Téléchargé",
       "goToArtist": "Aller à l'artiste",
-      "viewExternal": "Voir externe"
+      "viewExternal": "Voir externe",
+      "generatePlaylist": "Créer une liste de lecture à partir de ceci"
     },
     "sections": {
       "info": "Informations sur l'artiste"
@@ -1095,7 +1197,12 @@
       "albums": "Albums",
       "plays": "Lectures"
     },
-    "downloadAllFailed": "Certains albums n'ont pas pu être téléchargés."
+    "downloadAllFailed": "Certains albums n'ont pas pu être téléchargés.",
+    "toasts": {
+      "playlistGenerated_one": "Liste de lecture créée avec {{count}} morceau",
+      "playlistGenerated_other": "Liste de lecture créée avec {{count}} morceaux",
+      "playlistGenerationFailed": "Impossible de générer la liste de lecture"
+    }
   },
   "external": {
     "notFound": "Introuvable dans les sources connectées."
@@ -1264,6 +1371,9 @@
       "reset": "Réinitialiser l’égaliseur",
       "preset": "Préréglage d’égaliseur {{name}}",
       "decibels": "{{gain}} décibels"
+    },
+    "wants": {
+      "remove": "Retirer {{title}} des souhaits"
     }
   },
   "tabs": {
@@ -1274,6 +1384,10 @@
   "downloads": {
     "title": "File d'attente de téléchargement",
     "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages.",
-    "jobFailed": "Impossible de terminer le téléchargement de « {{title}} ». Il reste en file d'attente et sera réessayé."
+    "jobFailed": "Impossible de terminer le téléchargement de « {{title}} ». Il reste en file d'attente et sera réessayé.",
+    "section": {
+      "offline": "Hors ligne",
+      "downloaders": "Téléchargeurs"
+    }
   }
 }

@@ -79,6 +79,11 @@ export const selectHasSeenGetStarted = (
 ): boolean =>
   state.settings.hasSeenGetStarted;
 
+export const selectOnboardingDiscoveryPrompted = (
+  state: RootState
+): boolean =>
+  state.settings.onboardingDiscoveryPrompted ?? false;
+
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
 
@@ -148,6 +153,27 @@ export const selectDeezerExternalEnabled = (state: RootState): boolean =>
 export const selectMusicbrainzExternalEnabled = (state: RootState): boolean =>
   state.settings.musicbrainzExternalEnabled ?? false;
 
+/**
+ * Whether one source is enabled for the Search screen's "Other sources"
+ * scope. `searchSourcesEnabled` is the unified map; Deezer additionally
+ * falls back to the older `deezerSearchEnabled` flag when it has no entry of
+ * its own, so a user who already turned Deezer search on before this map
+ * existed keeps seeing it on — read-time reconciliation, no migration.
+ */
+export const selectSearchSourceEnabled = (sourceId: string) =>
+  (state: RootState): boolean => {
+    const explicit = state.settings.searchSourcesEnabled?.[sourceId];
+    if (explicit !== undefined) return explicit;
+    if (sourceId === 'deezer') return state.settings.deezerSearchEnabled ?? false;
+    return false;
+  };
+
+/** Every source id enabled for Search, independent of Home/discovery. */
+export const selectEnabledSearchSourceIds = (state: RootState): string[] => {
+  const ids = new Set<string>(['deezer', 'musicbrainz']);
+  return [...ids].filter(id => selectSearchSourceEnabled(id)(state));
+};
+
 /** Off until asked for: see the note on the field in settingsSlice. */
 export const selectListenbrainzDiscoveryEnabled = (state: RootState): boolean =>
   state.settings.listenbrainzDiscoveryEnabled ?? false;
@@ -172,6 +198,56 @@ export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
 
 export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
   state.settings.homeServerSectionsEnabled ?? true;
+
+/**
+ * Enabled external lyric sources, in the user's try-order.
+ *
+ * Filters `lyricsExternalSourcesOrder` down to the ones actually enabled
+ * rather than trusting the order list alone, so a source that was disabled
+ * without being removed from the order (or an id from a future version this
+ * one doesn't recognise) never gets called. Empty by default — the whole
+ * point being that a fresh install/upgrade resolves lyrics server-only,
+ * with no external calls at all, until the user opts in.
+ */
+export const selectEnabledLyricsExternalSourcesInOrder = (state: RootState): string[] => {
+  const order = state.settings.lyricsExternalSourcesOrder ?? [];
+  const enabled = state.settings.lyricsExternalSourcesEnabled ?? {};
+  return order.filter(sourceId => enabled[sourceId]);
+};
+
+export const selectLyricsExternalSourcesOrder = (state: RootState): string[] =>
+  state.settings.lyricsExternalSourcesOrder ?? [];
+
+export const selectLyricsExternalSourceEnabled = (sourceId: string) =>
+  (state: RootState): boolean => state.settings.lyricsExternalSourcesEnabled?.[sourceId] ?? false;
+
+/**
+ * `metadata.enrich` selectors — same shape as the lyrics pair above, kept as
+ * two entirely independent chains (artist-info, artwork) per the D3 design.
+ */
+export const selectEnabledMetadataArtistInfoSourcesInOrder = (state: RootState): string[] => {
+  const order = state.settings.metadataArtistInfoOrder ?? [];
+  const enabled = state.settings.metadataArtistInfoEnabled ?? {};
+  return order.filter(sourceId => enabled[sourceId]);
+};
+
+export const selectMetadataArtistInfoOrder = (state: RootState): string[] =>
+  state.settings.metadataArtistInfoOrder ?? [];
+
+export const selectMetadataArtistInfoSourceEnabled = (sourceId: string) =>
+  (state: RootState): boolean => state.settings.metadataArtistInfoEnabled?.[sourceId] ?? false;
+
+export const selectEnabledMetadataArtworkSourcesInOrder = (state: RootState): string[] => {
+  const order = state.settings.metadataArtworkOrder ?? [];
+  const enabled = state.settings.metadataArtworkEnabled ?? {};
+  return order.filter(sourceId => enabled[sourceId]);
+};
+
+export const selectMetadataArtworkOrder = (state: RootState): string[] =>
+  state.settings.metadataArtworkOrder ?? [];
+
+export const selectMetadataArtworkSourceEnabled = (sourceId: string) =>
+  (state: RootState): boolean => state.settings.metadataArtworkEnabled?.[sourceId] ?? false;
 
 /**
  * Crossfade, as the engine wants it, or `null` when it is off.

@@ -12,7 +12,6 @@ import {
   selectListenBrainzToken,
   selectListenBrainzAuthenticated,
   selectListenBrainzConfig,
-  selectListenBrainzScrobbleEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
 import { selectListenbrainzDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import { setListenbrainzDiscoveryEnabled } from '@/utils/redux/slices/settingsSlice';
@@ -21,7 +20,6 @@ import {
   setToken,
   setAuthenticated,
   disconnect,
-  setScrobbleEnabled,
 } from '@/utils/redux/slices/listenbrainzSlice';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import * as listenbrainz from '@/api/listenbrainz';
@@ -36,10 +34,8 @@ const ListenBrainzView: React.FC = () => {
   const token = useSelector(selectListenBrainzToken);
   const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
   const config = useSelector(selectListenBrainzConfig);
-  const scrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
   const discoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
 
-  const toggleScrobble = useCallback((v: boolean) => { dispatch(setScrobbleEnabled({ serverId, value: v })); }, [dispatch, serverId]);
   const toggleDiscovery = useCallback((v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
 
   // Discovery reads the public similar-artist graph, which takes no account —
@@ -49,11 +45,6 @@ const ListenBrainzView: React.FC = () => {
   const discoveryItems = useMemo(() => [
     { label: t('settings.listenBrainz.discovery'), subtext: t('settings.listenBrainz.discoveryDescription'), value: discoveryEnabled, onValueChange: toggleDiscovery },
   ], [t, discoveryEnabled, toggleDiscovery]);
-
-  // Now-playing follows scrobble; see the note in settingsSelectors.
-  const scrobbleItems = useMemo(() => [
-    { label: t('settings.scrobbling.scrobble'), subtext: t('settings.scrobbling.scrobbleDescription'), value: scrobbleEnabled, onValueChange: toggleScrobble },
-  ], [t, scrobbleEnabled, toggleScrobble]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,16 +125,10 @@ const ListenBrainzView: React.FC = () => {
       />
 
       {isAuthenticated && (
-        <>
-          <SettingsToggleGroup
-            items={scrobbleItems}
-          />
-
-          <SettingsDisconnectButton
-            label={t('settings.listenBrainz.disconnect')}
-            onPress={handleDisconnect}
-          />
-        </>
+        <SettingsDisconnectButton
+          label={t('settings.listenBrainz.disconnect')}
+          onPress={handleDisconnect}
+        />
       )}
     </SettingsScreen>
   );

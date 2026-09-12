@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { ServerType } from '@/types';
 import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
 
 export default function Connect() {
     const [selectedType, setSelectedType] = useState<ServerType | null>(null);
@@ -29,6 +30,7 @@ export default function Connect() {
     const router = useRouter();
     const dispatch = useDispatch();
     const rad = useRadius();
+    const onboardingDiscoveryPrompted = useSelector(selectOnboardingDiscoveryPrompted);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLayoutMounted(true), 0);
@@ -82,7 +84,11 @@ export default function Connect() {
                 isAuthenticated: true,
             }));
             dispatch(setActiveServer(id));
-            router.replace('/(home)/(tabs)/(home)');
+            router.replace(
+                onboardingDiscoveryPrompted
+                    ? '/(home)/(tabs)/(home)'
+                    : '/(onboarding)/discovery'
+            );
         } catch {
             toast.error(t('onboarding.connect.connectError'));
         } finally {

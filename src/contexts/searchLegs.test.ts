@@ -1,25 +1,25 @@
 import { planSearchLegs } from './searchLegs';
 
-const BOTH_FILTERS = { local: true, deezer: true };
-
 describe('planSearchLegs', () => {
-  it('attempts every leg the scope asks for when everything is reachable', () => {
+  it('attempts the server leg for the library scope when everything is reachable', () => {
     expect(planSearchLegs({
-      filters: BOTH_FILTERS,
+      resultScope: 'library',
+      enabledExternalSourceIds: [],
       searchScope: 'server',
       serverReachable: true,
       deviceOnline: true,
-    })).toEqual({ client: false, server: true, external: true, degraded: false });
+    })).toEqual({ client: false, server: true, externalSources: [], degraded: false });
   });
 
   it('searches the local index when that is the chosen scope', () => {
     const plan = planSearchLegs({
-      filters: { local: true, deezer: false },
+      resultScope: 'library',
+      enabledExternalSourceIds: [],
       searchScope: 'client',
       serverReachable: true,
       deviceOnline: true,
     });
-    expect(plan).toEqual({ client: true, server: false, external: false, degraded: false });
+    expect(plan).toEqual({ client: true, server: false, externalSources: [], degraded: false });
   });
 
   // The regression this file exists for: offline, the server leg was still
@@ -28,7 +28,8 @@ describe('planSearchLegs', () => {
   // shown under an error banner.
   it('reports a skipped leg as degraded rather than failed', () => {
     expect(planSearchLegs({
-      filters: BOTH_FILTERS,
+      resultScope: 'library',
+      enabledExternalSourceIds: [],
       searchScope: 'server',
       serverReachable: false,
       deviceOnline: true,
@@ -39,7 +40,8 @@ describe('planSearchLegs', () => {
   // over a fully synced library returns nothing at all, which is what it did.
   it('falls back to the local index when the server scope cannot be reached', () => {
     const plan = planSearchLegs({
-      filters: { local: true, deezer: false },
+      resultScope: 'library',
+      enabledExternalSourceIds: [],
       searchScope: 'server',
       serverReachable: false,
       deviceOnline: false,
@@ -49,38 +51,76 @@ describe('planSearchLegs', () => {
     expect(plan.degraded).toBe(true);
   });
 
-  it('still asks Deezer when only the music server is unreachable', () => {
-    // A downed VPN takes the server away while the internet is fine. Folding
-    // both into one flag would drop external results in that exact case.
-    const plan = planSearchLegs({
-      filters: BOTH_FILTERS,
-      searchScope: 'server',
-      serverReachable: false,
-      deviceOnline: true,
-    });
-    expect(plan.server).toBe(false);
-    expect(plan.external).toBe(true);
-  });
-
-  it('is not degraded when the only unreachable leg was never asked for', () => {
+  it('is not degraded when nothing was asked for beyond the local index', () => {
     expect(planSearchLegs({
-      filters: { local: true, deezer: false },
+      resultScope: 'library',
+      enabledExternalSourceIds: [],
       searchScope: 'client',
       serverReachable: false,
       deviceOnline: false,
-    })).toEqual({ client: true, server: false, external: false, degraded: false });
+    })).toEqual({ client: true, server: false, externalSources: [], degraded: false });
   });
 
-  it('drops the local legs entirely when the local filter is off', () => {
-    const plan = planSearchLegs({
-      filters: { local: false, deezer: true },
-      searchScope: 'server',
-      serverReachable: false,
-      deviceOnline: true,
+  describe('resultScope: other (the external-search action)', () => {
+    it('never plans a library leg alongside external ones — the two are not mixed by default', () => {
+      const plan = planSearchLegs({
+        resultScope: 'other',
+        enabledExternalSourceIds: ['deezer', 'musicbrainz'],
+        searchScope: 'server',
+        serverReachable: true,
+        deviceOnline: true,
+      });
+      expect(plan.client).toBe(false);
+      expect(plan.server).toBe(false);
+      expect(plan.externalSources.sort()).toEqual(['deezer', 'musicbrainz']);
     });
-    expect(plan.client).toBe(false);
-    expect(plan.server).toBe(false);
-    expect(plan.external).toBe(true);
-    expect(plan.degraded).toBe(false);
+
+    it('queries only the sources the Filters sheet enabled', () => {
+      const plan = planSearchLegs({
+        resultScope: 'other',
+        enabledExternalSourceIds: ['musicbrainz'],
+        searchScope: 'server',
+        serverReachable: true,
+        deviceOnline: true,
+      });
+      expect(plan.externalSources).toEqual(['musicbrainz']);
+    });
+
+    it('drops every external source when the device is offline', () => {
+      const plan = planSearchLegs({
+        resultScope: 'other',
+        enabledExternalSourceIds: ['deezer'],
+        searchScope: 'server',
+        serverReachable: true,
+        deviceOnline: false,
+      });
+      expect(plan.externalSources).toEqual([]);
+      expect(plan.degraded).toBe(true);
+    });
+
+    it('is not degraded when the scope was asked for with no sources enabled at all', () => {
+      // Nothing to attempt is not the same as something failing to reach.
+      const plan = planSearchLegs({
+        resultScope: 'other',
+        enabledExternalSourceIds: [],
+        searchScope: 'server',
+        serverReachable: true,
+        deviceOnline: true,
+      });
+      expect(plan.externalSources).toEqual([]);
+      expect(plan.degraded).toBe(false);
+    });
+
+    it('never attempts the library legs even when the search scope is client', () => {
+      const plan = planSearchLegs({
+        resultScope: 'other',
+        enabledExternalSourceIds: ['deezer'],
+        searchScope: 'client',
+        serverReachable: true,
+        deviceOnline: true,
+      });
+      expect(plan.client).toBe(false);
+      expect(plan.server).toBe(false);
+    });
   });
 });

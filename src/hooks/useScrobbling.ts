@@ -12,11 +12,11 @@ import { canScrobble } from '@/utils/playback/contentKind';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import {
   selectListenBrainzConfig,
-  selectListenBrainzScrobbleEnabled,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
 import {
-  selectServerScrobbleEnabled,
-} from '@/utils/redux/selectors/settingsSelectors';
+  selectLastfmScrobbleRoute,
+  selectListenBrainzScrobbleRoute,
+} from '@/utils/redux/selectors/scrobbleRoutingSelectors';
 import { useApi } from '@/api';
 
 function passesScrobbleThreshold(listenedSeconds: number, durationSeconds: number): boolean {
@@ -30,10 +30,20 @@ export function useScrobbling() {
   const dispatch = useDispatch();
   const activeServer = useSelector(selectActiveServer);
   const listenBrainzConfig = useSelector(selectListenBrainzConfig);
-  // Now-playing is not its own toggle — it follows scrobble. See the note
-  // on selectServerNowPlayingEnabled in settingsSelectors.
-  const lbScrobbleEnabled = useSelector(selectListenBrainzScrobbleEnabled);
-  const serverScrobbleEnabled = useSelector(selectServerScrobbleEnabled);
+  // One route per destination, not two independent booleans — see
+  // scrobbleRoutingSelectors. 'through-server' on either destination is what
+  // used to be `serverScrobbleEnabled`; ListenBrainz's own 'direct' route is
+  // what used to be its per-server scrobble toggle. Now-playing follows
+  // scrobble the same way it always did: whichever route is active for a
+  // destination also drives that destination's now-playing broadcast.
+  const lastfmRoute = useSelector(selectLastfmScrobbleRoute);
+  const listenBrainzRoute = useSelector(selectListenBrainzScrobbleRoute);
+  // The server adapter call covers both "forward to Last.fm" and "forward to
+  // ListenBrainz" server-side — it is one call regardless of which
+  // destination the server is configured to relay to. So it fires whenever
+  // *either* destination is routed 'through-server'.
+  const serverScrobbleEnabled = lastfmRoute === 'through-server' || listenBrainzRoute === 'through-server';
+  const lbScrobbleEnabled = listenBrainzRoute === 'direct';
 
   const lastScrobbledIdRef = useRef<string | null>(null);
 

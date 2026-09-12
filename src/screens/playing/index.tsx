@@ -11,7 +11,9 @@ import { usePlayingState, usePlayingProgress } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { selectShowSleepTimer, selectShowPlaybackSpeed, selectShowVolumeSlider } from '@/utils/redux/selectors/settingsSelectors';
+import { selectShowSleepTimer, selectShowPlaybackSpeed, selectShowVolumeSlider, selectEnabledLyricsExternalSourcesInOrder } from '@/utils/redux/selectors/settingsSelectors';
+import { resolveLyrics, ALL_EXTERNAL_LYRICS_SOURCES, type ExternalLyricsSourceId } from '@/features/lyrics/resolveLyrics';
+import { externalLyricsFetchers } from '@/features/lyrics/externalLyricsFetchers';
 import SongOptions from '@/components/options/SongOptions';
 import Queue from './components/Queue';
 import Animated, {
@@ -215,6 +217,17 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         [dragMoved, expansion, height, scrollY],
     );
 
+    const enabledExternalLyricsSourceIds = useSelector(selectEnabledLyricsExternalSourcesInOrder);
+    // The redux slice stores plain strings so it never has to know about this
+    // union; narrow to the ids the resolver actually recognises here, at the
+    // one place that reads it.
+    const enabledExternalLyricsSources = useMemo(
+        () => enabledExternalLyricsSourceIds.filter(
+            (id): id is ExternalLyricsSourceId => (ALL_EXTERNAL_LYRICS_SOURCES as string[]).includes(id)
+        ),
+        [enabledExternalLyricsSourceIds]
+    );
+
     useEffect(() => {
         if (!currentSong?.id) return;
 
@@ -225,7 +238,18 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         const task = InteractionManager.runAfterInteractions(() => {
             (async () => {
                 try {
-                    const res = await api.lyrics.getBySongId(currentSong.id);
+                    const res = await resolveLyrics({
+                        song: {
+                            songId: currentSong.id,
+                            title: currentSong.title,
+                            artist: currentSong.artist,
+                            album: currentSong.albumTitle,
+                            durationSec: Number(currentSong.duration) || undefined,
+                        },
+                        getServerLyrics: songId => api.lyrics.getBySongId(songId),
+                        enabledExternalSourcesInOrder: enabledExternalLyricsSources,
+                        fetchers: externalLyricsFetchers,
+                    });
                     if (cancelled) return;
                     if (res && res.lines.length > 0) {
                         setLyrics(res);
@@ -243,7 +267,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
             cancelled = true;
             task.cancel();
         };
-    }, [api.lyrics, currentSong?.id]);
+    }, [api.lyrics, currentSong?.id, currentSong?.title, currentSong?.artist, currentSong?.albumTitle, currentSong?.duration, enabledExternalLyricsSources]);
 
     const showSleepTimer = useSelector(selectShowSleepTimer);
     const showPlaybackSpeed = useSelector(selectShowPlaybackSpeed);

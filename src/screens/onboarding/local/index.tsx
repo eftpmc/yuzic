@@ -12,6 +12,8 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useSelector } from 'react-redux';
+import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
 
 /** First-run local-library import. Files are copied into app-private storage,
  * so a document provider revoking its temporary URI cannot break playback. */
@@ -20,6 +22,13 @@ export default function LocalImport() {
   const router = useRouter();
   const rad = useRadius();
   const [importing, setImporting] = useState(false);
+  const onboardingDiscoveryPrompted = useSelector(selectOnboardingDiscoveryPrompted);
+  const finishOnboarding = () =>
+    router.replace(
+      onboardingDiscoveryPrompted
+        ? '/(home)/(tabs)/(home)'
+        : '/(onboarding)/discovery'
+    );
 
   const pick = async () => {
     setImporting(true);
@@ -46,7 +55,7 @@ export default function LocalImport() {
         <Touchable style={[styles.primary, { borderRadius: rad.pill }, importing && styles.disabled]} onPress={pick} disabled={importing}>
           {importing ? <SpinningLoaderCircle size={iconSize.row} color={onDark.background} /> : <Text style={styles.primaryText}>{t('onboarding.local.choose')}</Text>}
         </Touchable>
-        <Touchable style={[styles.secondary, { borderRadius: rad.pill }]} onPress={() => router.replace('/(home)/(tabs)/(home)')}>
+        <Touchable style={[styles.secondary, { borderRadius: rad.pill }]} onPress={finishOnboarding}>
           <Text style={styles.secondaryText}>{t('onboarding.local.finish')}</Text>
         </Touchable>
       </View>

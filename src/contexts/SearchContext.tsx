@@ -16,6 +16,7 @@ import {
 } from '@/types';
 
 import * as deezer from '@/api/deezer';
+import * as mb from '@/api/musicbrainz';
 import { useAlbums } from '@/hooks/albums';
 import { useArtists } from '@/hooks/artists';
 import { usePlaylists } from '@/hooks/playlists';
@@ -35,19 +36,39 @@ import {
 } from '@/utils/downloads/collectionState';
 
 import { dedupeAndSort, type SearchResult } from './searchRanking';
-import { planSearchLegs } from './searchLegs';
+import { planSearchLegs, type SearchResultScope } from './searchLegs';
 
 export type { SearchResult } from './searchRanking';
+export type { SearchResultScope } from './searchLegs';
+
+/** Entity types an external source can be asked to return. Deliberately
+ *  narrower than the library's four kinds — 'song'/'playlist' have no
+ *  external equivalent through Deezer/MusicBrainz today, so filtering on
+ *  them would just always empty out; the Filters UI only offers what a
+ *  source actually supports. */
+export type SearchEntityType = 'album' | 'artist';
+
+export const ALL_SEARCH_ENTITY_TYPES: SearchEntityType[] = ['album', 'artist'];
 
 export type SearchFilters = {
-  local: boolean;
-  deezer: boolean;
-}
+  /** 'library' (default) — today's local search — or 'other', the
+   *  deliberate external-search action. The two are never both attempted
+   *  in the same request; that split is what keeps library and external
+   *  results from mixing by default. */
+  resultScope: SearchResultScope;
+  /** Source ids to query when `resultScope` is 'other' — the sources the
+   *  Filters sheet left checked, already narrowed to ones enabled for
+   *  search. Ignored when `resultScope` is 'library'. */
+  sourceIds: string[];
+  /** Which entity types to ask each external source for. Defaults to all
+   *  supported types when omitted. Ignored when `resultScope` is 'library'. */
+  entityTypes?: SearchEntityType[];
+};
 
 interface SearchContextType {
   searchResults: SearchResult[];
   searchLibrary: (query: string) => Promise<SearchResult[]>;
-  searchExternal: (query: string) => Promise<SearchResult[]>;
+  searchExternal: (query: string, sourceIds: string[], entityTypes: SearchEntityType[]) => Promise<SearchResult[]>;
   clearSearch: () => void;
   isLoading: boolean;
   /** True when the most recent search failed to reach the server/external source, so results shown (if any) may be incomplete. */
@@ -146,6 +167,59 @@ function playlistToResult(playlist: PlaylistBase, isDownloaded: boolean): Search
   };
 }
 
+/**
+ * One external source's contribution to a search, kept provenance-tagged
+ * (`externalSource` on every result) rather than merged with any other
+ * source's results — see the module doc on `searchExternal` for why.
+ */
+async function searchExternalSource(
+  sourceId: string,
+  query: string,
+  entityTypes: SearchEntityType[]
+): Promise<SearchResult[]> {
+  const wantsArtists = entityTypes.includes('artist');
+  const wantsAlbums = entityTypes.includes('album');
+
+  if (sourceId === 'deezer') {
+    const [artists, albums] = await Promise.all([
+      wantsArtists ? deezer.searchDeezerArtists(query, 4) : Promise.resolve([]),
+      wantsAlbums ? deezer.searchDeezerAlbums(query, 6) : Promise.resolve([]),
+    ]);
+    return [
+      ...artists.map(artist => artistToResult(artist, false, 'external')),
+      ...albums.map(album => albumToResult(album, 'external', false)),
+    ];
+  }
+
+  if (sourceId === 'musicbrainz') {
+    const [artists, releaseGroups] = await Promise.all([
+      wantsArtists ? mb.searchArtist(query, 4) : Promise.resolve([]),
+      wantsAlbums ? mb.searchReleaseGroupByTitle(query, 6) : Promise.resolve([]),
+    ]);
+    return [
+      ...artists.map(artist => artistToResult(
+        { id: artist.id, name: artist.name, subtext: '', cover: { kind: 'none' }, externalSource: 'musicbrainz' },
+        false,
+        'external'
+      )),
+      ...releaseGroups.map(rg => albumToResult(
+        {
+          id: rg.id,
+          title: rg.title,
+          subtext: rg['first-release-date']?.slice(0, 4) ?? '',
+          cover: { kind: 'coverartarchive', mbid: rg.id, mbidType: 'release-group' },
+          externalSource: 'musicbrainz',
+          externalIds: { mbid: rg.id },
+        },
+        'external',
+        false
+      )),
+    ];
+  }
+
+  return [];
+}
+
 // ---
 
 const SearchContext = createContext<SearchContextType | undefined>(
@@ -180,8 +254,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
   const isOffline = useIsOffline();
   const serverUnreachable = useServerUnreachable();
   const canReachServer = !isOffline && !serverUnreachable;
-  // Deezer is a public API, so it only needs the device to be online — an
-  // unreachable *music server* says nothing about whether Deezer is up.
+  // External sources are public APIs, so they only need the device to be
+  // online — an unreachable *music server* says nothing about whether they're up.
   const canReachExternal = !isOffline;
 
   const {
@@ -291,20 +365,32 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     ];
   }, [api, downloadedAlbumIds, downloadedTrackIds]);
 
+  /**
+   * Fans a query out to every requested external source in parallel and
+   * concatenates the results with each source's own `externalSource` tag
+   * intact — this is the "Other sources" leg, never mixed with the library
+   * legs above (see `planSearchLegs`).
+   *
+   * Deliberately does not merge across sources: a MusicBrainz release group
+   * and a Deezer album for the same record are two different editions/ids
+   * with no shared key to merge on here (no ISRC/UPC cross-match is computed
+   * at query time), so collapsing them would either drop a real edition or
+   * guess at a match with no confidence signal. Keeping them as separate,
+   * source-labelled rows is the conservative choice the locked design calls
+   * for ("keep editions/recordings and ambiguous matches separate").
+   * `dedupeAndSort`'s existing key (`source:type:id`) still collapses true
+   * duplicates — the same source returning the same id twice.
+   */
   const searchExternal = useCallback(async (
-    query: string
+    query: string,
+    sourceIds: string[],
+    entityTypes: SearchEntityType[]
   ): Promise<SearchResult[]> => {
-    if (!query.trim()) return [];
-
-    const [deezerArtists, deezerAlbums] = await Promise.all([
-      deezer.searchDeezerArtists(query, 4),
-      deezer.searchDeezerAlbums(query, 6),
-    ]);
-
-    return [
-      ...deezerArtists.map(artist => artistToResult(artist, false, 'external')),
-      ...deezerAlbums.map(album => albumToResult(album, 'external', false)),
-    ];
+    if (!query.trim() || sourceIds.length === 0) return [];
+    const perSource = await Promise.all(
+      sourceIds.map(sourceId => searchExternalSource(sourceId, query, entityTypes))
+    );
+    return perSource.flat();
   }, []);
 
   const clearSearch = useCallback(() => {
@@ -329,14 +415,17 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
     try {
       const lowerQuery = query.toLowerCase();
       const results: SearchResult[] = [];
+      const entityTypes = filters.entityTypes ?? ['album', 'artist'];
 
       // Decide the legs up front rather than at each call site. A leg that
       // cannot land is not attempted at all: each one would otherwise hang to
       // its own timeout on every keystroke and then land in the same `catch`
       // as a real failure, so local results that succeeded were shown
-      // underneath an error banner.
+      // underneath an error banner. Library and external legs are mutually
+      // exclusive here — `resultScope` picks one family, never both.
       const legs = planSearchLegs({
-        filters,
+        resultScope: filters.resultScope,
+        enabledExternalSourceIds: filters.sourceIds,
         searchScope,
         serverReachable: canReachServer,
         deviceOnline: canReachExternal,
@@ -352,8 +441,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({
       }
       if (requestId !== searchRequestIdRef.current) return;
 
-      if (legs.external) {
-        try { results.push(...await searchExternal(query)); } catch { errored = true; }
+      if (legs.externalSources.length > 0) {
+        try { results.push(...await searchExternal(query, legs.externalSources, entityTypes)); } catch { errored = true; }
       }
       if (requestId !== searchRequestIdRef.current) return;
 

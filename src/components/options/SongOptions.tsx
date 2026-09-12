@@ -11,7 +11,7 @@ import { generateSimilarPlaylist } from '@/features/audiomuse/generatePlaylist';
 
 import { ExternalAlbumBase, ExternalSong, Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useTheme } from '@/hooks/useTheme';
@@ -26,7 +26,7 @@ import {
   useAnyDownloaderConnected,
   useAnyTrackDownloaderConnected,
 } from '@/features/downloaders/registry';
-import DownloadSheet from '@/components/options/DownloadSheet';
+import GetReviewSheet from '@/components/options/GetReviewSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
 import {
   OptionSheetChipsRow,
@@ -39,7 +39,11 @@ import {
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
 import { iconSize, spacing, statusColor } from '@/constants/design';
-import haptics from '@/utils/haptics';
+import haptics, { selection as hapticsSelection } from '@/utils/haptics';
+import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { selectIsWanted } from '@/utils/redux/selectors/wantsSelectors';
+import { addWant, removeWant } from '@/utils/redux/slices/wantsSlice';
+import { makeLocalId } from '@/types/EntityId';
 
 type SongOptionsProps = {
   selectedSong: Song | ExternalSong;
@@ -509,6 +513,7 @@ const ExternalSongOptionsSheet = forwardRef<
 >(({ song, albumTitle, albumArtist, onPlay }, ref) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const dispatch = useDispatch();
 
   const downloadSheetRef = useSheetRef();
   const trackDownloadSheetRef = useSheetRef();
@@ -531,6 +536,38 @@ const ExternalSongOptionsSheet = forwardRef<
     title: song.title,
     artist: song.artist || albumArtist,
   }), [song.title, song.artist, albumArtist]);
+
+  // `ExternalSong` doesn't carry a `localId` field (Phase A only added it to
+  // the album/artist bases), so one is derived here from its own external
+  // source/id — same recipe `makeLocalId` uses elsewhere. Absent an
+  // `externalSource` there's nothing stable to key a Want on, so Want hides.
+  const localId = useMemo(
+    () => (song.externalSource ? makeLocalId({ kind: 'track', externalSource: song.externalSource, externalNativeId: song.id }) : undefined),
+    [song.externalSource, song.id]
+  );
+
+  const activeServerId = useSelector(selectActiveServerId);
+  const isWanted = useSelector(localId ? selectIsWanted(localId) : () => false);
+
+  const handleToggleWant = () => {
+    if (!localId || !activeServerId) return;
+    hapticsSelection();
+    if (isWanted) {
+      dispatch(removeWant({ serverId: activeServerId, localId }));
+    } else {
+      dispatch(addWant({
+        serverId: activeServerId,
+        want: {
+          localId,
+          externalIds: song.externalIds,
+          unit: 'track',
+          title: song.title,
+          artist: song.artist || albumArtist,
+          origin: 'search',
+        },
+      }));
+    }
+  };
 
   return (
     <>
@@ -567,10 +604,24 @@ const ExternalSongOptionsSheet = forwardRef<
             />
           )}
 
+          {localId && (
+            <OptionSheetRow
+              icon={
+                <Heart
+                  size={iconSize.loader}
+                  color={isWanted ? statusColor.success : colors.secondary}
+                  fill={isWanted ? statusColor.success : 'none'}
+                />
+              }
+              label={isWanted ? t('externalAlbum.menu.wanted') : t('externalAlbum.menu.want')}
+              onPress={handleToggleWant}
+            />
+          )}
+
           {canDownloadTrack && (
             <OptionSheetRow
               icon={<Download size={iconSize.loader} color={colors.secondary} />}
-              label={t('externalAlbum.menu.downloadSong')}
+              label={t('externalAlbum.menu.getSong')}
               onPress={() => trackDownloadSheetRef.current?.present()}
               trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
             />
@@ -579,13 +630,13 @@ const ExternalSongOptionsSheet = forwardRef<
           {canDownload && (
             <OptionSheetRow
               icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
-              label={t('externalAlbum.menu.downloadToServer')}
+              label={t('externalAlbum.menu.get')}
               onPress={() => downloadSheetRef.current?.present()}
               trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
             />
           )}
 
-          {(!!onPlay || canDownload) && <OptionSheetDivider />}
+          {(!!onPlay || canDownload || canDownloadTrack || localId) && <OptionSheetDivider />}
 
           <OptionSheetSectionLabel label={t('songOptions.sections.media')} />
           <OptionSheetInfoRow
@@ -595,8 +646,8 @@ const ExternalSongOptionsSheet = forwardRef<
         </BottomSheetScrollView>
       </BottomSheetModal>
 
-      <DownloadSheet album={albumBase} sheetRef={downloadSheetRef} />
-      <DownloadSheet album={albumBase} track={track} sheetRef={trackDownloadSheetRef} />
+      <GetReviewSheet album={albumBase} sheetRef={downloadSheetRef} />
+      <GetReviewSheet album={albumBase} track={track} sheetRef={trackDownloadSheetRef} />
     </>
   );
 });

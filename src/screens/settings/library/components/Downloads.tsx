@@ -63,7 +63,7 @@ const Downloads: React.FC = () => {
       <SettingsRow
         testID="downloads-more-info"
         label={t('settings.library.downloads.moreInfo')}
-        onPress={() => router.push('/settings/downloadsInfoView')}
+        onPress={() => router.push('/downloadsView')}
       />
     </SettingsCard>
     </>

@@ -1,17 +1,19 @@
-import React, { forwardRef, useMemo, useState } from 'react';
+import React, { forwardRef, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe, Share2, Link, CloudDownload, ChevronRight } from 'lucide-react-native';
+import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe, Share2, Link, CloudDownload, ChevronRight, Sparkles } from 'lucide-react-native';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useApi } from '@/api';
 import { shareItem } from '@/utils/share';
+import { selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
+import { useCanGeneratePlaylist, generateForAlbum } from '@/features/audiomuse/generateFromEntity';
 
 import { Album, AlbumBase, ExternalAlbumBase } from '@/types';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectAlbumPlayCount } from '@/utils/redux/selectors/statsSelectors';
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useDownload } from '@/contexts/DownloadContext';
@@ -24,7 +26,7 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
 import { useStarredAlbums, useStarAlbum, useUnstarAlbum } from '@/hooks/starred';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
-import DownloadSheet from '@/components/options/DownloadSheet';
+import GetReviewSheet from '@/components/options/GetReviewSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
 import {
   OptionSheetChipsRow,
@@ -38,7 +40,10 @@ import {
 } from './OptionSheetPrimitives';
 import { iconSize, spacing, statusColor } from '@/constants/design';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import haptics from '@/utils/haptics';
+import haptics, { selection as hapticsSelection } from '@/utils/haptics';
+import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
+import { selectIsWanted } from '@/utils/redux/selectors/wantsSelectors';
+import { addWant, removeWant } from '@/utils/redux/slices/wantsSlice';
 
 export type AlbumOptionsProps = {
   album: AlbumBase | Album | ExternalAlbumBase | null;
@@ -113,7 +118,11 @@ const LibraryAlbumOptionsSheet = forwardRef<
   const playCount = useSelector(selectAlbumPlayCount(album?.id ?? ''));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false);
+  const generatePlaylistInFlightRef = useRef(false);
   const api = useApi();
+  const audiomuseConfig = useSelector(selectAudiomuseConfig);
+  const canGeneratePlaylist = useCanGeneratePlaylist();
   const { albumWithSongs, songs, songsLoading } = useLazyAlbumDetail(album, isSheetOpen);
 
   const isStarred = starredAlbums.some(a => a.id === album?.id);
@@ -243,6 +252,23 @@ const LibraryAlbumOptionsSheet = forwardRef<
     await downloadAlbumById(album.id, songs);
   };
 
+  const handleGeneratePlaylist = async () => {
+    if (generatePlaylistInFlightRef.current || !album || !albumWithSongs) return;
+    generatePlaylistInFlightRef.current = true;
+    setIsGeneratingPlaylist(true);
+    try {
+      const result = await generateForAlbum(api, audiomuseConfig, albumWithSongs, { size: 25 });
+      toast.success(t('albumOptions.toasts.playlistGenerated', { count: result.trackCount }));
+      close();
+      router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
+    } catch {
+      toast.error(t('albumOptions.toasts.playlistGenerationFailed'));
+    } finally {
+      generatePlaylistInFlightRef.current = false;
+      setIsGeneratingPlaylist(false);
+    }
+  };
+
   if (!album) {
     return (
       <BottomSheetModal
@@ -329,6 +355,16 @@ const LibraryAlbumOptionsSheet = forwardRef<
           disabled={playbackDisabled}
           dimRow={playbackDisabled}
         />
+
+        {canGeneratePlaylist && (
+          <OptionSheetRow
+            icon={<Sparkles size={iconSize.loader} color={colors.secondary} />}
+            label={t('albumOptions.actions.generatePlaylist')}
+            onPress={handleGeneratePlaylist}
+            disabled={isGeneratingPlaylist || playbackDisabled}
+            loading={isGeneratingPlaylist}
+          />
+        )}
 
         {!hideGoToAlbum && (
           <OptionSheetRow
@@ -417,6 +453,7 @@ const ExternalAlbumOptionsSheet = forwardRef<
 >(({ album }, ref) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const dispatch = useDispatch();
 
   const downloadSheetRef = useSheetRef();
   const snapPoints = useMemo(() => ['30%'], []);
@@ -425,6 +462,31 @@ const ExternalAlbumOptionsSheet = forwardRef<
 
   const canDownload = useAnyAlbumDownloaderConnected();
   const sheetBg = useOptionSheetBackground();
+
+  const activeServerId = useSelector(selectActiveServerId);
+  const isWanted = useSelector(
+    album.localId ? selectIsWanted(album.localId) : () => false
+  );
+
+  const handleToggleWant = () => {
+    if (!album.localId || !activeServerId) return;
+    hapticsSelection();
+    if (isWanted) {
+      dispatch(removeWant({ serverId: activeServerId, localId: album.localId }));
+    } else {
+      dispatch(addWant({
+        serverId: activeServerId,
+        want: {
+          localId: album.localId,
+          externalIds: album.externalIds,
+          unit: 'album',
+          title: album.title,
+          artist: album.artist,
+          origin: 'artist-page',
+        },
+      }));
+    }
+  };
 
   return (
     <>
@@ -452,24 +514,41 @@ const ExternalAlbumOptionsSheet = forwardRef<
               icon={<SpinningLoaderCircle size={iconSize.loader} color={statusColor.downloading} />}
               label={t('externalAlbum.menu.downloading', { progress: status.progress })}
             />
-          ) : canDownload ? (
-            <OptionSheetRow
-              icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
-              label={t('externalAlbum.menu.downloadToServer')}
-              onPress={() => downloadSheetRef.current?.present()}
-              trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
-            />
           ) : (
-            <OptionSheetRow
-              icon={<CloudDownload size={iconSize.loader} color={colors.muted} />}
-              label={t('externalAlbum.menu.noServiceConnected')}
-              labelColor={colors.muted}
-            />
+            <>
+              {album.localId && (
+                <OptionSheetRow
+                  icon={
+                    <Heart
+                      size={iconSize.loader}
+                      color={isWanted ? statusColor.success : colors.secondary}
+                      fill={isWanted ? statusColor.success : 'none'}
+                    />
+                  }
+                  label={isWanted ? t('externalAlbum.menu.wanted') : t('externalAlbum.menu.want')}
+                  onPress={handleToggleWant}
+                />
+              )}
+              {canDownload ? (
+                <OptionSheetRow
+                  icon={<CloudDownload size={iconSize.loader} color={colors.secondary} />}
+                  label={t('externalAlbum.menu.get')}
+                  onPress={() => downloadSheetRef.current?.present()}
+                  trailing={<ChevronRight size={iconSize.inline} color={colors.placeholder} style={styles.chevron} />}
+                />
+              ) : (
+                <OptionSheetRow
+                  icon={<CloudDownload size={iconSize.loader} color={colors.muted} />}
+                  label={t('externalAlbum.menu.noServiceConnected')}
+                  labelColor={colors.muted}
+                />
+              )}
+            </>
           )}
         </BottomSheetView>
       </BottomSheetModal>
 
-      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
+      <GetReviewSheet album={album} sheetRef={downloadSheetRef} />
     </>
   );
 });

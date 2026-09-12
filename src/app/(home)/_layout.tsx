@@ -12,6 +12,7 @@ import { ExternalResolutionProvider } from '@/features/sources/ExternalResolutio
 import { ServerReachabilityWatcher } from '@/features/connectivity/ServerReachabilityWatcher';
 import { AutoDownloadWatcher } from '@/features/downloads/AutoDownloadWatcher';
 import { DownloadersQueueProvider } from '@/features/downloaders/DownloadersQueueContext';
+import { useWantArrivalWatcher } from '@/features/wants/useWantArrivalWatcher';
 import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 
 /**
@@ -31,6 +32,12 @@ export default function HomeLayout() {
   const appState = useRef(AppState.currentState);
   const activeServerId = useSelector(selectActiveServerId);
   const prevServerIdRef = useRef<string | null | undefined>(undefined);
+
+  // Presence-based arrival detection for Wants (C4): watches the synced
+  // library (refreshed by DownloadersQueueProvider's own poll/staggered-sync
+  // loop below, which is untouched by this) and resolves any want whose
+  // entity has actually shown up, by any route — never gated on jobRef.
+  useWantArrivalWatcher();
 
   useEffect(() => {
     isOfflineRef.current = isOffline;

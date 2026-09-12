@@ -473,7 +473,7 @@ appId: com.arinora.rawarr
           id: "downloads-more-info"
       - extendedWaitUntil:
           visible:
-            id: "downloads-info-screen"
+            id: "offline-section"
           timeout: 30000
       - extendedWaitUntil:
           visible:

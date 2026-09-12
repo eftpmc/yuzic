@@ -66,6 +66,24 @@ export async function searchReleaseGroup(
   return data['release-groups'] ?? [];
 }
 
+/**
+ * Free-text release-group search, keyed on title alone rather than an
+ * artist+title pair — this is what search's "Other sources" scope wants
+ * (a user typing an album name with no artist context yet), whereas
+ * {@link searchReleaseGroup} is for resolving a specific artist's album.
+ */
+export async function searchReleaseGroupByTitle(
+  query: string,
+  limit = 5
+): Promise<MbReleaseGroup[]> {
+  if (!query.trim()) return [];
+  const q = encodeURIComponent(`releasegroup:"${query}"`);
+  const data = await mb<{ 'release-groups': MbReleaseGroup[] }>(
+    `/release-group?query=${q}&limit=${limit}&fmt=json`
+  );
+  return data['release-groups'] ?? [];
+}
+
 export async function getArtistWithReleases(mbid: string): Promise<MbArtist> {
   return mb<MbArtist>(`/artist/${mbid}?inc=release-groups&fmt=json`);
 }
