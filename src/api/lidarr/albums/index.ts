@@ -85,6 +85,13 @@ type DownloadOptions = {
   timeoutMs?: number;
   pollIntervalMs?: number;
   signal?: AbortSignal;
+  /**
+   * Overrides the quality profile Lidarr assigns when it has to create the
+   * artist for this request. Only matters the first time an artist is added
+   * — an already-existing artist keeps whatever profile it already has.
+   * Omit to keep today's default (Lidarr profile id 1).
+   */
+  qualityProfileId?: number;
 };
 
 type LidarrCommand = {
@@ -461,6 +468,7 @@ async function performDownload(
       // monitored — the user only asked for this one. monitorAlbum() below
       // then enables monitoring on just the target release (issue #176).
       monitor: 'none',
+      qualityProfileId: options.qualityProfileId,
     });
     if (!ensured.success) return failure('lidarr_metadata_unavailable');
 

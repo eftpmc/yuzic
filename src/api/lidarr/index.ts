@@ -12,6 +12,10 @@ export function lookupArtist(config: LidarrConfig, term: string) {
 export function getArtists(config: LidarrConfig) {
   return artists.getArtists(createLidarrClient(config));
 }
+export function getQualityProfiles(config: LidarrConfig) {
+  return artists.getQualityProfiles(createLidarrClient(config));
+}
+export type { LidarrQualityProfile } from './artists';
 export function ensureArtist(
   config: LidarrConfig,
   artist: Parameters<typeof artists.ensureArtist>[1],

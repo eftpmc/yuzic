@@ -390,7 +390,9 @@
         "connectionFailed": "连接 Lidarr 失败",
         "disconnected": "已断开与 Lidarr 的连接。",
         "credentialsTitle": "连接",
-        "credentialsHelper": "你的 Lidarr 服务器地址和 API 密钥。位于 Lidarr 的 Settings → General。"
+        "credentialsHelper": "你的 Lidarr 服务器地址和 API 密钥。位于 Lidarr 的 Settings → General。",
+        "qualityProfileTitle": "质量配置",
+        "defaultQualityProfile": "默认质量配置"
       },
       "slskd": {
         "title": "slskd",
@@ -953,6 +955,7 @@
       "requesting": "正在请求",
       "saveAsDefaultAlbums": "保存为专辑的默认设置",
       "saveAsDefaultTracks": "保存为歌曲的默认设置",
+      "qualityProfile": "质量配置",
       "confirmGet": "获取"
     },
     "serverStatus": {

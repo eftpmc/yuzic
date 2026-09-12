@@ -61,6 +61,14 @@ export async function getRootFolders(client: LidarrClient): Promise<{ path: stri
   return client.request<{ path: string }[]>('/rootfolder');
 }
 
+export type LidarrQualityProfile = { id: number; name: string };
+
+export async function getQualityProfiles(
+  client: LidarrClient
+): Promise<LidarrQualityProfile[]> {
+  return client.request<LidarrQualityProfile[]>('/qualityprofile');
+}
+
 export async function ensureArtist(
   client: LidarrClient,
   artist: LidarrArtistLookupResult,

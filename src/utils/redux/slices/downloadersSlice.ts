@@ -28,6 +28,14 @@ export type PerServerDownloadersState = Record<DownloaderId, DownloaderConnectio
 export interface DownloaderDefaults {
   defaultAlbumProvider?: DownloaderId;
   defaultTrackProvider?: DownloaderId;
+  /**
+   * Lidarr-only: the quality profile applied when Lidarr has to create the
+   * artist for an album Get. Read from Lidarr's own `/qualityprofile` list at
+   * Settings > Downloaders setup time; GetReviewSheet pre-fills its per-Get
+   * override from this and only writes it back through the "save as default"
+   * toggle.
+   */
+  lidarrDefaultQualityProfileId?: number;
 }
 
 export interface DownloadersState {
@@ -117,6 +125,24 @@ const downloadersSlice = createSlice({
         [unit === 'album' ? 'defaultAlbumProvider' : 'defaultTrackProvider']: provider,
       };
     },
+    /**
+     * The only writer of the per-server Lidarr default quality profile.
+     * Written from the Lidarr settings screen's own selector, and from
+     * GetReviewSheet's "save as default" toggle when the user bumps the
+     * per-Get override and asks to keep it. `qualityProfileId` undefined
+     * clears back to Lidarr's own default (profile id 1).
+     */
+    setLidarrDefaultQualityProfileId(
+      state,
+      action: PayloadAction<{ serverId: string; qualityProfileId: number | undefined }>
+    ) {
+      const { serverId, qualityProfileId } = action.payload;
+      const current = state.defaultsByServer[serverId] ?? {};
+      state.defaultsByServer[serverId] = {
+        ...current,
+        lidarrDefaultQualityProfileId: qualityProfileId,
+      };
+    },
   },
 });
 
@@ -128,6 +154,7 @@ export const {
   disconnectDownloader,
   setSlskdPreferences,
   setDefaultProvider,
+  setLidarrDefaultQualityProfileId,
 } = downloadersSlice.actions;
 
 export default downloadersSlice.reducer;

@@ -400,7 +400,9 @@
         "credentialsTitle": "Connection",
         "credentialsHelper": "Your Lidarr server URL and API key. Found in Lidarr under Settings → General.",
         "connectionFailed": "Lidarr connection failed",
-        "disconnected": "Disconnected from Lidarr."
+        "disconnected": "Disconnected from Lidarr.",
+        "qualityProfileTitle": "Quality Profile",
+        "defaultQualityProfile": "Default Quality Profile"
       },
       "slskd": {
         "title": "slskd",
@@ -959,6 +961,7 @@
       "requesting": "Requesting",
       "saveAsDefaultAlbums": "Save as default for albums",
       "saveAsDefaultTracks": "Save as default for tracks",
+      "qualityProfile": "Quality Profile",
       "confirmGet": "Get"
     },
     "serverStatus": {

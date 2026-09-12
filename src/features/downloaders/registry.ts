@@ -31,6 +31,15 @@ export type DownloadResult =
   | { success: false; code?: string; message: string }
 
 /**
+ * Per-call knobs a downloader may honor for one Get, without changing any
+ * saved default. Only Lidarr album downloads currently read
+ * `qualityProfileId` — every other downloader ignores this bag entirely.
+ */
+export type DownloadOptions = {
+  qualityProfileId?: number
+}
+
+/**
  * The whole external album, not just its title and artist: Lidarr resolves the
  * release by MBID/Deezer id where available, and collapsing it to two strings
  * here would put it back on fuzzy name matching.
@@ -65,7 +74,7 @@ export type DownloaderDefinition = IntegrationModule & {
    * / `slots['acquisition.track']` are an additional capability-view over the
    * same methods, kept in sync below, not a replacement for them.
    */
-  downloadAlbum?(config: DownloaderConfig, req: AlbumDownloadRequest): Promise<DownloadResult>
+  downloadAlbum?(config: DownloaderConfig, req: AlbumDownloadRequest, options?: DownloadOptions): Promise<DownloadResult>
   downloadTrack?(config: DownloaderConfig, req: TrackDownloadRequest): Promise<DownloadResult>
   /**
    * Reads the transfer queue and reports which items disappeared since the
@@ -91,8 +100,14 @@ function lidarrConfigOf(config: DownloaderConfig): LidarrConfig {
   return { serverUrl: config.serverUrl, apiKey: config.apiKey }
 }
 
-const lidarrDownloadAlbum = (config: DownloaderConfig, album: AlbumDownloadRequest) =>
-  lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album))
+const lidarrDownloadAlbum = (
+  config: DownloaderConfig,
+  album: AlbumDownloadRequest,
+  options?: DownloadOptions
+) =>
+  lidarr.downloadAlbum(config, lidarr.albumRequestFromExternal(album), {
+    qualityProfileId: options?.qualityProfileId,
+  })
 
 const lidarrDownloader: DownloaderDefinition = {
   id: 'lidarr',

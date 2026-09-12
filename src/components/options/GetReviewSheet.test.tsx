@@ -83,10 +83,24 @@ jest.mock('@/utils/redux/slices/wantsSlice', () => ({
 
 jest.mock('@/utils/redux/selectors/downloadersSelectors', () => ({
   selectDefaultProviderForActiveServer: (state: any) => state.downloaders?.defaultsByServer?.['server-1'] ?? {},
+  selectLidarrDefaultQualityProfileId: (state: any) =>
+    state.downloaders?.defaultsByServer?.['server-1']?.lidarrDefaultQualityProfileId,
 }));
 
 jest.mock('@/utils/redux/slices/downloadersSlice', () => ({
   setDefaultProvider: (payload: any) => ({ type: 'downloaders/setDefaultProvider', payload }),
+  setLidarrDefaultQualityProfileId: (payload: any) => ({
+    type: 'downloaders/setLidarrDefaultQualityProfileId',
+    payload,
+  }),
+}));
+
+const mockGetQualityProfiles = jest.fn(async (..._args: unknown[]) => [
+  { id: 1, name: 'Standard' },
+  { id: 4, name: 'Lossless' },
+]);
+jest.mock('@/api/lidarr', () => ({
+  getQualityProfiles: (...args: unknown[]) => mockGetQualityProfiles(...args),
 }));
 
 const mockDownloaderStates = jest.fn();
@@ -142,6 +156,7 @@ describe('GetReviewSheet', () => {
     mockDispatch.mockClear();
     lidarrDownloadAlbum.mockClear();
     slskdDownloadAlbum.mockClear();
+    mockGetQualityProfiles.mockClear();
     mockState = {
       servers: { activeServer: { id: 'server-1', serverUrl: 'My Server' }, activeServerId: 'server-1' },
       downloaders: { defaultsByServer: {} },
@@ -256,6 +271,72 @@ describe('GetReviewSheet', () => {
     expect(mockDispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: 'wants/setWantJobRef' })
     );
+  });
+
+  it('shows the quality-profile selector only when Lidarr is selected for an album Get', async () => {
+    const view = await render(<GetReviewSheet album={externalAlbum} sheetRef={{ current: null } as any} />);
+
+    // Nothing selected yet — no quality-profile section.
+    expect(view.queryByText('externalAlbum.review.qualityProfile')).toBeNull();
+
+    await fireEvent.press(view.getByTestId('row-Lidarr'));
+    await flush();
+    expect(view.getByText('externalAlbum.review.qualityProfile')).toBeTruthy();
+    expect(view.getByTestId('row-Lossless')).toBeTruthy();
+
+    await fireEvent.press(view.getByTestId('row-Soulseek'));
+    await flush();
+    expect(view.queryByText('externalAlbum.review.qualityProfile')).toBeNull();
+  });
+
+  it('does not show a quality-profile selector for a track Get', async () => {
+    const view = await render(
+      <GetReviewSheet
+        album={externalAlbum}
+        track={{ title: 'A Song', artist: 'External Artist' }}
+        sheetRef={{ current: null } as any}
+      />
+    );
+
+    // Lidarr has no downloadTrack, so it isn't even offered as an option for
+    // a track Get — nothing to select, and no quality-profile section either.
+    expect(view.queryByTestId('row-Lidarr')).toBeNull();
+    expect(view.queryByText('externalAlbum.review.qualityProfile')).toBeNull();
+  });
+
+  it('passes the chosen quality profile to downloadAlbum as a request-only override', async () => {
+    const view = await render(<GetReviewSheet album={externalAlbum} sheetRef={{ current: null } as any} />);
+
+    await fireEvent.press(view.getByTestId('row-Lidarr'));
+    await flush();
+    await fireEvent.press(view.getByTestId('row-Lossless'));
+    await fireEvent.press(view.getByText('externalAlbum.review.confirmGet'));
+    await flush();
+
+    expect(lidarrDownloadAlbum).toHaveBeenCalledWith(
+      expect.anything(),
+      externalAlbum,
+      { qualityProfileId: 4 }
+    );
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'downloaders/setLidarrDefaultQualityProfileId' })
+    );
+  });
+
+  it('persists the bumped quality profile as the new default only when "save as default" is toggled', async () => {
+    const view = await render(<GetReviewSheet album={externalAlbum} sheetRef={{ current: null } as any} />);
+
+    await fireEvent.press(view.getByTestId('row-Lidarr'));
+    await flush();
+    await fireEvent.press(view.getByTestId('row-Lossless'));
+    await fireEvent.press(view.getByText('externalAlbum.review.saveAsDefaultAlbums'));
+    await fireEvent.press(view.getByText('externalAlbum.review.confirmGet'));
+    await flush();
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'downloaders/setLidarrDefaultQualityProfileId',
+      payload: { serverId: 'server-1', qualityProfileId: 4 },
+    });
   });
 });
 

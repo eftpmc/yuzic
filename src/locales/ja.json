@@ -390,7 +390,9 @@
         "connectionFailed": "Lidarr の接続に失敗しました",
         "disconnected": "Lidarr から切断しました。",
         "credentialsTitle": "接続",
-        "credentialsHelper": "LidarrサーバーのURLとAPIキー。Lidarrの Settings → General にあります。"
+        "credentialsHelper": "LidarrサーバーのURLとAPIキー。Lidarrの Settings → General にあります。",
+        "qualityProfileTitle": "品質プロファイル",
+        "defaultQualityProfile": "デフォルトの品質プロファイル"
       },
       "slskd": {
         "title": "slskd",
@@ -953,6 +955,7 @@
       "requesting": "リクエスト内容",
       "saveAsDefaultAlbums": "アルバムの既定として保存",
       "saveAsDefaultTracks": "曲の既定として保存",
+      "qualityProfile": "品質プロファイル",
       "confirmGet": "取得"
     },
     "serverStatus": {

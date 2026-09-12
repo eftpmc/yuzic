@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
   BottomSheetModal,
@@ -18,8 +18,13 @@ import {
   type DownloaderId,
   type DownloaderState,
 } from '@/features/downloaders/registry';
-import { setDefaultProvider } from '@/utils/redux/slices/downloadersSlice';
-import { selectDefaultProviderForActiveServer } from '@/utils/redux/selectors/downloadersSelectors';
+import * as lidarr from '@/api/lidarr';
+import type { LidarrQualityProfile } from '@/api/lidarr';
+import { setDefaultProvider, setLidarrDefaultQualityProfileId } from '@/utils/redux/slices/downloadersSlice';
+import {
+  selectDefaultProviderForActiveServer,
+  selectLidarrDefaultQualityProfileId,
+} from '@/utils/redux/selectors/downloadersSelectors';
 import { selectActiveServer, selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { selectIsWanted } from '@/utils/redux/selectors/wantsSelectors';
 import { setWantJobRef } from '@/utils/redux/slices/wantsSlice';
@@ -62,6 +67,7 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
   const activeServerId = useSelector(selectActiveServerId);
   const savedDefaults = useSelector(selectDefaultProviderForActiveServer);
   const savedDefaultId = unit === 'album' ? savedDefaults.defaultAlbumProvider : savedDefaults.defaultTrackProvider;
+  const savedDefaultQualityProfileId = useSelector(selectLidarrDefaultQualityProfileId);
 
   const downloaders = useDownloaderStates();
   // A downloader appears only if it takes the unit being asked for: Lidarr has
@@ -93,13 +99,51 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
 
   const selected = available.find((d) => d.def.id === selectedId) ?? null;
 
+  // Lidarr's one quality-relevant knob — album-only, since slskd/soulsync
+  // have no quality-profile concept. Fetched lazily only once Lidarr is the
+  // chosen provider for an album Get, and pre-filled from the saved default;
+  // changing it here is request-only unless "save as default" is checked.
+  const showQualityProfile = unit === 'album' && selected?.def.id === 'lidarr';
+  const [qualityProfiles, setQualityProfiles] = useState<LidarrQualityProfile[]>([]);
+  const [qualityProfilesLoading, setQualityProfilesLoading] = useState(false);
+  const [selectedQualityProfileId, setSelectedQualityProfileId] = useState<number | undefined>(
+    savedDefaultQualityProfileId
+  );
+
+  useEffect(() => {
+    if (!showQualityProfile || !selected) {
+      return;
+    }
+    setSelectedQualityProfileId(savedDefaultQualityProfileId);
+    let cancelled = false;
+    setQualityProfilesLoading(true);
+    lidarr
+      .getQualityProfiles(selected.config)
+      .then((profiles) => {
+        if (!cancelled) setQualityProfiles(profiles);
+      })
+      .catch(() => {
+        if (!cancelled) setQualityProfiles([]);
+      })
+      .finally(() => {
+        if (!cancelled) setQualityProfilesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showQualityProfile, selected, savedDefaultQualityProfileId]);
+
   const handleGet = async ({ def, config }: DownloaderState) => {
     if (loading) return;
     setLoading(true);
     try {
       const result = track
         ? await def.downloadTrack!(config, { title: track.title, artist: track.artist })
-        : await def.downloadAlbum!(config, album);
+        : await def.downloadAlbum!(
+            config,
+            album,
+            showQualityProfile ? { qualityProfileId: selectedQualityProfileId } : undefined
+          );
       const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
       const fallback = t('externalAlbum.download.failed');
       toast[result.success ? 'success' : 'error'](
@@ -112,6 +156,17 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
         // explicitly asked for that — a request-only override never writes here.
         if (saveAsDefault) {
           dispatch(setDefaultProvider({ serverId: activeServerId ?? '', unit, provider: def.id }));
+          // Lidarr's quality profile follows the same explicit toggle — a
+          // bumped-for-this-Get profile only becomes the new default when the
+          // user asked to keep it, same as the provider itself.
+          if (showQualityProfile && activeServerId) {
+            dispatch(
+              setLidarrDefaultQualityProfileId({
+                serverId: activeServerId,
+                qualityProfileId: selectedQualityProfileId,
+              })
+            );
+          }
         }
         // Wire the started job back to the want, if this entity is wanted —
         // Get never requires a Want, so this is a no-op otherwise.
@@ -190,12 +245,51 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
         })}
 
         {/*
-         * Lidarr quality-profile override slot — deliberately not built here
-         * (separate follow-up task). A per-Get control can land in this spot
-         * without restructuring the review: it would render only when
-         * `selected?.def.id === 'lidarr'`, read/write a request-only field
-         * alongside `selectedId`, and never touch the saved default above.
+         * Lidarr quality-profile override slot — request-only unless "save
+         * as default" is checked below. Only rendered for an album Get with
+         * Lidarr selected; slskd/soulsync have no quality-profile concept.
          */}
+        {showQualityProfile && (
+          <>
+            <OptionSheetSectionLabel label={t('externalAlbum.review.qualityProfile')} />
+            {qualityProfilesLoading ? (
+              <View style={styles.qualityLoading}>
+                <SpinningLoaderCircle size={iconSize.row} color={colors.themeColor} />
+              </View>
+            ) : (
+              qualityProfiles.map((profile) => {
+                const isProfileSelected = selectedQualityProfileId === profile.id;
+                return (
+                  <OptionSheetRow
+                    key={profile.id}
+                    label={profile.name}
+                    onPress={() => setSelectedQualityProfileId(profile.id)}
+                    disabled={loading}
+                    dimRow={loading}
+                    labelColor={isProfileSelected ? colors.secondary : undefined}
+                    trailing={
+                      <View
+                        style={[
+                          styles.radioOuter,
+                          { borderColor: isProfileSelected ? colors.secondary : colors.border, borderRadius: rad.pill },
+                        ]}
+                      >
+                        {isProfileSelected && (
+                          <View
+                            style={[
+                              styles.radioInner,
+                              { backgroundColor: colors.secondary, borderRadius: rad.pill },
+                            ]}
+                          />
+                        )}
+                      </View>
+                    }
+                  />
+                );
+              })
+            )}
+          </>
+        )}
 
         <OptionSheetDivider />
 
@@ -268,6 +362,10 @@ const styles = StyleSheet.create({
   radioInner: {
     width: 10,
     height: 10,
+  },
+  qualityLoading: {
+    paddingVertical: spacing.roomy,
+    alignItems: 'center',
   },
   requestingRow: {
     marginTop: spacing.sm,

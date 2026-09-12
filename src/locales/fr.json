@@ -391,7 +391,9 @@
         "connectionFailed": "Échec de la connexion à Lidarr",
         "disconnected": "Déconnecté de Lidarr.",
         "credentialsTitle": "Connexion",
-        "credentialsHelper": "L'URL de votre serveur Lidarr et votre clé API. Dans Lidarr : Settings → General."
+        "credentialsHelper": "L'URL de votre serveur Lidarr et votre clé API. Dans Lidarr : Settings → General.",
+        "qualityProfileTitle": "Profil de qualité",
+        "defaultQualityProfile": "Profil de qualité par défaut"
       },
       "slskd": {
         "title": "slskd",
@@ -957,6 +959,7 @@
       "requesting": "Demande",
       "saveAsDefaultAlbums": "Enregistrer par défaut pour les albums",
       "saveAsDefaultTracks": "Enregistrer par défaut pour les titres",
+      "qualityProfile": "Profil de qualité",
       "confirmGet": "Récupérer"
     },
     "serverStatus": {

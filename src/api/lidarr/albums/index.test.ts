@@ -436,4 +436,62 @@ describe('downloadAlbum', () => {
       )
     ).toBe(false);
   });
+
+  it('passes a provided qualityProfileId through to the artist-create payload', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response(iveCandidates))
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response([{ path: '/music' }]))
+      .mockImplementationOnce(() => response({ id: 20 }))
+      .mockImplementationOnce(() => response([lidarrAlbum]))
+      .mockImplementationOnce(() =>
+        response({ ...lidarrAlbum, monitored: true })
+      )
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response({ id: 30 }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await downloadAlbum(config, request(), { qualityProfileId: 4 });
+
+    expect(result).toEqual({ success: true, status: 'submitted' });
+
+    const calls = fetchMock.mock.calls as [string, RequestInit][];
+    const artistCreate = calls.find(
+      ([url, options]) =>
+        url.endsWith('/artist') && options?.method === 'POST'
+    );
+    expect(JSON.parse(String(artistCreate?.[1].body))).toMatchObject({
+      qualityProfileId: 4,
+    });
+  });
+
+  it('falls back to Lidarr profile id 1 when no qualityProfileId is given', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response(iveCandidates))
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response([{ path: '/music' }]))
+      .mockImplementationOnce(() => response({ id: 20 }))
+      .mockImplementationOnce(() => response([lidarrAlbum]))
+      .mockImplementationOnce(() =>
+        response({ ...lidarrAlbum, monitored: true })
+      )
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response({ id: 30 }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await downloadAlbum(config, request());
+
+    const calls = fetchMock.mock.calls as [string, RequestInit][];
+    const artistCreate = calls.find(
+      ([url, options]) =>
+        url.endsWith('/artist') && options?.method === 'POST'
+    );
+    expect(JSON.parse(String(artistCreate?.[1].body))).toMatchObject({
+      qualityProfileId: 1,
+    });
+  });
 });
