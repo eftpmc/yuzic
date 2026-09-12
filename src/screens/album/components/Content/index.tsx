@@ -11,10 +11,15 @@ type Props = {
   songsLoading?: boolean;
 };
 
-// Local and external albums are rendered by two structurally separate list
-// bodies (real Songs with full playback vs ExternalSongs with 30s previews) —
-// unifying only the identity resolution and Header, per the Artist screen's
-// own precedent of not converging preview rows with full-playback rows.
+// One album screen, one resolution state: the caller (screens/album/index.tsx)
+// has already resolved the album to either a local library entry or an
+// external lookup result, and passes exactly one of the two non-null here.
+// Which body renders follows directly from that resolution — `localAlbum`
+// present means the screen is showing an in-library album with full,
+// downloadable Songs; absent means it's showing an external album whose
+// tracks only ever resolve to 30s previews. That playback-capability
+// difference is real, so the two bodies stay separate components rather than
+// being merged into one that branches internally per row.
 const AlbumContent: React.FC<Props> = ({ localAlbum, externalAlbum, songsLoading }) => {
   if (localAlbum) {
     return <LocalAlbumBody album={localAlbum} songsLoading={songsLoading} />;
