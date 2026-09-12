@@ -4,11 +4,12 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { Provider } from 'react-redux'
 
 import type { Server, Song } from '@/types'
-import settingsReducer from '@/utils/redux/slices/settingsSlice'
+import settingsReducer, { setScrobbleRoute } from '@/utils/redux/slices/settingsSlice'
 import serversReducer, { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice'
-import listenbrainzReducer from '@/utils/redux/slices/listenbrainzSlice'
+import listenbrainzReducer, { setUsername, setToken } from '@/utils/redux/slices/listenbrainzSlice'
 import statsReducer from '@/utils/redux/slices/statsSlice'
 import offlineMutationsReducer from '@/utils/redux/slices/offlineMutationsSlice'
+import * as listenbrainz from '@/api/listenbrainz'
 
 const mockSongsApi = {
   get: jest.fn(),
@@ -139,5 +140,77 @@ describe('scrobble routing', () => {
     const queued = store.getState().offlineMutations.queue
     expect(queued).toHaveLength(1)
     expect(queued[0]).toMatchObject({ type: 'scrobble', songId: 's1', destination: 'server' })
+  })
+})
+
+/**
+ * D1: useScrobbling reads the per-destination route (Disabled /
+ * Through-server / Direct) rather than the old two independent booleans.
+ * These pin the routing decisions the hook makes off that route, including
+ * that ListenBrainz's 'direct' route reaches the ListenBrainz API directly
+ * while never also calling the server adapter for that same destination.
+ */
+describe('scrobble route dispatch', () => {
+  beforeEach(() => { jest.clearAllMocks() })
+
+  it('routes to the server adapter when listenbrainz route is through-server', async () => {
+    const server = serverOf('navidrome')
+    const store = makeStore(server)
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'listenbrainz', route: 'through-server' }))
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'lastfm', route: 'disabled' }))
+
+    const { result } = await renderHook(() => useScrobbling(), { wrapper: wrapperFor(store) })
+    await act(async () => {
+      await result.current.scrobbleIfNeeded(song, { listenedSeconds: 180, startTime: 1_700_000_000 })
+    })
+
+    expect(mockSongsApi.scrobble).toHaveBeenCalledWith('s1', 1_700_000_000)
+  })
+
+  it('routes nothing when both destinations are disabled', async () => {
+    const server = serverOf('navidrome')
+    const store = makeStore(server)
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'listenbrainz', route: 'disabled' }))
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'lastfm', route: 'disabled' }))
+
+    const { result } = await renderHook(() => useScrobbling(), { wrapper: wrapperFor(store) })
+    await act(async () => {
+      await result.current.scrobbleIfNeeded(song, { listenedSeconds: 180, startTime: 1_700_000_000 })
+    })
+
+    expect(mockSongsApi.scrobble).not.toHaveBeenCalled()
+  })
+
+  it('a lastfm route of through-server also drives the server adapter, with no direct option ever offered for it', async () => {
+    const server = serverOf('navidrome')
+    const store = makeStore(server)
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'lastfm', route: 'through-server' }))
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'listenbrainz', route: 'disabled' }))
+
+    const { result } = await renderHook(() => useScrobbling(), { wrapper: wrapperFor(store) })
+    await act(async () => {
+      await result.current.scrobbleIfNeeded(song, { listenedSeconds: 180, startTime: 1_700_000_000 })
+    })
+
+    expect(mockSongsApi.scrobble).toHaveBeenCalledWith('s1', 1_700_000_000)
+    // ScrobbleRoute type has no 'direct' value usable for 'lastfm' — enforced
+    // at the type level, not just by this test's absence of a dispatch.
+  })
+
+  it('routes to ListenBrainz directly, and never also to the server, when its route is direct', async () => {
+    const server = serverOf('navidrome')
+    const store = makeStore(server)
+    store.dispatch(setUsername({ serverId: server.id, value: 'ari' }))
+    store.dispatch(setToken({ serverId: server.id, value: 'tok' }))
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'listenbrainz', route: 'direct' }))
+    store.dispatch(setScrobbleRoute({ serverId: server.id, destination: 'lastfm', route: 'disabled' }))
+
+    const { result } = await renderHook(() => useScrobbling(), { wrapper: wrapperFor(store) })
+    await act(async () => {
+      await result.current.scrobbleIfNeeded(song, { listenedSeconds: 180, startTime: 1_700_000_000 })
+    })
+
+    expect(listenbrainz.submitScrobble).toHaveBeenCalled()
+    expect(mockSongsApi.scrobble).not.toHaveBeenCalled()
   })
 })

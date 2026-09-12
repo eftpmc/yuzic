@@ -165,6 +165,14 @@
       "homeSourcesDeezer": "Deezer",
       "homeSourcesDeezerSubtext": "Show Deezer discovery shelves (charts, top tracks, similar artists)."
     },
+    "lyrics": {
+      "title": "Lyrics",
+      "order": "Fallback order",
+      "serverEmbedded": "Server-embedded",
+      "serverEmbeddedSubtext": "Always checked first — the lyrics your server already has for a track.",
+      "lrclib": "LRCLIB",
+      "lrclibSubtext": "Free, anonymous lyrics lookup. Off by default; enable to use it when your server has none."
+    },
     "library": {
       "title": "Library",
       "librarySelect": {
@@ -474,7 +482,12 @@
       "scrobbleDescription": "Log completed tracks to your profile.",
       "nowPlayingDescription": "Show what you're listening to in real time.",
       "markAsPlayed": "Mark as Played",
-      "markAsPlayedDescription": "Update play count on your server."
+      "markAsPlayedDescription": "Update play count on your server.",
+      "routeDisabled": "Disabled",
+      "routeDirect": "Direct from Yuzic",
+      "throughServer": "Through the server",
+      "throughServerMarkAsPlayed": "Through the server (mark as played)",
+      "duplicateRiskNote": "Yuzic can't confirm the server actually forwards scrobbles once \"Through the server\" is selected. If the server is also configured to send scrobbles on its own, or another app scrobbles the same account, plays may be counted twice."
     },
     "home": {
       "title": "Home"

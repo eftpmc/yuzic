@@ -352,7 +352,13 @@ export type LyricLine = {
 };
 
 export type LyricsResult = {
-  provider: "jellyfin" | "navidrome" | "emby";
+  /**
+   * `"lrclib"` is not a server type: it is the one launch entry in the
+   * user-configurable external fallback chain (see
+   * `features/lyrics/resolveLyrics`), which only ever runs after the
+   * server-embedded lookup below has come back empty.
+   */
+  provider: "jellyfin" | "navidrome" | "emby" | "lrclib";
   /**
    * Whether `startMs` on each line means anything.
    *

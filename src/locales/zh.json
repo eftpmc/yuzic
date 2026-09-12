@@ -165,6 +165,14 @@
       "homeSourcesDeezer": "Deezer",
       "homeSourcesDeezerSubtext": "显示 Deezer 的发现栏目（排行榜、热门单曲、相似艺人）。"
     },
+    "lyrics": {
+      "title": "歌词",
+      "order": "回退顺序",
+      "serverEmbedded": "服务器内嵌",
+      "serverEmbeddedSubtext": "始终最先检查 —— 服务器上已有的这首歌的歌词。",
+      "lrclib": "LRCLIB",
+      "lrclibSubtext": "免费、匿名的歌词查询。默认关闭；当服务器没有歌词时可开启使用。"
+    },
     "library": {
       "title": "媒体库",
       "librarySelect": {
@@ -473,7 +481,12 @@
       "scrobbleDescription": "将已播放的曲目记录到你的个人资料。",
       "nowPlayingDescription": "实时显示正在播放的内容。",
       "markAsPlayed": "标记为已播放",
-      "markAsPlayedDescription": "更新服务器上的播放次数。"
+      "markAsPlayedDescription": "更新服务器上的播放次数。",
+      "routeDisabled": "已禁用",
+      "routeDirect": "由 Yuzic 直接发送",
+      "throughServer": "通过服务器",
+      "throughServerMarkAsPlayed": "通过服务器(标记为已播放)",
+      "duplicateRiskNote": "选择“通过服务器”后,Yuzic 无法确认服务器是否真的会转发 scrobble。如果服务器同时也配置了自己发送 scrobble,或另一个应用对同一账号进行 scrobble,播放记录可能会被重复计算。"
     },
     "home": {
       "title": "主页"

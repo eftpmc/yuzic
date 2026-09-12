@@ -174,6 +174,28 @@ export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
   state.settings.homeServerSectionsEnabled ?? true;
 
 /**
+ * Enabled external lyric sources, in the user's try-order.
+ *
+ * Filters `lyricsExternalSourcesOrder` down to the ones actually enabled
+ * rather than trusting the order list alone, so a source that was disabled
+ * without being removed from the order (or an id from a future version this
+ * one doesn't recognise) never gets called. Empty by default — the whole
+ * point being that a fresh install/upgrade resolves lyrics server-only,
+ * with no external calls at all, until the user opts in.
+ */
+export const selectEnabledLyricsExternalSourcesInOrder = (state: RootState): string[] => {
+  const order = state.settings.lyricsExternalSourcesOrder ?? [];
+  const enabled = state.settings.lyricsExternalSourcesEnabled ?? {};
+  return order.filter(sourceId => enabled[sourceId]);
+};
+
+export const selectLyricsExternalSourcesOrder = (state: RootState): string[] =>
+  state.settings.lyricsExternalSourcesOrder ?? [];
+
+export const selectLyricsExternalSourceEnabled = (sourceId: string) =>
+  (state: RootState): boolean => state.settings.lyricsExternalSourcesEnabled?.[sourceId] ?? false;
+
+/**
  * Crossfade, as the engine wants it, or `null` when it is off.
  *
  * Zero seconds is off rather than a zero-length fade: `null` tells the engine
