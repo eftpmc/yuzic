@@ -4,8 +4,26 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
 import { ALL_DOWNLOADERS, useDownloaderStates } from './registry';
+import { describeModule, moduleFillsSlot } from '@/features/integrations/types';
 import downloadersReducer from '@/utils/redux/slices/downloadersSlice';
 import serversReducer from '@/utils/redux/slices/serversSlice';
+import * as lidarr from '@/api/lidarr';
+import * as slskd from '@/api/slskd';
+import * as soulsync from '@/api/soulsync';
+
+jest.mock('@/api/lidarr', () => ({
+  ...jest.requireActual('@/api/lidarr'),
+  testConnection: jest.fn(),
+}));
+jest.mock('@/api/slskd', () => ({
+  ...jest.requireActual('@/api/slskd'),
+  testConnection: jest.fn(),
+}));
+jest.mock('@/api/soulsync', () => ({
+  ...jest.requireActual('@/api/soulsync'),
+  testConnection: jest.fn(),
+}));
+
 
 /**
  * The identity of this hook's result is load-bearing: DownloadersQueueProvider
@@ -78,5 +96,63 @@ describe('downloader units', () => {
       if (def.downloadAlbum) expect(def.albumAddedKey).toBeTruthy();
       if (def.downloadTrack) expect(def.trackAddedKey).toBeTruthy();
     }
+  });
+});
+
+/**
+ * Each downloader is also an `IntegrationModule`: it authenticates the same
+ * way (an apiKey tier), wires `testConnection` to its existing per-provider
+ * function, and declares an `acquisition.*` slot for exactly the units it
+ * implements above. `fetchQueueWithDiff` stays downloader-operational and is
+ * deliberately absent from `slots` — it isn't a product capability.
+ */
+describe('downloaders as IntegrationModules', () => {
+  const by = (id: string) => ALL_DOWNLOADERS.find(d => d.id === id)!;
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('declares apiKey auth for every downloader', () => {
+    for (const def of ALL_DOWNLOADERS) {
+      expect(def.auth.tier).toBe('apiKey');
+      expect(def.auth.configKeys).toEqual(expect.arrayContaining(['serverUrl', 'apiKey']));
+    }
+  });
+
+  it('declares slots matching each downloader\'s units', () => {
+    expect(describeModule(by('lidarr')).slots.sort()).toEqual(['acquisition.album']);
+    expect(describeModule(by('slskd')).slots.sort()).toEqual(['acquisition.album', 'acquisition.track'].sort());
+    expect(describeModule(by('soulsync')).slots.sort()).toEqual(['acquisition.track']);
+
+    expect(moduleFillsSlot(by('lidarr'), 'acquisition.album')).toBe(true);
+    expect(moduleFillsSlot(by('lidarr'), 'acquisition.track')).toBe(false);
+    expect(moduleFillsSlot(by('soulsync'), 'acquisition.track')).toBe(true);
+    expect(moduleFillsSlot(by('soulsync'), 'acquisition.album')).toBe(false);
+  });
+
+  it('does not map fetchQueueWithDiff to any capability slot', () => {
+    for (const def of ALL_DOWNLOADERS) {
+      const slotValues = Object.values(def.slots);
+      expect(slotValues).not.toContain(def.fetchQueueWithDiff);
+    }
+  });
+
+  const config = { serverUrl: 'http://example.test', apiKey: 'key' };
+
+  it('maps lidarr testConnection (boolean) to Health', async () => {
+    (lidarr.testConnection as jest.Mock).mockResolvedValue(true);
+    await expect(by('lidarr').testConnection(config)).resolves.toEqual({ ok: true });
+    expect(lidarr.testConnection).toHaveBeenCalledWith({ serverUrl: config.serverUrl, apiKey: config.apiKey });
+  });
+
+  it('maps slskd testConnection (boolean) to Health', async () => {
+    (slskd.testConnection as jest.Mock).mockResolvedValue(true);
+    await expect(by('slskd').testConnection(config)).resolves.toEqual({ ok: true });
+  });
+
+  it('maps soulsync testConnection (boolean) to Health', async () => {
+    (soulsync.testConnection as jest.Mock).mockResolvedValue(false);
+    await expect(by('soulsync').testConnection(config)).resolves.toEqual({ ok: false });
   });
 });
