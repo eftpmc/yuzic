@@ -823,7 +823,8 @@
     },
     "showMore": "あと{{count}}件",
     "showUnowned": "未所持の{{count}}件",
-    "enrichedBioSource": "{{source}}より"
+    "enrichedBioSource": "{{source}}より",
+    "enrichedArtworkSource": "{{source}}より"
   },
   "explore": {
     "sections": {

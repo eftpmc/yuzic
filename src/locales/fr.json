@@ -826,7 +826,8 @@
     },
     "showMore": "{{count}} de plus",
     "showUnowned": "{{count}} que vous ne possédez pas",
-    "enrichedBioSource": "via {{source}}"
+    "enrichedBioSource": "via {{source}}",
+    "enrichedArtworkSource": "via {{source}}"
   },
   "explore": {
     "sections": {

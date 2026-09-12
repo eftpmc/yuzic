@@ -816,7 +816,8 @@
     },
     "showMore": "{{count}} more",
     "showUnowned": "{{count}} you don't own",
-    "enrichedBioSource": "via {{source}}"
+    "enrichedBioSource": "via {{source}}",
+    "enrichedArtworkSource": "via {{source}}"
   },
   "album": {
     "disc": "Disc {{number}}",

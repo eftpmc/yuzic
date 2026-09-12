@@ -823,7 +823,8 @@
     },
     "showMore": "还有 {{count}} 个",
     "showUnowned": "你未拥有的 {{count}} 个",
-    "enrichedBioSource": "来自 {{source}}"
+    "enrichedBioSource": "来自 {{source}}",
+    "enrichedArtworkSource": "来自 {{source}}"
   },
   "explore": {
     "sections": {

@@ -41,6 +41,7 @@ import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProg
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { useArtworkEnrichment } from '@/features/metadata/useArtworkEnrichment';
 
 type Props = {
   localArtist: Artist | null;
@@ -63,12 +64,23 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
   const barInset = useDetailHeaderInset();
   const onTitleLayout = useDetailHeroTitleLayout();
 
-  const coverUri = localArtist
-    ? buildCover(localArtist.cover, 'background')
-    : buildCover(externalArtist!.cover, 'background');
-
   const displayName = localArtist?.name ?? externalArtist?.name ?? '';
-  const displayCover = localArtist?.cover ?? externalArtist?.cover ?? { kind: 'none' as const };
+  const serverCover = localArtist?.cover ?? externalArtist?.cover ?? { kind: 'none' as const };
+  const artistMbid = localArtist?.mbid ?? externalArtist?.externalIds?.mbid ?? null;
+
+  // `metadata.enrich` (artwork half, GAPS ONLY — see features/metadata): only
+  // consulted when the server/Deezer artist has no cover of its own, and a
+  // no-op the instant every artwork source is disabled — at which point this
+  // falls straight back to `serverCover` (the placeholder), restoring the
+  // pre-enrichment view with nothing left behind.
+  const { cover: enrichedCover, sourceLabel: enrichedArtworkSource } = useArtworkEnrichment({
+    name: displayName,
+    mbid: artistMbid,
+    hasOwnArtwork: serverCover.kind !== 'none',
+  });
+  const displayCover = serverCover.kind !== 'none' ? serverCover : enrichedCover ?? serverCover;
+
+  const coverUri = buildCover(displayCover, 'background');
 
   return (
     <>
@@ -147,6 +159,11 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
             <LocalMetaRow artist={localArtist} />
           ) : (
             <ExternalMetaRow artist={externalArtist!} />
+          )}
+          {serverCover.kind === 'none' && enrichedCover && enrichedArtworkSource && (
+            <Text style={[styles.artworkSourceLine, { color: colors.subtext }]}>
+              {t('artist.enrichedArtworkSource', { source: enrichedArtworkSource })}
+            </Text>
           )}
         </View>
       </View>
@@ -450,6 +467,10 @@ const styles = StyleSheet.create({
   },
   metaText: {
     ...typography.rowSubtitle,
+  },
+  artworkSourceLine: {
+    ...typography.micro,
+    marginTop: spacing.xxs,
   },
   buttonRow: {
     marginBottom: spacing.xl,
