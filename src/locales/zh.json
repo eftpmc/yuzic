@@ -5,9 +5,10 @@
       "general": "通用",
       "plugins": "插件",
       "connections": "连接",
-      "integrations": "集成",
-      "downloaders": "下载工具",
       "about": "关于"
+    },
+    "connections": {
+      "sources": "音乐库与发现来源"
     },
     "rows": {
       "server": "服务器",

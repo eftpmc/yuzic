@@ -5,9 +5,10 @@
       "general": "Général",
       "plugins": "Extensions",
       "connections": "Connexions",
-      "integrations": "Intégrations",
-      "downloaders": "Téléchargeurs",
       "about": "À propos"
+    },
+    "connections": {
+      "sources": "Sources de bibliothèque et de découverte"
     },
     "rows": {
       "server": "Serveur",

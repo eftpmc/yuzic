@@ -8,7 +8,7 @@ import {
     Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Server, Library, Volume2, Palette, Puzzle, Download, CloudDownload, Github, ShieldCheck, ScrollText, House as HomeIcon } from 'lucide-react-native';
+import { Server, Library, Volume2, Palette, Puzzle, CloudDownload, Github, ShieldCheck, ScrollText, House as HomeIcon } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -162,15 +162,9 @@ export default function Settings() {
                 </Text>
                 <SettingsCard>
                     <SettingsRow
-                        label={t('settings.sections.integrations')}
+                        label={t('settings.sections.connections')}
                         leftIcon={<Puzzle size={iconSize.secondary} color={colors.secondary} />}
-                        onPress={() => router.push('/settings/integrationsView')}
-                    />
-                    <SettingsDivider />
-                    <SettingsRow
-                        label={t('settings.downloaders.title')}
-                        leftIcon={<Download size={iconSize.secondary} color={colors.secondary} />}
-                        onPress={() => router.push('/settings/downloadersView')}
+                        onPress={() => router.push('/settings/connectionsView')}
                     />
                     {hasDownloader && (
                         <>

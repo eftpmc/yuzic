@@ -5,9 +5,10 @@
       "general": "一般",
       "plugins": "プラグイン",
       "connections": "接続",
-      "integrations": "連携",
-      "downloaders": "ダウンローダー",
       "about": "情報"
+    },
+    "connections": {
+      "sources": "ライブラリと発見のソース"
     },
     "rows": {
       "server": "サーバー",

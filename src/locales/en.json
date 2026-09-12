@@ -5,9 +5,10 @@
       "general": "General",
       "plugins": "Plugins",
       "connections": "Connections",
-      "integrations": "Integrations",
-      "downloaders": "Downloaders",
       "about": "About"
+    },
+    "connections": {
+      "sources": "Library & discovery sources"
     },
     "rows": {
       "server": "Server",

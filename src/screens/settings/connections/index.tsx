@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import SettingsScreen from '../components/SettingsScreen';
 import SettingsCard from '../components/SettingsCard';
+import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsDivider from '../components/SettingsDivider';
 import SettingsRow from '../components/SettingsRow';
 import { selectListenBrainzAuthenticated } from '@/utils/redux/selectors/listenbrainzSelectors';
@@ -15,8 +16,18 @@ import {
   selectListenbrainzDiscoveryEnabled,
 } from '@/utils/redux/selectors/settingsSelectors';
 import { selectAudiomuseEnabled } from '@/utils/redux/selectors/audiomuseSelectors';
+import { useDownloaderStates } from '@/features/downloaders/registry';
 
-const IntegrationsView: React.FC = () => {
+/**
+ * The single hub for every provider yuzic can connect to — merges the old
+ * separate Integrations and Downloaders hubs (§4 of
+ * docs/design-library-intent.md, commit 5330f4ee: Connections is meant to be
+ * the one central place listing every connectable provider). Each row keeps
+ * the exact label, status logic, and destination route the two old hubs used,
+ * grouped the same way they were split before: library/discovery sources,
+ * then downloaders.
+ */
+const ConnectionsView: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const isLbConnected = useSelector(selectListenBrainzAuthenticated);
@@ -25,9 +36,11 @@ const IntegrationsView: React.FC = () => {
   const isLastfmEnabled = useSelector(selectLastfmEnabled);
   const isLbDiscoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
   const isAudiomuseEnabled = useSelector(selectAudiomuseEnabled);
+  const downloaders = useDownloaderStates();
 
   return (
-    <SettingsScreen title={t('settings.sections.integrations')}>
+    <SettingsScreen title={t('settings.sections.connections')}>
+      <SettingsCardHeader title={t('settings.connections.sources')} subtle />
       <SettingsCard>
         <SettingsRow
           label="Deezer"
@@ -62,8 +75,22 @@ const IntegrationsView: React.FC = () => {
           onPress={() => router.push('/settings/audiomuseView')}
         />
       </SettingsCard>
+
+      <SettingsCardHeader title={t('settings.downloaders.title')} subtle />
+      <SettingsCard>
+        {downloaders.map(({ def, isConnected }, index) => (
+          <React.Fragment key={def.id}>
+            {index > 0 && <SettingsDivider />}
+            <SettingsRow
+              label={t(`settings.downloaders.${def.id}.title`)}
+              status={isConnected ? 'connected' : 'disconnected'}
+              onPress={() => router.push(def.settingsRoute)}
+            />
+          </React.Fragment>
+        ))}
+      </SettingsCard>
     </SettingsScreen>
   );
 };
 
-export default IntegrationsView;
+export default ConnectionsView;
