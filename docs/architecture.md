@@ -346,6 +346,41 @@ bodies' worth of divergence.
   difference the row layer already encodes but the list bodies keep explicit.
   Converging them is a deferred, higher-risk option, not an accident.
 
+## 7. Integration modules — one capability-slot contract
+
+Providers (downloaders, external sources) converge on one `IntegrationModule`
+contract (`features/integrations/types.ts`) so a feature asks *what a provider
+can do*, never *which product it is*.
+
+- **`CapabilitySlot`** — the vocabulary of things a provider can fill
+  (`acquisition.track/album`, `resolution`, `similarity.songs/artists`,
+  `discovery.shelf`, `playlist.generate`, `lyrics`, `scrobble`,
+  `metadata.enrich`, `preview`). **`IntegrationModule`** = `{ id, label, auth,
+  slots: Partial<Record<CapabilitySlot, SlotImpl>>, options?, testConnection }`.
+  `slots` is partial for the same reason `ApiAdapter` fields are optional —
+  callers presence-check the capability, never the provider name.
+- **`SlotImpl` is intentionally `unknown`** for now: typing every slot's method
+  signature would couple the contract to providers that don't exist yet. Each
+  slot gains a concrete impl type when it's actually built.
+- **Existing registries were extended, not rewritten.** `DownloaderDefinition`
+  and `SourceDefinition` are now `IntegrationModule & { …operational fields }`
+  (their `id` re-narrowed to the closed union). Downloaders are `apiKey`-tier and
+  fill `acquisition.*`; sources are `none`-tier (keyless public APIs; a trivial
+  `{ok:true}` testConnection — enablement is a user setting, not a connection)
+  and fill `resolution` + `discovery.shelf`. A downloader's `fetchQueueWithDiff`
+  deliberately maps to **no** slot — it's operational progress reporting, not a
+  product capability.
+- **Server adapters stay their own concern.** An `ApiAdapter` is required core,
+  not an optional integration, so it does **not** become an `IntegrationModule`.
+  Instead `serverAdapterSlots()` (`features/integrations/capabilityRegistry.ts`)
+  surfaces its capabilities into the same slot vocabulary, and
+  `useSlotProviders(slot)` answers "who fills this right now?" across the active
+  server **and** connected modules — read-only availability; blend/select/
+  fallback policy stays with the calling feature.
+- **One Connections screen** (`screens/settings/connections/`) is generated from
+  the provider list and replaced the two separate Integrations/Downloaders hubs.
+  Per-provider detail screens and their deep-link routes are unchanged.
+
 ## Where things live
 
 ```
