@@ -12,8 +12,8 @@ import { useFocusEffect, useNavigation, useScrollToTop } from '@react-navigation
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SearchResult, useSearch } from '@/contexts/SearchContext';
+import type { ExternalAlbumBase } from '@/types';
 import AlbumRow from '@/components/rows/AlbumRow';
-import ExternalAlbumRow from '@/components/rows/ExternalAlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
 import PlaylistRow from '@/components/rows/PlaylistRow';
 import SkeletonListRow from '@/components/SkeletonListRow';
@@ -310,7 +310,7 @@ const Search = () => {
 
     if (result.type === 'album') {
       return result.source === 'external' ? (
-        <ExternalAlbumRow
+        <AlbumRow
           album={{
             id: result.id,
             title: result.title,
@@ -323,7 +323,7 @@ const Search = () => {
           onPress={album => {
             recordResult(result);
             prefetchCovers([album.cover], 'detail');
-            navigateToAlbum(album);
+            navigateToAlbum(album as ExternalAlbumBase);
           }}
         />
       ) : (

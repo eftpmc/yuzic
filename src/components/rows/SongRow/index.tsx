@@ -11,9 +11,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import { Heart, ArrowDownCircle, Ellipsis } from 'lucide-react-native';
+import { Heart, ArrowDownCircle, Ellipsis, PlayCircle } from 'lucide-react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
 
-import { Song } from '@/types';
+import { ExternalSong, Song } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
 import MediaListRow from '@/components/MediaListRow';
@@ -22,14 +23,82 @@ import { useTranslation } from 'react-i18next';
 import { useDownloadState } from '@/contexts/DownloadContext';
 import { formatSongDuration } from '@/utils/formatDuration';
 import Touchable from '@/components/Touchable';
+import ExternalSongOptions from '@/components/options/ExternalSongOptions';
+import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled';
+
+export type SongRowSong = Song | ExternalSong;
+
+/**
+ * True when `song` came from an external catalog (Deezer/etc) rather than
+ * the user's library. `Song.streamUrl` is required on every library song and
+ * absent on `ExternalSong` — that difference is guaranteed by the type
+ * definitions, so it doubles as the discriminator without needing a new
+ * field on either type.
+ */
+export function isExternalSong(song: SongRowSong): song is ExternalSong {
+  return !('streamUrl' in song);
+}
 
 type Props = {
-  song: Song;
+  song: SongRowSong;
   collection?: any;
   onPress?: () => void;
   variant?: 'default' | 'albumCompact';
   showDownloadedDot?: boolean;
   isFavorite?: boolean;
+  /** External-song-only: album context for its options sheet. */
+  albumTitle?: string;
+  /** External-song-only: album context for its options sheet. */
+  albumArtist?: string;
+  /** External-song-only: when provided, preview badge is shown and queue actions become available. */
+  previewUrl?: string;
+};
+
+const ExternalSongRowView: React.FC<{
+  song: ExternalSong;
+  albumTitle: string;
+  albumArtist: string;
+  previewUrl?: string;
+  onPress?: () => void;
+}> = ({ song, albumTitle, albumArtist, previewUrl, onPress }) => {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const samplesEnabled = useDeezerDiscoveryEnabled();
+  const density = useListDensity();
+  const hasPreview = !!previewUrl;
+
+  const handlePress = useCallback(() => {
+    if (onPress) {
+      onPress();
+    } else if (!samplesEnabled) {
+      toast(t('settings.deezer.enableSamplesToPreview'));
+    }
+  }, [onPress, samplesEnabled, t]);
+
+  return (
+    <MediaListRow
+      title={song.title}
+      subtitle={song.artist || albumArtist}
+      cover={song.cover}
+      onPress={handlePress}
+      showCover={false}
+      variant="compact"
+      rowStyle={{ paddingVertical: density.trackRowPadding }}
+      trailing={
+        <View style={styles.rowRight}>
+          {hasPreview && (
+            <PlayCircle size={iconSize.inline} color={colors.subtext} />
+          )}
+          <ExternalSongOptions
+            song={song}
+            albumTitle={albumTitle}
+            albumArtist={albumArtist}
+            onPlay={previewUrl ? onPress : undefined}
+          />
+        </View>
+      }
+    />
+  );
 };
 
 const SongRow: React.FC<Props> = ({
@@ -39,6 +108,9 @@ const SongRow: React.FC<Props> = ({
   variant = 'default',
   showDownloadedDot = false,
   isFavorite = false,
+  albumTitle,
+  albumArtist,
+  previewUrl,
 }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -47,7 +119,12 @@ const SongRow: React.FC<Props> = ({
   const { isTrackDownloaded } = useDownloadState();
   const density = useListDensity();
   const isAlbumCompact = variant === 'albumCompact';
-  const downloaded = isTrackDownloaded(song.id);
+
+  // Hooks must run unconditionally in the same order on every render, so the
+  // library-only bits (download state, favorite animation) still run for an
+  // external song — same as they were simply absent for it before the merge,
+  // just now computed and discarded rather than never mounted.
+  const downloaded = !isExternalSong(song) && isTrackDownloaded(song.id);
 
   /**
    * The track's position on the record.
@@ -59,7 +136,7 @@ const SongRow: React.FC<Props> = ({
    * guessed index: a gap in the numbering is information, and a made-up "7"
    * beside a track the server calls untracked is not.
    */
-  const trackNumber = isAlbumCompact && typeof song.trackNumber === 'number' && song.trackNumber > 0
+  const trackNumber = isAlbumCompact && !isExternalSong(song) && typeof song.trackNumber === 'number' && song.trackNumber > 0
     ? song.trackNumber
     : null;
 
@@ -74,14 +151,26 @@ const SongRow: React.FC<Props> = ({
       onPress();
       return;
     }
-    if (collection) {
+    if (collection && !isExternalSong(song)) {
       playSongInCollection(song, collection, false);
     }
   }, [onPress, collection, song, playSongInCollection]);
 
   const openOptions = useCallback(() => {
-    openSongOptions(song);
+    if (!isExternalSong(song)) openSongOptions(song);
   }, [openSongOptions, song]);
+
+  if (isExternalSong(song)) {
+    return (
+      <ExternalSongRowView
+        song={song}
+        albumTitle={albumTitle ?? ''}
+        albumArtist={albumArtist ?? ''}
+        previewUrl={previewUrl}
+        onPress={onPress}
+      />
+    );
+  }
 
   return (
     <>

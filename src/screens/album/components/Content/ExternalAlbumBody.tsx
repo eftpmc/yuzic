@@ -4,7 +4,7 @@ import { FlashList } from '@shopify/flash-list';
 
 import { ExternalAlbum, ExternalSong } from '@/types';
 import AlbumHeader, { AlbumHeaderBar } from '../Header';
-import ExternalSongRow from '@/components/rows/ExternalSongRow';
+import SongRow from '@/components/rows/SongRow';
 import { useExternalAlbumPreviews } from '@/hooks/albums/useExternalAlbumPreviews';
 import { usePreviewPlayer, externalSongToTrack } from '@/hooks/usePreviewPlayer';
 import { useTheme } from '@/hooks/useTheme';
@@ -55,7 +55,7 @@ const ExternalAlbumBody: React.FC<Props> = ({ album }) => {
   const renderItem = useCallback(({ item }: { item: ExternalSong }) => {
     const previewUrl = previews[item.id];
     return (
-      <ExternalSongRow
+      <SongRow
         song={item}
         albumTitle={album.title}
         albumArtist={album.artist}
