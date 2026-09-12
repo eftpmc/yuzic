@@ -413,6 +413,44 @@ acquiring. The two are deliberately different code paths.
   surfacing all activity a provider reports including jobs started outside yuzic,
   reading the single shared `useDownloadersQueue` poll.
 
+## 9. Feature-oriented settings — configure the goal, not the provider
+
+Settings pages are organized by what the user wants yuzic to *do*, not by which
+integration supplies it. `screens/settings/home/` set the precedent (pulling
+Home-affecting toggles out of the per-integration screens); Scrobbling, Lyrics,
+Metadata, and Search follow it. Each reuses the `SettingsScreen` shell and is a
+route leaf registered in `settings/_layout.tsx` with a row on the settings root.
+
+- **Scrobbling** (`screens/settings/scrobbling/`) — exactly one route *per
+  destination, per server*: `disabled | through-server | direct`, stored in
+  `settingsSlice.scrobbleRoutes[serverId]`. The single enum per destination makes
+  "at most one route" structural (no double-scrobble). Defaults are *derived at
+  read time* from the pre-existing booleans (`deriveScrobbleRoute`), so no
+  migration runs. **Last.fm offers only disabled/through-server** this cut
+  (direct needs a signed session — sequenced out). `useScrobbling` routes by the
+  enum; a duplicate-risk note shows on `through-server` (yuzic can't verify
+  server forwarding).
+- **Lyrics** (`screens/settings/lyrics/`, `features/lyrics/resolveLyrics.ts`) —
+  server-embedded first, then user-ordered external sources; `resolveLyrics`
+  returns the first non-empty result. **LRCLIB** (`api/lrclib/`) is the launch
+  external source: `none`-tier, no key, *one* source that prefers synced and
+  falls back to plain internally. Off by default → server-only behaviour is
+  unchanged until a user enables it.
+- **Metadata** (`screens/settings/metadata/`, `features/metadata/`) — independent
+  **Artist-information** and **Artwork** controls, each its own ordered
+  enabled-source chain (`resolveArtistInfo`, `resolveArtwork`). **Display-only and
+  gaps-only**: the resolvers never write to any server and only fill a field the
+  server left empty, so disabling instantly restores the server view. Launch
+  sources: Last.fm `artist.getInfo`; Deezer artist images + Cover Art Archive
+  covers. A small "via X" line, never per-item badges.
+- **Search** (`screens/settings/search/`, `contexts/searchLegs.ts`) — a segmented
+  **Your Library** (default, no external calls) / **Other sources** scope with a
+  Filters sheet for search-enabled sources and entity types. `planSearchLegs`
+  picks library **XOR** external by scope, so results are never mixed by default;
+  provenance is preserved and editions/ambiguous matches stay separate.
+  `searchSourcesEnabled` is independent of Home enablement (legacy
+  `deezerSearchEnabled` reconciled at read time, no migration).
+
 ## Where things live
 
 ```
