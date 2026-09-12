@@ -22,6 +22,7 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
 
 export default function LibrariesOnboarding() {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ export default function LibrariesOnboarding() {
   const dispatch = useDispatch();
   const rad = useRadius();
   const { serverId } = useLocalSearchParams<{ serverId: string }>();
+  const onboardingDiscoveryPrompted = useSelector(selectOnboardingDiscoveryPrompted);
 
   const server = useSelector((state: RootState) =>
     selectServerById(serverId)(state)
@@ -78,7 +80,11 @@ export default function LibrariesOnboarding() {
       id: server.id,
       patch: { auth: { ...server.auth, ...libraryScopePatch(server, selectedIds) } as any },
     }));
-    router.replace('/(home)/(tabs)/(home)');
+    router.replace(
+      onboardingDiscoveryPrompted
+        ? '/(home)/(tabs)/(home)'
+        : '/(onboarding)/discovery'
+    );
   };
 
   return (

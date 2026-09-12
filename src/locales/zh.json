@@ -657,6 +657,13 @@
       "unsupported": "已跳过 {{count}} 个不支持的文件",
       "unsupported_other": "已跳过 {{count}} 个不支持的文件",
       "importFailed": "无法导入这些文件。"
+    },
+    "discovery": {
+      "title": "发现媒体库之外的内容",
+      "subtitle": "Yuzic 可以选择向 Deezer 和 ListenBrainz 请求推荐、相似艺术家和封面图片——两者均无需账号。",
+      "whatIsSent": "会发送的内容：仅发送提出请求所需的艺术家、专辑或曲目名称——除非你开启此选项，否则不会有任何其他关于你或你收听记录的信息离开此设备。",
+      "enable": "启用发现功能",
+      "notNow": "暂不开启"
     }
   },
   "library": {
@@ -837,6 +844,7 @@
       "serverRandomThemed": "今日{{genre}}",
       "serverNowPlaying": "服务器上正在播放",
       "lbSimilarForYou": "因为你喜欢 {{artist}}",
+      "localMix": "你的混音单",
       "lbCreatedFor": {
         "dailyJams": "每日金曲",
         "weeklyJams": "每周金曲",

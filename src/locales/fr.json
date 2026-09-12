@@ -658,6 +658,13 @@
       "unsupported": "{{count}} fichier non pris en charge ignoré",
       "unsupported_other": "{{count}} fichiers non pris en charge ignorés",
       "importFailed": "Impossible d’importer ces fichiers."
+    },
+    "discovery": {
+      "title": "Découvrir au-delà de votre bibliothèque",
+      "subtitle": "Yuzic peut, si vous le souhaitez, interroger Deezer et ListenBrainz pour des recommandations, artistes similaires et pochettes — aucun compte requis pour l’un ou l’autre.",
+      "whatIsSent": "Ce qui est envoyé : uniquement les noms d’artiste, d’album ou de titre nécessaires à la requête — rien d’autre sur vous ou votre écoute ne quitte cet appareil tant que vous n’activez pas cette option.",
+      "enable": "Activer la découverte",
+      "notNow": "Pas maintenant"
     }
   },
   "library": {
@@ -840,6 +847,7 @@
       "serverRandomThemed": "{{genre}} du jour",
       "serverNowPlaying": "En écoute sur votre serveur",
       "lbSimilarForYou": "Parce que vous aimez {{artist}}",
+      "localMix": "Votre mix",
       "lbCreatedFor": {
         "dailyJams": "Jams quotidiens",
         "weeklyJams": "Jams hebdomadaires",

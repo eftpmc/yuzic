@@ -47,4 +47,7 @@ export enum QueryKeys {
 	LocalArtistTopTracks = 'local-artist-top-tracks',
 	LocalArtistExternalDiscography = 'local-artist-external-discography',
 	MetadataArtistInfo = 'metadata-artist-info',
+	/** Local-first daily mix: play-stats seed + server-native similarity, zero
+	 * external calls (see LocalMixSection). */
+	LocalMix = 'local-mix',
 }

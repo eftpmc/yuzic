@@ -28,6 +28,7 @@ export type SectionType =
   | 'genre'
   | 'serverRandom'
   | 'serverNowPlaying'
+  | 'localMix'
   | 'lbSimilarArtistsForYou'
   | 'lbCreatedFor'
 
@@ -153,6 +154,10 @@ export function useDailyLayout(refreshKey = 0): HomeLayout {
     return [
       { key: 'serverRandom', type: 'serverRandom' },
       { key: 'serverNowPlaying', type: 'serverNowPlaying' },
+      // Local-first daily mix: play-stats seed + server-native similarity,
+      // zero external calls — so it lives in the server tier alongside the
+      // other always-on shelves rather than behind Deezer/LB's toggles.
+      { key: 'localMix', type: 'localMix' },
     ]
   }, [isOffline, hasLibrary])
 

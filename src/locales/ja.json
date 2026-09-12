@@ -657,6 +657,13 @@
       "unsupported": "未対応のファイル {{count}} 件をスキップしました",
       "unsupported_other": "未対応のファイル {{count}} 件をスキップしました",
       "importFailed": "ファイルを読み込めませんでした。"
+    },
+    "discovery": {
+      "title": "ライブラリの外側も発見する",
+      "subtitle": "Yuzic は任意で Deezer と ListenBrainz におすすめ、似たアーティスト、アートワークを問い合わせることができます — どちらもアカウント不要です。",
+      "whatIsSent": "送信される内容：質問に必要なアーティスト名・アルバム名・トラック名のみです。これをオンにしない限り、それ以外のあなたやリスニング履歴に関する情報はこの端末から送信されません。",
+      "enable": "発見機能を有効にする",
+      "notNow": "後で"
     }
   },
   "library": {
@@ -837,6 +844,7 @@
       "serverRandomThemed": "今日の{{genre}}",
       "serverNowPlaying": "サーバーで再生中",
       "lbSimilarForYou": "{{artist}} が好きなあなたへ",
+      "localMix": "あなたのミックス",
       "lbCreatedFor": {
         "dailyJams": "デイリージャム",
         "weeklyJams": "ウィークリージャム",

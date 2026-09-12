@@ -79,6 +79,11 @@ export const selectHasSeenGetStarted = (
 ): boolean =>
   state.settings.hasSeenGetStarted;
 
+export const selectOnboardingDiscoveryPrompted = (
+  state: RootState
+): boolean =>
+  state.settings.onboardingDiscoveryPrompted ?? false;
+
 export const selectShowQualityBadge = (state: RootState): boolean =>
   state.settings.showQualityBadge ?? false;
 

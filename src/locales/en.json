@@ -658,6 +658,13 @@
       "unsupported": "Skipped {{count}} unsupported file",
       "unsupported_other": "Skipped {{count}} unsupported files",
       "importFailed": "Couldn’t import those files."
+    },
+    "discovery": {
+      "title": "Discover beyond your library",
+      "subtitle": "Yuzic can optionally ask Deezer and ListenBrainz for recommendations, similar artists, and album art — no account needed for either.",
+      "whatIsSent": "What gets sent: only the artist, album, or track names needed to ask the question — nothing else about you or your listening history leaves this device unless you turn this on.",
+      "enable": "Enable discovery",
+      "notNow": "Not now"
     }
   },
   "library": {
@@ -842,6 +849,7 @@
       "serverRandomThemed": "Today's {{genre}}",
       "serverNowPlaying": "Playing on your server",
       "lbSimilarForYou": "Because you like {{artist}}",
+      "localMix": "Your Mix",
       "lbCreatedFor": {
         "dailyJams": "Daily Jams",
         "weeklyJams": "Weekly Jams",

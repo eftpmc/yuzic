@@ -115,6 +115,15 @@ export interface SettingsState {
 
   /* Onboarding */
   hasSeenGetStarted: boolean;
+  /**
+   * Whether the onboarding discovery opt-in step (E4) has been shown and
+   * answered — set true whether the user chose Enable or Not now. This is
+   * what makes the step ask-once: it is checked only inside the onboarding
+   * flow itself, so an existing user who already finished onboarding never
+   * sees it re-appear, and there is no separate "onboarding complete" flag
+   * to keep in sync with this one.
+   */
+  onboardingDiscoveryPrompted: boolean;
 
   /* Audio */
   wifiStreamQuality: AudioQuality;
@@ -271,6 +280,7 @@ const initialState: SettingsState = {
   librarySortOrder: 'title',
   searchScope: 'server',
   hasSeenGetStarted: false,
+  onboardingDiscoveryPrompted: false,
 
   wifiStreamQuality: 'original',
   cellularStreamQuality: 'high',
@@ -386,6 +396,9 @@ const settingsSlice = createSlice({
     /* Onboarding */
     setHasSeenGetStarted(state, action: PayloadAction<boolean>) {
       state.hasSeenGetStarted = action.payload;
+    },
+    setOnboardingDiscoveryPrompted(state, action: PayloadAction<boolean>) {
+      state.onboardingDiscoveryPrompted = action.payload;
     },
 
     /* Audio */
@@ -596,6 +609,7 @@ export const {
   setLibrarySortOrder,
   setSearchScope,
   setHasSeenGetStarted,
+  setOnboardingDiscoveryPrompted,
   setWifiStreamQuality,
   setCellularStreamQuality,
   setDownloadQuality,
