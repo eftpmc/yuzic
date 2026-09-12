@@ -947,6 +947,14 @@
       "downloading": "サーバーにダウンロード中… {{progress}}%",
       "noServiceConnected": "ダウンロードするには設定でダウンローダーを接続してください"
     },
+    "review": {
+      "targetServer": "対象サーバー",
+      "noServer": "サーバーが選択されていません",
+      "requesting": "リクエスト内容",
+      "saveAsDefaultAlbums": "アルバムの既定として保存",
+      "saveAsDefaultTracks": "曲の既定として保存",
+      "confirmGet": "取得"
+    },
     "serverStatus": {
       "onServer": "ライブラリ内",
       "downloadingToServer": "サーバーにダウンロード中 · {{progress}}%"

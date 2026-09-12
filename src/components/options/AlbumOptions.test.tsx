@@ -114,7 +114,7 @@ jest.mock('@/hooks/useExternalAlbumStatus', () => ({
   useExternalAlbumStatus: jest.fn(() => ({ kind: 'none' })),
 }));
 
-jest.mock('@/components/options/DownloadSheet', () => 'DownloadSheet');
+jest.mock('@/components/options/GetReviewSheet', () => 'GetReviewSheet');
 
 jest.mock('@/components/SpinningLoaderCircle', () => 'SpinningLoaderCircle');
 

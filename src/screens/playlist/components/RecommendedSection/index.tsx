@@ -36,7 +36,7 @@ import * as deezer from '@/api/deezer';
 import { getLastFmSimilarArtists } from '@/api/lastfm/getSimilarArtists';
 import { LASTFM_API_KEY } from '@/constants/keys';
 import { QueryKeys } from '@/enums/queryKeys';
-import DownloadSheet from '@/components/options/DownloadSheet';
+import GetReviewSheet from '@/components/options/GetReviewSheet';
 import { useAnyAlbumDownloaderConnected } from '@/features/downloaders/registry';
 import { formatSongDuration } from '@/utils/formatDuration';
 import type { Playlist, SongBase, ExternalAlbumBase, ExternalSong } from '@/types';
@@ -449,7 +449,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
       )}
 
       {albumForDownload && (
-        <DownloadSheet
+        <GetReviewSheet
           album={albumForDownload}
           sheetRef={downloadSheetRef}
         />

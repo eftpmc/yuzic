@@ -951,6 +951,14 @@
       "downloading": "Téléchargement vers le serveur… {{progress}}%",
       "noServiceConnected": "Connectez un téléchargeur dans les réglages pour télécharger"
     },
+    "review": {
+      "targetServer": "Serveur cible",
+      "noServer": "Aucun serveur sélectionné",
+      "requesting": "Demande",
+      "saveAsDefaultAlbums": "Enregistrer par défaut pour les albums",
+      "saveAsDefaultTracks": "Enregistrer par défaut pour les titres",
+      "confirmGet": "Récupérer"
+    },
     "serverStatus": {
       "onServer": "Dans la bibliothèque",
       "downloadingToServer": "Téléchargement vers le serveur · {{progress}}%"

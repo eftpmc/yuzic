@@ -19,8 +19,20 @@ export interface DownloaderConnection {
 
 export type PerServerDownloadersState = Record<DownloaderId, DownloaderConnection>;
 
+/**
+ * Per-server, per-unit default acquisition provider. Set only through the
+ * GetReviewSheet's explicit "save as default" toggle — never implicitly from
+ * a Get request — and read back only to *preselect* a provider row; the Get
+ * confirm tap still has to happen for a job to start.
+ */
+export interface DownloaderDefaults {
+  defaultAlbumProvider?: DownloaderId;
+  defaultTrackProvider?: DownloaderId;
+}
+
 export interface DownloadersState {
   byServer: Record<string, PerServerDownloadersState>;
+  defaultsByServer: Record<string, DownloaderDefaults>;
 }
 
 const emptyConnection: DownloaderConnection = {
@@ -37,6 +49,7 @@ const defaultPerServer: PerServerDownloadersState = {
 
 const initialState: DownloadersState = {
   byServer: {},
+  defaultsByServer: {},
 };
 
 function getOrCreate(state: DownloadersState, serverId: string, downloader: DownloaderId): DownloaderConnection {
@@ -88,6 +101,22 @@ const downloadersSlice = createSlice({
       const current = (entry.preferences as SlskdSearchPreferences | undefined) ?? DEFAULT_SLSKD_PREFERENCES;
       entry.preferences = { ...current, ...action.payload.preferences };
     },
+    /**
+     * The only writer of a default provider — called from GetReviewSheet's
+     * "save as default" toggle, never from a bare Get request. `provider`
+     * undefined clears back to ask-each-time.
+     */
+    setDefaultProvider(
+      state,
+      action: PayloadAction<{ serverId: string; unit: 'album' | 'track'; provider: DownloaderId | undefined }>
+    ) {
+      const { serverId, unit, provider } = action.payload;
+      const current = state.defaultsByServer[serverId] ?? {};
+      state.defaultsByServer[serverId] = {
+        ...current,
+        [unit === 'album' ? 'defaultAlbumProvider' : 'defaultTrackProvider']: provider,
+      };
+    },
   },
 });
 
@@ -98,6 +127,7 @@ export const {
   connectDownloader,
   disconnectDownloader,
   setSlskdPreferences,
+  setDefaultProvider,
 } = downloadersSlice.actions;
 
 export default downloadersSlice.reducer;

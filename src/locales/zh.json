@@ -947,6 +947,14 @@
       "downloading": "正在下载至服务器… {{progress}}%",
       "noServiceConnected": "请在设置中连接下载器以进行下载"
     },
+    "review": {
+      "targetServer": "目标服务器",
+      "noServer": "未选择服务器",
+      "requesting": "正在请求",
+      "saveAsDefaultAlbums": "保存为专辑的默认设置",
+      "saveAsDefaultTracks": "保存为歌曲的默认设置",
+      "confirmGet": "获取"
+    },
     "serverStatus": {
       "onServer": "已在库中",
       "downloadingToServer": "正在下载至服务器 · {{progress}}%"

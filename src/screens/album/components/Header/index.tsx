@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Album, ExternalAlbum, Playlist, Song } from '@/types';
 import AlbumOptions from '@/components/options/AlbumOptions';
-import DownloadSheet from '@/components/options/DownloadSheet';
+import GetReviewSheet from '@/components/options/GetReviewSheet';
 import StatusBanner from '@/components/StatusBanner';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import DownloadStateIcon from '@/components/DownloadStateIcon';
@@ -326,7 +326,7 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         )}
       </DetailActionRow>
 
-      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
+      <GetReviewSheet album={album} sheetRef={downloadSheetRef} />
     </>
   );
 }

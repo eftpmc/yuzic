@@ -109,7 +109,7 @@ jest.mock('@/features/downloaders/registry', () => ({
   useAnyTrackDownloaderConnected: jest.fn(() => false),
 }));
 
-jest.mock('@/components/options/DownloadSheet', () => 'DownloadSheet');
+jest.mock('@/components/options/GetReviewSheet', () => 'GetReviewSheet');
 
 jest.mock('@/components/options/OptionSheetPrimitives', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

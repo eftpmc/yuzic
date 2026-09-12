@@ -81,3 +81,16 @@ export const selectSlskdConfigWithPreferences = createSelector(
   [selectSlskdConfig, selectSlskdPreferences],
   (config, preferences) => ({ ...config, preferences })
 );
+
+/**
+ * The saved default acquisition provider for the active server, per unit.
+ * Per-server rather than global: acquisition is already scoped to the
+ * active server (its own downloader connections), so the default follows
+ * the same scope. Undefined means "ask each time" — GetReviewSheet only
+ * ever uses this to *preselect* a row, never to skip the Get confirm.
+ */
+export const selectDefaultProviderForActiveServer = createSelector(
+  [(s: RootState) => s.downloaders.defaultsByServer, (s: RootState) => s.servers.activeServerId],
+  (defaultsByServer, activeServerId) =>
+    (activeServerId ? defaultsByServer[activeServerId] ?? {} : {})
+);

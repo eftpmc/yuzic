@@ -26,7 +26,7 @@ import {
   useAnyDownloaderConnected,
   useAnyTrackDownloaderConnected,
 } from '@/features/downloaders/registry';
-import DownloadSheet from '@/components/options/DownloadSheet';
+import GetReviewSheet from '@/components/options/GetReviewSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
 import {
   OptionSheetChipsRow,
@@ -646,8 +646,8 @@ const ExternalSongOptionsSheet = forwardRef<
         </BottomSheetScrollView>
       </BottomSheetModal>
 
-      <DownloadSheet album={albumBase} sheetRef={downloadSheetRef} />
-      <DownloadSheet album={albumBase} track={track} sheetRef={trackDownloadSheetRef} />
+      <GetReviewSheet album={albumBase} sheetRef={downloadSheetRef} />
+      <GetReviewSheet album={albumBase} track={track} sheetRef={trackDownloadSheetRef} />
     </>
   );
 });

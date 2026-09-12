@@ -24,7 +24,7 @@ import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyAlbumDetail } from './useLazyCollectionDetails';
 import { useStarredAlbums, useStarAlbum, useUnstarAlbum } from '@/hooks/starred';
 import { useExternalAlbumStatus } from '@/hooks/useExternalAlbumStatus';
-import DownloadSheet from '@/components/options/DownloadSheet';
+import GetReviewSheet from '@/components/options/GetReviewSheet';
 import { useSheetRef } from '@/utils/useSheetRef';
 import {
   OptionSheetChipsRow,
@@ -515,7 +515,7 @@ const ExternalAlbumOptionsSheet = forwardRef<
         </BottomSheetView>
       </BottomSheetModal>
 
-      <DownloadSheet album={album} sheetRef={downloadSheetRef} />
+      <GetReviewSheet album={album} sheetRef={downloadSheetRef} />
     </>
   );
 });

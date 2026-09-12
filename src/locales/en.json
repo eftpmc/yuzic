@@ -953,6 +953,14 @@
       "downloading": "Downloading to server… {{progress}}%",
       "noServiceConnected": "Connect a downloader in Settings to download"
     },
+    "review": {
+      "targetServer": "Target server",
+      "noServer": "No server selected",
+      "requesting": "Requesting",
+      "saveAsDefaultAlbums": "Save as default for albums",
+      "saveAsDefaultTracks": "Save as default for tracks",
+      "confirmGet": "Get"
+    },
     "serverStatus": {
       "onServer": "In Library",
       "downloadingToServer": "Downloading to server · {{progress}}%"
