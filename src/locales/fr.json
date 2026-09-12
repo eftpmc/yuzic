@@ -629,6 +629,12 @@
   "library": {
     "offlineBanner": "Hors ligne — affichage de votre bibliothèque synchronisée et de vos téléchargements",
     "title": "Bibliothèque",
+    "downloads": {
+      "title": "Téléchargements"
+    },
+    "wants": {
+      "title": "Souhaits"
+    },
     "view": {
       "switchToList": "Passer à la vue liste",
       "switchToGrid": "Passer à la vue grille"
@@ -1016,6 +1022,11 @@
       "externalMetadata": "Métadonnées externes"
     }
   },
+  "wants": {
+    "title": "Souhaits",
+    "empty": "Rien d'enregistré pour l'instant. Ajoutez un titre ou un album que vous souhaitez et il apparaîtra ici.",
+    "manualAdd": "Ajouter aux souhaits"
+  },
   "manualAddWant": {
     "title": "Ajouter aux souhaits",
     "unit": {
@@ -1291,6 +1302,9 @@
       "reset": "Réinitialiser l’égaliseur",
       "preset": "Préréglage d’égaliseur {{name}}",
       "decibels": "{{gain}} décibels"
+    },
+    "wants": {
+      "remove": "Retirer {{title}} des souhaits"
     }
   },
   "tabs": {
@@ -1301,6 +1315,10 @@
   "downloads": {
     "title": "File d'attente de téléchargement",
     "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages.",
-    "jobFailed": "Impossible de terminer le téléchargement de « {{title}} ». Il reste en file d'attente et sera réessayé."
+    "jobFailed": "Impossible de terminer le téléchargement de « {{title}} ». Il reste en file d'attente et sera réessayé.",
+    "section": {
+      "offline": "Hors ligne",
+      "downloaders": "Téléchargeurs"
+    }
   }
 }

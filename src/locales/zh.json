@@ -628,6 +628,12 @@
   "library": {
     "offlineBanner": "离线 — 显示已同步的音乐库和下载内容",
     "title": "媒体库",
+    "downloads": {
+      "title": "下载"
+    },
+    "wants": {
+      "title": "想要列表"
+    },
     "view": {
       "switchToList": "切换到列表视图",
       "switchToGrid": "切换到网格视图"
@@ -1012,6 +1018,11 @@
       "externalMetadata": "外部元数据"
     }
   },
+  "wants": {
+    "title": "想要列表",
+    "empty": "还没有保存任何内容。添加想要的歌曲或专辑，它会显示在这里。",
+    "manualAdd": "添加到想要列表"
+  },
   "manualAddWant": {
     "title": "添加到想要列表",
     "unit": {
@@ -1287,6 +1298,9 @@
       "reset": "将均衡器重置为平坦",
       "preset": "{{name}} 均衡器预设",
       "decibels": "{{gain}} 分贝"
+    },
+    "wants": {
+      "remove": "从想要列表中移除“{{title}}”"
     }
   },
   "tabs": {
@@ -1297,6 +1311,10 @@
   "downloads": {
     "title": "下载队列",
     "noDownloaders": "未连接下载器。请在设置中添加。",
-    "jobFailed": "无法完成“{{title}}”的下载。它仍在队列中，将重试。"
+    "jobFailed": "无法完成“{{title}}”的下载。它仍在队列中，将重试。",
+    "section": {
+      "offline": "离线",
+      "downloaders": "下载器"
+    }
   }
 }

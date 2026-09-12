@@ -628,6 +628,12 @@
   "library": {
     "offlineBanner": "オフライン — 同期済みのライブラリとダウンロードを表示しています",
     "title": "ライブラリ",
+    "downloads": {
+      "title": "ダウンロード"
+    },
+    "wants": {
+      "title": "ウォンツ"
+    },
     "view": {
       "switchToList": "リスト表示に切り替え",
       "switchToGrid": "グリッド表示に切り替え"
@@ -1012,6 +1018,11 @@
       "externalMetadata": "外部メタデータ"
     }
   },
+  "wants": {
+    "title": "ウォンツ",
+    "empty": "まだ何も保存されていません。欲しいトラックやアルバムを追加すると、ここに表示されます。",
+    "manualAdd": "ウォンツに追加"
+  },
   "manualAddWant": {
     "title": "ウォンツに追加",
     "unit": {
@@ -1287,6 +1298,9 @@
       "reset": "イコライザーをフラットに戻す",
       "preset": "{{name}} イコライザープリセット",
       "decibels": "{{gain}} デシベル"
+    },
+    "wants": {
+      "remove": "「{{title}}」をウォンツから削除"
     }
   },
   "tabs": {
@@ -1297,6 +1311,10 @@
   "downloads": {
     "title": "ダウンロードキュー",
     "noDownloaders": "ダウンローダーが接続されていません。設定から追加してください。",
-    "jobFailed": "「{{title}}」のダウンロードを完了できませんでした。キューに残り、再試行されます。"
+    "jobFailed": "「{{title}}」のダウンロードを完了できませんでした。キューに残り、再試行されます。",
+    "section": {
+      "offline": "オフライン",
+      "downloaders": "ダウンローダー"
+    }
   }
 }

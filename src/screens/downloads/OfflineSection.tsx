@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, Text, View, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Text, View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Trash2 } from 'lucide-react-native';
-import Header from '../components/Header';
 import { useTheme } from '@/hooks/useTheme';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useAlbums } from '@/hooks/albums';
@@ -12,26 +10,29 @@ import { usePlaylists } from '@/hooks/playlists';
 import { useTracks } from '@/hooks/tracks';
 import { MediaImage } from '@/components/MediaImage';
 import { useDownload } from '@/contexts/DownloadContext';
-import { DownloadRow } from './downloadsInfo/types';
-import { buildDownloadRows } from './downloadsInfo/buildRows';
+import { DownloadRow } from '@/screens/settings/library/downloadsInfo/types';
+import { buildDownloadRows } from '@/screens/settings/library/downloadsInfo/buildRows';
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
-import SettingsCard from '../components/SettingsCard';
-import SettingsDivider from '../components/SettingsDivider';
-import SettingsInfoRow from '../components/SettingsInfoRow';
+import SettingsCard from '@/screens/settings/components/SettingsCard';
+import SettingsDivider from '@/screens/settings/components/SettingsDivider';
+import SettingsInfoRow from '@/screens/settings/components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
-import { useScrollClearance } from '@/hooks/useScrollClearance';
 
-const DownloadsInfoScreen: React.FC = () => {
+/**
+ * The OFFLINE section of the unified Downloads screen: on-device storage
+ * stats plus every downloaded track/collection, sourced entirely from
+ * `useDownload()` (DownloadContext). Extracted from the former standalone
+ * settings-only offline-downloads screen so this rendering lives in
+ * exactly one place — the unified screen embeds it directly rather than
+ * duplicating the rows.
+ */
+const OfflineSection: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const rad = useRadius();
-  // Same reason as the settings index: the flat constant is breathing room
-  // only, and the translucent dock takes no layout space, so the last download
-  // row would sit behind the tabs.
-  const scrollClearance = useScrollClearance();
   const activeServer = useSelector(selectActiveServer);
   const {
     removeDownloadByCollectionId,
@@ -124,103 +125,93 @@ const DownloadsInfoScreen: React.FC = () => {
   }, [t, clearDownloadsForProvider, activeServer?.type, activeServer?.id]);
 
   return (
-    <SafeAreaView testID="downloads-info-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title={t('settings.library.downloads.detailsTitle')} />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollClearance }]}>
+    <View testID="offline-section">
+      <SettingsCard>
+        <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
+        <SettingsDivider />
+        <SettingsInfoRow label={t('settings.library.downloads.availableLabel')} value={formattedAvailable} stacked />
+        <SettingsDivider />
+        <SettingsInfoRow label={t('settings.library.downloads.table.playlists')} value={String(downloadedPlaylistCount)} stacked />
+        <SettingsDivider />
+        <SettingsInfoRow label={t('settings.library.downloads.type.album')} value={String(downloadedAlbumCount)} stacked />
+        <SettingsDivider />
+        <SettingsInfoRow label={t('settings.library.downloads.table.tracks')} value={String(downloadedTrackCount)} stacked />
+      </SettingsCard>
 
-        <SettingsCard>
-          <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
-          <SettingsDivider />
-          <SettingsInfoRow label={t('settings.library.downloads.availableLabel')} value={formattedAvailable} stacked />
-          <SettingsDivider />
-          <SettingsInfoRow label={t('settings.library.downloads.table.playlists')} value={String(downloadedPlaylistCount)} stacked />
-          <SettingsDivider />
-          <SettingsInfoRow label={t('settings.library.downloads.type.album')} value={String(downloadedAlbumCount)} stacked />
-          <SettingsDivider />
-          <SettingsInfoRow label={t('settings.library.downloads.table.tracks')} value={String(downloadedTrackCount)} stacked />
-        </SettingsCard>
+      <Text style={[styles.locationNote, { color: colors.subtext }]}>
+        {t('settings.library.downloads.locationNote')}
+      </Text>
 
-        <Text style={[styles.locationNote, { color: colors.subtext }]}>
-          {t('settings.library.downloads.locationNote')}
+      {rows.length === 0 ? (
+        <Text style={[styles.emptyText, { color: colors.subtext }]}>
+          {t('settings.library.downloads.table.empty')}
         </Text>
+      ) : (
+        rows.map((item, index) => {
+          const prev = index > 0 ? rows[index - 1] : null;
+          const showSectionHeader = !prev || prev.provider !== item.provider;
+          const sectionTitle =
+            item.provider === 'navidrome' ? t('settings.library.downloads.provider.navidrome') :
+            item.provider === 'jellyfin' ? t('settings.library.downloads.provider.jellyfin') :
+            item.provider === 'emby' ? t('settings.library.downloads.provider.emby') :
+            t('settings.library.downloads.provider.unknown');
 
-        {rows.length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('settings.library.downloads.table.empty')}
-          </Text>
-        ) : (
-          rows.map((item, index) => {
-            const prev = index > 0 ? rows[index - 1] : null;
-            const showSectionHeader = !prev || prev.provider !== item.provider;
-            const sectionTitle =
-              item.provider === 'navidrome' ? t('settings.library.downloads.provider.navidrome') :
-              item.provider === 'jellyfin' ? t('settings.library.downloads.provider.jellyfin') :
-              item.provider === 'emby' ? t('settings.library.downloads.provider.emby') :
-              t('settings.library.downloads.provider.unknown');
-
-            return (
-              <View key={item.id}>
-                {showSectionHeader && (
-                  <View style={styles.providerHeader}>
-                    <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
-                    <Touchable
-                      accessibilityRole="button"
-                      accessibilityLabel={t('a11y.settings.clearProviderDownloads', { provider: sectionTitle })}
-                      onPress={() => confirmClearProvider(item)}
-                      style={styles.providerDelete}
-                    >
-                      <Trash2 size={iconSize.inline} color={colors.subtext} />
-                    </Touchable>
-                  </View>
-                )}
-                <View testID="download-info-row" style={[styles.row, { backgroundColor: colors.card, borderRadius: rad.md }]}>
-                  <View style={styles.coverCell}>
-                    <MediaImage cover={item.cover} size="thumb" style={[styles.cover, { borderRadius: rad.md }]} />
-                  </View>
-                  <View style={styles.trackCell}>
-                    <View style={styles.titleLine}>
-                      <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{item.title}</Text>
-                      <Text numberOfLines={1} style={[styles.sizeText, { color: colors.subtext }]}>{item.size}</Text>
-                    </View>
-                    <View style={styles.metaLine}>
-                      <Text numberOfLines={1} style={[styles.meta, { color: colors.subtext }]}>{item.subtitle}</Text>
-                      <Text style={[styles.metaDot, { color: colors.subtext }]}>·</Text>
-                      <Text numberOfLines={1} style={[styles.meta, { color: colors.subtext }]}>
-                        {item.trackCount} {item.trackCount === 1 ? t('common.song') : t('common.songs')}
-                      </Text>
-                      <Text style={[styles.metaDot, { color: colors.subtext }]}>·</Text>
-                      <Text numberOfLines={1} style={[styles.meta, styles.shrink, { color: colors.subtext }]}>{item.downloaded}</Text>
-                    </View>
-                  </View>
+          return (
+            <View key={item.id}>
+              {showSectionHeader && (
+                <View style={styles.providerHeader}>
+                  <Text style={[styles.providerTitle, { color: colors.secondary }]}>{sectionTitle}</Text>
                   <Touchable
                     accessibilityRole="button"
-                    accessibilityLabel={t('a11y.settings.removeDownload', { title: item.title })}
-                    style={[styles.removeButton, removingId === item.id && styles.disabled]}
-                    hitSlop={hitSlopFor(32)}
-                    onPress={() => confirmRemove(item)}
-                    disabled={removingId === item.id}
+                    accessibilityLabel={t('a11y.settings.clearProviderDownloads', { provider: sectionTitle })}
+                    onPress={() => confirmClearProvider(item)}
+                    style={styles.providerDelete}
                   >
                     <Trash2 size={iconSize.inline} color={colors.subtext} />
                   </Touchable>
                 </View>
+              )}
+              <View testID="download-info-row" style={[styles.row, { backgroundColor: colors.card, borderRadius: rad.md }]}>
+                <View style={styles.coverCell}>
+                  <MediaImage cover={item.cover} size="thumb" style={[styles.cover, { borderRadius: rad.md }]} />
+                </View>
+                <View style={styles.trackCell}>
+                  <View style={styles.titleLine}>
+                    <Text numberOfLines={1} style={[styles.title, { color: colors.secondary }]}>{item.title}</Text>
+                    <Text numberOfLines={1} style={[styles.sizeText, { color: colors.subtext }]}>{item.size}</Text>
+                  </View>
+                  <View style={styles.metaLine}>
+                    <Text numberOfLines={1} style={[styles.meta, { color: colors.subtext }]}>{item.subtitle}</Text>
+                    <Text style={[styles.metaDot, { color: colors.subtext }]}>·</Text>
+                    <Text numberOfLines={1} style={[styles.meta, { color: colors.subtext }]}>
+                      {item.trackCount} {item.trackCount === 1 ? t('common.song') : t('common.songs')}
+                    </Text>
+                    <Text style={[styles.metaDot, { color: colors.subtext }]}>·</Text>
+                    <Text numberOfLines={1} style={[styles.meta, styles.shrink, { color: colors.subtext }]}>{item.downloaded}</Text>
+                  </View>
+                </View>
+                <Touchable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('a11y.settings.removeDownload', { title: item.title })}
+                  style={[styles.removeButton, removingId === item.id && styles.disabled]}
+                  hitSlop={hitSlopFor(32)}
+                  onPress={() => confirmRemove(item)}
+                  disabled={removingId === item.id}
+                >
+                  <Trash2 size={iconSize.inline} color={colors.subtext} />
+                </Touchable>
               </View>
-            );
-          })
-        )}
-      </ScrollView>
-    </SafeAreaView>
+            </View>
+          );
+        })
+      )}
+    </View>
   );
 };
 
-export default DownloadsInfoScreen;
+export default OfflineSection;
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.scrollClearance,
-  },
   emptyText: {
     ...typography.caption,
     paddingTop: spacing.roomy,

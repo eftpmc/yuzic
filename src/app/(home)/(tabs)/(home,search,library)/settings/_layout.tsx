@@ -11,7 +11,6 @@ export default function SettingsLayout() {
             <Stack.Screen name='equalizerView' options={{ headerShown: false, title: "Equalizer" }} />
             <Stack.Screen name='serverView' options={{ headerShown: false, title: "Server" }} />
             <Stack.Screen name='connectionsView' options={{ headerShown: false, title: "Connections" }} />
-            <Stack.Screen name='downloadsInfoView' options={{ headerShown: false, title: "Offline downloads" }} />
             <Stack.Screen name='lidarrView' options={{ headerShown: false, title: "Lidarr" }} />
             <Stack.Screen name='slskdView' options={{ headerShown: false, title: "slskd" }} />
             <Stack.Screen name='soulsyncView' options={{ headerShown: false, title: "SoulSync" }} />

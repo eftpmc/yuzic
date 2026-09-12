@@ -629,6 +629,12 @@
   "library": {
     "offlineBanner": "Offline — showing your synced library and downloads",
     "title": "Library",
+    "downloads": {
+      "title": "Downloads"
+    },
+    "wants": {
+      "title": "Wants"
+    },
     "view": {
       "switchToList": "Switch to list view",
       "switchToGrid": "Switch to grid view"
@@ -1028,6 +1034,11 @@
     "artistField": "Artist",
     "add": "Add"
   },
+  "wants": {
+    "title": "Wants",
+    "empty": "Nothing saved yet. Add a track or album you want and it will show up here.",
+    "manualAdd": "Add to Wants"
+  },
   "albumOptions": {
     "actions": {
       "play": "Play",
@@ -1281,6 +1292,9 @@
       "reset": "Reset equalizer to flat",
       "preset": "{{name}} equalizer preset",
       "decibels": "{{gain}} decibels"
+    },
+    "wants": {
+      "remove": "Remove {{title}} from Wants"
     }
   },
   "tabs": {
@@ -1291,7 +1305,11 @@
   "downloads": {
     "title": "Download queue",
     "noDownloaders": "No downloaders connected. Add one in Settings.",
-    "jobFailed": "Couldn't finish downloading “{{title}}”. It stays queued and will retry."
+    "jobFailed": "Couldn't finish downloading “{{title}}”. It stays queued and will retry.",
+    "section": {
+      "offline": "Offline",
+      "downloaders": "Downloaders"
+    }
   },
   "media": {
     "albumNotFound": "Album not found",

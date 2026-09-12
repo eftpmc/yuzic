@@ -1,11 +1,13 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import {
   ChevronRight,
   Disc3,
   Download,
+  Heart,
   Link2,
   ListMusic,
   Music2,
@@ -60,6 +62,7 @@ type Section = {
  */
 const LibraryEntryRows: React.FC = () => {
   const navigation = useNavigation<any>()
+  const router = useRouter()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const summary = useLibrarySummary()
@@ -85,6 +88,18 @@ const LibraryEntryRows: React.FC = () => {
       labelKey: 'home.filters.downloaded',
       icon: <Download size={size} color={color} />,
       onPress: () => openCollection('downloaded'),
+    },
+    {
+      key: 'downloads',
+      labelKey: 'library.downloads.title',
+      icon: <Download size={size} color={color} />,
+      onPress: () => router.push('/downloadsView'),
+    },
+    {
+      key: 'wants',
+      labelKey: 'library.wants.title',
+      icon: <Heart size={size} color={color} />,
+      onPress: () => router.push('/wantsView'),
     },
   ]
   if (api.radio) {
@@ -217,6 +232,8 @@ const COUNT_KEY: Record<LibraryEntryKey, string> = {
   tracks: 'library.count.tracks',
   genres: 'library.count.genres',
   downloaded: 'library.count.items',
+  downloads: 'library.count.items',
+  wants: 'library.count.items',
   radio: 'library.count.stations',
   podcasts: 'library.count.podcasts',
   shares: 'library.count.shares',
