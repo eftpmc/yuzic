@@ -451,6 +451,37 @@ route leaf registered in `settings/_layout.tsx` with a row on the settings root.
   `searchSourcesEnabled` is independent of Home enablement (legacy
   `deezerSearchEnabled` reconciled at read time, no migration).
 
+## 10. Discovery — local-first, provider mixes, and generated playlists
+
+Home discovery is off by default and layered so the local tier always works
+with zero external calls.
+
+- **Local-first mix** (`screens/home/components/LocalMixSection`) seeds from
+  on-device play-stats/genres (a deterministic daily seed via the existing
+  `getDailySeed`/`seededShuffle` — **no new recommendation algorithm**) and
+  expands through the server adapter's `api.similar.getSimilarSongs` (server-
+  native, includes the user's server plugins). It makes **zero external-service
+  calls** and is *not* gated behind the external-discovery toggles — it lives in
+  the local/server tier, presence-checked on play history + server similarity.
+- **ListenBrainz `createdfor` shelves**
+  (`api/listenbrainz/recommendations/getCreatedForPlaylists`,
+  `LBCreatedForSection`) fetch the user's daily-jams / weekly-jams /
+  weekly-exploration mixes (public endpoint) and render **one standalone shelf
+  each** under the compact ListenBrainz `SourceGroup` header — LB built the mix,
+  yuzic fetches and renders it (no mix-generator, no new slot; the raw CF
+  endpoint is deliberately not built). Off by default; unowned tracks get
+  Want/Get for free through the shared `SongRow`.
+- **`playlist.generate`** — the "Make a playlist from this" gesture
+  (`features/audiomuse/generateFromEntity`) derives a seed from a track, album,
+  or artist and calls the existing generator; **AudioMuse builds the playlist on
+  the server** (no yuzic-local playlist store). The gesture is gated on
+  `useCanGeneratePlaylist`/`useSlotFilled('playlist.generate')` and hidden when
+  no provider fills the slot. Track/entity-seeded only (mood-centroid deferred).
+- **Onboarding asks once** (`screens/onboarding/discovery`): a single transparent
+  opt-in for external discovery (Deezer/ListenBrainz, no accounts, exactly what
+  gets sent), guarded by `onboardingDiscoveryPrompted` so it shows once and only
+  inside the onboarding flow — existing users never see it.
+
 ## Where things live
 
 ```
