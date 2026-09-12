@@ -1,10 +1,10 @@
 # Design: the library-intent system
 
-**Status: reconciled decision record (2026-09-12).** This supersedes the earlier
-draft on this branch (commits `027d66e6`, `778eee4a`). It reflects settled
-product decisions from the redesign discussion. It is a design spec, not an
-implementation authorization — provider-surface specifics marked *(pending
-audit)* are being verified against upstream docs/source before they are built.
+**Status: reconciled decision record (updated 2026-09-12).** This supersedes the
+earlier draft on this branch (commits `027d66e6`, `778eee4a`). It reflects settled
+product decisions from the redesign discussion, now grounded in a completed API
+audit (`.hermes/tmp/yuzic-api-gaps-filled.md`). It is a design spec, not an
+implementation authorization.
 
 This document proposes the next evolution of yuzic: a unified entity model, a
 capability-slot integration architecture, a Wants intent system, and
@@ -150,12 +150,20 @@ CapabilitySlot =
   | 'resolution'             // MusicBrainz: id refinement at action time
   | 'similarity.songs'       // server adapter, AudioMuse
   | 'similarity.artists'     // server adapter, Last.fm, ListenBrainz, Deezer
-  | 'discovery.shelf'        // Deezer, ListenBrainz, server (random/now-playing)
-  | 'lyrics'                 // server today; LRCLIB candidate
-  | 'scrobble'               // server adapter, ListenBrainz, Last.fm (direct, §7.3)
+  | 'discovery.shelf'        // Deezer, ListenBrainz createdfor mixes, server (random/now-playing)
+  | 'playlist.generate'      // AudioMuse: seeds → provider builds a server playlist (§11.1)
+  | 'lyrics'                 // server today; LRCLIB at launch (§10)
+  | 'scrobble'               // server adapter, ListenBrainz; Last.fm-direct sequenced (§7.3)
   | 'metadata.enrich'        // artist info / artwork, display-only (§9)
   | 'preview'                // Deezer 30s samples
 ```
+
+> **Deferred sibling — `playlist.mirror`.** A provider that takes a *source
+> playlist* and acquires its missing tracks while mirroring it to the server
+> (SoulSync's `/playlists/{id}/sync` pipeline) fills a distinct `playlist.mirror`
+> capability. Because it acquires missing tracks it is provider-driven playlist
+> *import*, which is out of scope this pass (§14); it is not `playlist.generate`
+> and is deferred with the rest of import.
 
 Consumers ask the slot, not the provider:
 
@@ -341,14 +349,15 @@ External jobs do **not** automatically create Wants, and yuzic exposes only the
 controls (cancel/retry) the reporting provider actually supports, keeping the
 provider and externally-started origin visible.
 
-## 6. Deepening the provider surfaces *(pending audit)*
+## 6. Deepening the provider surfaces
 
 The current integrations are shallow in ways that limit the features above. The
-concrete "what do we hold vs. what do we use" inventory is being verified by a
-dedicated API audit (downloaders + discovery), grounded in upstream docs/source,
-before any of these are built. What follows names candidate depth; specific
-endpoints are not treated as fact until the audit confirms route, method, auth,
-and disclosure.
+concrete "what do we hold vs. what do we use" inventory has been verified by a
+dedicated API audit (downloaders + discovery), grounded in upstream docs/source
+with version/commit anchors — see `.hermes/tmp/yuzic-api-gaps-filled.md` plus the
+two recovered partials. A short per-service "still unknown" list remains
+(request-body schemas, per-route roles) that needs a live instance to close; those
+are flagged, not guessed.
 
 ### Acquisition providers — user control per provider
 
@@ -357,11 +366,19 @@ renders from the schema, so adding an option touches only the module.
 
 - **Lidarr** (currently zero knobs): quality profile, metadata profile, root
   folder, monitor-on-add, search-on-add — the quality profile decides *what the
-  user receives*. Exact route signatures pending audit.
+  user receives* (Lossless vs. lossy). Verified reads: `GET /qualityprofile`,
+  `/metadataprofile`, `/rootfolder` at config time. The quality profile ships with
+  **both** a per-provider default in Settings > Downloaders **and** a per-Get
+  override in the Get-review sheet, first cut: the default is chosen once at setup,
+  the review pre-fills it and lets the user bump one album (e.g. to Lossless)
+  before dispatch, and the override is request-only unless explicitly saved as the
+  new default. Schema-driven via `OptionsDescriptor` so adding a knob touches only
+  the module.
 - **slskd**: existing `SlskdSearchPreferences` (format, min bitrate, free-slot)
-  fold into the schema unchanged; further knobs pending audit.
-- **SoulSync**: currently a bare track request; surface whatever its pipeline
-  accepts. Pending audit.
+  fold into the schema unchanged; the full OpenAPI surface (rel. 0.26.0, 70
+  paths) is audited but only search/transfer/cancel are in Yuzic's role.
+- **SoulSync**: currently a bare track request; `/api/v1` surface audited
+  (track-only, no album route — hence `downloadAlbum` optional).
 - Every provider surfaces `testConnection` health in one place (the Wants/Get
   and Downloads surfaces show a degraded provider before the user wonders why
   nothing moves).
@@ -372,16 +389,26 @@ renders from the schema, so adding an option touches only the module.
   and to read the public similar-artists graph. Holding the token neither proves
   a token is required for public reads nor grants consent to read
   recommendations back — any recommendation/playlist use is a separate,
-  explicit, consented feature. The full token-capability matrix is pending audit.
-- **AudioMuse** — we call ping + similarity only. Deeper playlist/analysis
-  endpoints are pending audit against a live instance and are, in any case,
-  gated by whether we ship a user-visible feature that needs them.
+  explicit, consented feature. **In scope:** the `createdfor` public playlists
+  (daily-jams / weekly-jams / weekly-exploration) as discovery shelves (§11).
+  **Deferred:** the raw CF recommendation endpoint (bare MBIDs), which would
+  need Yuzic-side curation that edges into the deferred mix-generator scope.
+- **AudioMuse** — we call ping + similarity today (autoplay/queue extension,
+  kept). **In scope:** `POST /api/create_playlist` fills the new
+  `playlist.generate` slot (§11.1) — it creates a playlist on the configured
+  media server from track seeds.
 - **Last.fm** — `artist.getSimilar` today. Cheap read-only additions within the
-  bundled-key model may be added. Authenticated Last.fm is **not ruled out** —
-  see §7.3 for direct authenticated scrobbling, which is in scope.
-- **Deezer** — used for shelves/search/previews; deepening (editorial charts,
-  radio, wider `related`) is opportunistic, not a priority.
-- **Lyrics** — server-only today. LRCLIB is a natural `lyrics` slot module
+  bundled-key model are available (`artist.getInfo` backs metadata enrichment,
+  §9). Direct authenticated scrobbling is in the design but **sequenced** behind
+  the token-only routes (§7.3): it needs the signed-session path (`auth.getSession`
+  + `api_sig` from a shipped app secret), the only `account`-tier integration, for
+  a case server-forwarding usually already covers.
+- **Deezer / MusicBrainz** — deepening (Deezer editorial charts/radio/wider
+  `related`; MusicBrainz recording/work/label entities, ISRC/ISWC lookups, Cover
+  Art Archive size variants) is **parked as draw-on-demand**: available when a
+  specific feature needs it (e.g. CAA 1200px for higher-res artwork), not a
+  first-cut workstream and not a UI surface of its own.
+- **Lyrics** — server-only today. LRCLIB is the launch `lyrics` slot module
   (anonymous, no key), off by default like every external source (§10).
 
 ## 7. Auth model
@@ -425,8 +452,15 @@ Scrobbling therefore supports **exactly one route per destination per server**:
 Disabled | Through the server | Direct from Yuzic
 ```
 
-- **Direct authenticated Last.fm scrobbling is in scope** as one of these routes,
-  alongside the existing ListenBrainz-direct and server-forwarded routes.
+- **ListenBrainz-direct is available now** (token-only, no signing) and is the
+  first Direct route to ship.
+- **Direct authenticated Last.fm scrobbling is sequenced behind the token-only
+  routes**, not built in the first cut. It requires the signed-session path
+  (`auth.getSession` + an `api_sig` from a shipped app secret) — the only
+  `account`-tier integration in the design — and most self-hosters already reach
+  Last.fm via server-side forwarding. Last.fm therefore offers Disabled /
+  Through-server now; Direct-from-Yuzic arrives as a follow-up if demand shows up.
+  It stays in the design, deprioritized in sequencing.
 - Settings > Scrobbling selects the route **per destination, per server**, and
   clearly explains the duplicate-scrobble risk when server-forwarding cannot be
   verified.
@@ -448,18 +482,38 @@ Disabled | Through the server | Direct from Yuzic
 ## 9. Metadata enrichment
 
 One Metadata settings page with **distinct artist-information and artwork
-controls**. Enrichment is **display-only**: enriched artist bios, images, and
-artwork are cached in yuzic and shown in the UI. Yuzic **never writes** to server
-tags or files. Disabling enrichment **restores the server's own view**. This is a
-`metadata.enrich` capability, off by default like every external source (P2).
+controls**, each with its **own user-configurable fallback order** — matching the
+per-library ordered metadata-provider and image-fetcher lists self-hosters already
+know from Jellyfin/Emby. Enrichment is **display-only**: enriched artist bios,
+images, and artwork are cached in yuzic and shown in the UI, filling **gaps only**
+with server data staying authoritative. Yuzic **never writes** to server tags or
+files. Disabling enrichment **restores the server's own view**. Externally
+enriched data shows a small unobtrusive source line (full source/cache detail
+under More info); no persistent per-item badges. This is a `metadata.enrich`
+capability, off by default like every external source (P2).
+
+**Launch source depth:** the artwork chain has real members — **Deezer** (artist
+images) + **Cover Art Archive** (album covers via MBID) + server art. The
+artist-information chain launches with effectively one prose-bio source —
+**Last.fm `artist.getInfo`** (MusicBrainz provides structured relations/tags, not
+bios). The model is uniform even though artist-info starts with one real link; the
+UI shows whatever sources fill each control.
 
 ## 10. Lyrics
 
-Lyrics is its own settings area, like Scrobbling. Sources are **explicit opt-in**,
-with a **user-configurable priority/fallback chain** (yuzic tries enabled sources
-in the user's order when a higher one has no result). Once configured, behavior
-is automatic per settings — yuzic does not ask every song. This is
-feature-specific fallback behavior, **not** a global provider-priority system.
+Lyrics is its own settings area, like Scrobbling. It defaults to **server-embedded
+lyrics first**, then enabled external sources in a **user-configurable
+priority/fallback chain** (yuzic tries enabled sources in the user's order when a
+higher one has no result; any source is reorderable or disable-able). Once
+configured, behavior is automatic per settings — yuzic does not ask every song.
+This is feature-specific fallback behavior, **not** a global provider-priority
+system.
+
+**Launch source:** **LRCLIB** fills the first external `lyrics` slot — `none`-tier
+(anonymous, no key, no account). LRCLIB returns both plain and synced lyrics;
+it is treated as **one source that prefers synced when available** and falls back
+to plain internally (not two chain links, no extra knob). Synced (time-coded)
+lyrics are the value-add where the player supports line highlighting.
 
 ## 11. Discovery, privacy-consistent
 
@@ -478,8 +532,37 @@ Off by default, useful anyway (P2):
   whatever the user's server plugins provide). A private mix with zero external
   calls. We improve this using existing capabilities; we do **not** introduce a
   new generic mix-generator algorithm this pass (§14).
+- **ListenBrainz mixes as shelves.** When LB is connected and external discovery
+  is on, its `createdfor` playlists (daily-jams / weekly-jams /
+  weekly-exploration) present as **standalone named shelves in the external
+  tier** — each its own shelf, not a combined "LB mixes" section — using the
+  existing `discovery.shelf` capability (no new slot, no mix-generator: LB built
+  the mix, yuzic fetches and renders it). Per the hybrid-provenance rule the 2–3
+  LB shelves may sit under one compact ListenBrainz header. Their unowned tracks
+  are one tap from Want/Get.
 - Discovery output feeds Wants: every recommended unowned item is one tap from
   `wanted` (save-only) or an explicit Get.
+
+### 11.1 Provider-generated playlists (`playlist.generate`)
+
+A provider that turns **seeds into a finished playlist** fills the
+`playlist.generate` slot: yuzic sends seeds, the provider generates **and writes
+the playlist to the server**, and it then appears in yuzic's library like any
+other server playlist. **No Yuzic-local playlist store is introduced** — the
+provider owns the server write. Per-server scoped like everything else.
+
+- **AudioMuse** fills it via `POST /api/create_playlist`
+  (`create_media_server_playlist`, writes to Jellyfin/Navidrome/Plex/Emby/Lyrion).
+- **First-cut scope: track/entity-seeded only.** A "Make a playlist from this"
+  gesture on a track/album/artist action sheet seeds the provider (AudioMuse's
+  similar-tracks path); the new server playlist appears with brief "created 'X' on
+  your server" feedback. The name is auto-suggested ("Similar to «seed»") and
+  editable before dispatch. There is **no seed-picker UI** — the seed is the
+  invoked entity.
+- **Deferred:** the mood-centroid seed flavor (AudioMuse `mood_centroids`), which
+  adds a mood-picker UI — a fast-follow.
+- The gesture only appears when a `playlist.generate` provider is connected and
+  enabled (off by default; an empty slot makes no call and shows no gesture, P2).
 
 ## 12. Upgrade / migration
 
@@ -497,13 +580,14 @@ Each phase ships alone and is useful without the ones after it.
 | **A. Entity model** | `LibraryState` on one row model; kill parallel external screens; stable local id + carried `ExternalIds`; matching separate from identity | — |
 | **B. Module contract** | Converge sources + downloaders registries on `IntegrationModule`; schema-driven options (Lidarr knobs); secure-storage migration; generated Connections screen with data-flow lines; remove superseded per-service paths | A (soft) |
 | **C. Wants + Get v1** | Want slice (save-only) + Get router + Wants screen and one Downloads screen (Offline/Downloaders sections, all-activity view); ask-by-default confirm; arrival verification; needs-attention linked to job | A, B |
-| **D. Feature surfaces** | Scrobbling (one route per destination per server, incl. direct Last.fm); Lyrics fallback chain + LRCLIB; Metadata enrichment (display-only); Search source selector; Home settings | B |
-| **E. Discovery deepening** | Local-first Home mix from existing capabilities; verified provider-surface additions from the audit; onboarding discovery prompt | B (C for want/Get taps) |
+| **D. Feature surfaces** | Scrobbling (one route per destination per server; LB-direct now, Last.fm-direct sequenced); Lyrics fallback chain + LRCLIB (synced-preferred); Metadata enrichment (display-only, per-control fallback order, Last.fm + Deezer/CAA); Search source selector; Home settings | B |
+| **E. Discovery + generate** | Local-first Home mix; ListenBrainz `createdfor` mixes as external shelves; `playlist.generate` (AudioMuse, track-seeded → server playlist); onboarding discovery prompt | B (C for want/Get taps) |
 
 Open items to spike before/while building:
 
-- SoulSync, AudioMuse, slskd, and Lidarr API audits against upstream docs/source
-  and a live instance (what do their pipelines actually accept?) — **in progress**.
+- API audit against upstream docs/source — **done** (`.hermes/tmp/yuzic-api-gaps-filled.md`
+  + two recovered partials, version/commit-anchored). Remaining per-service unknowns
+  (request-body schemas, per-route roles) need a live instance to close.
 - Navidrome's reporting of server-side scrobble-forwarding config (for §7.3
   auto-detection vs. ask).
 - Whether `MatchKey` needs duration, or artist+title(+album) suffices against a
