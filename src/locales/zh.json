@@ -173,6 +173,27 @@
       "lrclib": "LRCLIB",
       "lrclibSubtext": "免费、匿名的歌词查询。默认关闭；当服务器没有歌词时可开启使用。"
     },
+    "search": {
+      "title": "搜索",
+      "sourcesSection": "搜索来源",
+      "explanation": "搜索页面「其他来源」范围可以查询的来源。与首页相互独立 —— 为某个来源开启首页栏目不会为搜索开启它,反之亦然。",
+      "deezer": "Deezer",
+      "deezerSubtext": "在「其他来源」中搜索时包含 Deezer 的专辑和艺人。",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "在「其他来源」中搜索时包含 MusicBrainz 的专辑和艺人。"
+    },
+    "metadata": {
+      "title": "元数据",
+      "explanation": "仅用于显示。补充服务器没有的艺术家信息和封面 —— 绝不会更改服务器上的任何内容,也绝不会写入标签或文件。关闭某个来源即可恢复到服务器原本显示的内容。",
+      "artistInfoSection": "艺术家信息",
+      "artworkSection": "封面",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "艺术家简介和标签。默认关闭;当服务器没有简介时可开启使用。",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "艺术家图片。默认关闭;当服务器没有艺术家照片时可开启使用。",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "通过 MusicBrainz ID 获取专辑封面。默认关闭;当服务器没有封面时可开启使用。"
+    },
     "library": {
       "title": "媒体库",
       "librarySelect": {
@@ -756,6 +777,16 @@
     "clearRecent": "清除",
     "removeRecentSearch": "从最近搜索中删除“{{query}}”",
     "recentlyOpened": "最近打开",
+    "scope": {
+      "library": "音乐库",
+      "other": "其他来源"
+    },
+    "filters": {
+      "title": "筛选",
+      "sources": "来源",
+      "entityTypes": "包含",
+      "noSourcesEnabled": "尚未启用任何搜索来源。请在 设置 › 搜索 中启用一个。"
+    },
     "entityTypes": {
       "song": "歌曲",
       "album": "专辑",
@@ -784,7 +815,8 @@
       "topSongs": "热门歌曲"
     },
     "showMore": "还有 {{count}} 个",
-    "showUnowned": "你未拥有的 {{count}} 个"
+    "showUnowned": "你未拥有的 {{count}} 个",
+    "enrichedBioSource": "来自 {{source}}"
   },
   "explore": {
     "sections": {

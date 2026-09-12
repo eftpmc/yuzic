@@ -173,6 +173,27 @@
       "lrclib": "LRCLIB",
       "lrclibSubtext": "Recherche de paroles gratuite et anonyme. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'en a pas."
     },
+    "search": {
+      "title": "Recherche",
+      "sourcesSection": "Sources de recherche",
+      "explanation": "Quelles sources la portée « Autres sources » de l'écran Recherche peut interroger. Indépendant de l'écran d'accueil — activer les étagères d'une source sur l'accueil ne l'active pas pour la recherche, et inversement.",
+      "deezer": "Deezer",
+      "deezerSubtext": "Inclure les albums et artistes Deezer lors d'une recherche dans Autres sources.",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "Inclure les albums et artistes MusicBrainz lors d'une recherche dans Autres sources."
+    },
+    "metadata": {
+      "title": "Métadonnées",
+      "explanation": "Affichage uniquement. Complète les informations sur l'artiste et les pochettes que votre serveur n'a pas — cela ne modifie jamais rien sur votre serveur et n'écrit jamais de tags ni de fichiers. Désactivez une source pour revenir exactement à ce que montre votre serveur.",
+      "artistInfoSection": "Informations sur l'artiste",
+      "artworkSection": "Pochettes",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "Biographie et tags de l'artiste. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de biographie.",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "Images d'artiste. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de photo d'artiste.",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "Pochettes d'album via l'identifiant MusicBrainz. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de pochette."
+    },
     "library": {
       "title": "Bibliothèque",
       "librarySelect": {
@@ -759,6 +780,16 @@
     "clearRecent": "Effacer",
     "removeRecentSearch": "Supprimer « {{query}} » des recherches récentes",
     "recentlyOpened": "Ouverts récemment",
+    "scope": {
+      "library": "Votre bibliothèque",
+      "other": "Autres sources"
+    },
+    "filters": {
+      "title": "Filtres",
+      "sources": "Sources",
+      "entityTypes": "Inclure",
+      "noSourcesEnabled": "Aucune source de recherche n'est activée. Activez-en une dans Réglages › Recherche."
+    },
     "entityTypes": {
       "song": "Titre",
       "album": "Album",
@@ -787,7 +818,8 @@
       "topSongs": "Titres populaires"
     },
     "showMore": "{{count}} de plus",
-    "showUnowned": "{{count}} que vous ne possédez pas"
+    "showUnowned": "{{count}} que vous ne possédez pas",
+    "enrichedBioSource": "via {{source}}"
   },
   "explore": {
     "sections": {

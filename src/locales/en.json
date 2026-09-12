@@ -173,6 +173,27 @@
       "lrclib": "LRCLIB",
       "lrclibSubtext": "Free, anonymous lyrics lookup. Off by default; enable to use it when your server has none."
     },
+    "search": {
+      "title": "Search",
+      "sourcesSection": "Search sources",
+      "explanation": "Which sources the \"Other sources\" scope on the Search screen may query. Independent of Home — enabling a source's Home shelves does not enable it for search, and vice versa.",
+      "deezer": "Deezer",
+      "deezerSubtext": "Include Deezer albums and artists when searching Other sources.",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "Include MusicBrainz albums and artists when searching Other sources."
+    },
+    "metadata": {
+      "title": "Metadata",
+      "explanation": "Display-only. Fills in artist info and artwork your server doesn't have — it never changes anything on your server, and never writes tags or files. Turn a source off to go back to exactly what your server shows.",
+      "artistInfoSection": "Artist information",
+      "artworkSection": "Artwork",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "Artist biography and tags. Off by default; enable to use it when your server has no biography.",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "Artist images. Off by default; enable to use it when your server has no artist photo.",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "Album covers via MusicBrainz ID. Off by default; enable to use it when your server has no cover."
+    },
     "library": {
       "title": "Library",
       "librarySelect": {
@@ -759,6 +780,16 @@
     "clearRecent": "Clear",
     "removeRecentSearch": "Remove \"{{query}}\" from recent searches",
     "recentlyOpened": "Recently opened",
+    "scope": {
+      "library": "Your Library",
+      "other": "Other sources"
+    },
+    "filters": {
+      "title": "Filters",
+      "sources": "Sources",
+      "entityTypes": "Include",
+      "noSourcesEnabled": "No search sources are enabled. Turn one on in Settings › Search."
+    },
     "entityTypes": {
       "song": "Song",
       "album": "Album",
@@ -777,7 +808,8 @@
       "topSongs": "Top songs"
     },
     "showMore": "{{count}} more",
-    "showUnowned": "{{count}} you don't own"
+    "showUnowned": "{{count}} you don't own",
+    "enrichedBioSource": "via {{source}}"
   },
   "album": {
     "disc": "Disc {{number}}",

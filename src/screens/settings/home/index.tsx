@@ -8,7 +8,7 @@ import {
     Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Server, Library, Volume2, Palette, Puzzle, CloudDownload, Github, ShieldCheck, ScrollText, House as HomeIcon, Mic2, Disc3 } from 'lucide-react-native';
+import { Server, Library, Volume2, Palette, Puzzle, CloudDownload, Github, ShieldCheck, ScrollText, House as HomeIcon, Mic2, Disc3, Sparkles, Search as SearchIcon } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -153,6 +153,19 @@ export default function Settings() {
                         label={t('settings.lyrics.title')}
                         leftIcon={<Mic2 size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/lyricsView')}
+                    />
+                    <SettingsDivider />
+                    <SettingsRow
+                        label={t('settings.metadata.title')}
+                        leftIcon={<Sparkles size={iconSize.secondary} color={colors.secondary} />}
+                        onPress={() => router.push('/settings/metadataView')}
+                    />
+                    <SettingsDivider />
+                    <SettingsRow
+                        testID="settings-row-search"
+                        label={t('settings.search.title')}
+                        leftIcon={<SearchIcon size={iconSize.secondary} color={colors.secondary} />}
+                        onPress={() => router.push('/settings/searchView')}
                     />
                     <SettingsDivider />
                     <SettingsRow

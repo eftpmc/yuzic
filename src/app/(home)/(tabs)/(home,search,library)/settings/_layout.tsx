@@ -21,6 +21,8 @@ export default function SettingsLayout() {
             <Stack.Screen name='musicbrainzView' options={{ headerShown: false, title: "MusicBrainz" }} />
             <Stack.Screen name='audiomuseView' options={{ headerShown: false, title: "AudioMuse-AI" }} />
             <Stack.Screen name='lyricsView' options={{ headerShown: false, title: "Lyrics" }} />
+            <Stack.Screen name='searchView' options={{ headerShown: false, title: "Search" }} />
+            <Stack.Screen name='metadataView' options={{ headerShown: false, title: "Metadata" }} />
         </Stack>
     );
 }

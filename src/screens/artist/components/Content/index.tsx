@@ -25,6 +25,7 @@ import MediaTile from '@/screens/home/components/MediaTile'
 import MostPlayedSection from './MostPlayedSection'
 import PopularOnDeezerSection from './PopularOnDeezerSection'
 import BioSection from './BioSection'
+import { useArtistInfoEnrichment } from '@/features/metadata/useArtistInfoEnrichment'
 import { findArtistsWithSharedGenres, type LocalArtistSummary } from './localSimilarArtists'
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
@@ -493,6 +494,11 @@ function PopularOnDeezerSectionResolver({ localArtist, externalArtist }: {
 // above runs, so react-query dedupes it), external mode already has it on
 // the artist. Gated by the Deezer Top Tracks setting in local mode, matching
 // the pre-unification behavior where the bio lived inside TopTracksSection.
+//
+// When neither source has a bio, `useArtistInfoEnrichment` (metadata.enrich,
+// GAPS ONLY — see features/metadata) may fill the gap; it stays a no-op
+// whenever a real bio already exists, so this never overrides server/Deezer
+// data, only supplements its absence.
 function BioSectionResolver({ localArtist, externalArtist }: {
   localArtist: Artist | null
   externalArtist: ExternalArtist | null
@@ -504,7 +510,22 @@ function BioSectionResolver({ localArtist, externalArtist }: {
     enabled: !!localArtist && deezerEnabled,
   })
 
-  return <BioSection biography={localArtist ? localBiography : externalArtist?.biography} />
+  const ownBio = localArtist ? localBiography : externalArtist?.biography
+  const artistName = localArtist?.name ?? externalArtist?.name ?? ''
+  const artistMbid = localArtist?.mbid ?? externalArtist?.externalIds?.mbid ?? null
+
+  const { bio: enrichedBio, sourceLabel } = useArtistInfoEnrichment({
+    name: artistName,
+    mbid: artistMbid,
+    hasOwnBio: !!ownBio,
+  })
+
+  return (
+    <BioSection
+      biography={ownBio ?? enrichedBio ?? undefined}
+      enrichedSourceLabel={ownBio ? null : sourceLabel}
+    />
+  )
 }
 
 const styles = StyleSheet.create({

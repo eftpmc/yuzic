@@ -7,12 +7,20 @@ import { spacing, typography } from '@/constants/design'
 
 type Props = {
   biography?: string
+  /**
+   * Set only when `biography` came from `metadata.enrich` rather than the
+   * server/Deezer — draws a small unobtrusive source line under the bio
+   * ("via Last.fm"), never a persistent per-item badge. Display-only: this
+   * has no bearing on whether the bio is shown, only on how it's credited.
+   */
+  enrichedSourceLabel?: string | null
 }
 
 // The biography always comes from an external source (Deezer in local mode,
 // the resolved external artist otherwise) — self-hosted servers don't carry
-// artist biography text.
-export default function BioSection({ biography }: Props) {
+// artist biography text — or, when metadata enrichment is on and neither of
+// those has one, from a metadata.enrich source (see `features/metadata`).
+export default function BioSection({ biography, enrichedSourceLabel }: Props) {
   const { colors } = useTheme()
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
@@ -39,6 +47,11 @@ export default function BioSection({ biography }: Props) {
         <Text style={[styles.bioToggle, { color: colors.subtext }]}>
           {expanded ? t('common.less') : t('common.more')}
         </Text>
+        {enrichedSourceLabel && (
+          <Text style={[styles.sourceLine, { color: colors.subtext }]}>
+            {t('artist.enrichedBioSource', { source: enrichedSourceLabel })}
+          </Text>
+        )}
       </Touchable>
     </View>
   )
@@ -64,5 +77,9 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '500',
     marginTop: spacing.xs,
+  },
+  sourceLine: {
+    ...typography.micro,
+    marginTop: spacing.xxs,
   },
 })

@@ -45,4 +45,5 @@ export enum QueryKeys {
 	ServerSimilarAlbums = 'server-similar-albums',
 	LocalArtistTopTracks = 'local-artist-top-tracks',
 	LocalArtistExternalDiscography = 'local-artist-external-discography',
+	MetadataArtistInfo = 'metadata-artist-info',
 }

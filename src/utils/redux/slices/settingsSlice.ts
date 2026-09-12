@@ -154,6 +154,17 @@ export interface SettingsState {
   deezerExternalEnabled: boolean;
   musicbrainzExternalEnabled: boolean;
   /**
+   * Which sources the user has opted into for the Search screen's "Other
+   * sources" scope — independent of Home/discovery enablement and of the
+   * per-source Settings pages above. Keyed by source id (`deezer`,
+   * `musicbrainz`). Absent keys read as off; `deezerSearchEnabled` (the
+   * older, search-specific Deezer flag) is reconciled at *read* time in
+   * `selectSearchSourceEnabled` rather than migrated here, so an existing
+   * user who already turned Deezer search on keeps seeing it on with no
+   * migration code and no double state to keep in sync.
+   */
+  searchSourcesEnabled: Record<string, boolean>;
+  /**
    * ListenBrainz's public similar-artist graph (Home shelf, artist page).
    * Needs no account, but it is still a third-party service being told which
    * artists this user listens to, so it waits to be asked for like every
@@ -188,6 +199,20 @@ export interface SettingsState {
    */
   lyricsExternalSourcesOrder: string[];
   lyricsExternalSourcesEnabled: Record<string, boolean>;
+
+  /**
+   * `metadata.enrich` — display-only artist-info / artwork gap-filling
+   * (see `features/metadata`). Two entirely independent fallback chains,
+   * mirroring the lyrics pair above: a user can enable artist-info without
+   * artwork or vice versa. Both default empty/off, so a fresh install shows
+   * exactly the server's own data until the user opts in, and disabling
+   * either chain (clearing its enabled map) restores that server-only view
+   * with no code path change — the resolvers simply have nothing to try.
+   */
+  metadataArtistInfoOrder: string[];
+  metadataArtistInfoEnabled: Record<string, boolean>;
+  metadataArtworkOrder: string[];
+  metadataArtworkEnabled: Record<string, boolean>;
 
   /* Player controls */
   showSleepTimer: boolean;
@@ -263,6 +288,7 @@ const initialState: SettingsState = {
   deezerSearchEnabled: false,
   deezerExternalEnabled: false,
   musicbrainzExternalEnabled: false,
+  searchSourcesEnabled: {},
   listenbrainzDiscoveryEnabled: false,
   lastfmEnabled: false,
 
@@ -277,6 +303,11 @@ const initialState: SettingsState = {
 
   lyricsExternalSourcesOrder: [],
   lyricsExternalSourcesEnabled: {},
+
+  metadataArtistInfoOrder: [],
+  metadataArtistInfoEnabled: {},
+  metadataArtworkOrder: [],
+  metadataArtworkEnabled: {},
 
   showSleepTimer: true,
   showPlaybackSpeed: false,
@@ -415,6 +446,14 @@ const settingsSlice = createSlice({
     setMusicbrainzExternalEnabled(state, action: PayloadAction<boolean>) {
       state.musicbrainzExternalEnabled = action.payload;
     },
+    /** Toggles one source's inclusion in Search's "Other sources" scope. */
+    setSearchSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      if (!state.searchSourcesEnabled) state.searchSourcesEnabled = {};
+      state.searchSourcesEnabled[action.payload.sourceId] = action.payload.enabled;
+    },
     setListenbrainzDiscoveryEnabled(state, action: PayloadAction<boolean>) {
       state.listenbrainzDiscoveryEnabled = action.payload;
     },
@@ -453,6 +492,38 @@ const settingsSlice = createSlice({
     /** Replaces the whole try-order (drag-to-reorder writes the full array). */
     setLyricsExternalSourcesOrder(state, action: PayloadAction<string[]>) {
       state.lyricsExternalSourcesOrder = action.payload;
+    },
+
+    setMetadataArtistInfoSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      const { sourceId, enabled } = action.payload;
+      if (!state.metadataArtistInfoEnabled) state.metadataArtistInfoEnabled = {};
+      state.metadataArtistInfoEnabled[sourceId] = enabled;
+      if (!state.metadataArtistInfoOrder) state.metadataArtistInfoOrder = [];
+      if (enabled && !state.metadataArtistInfoOrder.includes(sourceId)) {
+        state.metadataArtistInfoOrder.push(sourceId);
+      }
+    },
+    setMetadataArtistInfoOrder(state, action: PayloadAction<string[]>) {
+      state.metadataArtistInfoOrder = action.payload;
+    },
+
+    setMetadataArtworkSourceEnabled(
+      state,
+      action: PayloadAction<{ sourceId: string; enabled: boolean }>
+    ) {
+      const { sourceId, enabled } = action.payload;
+      if (!state.metadataArtworkEnabled) state.metadataArtworkEnabled = {};
+      state.metadataArtworkEnabled[sourceId] = enabled;
+      if (!state.metadataArtworkOrder) state.metadataArtworkOrder = [];
+      if (enabled && !state.metadataArtworkOrder.includes(sourceId)) {
+        state.metadataArtworkOrder.push(sourceId);
+      }
+    },
+    setMetadataArtworkOrder(state, action: PayloadAction<string[]>) {
+      state.metadataArtworkOrder = action.payload;
     },
 
     setShowSleepTimer(state, action: PayloadAction<boolean>) {
@@ -538,6 +609,7 @@ export const {
   setDeezerSearchEnabled,
   setDeezerExternalEnabled,
   setMusicbrainzExternalEnabled,
+  setSearchSourceEnabled,
   setListenbrainzDiscoveryEnabled,
   setLastfmEnabled,
   setQueueSyncEnabled,
@@ -546,6 +618,10 @@ export const {
   setHomeServerSectionsEnabled,
   setLyricsExternalSourceEnabled,
   setLyricsExternalSourcesOrder,
+  setMetadataArtistInfoSourceEnabled,
+  setMetadataArtistInfoOrder,
+  setMetadataArtworkSourceEnabled,
+  setMetadataArtworkOrder,
   setShowSleepTimer,
   setShowJumpButtons,
   setShowVolumeSlider,

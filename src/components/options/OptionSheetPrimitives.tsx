@@ -55,6 +55,7 @@ type RowProps = {
   loading?: boolean;
   labelColor?: string;
   trailing?: React.ReactNode;
+  testID?: string;
 };
 
 export function OptionSheetRow({
@@ -68,12 +69,14 @@ export function OptionSheetRow({
   loading,
   labelColor,
   trailing,
+  testID,
 }: RowProps) {
   const { colors } = useTheme();
   const leading = loading ? <SpinningLoaderCircle size={iconSize.row} color={colors.subtext} /> : icon;
 
   return (
     <Touchable
+      testID={testID}
       style={[styles.option, dimRow && styles.optionDimmed]}
       onPress={onPress}
       disabled={disabled || !onPress}

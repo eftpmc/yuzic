@@ -173,6 +173,27 @@
       "lrclib": "LRCLIB",
       "lrclibSubtext": "無料・匿名の歌詞検索。デフォルトではオフ。サーバーに歌詞がない場合に使うには有効にしてください。"
     },
+    "search": {
+      "title": "検索",
+      "sourcesSection": "検索ソース",
+      "explanation": "検索画面の「その他のソース」スコープが問い合わせるソース。ホームとは独立しています — ホームの棚を有効にしても検索が有効になるわけではなく、その逆も同様です。",
+      "deezer": "Deezer",
+      "deezerSubtext": "「その他のソース」での検索に Deezer のアルバムとアーティストを含めます。",
+      "musicbrainz": "MusicBrainz",
+      "musicbrainzSubtext": "「その他のソース」での検索に MusicBrainz のアルバムとアーティストを含めます。"
+    },
+    "metadata": {
+      "title": "メタデータ",
+      "explanation": "表示のみです。サーバーにないアーティスト情報やアートワークを補完します — サーバー上の何かを変更したり、タグやファイルを書き込んだりすることは一切ありません。ソースをオフにすると、サーバーが表示する内容そのものに戻ります。",
+      "artistInfoSection": "アーティスト情報",
+      "artworkSection": "アートワーク",
+      "lastfm": "Last.fm",
+      "lastfmSubtext": "アーティストの経歴とタグ。デフォルトではオフ。サーバーに経歴がない場合に使うには有効にしてください。",
+      "deezerArtwork": "Deezer",
+      "deezerArtworkSubtext": "アーティスト画像。デフォルトではオフ。サーバーにアーティスト写真がない場合に使うには有効にしてください。",
+      "coverArtArchive": "Cover Art Archive",
+      "coverArtArchiveSubtext": "MusicBrainz IDによるアルバムカバー。デフォルトではオフ。サーバーにカバーがない場合に使うには有効にしてください。"
+    },
     "library": {
       "title": "ライブラリ",
       "librarySelect": {
@@ -756,6 +777,16 @@
     "clearRecent": "クリア",
     "removeRecentSearch": "「{{query}}」を最近の検索から削除",
     "recentlyOpened": "最近開いた項目",
+    "scope": {
+      "library": "ライブラリ",
+      "other": "その他のソース"
+    },
+    "filters": {
+      "title": "フィルター",
+      "sources": "ソース",
+      "entityTypes": "対象",
+      "noSourcesEnabled": "検索ソースが有効になっていません。設定 › 検索 で有効にしてください。"
+    },
     "entityTypes": {
       "song": "曲",
       "album": "アルバム",
@@ -784,7 +815,8 @@
       "topSongs": "人気の曲"
     },
     "showMore": "あと{{count}}件",
-    "showUnowned": "未所持の{{count}}件"
+    "showUnowned": "未所持の{{count}}件",
+    "enrichedBioSource": "{{source}}より"
   },
   "explore": {
     "sections": {

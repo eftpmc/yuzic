@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -7,11 +7,13 @@ import {
   ScrollView,
   Text,
 } from 'react-native';
-import { CloudOff, Ellipsis, Search as SearchIcon, X } from 'lucide-react-native';
+import { CloudOff, Ellipsis, SlidersHorizontal, Search as SearchIcon, X } from 'lucide-react-native';
 import { useFocusEffect, useNavigation, useScrollToTop } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 
-import { SearchResult, useSearch } from '@/contexts/SearchContext';
+import { SearchResult, useSearch, ALL_SEARCH_ENTITY_TYPES, type SearchEntityType } from '@/contexts/SearchContext';
+import type { SearchResultScope } from '@/contexts/searchLegs';
 import type { ExternalAlbumBase } from '@/types';
 import AlbumRow from '@/components/rows/AlbumRow';
 import ArtistRow from '@/components/rows/ArtistRow';
@@ -28,7 +30,6 @@ import { toast } from '@backpackapp-io/react-native-toast';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
-import { useDeezerSearchEnabled } from '@/features/home/hooks/useDeezerEnabled';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectShowSourceHeaders } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer, selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
@@ -44,8 +45,11 @@ import {
   type SearchEntityEntry,
 } from '@/utils/redux/slices/searchHistorySlice';
 import RecentSearches from './components/RecentSearches';
+import SearchScopeControl from './components/SearchScopeControl';
+import SearchFiltersSheet from './components/SearchFiltersSheet';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
+import { useEnabledSearchSourceIds } from '@/features/sources/useSearchSourcesEnabled';
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
@@ -56,6 +60,7 @@ import { useScrollClearance } from '@/hooks/useScrollClearance';
 const Search = () => {
   const searchInputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const filtersSheetRef = useRef<BottomSheetModal>(null);
   useScrollToTop(scrollRef);
   const { openSongOptions } = useSongActionSheets();
   const navigation = useNavigation<any>();
@@ -67,7 +72,9 @@ const Search = () => {
   const dispatch = useDispatch();
   const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
-  const deezerSearchEnabled = useDeezerSearchEnabled();
+  // Sources the user has turned on FOR SEARCH — independent of Home/discovery
+  // enablement. Nothing here is ever implied by a Home toggle.
+  const enabledSearchSourceIds = useEnabledSearchSourceIds();
   const showSourceHeaders = useSelector(selectShowSourceHeaders);
   const username = useSelector(selectActiveServer)?.username;
   const activeServerId = useSelector(selectActiveServerId);
@@ -77,6 +84,11 @@ const Search = () => {
 
   const [query, setQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  // 'library' is the default and the only scope that ever runs without an
+  // explicit switch — "Other sources" is the deliberate external action.
+  const [resultScope, setResultScope] = useState<SearchResultScope>('library');
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>(enabledSearchSourceIds);
+  const [selectedEntityTypes, setSelectedEntityTypes] = useState<SearchEntityType[]>(ALL_SEARCH_ENTITY_TYPES);
   const { searchResults, handleSearchWithFilters, clearSearch, isLoading, hasError, degraded } = useSearch();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -84,6 +96,16 @@ const Search = () => {
   // keystroke but still needs to read the current value.
   const queryRef = useRef(query);
   queryRef.current = query;
+
+  // Mirrors scope/filter selections for the same reason `queryRef` exists:
+  // `runSearch` is stable across re-renders it doesn't need to react to, but
+  // still has to read the current selection when the debounce/submit fires.
+  const scopeRef = useRef(resultScope);
+  scopeRef.current = resultScope;
+  const selectedSourceIdsRef = useRef(selectedSourceIds);
+  selectedSourceIdsRef.current = selectedSourceIds;
+  const selectedEntityTypesRef = useRef(selectedEntityTypes);
+  selectedEntityTypesRef.current = selectedEntityTypes;
 
   /**
    * Open the keyboard when the tab is opened with nothing typed.
@@ -110,7 +132,6 @@ const Search = () => {
       return () => cancelAnimationFrame(frame);
       // Intentionally not reacting to `query`: this fires on focus, and
       // re-running it as the user types would fight the keyboard.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
@@ -120,11 +141,38 @@ const Search = () => {
     };
   }, []);
 
-  const runSearch = (text: string) => {
+  // A source that stops being enabled for search (disabled in Settings, or
+  // the device going offline) drops out of the current selection too, so a
+  // stale id never reaches `handleSearchWithFilters`. A newly-enabled source
+  // is not auto-selected, so a user who narrowed the Filters sheet on purpose
+  // doesn't have that choice silently widened out from under them.
+  useEffect(() => {
+    setSelectedSourceIds(prev => {
+      const next = prev.filter(id => enabledSearchSourceIds.includes(id as never));
+      return next.length === prev.length ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabledSearchSourceIds.join(',')]);
+
+  const runSearch = useCallback((text: string) => {
     clearSearch();
     setHasSearched(true);
-    void handleSearchWithFilters(text, { local: true, deezer: deezerSearchEnabled });
-  };
+    void handleSearchWithFilters(text, {
+      resultScope: scopeRef.current,
+      sourceIds: selectedSourceIdsRef.current,
+      entityTypes: selectedEntityTypesRef.current,
+    });
+  }, [clearSearch, handleSearchWithFilters]);
+
+  // Switching scope (or the filters underneath "Other sources") re-runs the
+  // current query immediately rather than waiting for the next keystroke —
+  // otherwise flipping to "Other sources" would show stale library results
+  // (or nothing) until the user typed again.
+  useEffect(() => {
+    if (query.trim() === '') return;
+    runSearch(query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resultScope, selectedSourceIds.join(','), selectedEntityTypes.join(',')]);
 
   // Only called from deliberate actions (submitting, tapping a result, replaying a
   // recent search) — never from the as-you-type debounce, or every paused keystroke
@@ -267,11 +315,22 @@ const Search = () => {
     }
   };
 
-  const localResults = useMemo(() => searchResults.filter(r => r.source === 'local'), [searchResults]);
+  // The library scope only ever contains local results, and "Other sources"
+  // only ever contains external ones — `resultScope` already kept the fetch
+  // itself from mixing the two (see `planSearchLegs`), and this keeps the
+  // render from doing it either, belt and suspenders against a stray result
+  // slipping in from a stale request.
+  const libraryResults = useMemo(
+    () => (resultScope === 'library' ? searchResults.filter(r => r.source === 'local') : []),
+    [searchResults, resultScope]
+  );
 
-  // Group external results by their source so each gets its own labelled section
+  // Group external results by their source so each gets its own labelled,
+  // provenance-tagged section — never merged into one undifferentiated list,
+  // and never merged with the library results above.
   const externalResultsBySource = useMemo(() => {
     const groups = new Map<string, typeof searchResults>();
+    if (resultScope !== 'other') return groups;
     for (const r of searchResults) {
       if (r.source !== 'external' || !r.externalSource) continue;
       const existing = groups.get(r.externalSource);
@@ -279,13 +338,25 @@ const Search = () => {
       else groups.set(r.externalSource, [r]);
     }
     return groups;
-  }, [searchResults]);
+  }, [searchResults, resultScope]);
 
   const coversToPrefetch = useMemo(
     () => searchResults.slice(0, 18).map(r => r.cover),
     [searchResults]
   );
   usePrefetchCovers(coversToPrefetch, 'thumb');
+
+  const toggleFilterSource = useCallback((sourceId: string) => {
+    setSelectedSourceIds(prev =>
+      prev.includes(sourceId) ? prev.filter(id => id !== sourceId) : [...prev, sourceId]
+    );
+  }, []);
+
+  const toggleFilterEntityType = useCallback((entityType: SearchEntityType) => {
+    setSelectedEntityTypes(prev =>
+      prev.includes(entityType) ? prev.filter(type => type !== entityType) : [...prev, entityType]
+    );
+  }, []);
 
   const renderResult = (result: SearchResult) => {
     if (result.type === 'song') {
@@ -381,6 +452,10 @@ const Search = () => {
     return null;
   };
 
+  const isOtherScope = resultScope === 'other';
+  const noResultsForScope = query.trim() !== '' && hasSearched && !isLoading
+    && (isOtherScope ? externalResultsBySource.size === 0 : libraryResults.length === 0);
+
   return (
     <SafeAreaView testID="search-screen" edges={['top']} style={[styles.container, { backgroundColor: colors.background }]}>
       <TabHeader
@@ -426,6 +501,23 @@ const Search = () => {
         </View>
       </View>
 
+      <View style={styles.scopeRow}>
+        <View style={styles.scopeControlWrap}>
+          <SearchScopeControl value={resultScope} onChange={setResultScope} />
+        </View>
+        {isOtherScope && (
+          <Touchable
+            testID="search-filters-button"
+            accessibilityRole="button"
+            accessibilityLabel={t('search.filters.title')}
+            style={[styles.filtersButton, { backgroundColor: colors.muted, borderRadius: rad.md }]}
+            onPress={() => filtersSheetRef.current?.present()}
+          >
+            <SlidersHorizontal size={iconSize.row} color={colors.secondary} />
+          </Touchable>
+        )}
+      </View>
+
       {hasSearched && !isLoading && (hasError || degraded) && (
         <StatusBanner
           icon={<CloudOff size={iconSize.badge} color={colors.subtext} />}
@@ -463,13 +555,13 @@ const Search = () => {
             ? [...Array(8)].map((_, i) => <SkeletonListRow key={i} />)
             : (
               <>
-                {localResults.map(result => (
+                {!isOtherScope && libraryResults.map(result => (
                   <View key={`local:${result.type}:${result.id}`} style={styles.resultBlock}>
                     {renderResult(result)}
                   </View>
                 ))}
 
-                {Array.from(externalResultsBySource.entries()).map(([sourceId, results]) => {
+                {isOtherScope && Array.from(externalResultsBySource.entries()).map(([sourceId, results]) => {
                   const meta = getSourceMeta(sourceId);
                   const label = meta?.label ?? sourceId;
                   const color = meta?.color ?? colors.subtext;
@@ -496,12 +588,21 @@ const Search = () => {
             )
         }
 
-        {query.trim() !== '' && hasSearched && !isLoading && searchResults.length === 0 && (
+        {noResultsForScope && (
           <Text testID="search-no-results" style={[styles.noResults, { color: colors.subtext }]}>
             {t('search.noResults')}
           </Text>
         )}
       </ScrollView>
+
+      <SearchFiltersSheet
+        ref={filtersSheetRef}
+        availableSourceIds={enabledSearchSourceIds}
+        selectedSourceIds={selectedSourceIds}
+        onToggleSource={toggleFilterSource}
+        selectedEntityTypes={selectedEntityTypes}
+        onToggleEntityType={toggleFilterEntityType}
+      />
     </SafeAreaView>
   );
 };
@@ -536,6 +637,22 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scopeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  scopeControlWrap: {
+    flex: 1,
+  },
+  filtersButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errorBanner: {
     marginHorizontal: spacing.lg,
