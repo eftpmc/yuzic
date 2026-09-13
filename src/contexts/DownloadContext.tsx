@@ -66,6 +66,7 @@ import { mediaHeadersForSong } from '@/features/player/mediaHeaders';
 import { selectDownloadOnWifiOnly, selectDownloadQuality } from '@/utils/redux/selectors/settingsSelectors';
 import { useNetworkType } from '@/hooks/useNetworkType';
 import { streamSourceId } from '@/utils/playback/streamId';
+import { downloadProgressFraction, nextDownloadingIds, collectionDownloadState } from './downloadPolicies';
 
 export type DownloadedTrack = DownloadedTrackEntry & {
   localPath: string;
@@ -306,7 +307,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   // state updates per second so a 3-track chunk doesn't re-render the tree
   // on every network buffer.
   const reportDownloadProgress = useCallback((trackId: string, written: number, expected: number) => {
-    const fraction = expected > 0 ? Math.min(written / expected, 1) : -1;
+    const fraction = downloadProgressFraction(written, expected);
     progressRef.current = { ...progressRef.current, [trackId]: fraction };
     if (progressFlushTimerRef.current) return;
     progressFlushTimerRef.current = setTimeout(() => {
@@ -400,12 +401,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 
   const setTrackDownloading = useCallback((trackId: string, downloading: boolean) => {
-    setDownloadingIds(current => {
-      const next = new Set(current);
-      if (downloading) next.add(trackId);
-      else next.delete(trackId);
-      return next;
-    });
+    setDownloadingIds(current => nextDownloadingIds(current, trackId, downloading));
   }, []);
 
   const resolveTrack = useCallback(async (track: Song): Promise<Song | null> => {
@@ -848,13 +844,15 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [processDownloadQueue]);
 
   const getCollectionDownloadState = useCallback((trackIds: string[]) => {
-    if (!trackIds.length) return { isDownloaded: false, isDownloading: false };
-    const queuedTrackIds = new Set(state.jobs.flatMap(job => job.tracks.map(track => track.id)));
-    return {
-      isDownloaded: trackIds.every(isTrackDownloaded),
-      isDownloading: trackIds.some(trackId => isTrackDownloading(trackId) || queuedTrackIds.has(trackId)),
-    };
-  }, [isTrackDownloaded, isTrackDownloading, state.jobs]);
+    const downloadedIds = new Set(state.tracks.map(track => track.trackId));
+    const queuedIds = new Set(state.jobs.flatMap(job => job.tracks.map(track => track.id)));
+    return collectionDownloadState(
+      trackIds,
+      downloadedIds,
+      downloadingIds,
+      queuedIds,
+    );
+  }, [downloadingIds, isTrackDownloaded, isTrackDownloading, state.jobs, state.tracks]);
 
   useEffect(() => {
     if (!jobRunnerRef.current.isRunning()) {
