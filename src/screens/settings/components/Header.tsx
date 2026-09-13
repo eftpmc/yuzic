@@ -29,8 +29,16 @@ const Header: React.FC<HeaderProps> = ({
     const handleBack = () => {
         if (onBackPress) {
             onBackPress();
-        } else {
+            return;
+        }
+        // Settings is a modal on the root stack, so back() dismisses it and
+        // returns to whichever tab opened it. A cold deep link straight to a
+        // settings route has nothing behind it to pop, which would strand the
+        // user in the modal with a dead back arrow — fall back to the tabs.
+        if (router.canGoBack()) {
             router.back();
+        } else {
+            router.replace('/(home)/(tabs)/(home)');
         }
     };
 

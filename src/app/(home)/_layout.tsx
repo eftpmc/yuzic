@@ -17,12 +17,22 @@ import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
 
 /**
  * The outer authenticated layout: providers, watchers, and the app-wide sync
- * effects. Every route the app can reach after login lives inside `(tabs)`,
- * which owns its own Tabs + per-tab Stack. Detail routes (album, artist,
- * playlist, settings, radio, podcasts, shares, downloads, genres, library
+ * effects. Every browsing route the app can reach after login lives inside
+ * `(tabs)`, which owns its own Tabs + per-tab Stack. Detail routes (album,
+ * artist, playlist, radio, podcasts, shares, downloads, genres, library
  * collections) live in the shared `(tabs)/(home,search,library)/` group so
  * they push onto the currently-focused tab's stack — the tab bar and
  * PlayingBar stay docked below across the whole browse session.
+ *
+ * `settings/` deliberately does NOT live in that shared group. Settings is
+ * global app configuration, not tab-scoped content, and a shared-group route
+ * is compiled once per tab: opening it from Home and again from Library built
+ * two independent Settings stacks, each remembering its own sub-page, so the
+ * app could hold three at once and returning to a tab restored whichever
+ * sub-page that tab had been left on. Here it is one screen on the root
+ * stack, presented as a modal — a single instance that covers the dock and
+ * dismisses back to whichever tab opened it, with that tab untouched
+ * underneath.
  */
 export default function HomeLayout() {
   const { sync } = useSync();
@@ -74,6 +84,7 @@ export default function HomeLayout() {
           <AutoDownloadWatcher />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+            <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
           </Stack>
         </DownloadersQueueProvider>
       </AccountSheetProvider>
