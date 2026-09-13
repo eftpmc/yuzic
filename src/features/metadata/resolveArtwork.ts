@@ -11,7 +11,6 @@ import type { CoverSource } from '@/types/Cover';
 /** Every artwork source the app knows how to fill this slot with. */
 export type ArtworkSourceId = 'deezer' | 'coverartarchive';
 
-export const ALL_ARTWORK_SOURCES: readonly ArtworkSourceId[] = ['deezer', 'coverartarchive'];
 
 export type ArtworkResult = {
   cover: CoverSource;
