@@ -30,16 +30,18 @@ import { AccountSheetProvider } from '@/contexts/AccountSheetContext';
  * two independent Settings stacks, each remembering its own sub-page, so the
  * app could hold three at once and returning to a tab restored whichever
  * sub-page that tab had been left on. Here it is one screen on the root
- * stack, presented full-screen — a single instance that covers the dock and
- * dismisses back to whichever tab opened it, with that tab untouched
- * underneath.
+ * stack — a single instance, pushed above the dock, returning to whichever
+ * tab opened it with that tab untouched underneath.
  *
- * `fullScreenModal` is an iOS distinction: react-native-screens maps it to
- * UIModalPresentationFullScreen there, and on Android every modal
- * presentation falls back to an ordinary push. So Android behaves exactly as
- * it did when settings was a tab route — hardware back pops it — and the only
- * change on that platform is that the push now lands on the root stack, above
- * the dock, rather than inside a tab's stack beneath it.
+ * It is an ordinary push rather than a modal presentation. A push already
+ * covers the whole screen including the dock, which is all "modal" was
+ * bought for here, and it keeps the screen in the same native view
+ * controller as the rest of the app. `presentation: 'modal'` and
+ * `'fullScreenModal'` both hand the screen to a separately-presented
+ * UIViewController on iOS, where the top safe-area inset arrives as 0 — the
+ * header then drew its back arrow level with the status bar clock. Nothing
+ * in Settings asks for modal semantics, so the presentation that keeps the
+ * insets is the right one.
  */
 export default function HomeLayout() {
   const { sync } = useSync();
@@ -91,7 +93,7 @@ export default function HomeLayout() {
           <AutoDownloadWatcher />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-            <Stack.Screen name="settings" options={{ presentation: 'fullScreenModal' }} />
+            <Stack.Screen name="settings" />
           </Stack>
         </DownloadersQueueProvider>
       </AccountSheetProvider>
