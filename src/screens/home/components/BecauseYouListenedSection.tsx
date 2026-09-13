@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { selectHomeShelfItemCount } from '@/utils/redux/selectors/settingsSelectors'
 import { useTheme } from '@/hooks/useTheme'
 import { useArtists } from '@/hooks/artists'
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers'
@@ -24,14 +26,15 @@ import SelectionBottomSheet from '@/components/SelectionBottomSheet'
 import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types';
-import { HOME_TARGET_ALBUMS, HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
+import { HOME_RELATED_ARTIST_LIMIT } from '@/constants/home';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 async function fetchAlbumsForSeed(
   artistName: string,
-  libraryArtistNames: Set<string>
+  libraryArtistNames: Set<string>,
+  itemCount: number
 ): Promise<ExternalAlbumBase[]> {
   const seedArtist = await deezer.resolveDeezerArtistByName(artistName)
   if (!seedArtist) return []
@@ -39,7 +42,7 @@ async function fetchAlbumsForSeed(
   const related = await deezer.getDeezerRelatedArtists(seedArtist.id, HOME_RELATED_ARTIST_LIMIT)
   const fresh = related.filter(artist => !libraryArtistNames.has(artist.name.toLowerCase()))
 
-  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: HOME_TARGET_ALBUMS })
+  return collectCoveredAlbumsForArtists(fresh, { targetAlbums: itemCount })
 }
 
 type Props = {
@@ -56,6 +59,7 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
   const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   const dayKey = getDayKey()
+  const itemCount = useSelector(selectHomeShelfItemCount)
   const isEnabled = useDeezerDiscoveryEnabled()
 
   const [selectedArtist, setSelectedArtist] = React.useState<string>(artistName)
@@ -97,8 +101,8 @@ export default function BecauseYouListenedSection({ artistName, refreshKey = 0 }
     // Include libraryArtists.length so the exclusion set (libraryArtistNames)
     // stays fresh: new library artists should stop appearing in suggestions
     // rather than waiting out the full 12h staleTime.
-    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist, libraryArtists.length, refreshKey],
-    queryFn: () => fetchAlbumsForSeed(selectedArtist, libraryArtistNames),
+    queryKey: [QueryKeys.ExploreBecauseYouListened, dayKey, selectedArtist, libraryArtists.length, refreshKey, itemCount],
+    queryFn: () => fetchAlbumsForSeed(selectedArtist, libraryArtistNames, itemCount),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_DISCOVERY,
     networkMode: 'online',

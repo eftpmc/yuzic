@@ -529,7 +529,43 @@
       "duplicateRiskNote": "选择“通过服务器”后，若服务器或其他应用也 scrobble，可能重复计数。"
     },
     "home": {
-      "title": "主页"
+      "title": "主页",
+      "shelfLength": "Shelf size",
+      "shelvesTitle": "Home shelves",
+      "orderTitle": "Shelf order",
+      "sleepPresets": "Sleep timer quick-adds",
+      "sleepPresetsSubtext": "Show this duration as a quick-add button.",
+      "shelfSubtext": "Show this shelf on Home.",
+      "selected": "Selected",
+      "minutes": "{{count}} minutes",
+      "length": {
+        "compact": "Compact",
+        "standard": "Standard",
+        "generous": "Generous"
+      },
+      "tier": {
+        "resume": "Resume",
+        "library": "Your library",
+        "server": "Server discovery",
+        "listenbrainz": "ListenBrainz discovery",
+        "deezer": "Deezer discovery"
+      },
+      "shelves": {
+        "quickPicks": "Quick picks",
+        "continuePlaying": "Continue playing",
+        "recentlyPlayed": "Recently played",
+        "recentlyAdded": "Recently added",
+        "mostPlayed": "Most played",
+        "serverRandom": "Random albums",
+        "serverNowPlaying": "Now playing",
+        "localMix": "Your mix",
+        "lbSimilarArtistsForYou": "Similar artists for you",
+        "lbCreatedForDailyJams": "Daily jams",
+        "lbCreatedForWeeklyJams": "Weekly jams",
+        "lbCreatedForWeeklyExploration": "Weekly exploration",
+        "topArtists": "Top artists",
+        "charts": "Charts"
+      }
     }
   },
   "common": {

@@ -530,7 +530,43 @@
       "duplicateRiskNote": "Avec « Via le serveur », les écoutes peuvent compter double si le serveur ou une autre app scrobble aussi."
     },
     "home": {
-      "title": "Accueil"
+      "title": "Accueil",
+      "shelfLength": "Shelf size",
+      "shelvesTitle": "Home shelves",
+      "orderTitle": "Shelf order",
+      "sleepPresets": "Sleep timer quick-adds",
+      "sleepPresetsSubtext": "Show this duration as a quick-add button.",
+      "shelfSubtext": "Show this shelf on Home.",
+      "selected": "Selected",
+      "minutes": "{{count}} minutes",
+      "length": {
+        "compact": "Compact",
+        "standard": "Standard",
+        "generous": "Generous"
+      },
+      "tier": {
+        "resume": "Resume",
+        "library": "Your library",
+        "server": "Server discovery",
+        "listenbrainz": "ListenBrainz discovery",
+        "deezer": "Deezer discovery"
+      },
+      "shelves": {
+        "quickPicks": "Quick picks",
+        "continuePlaying": "Continue playing",
+        "recentlyPlayed": "Recently played",
+        "recentlyAdded": "Recently added",
+        "mostPlayed": "Most played",
+        "serverRandom": "Random albums",
+        "serverNowPlaying": "Now playing",
+        "localMix": "Your mix",
+        "lbSimilarArtistsForYou": "Similar artists for you",
+        "lbCreatedForDailyJams": "Daily jams",
+        "lbCreatedForWeeklyJams": "Weekly jams",
+        "lbCreatedForWeeklyExploration": "Weekly exploration",
+        "topArtists": "Top artists",
+        "charts": "Charts"
+      }
     }
   },
   "common": {

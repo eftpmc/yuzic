@@ -9,6 +9,7 @@ import {
 import { Ellipsis } from 'lucide-react-native';
 import { notify } from '@/components/toast';
 import { useSelector } from 'react-redux';
+import { selectHomeShelfItemCount } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -33,7 +34,7 @@ import {
 import { SECTION_H_PADDING } from '@/features/home/constants';
 import { iconSize, spacing, typography } from '@/constants/design';
 
-function useQuickPicks(refreshKey: number): SongBase[] {
+function useQuickPicks(refreshKey: number, itemCount: number): SongBase[] {
   const songsById = useSelector(selectSongsById);
   const playCounts = useSelector(selectSongPlayCounts);
   const lastPlayedAt = useSelector(selectSongLastPlayedAt);
@@ -58,9 +59,9 @@ function useQuickPicks(refreshKey: number): SongBase[] {
 
     scored.sort((a, b) => b.score - a.score);
     const pool = scored.slice(0, QUICK_PICKS_CANDIDATE_POOL).map(s => s.song);
-    if (refreshKey === 0) return pool.slice(0, QUICK_PICKS_TOTAL);
-    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, QUICK_PICKS_TOTAL);
-  }, [songsById, playCounts, lastPlayedAt, refreshKey]);
+    if (refreshKey === 0) return pool.slice(0, itemCount);
+    return seededShuffle(pool, (Math.imul(refreshKey, 1664525) + 1013904223) | 0).slice(0, itemCount);
+  }, [songsById, playCounts, lastPlayedAt, refreshKey, itemCount]);
 }
 
 type Props = { refreshKey?: number };
@@ -70,7 +71,8 @@ export default function QuickPicksSection({ refreshKey = 0 }: Props) {
   const { colors } = useTheme();
   const { playSong } = usePlayingActions();
   const { resolvePlayableSong } = usePlayableSongResolver();
-  const picks = useQuickPicks(refreshKey);
+  const itemCount = useSelector(selectHomeShelfItemCount);
+  const picks = useQuickPicks(refreshKey, itemCount);
   const { width: screenWidth } = useWindowDimensions();
   const { openSongOptions } = useSongActionSheets();
 
