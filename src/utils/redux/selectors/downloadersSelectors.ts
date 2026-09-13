@@ -45,11 +45,7 @@ export const downloaderSelectors = Object.fromEntries(
   DOWNLOADER_IDS.map((id) => [id, buildSelectors(id)])
 ) as Record<DownloaderId, DownloaderSelectors>;
 
-export const selectLidarrServerUrl = downloaderSelectors.lidarr.serverUrl;
-export const selectLidarrApiKey = downloaderSelectors.lidarr.apiKey;
 export const selectLidarrAuthenticated = downloaderSelectors.lidarr.isAuthenticated;
-export const selectSlskdServerUrl = downloaderSelectors.slskd.serverUrl;
-export const selectSlskdApiKey = downloaderSelectors.slskd.apiKey;
 export const selectSlskdAuthenticated = downloaderSelectors.slskd.isAuthenticated;
 export const selectLidarrConfig = downloaderSelectors.lidarr.config;
 export const selectSlskdConfig = downloaderSelectors.slskd.config;
@@ -74,12 +70,6 @@ export const selectSlskdPreferences = createSelector(
       preferFreeSlot: stored?.preferFreeSlot ?? DEFAULT_SLSKD_PREFERENCES.preferFreeSlot,
     };
   }
-);
-
-/** Slskd config with preferences bundled in, for the code paths that need them. */
-export const selectSlskdConfigWithPreferences = createSelector(
-  [selectSlskdConfig, selectSlskdPreferences],
-  (config, preferences) => ({ ...config, preferences })
 );
 
 /**

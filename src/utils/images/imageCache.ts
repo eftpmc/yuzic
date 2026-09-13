@@ -37,19 +37,6 @@ export function hasImageUrlFailed(uri: string | null | undefined): boolean {
   return !!uri && failedImageUrls.has(uri);
 }
 
-export function resetFailedImageUrl(uri: string) {
-  failedImageUrls.delete(uri);
-}
-
-export function prefetchImageUrls(urls: readonly (string | null | undefined)[]) {
-  const sources = [...new Set(urls.filter((url): url is string => !!url && !hasImageUrlFailed(url)))]
-    .map(uri => ({ uri, cacheKey: uri }));
-
-  if (!sources.length) return;
-
-  TurboImage.prefetch(sources, IMAGE_CACHE_POLICY).catch(() => {});
-}
-
 export function prefetchCovers(
   covers: readonly (CoverSource | null | undefined)[],
   size: 'thumb' | 'grid' | 'detail' | 'background',

@@ -433,7 +433,6 @@ export const getServerProvider = (type: ServerType) => {
   return provider;
 };
 
-export const getAllServerProviders = () =>
   Object.values(SERVER_PROVIDERS);
 
 export const supportsDemo = (type: ServerType) =>

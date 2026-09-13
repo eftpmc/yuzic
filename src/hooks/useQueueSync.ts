@@ -67,31 +67,3 @@ export function useQueueSync() {
 
   return { supported, save };
 }
-
-/**
- * Effect hook: throttled save whenever a queue exists and either the current
- * song id or the queue identity changes. Callers pass live values from the
- * playing context; the hook handles debouncing and best-effort delivery.
- */
-export function useQueueSyncEffect(
-  queue: Song[],
-  currentSong: Song | null,
-  positionMs: number
-) {
-  const { supported, save } = useQueueSync();
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (!supported) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    // Small debounce so a rapid skip-skip-skip doesn't turn into three POSTs.
-    timeoutRef.current = setTimeout(() => {
-      void save(queue, currentSong?.id, positionMs);
-    }, 1500);
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [supported, save, queue, currentSong?.id, positionMs]);
-}
