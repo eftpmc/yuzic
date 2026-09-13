@@ -10,6 +10,10 @@ import {
   AppLanguage,
   LibraryViewKey,
   LIBRARY_VIEW_DEFAULTS,
+  HOME_SHELF_LENGTHS,
+  DEFAULT_SLEEP_TIMER_PRESETS,
+  HomeShelfLength,
+  HomeShelfTier,
 } from '@/utils/redux/slices/settingsSlice';
 import type { ListDensity, RadiusPreset } from '@/constants/design';
 import type { SpeedProfile } from '@/utils/playback/speedProfile';
@@ -198,6 +202,28 @@ export const selectResumeLongTracksEnabled = (state: RootState): boolean =>
 
 export const selectHomeServerSectionsEnabled = (state: RootState): boolean =>
   state.settings.homeServerSectionsEnabled ?? true;
+
+export const selectHomeShelfVisibilityMap = (state: RootState): Record<string, boolean> =>
+  state.settings.homeShelfVisibility ?? {};
+
+export const selectHomeShelfLength = (state: RootState): HomeShelfLength =>
+  state.settings.homeShelfLength ?? 'standard';
+
+export const selectHomeShelfItemCount = (state: RootState): number =>
+  HOME_SHELF_LENGTHS[selectHomeShelfLength(state)] ?? HOME_SHELF_LENGTHS.standard;
+
+export const selectSleepTimerPresets = (state: RootState): number[] => {
+  const presets = state.settings.sleepTimerPresets;
+  return Array.isArray(presets) && presets.length > 0 ? presets : [...DEFAULT_SLEEP_TIMER_PRESETS];
+};
+
+export const selectHomeShelfOrder = (tier: HomeShelfTier, defaults: string[]) =>
+  (state: RootState): string[] => {
+    const configured = state.settings.homeShelfOrder?.[tier];
+    if (!configured?.length) return defaults;
+    const known = new Set(defaults);
+    return [...configured.filter(key => known.has(key)), ...defaults.filter(key => !configured.includes(key))];
+  };
 
 /**
  * Enabled external lyric sources, in the user's try-order.

@@ -5,12 +5,11 @@ import { Moon } from 'lucide-react-native';
 import { getBackend } from '@/features/player/activeBackend';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeColor, selectSleepTimerPresets } from '@/utils/redux/selectors/settingsSelectors';
 import { mmkv } from '@/utils/mmkvStorage';
 import {
   SLEEP_TIMER_STORAGE_KEY,
   SLEEP_TIMER_MAX_SECONDS,
-  SLEEP_TIMER_INCREMENTS,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
 import { useRadius } from '@/hooks/useRadius';
@@ -27,6 +26,7 @@ type Props = { contentWidth: number };
 export default function SleepTimerCard({ contentWidth }: Props) {
   const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
+  const presets = useSelector(selectSleepTimerPresets);
   const rad = useRadius();
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const targetMsRef = useRef<number | null>(null);
@@ -156,7 +156,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           </Text>
         </Touchable>
 
-        {SLEEP_TIMER_INCREMENTS.map(min => (
+        {presets.map(min => (
           <Touchable
             key={min}
             onPress={() => handleIncrement(min)}

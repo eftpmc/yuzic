@@ -456,6 +456,14 @@ route leaf registered in `settings/_layout.tsx` with a row on the settings root.
 Home discovery is off by default and layered so the local tier always works
 with zero external calls.
 
+Home shelf personalization is additive and tier-safe: `settingsSlice` stores
+per-shelf visibility and per-tier ordering, while selectors fall back to the
+original visible/order values when a key is absent. `customizeHomeSections`
+filters and orders only the sections supplied for one tier, preserving the
+resume → library → source-group hierarchy. `homeShelfLength` uses bounded
+compact/standard/generous choices, and `sleepTimerPresets` stores bounded quick
+add durations; both are surfaced in Home settings and read through defaults.
+
 - **Local-first mix** (`screens/home/components/LocalMixSection`) seeds from
   on-device play-stats/genres (a deterministic daily seed via the existing
   `getDailySeed`/`seededShuffle` — **no new recommendation algorithm**) and

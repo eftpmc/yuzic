@@ -39,6 +39,14 @@ export type PlayingBarAction = 'none' | 'skip' | 'favorite' | 'randomAlbum' | 'a
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type SearchScope = 'client' | 'server';
 export type AppLanguage = string;
+export type HomeShelfLength = 'compact' | 'standard' | 'generous';
+export type HomeShelfTier = 'resume' | 'library' | 'server' | 'listenbrainz' | 'deezer';
+export const HOME_SHELF_LENGTHS: Record<HomeShelfLength, number> = {
+  compact: 6,
+  standard: 10,
+  generous: 14,
+};
+export const DEFAULT_SLEEP_TIMER_PRESETS = [5, 15, 30] as const;
 
 /**
  * The scrobble targets a server can be routed to. Last.fm-direct is
@@ -194,6 +202,14 @@ export interface SettingsState {
    * (deezerDiscoveryEnabled, listenbrainzDiscoveryEnabled) rather than by a
    * second switch that could sit on while the first one is off. */
   homeServerSectionsEnabled: boolean;
+  /** Per-shelf opt-outs. Missing keys read as visible for additive persistence. */
+  homeShelfVisibility: Record<string, boolean>;
+  /** Per-tier order. Missing tiers read in the product default order. */
+  homeShelfOrder: Partial<Record<HomeShelfTier, string[]>>;
+  /** Number of items in Home shelves; standard preserves the original layout. */
+  homeShelfLength: HomeShelfLength;
+  /** Quick-add sleep timer durations, in minutes. */
+  sleepTimerPresets: number[];
 
   /**
    * Lyrics fallback chain, external sources only — server-embedded lyrics
@@ -310,6 +326,10 @@ const initialState: SettingsState = {
   resumeLongTracksEnabled: true,
 
   homeServerSectionsEnabled: true,
+  homeShelfVisibility: {},
+  homeShelfOrder: {},
+  homeShelfLength: 'standard',
+  sleepTimerPresets: [...DEFAULT_SLEEP_TIMER_PRESETS],
 
   lyricsExternalSourcesOrder: [],
   lyricsExternalSourcesEnabled: {},
@@ -486,6 +506,20 @@ const settingsSlice = createSlice({
     setHomeServerSectionsEnabled(state, action: PayloadAction<boolean>) {
       state.homeServerSectionsEnabled = action.payload;
     },
+    setHomeShelfVisibility(state, action: PayloadAction<{ key: string; visible: boolean }>) {
+      if (!state.homeShelfVisibility) state.homeShelfVisibility = {};
+      state.homeShelfVisibility[action.payload.key] = action.payload.visible;
+    },
+    setHomeShelfOrder(state, action: PayloadAction<{ tier: HomeShelfTier; order: string[] }>) {
+      if (!state.homeShelfOrder) state.homeShelfOrder = {};
+      state.homeShelfOrder[action.payload.tier] = action.payload.order;
+    },
+    setHomeShelfLength(state, action: PayloadAction<HomeShelfLength>) {
+      state.homeShelfLength = action.payload;
+    },
+    setSleepTimerPresets(state, action: PayloadAction<number[]>) {
+      state.sleepTimerPresets = action.payload;
+    },
 
     setLyricsExternalSourceEnabled(
       state,
@@ -630,6 +664,10 @@ export const {
   setServerNowPlayingShelfEnabled,
   setResumeLongTracksEnabled,
   setHomeServerSectionsEnabled,
+  setHomeShelfVisibility,
+  setHomeShelfOrder,
+  setHomeShelfLength,
+  setSleepTimerPresets,
   setLyricsExternalSourceEnabled,
   setLyricsExternalSourcesOrder,
   setMetadataArtistInfoSourceEnabled,
