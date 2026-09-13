@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, typography, radius } from '@/constants/design';
+import { useBottomOverlayHeight } from '@/hooks/useScrollClearance';
 import Touchable from './Touchable';
 
 type Props = {
@@ -25,9 +26,10 @@ type Props = {
  */
 const EmptyState: React.FC<Props> = ({ icon, message, action }) => {
   const { colors } = useTheme();
+  const bottomOverlayHeight = useBottomOverlayHeight();
 
   return (
-    <View style={styles.container}>
+    <View testID="empty-state" style={[styles.container, { paddingBottom: bottomOverlayHeight }]}>
       {icon}
       <Text style={[styles.message, { color: colors.subtext }]}>{message}</Text>
       {action ? (

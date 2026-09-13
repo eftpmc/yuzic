@@ -20,12 +20,23 @@ import { selectTranslucentDock } from '@/utils/redux/selectors/settingsSelectors
  * step: the dock's height changes with the safe-area inset and with whether a
  * track is playing, and a hardcoded guess would be wrong on both counts.
  */
-export function useScrollClearance(): number {
+export function resolveBottomOverlayHeight(
+  translucent: boolean,
+  tabBarHeight: number | null | undefined
+): number {
+  if (!translucent || tabBarHeight == null) return 0;
+  return tabBarHeight;
+}
+
+export function useBottomOverlayHeight(): number {
   const translucent = useSelector(selectTranslucentDock);
   // Null outside a tab navigator — modals and the onboarding stack render
-  // without a dock, and want the plain value.
+  // without a dock, so nothing overlays their content.
   const tabBarHeight = useContext(BottomTabBarHeightContext);
 
-  if (!translucent || tabBarHeight == null) return spacing.scrollClearance;
-  return tabBarHeight + spacing.scrollClearance;
+  return resolveBottomOverlayHeight(translucent, tabBarHeight);
+}
+
+export function useScrollClearance(): number {
+  return useBottomOverlayHeight() + spacing.scrollClearance;
 }
