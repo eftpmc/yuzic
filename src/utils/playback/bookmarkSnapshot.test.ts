@@ -87,7 +87,7 @@ describe('songFromBookmarkSnapshot', () => {
       { title: 'No Art', artist: 'A Show' },
       'https://fresh/url',
     );
-    expect(rebuilt.cover).toEqual({ kind: 'letter', name: 'No Art' });
+    expect(rebuilt.cover).toEqual({ kind: 'none' });
   });
 
   it('survives a snapshot written before duration was stored', () => {

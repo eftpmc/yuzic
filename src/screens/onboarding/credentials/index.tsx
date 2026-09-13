@@ -1,3 +1,4 @@
+import { fixedColor, iconSize, onDark, spacing, stateLayer, statusColor, typography } from '@/constants/design';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -10,14 +11,13 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, statusColor, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useCodeAuth } from './useCodeAuth';
 
@@ -90,7 +90,7 @@ export default function Credentials() {
             return;
         }
         if (phase.status === 'failed') {
-            toast.error(
+            notify.error(
                 phase.reason === 'expired'
                     ? t('onboarding.credentials.codeAuth.expired')
                     : phase.message || t('onboarding.credentials.codeAuth.unavailable')
@@ -105,7 +105,7 @@ export default function Credentials() {
     const handleNext = async () => {
         if (!type || !serverUrl) return;
         if (!localUsername || !localPassword) {
-            toast.error(t('onboarding.credentials.missingCredentials'));
+            notify.error(t('onboarding.credentials.missingCredentials'));
             return;
         }
         const provider = SERVER_PROVIDERS[type];
@@ -114,17 +114,17 @@ export default function Credentials() {
         try {
             const result = await provider.connect(serverUrl, localUsername, localPassword, basicAuth);
             if (!result.success || !result.auth) {
-                toast.error(result.message || t('onboarding.credentials.authFailed'));
+                notify.error(result.message || t('onboarding.credentials.authFailed'));
                 return;
             }
             const pingOk = await provider.ping(serverUrl, localUsername, result.auth, basicAuth);
             if (!pingOk) {
-                toast.error(t('onboarding.credentials.apiNotResponding'));
+                notify.error(t('onboarding.credentials.apiNotResponding'));
                 return;
             }
             saveServer(result.auth);
         } catch {
-            toast.error(t('onboarding.credentials.connectError'));
+            notify.error(t('onboarding.credentials.connectError'));
         } finally {
             setIsTesting(false);
         }
@@ -273,7 +273,7 @@ export default function Credentials() {
                             disabled={isTesting}
                         >
                             {isTesting
-                                ? <SpinningLoaderCircle size={iconSize.row} color="#000" />
+                                ? <SpinningLoaderCircle size={iconSize.row} color={onDark.background} />
                                 : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                             }
                         </Touchable>
@@ -331,19 +331,19 @@ const styles = StyleSheet.create({
     warningRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        backgroundColor: '#1c1400',
+        backgroundColor: fixedColor.onboardingWarningSurface,
         borderWidth: 1,
-        borderColor: '#78450a',
+        borderColor: fixedColor.onboardingWarningBorder,
         padding: spacing.controlGap,
         marginBottom: spacing.md,
-        gap: 8,
+        gap: spacing.sm,
     },
     warningText: { ...typography.caption, flex: 1, color: statusColor.warningText },
     // Code sign-in panel
     codeAuthPanel: {
         alignItems: 'center',
         paddingVertical: spacing.xl,
-        gap: 16,
+        gap: spacing.page,
     },
     codeAuthLabel: {
         ...typography.body,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     codeAuthWaiting: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: spacing.sm,
     },
     codeAuthWaitingText: {
         ...typography.rowSubtitle,
@@ -379,8 +379,8 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: spacing.md,
     },
-    nextButtonDisabled: { opacity: 0.6 },
-    nextButtonText: { ...typography.sheetTitle, color: '#000' },
+    nextButtonDisabled: { opacity: stateLayer.pressedOpacity },
+    nextButtonText: { ...typography.sheetTitle, color: onDark.background },
     backButton: {
         backgroundColor: onDark.border,
         paddingVertical: spacing.lg,

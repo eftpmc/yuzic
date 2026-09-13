@@ -1,3 +1,4 @@
+import { controlSize, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -11,7 +12,7 @@ import { useNavigation } from '@react-navigation/native'
 import { ChevronLeft, Ellipsis, Shuffle, Play } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
-import { toast } from '@backpackapp-io/react-native-toast'
+import { notify } from '@/components/toast';
 import { useTranslation } from 'react-i18next'
 
 import { AlbumBase, Song } from '@/types'
@@ -38,7 +39,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import DownloadStateIcon from '@/components/DownloadStateIcon';
 import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import Touchable from '@/components/Touchable';
-import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -115,7 +115,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
     })()
 
     if (!playableSongs.length) {
-      toast.error(t('common.oneSecond'))
+      notify.error(t('common.oneSecond'))
       return
     }
     playSongInCollection(
@@ -185,7 +185,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
               style={[styles.backButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color={onDark.text} style={{ marginLeft: -2 }} />
             </Touchable>
           </View>
         )}

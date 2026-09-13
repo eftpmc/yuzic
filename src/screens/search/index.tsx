@@ -1,3 +1,4 @@
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -26,7 +27,7 @@ import { usePlayingActions } from '@/contexts/PlayingContext';
 import IconActionButton from '@/components/IconActionButton';
 import MediaListRow from '@/components/MediaListRow';
 import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { usePrefetchCovers } from '@/hooks/usePrefetchCovers';
 import { prefetchCovers } from '@/utils/images/imageCache';
 import { usePlayableSongResolver } from '@/hooks/songs';
@@ -45,7 +46,6 @@ import {
   type SearchEntityEntry,
 } from '@/utils/redux/slices/searchHistorySlice';
 import RecentSearches from './components/RecentSearches';
-import SearchScopeControl from './components/SearchScopeControl';
 import SearchFiltersSheet from './components/SearchFiltersSheet';
 import { useMatchedNavigation } from '@/features/sources/useMatchedNavigation';
 import { getSourceMeta } from '@/features/sources/registry';
@@ -53,7 +53,6 @@ import { useEnabledSearchSourceIds } from '@/features/sources/useSearchSourcesEn
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 
@@ -236,9 +235,9 @@ const Search = () => {
     try {
       const song = await resolvePlayableSong(entity.id);
       if (song) await playSong(song);
-      else toast.error(t('common.playbackError'));
+      else notify.error(t('common.playbackError'));
     } catch {
-      toast.error(t('common.playbackError'));
+      notify.error(t('common.playbackError'));
     }
   };
 
@@ -296,9 +295,9 @@ const Search = () => {
       if (result.song) { await playSong(result.song); return; }
       const song = await resolvePlayableSong(result.id);
       if (song) await playSong(song);
-      else toast.error(t('common.playbackError'));
+      else notify.error(t('common.playbackError'));
     } catch {
-      toast.error(t('common.playbackError'));
+      notify.error(t('common.playbackError'));
     }
   };
 
@@ -308,10 +307,10 @@ const Search = () => {
       if (song) {
         openSongOptions(song);
       } else {
-        toast.error(t('common.songDetailsError'));
+        notify.error(t('common.songDetailsError'));
       }
     } catch {
-      toast.error(t('common.songDetailsError'));
+      notify.error(t('common.songDetailsError'));
     }
   };
 
@@ -499,23 +498,25 @@ const Search = () => {
             </Touchable>
           )}
         </View>
-      </View>
-
-      <View style={styles.scopeRow}>
-        <View style={styles.scopeControlWrap}>
-          <SearchScopeControl value={resultScope} onChange={setResultScope} />
-        </View>
-        {isOtherScope && (
-          <Touchable
-            testID="search-filters-button"
-            accessibilityRole="button"
-            accessibilityLabel={t('search.filters.title')}
-            style={[styles.filtersButton, { backgroundColor: colors.muted, borderRadius: rad.md }]}
-            onPress={() => filtersSheetRef.current?.present()}
-          >
-            <SlidersHorizontal size={iconSize.row} color={colors.secondary} />
-          </Touchable>
-        )}
+        <Touchable
+          testID="search-filters-button"
+          accessibilityRole="button"
+          accessibilityLabel={t('search.filters.title')}
+          accessibilityState={{ selected: isOtherScope }}
+          style={[
+            styles.filtersButton,
+            {
+              backgroundColor: isOtherScope ? colors.themeColor + '26' : colors.muted,
+              borderRadius: rad.md,
+            },
+          ]}
+          onPress={() => filtersSheetRef.current?.present()}
+        >
+          <SlidersHorizontal
+            size={iconSize.row}
+            color={isOtherScope ? colors.themeColor : colors.secondary}
+          />
+        </Touchable>
       </View>
 
       {hasSearched && !isLoading && (hasError || degraded) && (
@@ -597,6 +598,8 @@ const Search = () => {
 
       <SearchFiltersSheet
         ref={filtersSheetRef}
+        resultScope={resultScope}
+        onChangeScope={setResultScope}
         availableSourceIds={enabledSearchSourceIds}
         selectedSourceIds={selectedSourceIds}
         onToggleSource={toggleFilterSource}
@@ -615,7 +618,8 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
@@ -638,19 +642,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scopeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  scopeControlWrap: {
-    flex: 1,
-  },
   filtersButton: {
-    width: 40,
-    height: 40,
+    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -669,7 +662,7 @@ const styles = StyleSheet.create({
   sourceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.roomy,
     paddingBottom: spacing.xs,
@@ -683,7 +676,7 @@ const styles = StyleSheet.create({
   sourceBadgeLetter: {
     ...typography.micro,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
   sourceHeaderText: {
     ...typography.rowSubtitle,

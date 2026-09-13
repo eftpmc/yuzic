@@ -1,16 +1,16 @@
+import { iconSize, onDark, spacing, stateLayer, typography } from '@/constants/design';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { FileMusic } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { pickAndImportLocalFiles } from '@/api/local/pickAndImport';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useSelector } from 'react-redux';
 import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
@@ -35,11 +35,11 @@ export default function LocalImport() {
     try {
       const outcome = await pickAndImportLocalFiles();
       if (!outcome) return;
-      if (outcome.imported) toast.success(t('onboarding.local.imported', { count: outcome.imported }));
-      if (outcome.unsupported) toast.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
-      if (outcome.failed) toast.error(t('onboarding.local.importFailed'));
+      if (outcome.imported) notify.success(t('onboarding.local.imported', { count: outcome.imported }));
+      if (outcome.unsupported) notify.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
+      if (outcome.failed) notify.error(t('onboarding.local.importFailed'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('onboarding.local.importFailed'));
+      notify.error(error instanceof Error ? error.message : t('onboarding.local.importFailed'));
     } finally { setImporting(false); }
   };
 
@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
   supported: { ...typography.caption, color: onDark.subtext, textAlign: 'center' },
   actions: { padding: spacing.roomy, gap: spacing.md },
   primary: { backgroundColor: onDark.text, width: '100%', paddingVertical: spacing.lg, alignItems: 'center' },
-  primaryText: { ...typography.sheetTitle, color: '#000' },
+  primaryText: { ...typography.sheetTitle, color: onDark.background },
   secondary: { backgroundColor: onDark.border, width: '100%', paddingVertical: spacing.lg, alignItems: 'center' },
   secondaryText: { ...typography.sheetTitle, color: onDark.text },
-  disabled: { opacity: 0.6 },
+  disabled: { opacity: stateLayer.pressedOpacity },
 });

@@ -26,8 +26,8 @@ jest.mock('@/components/BottomSheetBackdrop', () => ({
   renderBackdrop: () => null,
 }));
 
-jest.mock('@backpackapp-io/react-native-toast', () => ({
-  toast: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn() }),
+jest.mock('@/components/toast', () => ({
+  notify: Object.assign(jest.fn(), { info: jest.fn(), success: jest.fn(), error: jest.fn(), loading: jest.fn(), dismiss: jest.fn() }),
 }));
 
 jest.mock('@/components/SpinningLoaderCircle', () => 'SpinningLoaderCircle');

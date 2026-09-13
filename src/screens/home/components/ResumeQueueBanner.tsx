@@ -1,3 +1,4 @@
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Play, X } from 'lucide-react-native';
@@ -8,8 +9,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { useResumableServerQueue } from '@/hooks/useResumableServerQueue';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
-
 /**
  * Shown at the top of Home when the server has a recent queue that this
  * session hasn't started. One tap resumes; the X dismisses for the session.
@@ -41,8 +40,8 @@ export function ResumeQueueBanner() {
       >
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
           {resuming
-            ? <SpinningLoaderCircle size={iconSize.inline} color="#000" />
-            : <Play size={iconSize.inline} color="#000" fill="#000" />
+            ? <SpinningLoaderCircle size={iconSize.inline} color={onDark.background} />
+            : <Play size={iconSize.inline} color={onDark.background} fill={onDark.background} />
           }
         </View>
         <View style={styles.text}>

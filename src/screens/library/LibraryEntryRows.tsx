@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import {
   ChevronRight,
   Disc3,
+  ArrowDownToLine,
   Download,
   Heart,
   Link2,
@@ -85,9 +86,9 @@ const LibraryEntryRows: React.FC = () => {
     },
     {
       key: 'downloaded',
-      labelKey: 'home.filters.downloaded',
-      icon: <Download size={size} color={color} />,
-      onPress: () => openCollection('downloaded'),
+      labelKey: 'library.downloaded.title',
+      icon: <ArrowDownToLine size={size} color={color} />,
+      onPress: () => router.push('/offlineView'),
     },
     {
       key: 'downloads',

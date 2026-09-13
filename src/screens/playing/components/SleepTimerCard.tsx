@@ -1,18 +1,17 @@
+import { iconSize, onDark, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
 import { getBackend } from '@/features/player/activeBackend';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
+import { selectThemeColor, selectSleepTimerPresets } from '@/utils/redux/selectors/settingsSelectors';
 import { mmkv } from '@/utils/mmkvStorage';
 import {
   SLEEP_TIMER_STORAGE_KEY,
   SLEEP_TIMER_MAX_SECONDS,
-  SLEEP_TIMER_INCREMENTS,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { withAlpha } from '@/features/theme/coverAccent';
 
@@ -27,6 +26,7 @@ type Props = { contentWidth: number };
 export default function SleepTimerCard({ contentWidth }: Props) {
   const { t } = useTranslation();
   const themeColor = useSelector(selectThemeColor);
+  const presets = useSelector(selectSleepTimerPresets);
   const rad = useRadius();
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const targetMsRef = useRef<number | null>(null);
@@ -113,7 +113,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           size={iconSize.decorative}
           color={isActive ? themeColor : onDark.text}
           strokeWidth={1}
-          style={{ opacity: 0.08 }}
+          style={{ opacity: stateLayer.subtleOpacity }}
         />
       </View>
 
@@ -151,12 +151,12 @@ export default function SleepTimerCard({ contentWidth }: Props) {
               : { borderColor: 'rgba(255,255,255,0.12)' },
           ]}
         >
-          <Text style={[styles.offLabel, !isActive && { opacity: 0.35 }]}>
+          <Text style={[styles.offLabel, !isActive && { opacity: stateLayer.disabledTextOpacity }]}>
             {t('playing.sleepTimer.cancel')}
           </Text>
         </Touchable>
 
-        {SLEEP_TIMER_INCREMENTS.map(min => (
+        {presets.map(min => (
           <Touchable
             key={min}
             onPress={() => handleIncrement(min)}
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   label: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   controls: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   offButton: {
     flex: 1,

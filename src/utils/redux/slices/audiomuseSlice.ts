@@ -43,17 +43,15 @@ const audiomuseSlice = createSlice({
       const entry = getOrCreate(state, action.payload.serverId);
       entry.apiToken = action.payload.value;
     },
-    setAudiomuseEnabled(state, action: PayloadAction<ServerRef & { value: boolean }>) {
-      const entry = getOrCreate(state, action.payload.serverId);
-      entry.isEnabled = action.payload.value;
-    },
     setAudiomuseAuthenticated(state, action: PayloadAction<ServerRef & { value: boolean }>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.isAuthenticated = action.payload.value;
+      if (!action.payload.value) entry.isEnabled = false;
     },
     connectAudiomuse(state, action: PayloadAction<ServerRef>) {
       const entry = getOrCreate(state, action.payload.serverId);
       entry.isAuthenticated = true;
+      entry.isEnabled = true;
     },
     disconnectAudiomuse(state, action: PayloadAction<ServerRef>) {
       const entry = getOrCreate(state, action.payload.serverId);
@@ -68,7 +66,6 @@ const audiomuseSlice = createSlice({
 export const {
   setAudiomuseServerUrl,
   setAudiomuseApiToken,
-  setAudiomuseEnabled,
   setAudiomuseAuthenticated,
   connectAudiomuse,
   disconnectAudiomuse,

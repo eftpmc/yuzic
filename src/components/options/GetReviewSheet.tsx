@@ -1,10 +1,11 @@
+import { iconSize, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useSelector, useDispatch } from 'react-redux';
 
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
@@ -38,7 +39,6 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { iconSize, spacing, typography } from '@/constants/design';
 import Touchable from '@/components/Touchable';
 
 interface Props {
@@ -146,7 +146,7 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
           );
       const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
       const fallback = t('externalAlbum.download.failed');
-      toast[result.success ? 'success' : 'error'](
+      notify[result.success ? 'success' : 'error'](
         result.success
           ? t(successKey)
           : t(downloadErrorKey(def.id, result.code), { defaultValue: fallback })
@@ -176,7 +176,7 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
         sheetRef.current?.dismiss();
       }
     } catch {
-      toast.error(t('externalAlbum.download.startFailed'));
+      notify.error(t('externalAlbum.download.startFailed'));
     } finally {
       setLoading(false);
     }
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   getButtonDisabled: {
-    opacity: 0.5,
+    opacity: stateLayer.mutedOpacity,
   },
   getButtonLabel: {
     ...typography.rowTitle,

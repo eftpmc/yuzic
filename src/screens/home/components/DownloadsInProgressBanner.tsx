@@ -1,3 +1,4 @@
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -9,8 +10,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { useDownloadersQueue } from '@/features/downloaders/DownloadersQueueContext';
-import { iconSize, spacing, typography } from '@/constants/design';
-
 /**
  * Banner that surfaces active downloader queues (Lidarr / slskd) at the top
  * of Home so users see what's in flight without diving into Settings →
@@ -43,7 +42,7 @@ export function DownloadsInProgressBanner() {
     <View style={[styles.container, { backgroundColor: colors.muted, borderRadius: rad.card }]}>
       <Touchable style={styles.body} onPress={handleOpen} accessibilityRole="button" accessibilityLabel={t('home.downloadsBanner.open')}>
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
-          <SpinningLoaderCircle size={iconSize.badge} color="#000" />
+          <SpinningLoaderCircle size={iconSize.badge} color={onDark.background} />
         </View>
         <View style={styles.text}>
           <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>

@@ -1,3 +1,4 @@
+import { onDark, sourceColor, spacing, typography } from '@/constants/design';
 import React, { useMemo } from 'react'
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -23,7 +24,6 @@ import {
   ALBUM_RECOMMENDATION_RELATED_LIMIT,
   ALBUM_RECOMMENDATION_TARGET_ALBUMS,
 } from '@/constants/album';
-import { sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: ALBUM_RECOMMENDATION_HORIZONTAL_PADDING,
     marginBottom: spacing.md,
   },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   badgeLetter: {
     ...typography.micro,
     fontWeight: '600',
-    color: '#fff',
+    color: onDark.text,
   },
   title: {
     ...typography.sectionTitle,

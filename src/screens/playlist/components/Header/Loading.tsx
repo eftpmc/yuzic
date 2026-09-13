@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.sm,
-    gap: 8,
+    gap: spacing.sm,
   },
   actionsRow: {
     width: '100%',
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.controlGap,
   },
 });
 

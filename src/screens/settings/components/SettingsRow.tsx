@@ -1,10 +1,10 @@
+import { iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { SETTINGS_STATUS_COLORS } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
  type Props = {
@@ -54,7 +54,7 @@ const SettingsRow: React.FC<Props> = ({ label, onPress, leftIcon, rightText, sta
               ? { backgroundColor: colors.themeColor, borderColor: colors.themeColor }
               : { borderColor: colors.border },
           ]}>
-            {checked && <Check size={iconSize.badge} color="#fff" strokeWidth={3} />}
+            {checked && <Check size={iconSize.badge} color={onDark.text} strokeWidth={3} />}
           </View>
         ) : (
           <ChevronRight size={iconSize.row} color={colors.border} />
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   right: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.tight,
   },
   statusDot: {
     width: 8,

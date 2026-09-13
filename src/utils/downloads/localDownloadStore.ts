@@ -84,10 +84,3 @@ export function readResumables(): PersistedResumable[] {
 export function writeResumables(resumables: PersistedResumable[]) {
   writeJsonArray(RESUMABLES_KEY, resumables);
 }
-
-export function clearDownloadsSnapshot() {
-  mmkv.remove(TRACKS_KEY);
-  mmkv.remove(COLLECTIONS_KEY);
-  mmkv.remove(JOBS_KEY);
-  mmkv.remove(RESUMABLES_KEY);
-}

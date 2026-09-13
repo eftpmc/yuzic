@@ -1,13 +1,12 @@
+import { fontScaleCap, onDark } from '@/constants/design';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { useFocusEffect } from 'expo-router';
 import { useSelector } from 'react-redux';
 
 import { useApi } from '@/api';
+import { useAppActive } from '@/hooks/useAppActive';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { fontScaleCap } from '@/constants/design';
-
 /**
  * The signed-in user's profile picture, or their initial in a coloured disc.
  *
@@ -72,13 +71,26 @@ export default function UserAvatar({
 
   // Tab screens stay mounted, so a header can otherwise retain the source it
   // created before the user updated their picture on the server. Keep the
-  // existing signed URL — rebuilding Navidrome's would defeat its cache on each
-  // tab switch — and explicitly reload it. This also refreshes deterministic
-  // Jellyfin/Emby URLs without provider-specific cache busters.
-  useFocusEffect(useCallback(() => {
+  // existing signed URL — rebuilding Navidrome's would defeat its cache — and
+  // explicitly reload it. This also refreshes deterministic Jellyfin/Emby URLs
+  // without provider-specific cache busters.
+  //
+  // This hangs off returning to the foreground, NOT off screen focus. Focus
+  // fires on every tab switch, and each bump changes the Image's key, so the
+  // picture was being unmounted and re-fetched several times a minute — the
+  // letter underneath showing through each time as a visible flicker. Focus is
+  // also not evidence the avatar changed: the user cannot edit it on the
+  // server without leaving the app, so a foreground transition is the earliest
+  // moment a new picture can exist, and the cheapest signal that says so.
+  const isAppActive = useAppActive();
+  const wasAppActive = useRef(isAppActive);
+  useEffect(() => {
+    if (wasAppActive.current === isAppActive) return;
+    wasAppActive.current = isAppActive;
+    if (!isAppActive) return;
     setFailed(false);
     setReloadGeneration(generation => generation + 1);
-  }, []));
+  }, [isAppActive]);
 
   useEffect(() => setFailed(false), [uri]);
 
@@ -112,7 +124,11 @@ export default function UserAvatar({
       </Text>
       <Image
         testID="user-avatar-image"
-        key={`${uri}:${reloadGeneration}`}
+        // Keyed on the URL alone. Including the reload generation here is what
+        // made a refresh a full unmount/remount rather than a re-fetch into the
+        // node already on screen; a new account genuinely is a different image
+        // and should start over, a refresh of the same one should not.
+        key={uri}
         source={{ uri, cache: reloadGeneration ? 'reload' : 'default' }}
         style={[styles.image, { borderRadius, position: 'absolute' }]}
         // The letter stays underneath while the picture loads, so the header
@@ -131,7 +147,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   initial: {
-    color: '#fff',
+    color: onDark.text,
     fontWeight: '600',
   },
   image: {

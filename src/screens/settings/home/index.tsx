@@ -8,7 +8,7 @@ import {
     Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Server, Library, Volume2, Palette, Puzzle, CloudDownload, Github, ShieldCheck, ScrollText, House as HomeIcon, Mic2, Disc3, Sparkles, Search as SearchIcon } from 'lucide-react-native';
+import { Server, Library, Volume2, Palette, Puzzle, CloudDownload, Github, ShieldCheck, ScrollText, House as HomeIcon, Mic2, Disc3, Tags, Search as SearchIcon } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -125,18 +125,6 @@ export default function Settings() {
                         onPress={() => router.push('/settings/libraryView')}
                     />
                     <SettingsDivider />
-                    {/*
-                      Home sits beside Library because it is the other surface
-                      a listener spends time in, and because its settings —
-                      which sources fill its shelves — used to be filed under
-                      Appearance, where nobody would think to look for them.
-                    */}
-                    <SettingsRow
-                        label={t('settings.home.title')}
-                        leftIcon={<HomeIcon size={iconSize.secondary} color={colors.secondary} />}
-                        onPress={() => router.push('/settings/homeView')}
-                    />
-                    <SettingsDivider />
                     <SettingsRow
                         label={t('settings.rows.player')}
                         leftIcon={<Volume2 size={iconSize.secondary} color={colors.secondary} />}
@@ -154,10 +142,21 @@ export default function Settings() {
                         leftIcon={<Mic2 size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/lyricsView')}
                     />
+                </SettingsCard>
+
+                <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
+                    {t('settings.sections.discovery')}
+                </Text>
+                <SettingsCard>
+                    <SettingsRow
+                        label={t('settings.home.title')}
+                        leftIcon={<HomeIcon size={iconSize.secondary} color={colors.secondary} />}
+                        onPress={() => router.push('/settings/homeView')}
+                    />
                     <SettingsDivider />
                     <SettingsRow
                         label={t('settings.metadata.title')}
-                        leftIcon={<Sparkles size={iconSize.secondary} color={colors.secondary} />}
+                        leftIcon={<Tags size={iconSize.secondary} color={colors.secondary} />}
                         onPress={() => router.push('/settings/metadataView')}
                     />
                     <SettingsDivider />
@@ -176,7 +175,7 @@ export default function Settings() {
                 </SettingsCard>
 
                 {/*
-                  This card had no heading at all: "General" led the one above
+                  This card had no heading at all: the Discovery card led the one above
                   it and "About" the one below, leaving Integrations and
                   Downloaders reading as either the tail of General or as
                   nothing. They are neither — they are the things Yuzic talks
@@ -270,7 +269,7 @@ const styles = StyleSheet.create({
     serverMeta: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: spacing.tight,
     },
     typeBadge: {
         paddingHorizontal: spacing.tight,

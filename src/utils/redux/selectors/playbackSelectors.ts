@@ -1,6 +1,5 @@
 import { RootState } from '@/utils/redux/store';
 
-export const selectPersistedPlayback = (s: RootState) => s.playback;
 export const selectPersistedPlaybackQueue = (s: RootState) => s.playback.queueSongIds;
 export const selectPersistedPlaybackCurrentIndex = (s: RootState) => s.playback.currentIndex;
 export const selectPersistedPlaybackPositionMs = (s: RootState) => s.playback.positionMs;

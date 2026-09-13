@@ -1,51 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { useDownload } from '@/contexts/DownloadContext';
-import { Paths } from 'expo-file-system';
-import { formatBytes } from '@/utils/downloads/downloadStore';
 import { selectAutoDownloadNewSongs, selectDownloadOnWifiOnly } from '@/utils/redux/selectors/settingsSelectors';
 import { setAutoDownloadNewSongs, setDownloadOnWifiOnly } from '@/utils/redux/slices/settingsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsDivider from '../../components/SettingsDivider';
-import SettingsInfoRow from '../../components/SettingsInfoRow';
-import SettingsRow from '../../components/SettingsRow';
 import SettingsToggleRow from '../../components/SettingsToggleRow';
 
+/**
+ * Download *preferences* only — the two toggles that govern how offline
+ * downloading behaves. The offline library itself (storage used, saved items,
+ * per-item removal) now lives on its own Library → Offline screen, and server
+ * transfer activity on Library → Downloads, so this settings block no longer
+ * repeats storage stats or links out to a queue.
+ */
 const Downloads: React.FC = () => {
   const { t } = useTranslation();
-  const router = useRouter();
   const dispatch = useDispatch();
   const autoDownloadNewSongs = useSelector(selectAutoDownloadNewSongs);
   const downloadOnWifiOnly = useSelector(selectDownloadOnWifiOnly);
-  const { totalDownloadedBytes, downloadStateVersion } = useDownload();
-  const [freeBytes, setFreeBytes] = useState<number | null>(null);
-
-  useEffect(() => {
-    setFreeBytes(Paths.availableDiskSpace);
-  }, [downloadStateVersion]);
-
-  const formattedSize = formatBytes(totalDownloadedBytes);
-  const formattedAvailable = freeBytes != null ? formatBytes(freeBytes) : '—';
 
   return (
     <>
     <SettingsCardHeader subtle title={t('settings.library.downloads.title')} />
     <SettingsCard>
-      <SettingsInfoRow
-        label={t('settings.library.downloads.sizeLabel')}
-        value={formattedSize}
-        stacked
-      />
-      <SettingsDivider />
-      <SettingsInfoRow
-        label={t('settings.library.downloads.availableLabel')}
-        value={formattedAvailable}
-        stacked
-      />
-      <SettingsDivider />
       <SettingsToggleRow
         label={t('settings.library.downloads.autoDownloadLabel')}
         subtext={t('settings.library.downloads.autoDownloadSubtext')}
@@ -58,12 +37,6 @@ const Downloads: React.FC = () => {
         subtext={t('settings.library.downloads.wifiOnlySubtext')}
         value={downloadOnWifiOnly}
         onValueChange={value => dispatch(setDownloadOnWifiOnly(value))}
-      />
-      <SettingsDivider />
-      <SettingsRow
-        testID="downloads-more-info"
-        label={t('settings.library.downloads.moreInfo')}
-        onPress={() => router.push('/downloadsView')}
       />
     </SettingsCard>
     </>

@@ -1,7 +1,7 @@
+import { motion, onDark } from '@/constants/design';
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, type GestureResponderEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
-import { onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type SeekableProgressBarProps = {
@@ -39,7 +39,7 @@ export const SeekableProgressBar: React.FC<SeekableProgressBarProps> = ({
       if (Math.abs(ratio - pendingRatio.current) > 0.02) return;
       pendingRatio.current = -1;
     }
-    displayRatio.value = withTiming(ratio, { duration: 1000, easing: Easing.linear });
+    displayRatio.value = withTiming(ratio, { duration: motion.progress, easing: Easing.linear });
   }, [value, duration, displayRatio]);
 
   const handleTouch = (evt: GestureResponderEvent) => {

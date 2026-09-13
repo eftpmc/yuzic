@@ -30,7 +30,7 @@ export async function getSimilarArtists(
         name: s.name,
         cover: s.coverArt
           ? { kind: 'navidrome' as const, coverArtId: s.coverArt }
-          : { kind: 'letter' as const, name: s.name },
+          : { kind: 'none' as const },
         subtext: '',
       }));
   } catch (error) {

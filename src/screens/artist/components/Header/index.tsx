@@ -1,3 +1,4 @@
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +17,7 @@ import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { Artist, ExternalArtist, Song } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useTracks } from '@/hooks/tracks';
 import { buildCover } from '@/utils/builders/buildCover';
@@ -39,7 +40,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import DownloadStateIcon from '@/components/DownloadStateIcon';
 import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useArtworkEnrichment } from '@/features/metadata/useArtworkEnrichment';
 
@@ -134,7 +134,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color={onDark.text} style={{ marginLeft: -2 }} />
             </Touchable>
             {localArtist ? (
               <LocalOptionsButton artist={localArtist} />
@@ -306,7 +306,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
     })();
 
     if (!songs.length) {
-      toast.error(t('common.oneSecond'));
+      notify.error(t('common.oneSecond'));
       return;
     }
 
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     overflow: 'hidden',
-    backgroundColor: '#222',
+    backgroundColor: onDark.muted,
     alignItems: 'center',
     justifyContent: 'center',
   },

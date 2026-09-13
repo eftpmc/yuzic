@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { FilePlus2, ChevronRight } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -34,13 +34,13 @@ export default function LocalFileImport() {
       const outcome = await pickAndImportLocalFiles();
       if (!outcome) return;
       if (outcome.imported) {
-        toast.success(t('onboarding.local.imported', { count: outcome.imported }));
+        notify.success(t('onboarding.local.imported', { count: outcome.imported }));
         await sync(true);
       }
-      if (outcome.unsupported) toast.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
-      if (outcome.failed) toast.error(t('onboarding.local.importFailed'));
+      if (outcome.unsupported) notify.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
+      if (outcome.failed) notify.error(t('onboarding.local.importFailed'));
     } catch {
-      toast.error(t('onboarding.local.importFailed'));
+      notify.error(t('onboarding.local.importFailed'));
     } finally {
       setImporting(false);
     }

@@ -45,8 +45,8 @@ jest.mock('@/utils/useSheetRef', () => ({
   useSheetRef: () => ({ current: null }),
 }));
 
-jest.mock('@backpackapp-io/react-native-toast', () => ({
-  toast: Object.assign(jest.fn(), { error: jest.fn() }),
+jest.mock('@/components/toast', () => ({
+  notify: { info: jest.fn(), success: jest.fn(), error: jest.fn(), loading: jest.fn(), dismiss: jest.fn() },
 }));
 
 jest.mock('@/components/MediaListRow', () => {

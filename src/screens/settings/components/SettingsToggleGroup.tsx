@@ -1,8 +1,7 @@
+import { onDark, spacing, typography } from '@/constants/design';
 import React, { memo } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, typography } from '@/constants/design';
-
 export type ToggleItem = {
   label: string;
   subtext: string;
@@ -34,7 +33,7 @@ const SettingsToggleGroup: React.FC<Props> = ({ items }) => {
               value={item.value}
               onValueChange={item.onValueChange}
               trackColor={{ true: colors.themeColor }}
-              thumbColor="#fff"
+              thumbColor={onDark.text}
             />
           </View>
         ))}

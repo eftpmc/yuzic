@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import SettingsScreen from '../../components/SettingsScreen';
 import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsAuthCard from '../../components/SettingsAuthCard';
-import SettingsToggleGroup from '../../components/SettingsToggleGroup';
 import SettingsDisconnectButton from '../../components/SettingsDisconnectButton';
 import * as audiomuse from '@/api/audiomuse';
 
@@ -20,7 +19,6 @@ import {
 import {
   setAudiomuseServerUrl,
   setAudiomuseApiToken,
-  setAudiomuseEnabled,
   setAudiomuseAuthenticated,
   connectAudiomuse,
   disconnectAudiomuse,
@@ -47,7 +45,10 @@ const AudiomuseView: React.FC = () => {
       dispatch(setAudiomuseAuthenticated({ serverId, value: false }));
       return;
     }
-    if (isAuthenticated) return;
+    if (isAuthenticated) {
+      if (!isEnabled) dispatch(connectAudiomuse({ serverId }));
+      return;
+    }
 
     let cancelled = false;
     const timeout = setTimeout(async () => {
@@ -60,7 +61,7 @@ const AudiomuseView: React.FC = () => {
       } catch {
         if (!cancelled) {
           dispatch(setAudiomuseAuthenticated({ serverId, value: false }));
-          toast.error(t('settings.audiomuse.connectionFailed'));
+          notify.error(t('settings.audiomuse.connectionFailed'));
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -68,7 +69,7 @@ const AudiomuseView: React.FC = () => {
     }, 500);
 
     return () => { cancelled = true; clearTimeout(timeout); };
-  }, [apiToken, config, dispatch, isAuthenticated, serverId, serverUrl, t]);
+  }, [apiToken, config, dispatch, isAuthenticated, isEnabled, serverId, serverUrl, t]);
 
   const handlePing = useCallback(async () => {
     if (!config.serverUrl || !config.apiToken || isLoading) return;
@@ -78,7 +79,7 @@ const AudiomuseView: React.FC = () => {
       dispatch(connectAudiomuse({ serverId }));
     } catch {
       dispatch(setAudiomuseAuthenticated({ serverId, value: false }));
-      toast.error(t('settings.audiomuse.connectionFailed'));
+      notify.error(t('settings.audiomuse.connectionFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -86,15 +87,8 @@ const AudiomuseView: React.FC = () => {
 
   const handleDisconnect = () => {
     dispatch(disconnectAudiomuse({ serverId }));
-    toast(t('settings.audiomuse.disconnected'));
+    notify.info(t('settings.audiomuse.disconnected'));
   };
-
-  const enableItems = [{
-    label: t('settings.audiomuse.enable'),
-    subtext: t('settings.audiomuse.enableSubtext'),
-    value: isEnabled,
-    onValueChange: (v: boolean) => dispatch(setAudiomuseEnabled({ serverId, value: v })),
-  }];
 
   if (!activeServer) return null;
 
@@ -111,8 +105,6 @@ const AudiomuseView: React.FC = () => {
         connectivityLabel={t('settings.audiomuse.connectivity')}
         onConnectivityPress={handlePing}
       />
-
-      <SettingsToggleGroup items={enableItems} />
 
       {isAuthenticated && (
         <SettingsDisconnectButton

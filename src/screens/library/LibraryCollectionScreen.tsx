@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { toast } from '@backpackapp-io/react-native-toast'
+import { notify } from '@/components/toast';
 
 import { DetailHeaderBar } from '@/components/DetailHeader'
 import { usePlayingActions } from '@/contexts/PlayingContext'
@@ -91,7 +91,7 @@ const LibraryCollectionScreen: React.FC = () => {
     try {
       await playSongs(playableTracks, { shuffle, contextId: 'library-tracks' })
     } catch {
-      toast.error(t('library.collection.playFailed'))
+      notify.error(t('library.collection.playFailed'))
     }
   }, [playableTracks, playSongs, t])
 

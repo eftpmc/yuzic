@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import * as slskd from '@/api/slskd';
-import type { SlskdQueueRecord, SlskdSearchPreferences } from '@/api/slskd';
+import type { SlskdSearchPreferences } from '@/api/slskd';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsSelectCard from '../components/SettingsSelectCard';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
@@ -11,7 +11,6 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectSlskdPreferences } from '@/utils/redux/selectors/downloadersSelectors';
 import { setSlskdPreferences } from '@/utils/redux/slices/downloadersSlice';
 import DownloaderSettingsScreen from './DownloaderSettingsScreen';
-import { useSlskdRenderItem } from './useSlskdRenderItem';
 
 const MIN_BITRATE_OPTIONS: number[] = [0, 128, 192, 256, 320];
 
@@ -88,15 +87,10 @@ const SearchPreferencesCard: React.FC = () => {
 };
 
 const SlskdView: React.FC = () => {
-  const renderItem = useSlskdRenderItem();
-
   return (
-    <DownloaderSettingsScreen<SlskdQueueRecord>
+    <DownloaderSettingsScreen
       id="slskd"
       testConnection={slskd.testConnection}
-      fetchQueueWithDiff={slskd.fetchQueueWithDiff}
-      cancelQueueItem={slskd.cancelQueueItem}
-      renderItem={renderItem}
       extraCards={<SearchPreferencesCard />}
     />
   );

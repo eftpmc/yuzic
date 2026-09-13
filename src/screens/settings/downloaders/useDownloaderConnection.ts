@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { downloaderSelectors } from '@/utils/redux/selectors/downloadersSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -73,7 +73,7 @@ export function useDownloaderConnection(
       } catch {
         if (!cancelled) {
           dispatch(setDownloaderAuthenticated({ serverId, downloader: id, value: false }));
-          toast.error(translate.current(`settings.downloaders.${id}.connectionFailed`));
+          notify.error(translate.current(`settings.downloaders.${id}.connectionFailed`));
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -94,7 +94,7 @@ export function useDownloaderConnection(
       dispatch(connectDownloader({ serverId, downloader: id }));
     } catch {
       dispatch(setDownloaderAuthenticated({ serverId, downloader: id, value: false }));
-      toast.error(t(`settings.downloaders.${id}.connectionFailed`));
+      notify.error(t(`settings.downloaders.${id}.connectionFailed`));
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +102,7 @@ export function useDownloaderConnection(
 
   const disconnect = useCallback(() => {
     dispatch(disconnectDownloader({ serverId, downloader: id }));
-    toast(t(`settings.downloaders.${id}.disconnected`));
+    notify.info(t(`settings.downloaders.${id}.disconnected`));
   }, [dispatch, id, serverId, t]);
 
   return {

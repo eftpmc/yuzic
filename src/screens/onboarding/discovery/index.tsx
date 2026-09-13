@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   enableButtonText: {
     ...typography.sheetTitle,
-    color: '#000',
+    color: onDark.background,
   },
   notNowButton: {
     backgroundColor: onDark.border,

@@ -22,11 +22,6 @@ export const selectAlbumsById = createSelector(
   (albums): Map<string, AlbumBase> => new Map(albums.map(a => [a.id, a]))
 );
 
-export const selectArtistsById = createSelector(
-  selectLibraryArtists,
-  (artists): Map<string, Artist> => new Map(artists.map(a => [a.id, a]))
-);
-
 export const selectSongsById = createSelector(
   selectLibraryTracks,
   (tracks): Map<string, SongBase> => new Map(tracks.map(song => [song.id, song]))

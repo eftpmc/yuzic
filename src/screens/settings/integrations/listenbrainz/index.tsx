@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import SettingsScreen from '../../components/SettingsScreen';
 import SettingsAuthCard from '../../components/SettingsAuthCard';
-import SettingsToggleGroup from '../../components/SettingsToggleGroup';
 import SettingsDisconnectButton from '../../components/SettingsDisconnectButton';
 import {
   selectListenBrainzUsername,
@@ -13,8 +12,6 @@ import {
   selectListenBrainzAuthenticated,
   selectListenBrainzConfig,
 } from '@/utils/redux/selectors/listenbrainzSelectors';
-import { selectListenbrainzDiscoveryEnabled } from '@/utils/redux/selectors/settingsSelectors';
-import { setListenbrainzDiscoveryEnabled } from '@/utils/redux/slices/settingsSlice';
 import {
   setUsername,
   setToken,
@@ -34,17 +31,6 @@ const ListenBrainzView: React.FC = () => {
   const token = useSelector(selectListenBrainzToken);
   const isAuthenticated = useSelector(selectListenBrainzAuthenticated);
   const config = useSelector(selectListenBrainzConfig);
-  const discoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
-
-  const toggleDiscovery = useCallback((v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
-
-  // Discovery reads the public similar-artist graph, which takes no account —
-  // so it sits above the credentials rather than inside the connected-only
-  // block, and it is off until it is switched on like every other source that
-  // talks to somebody else's server.
-  const discoveryItems = useMemo(() => [
-    { label: t('settings.listenBrainz.discovery'), subtext: t('settings.listenBrainz.discoveryDescription'), value: discoveryEnabled, onValueChange: toggleDiscovery },
-  ], [t, discoveryEnabled, toggleDiscovery]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,13 +49,13 @@ const ListenBrainzView: React.FC = () => {
           const result = await listenbrainz.testConnection(config);
           if (!cancelled) {
             dispatch(setAuthenticated({ serverId, value: result.success }));
-            if (!result.success) toast.error(result.message || t('settings.listenBrainz.connectFailed'));
+            if (!result.success) notify.error(result.message || t('settings.listenBrainz.connectFailed'));
           }
         }
       } catch {
         if (!cancelled) {
           dispatch(setAuthenticated({ serverId, value: false }));
-          toast.error(t('settings.listenBrainz.connectFailed'));
+          notify.error(t('settings.listenBrainz.connectFailed'));
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -81,7 +67,7 @@ const ListenBrainzView: React.FC = () => {
 
   const handlePing = async () => {
     if (!username || !token) {
-      toast.error(t('settings.listenBrainz.missingCredentials'));
+      notify.error(t('settings.listenBrainz.missingCredentials'));
       return;
     }
     setIsLoading(true);
@@ -90,13 +76,13 @@ const ListenBrainzView: React.FC = () => {
       const result = await listenbrainz.testConnection(config);
       dispatch(setAuthenticated({ serverId, value: result.success }));
       if (result.success) {
-        toast.success(t('settings.listenBrainz.connectionSuccessful'));
+        notify.success(t('settings.listenBrainz.connectionSuccessful'));
       } else {
-        toast.error(result.message || t('settings.listenBrainz.connectionFailed'));
+        notify.error(result.message || t('settings.listenBrainz.connectionFailed'));
       }
     } catch {
       dispatch(setAuthenticated({ serverId, value: false }));
-      toast.error(t('settings.listenBrainz.connectFailed'));
+      notify.error(t('settings.listenBrainz.connectFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -104,15 +90,13 @@ const ListenBrainzView: React.FC = () => {
 
   const handleDisconnect = () => {
     dispatch(disconnect({ serverId }));
-    toast(t('settings.listenBrainz.disconnected'));
+    notify.info(t('settings.listenBrainz.disconnected'));
   };
 
   if (!activeServer) return null;
 
   return (
     <SettingsScreen title={t('settings.listenBrainz.title')}>
-      <SettingsToggleGroup items={discoveryItems} />
-
       <SettingsAuthCard
         fields={[
           { label: t('settings.listenBrainz.username'), value: username, onChangeText: v => dispatch(setUsername({ serverId, value: v.trim() })), placeholder: t('settings.listenBrainz.usernamePlaceholder') },

@@ -447,8 +447,9 @@ appId: com.arinora.rawarr
 # fill only the top ~11% of a 2732px screen and the `bottom` layout crops
 # exactly that strip away, leaving the shot almost empty; switching that
 # collection to a grid only moved the void down. The shipped iPad reference is
-# a different screen entirely — the settings one, whose per-item rows (size,
-# date, delete) plus the provider header fill the frame at this height.
+# a different screen entirely — the Library → Offline screen, whose per-item
+# rows (size, date, delete) plus the storage summary fill the frame at this
+# height.
 #
 # Navigated by tapping, not by `openLink`: a scheme URL raises iOS's
 # "Open in Yuzic?" alert, which is a system alert outside the app's hierarchy,
@@ -459,18 +460,14 @@ appId: com.arinora.rawarr
       true: ${SHOT_DEVICE == 'ipad'}
     commands:
       - tapOn:
-          text: "Account"
-      - tapOn:
-          id: "account-settings"
-      - tapOn:
-          id: "settings-row-library"
+          id: "library-tab"
       - scrollUntilVisible:
           element:
-            id: "downloads-more-info"
+            id: "library-entry-downloaded"
           direction: DOWN
           timeout: 30000
       - tapOn:
-          id: "downloads-more-info"
+          id: "library-entry-downloaded"
       - extendedWaitUntil:
           visible:
             id: "offline-section"

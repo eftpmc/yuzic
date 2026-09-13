@@ -37,6 +37,20 @@ export const spacing = {
   headerOffset: 60,
 } as const;
 
+export const motion = {
+  pressIn: 80, pressOut: 150, quick: 140, titleFade: 180, favorite: 200,
+  swipe: 220, contentFade: 240, modeChange: 300, washArrival: 450,
+  indeterminate: 900, progress: 1000, backgroundArrival: 1200,
+  easing: { linear: 'linear', standard: 'cubic' },
+} as const;
+
+export const shadow = {
+  toast: { shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
+  primaryButton: { shadowOpacity: 0.3, shadowRadius: 6, shadowOffset: { width: 0, height: 5 }, elevation: 5 },
+  selectedSwatch: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 3 },
+  none: { shadowOpacity: 0, elevation: 0 },
+} as const;
+
 export const statusColor = {
   favorite: '#ff3b30',
   destructive: '#ff3b30',
@@ -46,6 +60,13 @@ export const statusColor = {
    *  that would look shouty in the pure iOS orange. */
   warningText: '#f59e0b',
   downloading: '#007AFF',
+  errorText: '#e57373',
+} as const;
+
+export const fixedColor = {
+  onboardingBlue: '#1f6feb',
+  onboardingWarningSurface: '#1c1400',
+  onboardingWarningBorder: '#78450a',
 } as const;
 
 /**
@@ -59,6 +80,7 @@ export const sourceColor = {
   lastfm: '#D51007',
   listenbrainz: '#EB743B',
   musicbrainz: '#BA478F',
+  audiomuse: '#7C3AED',
 } as const;
 
 /**
@@ -101,6 +123,9 @@ export const stateLayer = {
   rippleDark: 'rgba(255, 255, 255, 0.12)',
   rippleLight: 'rgba(0, 0, 0, 0.10)',
   pressedOpacity: 0.6,
+  disabledTextOpacity: 0.35, disabledOpacity: 0.4, inactiveOpacity: 0.45,
+  mutedOpacity: 0.5, secondaryOpacity: 0.55, secondaryContentOpacity: 0.7,
+  selectedOpacity: 0.9, decorativeOpacity: 0.07, subtleOpacity: 0.08,
 } as const;
 
 /**
@@ -453,4 +478,7 @@ export type SemanticThemeColors = {
   destructiveOnSurface: string;
   /** Warning-toned foreground for inline text like unsaved-changes hints. */
   warningText: string;
+  /** Elevated surface for floating transient UI (toasts) that must read as
+   *  distinct from the playing bar / tab bar, which both use `card`. */
+  toastSurface: string;
 };

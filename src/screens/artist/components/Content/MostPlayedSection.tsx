@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useTheme } from '@/hooks/useTheme'
 import { useTranslation } from 'react-i18next'
-import { toast } from '@backpackapp-io/react-native-toast'
+import { notify } from '@/components/toast';
 import { selectSongPlayCounts } from '@/utils/redux/selectors/statsSelectors'
 import { useTracks } from '@/hooks/tracks'
 import { usePlayingActions } from '@/contexts/PlayingContext'
@@ -38,7 +38,7 @@ export default function MostPlayedSection({ artist }: Props) {
       const song = await resolvePlayableSong(trackId);
       if (song) await playSong(song);
     } catch {
-      toast.error(t('common.playbackError'));
+      notify.error(t('common.playbackError'));
     }
   }
 

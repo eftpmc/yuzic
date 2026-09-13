@@ -4,6 +4,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import { selectHomeShelfItemCount } from '@/utils/redux/selectors/settingsSelectors'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useTheme } from '@/hooks/useTheme'
 import { useAlbums } from '@/hooks/albums'
@@ -28,7 +29,6 @@ import MediaTile from './MediaTile'
 import SkeletonTiles from '@/components/SkeletonTiles'
 import type { ExternalAlbumBase } from '@/types'
 import {
-  HOME_TARGET_ALBUMS,
   HOME_SEED_ARTISTS,
   HOME_RELATED_PER_SEED,
   HOME_GENRE_ARTIST_LIMIT,
@@ -75,7 +75,8 @@ function findDeezerGenreId(
 async function fetchAlbumsForGenre(
   genre: string,
   seedArtistNames: string[],
-  libraryArtistNames: Set<string>
+  libraryArtistNames: Set<string>,
+  itemCount: number
 ): Promise<ExternalAlbumBase[]> {
   const albums: ExternalAlbumBase[] = []
   if (seedArtistNames.length > 0) {
@@ -99,10 +100,10 @@ async function fetchAlbumsForGenre(
         return true
       })
 
-    albums.push(...await collectCoveredAlbumsForArtists(relatedArtists, { targetAlbums: HOME_TARGET_ALBUMS }))
+    albums.push(...await collectCoveredAlbumsForArtists(relatedArtists, { targetAlbums: itemCount }))
   }
 
-  if (albums.length >= HOME_TARGET_ALBUMS) return albums
+  if (albums.length >= itemCount) return albums
 
   const genreList = await deezer.getDeezerGenreList()
   const genreId = findDeezerGenreId(genre, genreList)
@@ -112,10 +113,10 @@ async function fetchAlbumsForGenre(
   const fresh = artists.filter(a => !libraryArtistNames.has(a.name.toLowerCase()))
 
   albums.push(...await collectCoveredAlbumsForArtists(fresh, {
-    targetAlbums: HOME_TARGET_ALBUMS - albums.length,
+    targetAlbums: itemCount - albums.length,
     excludeAlbumIds: albums.map(album => album.id),
   }))
-  return albums.slice(0, HOME_TARGET_ALBUMS)
+  return albums.slice(0, itemCount)
 }
 
 type Props = {
@@ -134,6 +135,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
   const { width: screenWidth } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   const dayKey = getDayKey()
+  const itemCount = useSelector(selectHomeShelfItemCount)
   const isEnabled = useDeezerDiscoveryEnabled()
 
   const [selectedGenre, setSelectedGenre] = React.useState<string>(genre)
@@ -192,7 +194,7 @@ export default function GenreSection({ genre, refreshKey = 0 }: Props) {
     // gains or loses artists — otherwise stale results would include artists
     // that are now in the library (or exclude ones that have been removed).
     queryKey: [QueryKeys.ExploreGenreRow, dayKey, selectedGenre, seedArtistNames.join('|'), libraryArtists.length, refreshKey],
-    queryFn: () => fetchAlbumsForGenre(selectedGenre, seedArtistNames, libraryArtistNames),
+    queryFn: () => fetchAlbumsForGenre(selectedGenre, seedArtistNames, libraryArtistNames, itemCount),
     enabled: isEnabled,
     staleTime: STALE_DEEZER_DISCOVERY,
     networkMode: 'online',
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
-    gap: 5,
+    gap: spacing.tight,
     marginBottom: spacing.md,
     marginLeft: H_PADDING,
     marginRight: H_PADDING,

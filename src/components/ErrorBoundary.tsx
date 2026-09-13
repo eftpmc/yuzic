@@ -1,9 +1,8 @@
+import { onDark, radius, spacing, typography } from '@/constants/design';
 import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import RNRestart from 'react-native-restart';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
-
 interface Props {
   children: ReactNode;
 }
@@ -44,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: onDark.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xxl,
@@ -52,25 +51,25 @@ const styles = StyleSheet.create({
   title: {
     ...typography.sectionTitle,
     fontWeight: '700',
-    color: '#fff',
+    color: onDark.text,
     marginBottom: spacing.md,
   },
   message: {
     ...typography.rowSubtitle,
-    color: '#aaa',
+    color: onDark.subtext,
     textAlign: 'center',
     marginBottom: spacing.xxl,
   },
   button: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: onDark.surfaceElevated,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: onDark.border,
   },
   buttonText: {
     ...typography.button,
-    color: '#fff',
+    color: onDark.text,
   },
 });

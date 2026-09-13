@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { useApi } from '@/api';
 import * as listenbrainz from '@/api/listenbrainz';
@@ -174,13 +174,13 @@ export default function OfflineMutationReplayer() {
       }
 
       if (syncedCount > 0) {
-        toast.success(i18n.t('common.offline.syncedChanges'), {
+        notify.success(i18n.t('common.offline.syncedChanges'), {
           id: SYNCED_TOAST_ID,
         });
       }
 
       if (failedCount > 0) {
-        toast.error(i18n.t('common.offline.syncQueuedChangesFailed'), {
+        notify.error(i18n.t('common.offline.syncQueuedChangesFailed'), {
           id: FAILED_TOAST_ID,
         });
       }

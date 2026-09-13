@@ -1,3 +1,4 @@
+import { hitSlopFor, iconSize, motion, spacing, typography } from '@/constants/design';
 import React, { forwardRef, useRef, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,8 +24,6 @@ import { LyricsResult } from '@/api/types';
 import { ChevronDown } from 'lucide-react-native';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
-
 type LyricsBottomSheetProps = {
   lyrics: LyricsResult | null;
   onClose: () => void;
@@ -57,7 +56,7 @@ function LyricLine({
   const opacity = useSharedValue(opacityTarget);
 
   useEffect(() => {
-    opacity.value = withTiming(opacityTarget, { duration: 240 });
+    opacity.value = withTiming(opacityTarget, { duration: motion.contentFade });
   }, [opacity, opacityTarget]);
 
   const animatedStyle = useAnimatedStyle(() => ({

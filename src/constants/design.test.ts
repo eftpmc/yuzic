@@ -1,3 +1,4 @@
+import { motion, shadow, stateLayer } from './design'
 import {
   controlSize,
   hitSlopFor,
@@ -186,3 +187,5 @@ describe('withScaledLeading', () => {
     expect(Object.keys(withScaledLeading(scale, 2))).toEqual(Object.keys(scale))
   })
 })
+
+describe('new visual tokens', () => { it('preserves motion, shadow, and state values', () => { expect(motion.backgroundArrival).toBe(1200); expect(motion.easing.standard).toBe('cubic'); expect(shadow.toast.elevation).toBe(6); expect(stateLayer.disabledOpacity).toBe(0.4) }) })

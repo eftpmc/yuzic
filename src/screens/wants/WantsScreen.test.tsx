@@ -7,8 +7,9 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string, opts?: any) => (opts?.title ? `${key}:${opts.title}` : key) }),
 }));
 
+const mockNavigate = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), back: jest.fn(), navigate: mockNavigate }),
 }));
 
 jest.mock('@/hooks/useTheme', () => ({
@@ -39,12 +40,19 @@ jest.mock('@/components/MediaImage', () => {
   return { MediaImage: () => <View testID="media-image-mock" /> };
 });
 
-const mockOpen = jest.fn();
-jest.mock('@/components/options/ManualAddWantSheet', () => {
+jest.mock('@/components/EmptyState', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factory can't reference outer-scope imports
-  const { Text } = require('react-native');
+  const { Text, View } = require('react-native');
   return {
-    useManualAddWantSheet: () => ({ open: mockOpen, sheet: <Text testID="manual-add-sheet-mock" /> }),
+    __esModule: true,
+    default: ({ message, action }: any) => (
+      <View>
+        <Text>{message}</Text>
+        {action ? (
+          <Text testID="empty-action" onPress={action.onPress}>{action.label}</Text>
+        ) : null}
+      </View>
+    ),
   };
 });
 
@@ -68,7 +76,7 @@ jest.mock('@/utils/redux/slices/wantsSlice', () => ({
 describe('WantsScreen', () => {
   beforeEach(() => {
     mockWants = [];
-    mockOpen.mockClear();
+    mockNavigate.mockClear();
     mockDispatch.mockClear();
   });
 
@@ -89,12 +97,11 @@ describe('WantsScreen', () => {
     expect(view.getByText('Album Title')).toBeTruthy();
   });
 
-  it('exposes the Manual Add opener wired to useManualAddWantSheet()', async () => {
+  it('navigates to Search from the empty-state action', async () => {
     const view = await render(<WantsScreen />);
-    fireEvent.press(view.getByTestId('wants-manual-add'));
+    fireEvent.press(view.getByTestId('empty-action'));
 
-    expect(mockOpen).toHaveBeenCalledTimes(1);
-    expect(view.getByTestId('manual-add-sheet-mock')).toBeTruthy();
+    expect(mockNavigate).toHaveBeenCalledWith('/(home)/(tabs)/(search)');
   });
 
   it('removes a want when its remove control is pressed', async () => {

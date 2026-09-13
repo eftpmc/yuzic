@@ -28,6 +28,8 @@ jest.mock('react-redux', () => ({
         return false;
       case 'audiomuseEnabled':
         return true;
+      case 'audiomuseAuthenticated':
+        return true;
       default:
         return undefined;
     }
@@ -47,6 +49,7 @@ jest.mock('@/utils/redux/selectors/settingsSelectors', () => ({
 
 jest.mock('@/utils/redux/selectors/audiomuseSelectors', () => ({
   selectAudiomuseEnabled: 'audiomuseEnabled',
+  selectAudiomuseAuthenticated: 'audiomuseAuthenticated',
 }));
 
 jest.mock('@/features/downloaders/registry', () => ({
@@ -58,13 +61,13 @@ jest.mock('@/features/downloaders/registry', () => ({
 }));
 
 describe('ConnectionsView', () => {
-  it('lists every provider from both former hubs with its route', async () => {
+  it('lists only managed integrations and downloaders, not feature-source toggles', async () => {
     const view = await render(<ConnectionsView />);
 
-    // Library & discovery sources (formerly the Integrations hub).
-    expect(view.getByText('Deezer')).toBeTruthy();
-    expect(view.getByText('MusicBrainz')).toBeTruthy();
-    expect(view.getByText('Last.fm')).toBeTruthy();
+    expect(view.queryByText('Deezer')).toBeNull();
+    expect(view.queryByText('MusicBrainz')).toBeNull();
+    expect(view.queryByText('Last.fm')).toBeNull();
+
     expect(view.getByText('ListenBrainz')).toBeTruthy();
     expect(view.getByText('AudioMuse-AI')).toBeTruthy();
 
@@ -73,9 +76,11 @@ describe('ConnectionsView', () => {
     expect(view.getByText('settings.downloaders.lidarr.title')).toBeTruthy();
     expect(view.getByText('settings.downloaders.slskd.title')).toBeTruthy();
     expect(view.getByText('settings.downloaders.soulsync.title')).toBeTruthy();
+    expect(view.getAllByText('settings.connections.status.ready')).toHaveLength(2);
+    expect(view.getAllByText('settings.connections.status.notSetUp')).toHaveLength(2);
 
-    fireEvent.press(view.getByText('Deezer'));
-    expect(mockPush).toHaveBeenCalledWith('/settings/deezerView');
+    fireEvent.press(view.getByText('AudioMuse-AI'));
+    expect(mockPush).toHaveBeenCalledWith('/settings/audiomuseView');
 
     fireEvent.press(view.getByText('settings.downloaders.lidarr.title'));
     expect(mockPush).toHaveBeenCalledWith('/settings/lidarrView');

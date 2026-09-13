@@ -7,7 +7,7 @@ import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useRouter } from 'expo-router';
 import { useApi } from '@/api';
 import { disconnect } from '@/utils/redux/slices/serversSlice';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { useTheme } from '@/hooks/useTheme';
 import { useQueryClient } from '@tanstack/react-query';
@@ -52,9 +52,9 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
     close();
     try {
       const result = await api.auth.startScan();
-      toast.success(result?.message ?? t('home.account.scanTriggered'));
+      notify.success(result?.message ?? t('home.account.scanTriggered'));
     } catch {
-      toast.error(t('home.account.scanFailed'));
+      notify.error(t('home.account.scanFailed'));
     }
   };
 
@@ -68,7 +68,7 @@ const AccountBottomSheet = forwardRef<BottomSheetModal, Props>(({ onDismiss }, r
       queryClient.clear();
       router.replace('/(onboarding)');
     } catch {
-      toast.error(t('home.account.signOutFailed'));
+      notify.error(t('home.account.signOutFailed'));
     }
   };
 
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.rowGap,
     marginBottom: spacing.lg,
   },
   headerInfo: {
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   serverMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.tight,
   },
   typeBadge: {
     paddingHorizontal: spacing.tight,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.rowGap,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
   },

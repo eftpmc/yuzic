@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ExternalSourcePickerSheet, { type PickerItem } from '@/components/ExternalSourcePickerSheet';
 import { useEnabledExternalSources, type SourceResolvedAlbum, type SourceResolvedArtist } from './registry';
@@ -46,7 +46,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     }
 
     if (enabledSources.length === 0) {
-      toast.error(NO_SOURCE_TOAST);
+      notify.error(NO_SOURCE_TOAST);
       return;
     }
 
@@ -62,7 +62,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     )).filter(Boolean) as SourceResolvedAlbum[];
 
     if (results.length === 0) {
-      toast.error('This album could not be found on any enabled source.');
+      notify.error('This album could not be found on any enabled source.');
       return;
     }
     if (results.length === 1) {
@@ -81,7 +81,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     }
 
     if (enabledSources.length === 0) {
-      toast.error(NO_SOURCE_TOAST);
+      notify.error(NO_SOURCE_TOAST);
       return;
     }
 
@@ -95,7 +95,7 @@ export function ExternalResolutionProvider({ children }: { children: React.React
     )).filter(Boolean) as SourceResolvedArtist[];
 
     if (results.length === 0) {
-      toast.error('This artist could not be found on any enabled source.');
+      notify.error('This artist could not be found on any enabled source.');
       return;
     }
     if (results.length === 1) {

@@ -3,7 +3,7 @@ import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { CloudOff, Pencil, Plus, Radio as RadioIcon, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
@@ -69,7 +69,7 @@ export default function RadioScreen() {
               await api.radio?.remove(station.id);
               await queryClient.invalidateQueries({ queryKey: [QueryKeys.Radio] });
             } catch {
-              toast.error(t('common.error.unexpected'));
+              notify.error(t('common.error.unexpected'));
             }
           },
         },
@@ -239,7 +239,7 @@ function StationEditor({
       await onSaved();
       return true;
     } catch {
-      toast.error(t('common.error.unexpected'));
+      notify.error(t('common.error.unexpected'));
       return false;
     }
   }, [api.radio, homepageUrl, initial, name, onSaved, streamUrl, t]);

@@ -59,7 +59,7 @@ module.exports = defineConfig([
     files: SCALED_FILES,
     // The scale file is where the numbers live, and its test has to write a
     // fixture scale to check the scaling with.
-    ignores: ["src/constants/design.ts", "src/constants/design.test.ts"],
+    ignores: ["src/constants/design.ts", "src/constants/design.test.ts", "**/*.test.ts", "**/*.test.tsx"],
     plugins: { yuzic },
     rules: {
       "no-restricted-syntax": [
@@ -70,6 +70,12 @@ module.exports = defineConfig([
         conditionalLiteralValue("fontSize", "typography"),
         conditionalLiteralValue("borderRadius", "radius"),
         ...SPACING_PROPERTIES.map(p => conditionalLiteralValue(p, "spacing")),
+        { selector: "Property[key.name=/^(gap|rowGap|columnGap)$/][value.type='Literal'][value.value!=0]", message: "Use a spacing token from @/constants/design instead of a literal gap." },
+        { selector: "CallExpression[callee.name='withTiming'] Property[key.name='duration'][value.type='Literal'][value.value!=0]", message: "Use a motion token from @/constants/design instead of a literal animation duration." },
+        { selector: "CallExpression[callee.property.name='setOptions'] Property[key.name='duration'][value.type='Literal'][value.value!=0]", message: "Use a motion token from @/constants/design instead of a literal animation duration." },
+        { selector: "Property[key.name='shadowOpacity'][value.type='Literal'][value.value!=0]", message: "Use a shadow/stateLayer token from @/constants/design instead of a literal shadowOpacity." },
+        { selector: "Property[key.name='elevation'][value.type='Literal'][value.value!=0]", message: "Use a shadow token from @/constants/design instead of a literal elevation." },
+        { selector: "Property[key.name=/^(color|backgroundColor|borderColor|shadowColor|tintColor|placeholderTextColor)$/][value.type='Literal'][value.value=/^#/]", message: "Use a semantic color token from @/constants/design or useTheme instead of a raw hex color." },
         // The glyph scale, which lives on a JSX attribute rather than a style
         // property — so none of the selectors above could ever have seen it,
         // and it drifted to 20 distinct values across 294 icons.

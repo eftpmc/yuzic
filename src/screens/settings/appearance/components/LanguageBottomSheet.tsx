@@ -1,132 +1,15 @@
 import React, { forwardRef, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-import { Languages, Check } from 'lucide-react-native';
-import { useSelector } from 'react-redux';
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-
-import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { useTheme } from '@/hooks/useTheme';
-import { AVAILABLE_LANGUAGES } from '@/constants/languages';
+import { Languages } from 'lucide-react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
-import { renderBackdrop } from '@/components/BottomSheetBackdrop';
-import Touchable from '@/components/Touchable';
-import { iconSize, spacing, typography } from '@/constants/design';
-import { useRadius } from '@/hooks/useRadius';
-import { withAlpha } from '@/features/theme/coverAccent';
+import { AVAILABLE_LANGUAGES } from '@/constants/languages';
+import SingleSelectBottomSheet, { type SingleSelectOption } from '@/components/SingleSelectBottomSheet';
 
-interface LanguageBottomSheetProps {
-  selected: string;
-  onSelect: (code: string) => void;
-}
-
-const LanguageBottomSheet = forwardRef<
-  BottomSheetModal,
-  LanguageBottomSheetProps
->(({ selected, onSelect }, ref) => {
-  const themeColor = useSelector(selectThemeColor);
-  const { colors } = useTheme();
-  const rad = useRadius();
+interface LanguageBottomSheetProps { selected: string; onSelect: (code: string) => void; }
+const LanguageBottomSheet = forwardRef<BottomSheetModal, LanguageBottomSheetProps>(({ selected, onSelect }, ref) => {
   const { t } = useTranslation();
-
-  const snapPoints = useMemo(() => ['35%'], []);
-
-  return (
-    <BottomSheetModal
-      ref={ref}
-      snapPoints={snapPoints}
-      enableDynamicSizing={false}
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      backgroundStyle={{
-        backgroundColor: colors.card,
-      }}
-      handleIndicatorStyle={{
-        backgroundColor: colors.border,
-      }}
-    >
-      <BottomSheetView style={styles.sheetContainer}>
-        <Text
-          style={[styles.sheetTitle, { color: colors.secondary }]}
-        >
-          {t('settings.appearance.language.title')}
-        </Text>
-
-        {AVAILABLE_LANGUAGES.map(lang => {
-          const isSelected = selected === lang.code;
-
-          return (
-            <Touchable
-              key={lang.code}
-              style={[
-                styles.pickerItem,
-                {
-                  backgroundColor: isSelected
-                    ? withAlpha(themeColor, 0.13)
-                    : 'transparent',
-                  borderRadius: rad.md,
-                },
-              ]}
-              onPress={() => onSelect(lang.code)}
-            >
-              <View style={styles.pickerLeft}>
-                <Languages
-                  size={iconSize.row}
-                  color={isSelected ? themeColor : colors.subtext}
-                  style={{ marginRight: spacing.controlGap }}
-                />
-                <Text
-                  style={[
-                    styles.pickerText,
-                    { color: colors.secondary, fontWeight: isSelected ? '600' : '400' },
-                  ]}
-                >
-                  {t(lang.translationKey)}
-                </Text>
-              </View>
-
-              {isSelected && (
-                <Check
-                  size={iconSize.control}
-                  color={themeColor}
-                />
-              )}
-            </Touchable>
-          );
-        })}
-      </BottomSheetView>
-    </BottomSheetModal>
-  );
+  const options = useMemo<SingleSelectOption[]>(() => AVAILABLE_LANGUAGES.map(lang => ({ value: lang.code, label: t(lang.translationKey), Icon: Languages })), [t]);
+  return <SingleSelectBottomSheet ref={ref} selected={selected} options={options} title={t('settings.appearance.language.title')} snapPoint="35%" onSelect={onSelect} />;
 });
-
 LanguageBottomSheet.displayName = 'LanguageBottomSheet';
-
 export default LanguageBottomSheet;
-
-const styles = StyleSheet.create({
-  sheetContainer: {
-    paddingHorizontal: spacing.roomy,
-    paddingTop: spacing.controlGap,
-  },
-  sheetTitle: {
-    ...typography.sheetTitle,
-    marginBottom: spacing.controlGap,
-  },
-  pickerItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
-  },
-  pickerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  pickerText: {
-    ...typography.body,
-  },
-});

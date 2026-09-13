@@ -24,7 +24,7 @@ export function podcastEpisodeToSong(
     albumTitle: channel?.title,
     cover: channel?.coverArt
       ? { kind: 'navidrome', coverArtId: channel.coverArt }
-      : { kind: 'letter', name: channel?.title ?? episode.title },
+      : { kind: 'none' },
     duration: String(episode.durationSeconds ?? 0),
     streamUrl,
     // Kept so the URL can be rebuilt later without storing the signed one.

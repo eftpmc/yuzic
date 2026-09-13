@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { ArrowDownCircle, CheckCircle, Play } from 'lucide-react-native';
 
 import { useApi } from '@/api';
@@ -74,12 +74,12 @@ export default function PodcastChannelScreen() {
     if (!api.podcasts) return;
     try {
       await api.podcasts.downloadEpisode(episode.id);
-      toast(t('podcasts.downloadStarted'));
+      notify.info(t('podcasts.downloadStarted'));
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: [QueryKeys.Podcasts, 'withEpisodes'] });
       }, 5_000);
     } catch {
-      toast.error(t('common.error.unexpected'));
+      notify.error(t('common.error.unexpected'));
     }
   }, [api.podcasts, queryClient, t]);
 

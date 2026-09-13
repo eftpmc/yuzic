@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useTranslation } from 'react-i18next';
 
 import { useLibrary } from '@/contexts/LibraryContext';
@@ -23,7 +23,7 @@ import { findArrivedWants } from './arrival';
  * Bandcamp download dropped in by hand) resolves the want. There is
  * deliberately no separate "Arrived" collection; Recently Added already
  * covers that, so a resolved want is simply removed from the active list
- * with a brief toast.
+ * with a brief notification.
  */
 export function useWantArrivalWatcher(): void {
   const { t } = useTranslation();
@@ -59,7 +59,7 @@ export function useWantArrivalWatcher(): void {
     for (const want of arrived) {
       resolvedRef.current.add(want.localId);
       dispatch(removeWant({ serverId: activeServerId, localId: want.localId }));
-      toast.success(t('externalAlbum.menu.arrived', { title: want.title }));
+      notify.success(t('externalAlbum.menu.arrived', { title: want.title }));
     }
   }, [activeServerId, wants, albums, tracks, dispatch, t]);
 }

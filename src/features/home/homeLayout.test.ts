@@ -2,6 +2,7 @@ import {
   buildDiscoverySections,
   buildLibrarySections,
   buildResumeSections,
+  customizeHomeSections,
 } from './homeLayout'
 
 const discovery = (overrides: Partial<Parameters<typeof buildDiscoverySections>[0]> = {}) =>
@@ -12,6 +13,19 @@ const discovery = (overrides: Partial<Parameters<typeof buildDiscoverySections>[
     topGenres: ['Jazz'],
     ...overrides,
   })
+
+describe('customizeHomeSections', () => {
+  it('filters hidden shelves and reorders only within the supplied tier', () => {
+    const sections = [{ key: 'a', type: 'quickPicks' as const }, { key: 'b', type: 'recentlyPlayed' as const }, { key: 'c', type: 'continuePlaying' as const }]
+    expect(customizeHomeSections(sections, { b: false }, ['c', 'a']).map(s => s.key)).toEqual(['c', 'a'])
+  })
+
+  it('falls back to newly available shelves after a persisted order', () => {
+    const sections = [{ key: 'a', type: 'quickPicks' as const }, { key: 'b', type: 'recentlyPlayed' as const }]
+    expect(customizeHomeSections(sections, {}, ['b']).map(s => s.key)).toEqual(['b', 'a'])
+  })
+})
+
 
 describe('buildResumeSections', () => {
   it('leads with what you were listening to', () => {

@@ -1,5 +1,5 @@
+import { iconSize, onDark, spacing, statusColor } from '@/constants/design';
 import React, { useCallback, useMemo } from 'react';
-import { iconSize, spacing, statusColor } from '@/constants/design';
 import {
   StyleSheet,
 } from 'react-native';
@@ -315,7 +315,7 @@ function ExternalActionRow({ album }: { album: ExternalAlbum }) {
         >
           <CloudDownload
             size={iconSize.control}
-            color={!canDownload || albumStatus.kind !== 'none' ? 'rgba(255,255,255,0.4)' : '#fff'}
+            color={!canDownload || albumStatus.kind !== 'none' ? 'rgba(255,255,255,0.4)' : onDark.text}
           />
         </DetailPlayAction>
 

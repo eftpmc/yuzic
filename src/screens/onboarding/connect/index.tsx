@@ -1,3 +1,4 @@
+import { iconSize, onDark, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,7 +9,7 @@ import {
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,7 +18,6 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
 
@@ -39,7 +39,7 @@ export default function Connect() {
 
     const handleNext = () => {
         if (!selectedType) {
-            toast.error(t('onboarding.connect.selectTypeFirst'));
+            notify.error(t('onboarding.connect.selectTypeFirst'));
             return;
         }
         if (selectedType === 'local') {
@@ -68,7 +68,7 @@ export default function Connect() {
         if (!selectedType) return;
         const provider = SERVER_PROVIDERS[selectedType];
         if (!provider.capabilities.supportsDemo || !provider.demo) {
-            toast.error(t('onboarding.connect.demoUnavailableProvider'));
+            notify.error(t('onboarding.connect.demoUnavailableProvider'));
             return;
         }
         setIsTesting(true);
@@ -90,7 +90,7 @@ export default function Connect() {
                     : '/(onboarding)/discovery'
             );
         } catch {
-            toast.error(t('onboarding.connect.connectError'));
+            notify.error(t('onboarding.connect.connectError'));
         } finally {
             setIsTesting(false);
         }
@@ -162,7 +162,7 @@ export default function Connect() {
                     disabled={isTesting}
                 >
                     {isTesting ? (
-                        <SpinningLoaderCircle size={iconSize.row} color="#000" />
+                        <SpinningLoaderCircle size={iconSize.row} color={onDark.background} />
                     ) : (
                         <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     serverTypeContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 12,
+        gap: spacing.rowGap,
         marginBottom: spacing.xs,
     },
     serverTypeButton: {
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
         marginTop: spacing.tight,
     },
     serverTypeTextSelected: {
-        color: '#000',
+        color: onDark.background,
     },
     buttonContainer: {
         padding: spacing.roomy,
@@ -263,11 +263,11 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     buttonDisabled: {
-        opacity: 0.6,
+        opacity: stateLayer.pressedOpacity,
     },
     nextButtonText: {
         ...typography.sheetTitle,
-        color: '#000',
+        color: onDark.background,
     },
     demoButton: {
         backgroundColor: onDark.border,

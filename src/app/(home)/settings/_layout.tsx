@@ -1,5 +1,16 @@
 import { Stack } from 'expo-router';
 
+// Declares this stack's root. A deep link straight to a sub-page
+// (/settings/serverView) pushes `index` underneath it first, so the back
+// arrow always has somewhere to go — without it the header's router.back()
+// would try to pop past the modal's own root.
+export const unstable_settings = { anchor: 'index' };
+
+/**
+ * Settings lives on the root stack as a modal, not in the
+ * `(home,search,library)` shared group — see `(home)/_layout.tsx`. That makes
+ * it one instance for the whole app instead of one per tab.
+ */
 export default function SettingsLayout() {
     return (
         <Stack>

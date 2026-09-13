@@ -1,3 +1,4 @@
+import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, motion, onDark, radius, spacing } from '@/constants/design';
 import React, { useCallback, useEffect, memo, useMemo, useRef } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -36,8 +37,6 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, onDark, radius, spacing } from '@/constants/design';
-
 type Variant = 'ios' | 'android';
 
 type Props = {
@@ -60,7 +59,7 @@ const ProgressBarStrip = memo(({
 
   useEffect(() => {
     const ratio = effectiveDuration > 0 ? Math.max(0, Math.min(1, position / effectiveDuration)) : 0;
-    displayRatio.value = withTiming(ratio, { duration: 1000, easing: Easing.linear });
+    displayRatio.value = withTiming(ratio, { duration: motion.progress, easing: Easing.linear });
   }, [position, effectiveDuration, displayRatio]);
 
   const fillStyle = useAnimatedStyle(() => ({

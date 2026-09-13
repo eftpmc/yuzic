@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useIsFetching } from '@tanstack/react-query'
@@ -6,11 +7,14 @@ import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/hooks/useTheme'
 import { useDailyLayout } from '@/features/home/hooks/useDailyLayout'
+import { customizeHomeSections } from '@/features/home/homeLayout'
 import { useDeezerDiscoveryEnabled } from '@/features/home/hooks/useDeezerEnabled'
 import {
   selectShowSourceHeaders,
   selectHomeServerSectionsEnabled,
   selectListenbrainzDiscoveryEnabled,
+  selectHomeShelfVisibilityMap,
+  selectHomeShelfOrder,
 } from '@/utils/redux/selectors/settingsSelectors'
 
 import QuickPicksSection from './components/QuickPicksSection'
@@ -89,6 +93,17 @@ export default function Home() {
   const showSourceHeaders = useSelector(selectShowSourceHeaders)
   const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled)
   const listenbrainzDiscoveryEnabled = useSelector(selectListenbrainzDiscoveryEnabled)
+  const homeVisibility = useSelector(selectHomeShelfVisibilityMap)
+  const resumeSections = useSelector(selectHomeShelfOrder('resume', resume.map(s => s.key)))
+  const librarySections = useSelector(selectHomeShelfOrder('library', library.map(s => s.key)))
+  const serverSections = useSelector(selectHomeShelfOrder('server', server.map(s => s.key)))
+  const listenbrainzSections = useSelector(selectHomeShelfOrder('listenbrainz', listenbrainz.map(s => s.key)))
+  const deezerSections = useSelector(selectHomeShelfOrder('deezer', deezer.map(s => s.key)))
+  const visibleResume = customizeHomeSections(resume, homeVisibility, resumeSections)
+  const visibleLibrary = customizeHomeSections(library, homeVisibility, librarySections)
+  const visibleServer = customizeHomeSections(server, homeVisibility, serverSections)
+  const visibleListenbrainz = customizeHomeSections(listenbrainz, homeVisibility, listenbrainzSections)
+  const visibleDeezer = customizeHomeSections(deezer, homeVisibility, deezerSections)
   const api = useApi()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -143,7 +158,7 @@ export default function Home() {
       // used to do, leaving two headers on one screen badged identically.
       color: colors.themeColor,
       letter: 'S',
-      sections: server,
+      sections: visibleServer,
       enabled: Boolean(api.discovery) && homeServerEnabled,
     },
     {
@@ -151,10 +166,17 @@ export default function Home() {
       label: 'ListenBrainz',
       color: sourceColor.listenbrainz,
       letter: 'B',
-      sections: listenbrainz,
+      sections: visibleListenbrainz,
       enabled: listenbrainzDiscoveryEnabled,
     },
-    { id: 'deezer', label: 'Deezer', color: sourceColor.deezer, letter: 'D', sections: deezer, enabled: deezerEnabled },
+    {
+      id: 'deezer',
+      label: 'Deezer',
+      color: sourceColor.deezer,
+      letter: 'D',
+      sections: visibleDeezer,
+      enabled: deezerEnabled,
+    },
   ]
 
   return (
@@ -174,16 +196,16 @@ export default function Home() {
       <ResumeQueueBanner />
       <DownloadsInProgressBanner />
 
-      {resume.map(config => renderSection(config, refreshKey))}
+      {visibleResume.map(config => renderSection(config, refreshKey))}
 
-      {library.length > 0 && (
+      {visibleLibrary.length > 0 && (
         <>
           <View style={styles.sourceHeader}>
             <Text style={[styles.sourceHeaderText, { color: colors.subtext }]}>
               {t('explore.sections.fromYourLibrary')}
             </Text>
           </View>
-          {library.map(config => renderSection(config, refreshKey))}
+          {visibleLibrary.map(config => renderSection(config, refreshKey))}
         </>
       )}
 
@@ -225,7 +247,7 @@ const styles = StyleSheet.create({
   sourceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.roomy,
     paddingBottom: spacing.xs,
@@ -239,7 +261,7 @@ const styles = StyleSheet.create({
   sourceBadgeLetter: {
     ...typography.micro,
     fontWeight: '600',
-    color: '#fff',
+    color: onDark.text,
   },
   sourceHeaderText: {
     ...typography.label,

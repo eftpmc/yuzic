@@ -1,3 +1,4 @@
+import { onDark, shadow, spacing, typography } from '@/constants/design';
 import React, { useState } from 'react';
 import {
     View,
@@ -14,7 +15,6 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
-import { spacing, typography, onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Home() {
@@ -146,10 +146,7 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.lg,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 5,
+        ...shadow.primaryButton,
     },
     buttonPressed: {
         top: 6,

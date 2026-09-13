@@ -4,80 +4,74 @@ import { useDispatch, useSelector } from 'react-redux';
 import SettingsScreen from '../components/SettingsScreen';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsToggleGroup from '../components/SettingsToggleGroup';
+import SettingsCard from '../components/SettingsCard';
+import SettingsSourceList from '../components/SettingsSourceList';
+import SettingsRow from '../components/SettingsRow';
 import {
-  selectHomeServerSectionsEnabled,
-  selectListenbrainzDiscoveryEnabled,
-  selectDeezerDiscoveryEnabled,
+  selectHomeShelfVisibilityMap, selectHomeShelfLength, selectSleepTimerPresets,
 } from '@/utils/redux/selectors/settingsSelectors';
 import {
-  setHomeServerSectionsEnabled,
-  setListenbrainzDiscoveryEnabled,
-  setDeezerDiscoveryEnabled,
+  setHomeShelfVisibility, setHomeShelfOrder, setHomeShelfLength, setSleepTimerPresets,
 } from '@/utils/redux/slices/settingsSlice';
+import type { HomeShelfLength, HomeShelfTier } from '@/utils/redux/slices/settingsSlice';
 
-/**
- * Which sources feed Home.
- *
- * These lived in Appearance, which is where nobody would look for them: they
- * decide what Home *shows*, not what it looks like. Someone turning off Deezer
- * discovery goes hunting through Integrations; someone turning off their
- * server's shelves has no obvious place to go at all.
- *
- * Home is a surface of its own in this app — `features/home/homeLayout` groups
- * its sections into tiers, and the Home-versus-Library distinction is a rule
- * the codebase already keeps — so its settings get a screen of their own too.
- *
- * The badge that labels an external section stays in Appearance. That one is
- * about whether a thing is drawn, which is the same question as the player's
- * control toggles, and it gets the same answer.
- */
+const TIERS: { tier: HomeShelfTier; ids: string[] }[] = [
+  { tier: 'resume', ids: ['quickPicks', 'continuePlaying', 'recentlyPlayed'] },
+  { tier: 'library', ids: ['recentlyAdded', 'mostPlayed'] },
+  { tier: 'server', ids: ['serverRandom', 'serverNowPlaying', 'localMix'] },
+  { tier: 'listenbrainz', ids: ['lbSimilarArtistsForYou', 'lbCreatedForDailyJams', 'lbCreatedForWeeklyJams', 'lbCreatedForWeeklyExploration'] },
+  { tier: 'deezer', ids: ['topArtists', 'charts'] },
+];
+const SLEEP_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
+const LENGTHS: HomeShelfLength[] = ['compact', 'standard', 'generous'];
+
 const HomeSettings: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-
-  const homeServerEnabled = useSelector(selectHomeServerSectionsEnabled);
-  const homeListenbrainzEnabled = useSelector(selectListenbrainzDiscoveryEnabled);
-  const deezerEnabled = useSelector(selectDeezerDiscoveryEnabled);
-
-  const toggleHomeServer = useCallback(
-    (v: boolean) => { dispatch(setHomeServerSectionsEnabled(v)); }, [dispatch]);
-  // Same lever the Integrations screen shows, on purpose: a shelf that appears
-  // here is a call to ListenBrainz, so there is one switch for both rather
-  // than a display toggle that can sit on while the source is off — which is
-  // how the Deezer row beside it already behaves.
-  const toggleHomeListenbrainz = useCallback(
-    (v: boolean) => { dispatch(setListenbrainzDiscoveryEnabled(v)); }, [dispatch]);
-  const toggleHomeDeezer = useCallback(
-    (v: boolean) => { dispatch(setDeezerDiscoveryEnabled(v)); }, [dispatch]);
-
-  const homeSourceItems = useMemo(() => [
-    {
-      label: t('settings.appearance.homeSourcesServer'),
-      subtext: t('settings.appearance.homeSourcesServerSubtext'),
-      value: homeServerEnabled,
-      onValueChange: toggleHomeServer,
-    },
-    {
-      label: t('settings.appearance.homeSourcesListenbrainz'),
-      subtext: t('settings.appearance.homeSourcesListenbrainzSubtext'),
-      value: homeListenbrainzEnabled,
-      onValueChange: toggleHomeListenbrainz,
-    },
-    {
-      label: t('settings.appearance.homeSourcesDeezer'),
-      subtext: t('settings.appearance.homeSourcesDeezerSubtext'),
-      value: deezerEnabled,
-      onValueChange: toggleHomeDeezer,
-    },
-  ], [
-    t, homeServerEnabled, homeListenbrainzEnabled, deezerEnabled,
-    toggleHomeServer, toggleHomeListenbrainz, toggleHomeDeezer,
-  ]);
+  const visibility = useSelector(selectHomeShelfVisibilityMap);
+  const presets = useSelector(selectSleepTimerPresets);
+  const length = useSelector(selectHomeShelfLength);
+  const visibilityItems = useMemo(() => TIERS.flatMap(({ ids }) => ids.map(id => ({
+    label: t(`settings.home.shelves.${id}`),
+    subtext: t('settings.home.shelfSubtext'),
+    value: visibility[id] ?? true,
+    onValueChange: (value: boolean) => dispatch(setHomeShelfVisibility({ key: id, visible: value })),
+  }))), [dispatch, t, visibility]);
+  const setLength = useCallback((next: HomeShelfLength) => dispatch(setHomeShelfLength(next)), [dispatch]);
 
   return (
     <SettingsScreen title={t('settings.home.title')}>
-      <SettingsCardHeader subtle title={t('settings.appearance.homeSources')} />
-      <SettingsToggleGroup items={homeSourceItems} />
+      <SettingsCardHeader subtle title={t('settings.home.shelfLength')} />
+      <SettingsCard>
+        {LENGTHS.map(option => (
+          <SettingsRow key={option} label={t(`settings.home.length.${option}`)} rightText={length === option ? t('settings.home.selected') : undefined} selected={length === option} onPress={() => setLength(option)} />
+        ))}
+      </SettingsCard>
+      <SettingsCardHeader subtle title={t('settings.home.shelvesTitle')} />
+      <SettingsToggleGroup items={visibilityItems} />
+      {TIERS.map(({ tier, ids }) => (
+        <SettingsCardHeader key={tier} subtle title={t(`settings.home.tier.${tier}`)} />
+      ))}
+      <SettingsCardHeader subtle title={t('settings.home.orderTitle')} />
+      {TIERS.map(({ tier, ids }) => (
+        <SettingsCard key={tier}>
+          <SettingsSourceList
+            sources={ids.map(id => ({ id, label: t(`settings.home.shelves.${id}`), subtext: t('settings.home.shelfSubtext'), enabled: true, onEnabledChange: () => undefined }))}
+            sourceOrder={ids}
+            onOrderChange={order => dispatch(setHomeShelfOrder({ tier, order }))}
+          />
+        </SettingsCard>
+      ))}
+      <SettingsCardHeader subtle title={t('settings.home.sleepPresets')} />
+      <SettingsToggleGroup items={SLEEP_OPTIONS.map(minutes => ({
+        label: t('settings.home.minutes', { count: minutes }),
+        subtext: t('settings.home.sleepPresetsSubtext'),
+        value: presets.includes(minutes),
+        onValueChange: enabled => {
+          const next = enabled ? [...new Set([...presets, minutes])].sort((a, b) => a - b) : presets.filter(value => value !== minutes);
+          if (next.length > 0) dispatch(setSleepTimerPresets(next));
+        },
+      }))} />
     </SettingsScreen>
   );
 };

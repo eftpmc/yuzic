@@ -24,12 +24,6 @@ export function isPodcastEpisode(song: Song | null | undefined): boolean {
   return getContentKind(song) === 'podcastEpisode';
 }
 
-/** A 30s external clip — Deezer preview etc. Duration is known but the URL
- * is not refreshable, and the play should not count as a scrobble. */
-export function isPreview(song: Song | null | undefined): boolean {
-  return getContentKind(song) === 'preview';
-}
-
 /** A live stream has no known duration — hide the progress bar, timestamps
  * and seek. Podcast episodes are finite audio; a progress bar makes sense. */
 export function hasFiniteDuration(song: Song | null | undefined): boolean {

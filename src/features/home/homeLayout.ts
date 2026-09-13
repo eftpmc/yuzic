@@ -10,8 +10,19 @@ import type { SectionConfig } from './hooks/useDailyLayout'
  * an order of importance; the sections themselves are unchanged.
  */
 
-/** What you were doing. Highest confidence, so it comes first and unlabelled —
- * it is the default context rather than a category. */
+export function customizeHomeSections(
+  sections: SectionConfig[],
+  visibility: Record<string, boolean>,
+  order: string[]
+): SectionConfig[] {
+  const byKey = new Map(sections.map(section => [section.key, section]))
+  const orderedKeys = [...order, ...sections.map(section => section.key).filter(key => !order.includes(key))]
+  return orderedKeys
+    .map(key => byKey.get(key))
+    .filter((section): section is SectionConfig => section !== undefined && visibility[section.key] !== false)
+}
+
+
 export function buildResumeSections(): SectionConfig[] {
   return [
     { key: 'quickPicks', type: 'quickPicks' },

@@ -36,7 +36,6 @@ export const selectListenBrainzScrobbleEnabled = createSelector(
 );
 
 // Same lever as scrobble — see the note in settingsSelectors.
-export const selectListenBrainzNowPlayingEnabled = selectListenBrainzScrobbleEnabled;
 
 export const selectListenBrainzConfig = createSelector(
   [selectListenBrainzUsername, selectListenBrainzToken],

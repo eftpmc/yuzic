@@ -1,5 +1,5 @@
+import { fontScaleCap, hitSlopFor, iconSize, motion, spacing, stateLayer, statusColor, typography } from '@/constants/design';
 import React, { memo, useCallback, useEffect } from 'react';
-import { fontScaleCap, hitSlopFor, iconSize, spacing, statusColor, typography } from '@/constants/design';
 import { useListDensity } from '@/hooks/useListDensity';
 import {
   Text,
@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Heart, ArrowDownCircle, Ellipsis, PlayCircle } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { ExternalSong, Song } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -73,7 +73,7 @@ const ExternalSongRowView: React.FC<{
     if (onPress) {
       onPress();
     } else if (!samplesEnabled) {
-      toast(t('settings.deezer.enableSamplesToPreview'));
+      notify.info(t('settings.deezer.enableSamplesToPreview'));
     }
   }, [onPress, samplesEnabled, t]);
 
@@ -156,7 +156,7 @@ const SongRow: React.FC<Props> = ({
 
   const heartOpacity = useSharedValue(isFavorite ? 1 : 0);
   useEffect(() => {
-    heartOpacity.value = withTiming(isFavorite ? 1 : 0, { duration: 200 });
+    heartOpacity.value = withTiming(isFavorite ? 1 : 0, { duration: motion.favorite });
   }, [isFavorite, heartOpacity]);
   const heartStyle = useAnimatedStyle(() => ({ opacity: heartOpacity.value }));
 
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     // with the titles, which is the opposite of what an index is for — it
     // should be findable when looked for and invisible when not.
     ...typography.caption,
-    opacity: 0.6,
+    opacity: stateLayer.pressedOpacity,
     // Fixed width and right-aligned so the titles form a straight edge whether
     // the record has nine tracks or nineteen. Tabular figures keep "11" the
     // same width as "17", which proportional digits do not.

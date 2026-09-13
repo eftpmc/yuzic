@@ -58,10 +58,3 @@ export interface MediaItem {
    */
   artworkHeaders?: Record<string, string>;
 }
-
-/** What to do when the queue runs out. */
-export enum RepeatMode {
-  Off = 'off',
-  Track = 'track',
-  Queue = 'queue',
-}

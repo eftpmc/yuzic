@@ -1,3 +1,4 @@
+import { onDark, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
@@ -7,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { selectEqualizerGains, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { setEqualizerGains } from '@/utils/redux/slices/settingsSlice';
-import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import { withAlpha } from '@/features/theme/coverAccent';
@@ -94,7 +94,7 @@ export const Equalizer: React.FC = () => {
               <Text
                 style={[
                   styles.presetText,
-                  { color: selected ? '#fff' : colors.secondary },
+                  { color: selected ? onDark.text : colors.secondary },
                 ]}
               >
                 {t(preset.labelKey)}
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 12,
     height: 1,
-    opacity: 0.5,
+    opacity: stateLayer.mutedOpacity,
   },
   /** Centre outward: up for a boost, down for a cut. */
   trackFill: {

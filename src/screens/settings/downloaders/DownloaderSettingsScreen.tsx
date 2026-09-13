@@ -10,29 +10,18 @@ import {
   useDownloaderConnection,
   type DownloaderConfig,
 } from './useDownloaderConnection';
-import type { QueueDiff } from './useDownloaderQueue';
 import { radius, spacing, typography } from '@/constants/design';
-import DownloaderQueueCard from './DownloaderQueueCard';
 
-type Props<T extends { id: string }> = {
+type Props = {
   id: DownloaderId;
   testConnection: (config: DownloaderConfig) => Promise<unknown>;
-  fetchQueueWithDiff: (config: DownloaderConfig, previous: T[]) => Promise<QueueDiff<T>>;
   /**
-   * The one genuinely downloader-specific piece: how a queue entry looks.
-   *
-   * `cancel` is passed through so the row can decide how to draw the cancel
-   * control (trailing icon, in a header, etc.) and expose the loading state.
-   */
-  renderItem: (item: T, cancel: RowCancelHelpers) => React.ReactElement | null;
-  /**
-   * Cancels the given queue entry. Returns when the downloader has accepted the
-   * request; the screen shows an "is cancelling" spinner while the promise runs.
-   */
-  cancelQueueItem?: (config: DownloaderConfig, item: T) => Promise<void>;
-  /**
-   * Downloader-specific extras rendered between the queue and the disconnect
-   * button — search preferences, filters, anything that only one downloader has.
+   * Downloader-specific extras rendered between the auth card and the
+   * disconnect button — search preferences, filters, quality profiles,
+   * anything that only one downloader has. The live download queue is NOT
+   * here: connection settings configure a provider, they don't monitor it.
+   * The queue lives on one screen only — the Downloads screen — so it can
+   * never drift into two places again.
    */
   extraCards?: React.ReactNode;
   /** Called on disconnect so a screen can drop any extra local state. */
@@ -55,15 +44,12 @@ export type RowCancelHelpers = {
  * near-identical copies, which is how slskd ended up silently swallowing queue
  * errors that Lidarr surfaced.
  */
-function DownloaderSettingsScreen<T extends { id: string }>({
+function DownloaderSettingsScreen({
   id,
   testConnection,
-  fetchQueueWithDiff,
-  renderItem,
-  cancelQueueItem,
   extraCards,
   onDisconnected,
-}: Props<T>) {
+}: Props) {
   const { t } = useTranslation();
 
   const {
@@ -74,7 +60,6 @@ function DownloaderSettingsScreen<T extends { id: string }>({
     setApiKey,
     isAuthenticated,
     isLoading,
-    config,
     ping,
     disconnect,
   } = useDownloaderConnection(id, testConnection);
@@ -108,15 +93,6 @@ function DownloaderSettingsScreen<T extends { id: string }>({
         isLoading={isLoading}
         connectivityLabel={t('settings.downloaders.connectivity')}
         onConnectivityPress={ping}
-      />
-
-      <DownloaderQueueCard<T>
-        id={id}
-        config={config}
-        isAuthenticated={isAuthenticated}
-        fetchQueueWithDiff={fetchQueueWithDiff}
-        renderItem={renderItem}
-        cancelQueueItem={cancelQueueItem}
       />
 
       {isAuthenticated && extraCards}

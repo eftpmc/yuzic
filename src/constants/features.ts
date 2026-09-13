@@ -1,8 +1,5 @@
-export const ALBUM_RECOMMENDATION_RELATED_LIMIT = 30;
-export const ALBUM_RECOMMENDATION_TARGET_ALBUMS = 8;
 export const ALBUM_EXTERNAL_HORIZONTAL_PADDING = 16;
 
-export { sourceColor } from './design';
 import { statusColor } from './design';
 
 export const PLAYING_ARTIST_CARD_HEIGHT = 280;

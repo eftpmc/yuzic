@@ -3,12 +3,31 @@
     "title": "Settings",
     "sections": {
       "general": "General",
+      "discovery": "Discovery",
       "plugins": "Plugins",
       "connections": "Connections",
       "about": "About"
     },
     "connections": {
-      "sources": "Library & discovery sources"
+      "sources": "Library & discovery sources",
+      "accounts": "Accounts",
+      "services": "Services & downloaders",
+      "status": {
+        "available": "Available",
+        "inUse": "In use",
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "ready": "Ready",
+        "notSetUp": "Not set up"
+      },
+      "summary": {
+        "deezer": "Discovery and artwork",
+        "musicbrainz": "Artist and release data",
+        "lastfm": "Similar artists and recommendations",
+        "listenbrainz": "Scrobbling account and discovery",
+        "audiomuse": "Playlist generation",
+        "downloader": "Server downloads"
+      }
     },
     "rows": {
       "server": "Server",
@@ -42,7 +61,7 @@
       },
       "fallbackUrls": {
         "title": "Fallback URLs",
-        "subtext": "Extra URLs the app will try if the primary can’t be reached — e.g. a Tailscale or public address when you’re away from home.",
+        "subtext": "Backup URLs to try if the primary is unreachable.",
         "placeholder": "https://tailscale-or-domain.example",
         "addAria": "Add fallback URL",
         "removeAria": "Remove {{url}}",
@@ -53,19 +72,19 @@
       },
       "privacyTitle": "Privacy",
       "queueSync": "Sync queue across devices",
-      "queueSyncDescription": "Save what you’re playing to the server so another device can pick up where you left off.",
+      "queueSyncDescription": "Resume playback across your devices.",
       "nowPlayingShelf": "Show who else is listening",
-      "nowPlayingShelfDescription": "A Home row listing other users on this server and what they’re playing right now.",
+      "nowPlayingShelfDescription": "A Home row of what others here are playing.",
       "clientCertificate": {
         "title": "Client certificate",
-        "description": "For a server that asks the client to prove who it is. Choose the PKCS#12 file (.p12 or .pfx) your server issued you.",
+        "description": "For servers that require a client certificate (.p12/.pfx).",
         "passwordPlaceholder": "Certificate password",
         "choose": "Choose certificate",
         "installed": "Certificate installed",
         "remove": "Remove certificate",
-        "rejected": "That certificate could not be read. Check the password and try again.",
+        "rejected": "Couldn't read that certificate. Check the password.",
         "readFailed": "That file could not be read.",
-        "unsupported": "Client certificates are not supported on this platform yet."
+        "unsupported": "Not supported on this platform yet."
       }
     },
     "appearance": {
@@ -84,7 +103,7 @@
       },
       "playingBarAction": {
         "title": "Playing bar action",
-        "info": "Choose which action appears in the playing bar",
+        "info": "Which action shows in the playing bar.",
         "actions": {
           "none": "None",
           "skip": "Skip",
@@ -109,17 +128,17 @@
       "display": "Display",
       "playing": "Playing",
       "showQualityBadge": "Show quality badge",
-      "showQualityBadgeSubtext": "Displays audio format and bitrate on the now playing screen.",
+      "showQualityBadgeSubtext": "Format and bitrate on the player.",
       "showSourceHeaders": "Show source headers",
-      "showSourceHeadersSubtext": "Shows the source badge next to section titles from external services.",
+      "showSourceHeadersSubtext": "Badge external sources in section titles.",
       "feel": "Feel",
       "haptics": "Haptic feedback",
-      "hapticsSubtext": "Small taps on play, skip, favourites, and long-press.",
+      "hapticsSubtext": "Taps on play, skip, and long-press.",
       "respectReducedMotion": "Respect reduced motion",
-      "respectReducedMotionSubtext": "When your system asks for less motion, animations soften or snap instead.",
+      "respectReducedMotionSubtext": "Soften animations when your system asks.",
       "gridColumns": {
         "label": "Grid columns",
-        "subtext": "How many columns of albums, artists, and playlists appear in grid view."
+        "subtext": "Columns in grid view."
       },
       "radiusPreset": {
         "title": "Corners",
@@ -138,9 +157,9 @@
         }
       },
       "translucentDock": "Translucent dock",
-      "translucentDockSubtext": "Float the tab bar over the page so content scrolls under it.",
+      "translucentDockSubtext": "Float the tab bar over scrolling content.",
       "coverAccent": "Colour from artwork",
-      "coverAccentSubtext": "Tint album, artist, and player screens with a shade taken from the cover.",
+      "coverAccentSubtext": "Tint screens with a shade from the cover.",
       "listDensity": {
         "title": "List density",
         "info": "How much space sits between rows in a list.",
@@ -159,40 +178,40 @@
       },
       "homeSources": "Home shelves",
       "homeSourcesServer": "On your server",
-      "homeSourcesServerSubtext": "Show random shelves and now-playing from your server.",
+      "homeSourcesServerSubtext": "Random shelves and now-playing from your server.",
       "homeSourcesListenbrainz": "ListenBrainz",
       "homeSourcesListenbrainzSubtext": "Show ListenBrainz similar-artist shelves.",
       "homeSourcesDeezer": "Deezer",
-      "homeSourcesDeezerSubtext": "Show Deezer discovery shelves (charts, top tracks, similar artists)."
+      "homeSourcesDeezerSubtext": "Deezer charts, top tracks, and similar artists."
     },
     "lyrics": {
       "title": "Lyrics",
-      "order": "Fallback order",
+      "sources": "Lyrics sources",
       "serverEmbedded": "Server-embedded",
-      "serverEmbeddedSubtext": "Always checked first — the lyrics your server already has for a track.",
+      "serverEmbeddedSubtext": "Checked first — your server's own lyrics.",
       "lrclib": "LRCLIB",
-      "lrclibSubtext": "Free, anonymous lyrics lookup. Off by default; enable to use it when your server has none."
+      "lrclibSubtext": "Free, anonymous lyrics lookup."
     },
     "search": {
       "title": "Search",
       "sourcesSection": "Search sources",
-      "explanation": "Which sources the \"Other sources\" scope on the Search screen may query. Independent of Home — enabling a source's Home shelves does not enable it for search, and vice versa.",
+      "explanation": "Sources the “Other sources” scope may search. Separate from Home.",
       "deezer": "Deezer",
-      "deezerSubtext": "Include Deezer albums and artists when searching Other sources.",
+      "deezerSubtext": "Search Deezer albums and artists.",
       "musicbrainz": "MusicBrainz",
-      "musicbrainzSubtext": "Include MusicBrainz albums and artists when searching Other sources."
+      "musicbrainzSubtext": "Search MusicBrainz albums and artists."
     },
     "metadata": {
       "title": "Metadata",
-      "explanation": "Display-only. Fills in artist info and artwork your server doesn't have — it never changes anything on your server, and never writes tags or files. Turn a source off to go back to exactly what your server shows.",
+      "explanation": "Fills gaps your server is missing. Never edits your server.",
       "artistInfoSection": "Artist information",
       "artworkSection": "Artwork",
       "lastfm": "Last.fm",
-      "lastfmSubtext": "Artist biography and tags. Off by default; enable to use it when your server has no biography.",
+      "lastfmSubtext": "Bios and tags",
       "deezerArtwork": "Deezer",
-      "deezerArtworkSubtext": "Artist images. Off by default; enable to use it when your server has no artist photo.",
+      "deezerArtworkSubtext": "Artist images",
       "coverArtArchive": "Cover Art Archive",
-      "coverArtArchiveSubtext": "Album covers via MusicBrainz ID. Off by default; enable to use it when your server has no cover."
+      "coverArtArchiveSubtext": "Album covers"
     },
     "library": {
       "title": "Library",
@@ -203,11 +222,11 @@
       "localFiles": {
         "title": "Local files",
         "import": "Import audio files",
-        "description": "Add music to Yuzic’s private library on this device."
+        "description": "Add music to this device's private library."
       },
       "discovery": {
         "title": "Discovery",
-        "info": "How Discovery suggests artists and albums from your library.",
+        "info": "How Discovery suggests from your library.",
         "about": "About discovery"
       },
       "stats": {
@@ -222,7 +241,7 @@
         "daysAgo_other": "{{count}} days ago",
         "lastSynced": "Last synced",
         "syncOnAppStart": "Sync on app start",
-        "syncOnAppStartSubtext": "Automatically sync your library each time you open the app"
+        "syncOnAppStartSubtext": "Sync your library each time you open the app."
       },
       "offlineChanges": {
         "title": "Pending offline changes",
@@ -233,20 +252,20 @@
         "retry": "Retry",
         "discard": "Discard",
         "discardTitle": "Discard offline changes?",
-        "discardBody": "This removes pending changes for the current server. Your local library will refresh on the next sync."
+        "discardBody": "Discards pending changes for this server. Your library refreshes on next sync."
       },
       "downloads": {
         "title": "Offline downloads",
         "detailsTitle": "Offline downloads",
         "moreInfo": "More info",
         "clearTitle": "Clear downloads?",
-        "clearBody": "This will remove all downloaded songs from your device.",
-        "clearBodyForProvider": "This will remove downloads for the current server only.",
-        "clearBodyProviderNamed": "This will remove downloads for {{provider}} only.",
+        "clearBody": "Removes all downloaded songs from this device.",
+        "clearBodyForProvider": "Removes downloads for the current server only.",
+        "clearBodyProviderNamed": "Removes downloads for {{provider}} only.",
         "clearFailedTitle": "Couldn't clear downloads",
         "clearFailedBody": "An error occurred while removing local files.",
         "removeTitle": "Remove downloaded item?",
-        "removeBody": "This will remove downloaded files for \"{{title}}\" from your device.",
+        "removeBody": "Removes downloaded files for “{{title}}”.",
         "removeFailedTitle": "Couldn't remove download",
         "removeFailedBody": "An error occurred while removing local files.",
         "provider": {
@@ -286,18 +305,18 @@
           "tracks": "Tracks",
           "playlists": "Playlists"
         },
-        "offlineNote": "These songs are stored locally for offline playback.",
-        "locationNote": "Downloads are stored in the app's private storage and aren't browsable from your device's file manager. Use this screen to view and remove them.",
+        "offlineNote": "Stored locally for offline playback.",
+        "locationNote": "Kept in the app's private storage, not your file manager. Manage them here.",
         "autoDownloadLabel": "Auto-download new songs",
-        "autoDownloadSubtext": "Automatically download songs added to your library for offline use",
+        "autoDownloadSubtext": "Auto-download songs added to your library.",
         "autoDownloadStarted_one": "Auto-downloading {{count}} new song",
         "autoDownloadStarted_other": "Auto-downloading {{count}} new songs",
         "wifiOnlyLabel": "Download on WiFi only",
-        "wifiOnlySubtext": "Hold downloads until you are on WiFi. Queued downloads resume automatically."
+        "wifiOnlySubtext": "Wait for WiFi. Downloads resume automatically."
       },
       "downloadQuality": {
         "title": "Download Quality",
-        "caption": "Original downloads the lossless source when your server supports it. Larger files use more storage.",
+        "caption": "Original is lossless where supported; larger files.",
         "options": {
           "low": "Low · 128kbps",
           "medium": "Medium · 192kbps",
@@ -314,8 +333,8 @@
         "title": "Equalizer",
         "reset": "Reset",
         "presets": "Presets",
-        "flatSubtext": "Flat — the equalizer is bypassed entirely, so it costs nothing.",
-        "gainSubtext": "Gains up to {{limit}} dB. Applies to everything the player outputs.",
+        "flatSubtext": "Flat — EQ bypassed, no cost.",
+        "gainSubtext": "Gains up to {{limit}} dB on all output.",
         "presetFlat": "Flat",
         "presetBass": "Bass boost",
         "presetTreble": "Treble boost",
@@ -325,7 +344,7 @@
       "streamingQuality": {
         "wifi": "WiFi Quality",
         "cellular": "Cellular Quality",
-        "caption": "Original streams lossless audio when your server supports it. Recommended for WiFi only.",
+        "caption": "Original is lossless where supported. Best on WiFi.",
         "options": {
           "low": "Low · 128kbps",
           "medium": "Medium · 192kbps",
@@ -334,24 +353,24 @@
         }
       },
       "opusCodec": "Opus Codec",
-      "opusCodecSubtext": "Better quality than MP3 at the same bitrate. Sounds noticeably better at lower bitrates.",
+      "opusCodecSubtext": "Better than MP3 at the same bitrate.",
       "showSleepTimer": "Sleep Timer",
       "showSleepTimerSubtext": "Show a sleep timer control in the player.",
       "showPlaybackSpeed": "Playback Speed",
       "showPlaybackSpeedSubtext": "Show a speed control in the player.",
       "showJumpButtons": "Jump Buttons",
-      "showJumpButtonsSubtext": "Show 15-second skip-back and skip-forward buttons in the player.",
+      "showJumpButtonsSubtext": "15-second skip buttons in the player.",
       "showVolumeSlider": "Volume Slider",
-      "showVolumeSliderSubtext": "Show an in-app volume slider on the player screen.",
+      "showVolumeSliderSubtext": "In-app volume slider on the player.",
       "autoplay": "Autoplay",
-      "autoplaySubtextAudiomuse": "Keep playing sonically similar tracks once your queue ends, using AudioMuse-AI.",
-      "autoplaySubtextNative": "Keep playing similar tracks from your server once your queue ends.",
+      "autoplaySubtextAudiomuse": "Keep playing similar tracks via AudioMuse-AI.",
+      "autoplaySubtextNative": "Keep playing similar tracks from your server.",
       "resumeLongTracks": "Resume long tracks",
-      "resumeLongTracksSubtext": "Audiobooks, DJ sets, podcast episodes — pick up where you left off.",
+      "resumeLongTracksSubtext": "Resume audiobooks, DJ sets, and podcasts.",
       "cacheTitle": "Playback cache",
       "clearCache": "Clear playback cache",
       "clearCacheTitle": "Clear playback cache?",
-      "clearCacheBody": "Streamed audio held on this device will be fetched again next time you play it. Your downloads are not affected.",
+      "clearCacheBody": "Cached audio re-fetches on next play. Downloads unaffected.",
       "clearCacheConfirm": "Clear",
       "clearCacheDone": "Playback cache cleared",
       "audio": "Audio",
@@ -359,21 +378,21 @@
         "label": "Crossfade",
         "off": "Off",
         "offSubtext": "Tracks follow one another with no overlap.",
-        "onSubtext": "Each track fades into the next over {{seconds}} seconds. Skipping still cuts straight across.",
+        "onSubtext": "Fade between tracks over {{seconds}}s. Skips cut straight.",
         "seguesLabel": "Fade through segues",
-        "seguesSubtext": "Albums that run tracks together are hard-cut at those joins by default, so a continuous mix stays continuous. Turn this on to fade everything regardless."
+        "seguesSubtext": "Gapless album joins stay hard-cut. On fades those too."
       }
     },
     "listenBrainz": {
       "title": "ListenBrainz",
       "credentialsTitle": "Credentials",
-      "credentialsHelper": "Your username and user token from listenbrainz.org/profile.",
+      "credentialsHelper": "Username and token from listenbrainz.org/profile.",
       "username": "Username",
       "userToken": "User Token",
       "usernamePlaceholder": "ListenBrainz username",
       "tokenPlaceholder": "ListenBrainz user token",
       "connectivity": "Connectivity",
-      "helperText": "ListenBrainz is used for scrobbling and now playing updates. No listening data is sent without your permission.",
+      "helperText": "For scrobbling and now-playing. Nothing sent without permission.",
       "disconnect": "Disconnect",
       "missingCredentials": "Enter username and token first.",
       "connectionSuccessful": "ListenBrainz connection successful.",
@@ -383,15 +402,15 @@
       "scrobble": "Scrobble",
       "nowPlaying": "Now Playing",
       "discovery": "Discovery",
-      "discoveryDescription": "Use ListenBrainz's public similar-artist graph on Home and artist pages. No account required — the artists you listen to are sent to ListenBrainz to find matches."
+      "discoveryDescription": "Similar artists on Home and artist pages. No account; artist names are sent to match."
     },
     "musicbrainz": {
       "external": "External Artist & Album Data",
-      "externalDescription": "Fill in artist and album pages with MusicBrainz data when they're not in your library. No account required."
+      "externalDescription": "Fill artist and album pages from MusicBrainz. No account."
     },
     "lastfm": {
       "enable": "Artist & Recommendation Data",
-      "enableDescription": "Use Last.fm to find similar artists and to seed playlist recommendations. No account required — artist names are sent to Last.fm to look them up."
+      "enableDescription": "Similar artists and playlist seeds. No account; artist names are sent to look up."
     },
     "downloaders": {
       "title": "Downloaders",
@@ -427,7 +446,7 @@
       "lidarr": {
         "title": "Lidarr",
         "credentialsTitle": "Connection",
-        "credentialsHelper": "Your Lidarr server URL and API key. Found in Lidarr under Settings → General.",
+        "credentialsHelper": "Lidarr URL and API key (Settings → General).",
         "connectionFailed": "Lidarr connection failed",
         "disconnected": "Disconnected from Lidarr.",
         "qualityProfileTitle": "Quality Profile",
@@ -436,7 +455,7 @@
       "slskd": {
         "title": "slskd",
         "credentialsTitle": "Connection",
-        "credentialsHelper": "Your slskd server URL and API key. Found in slskd under Options → API Keys.",
+        "credentialsHelper": "slskd URL and API key (Options → API Keys).",
         "connectionFailed": "slskd connection failed",
         "disconnected": "Disconnected from slskd.",
         "searchPreferencesTitle": "Search Preferences",
@@ -447,31 +466,31 @@
         "minBitrateAny": "Any",
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "Prefer Free Upload Slot",
-        "preferFreeSlotSubtext": "Pick peers whose slot is free over ones with a queue. Turn off to catch rare releases even if it means waiting."
+        "preferFreeSlotSubtext": "Prefer free slots over queued peers. Off catches rare releases."
       },
       "soulsync": {
         "title": "SoulSync",
         "credentialsTitle": "Connection",
-        "credentialsHelper": "Your SoulSync server URL and API key. Generate a key in SoulSync under Settings → API Keys.",
+        "credentialsHelper": "SoulSync URL and API key (Settings → API Keys).",
         "connectionFailed": "SoulSync connection failed",
         "disconnected": "Disconnected from SoulSync."
       }
     },
     "deezer": {
       "discovery": "Discovery",
-      "discoveryDescription": "Deezer charts and recommendations on the explore screen.",
+      "discoveryDescription": "Deezer charts and recommendations on Explore.",
       "search": "Search",
       "searchDescription": "Include Deezer results in search.",
       "external": "External Artist & Album Data",
-      "externalDescription": "Fill in artist and album pages with Deezer data when they're not in your library.",
+      "externalDescription": "Fill artist and album pages from Deezer.",
       "topTracks": "Top Tracks",
       "topTracksDescription": "Show Deezer top tracks on artist pages.",
       "similarArtists": "Similar Artists",
       "similarArtistsDescription": "Show Deezer similar artists on artist pages.",
       "albumRecommendations": "Recommendations",
-      "albumRecommendationsDescription": "Show Deezer recommended albums on album pages.",
+      "albumRecommendationsDescription": "Recommended albums on album pages.",
       "samples": "Samples",
-      "samplesDescription": "Fetch 30s preview samples for external album pages.",
+      "samplesDescription": "30s preview samples on external albums.",
       "enableSamplesToPreview": "Enable Samples in Settings to hear previews",
       "playlistRecommendations": "Recommendations",
       "playlistRecommendationsDescription": "Show Deezer recommended playlists.",
@@ -481,7 +500,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "Connect to a self-hosted AudioMuse-AI instance pointed at this server for sonic-analysis-based Smart Shuffle.",
+      "credentialsHelper": "A self-hosted AudioMuse-AI instance for Smart Shuffle.",
       "serverUrl": "Server URL",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "API Token",
@@ -489,7 +508,7 @@
       "connectivity": "Connectivity",
       "connectionFailed": "AudioMuse-AI connection failed",
       "enable": "Enable AudioMuse-AI",
-      "enableSubtext": "Use AudioMuse-AI for Smart Shuffle when connected.",
+      "enableSubtext": "Smart Shuffle via AudioMuse-AI when connected.",
       "disconnect": "Disconnect",
       "disconnected": "Disconnected from AudioMuse-AI."
     },
@@ -508,10 +527,46 @@
       "routeDirect": "Direct from Yuzic",
       "throughServer": "Through the server",
       "throughServerMarkAsPlayed": "Through the server (mark as played)",
-      "duplicateRiskNote": "Yuzic can't confirm the server actually forwards scrobbles once \"Through the server\" is selected. If the server is also configured to send scrobbles on its own, or another app scrobbles the same account, plays may be counted twice."
+      "duplicateRiskNote": "With “Through the server,” plays may count twice if the server or another app also scrobbles."
     },
     "home": {
-      "title": "Home"
+      "title": "Home",
+      "shelfLength": "Shelf size",
+      "shelvesTitle": "Home shelves",
+      "orderTitle": "Shelf order",
+      "sleepPresets": "Sleep timer quick-adds",
+      "sleepPresetsSubtext": "Show this duration as a quick-add button.",
+      "shelfSubtext": "Show this shelf on Home.",
+      "selected": "Selected",
+      "minutes": "{{count}} minutes",
+      "length": {
+        "compact": "Compact",
+        "standard": "Standard",
+        "generous": "Generous"
+      },
+      "tier": {
+        "resume": "Resume",
+        "library": "Your library",
+        "server": "Server discovery",
+        "listenbrainz": "ListenBrainz discovery",
+        "deezer": "Deezer discovery"
+      },
+      "shelves": {
+        "quickPicks": "Quick picks",
+        "continuePlaying": "Continue playing",
+        "recentlyPlayed": "Recently played",
+        "recentlyAdded": "Recently added",
+        "mostPlayed": "Most played",
+        "serverRandom": "Random albums",
+        "serverNowPlaying": "Now playing",
+        "localMix": "Your mix",
+        "lbSimilarArtistsForYou": "Similar artists for you",
+        "lbCreatedForDailyJams": "Daily jams",
+        "lbCreatedForWeeklyJams": "Weekly jams",
+        "lbCreatedForWeeklyExploration": "Weekly exploration",
+        "topArtists": "Top artists",
+        "charts": "Charts"
+      }
     }
   },
   "common": {
@@ -673,6 +728,9 @@
     "downloads": {
       "title": "Downloads"
     },
+    "downloaded": {
+      "title": "Offline"
+    },
     "wants": {
       "title": "Wants"
     },
@@ -792,6 +850,7 @@
       "other": "Other sources"
     },
     "filters": {
+      "scope": "Search in",
       "title": "Filters",
       "sources": "Sources",
       "entityTypes": "Include",
@@ -1095,8 +1154,8 @@
   },
   "wants": {
     "title": "Wants",
-    "empty": "Nothing saved yet. Add a track or album you want and it will show up here.",
-    "manualAdd": "Add to Wants"
+    "empty": "Nothing saved yet.",
+    "searchAction": "Search music"
   },
   "albumOptions": {
     "actions": {
@@ -1348,7 +1407,8 @@
     "settings": {
       "themeColor": "Theme colour {{color}}",
       "clearProviderDownloads": "Delete all {{provider}} downloads",
-      "removeDownload": "Remove download {{title}}"
+      "removeDownload": "Remove download {{title}}",
+      "reorderSource": "Reorder {{name}}"
     },
     "onboarding": {
       "serverOptions": "Options for {{url}}"
@@ -1372,12 +1432,13 @@
     "library": "Library"
   },
   "downloads": {
-    "title": "Download queue",
+    "title": "Downloads",
     "noDownloaders": "No downloaders connected. Add one in Settings.",
     "jobFailed": "Couldn't finish downloading “{{title}}”. It stays queued and will retry.",
+    "offlineSummary": "{{size}} used · {{available}} free",
     "section": {
-      "offline": "Offline",
-      "downloaders": "Downloaders"
+      "offline": "Saved on this device",
+      "downloaders": "Server transfers"
     }
   },
   "media": {

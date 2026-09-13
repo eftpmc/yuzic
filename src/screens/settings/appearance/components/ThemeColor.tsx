@@ -1,3 +1,4 @@
+import { iconSize, radius, shadow, spacing, typography } from '@/constants/design';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
@@ -11,7 +12,6 @@ import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
-import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export const ThemeColor: React.FC = () => {
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   presets: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   preset: {
@@ -92,11 +92,7 @@ const styles = StyleSheet.create({
   },
   presetSelected: {
     borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 3,
+    ...shadow.selectedSwatch,
   },
   expandButton: {
     flexDirection: 'row',

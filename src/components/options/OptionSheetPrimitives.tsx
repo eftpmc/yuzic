@@ -1,5 +1,5 @@
+import { iconSize, radius, spacing, stateLayer, typography } from '@/constants/design';
 import React from 'react';
-import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   StyleSheet,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   optionDimmed: {
-    opacity: 0.55,
+    opacity: stateLayer.secondaryOpacity,
   },
   optionBody: {
     flex: 1,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   optionText: { ...typography.rowTitle },
   optionTextDimmed: {
-    opacity: 0.6,
+    opacity: stateLayer.pressedOpacity,
   },
   optionDescription: {
     ...typography.caption,

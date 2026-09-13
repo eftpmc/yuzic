@@ -1,3 +1,4 @@
+import { iconSize, motion, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { Alert, FlatList, StyleSheet, Text } from 'react-native';
 import Animated, {
@@ -10,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import SettingsCard from '../components/SettingsCard';
 import SettingsCardHeader from '../components/SettingsCardHeader';
@@ -19,8 +20,6 @@ import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice';
 import { useDownloaderQueue, type QueueDiff } from './useDownloaderQueue';
 import type { DownloaderConfig } from './useDownloaderConnection';
 import type { RowCancelHelpers } from './DownloaderSettingsScreen';
-import { iconSize, spacing, typography } from '@/constants/design';
-
 type Props<T extends { id: string }> = {
   id: DownloaderId;
   /** Optional card title override — the Downloads screen uses this to show
@@ -60,7 +59,7 @@ function DownloaderQueueCard<T extends { id: string }>({
   const rotation = useSharedValue(0);
   React.useEffect(() => {
     rotation.value = withRepeat(
-      withTiming(360, { duration: 1000, easing: Easing.linear }),
+      withTiming(360, { duration: motion.progress, easing: Easing.linear }),
       -1,
       false
     );
@@ -79,9 +78,9 @@ function DownloaderQueueCard<T extends { id: string }>({
       setCancellingId(item.id);
       try {
         await cancelQueueItem(config, item);
-        toast.success(t('settings.downloaders.cancelled'));
+        notify.success(t('settings.downloaders.cancelled'));
       } catch {
-        toast.error(t('settings.downloaders.cancelFailed'));
+        notify.error(t('settings.downloaders.cancelFailed'));
       } finally {
         setCancellingId((current) => (current === item.id ? null : current));
       }
