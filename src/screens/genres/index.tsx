@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { ChevronRight } from 'lucide-react-native'
 
 import { DetailHeaderBar } from '@/components/DetailHeader'
+import EmptyState from '@/components/EmptyState'
 import { useTheme } from '@/hooks/useTheme'
 import { iconSize, spacing, typography } from '@/constants/design'
 import { useAlbums } from '@/hooks/albums'
@@ -66,9 +67,7 @@ const GenresScreen: React.FC = () => {
         // exactly like a library with no genres.
         <LoadingGenreList />
       ) : rows.length === 0 ? (
-        <Text style={[styles.empty, { color: colors.subtext }]}>
-          {t('library.genres.empty')}
-        </Text>
+        <EmptyState message={t('library.genres.empty')} />
       ) : (
         <FlashList<GenreRow>
           data={rows}
@@ -97,5 +96,4 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, minWidth: 0, marginRight: spacing.rowGap },
   genre: { ...typography.rowTitle },
   count: { ...typography.caption, marginTop: spacing.xxs },
-  empty: { ...typography.rowSubtitle, textAlign: 'center', marginTop: spacing.xxl },
 })

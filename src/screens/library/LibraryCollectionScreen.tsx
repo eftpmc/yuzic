@@ -1,14 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { notify } from '@/components/toast';
 
 import { DetailHeaderBar } from '@/components/DetailHeader'
+import EmptyState from '@/components/EmptyState'
 import { usePlayingActions } from '@/contexts/PlayingContext'
 import { useTheme } from '@/hooks/useTheme'
-import { spacing, typography } from '@/constants/design'
+import { spacing } from '@/constants/design'
 import CollectionActions from './CollectionActions'
 import LibraryList from './LibraryList'
 import LoadingLibraryList from './Loading'
@@ -121,11 +122,7 @@ const LibraryCollectionScreen: React.FC = () => {
       {isLoading && items.length === 0 ? (
         <LoadingLibraryList collection={type ?? null} />
       ) : items.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('library.collection.empty')}
-          </Text>
-        </View>
+        <EmptyState message={t('library.collection.empty')} />
       ) : (
         <LibraryList
           items={items}
@@ -145,6 +142,4 @@ export default LibraryCollectionScreen
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   actions: { paddingHorizontal: spacing.page, paddingTop: spacing.sm },
-  empty: { paddingHorizontal: spacing.page, paddingTop: spacing.xl },
-  emptyText: { ...typography.rowSubtitle },
 })

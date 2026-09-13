@@ -1,16 +1,17 @@
 import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { notify } from '@/components/toast';
 
 import { DetailHeaderBar } from '@/components/DetailHeader';
+import EmptyState from '@/components/EmptyState';
 import SongRow from '@/components/rows/SongRow';
 import LoadingSongRow from '@/components/rows/SongRow/Loading';
 import { usePlayingActions } from '@/contexts/PlayingContext';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, typography } from '@/constants/design';
+import { spacing } from '@/constants/design';
 import CollectionActions from '@/screens/library/CollectionActions';
 import { useLocalMix } from './hooks/useLocalMix';
 
@@ -53,11 +54,7 @@ export default function LocalMixScreen() {
           {songs.map(song => <SongRow key={song.id} song={song} />)}
         </ScrollView>
       ) : (
-        <View style={styles.empty}>
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            {t('library.collection.empty')}
-          </Text>
-        </View>
+        <EmptyState message={t('library.collection.empty')} />
       )}
     </SafeAreaView>
   );
@@ -67,6 +64,4 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { paddingBottom: spacing.xl },
   actions: { paddingHorizontal: spacing.page, paddingTop: spacing.sm, paddingBottom: spacing.md },
-  empty: { paddingHorizontal: spacing.page, paddingTop: spacing.xl },
-  emptyText: { ...typography.rowSubtitle },
 });
