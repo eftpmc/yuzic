@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
-    gap: 5,
+    gap: spacing.tight,
     marginBottom: spacing.md,
     marginLeft: H_PADDING,
     marginRight: H_PADDING,

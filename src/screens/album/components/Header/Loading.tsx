@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     actions: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: spacing.controlGap,
     },
 });
 

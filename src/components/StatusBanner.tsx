@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.tight,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.tight,
   },

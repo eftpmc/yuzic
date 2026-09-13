@@ -1,3 +1,4 @@
+import { statusColor } from '@/constants/design';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -121,7 +122,7 @@ const FallbackUrlsCard: React.FC<Props> = ({ server }) => {
           </Touchable>
         </View>
         {error && (
-          <Text style={[styles.error, { color: '#e57373' }]}>{error}</Text>
+          <Text style={[styles.error, { color: statusColor.errorText }]}>{error}</Text>
         )}
       </SettingsCard>
     </>

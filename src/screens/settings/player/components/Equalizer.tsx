@@ -1,3 +1,5 @@
+import { onDark } from '@/constants/design';
+import { stateLayer } from '@/constants/design';
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
@@ -94,7 +96,7 @@ export const Equalizer: React.FC = () => {
               <Text
                 style={[
                   styles.presetText,
-                  { color: selected ? '#fff' : colors.secondary },
+                  { color: selected ? onDark.text : colors.secondary },
                 ]}
               >
                 {t(preset.labelKey)}
@@ -250,7 +252,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 12,
     height: 1,
-    opacity: 0.5,
+    opacity: stateLayer.mutedOpacity,
   },
   /** Centre outward: up for a boost, down for a cut. */
   trackFill: {

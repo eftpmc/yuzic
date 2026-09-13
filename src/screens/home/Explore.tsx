@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, ScrollView, View, Text, RefreshControl } from 'react-native'
 import { useIsFetching } from '@tanstack/react-query'
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
   sourceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.roomy,
     paddingBottom: spacing.xs,
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
   sourceBadgeLetter: {
     ...typography.micro,
     fontWeight: '600',
-    color: '#fff',
+    color: onDark.text,
   },
   sourceHeaderText: {
     ...typography.label,

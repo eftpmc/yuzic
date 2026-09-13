@@ -1,3 +1,5 @@
+import { onDark } from '@/constants/design';
+import { stateLayer } from '@/constants/design';
 import React, {
   useCallback,
   useState,
@@ -339,7 +341,7 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
             onPress={handleDone}
           >
             {membershipLoading ? (
-              <SpinningLoaderCircle size={iconSize.row} color="#fff" />
+              <SpinningLoaderCircle size={iconSize.row} color={onDark.text} />
             ) : (
               <Text style={styles.doneButtonText}>{t('common.done')}</Text>
             )}
@@ -424,10 +426,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   doneButtonDisabled: {
-    opacity: 0.7,
+    opacity: stateLayer.secondaryContentOpacity,
   },
   doneButtonText: {
     ...typography.rowTitle,
-    color: '#fff',
+    color: onDark.text,
   },
 });

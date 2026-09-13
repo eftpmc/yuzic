@@ -1,3 +1,4 @@
+import { shadow } from '@/constants/design';
 import React, { useState } from 'react';
 import {
     View,
@@ -146,10 +147,7 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.lg,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 5,
+        ...shadow.primaryButton,
     },
     buttonPressed: {
         top: 6,

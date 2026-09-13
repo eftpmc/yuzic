@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -42,7 +43,7 @@ const Stats: React.FC = () => {
   useEffect(() => {
     if (isSyncing) {
       rotation.value = withRepeat(
-        withTiming(360, { duration: 1000, easing: Easing.linear }),
+        withTiming(360, { duration: motion.progress, easing: Easing.linear }),
         -1,
         false
       );

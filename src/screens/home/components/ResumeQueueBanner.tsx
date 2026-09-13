@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Play, X } from 'lucide-react-native';
@@ -41,8 +42,8 @@ export function ResumeQueueBanner() {
       >
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
           {resuming
-            ? <SpinningLoaderCircle size={iconSize.inline} color="#000" />
-            : <Play size={iconSize.inline} color="#000" fill="#000" />
+            ? <SpinningLoaderCircle size={iconSize.inline} color={onDark.background} />
+            : <Play size={iconSize.inline} color={onDark.background} fill={onDark.background} />
           }
         </View>
         <View style={styles.text}>

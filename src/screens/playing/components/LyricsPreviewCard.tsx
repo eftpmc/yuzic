@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import {
   View,
@@ -49,7 +50,7 @@ function LyricLine({
   const opacity = useSharedValue(opacityTarget);
 
   useEffect(() => {
-    opacity.value = withTiming(opacityTarget, { duration: 240 });
+    opacity.value = withTiming(opacityTarget, { duration: motion.contentFade });
   }, [opacity, opacityTarget]);
 
   const animatedStyle = useAnimatedStyle(() => ({

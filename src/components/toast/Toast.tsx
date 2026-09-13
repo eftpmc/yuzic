@@ -1,3 +1,5 @@
+import { shadow } from '@/constants/design';
+import { motion } from '@/constants/design';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -155,11 +157,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 6,
+    ...shadow.toast,
   },
   iconWrap: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   message: { ...typography.rowSubtitle, flex: 1, minWidth: 0 },

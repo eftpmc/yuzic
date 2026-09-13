@@ -1,3 +1,4 @@
+import { shadow } from '@/constants/design';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
   },
   presets: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   preset: {
@@ -92,11 +93,7 @@ const styles = StyleSheet.create({
   },
   presetSelected: {
     borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 3,
+    ...shadow.selectedSwatch,
   },
   expandButton: {
     flexDirection: 'row',

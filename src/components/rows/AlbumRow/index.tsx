@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: spacing.xs,
   },
   badgeText: {
     ...typography.caption,

@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -662,7 +663,7 @@ const styles = StyleSheet.create({
   sourceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.roomy,
     paddingBottom: spacing.xs,
@@ -676,7 +677,7 @@ const styles = StyleSheet.create({
   sourceBadgeLetter: {
     ...typography.micro,
     fontWeight: '500',
-    color: '#fff',
+    color: onDark.text,
   },
   sourceHeaderText: {
     ...typography.rowSubtitle,

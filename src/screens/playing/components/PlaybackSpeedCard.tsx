@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Gauge } from 'lucide-react-native';
@@ -61,7 +62,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
           size={iconSize.decorative}
           color={isAltered ? themeColor : onDark.text}
           strokeWidth={0.8}
-          style={{ opacity: 0.07 }}
+          style={{ opacity: stateLayer.decorativeOpacity }}
         />
       </View>
 
@@ -95,7 +96,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
               : { borderColor: 'rgba(255,255,255,0.12)' },
           ]}
         >
-          <Text style={[styles.resetLabel, !isAltered && { opacity: 0.35 }]}>
+          <Text style={[styles.resetLabel, !isAltered && { opacity: stateLayer.disabledTextOpacity }]}>
             1×
           </Text>
         </Touchable>
@@ -103,7 +104,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
         <Touchable
           onPress={decrease}
           disabled={!canDecrease}
-          style={[styles.stepButton, { borderRadius: rad.card }, !canDecrease && { opacity: 0.35 }]}
+          style={[styles.stepButton, { borderRadius: rad.card }, !canDecrease && { opacity: stateLayer.disabledTextOpacity }]}
         >
           <Text style={styles.stepLabel}>−</Text>
         </Touchable>
@@ -111,7 +112,7 @@ export default function PlaybackSpeedCard({ contentWidth }: Props) {
         <Touchable
           onPress={increase}
           disabled={!canIncrease}
-          style={[styles.stepButton, { borderRadius: rad.card }, !canIncrease && { opacity: 0.35 }]}
+          style={[styles.stepButton, { borderRadius: rad.card }, !canIncrease && { opacity: stateLayer.disabledTextOpacity }]}
         >
           <Text style={styles.stepLabel}>+</Text>
         </Touchable>
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   label: {
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
   controls: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   resetButton: {
     flex: 1,

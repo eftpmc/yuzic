@@ -1,3 +1,4 @@
+import { fixedColor } from '@/constants/design';
 import React from 'react';
 import {
   View,
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     subRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: spacing.sm,
     },
 
     serverSubtext: {
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
     },
 
     activeBadge: {
-        backgroundColor: '#1f6feb',
+        backgroundColor: fixedColor.onboardingBlue,
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xxs,
     },
@@ -266,6 +267,6 @@ const styles = StyleSheet.create({
 
     addButtonText: {
         ...typography.sheetTitle,
-        color: '#000',
+        color: onDark.background,
     },
 });

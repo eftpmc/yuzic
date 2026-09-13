@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -43,7 +44,7 @@ export function DownloadsInProgressBanner() {
     <View style={[styles.container, { backgroundColor: colors.muted, borderRadius: rad.card }]}>
       <Touchable style={styles.body} onPress={handleOpen} accessibilityRole="button" accessibilityLabel={t('home.downloadsBanner.open')}>
         <View style={[styles.iconWrap, { backgroundColor: colors.themeColor, borderRadius: rad.pill }]}>
-          <SpinningLoaderCircle size={iconSize.badge} color="#000" />
+          <SpinningLoaderCircle size={iconSize.badge} color={onDark.background} />
         </View>
         <View style={styles.text}>
           <Text style={[styles.title, { color: colors.secondary }]} numberOfLines={1}>

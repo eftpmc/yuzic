@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -134,7 +135,7 @@ const ArtistHeader: React.FC<Props> = ({ localArtist, externalArtist, showNaviga
               hitSlop={hitSlopFor(36)}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color={onDark.text} style={{ marginLeft: -2 }} />
             </Touchable>
             {localArtist ? (
               <LocalOptionsButton artist={localArtist} />
@@ -417,7 +418,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     overflow: 'hidden',
-    backgroundColor: '#222',
+    backgroundColor: onDark.muted,
     alignItems: 'center',
     justifyContent: 'center',
   },

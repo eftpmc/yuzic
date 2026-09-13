@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     serverMeta: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: spacing.tight,
     },
     typeBadge: {
         paddingHorizontal: spacing.tight,

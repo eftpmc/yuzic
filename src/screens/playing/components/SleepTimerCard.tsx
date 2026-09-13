@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
@@ -113,7 +114,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
           size={iconSize.decorative}
           color={isActive ? themeColor : onDark.text}
           strokeWidth={1}
-          style={{ opacity: 0.08 }}
+          style={{ opacity: stateLayer.subtleOpacity }}
         />
       </View>
 
@@ -151,7 +152,7 @@ export default function SleepTimerCard({ contentWidth }: Props) {
               : { borderColor: 'rgba(255,255,255,0.12)' },
           ]}
         >
-          <Text style={[styles.offLabel, !isActive && { opacity: 0.35 }]}>
+          <Text style={[styles.offLabel, !isActive && { opacity: stateLayer.disabledTextOpacity }]}>
             {t('playing.sleepTimer.cancel')}
           </Text>
         </Touchable>
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   label: {
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
   },
   controls: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   offButton: {
     flex: 1,
