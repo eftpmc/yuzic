@@ -79,8 +79,13 @@ import {
 import { selectActiveServerId as selectActiveServerIdSel, selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { selectLibraryTracks } from '@/utils/redux/selectors/librarySelectors';
 import { clampStartIndex, trimQueueAroundIndex } from './adhocQueue';
-
-
+import {
+  backendRepeatMode,
+  clampVolume,
+  movedCurrentIndex,
+  nextRepeatMode,
+  seekTarget,
+} from './playingPolicies';
 
 export interface PlaybackProgress {
   position: number;
@@ -884,11 +889,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
     getBackend().setMediaItems(toMediaItems(songs), startIndex);
-    getBackend().setRepeatMode(
-      repeatModeRef.current === 'all' ? 'queue' :
-      repeatModeRef.current === 'one' ? 'track' :
-      'off'
-    );
+    getBackend().setRepeatMode(backendRepeatMode(repeatModeRef.current));
     if (seekToPosition !== undefined && seekToPosition > 0) getBackend().seekTo(seekToPosition);
     if (play) getBackend().play();
   }, [resetLastScrobbled, sinkLoadQueue, toMediaItems]);
@@ -1175,8 +1176,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const { position, duration } = remoteOwnsPlayback()
       ? { position: jukeboxPositionRef.current, duration: Number(currentSongRef.current?.duration) || 0 }
       : getBackend().getProgress();
-    const max = duration > 0 ? duration : Number.POSITIVE_INFINITY;
-    const target = Math.max(0, Math.min(max, (position || 0) + deltaSeconds));
+    const target = seekTarget(position, deltaSeconds, duration);
     if (!remoteOwnsPlayback()) getBackend().seekTo(target);
     void sinkSeek(target);
   }, [sinkSeek]);
@@ -1191,12 +1191,8 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
     queueRef.current = q;
     getBackend().moveMediaItem(from, to);
     setCurrentIndex(prev => {
-      let next = prev;
-      if (prev === from) next = to;
-      else if (from < prev && to >= prev) next = prev - 1;
-      else if (from > prev && to <= prev) next = prev + 1;
-      currentIndexRef.current = next;
-      return next;
+      currentIndexRef.current = movedCurrentIndex(prev, from, to);
+      return currentIndexRef.current;
     });
     bumpQueue();
   }, [bumpQueue]);
@@ -1332,18 +1328,14 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const toggleRepeat = useCallback(() => {
     setRepeatMode(prev => {
-      const next: RepeatModeState = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
-      getBackend().setRepeatMode(
-        next === 'all' ? 'queue' :
-        next === 'one' ? 'track' :
-        'off'
-      );
+      const next = nextRepeatMode(prev);
+      getBackend().setRepeatMode(backendRepeatMode(next));
       return next;
     });
   }, []);
 
   const setVolume = useCallback((next: number) => {
-    const clamped = Math.max(0, Math.min(1, next));
+    const clamped = clampVolume(next);
     setVolumeState(clamped);
     getBackend().setVolume(clamped);
   }, []);
