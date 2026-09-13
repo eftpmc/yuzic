@@ -14,9 +14,6 @@ import { DownloadRow } from '@/screens/settings/library/downloadsInfo/types';
 import { buildDownloadRows } from '@/screens/settings/library/downloadsInfo/buildRows';
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
-import SettingsCard from '@/screens/settings/components/SettingsCard';
-import SettingsDivider from '@/screens/settings/components/SettingsDivider';
-import SettingsInfoRow from '@/screens/settings/components/SettingsInfoRow';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
@@ -41,7 +38,6 @@ const OfflineSection: React.FC = () => {
     getAllDownloadedTracks,
     getAllDownloadedCollections,
     totalDownloadedBytes,
-    downloadedTrackCount,
   } = useDownload();
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [freeBytes, setFreeBytes] = useState<number | null>(null);
@@ -63,9 +59,6 @@ const OfflineSection: React.FC = () => {
     () => buildDownloadRows({ albums, tracks, playlists: fullPlaylists, fullPlaylists, downloadedTracks, downloadedCollections, t }),
     [albums, tracks, fullPlaylists, downloadedTracks, downloadedCollections, t]
   );
-
-  const downloadedAlbumCount = useMemo(() => rows.filter(r => r.type === 'album').length, [rows]);
-  const downloadedPlaylistCount = useMemo(() => rows.filter(r => r.type === 'playlist').length, [rows]);
 
   const confirmRemove = useCallback((row: DownloadRow) => {
     Alert.alert(
@@ -126,18 +119,9 @@ const OfflineSection: React.FC = () => {
 
   return (
     <View testID="offline-section">
-      <SettingsCard>
-        <SettingsInfoRow label={t('settings.library.downloads.sizeLabel')} value={formattedSize} stacked />
-        <SettingsDivider />
-        <SettingsInfoRow label={t('settings.library.downloads.availableLabel')} value={formattedAvailable} stacked />
-        <SettingsDivider />
-        <SettingsInfoRow label={t('settings.library.downloads.table.playlists')} value={String(downloadedPlaylistCount)} stacked />
-        <SettingsDivider />
-        <SettingsInfoRow label={t('settings.library.downloads.type.album')} value={String(downloadedAlbumCount)} stacked />
-        <SettingsDivider />
-        <SettingsInfoRow label={t('settings.library.downloads.table.tracks')} value={String(downloadedTrackCount)} stacked />
-      </SettingsCard>
-
+      <Text style={[styles.summaryLine, { color: colors.subtext }]}>
+        {t('downloads.offlineSummary', { size: formattedSize, available: formattedAvailable })}
+      </Text>
       <Text style={[styles.locationNote, { color: colors.subtext }]}>
         {t('settings.library.downloads.locationNote')}
       </Text>
@@ -212,6 +196,11 @@ const OfflineSection: React.FC = () => {
 export default OfflineSection;
 
 const styles = StyleSheet.create({
+  summaryLine: {
+    ...typography.caption,
+    paddingHorizontal: spacing.xs,
+    paddingBottom: spacing.xs,
+  },
   emptyText: {
     ...typography.caption,
     paddingTop: spacing.roomy,

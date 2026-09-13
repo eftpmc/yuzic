@@ -18,7 +18,7 @@ import {
 import { X, Search, Plus, Check } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { Playlist, PlaylistBase, Song } from '@/types';
@@ -41,6 +41,7 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
 import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
+import { FAVORITES_ID } from '@/constants/favorites';
 
 type PlaylistListProps = {
   selectedSong: Song | null;
@@ -59,7 +60,15 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
     const api = useApi();
     const queryClient = useQueryClient();
     const activeServer = useSelector(selectActiveServer);
-    const { playlists } = usePlaylists();
+    const { playlists: allPlaylists } = usePlaylists();
+    // Favorites is a synthetic playlist backed by starred songs: toggling it
+    // here would call the same star/unstar as the heart button already on the
+    // song, so it's redundant in the add-to-playlist chooser. It stays a
+    // browsable collection in the Library; it just isn't a target you pick.
+    const playlists = useMemo(
+      () => allPlaylists.filter(p => p.id !== FAVORITES_ID),
+      [allPlaylists]
+    );
     const createPlaylist = useCreatePlaylist();
     const addSongToPlaylist = useAddSongToPlaylist();
     const removeSongFromPlaylist = useRemoveSongFromPlaylist();
@@ -199,9 +208,9 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
         setNewPlaylistName('');
       } catch (e) {
         if (e instanceof Error && e.message === 'offline') {
-          toast.error(t('common.offline.notAvailable'));
+          notify.error(t('common.offline.notAvailable'));
         } else {
-          toast.error(t('playlistList.createFailed'));
+          notify.error(t('playlistList.createFailed'));
         }
       }
     };
@@ -232,9 +241,9 @@ const PlaylistList = forwardRef<BottomSheetModal, PlaylistListProps>(
       const failed = results.filter(r => r.status === 'rejected').length;
 
       if (failed > 0) {
-        toast.error(t('playlistList.updateFailed'));
+        notify.error(t('playlistList.updateFailed'));
       } else {
-        toast.success(t(wasOffline ? 'playlistList.updatedOffline' : 'playlistList.updated'));
+        notify.success(t(wasOffline ? 'playlistList.updatedOffline' : 'playlistList.updated'));
         onClose();
       }
     };

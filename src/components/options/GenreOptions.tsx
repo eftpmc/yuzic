@@ -4,7 +4,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { ListEnd, ListStart, Shuffle, Check, ArrowDownCircle } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 
@@ -113,11 +113,11 @@ const GenreOptions = forwardRef<BottomSheetModal, GenreOptionsProps>(({ genre, a
     const loaded = await ensureSongsLoaded();
     if (!loaded.length) return;
     if (!currentSong) {
-      toast.error(t('songOptions.toasts.nothingPlaying'));
+      notify.error(t('songOptions.toasts.nothingPlaying'));
       return;
     }
     [...loaded].reverse().forEach(song => playNext(song));
-    toast.success(t('genreOptions.toasts.addedNext', { genre }));
+    notify.success(t('genreOptions.toasts.addedNext', { genre }));
     close();
   };
 
@@ -130,7 +130,7 @@ const GenreOptions = forwardRef<BottomSheetModal, GenreOptionsProps>(({ genre, a
       playSongInCollection(loaded[0], collection, false);
     } else {
       addCollectionToQueue(collection);
-      toast.success(t('genreOptions.toasts.addedToEnd', { genre }));
+      notify.success(t('genreOptions.toasts.addedToEnd', { genre }));
     }
     close();
   };
@@ -144,7 +144,7 @@ const GenreOptions = forwardRef<BottomSheetModal, GenreOptionsProps>(({ genre, a
       playSongInCollection(loaded[0], collection, true);
     } else {
       shuffleCollectionToQueue(collection);
-      toast.success(t('genreOptions.toasts.shuffledToQueue', { genre }));
+      notify.success(t('genreOptions.toasts.shuffledToQueue', { genre }));
     }
     close();
   };

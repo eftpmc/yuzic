@@ -3,12 +3,31 @@
     "title": "设置",
     "sections": {
       "general": "通用",
+      "discovery": "发现",
       "plugins": "插件",
       "connections": "连接",
       "about": "关于"
     },
     "connections": {
-      "sources": "音乐库与发现来源"
+      "sources": "音乐库与发现来源",
+      "accounts": "账户",
+      "services": "服务与下载器",
+      "status": {
+        "available": "可用",
+        "inUse": "使用中",
+        "connected": "已连接",
+        "notConnected": "未连接",
+        "ready": "已就绪",
+        "notSetUp": "未设置"
+      },
+      "summary": {
+        "deezer": "发现与封面图",
+        "musicbrainz": "艺人与发行信息",
+        "lastfm": "相似艺人与推荐",
+        "listenbrainz": "Scrobbling 账户与发现",
+        "audiomuse": "播放列表生成",
+        "downloader": "服务器下载"
+      }
     },
     "rows": {
       "server": "服务器",
@@ -42,7 +61,7 @@
       },
       "fallbackUrls": {
         "title": "备用URL",
-        "subtext": "无法访问主URL时应用会尝试的额外URL — 例如出门在外时使用的 Tailscale 或公网地址。",
+        "subtext": "主地址无法连接时尝试的备用 URL。",
         "placeholder": "https://tailscale-或-domain.example",
         "addAria": "添加备用URL",
         "removeAria": "移除 {{url}}",
@@ -53,19 +72,19 @@
       },
       "privacyTitle": "隐私",
       "queueSync": "跨设备同步播放队列",
-      "queueSyncDescription": "将正在播放的内容保存到服务器，以便在其他设备上从上次的位置继续播放。",
+      "queueSyncDescription": "在你的设备间接续播放。",
       "nowPlayingShelf": "显示其他正在收听的人",
-      "nowPlayingShelfDescription": "在首页显示此服务器上的其他用户以及他们正在播放的内容。",
+      "nowPlayingShelfDescription": "显示他人正在播放的主页行。",
       "clientCertificate": {
         "title": "客户端证书",
-        "description": "适用于要求客户端证明身份的服务器。请选择服务器签发给你的 PKCS#12 文件（.p12 或 .pfx）。",
+        "description": "用于需要客户端证书的服务器（.p12/.pfx）。",
         "passwordPlaceholder": "证书密码",
         "choose": "选择证书",
         "installed": "已安装证书",
         "remove": "移除证书",
-        "rejected": "无法读取该证书。请检查密码后重试。",
+        "rejected": "无法读取该证书，请检查密码。",
         "readFailed": "无法读取该文件。",
-        "unsupported": "此平台尚不支持客户端证书。"
+        "unsupported": "此平台暂不支持。"
       }
     },
     "appearance": {
@@ -84,7 +103,7 @@
       },
       "playingBarAction": {
         "title": "播放栏操作",
-        "info": "选择播放栏显示的操作按钮",
+        "info": "播放条中显示哪个操作。",
         "actions": {
           "none": "无",
           "skip": "跳过",
@@ -107,19 +126,19 @@
         "chinese": "中文"
       },
       "showQualityBadge": "显示音质标签",
-      "showQualityBadgeSubtext": "在正在播放界面显示音频格式和比特率。",
+      "showQualityBadgeSubtext": "在播放器显示格式和码率。",
       "display": "显示",
       "playing": "播放",
       "showSourceHeaders": "显示来源标识",
-      "showSourceHeadersSubtext": "在外部服务的分区标题旁显示来源徽章。",
+      "showSourceHeadersSubtext": "在分区标题旁标记外部来源。",
       "feel": "触感",
       "haptics": "触觉反馈",
-      "hapticsSubtext": "在播放、切歌、收藏、长按时轻微振动。",
+      "hapticsSubtext": "播放、切歌和长按时轻触反馈。",
       "respectReducedMotion": "遵循减弱动态效果",
-      "respectReducedMotionSubtext": "当系统开启减弱动态效果时，动画会变得柔和或直接消失。",
+      "respectReducedMotionSubtext": "系统要求时减弱动画。",
       "gridColumns": {
         "label": "网格列数",
-        "subtext": "网格视图中显示的专辑、艺人和播放列表的列数。"
+        "subtext": "网格视图的列数。"
       },
       "radiusPreset": {
         "title": "圆角",
@@ -138,9 +157,9 @@
         }
       },
       "translucentDock": "半透明底栏",
-      "translucentDockSubtext": "让标签栏浮于页面之上，内容从其下方滚动。",
+      "translucentDockSubtext": "让标签栏浮于内容之上。",
       "coverAccent": "取色自封面",
-      "coverAccentSubtext": "用封面上的颜色为专辑、艺人和播放器页面着色。",
+      "coverAccentSubtext": "用封面色调为界面着色。",
       "listDensity": {
         "title": "列表密度",
         "info": "列表中各行之间留出的间距。",
@@ -159,40 +178,40 @@
       },
       "homeSources": "首页栏目",
       "homeSourcesServer": "来自服务器",
-      "homeSourcesServerSubtext": "显示服务器的随机栏目和正在播放。",
+      "homeSourcesServerSubtext": "显示服务器的随机行和正在播放。",
       "homeSourcesListenbrainz": "ListenBrainz",
       "homeSourcesListenbrainzSubtext": "显示 ListenBrainz 的相似艺人栏目。",
       "homeSourcesDeezer": "Deezer",
-      "homeSourcesDeezerSubtext": "显示 Deezer 的发现栏目（排行榜、热门单曲、相似艺人）。"
+      "homeSourcesDeezerSubtext": "Deezer 榜单、热门曲和相似艺人。"
     },
     "lyrics": {
       "title": "歌词",
-      "order": "回退顺序",
+      "sources": "歌词来源",
       "serverEmbedded": "服务器内嵌",
-      "serverEmbeddedSubtext": "始终最先检查 —— 服务器上已有的这首歌的歌词。",
+      "serverEmbeddedSubtext": "优先检查——服务器自带歌词。",
       "lrclib": "LRCLIB",
-      "lrclibSubtext": "免费、匿名的歌词查询。默认关闭；当服务器没有歌词时可开启使用。"
+      "lrclibSubtext": "免费、匿名的歌词查询。"
     },
     "search": {
       "title": "搜索",
       "sourcesSection": "搜索来源",
-      "explanation": "搜索页面「其他来源」范围可以查询的来源。与首页相互独立 —— 为某个来源开启首页栏目不会为搜索开启它,反之亦然。",
+      "explanation": "“其他来源”可搜索的来源。与主页独立。",
       "deezer": "Deezer",
-      "deezerSubtext": "在「其他来源」中搜索时包含 Deezer 的专辑和艺人。",
+      "deezerSubtext": "搜索 Deezer 专辑和艺人。",
       "musicbrainz": "MusicBrainz",
-      "musicbrainzSubtext": "在「其他来源」中搜索时包含 MusicBrainz 的专辑和艺人。"
+      "musicbrainzSubtext": "搜索 MusicBrainz 专辑和艺人。"
     },
     "metadata": {
       "title": "元数据",
-      "explanation": "仅用于显示。补充服务器没有的艺术家信息和封面 —— 绝不会更改服务器上的任何内容,也绝不会写入标签或文件。关闭某个来源即可恢复到服务器原本显示的内容。",
+      "explanation": "补全服务器缺失的信息，绝不修改服务器。",
       "artistInfoSection": "艺术家信息",
       "artworkSection": "封面",
       "lastfm": "Last.fm",
-      "lastfmSubtext": "艺术家简介和标签。默认关闭;当服务器没有简介时可开启使用。",
+      "lastfmSubtext": "简介和标签",
       "deezerArtwork": "Deezer",
-      "deezerArtworkSubtext": "艺术家图片。默认关闭;当服务器没有艺术家照片时可开启使用。",
+      "deezerArtworkSubtext": "艺人图片",
       "coverArtArchive": "Cover Art Archive",
-      "coverArtArchiveSubtext": "通过 MusicBrainz ID 获取专辑封面。默认关闭;当服务器没有封面时可开启使用。"
+      "coverArtArchiveSubtext": "专辑封面"
     },
     "library": {
       "title": "媒体库",
@@ -203,11 +222,11 @@
       "localFiles": {
         "title": "本地文件",
         "import": "导入音频文件",
-        "description": "将音乐添加到此设备上 Yuzic 的私有音乐库。"
+        "description": "将音乐添加到本设备的私有库。"
       },
       "discovery": {
         "title": "发现",
-        "info": "发现功能会从你的媒体库中为你推荐歌手和专辑。",
+        "info": "Discovery 如何从你的库中推荐。",
         "about": "关于发现功能"
       },
       "stats": {
@@ -222,7 +241,7 @@
         "daysAgo_other": "{{count}} 天前",
         "lastSynced": "上次同步",
         "syncOnAppStart": "启动时同步",
-        "syncOnAppStartSubtext": "每次打开应用时自动同步你的音乐库"
+        "syncOnAppStartSubtext": "每次打开应用时同步库。"
       },
       "offlineChanges": {
         "title": "待同步的离线更改",
@@ -233,20 +252,20 @@
         "retry": "重试",
         "discard": "放弃",
         "discardTitle": "放弃离线更改？",
-        "discardBody": "这会移除当前服务器的待同步更改。本地媒体库将在下次同步时刷新。"
+        "discardBody": "放弃此服务器的待同步更改。下次同步时刷新库。"
       },
       "downloads": {
         "title": "离线下载",
         "detailsTitle": "离线下载",
         "moreInfo": "更多信息",
         "clearTitle": "清空下载内容？",
-        "clearBody": "此操作将删除设备上所有已下载的曲目。",
-        "clearBodyForProvider": "此操作仅删除当前服务器的下载内容。",
-        "clearBodyProviderNamed": "此操作仅删除 {{provider}} 的下载内容。",
+        "clearBody": "从本设备移除所有已下载歌曲。",
+        "clearBodyForProvider": "仅移除当前服务器的下载。",
+        "clearBodyProviderNamed": "仅移除 {{provider}} 的下载。",
         "clearFailedTitle": "无法清空下载内容",
         "clearFailedBody": "删除本地文件时发生错误。",
         "removeTitle": "删除该下载项？",
-        "removeBody": "此操作将删除设备上「{{title}}」的已下载文件。",
+        "removeBody": "移除“{{title}}”的已下载文件。",
         "removeFailedTitle": "无法删除该下载项",
         "removeFailedBody": "删除本地文件时发生错误。",
         "provider": {
@@ -286,17 +305,17 @@
           "tracks": "曲目",
           "playlists": "播放列表"
         },
-        "offlineNote": "这些曲目已存储在本地，可离线播放。",
-        "locationNote": "下载内容存储在应用的私有存储空间中，无法通过设备的文件管理器访问。请使用此页面查看和删除下载内容。",
+        "offlineNote": "本地存储以供离线播放。",
+        "locationNote": "存于应用私有空间，文件管理器不可见，请在此管理。",
         "autoDownloadLabel": "自动下载新歌曲",
-        "autoDownloadSubtext": "自动下载资料库中新增的歌曲以供离线播放",
+        "autoDownloadSubtext": "自动下载添加到库的歌曲。",
         "autoDownloadStarted_other": "正在自动下载 {{count}} 首新歌曲",
         "wifiOnlyLabel": "仅在 WiFi 下下载",
-        "wifiOnlySubtext": "在连接 WiFi 前暂停下载。队列会自动继续。"
+        "wifiOnlySubtext": "等待 WiFi，之后自动恢复。"
       },
       "downloadQuality": {
         "title": "下载音质",
-        "caption": "若服务器支持，原始音质将下载无损源文件。文件越大，占用的存储空间越多。",
+        "caption": "支持时下载无损，文件更大。",
         "options": {
           "low": "低 · 128kbps",
           "medium": "中 · 192kbps",
@@ -313,8 +332,8 @@
         "title": "均衡器",
         "reset": "重置",
         "presets": "预设",
-        "flatSubtext": "平坦 — 均衡器已完全绕过，不占用任何资源。",
-        "gainSubtext": "增益最高 {{limit}} dB，作用于播放器的全部输出。",
+        "flatSubtext": "平直——绕过均衡器，无开销。",
+        "gainSubtext": "全部输出增益至多 {{limit}} dB。",
         "presetFlat": "平坦",
         "presetBass": "低音增强",
         "presetTreble": "高音增强",
@@ -324,7 +343,7 @@
       "streamingQuality": {
         "wifi": "WiFi音质",
         "cellular": "蜂窝网络音质",
-        "caption": "若服务器支持，原始音质将以无损音频流式传输。建议仅在WiFi下使用。",
+        "caption": "支持时无损播放，建议 WiFi。",
         "options": {
           "low": "低 · 128kbps",
           "medium": "中 · 192kbps",
@@ -333,24 +352,24 @@
         }
       },
       "opusCodec": "Opus编解码器",
-      "opusCodecSubtext": "相同比特率下音质优于MP3，在低比特率下效果尤为明显。",
+      "opusCodecSubtext": "同码率下音质优于 MP3。",
       "showSleepTimer": "睡眠定时器",
       "showSleepTimerSubtext": "在播放器中显示睡眠定时器控件。",
       "showPlaybackSpeed": "播放速度",
       "showPlaybackSpeedSubtext": "在播放器中显示速度控件。",
       "showJumpButtons": "跳转按钮",
-      "showJumpButtonsSubtext": "在播放器中显示15秒后退和前进按钮。",
+      "showJumpButtonsSubtext": "播放器中显示 15 秒跳转按钮。",
       "showVolumeSlider": "音量滑块",
-      "showVolumeSliderSubtext": "在播放器界面显示应用内音量滑块。",
+      "showVolumeSliderSubtext": "播放器中显示音量滑块。",
       "autoplay": "自动播放",
-      "autoplaySubtextAudiomuse": "队列播放完毕后，使用 AudioMuse-AI 继续播放声音相似的曲目。",
-      "autoplaySubtextNative": "队列播放完毕后，继续播放服务器中的相似曲目。",
+      "autoplaySubtextAudiomuse": "用 AudioMuse-AI 续播相似曲目。",
+      "autoplaySubtextNative": "从服务器续播相似曲目。",
       "resumeLongTracks": "继续播放长音轨",
-      "resumeLongTracksSubtext": "有声书、DJ 混音、播客单集——从上次停下的地方继续。",
+      "resumeLongTracksSubtext": "续播有声书、DJ 混音和播客。",
       "cacheTitle": "播放缓存",
       "clearCache": "清除播放缓存",
       "clearCacheTitle": "清除播放缓存？",
-      "clearCacheBody": "设备上保存的流媒体音频将在下次播放时重新获取。已下载的内容不受影响。",
+      "clearCacheBody": "缓存音频下次播放时重新获取，下载不受影响。",
       "clearCacheConfirm": "清除",
       "clearCacheDone": "已清除播放缓存",
       "audio": "音频",
@@ -358,9 +377,9 @@
         "label": "交叉淡入淡出",
         "off": "关闭",
         "offSubtext": "曲目之间直接衔接，不重叠。",
-        "onSubtext": "每首曲目在 {{seconds}} 秒内淡入下一首。手动切歌仍会直接切换。",
+        "onSubtext": "曲目间淡入淡出 {{seconds}} 秒，切歌直接切换。",
         "seguesLabel": "连贯曲目也淡入淡出",
-        "seguesSubtext": "默认情况下，曲目相连的专辑会在衔接处直接切换，以保持整张混音的连贯。开启后将对所有曲目淡入淡出。"
+        "seguesSubtext": "专辑无缝衔接仍直切；开启则一并淡化。"
       }
     },
     "listenBrainz": {
@@ -370,7 +389,7 @@
       "usernamePlaceholder": "ListenBrainz 用户名",
       "tokenPlaceholder": "ListenBrainz 用户令牌",
       "connectivity": "连接状态",
-      "helperText": "ListenBrainz 用于记录播放记录和正在播放更新。未经你的许可，不会发送任何播放数据。",
+      "helperText": "用于 scrobble 和正在播放，未经许可不发送。",
       "disconnect": "断开连接",
       "missingCredentials": "请先输入用户名和令牌。",
       "connectionSuccessful": "成功连接至 ListenBrainz。",
@@ -378,11 +397,11 @@
       "connectFailed": "无法连接至 ListenBrainz。",
       "disconnected": "已断开与 ListenBrainz 的连接。",
       "credentialsTitle": "凭据",
-      "credentialsHelper": "来自 listenbrainz.org/profile 的用户名和用户令牌。",
+      "credentialsHelper": "来自 listenbrainz.org/profile 的用户名和令牌。",
       "scrobble": "记录播放",
       "nowPlaying": "正在播放",
       "discovery": "发现",
-      "discoveryDescription": "在主页和艺术家页面使用 ListenBrainz 的公开相似艺术家数据。无需账号 — 为了匹配，你收听的艺术家会被发送至 ListenBrainz。"
+      "discoveryDescription": "在主页和艺人页显示相似艺人。无需账号，发送艺人名用于匹配。"
     },
     "downloaders": {
       "title": "下载管理",
@@ -419,7 +438,7 @@
         "connectionFailed": "连接 Lidarr 失败",
         "disconnected": "已断开与 Lidarr 的连接。",
         "credentialsTitle": "连接",
-        "credentialsHelper": "你的 Lidarr 服务器地址和 API 密钥。位于 Lidarr 的 Settings → General。",
+        "credentialsHelper": "Lidarr URL 和 API 密钥（Settings → General）。",
         "qualityProfileTitle": "质量配置",
         "defaultQualityProfile": "默认质量配置"
       },
@@ -428,7 +447,7 @@
         "connectionFailed": "连接 slskd 失败",
         "disconnected": "已断开与 slskd 的连接。",
         "credentialsTitle": "连接",
-        "credentialsHelper": "你的 slskd 服务器地址和 API 密钥。位于 slskd 的 Options → API Keys。",
+        "credentialsHelper": "slskd URL 和 API 密钥（Options → API Keys）。",
         "searchPreferencesTitle": "搜索偏好",
         "preferredFormat": "首选格式",
         "formatAuto": "任意（优先 FLAC）",
@@ -437,40 +456,40 @@
         "minBitrateAny": "任意",
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "优先空闲上传槽",
-        "preferFreeSlotSubtext": "优先选择上传槽空闲的对端。关闭后即使需要排队，也可能获取到罕见的发行版本。"
+        "preferFreeSlotSubtext": "优先空闲槽位，关闭可获取稀有资源。"
       },
       "queueTitle": "下载队列",
       "soulsync": {
         "title": "SoulSync",
         "credentialsTitle": "连接",
-        "credentialsHelper": "你的 SoulSync 服务器地址和 API 密钥。可在 SoulSync 的 Settings → API Keys 中生成。",
+        "credentialsHelper": "SoulSync URL 和 API 密钥（Settings → API Keys）。",
         "connectionFailed": "SoulSync 连接失败",
         "disconnected": "已断开与 SoulSync 的连接。"
       }
     },
     "musicbrainz": {
       "external": "外部艺术家和专辑数据",
-      "externalDescription": "当艺术家或专辑不在您的音乐库中时，用 MusicBrainz 数据补全其页面。无需账号。"
+      "externalDescription": "用 MusicBrainz 补全页面，无需账号。"
     },
     "lastfm": {
       "enable": "艺术家与推荐数据",
-      "enableDescription": "使用 Last.fm 查找相似艺术家，并为播放列表推荐提供起点。无需账号 — 艺术家名称会被发送至 Last.fm 进行查询。"
+      "enableDescription": "相似艺人和歌单种子。无需账号，发送艺人名查询。"
     },
     "deezer": {
       "discovery": "发现",
-      "discoveryDescription": "Deezer 排行榜和推荐显示在探索页面。",
+      "discoveryDescription": "探索页显示 Deezer 榜单和推荐。",
       "search": "搜索",
       "searchDescription": "在搜索中包含 Deezer 结果。",
       "external": "外部艺术家和专辑数据",
-      "externalDescription": "当艺术家或专辑不在您的音乐库中时，用 Deezer 数据补全其页面。",
+      "externalDescription": "用 Deezer 补全专辑和艺人页面。",
       "topTracks": "热门歌曲",
       "topTracksDescription": "在艺术家页面显示 Deezer 热门歌曲。",
       "similarArtists": "相似艺术家",
       "similarArtistsDescription": "在艺术家页面显示 Deezer 相似艺术家。",
       "albumRecommendations": "推荐",
-      "albumRecommendationsDescription": "在专辑页面显示 Deezer 推荐专辑。",
+      "albumRecommendationsDescription": "在专辑页显示推荐专辑。",
       "samples": "试听片段",
-      "samplesDescription": "为外部专辑页面获取 30 秒试听片段。",
+      "samplesDescription": "为外部专辑获取 30 秒试听。",
       "enableSamplesToPreview": "请在设置中启用试听片段以收听预览",
       "playlistRecommendations": "推荐",
       "playlistRecommendationsDescription": "显示 Deezer 推荐的播放列表。",
@@ -480,7 +499,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "连接到指向此服务器的自托管 AudioMuse-AI 实例，以启用基于声音分析的智能随机播放。",
+      "credentialsHelper": "用于 Smart Shuffle 的自托管 AudioMuse-AI 实例。",
       "serverUrl": "服务器地址",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "API 令牌",
@@ -488,7 +507,7 @@
       "connectivity": "连接状态",
       "connectionFailed": "连接 AudioMuse-AI 失败",
       "enable": "启用 AudioMuse-AI",
-      "enableSubtext": "连接后使用 AudioMuse-AI 实现智能随机播放。",
+      "enableSubtext": "连接后用 AudioMuse-AI 进行 Smart Shuffle。",
       "disconnect": "断开连接",
       "disconnected": "已断开与 AudioMuse-AI 的连接。"
     },
@@ -507,7 +526,7 @@
       "routeDirect": "由 Yuzic 直接发送",
       "throughServer": "通过服务器",
       "throughServerMarkAsPlayed": "通过服务器(标记为已播放)",
-      "duplicateRiskNote": "选择“通过服务器”后,Yuzic 无法确认服务器是否真的会转发 scrobble。如果服务器同时也配置了自己发送 scrobble,或另一个应用对同一账号进行 scrobble,播放记录可能会被重复计算。"
+      "duplicateRiskNote": "选择“通过服务器”后，若服务器或其他应用也 scrobble，可能重复计数。"
     },
     "home": {
       "title": "主页"
@@ -672,6 +691,9 @@
     "downloads": {
       "title": "下载"
     },
+    "downloaded": {
+      "title": "离线"
+    },
     "wants": {
       "title": "想要列表"
     },
@@ -789,6 +811,7 @@
       "other": "其他来源"
     },
     "filters": {
+      "scope": "搜索范围",
       "title": "筛选",
       "sources": "来源",
       "entityTypes": "包含",
@@ -1079,8 +1102,8 @@
   },
   "wants": {
     "title": "想要列表",
-    "empty": "还没有保存任何内容。添加想要的歌曲或专辑，它会显示在这里。",
-    "manualAdd": "添加到想要列表"
+    "empty": "还没有保存任何内容。",
+    "searchAction": "搜索音乐"
   },
   "manualAddWant": {
     "title": "添加到想要列表",
@@ -1354,7 +1377,8 @@
     "settings": {
       "themeColor": "主题色 {{color}}",
       "clearProviderDownloads": "删除所有 {{provider}} 下载",
-      "removeDownload": "移除下载 {{title}}"
+      "removeDownload": "移除下载 {{title}}",
+      "reorderSource": "重新排序 {{name}}"
     },
     "onboarding": {
       "serverOptions": "{{url}}的选项"
@@ -1378,12 +1402,13 @@
     "library": "音乐库"
   },
   "downloads": {
-    "title": "下载队列",
+    "title": "下载",
     "noDownloaders": "未连接下载器。请在设置中添加。",
     "jobFailed": "无法完成“{{title}}”的下载。它仍在队列中，将重试。",
+    "offlineSummary": "已用 {{size}} · 可用 {{available}}",
     "section": {
-      "offline": "离线",
-      "downloaders": "下载器"
+      "offline": "已保存到本机",
+      "downloaders": "服务器传输"
     }
   }
 }

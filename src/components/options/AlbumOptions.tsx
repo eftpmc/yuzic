@@ -6,7 +6,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Heart, ListEnd, ListStart, Play, Shuffle, Disc, CheckCircle, ArrowDownCircle, Globe, Share2, Link, CloudDownload, ChevronRight, Sparkles } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useApi } from '@/api';
 import { shareItem } from '@/utils/share';
 import { selectAudiomuseConfig } from '@/utils/redux/selectors/audiomuseSelectors';
@@ -139,13 +139,13 @@ const LibraryAlbumOptionsSheet = forwardRef<
     try {
       if (isStarred) {
         await unstarAlbum.mutateAsync(album.id);
-        toast.success(t('albumOptions.toasts.removedFromFavorites', { title: album.title }));
+        notify.success(t('albumOptions.toasts.removedFromFavorites', { title: album.title }));
       } else {
         await starAlbum.mutateAsync(album.id);
-        toast.success(t('albumOptions.toasts.addedToFavorites', { title: album.title }));
+        notify.success(t('albumOptions.toasts.addedToFavorites', { title: album.title }));
       }
     } catch {
-      toast.error(t('albumOptions.toasts.updateFavoritesFailed'));
+      notify.error(t('albumOptions.toasts.updateFavoritesFailed'));
     } finally {
       close();
     }
@@ -164,11 +164,11 @@ const LibraryAlbumOptionsSheet = forwardRef<
   const handleAddToNext = () => {
     if (!albumWithSongs || playbackDisabled) return;
     if (!currentSong) {
-      toast.error(t('songOptions.toasts.nothingPlaying'));
+      notify.error(t('songOptions.toasts.nothingPlaying'));
       return;
     }
     [...songs].reverse().forEach(song => playNext(song));
-    toast.success(t('albumOptions.toasts.addedNext', { title: albumWithSongs.title }));
+    notify.success(t('albumOptions.toasts.addedNext', { title: albumWithSongs.title }));
     close();
   };
 
@@ -179,7 +179,7 @@ const LibraryAlbumOptionsSheet = forwardRef<
       playSongInCollection(songs[0], albumWithSongs, false);
     } else {
       addCollectionToQueue(albumWithSongs);
-      toast.success(t('albumOptions.toasts.addedToEnd', { title: albumWithSongs.title }));
+      notify.success(t('albumOptions.toasts.addedToEnd', { title: albumWithSongs.title }));
     }
     close();
   };
@@ -191,7 +191,7 @@ const LibraryAlbumOptionsSheet = forwardRef<
       playSongInCollection(songs[0], albumWithSongs, true);
     } else {
       shuffleCollectionToQueue(albumWithSongs);
-      toast.success(t('albumOptions.toasts.shuffledToQueue', { title: albumWithSongs.title }));
+      notify.success(t('albumOptions.toasts.shuffledToQueue', { title: albumWithSongs.title }));
     }
     close();
   };
@@ -231,7 +231,7 @@ const LibraryAlbumOptionsSheet = forwardRef<
         description: album.title,
       });
       if (!created?.url) {
-        toast.error(t('albumOptions.toasts.shareFailed'));
+        notify.error(t('albumOptions.toasts.shareFailed'));
         return;
       }
       const shared = await shareItem({
@@ -241,7 +241,7 @@ const LibraryAlbumOptionsSheet = forwardRef<
       });
       if (shared) close();
     } catch {
-      toast.error(t('albumOptions.toasts.shareFailed'));
+      notify.error(t('albumOptions.toasts.shareFailed'));
     } finally {
       setIsSharing(false);
     }
@@ -258,11 +258,11 @@ const LibraryAlbumOptionsSheet = forwardRef<
     setIsGeneratingPlaylist(true);
     try {
       const result = await generateForAlbum(api, audiomuseConfig, albumWithSongs, { size: 25 });
-      toast.success(t('albumOptions.toasts.playlistGenerated', { count: result.trackCount }));
+      notify.success(t('albumOptions.toasts.playlistGenerated', { count: result.trackCount }));
       close();
       router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
     } catch {
-      toast.error(t('albumOptions.toasts.playlistGenerationFailed'));
+      notify.error(t('albumOptions.toasts.playlistGenerationFailed'));
     } finally {
       generatePlaylistInFlightRef.current = false;
       setIsGeneratingPlaylist(false);

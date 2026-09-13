@@ -11,7 +11,7 @@ import React, {
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import type { Song } from '@/types';
@@ -618,7 +618,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
         // belongs to the download-to-server flow, so a local album that gave
         // up said "Download failed." with no subject and no next step, on a
         // screen that has nothing to do with an external downloader.
-        toast.error(t('downloads.jobFailed', {
+        notify.error(t('downloads.jobFailed', {
           title: job.tracks[0]?.title ?? '',
         }));
       },
@@ -710,10 +710,10 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
   const toastCollectionResult = useCallback((tracks: Song[], label: string) => {
     const downloadedCount = tracks.filter(track => localPathMapRef.current.has(track.id)).length;
     if (downloadedCount === tracks.length) {
-      toast.success(t('settings.downloaders.downloadComplete'));
+      notify.success(t('settings.downloaders.downloadComplete'));
     } else {
       console.warn(`${label} download incomplete: ${downloadedCount}/${tracks.length} tracks`);
-      toast.error(t('externalAlbum.download.failed'));
+      notify.error(t('externalAlbum.download.failed'));
     }
   }, [t]);
 
@@ -728,7 +728,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       toastCollectionResult(tracks, 'Album');
     } catch (error) {
       console.warn('Album download failed', error);
-      toast.error(t('externalAlbum.download.failed'));
+      notify.error(t('externalAlbum.download.failed'));
     }
   }, [api, downloadCollection, t, toastCollectionResult]);
 
@@ -743,7 +743,7 @@ export const DownloadProvider: React.FC<{ children: ReactNode }> = ({ children }
       toastCollectionResult(tracks, 'Playlist');
     } catch (error) {
       console.warn('Playlist download failed', error);
-      toast.error(t('externalAlbum.download.failed'));
+      notify.error(t('externalAlbum.download.failed'));
     }
   }, [api, downloadCollection, t, toastCollectionResult]);
 

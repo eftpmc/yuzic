@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { FileMusic } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -35,11 +35,11 @@ export default function LocalImport() {
     try {
       const outcome = await pickAndImportLocalFiles();
       if (!outcome) return;
-      if (outcome.imported) toast.success(t('onboarding.local.imported', { count: outcome.imported }));
-      if (outcome.unsupported) toast.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
-      if (outcome.failed) toast.error(t('onboarding.local.importFailed'));
+      if (outcome.imported) notify.success(t('onboarding.local.imported', { count: outcome.imported }));
+      if (outcome.unsupported) notify.error(t('onboarding.local.unsupported', { count: outcome.unsupported }));
+      if (outcome.failed) notify.error(t('onboarding.local.importFailed'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('onboarding.local.importFailed'));
+      notify.error(error instanceof Error ? error.message : t('onboarding.local.importFailed'));
     } finally { setImporting(false); }
   };
 

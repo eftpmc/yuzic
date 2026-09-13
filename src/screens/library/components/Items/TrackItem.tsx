@@ -4,7 +4,7 @@ import { useSongActionSheets } from '@/contexts/SongActionSheetContext';
 import { usePlayingActions } from "@/contexts/PlayingContext";
 import { SongBase } from "@/types";
 import { useTranslation } from "react-i18next";
-import { toast } from "@backpackapp-io/react-native-toast";
+import { notify } from '@/components/toast';
 import { usePlayableSongResolver } from '@/hooks/songs';
 import { FULL_TRACK_FETCH_TIMEOUT_MS, TRACK_PRESS_COOLDOWN_MS } from '@/constants/playback';
 import haptics from '@/utils/haptics';
@@ -43,7 +43,7 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
     try {
       const fullSong = await resolvePlayableSong(song, { timeoutMs: FULL_TRACK_FETCH_TIMEOUT_MS });
       if (!fullSong) {
-        toast.error(t("common.playbackError"));
+        notify.error(t("common.playbackError"));
         return;
       }
       if (fullSong.filePath) {
@@ -56,7 +56,7 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
       await playSimilar(fullSong);
     } catch (error) {
       console.warn("Failed to play home track", error);
-      toast.error(t("common.playbackError"));
+      notify.error(t("common.playbackError"));
     } finally {
       pressInFlightRef.current = false;
     }
@@ -71,11 +71,11 @@ const TrackItem: React.FC<Props> = ({ song, isGridView, gridWidth, gridSpacing }
       if (fullSong) {
         openSongOptions(fullSong);
       } else {
-        toast.error(t("common.songDetailsError"));
+        notify.error(t("common.songDetailsError"));
       }
     } catch (error) {
       console.warn("Failed to fetch full track data", error);
-      toast.error(t("common.songDetailsError"));
+      notify.error(t("common.songDetailsError"));
     } finally {
       longPressInFlightRef.current = false;
     }

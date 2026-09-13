@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { toast } from '@backpackapp-io/react-native-toast'
+import { notify } from '@/components/toast';
 
 import { useApi } from '@/api'
 import { QueryKeys } from '@/enums/queryKeys'
@@ -57,7 +57,7 @@ export default function TopSongsSection({ artist }: Props) {
       const song = await resolvePlayableSong(trackId)
       if (song) await playSong(song)
     } catch {
-      toast.error(t('common.playbackError'))
+      notify.error(t('common.playbackError'))
     }
   }, [resolvePlayableSong, playSong, t])
 

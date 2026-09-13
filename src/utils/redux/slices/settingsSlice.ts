@@ -324,7 +324,7 @@ const initialState: SettingsState = {
   playbackSpeeds: {},
   showJumpButtons: false,
   showVolumeSlider: false,
-  autoplayEnabled: false,
+  autoplayEnabled: true,
   crossfadeSeconds: 0,
   crossfadeAlways: false,
   equalizerGains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

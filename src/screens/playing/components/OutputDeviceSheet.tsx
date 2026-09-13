@@ -12,7 +12,7 @@ import IconActionButton from '@/components/IconActionButton';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useTheme } from '@/hooks/useTheme';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
@@ -63,7 +63,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
       await selectDlna(device);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     } catch {
-      toast.error(t('playing.output.connectFailed'));
+      notify.error(t('playing.output.connectFailed'));
     } finally {
       setConnectingDlnaUdn(null);
     }
@@ -74,7 +74,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
       await selectJukebox(serverName);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     } catch {
-      toast.error(t('playing.output.jukeboxFailed'));
+      notify.error(t('playing.output.jukeboxFailed'));
     }
   }, [selectJukebox, serverName, ref, t]);
 
@@ -85,7 +85,7 @@ const OutputDeviceSheet = forwardRef<BottomSheetModal>((_, ref) => {
       async (ip) => {
         if (!ip?.trim()) return;
         const device = await probeManual(ip);
-        if (!device) toast.error(t('playing.output.notFoundAtAddress'));
+        if (!device) notify.error(t('playing.output.notFoundAtAddress'));
       },
       'plain-text',
       '',

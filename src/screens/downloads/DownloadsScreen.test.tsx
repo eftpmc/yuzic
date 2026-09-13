@@ -27,15 +27,6 @@ jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({ colors: { secondary: '#000', subtext: '#666', border: '#ccc', card: '#111', themeColor: '#0f0', background: '#fff', muted: '#eee' } }),
 }));
 
-jest.mock('./OfflineSection', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factory can't reference outer-scope imports
-  const { Text: RNText } = require('react-native');
-  return {
-    __esModule: true,
-    default: () => <RNText testID="offline-section-mock">offline</RNText>,
-  };
-});
-
 const mockUseDownloadersQueue = jest.fn(() => ({ queues: [], totalInFlight: 0 }));
 jest.mock('@/features/downloaders/DownloadersQueueContext', () => ({
   useDownloadersQueue: () => mockUseDownloadersQueue(),
@@ -84,13 +75,13 @@ describe('DownloadsScreen', () => {
     mockUseDownloadersQueue.mockClear();
   });
 
-  it('renders the Offline section and the Downloaders section', async () => {
+  it('is server-transfers only: no offline section on this screen', async () => {
     mockUseDownloaderStates.mockReturnValue([]);
     const view = await render(<DownloadsScreen />);
 
-    expect(view.getByTestId('offline-section-mock')).toBeTruthy();
-    expect(view.getByText('downloads.section.offline')).toBeTruthy();
-    expect(view.getByText('downloads.section.downloaders')).toBeTruthy();
+    expect(view.queryByTestId('offline-section-mock')).toBeNull();
+    // The empty state stands in for the (removed) section headers.
+    expect(view.getByText('downloads.noDownloaders')).toBeTruthy();
   });
 
   it('shows every connected downloader, including SoulSync (previously omitted)', async () => {

@@ -68,7 +68,7 @@ jest.mock('@/hooks/tracks', () => ({ useTracks: () => ({ tracks: [] }) }))
 jest.mock('@/api', () => ({ useApi: () => ({ albums: { get: jest.fn() } }) }))
 jest.mock('@/utils/redux/selectors/serversSelectors', () => ({ selectActiveServer: () => null }))
 jest.mock('@/hooks/albums', () => ({ fetchAlbumDetailsSettled: jest.fn(async () => []) }))
-jest.mock('@backpackapp-io/react-native-toast', () => ({ toast: Object.assign(jest.fn(), { error: jest.fn() }) }))
+jest.mock('@/components/toast', () => ({ notify: { info: jest.fn(), success: jest.fn(), error: jest.fn(), loading: jest.fn(), dismiss: jest.fn() } }))
 
 let mockLastResolved: unknown
 jest.mock('@tanstack/react-query', () => ({

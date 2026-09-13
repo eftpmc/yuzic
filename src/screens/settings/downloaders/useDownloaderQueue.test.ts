@@ -10,8 +10,14 @@ jest.mock('react-i18next', () => ({
 // Jest hoists mock factories above the file, so the spy needs the `mock` prefix
 // to be reachable from inside one.
 const mockToast = jest.fn();
-jest.mock('@backpackapp-io/react-native-toast', () => ({
-  toast: (...args: unknown[]) => mockToast(...args),
+jest.mock('@/components/toast', () => ({
+  notify: {
+    info: (...args: unknown[]) => mockToast(...args),
+    success: (...args: unknown[]) => mockToast(...args),
+    error: (...args: unknown[]) => mockToast(...args),
+    loading: jest.fn(),
+    dismiss: jest.fn(),
+  },
 }));
 
 type Listener = (state: string) => void;

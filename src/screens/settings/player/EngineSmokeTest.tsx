@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import SettingsCard from '../components/SettingsCard';
 import SettingsCardHeader from '../components/SettingsCardHeader';
@@ -52,10 +52,10 @@ const EngineSmokeTest: React.FC = () => {
       say(`module: ${YuzicEngine ? 'found' : 'missing'}`);
       await YuzicEngine.setup({ progressIntervalMs: 1000 });
       say('setup: ok — audio session claimed');
-      toast.success('Engine responded');
+      notify.success('Engine responded');
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Engine did not respond');
+      notify.error('Engine did not respond');
     }
   }, [loadEngine, say]);
 
@@ -104,10 +104,10 @@ const EngineSmokeTest: React.FC = () => {
 
       await YuzicEngine.play();
       say('play() returned — watching progress');
-      toast.success('Engine playing');
+      notify.success('Engine playing');
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Engine playback failed');
+      notify.error('Engine playback failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -197,7 +197,7 @@ const EngineSmokeTest: React.FC = () => {
       }, 15_000);
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Seek probe failed');
+      notify.error('Seek probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -262,7 +262,7 @@ const EngineSmokeTest: React.FC = () => {
       say('no other engine call was made in between');
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Append probe failed');
+      notify.error('Append probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -333,7 +333,7 @@ const EngineSmokeTest: React.FC = () => {
       say(`waiting for the fade (${fadeSec}s)`);
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Crossfade probe failed');
+      notify.error('Crossfade probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -395,10 +395,10 @@ const EngineSmokeTest: React.FC = () => {
       await YuzicEngine.clearQueue();
       const emptied = await YuzicEngine.getQueue();
       say(`cleared: ${emptied.length} items`);
-      toast.success('Queue editing works');
+      notify.success('Queue editing works');
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Queue probe failed');
+      notify.error('Queue probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -464,7 +464,7 @@ const EngineSmokeTest: React.FC = () => {
 
       if (afterStop.usedBytes === 0 || afterStop.entryCount === 0) {
         say('cache emptied when the track stopped');
-        toast.error('Cache did not persist');
+        notify.error('Cache did not persist');
         return;
       }
       say('kept across the track ending');
@@ -481,17 +481,17 @@ const EngineSmokeTest: React.FC = () => {
 
       if (afterEvict.entryCount < afterStop.entryCount) {
         say('evict dropped the track it was given');
-        toast.success('Disk cache holds');
+        notify.success('Disk cache holds');
       } else {
         // Distinguishable from a thrown error: this is the call returning
         // cleanly and changing nothing, which is the failure this codebase
         // keeps producing and the one a passing probe would hide.
         say('evict returned but removed nothing');
-        toast.error('evict did nothing');
+        notify.error('evict did nothing');
       }
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Cache probe failed');
+      notify.error('Cache probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -564,11 +564,11 @@ const EngineSmokeTest: React.FC = () => {
       if (fast < 0.2) say('no audio at 2x — the speed node broke the graph');
       else if (fast > 1.5 && slow < 0.8) {
         say('speed follows the setting');
-        toast.success('Speed control works');
+        notify.success('Speed control works');
       } else say('rates did not track the setting');
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Speed probe failed');
+      notify.error('Speed probe failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 
@@ -616,10 +616,10 @@ const EngineSmokeTest: React.FC = () => {
         })),
       });
       say(`published ${albums.size} albums, ${playable.length} tracks`);
-      toast.success('Browse tree published');
+      notify.success('Browse tree published');
     } catch (error) {
       say(`failed: ${(error as Error)?.message ?? String(error)}`);
-      toast.error('Browse tree failed');
+      notify.error('Browse tree failed');
     }
   }, [api, tracks, activeServer, loadEngine, say]);
 

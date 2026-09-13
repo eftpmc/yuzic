@@ -59,7 +59,7 @@ export function songFromBookmarkSnapshot(
     artistId: '',
     albumId: snapshot.channelId ?? '',
     albumTitle: snapshot.artist,
-    cover: snapshot.cover ?? { kind: 'letter', name: snapshot.title },
+    cover: snapshot.cover ?? { kind: 'none' },
     duration: snapshot.duration ?? '0',
     streamUrl,
     contentKind: snapshot.contentKind,

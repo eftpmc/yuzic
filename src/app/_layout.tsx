@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 
 import { QueryClient, QueryCache, onlineManager } from '@tanstack/react-query';
-import { Toasts, toast } from '@backpackapp-io/react-native-toast';
+import { ToastHost, notify } from '@/components/toast';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -37,8 +37,6 @@ import OfflineMutationReplayer from '@/offline/OfflineMutationReplayer';
 import { isLikelyNetworkError, setServerUnreachable } from '@/features/connectivity/serverReachability';
 import { QueryKeys } from '@/enums/queryKeys';
 import { clearImageMemoryCache, runImageCacheMigration } from '@/utils/images/imageCache';
-import { spacing, typography } from '@/constants/design';
-import { useRadius } from '@/hooks/useRadius';
 import { useClientCertificate } from '@/features/mtls/useClientCertificate';
 
 
@@ -137,7 +135,7 @@ const queryClient = new QueryClient({
         !hasCachedLibraryDataForServer(query.queryKey) &&
         !query.meta?.suppressGlobalErrorToast
       ) {
-        toast.error(i18n.t('common.libraryLoadFailed'), {
+        notify.error(i18n.t('common.libraryLoadFailed'), {
           id: LIBRARY_LOAD_FAILED_TOAST_ID,
         });
       }
@@ -182,8 +180,7 @@ function useImageMemoryCleanup() {
 }
 
 function AppShell() {
-  const { resolved, isDarkMode, colors } = useTheme();
-  const rad = useRadius();
+  const { resolved, isDarkMode } = useTheme();
   const language = useSelector(selectLanguage);
   useImageMemoryCleanup();
   // Mounted here, not on the settings screen that owns the import UI: the
@@ -201,12 +198,12 @@ function AppShell() {
   useEffect(() => {
     const unsub = NetInfo.addEventListener(state => {
       if (!state.isConnected) {
-        toast(i18n.t('common.offline.noConnection'), {
+        notify.info(i18n.t('common.offline.noConnection'), {
           id: OFFLINE_TOAST_ID,
           duration: Infinity,
         });
       } else {
-        toast.dismiss(OFFLINE_TOAST_ID);
+        notify.dismiss(OFFLINE_TOAST_ID);
       }
     });
     return unsub;
@@ -236,30 +233,7 @@ function AppShell() {
 
                 <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-                <Toasts
-                  defaultStyle={{
-                    view: {
-                      backgroundColor: isDarkMode
-                        ? 'rgba(34,34,34,0.9)'
-                        : 'rgba(255,255,255,0.9)',
-                      borderRadius: rad.md,
-                      shadowColor: '#000',
-                      shadowOpacity: 0.15,
-                      shadowRadius: 10,
-                      elevation: 4,
-                    },
-                    pressable: {
-                      backgroundColor: 'transparent',
-                    },
-                    text: {
-                      ...typography.rowTitle,
-                      color: colors.secondary,
-                    },
-                    indicator: {
-                      marginRight: spacing.md,
-                    },
-                  }}
-                />
+                <ToastHost />
                 </PlayerExpansionProvider>
                 </SongActionSheetProvider>
               </BottomSheetModalProvider>

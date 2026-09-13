@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { AlertTriangle, CloudOff, Plus, Podcast as PodcastIcon, RefreshCw, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
@@ -69,7 +69,7 @@ export default function PodcastsScreen() {
       }, 5_000);
     } catch {
       setRefreshing(false);
-      toast.error(t('common.error.unexpected'));
+      notify.error(t('common.error.unexpected'));
     }
   }, [api.podcasts, queryClient, refreshing, t]);
 
@@ -89,7 +89,7 @@ export default function PodcastsScreen() {
               await api.podcasts?.unsubscribe(channel.id);
               await queryClient.invalidateQueries({ queryKey: [QueryKeys.Podcasts] });
             } catch {
-              toast.error(t('common.error.unexpected'));
+              notify.error(t('common.error.unexpected'));
             }
           },
         },
@@ -243,7 +243,7 @@ function SubscribeSheet({
       await onSubscribed();
       return true;
     } catch {
-      toast.error(t('podcasts.subscribeFailed'));
+      notify.error(t('podcasts.subscribeFailed'));
       return false;
     }
   }, [api.podcasts, onSubscribed, t, url]);

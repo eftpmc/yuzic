@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useTranslation } from 'react-i18next';
 import { useDownloadActions, useDownloadState } from '@/contexts/DownloadContext';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -48,7 +48,7 @@ export function AutoDownloadWatcher() {
     // entries from the library list are enough to enqueue.
     const songs: Song[] = newTracks.map(track => ({ ...track, streamUrl: '' }));
     void downloadTracks(songs);
-    toast(t('settings.library.downloads.autoDownloadStarted', { count: songs.length }));
+    notify.info(t('settings.library.downloads.autoDownloadStarted', { count: songs.length }));
   }, [tracks, activeServer?.id, enabled, downloadTracks, isTrackDownloaded, t]);
 
   return null;

@@ -8,7 +8,7 @@ import { CheckCircle, CirclePlus, RefreshCw, CloudDownload } from 'lucide-react-
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { useTheme } from '@/hooks/useTheme';
 import IconActionButton from '@/components/IconActionButton';
@@ -138,9 +138,9 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
     try {
       const full = await resolvePlayableSong(song);
       if (full) await playSimilar(full);
-      else toast.error(t('common.playbackError'));
+      else notify.error(t('common.playbackError'));
     } catch {
-      toast.error(t('common.playbackError'));
+      notify.error(t('common.playbackError'));
     }
   }, [playSimilar, resolvePlayableSong, song, t]);
 
@@ -150,9 +150,9 @@ const LocalRow: React.FC<LocalRowProps> = ({ song, playlistId }) => {
     try {
       await addToPlaylist.mutateAsync({ playlistId, songId: song.id });
       setAdded(true);
-      toast.success(t('playlist.recommended.added'));
+      notify.success(t('playlist.recommended.added'));
     } catch {
-      toast.error(t('playlist.recommended.addFailed'));
+      notify.error(t('playlist.recommended.addFailed'));
     } finally {
       setAdding(false);
     }
@@ -381,14 +381,14 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
   const handleDownloadExternalSong = useCallback(async (song: ExternalSong) => {
     if (!hasDownloader) return;
     if (!song.albumId) {
-      toast.error(t('externalAlbum.download.startFailed'));
+      notify.error(t('externalAlbum.download.startFailed'));
       return;
     }
 
     try {
       const album = await deezer.getDeezerAlbum(song.albumId);
       if (!album) {
-        toast.error(t('externalAlbum.download.startFailed'));
+        notify.error(t('externalAlbum.download.startFailed'));
         return;
       }
 
@@ -397,7 +397,7 @@ export const DeezerRecommendedSection: React.FC<DeezerRecommendedSectionProps> =
         downloadSheetRef.current?.present();
       });
     } catch {
-      toast.error(t('externalAlbum.download.startFailed'));
+      notify.error(t('externalAlbum.download.startFailed'));
     }
   }, [downloadSheetRef, hasDownloader, t]);
 

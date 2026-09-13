@@ -8,7 +8,7 @@ import {
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -39,7 +39,7 @@ export default function Connect() {
 
     const handleNext = () => {
         if (!selectedType) {
-            toast.error(t('onboarding.connect.selectTypeFirst'));
+            notify.error(t('onboarding.connect.selectTypeFirst'));
             return;
         }
         if (selectedType === 'local') {
@@ -68,7 +68,7 @@ export default function Connect() {
         if (!selectedType) return;
         const provider = SERVER_PROVIDERS[selectedType];
         if (!provider.capabilities.supportsDemo || !provider.demo) {
-            toast.error(t('onboarding.connect.demoUnavailableProvider'));
+            notify.error(t('onboarding.connect.demoUnavailableProvider'));
             return;
         }
         setIsTesting(true);
@@ -90,7 +90,7 @@ export default function Connect() {
                     : '/(onboarding)/discovery'
             );
         } catch {
-            toast.error(t('onboarding.connect.connectError'));
+            notify.error(t('onboarding.connect.connectError'));
         } finally {
             setIsTesting(false);
         }

@@ -3,12 +3,31 @@
     "title": "Paramètres",
     "sections": {
       "general": "Général",
+      "discovery": "Découverte",
       "plugins": "Extensions",
       "connections": "Connexions",
       "about": "À propos"
     },
     "connections": {
-      "sources": "Sources de bibliothèque et de découverte"
+      "sources": "Sources de bibliothèque et de découverte",
+      "accounts": "Comptes",
+      "services": "Services et téléchargeurs",
+      "status": {
+        "available": "Disponible",
+        "inUse": "Utilisée",
+        "connected": "Connecté",
+        "notConnected": "Non connecté",
+        "ready": "Prêt",
+        "notSetUp": "Non configuré"
+      },
+      "summary": {
+        "deezer": "Découverte et illustrations",
+        "musicbrainz": "Données d'artistes et de sorties",
+        "lastfm": "Artistes similaires et recommandations",
+        "listenbrainz": "Compte de scrobbling et découverte",
+        "audiomuse": "Création de playlists",
+        "downloader": "Téléchargements depuis le serveur"
+      }
     },
     "rows": {
       "server": "Serveur",
@@ -42,7 +61,7 @@
       },
       "fallbackUrls": {
         "title": "URL de secours",
-        "subtext": "URL supplémentaires que l’application essaiera si la principale est injoignable — par exemple une adresse Tailscale ou publique en déplacement.",
+        "subtext": "URL de secours si l'adresse principale est injoignable.",
         "placeholder": "https://tailscale-ou-domaine.exemple",
         "addAria": "Ajouter une URL de secours",
         "removeAria": "Supprimer {{url}}",
@@ -53,19 +72,19 @@
       },
       "privacyTitle": "Confidentialité",
       "queueSync": "Synchroniser la file d’attente entre appareils",
-      "queueSyncDescription": "Enregistre ce que vous écoutez sur le serveur pour qu’un autre appareil puisse reprendre où vous vous êtes arrêté.",
+      "queueSyncDescription": "Reprendre la lecture sur vos appareils.",
       "nowPlayingShelf": "Afficher qui écoute aussi",
-      "nowPlayingShelfDescription": "Une rangée sur l’accueil listant les autres utilisateurs de ce serveur et ce qu’ils écoutent en ce moment.",
+      "nowPlayingShelfDescription": "Une rangée d'accueil de ce que les autres écoutent.",
       "clientCertificate": {
         "title": "Certificat client",
-        "description": "Pour un serveur qui demande au client de prouver son identité. Choisissez le fichier PKCS#12 (.p12 ou .pfx) délivré par votre serveur.",
+        "description": "Pour les serveurs exigeant un certificat client (.p12/.pfx).",
         "passwordPlaceholder": "Mot de passe du certificat",
         "choose": "Choisir un certificat",
         "installed": "Certificat installé",
         "remove": "Supprimer le certificat",
-        "rejected": "Ce certificat n'a pas pu être lu. Vérifiez le mot de passe et réessayez.",
+        "rejected": "Certificat illisible. Vérifiez le mot de passe.",
         "readFailed": "Ce fichier n'a pas pu être lu.",
-        "unsupported": "Les certificats clients ne sont pas encore pris en charge sur cette plateforme."
+        "unsupported": "Pas encore pris en charge sur cette plateforme."
       }
     },
     "appearance": {
@@ -84,7 +103,7 @@
       },
       "playingBarAction": {
         "title": "Action de la barre de lecture",
-        "info": "Choisissez l'action affichée dans la barre de lecture",
+        "info": "Quelle action apparaît dans la barre de lecture.",
         "actions": {
           "none": "Aucune",
           "skip": "Suivant",
@@ -107,19 +126,19 @@
         "chinese": "Chinois"
       },
       "showQualityBadge": "Afficher le badge qualité",
-      "showQualityBadgeSubtext": "Affiche le format audio et le débit binaire dans le lecteur.",
+      "showQualityBadgeSubtext": "Format et débit sur le lecteur.",
       "display": "Affichage",
       "playing": "Lecture",
       "showSourceHeaders": "Afficher les badges de source",
-      "showSourceHeadersSubtext": "Affiche le badge de la source à côté des titres de section des services externes.",
+      "showSourceHeadersSubtext": "Badge des sources externes dans les titres.",
       "feel": "Ressenti",
       "haptics": "Retour haptique",
-      "hapticsSubtext": "Petits retours tactiles sur lecture, saut, favoris et appui long.",
+      "hapticsSubtext": "Vibrations sur lecture, saut et appui long.",
       "respectReducedMotion": "Respecter la réduction des animations",
-      "respectReducedMotionSubtext": "Quand le système demande moins d’animations, celles-ci s’adoucissent ou disparaissent.",
+      "respectReducedMotionSubtext": "Adoucir les animations si le système le demande.",
       "gridColumns": {
         "label": "Colonnes de la grille",
-        "subtext": "Nombre de colonnes d’albums, d’artistes et de listes de lecture affichées en vue grille."
+        "subtext": "Colonnes en vue grille."
       },
       "radiusPreset": {
         "title": "Coins",
@@ -138,9 +157,9 @@
         }
       },
       "translucentDock": "Barre translucide",
-      "translucentDockSubtext": "Fait flotter la barre d’onglets au-dessus de la page pour que le contenu défile dessous.",
+      "translucentDockSubtext": "Barre d'onglets flottant sur le contenu.",
       "coverAccent": "Couleur de la pochette",
-      "coverAccentSubtext": "Teinte les écrans d'album, d'artiste et du lecteur avec une nuance prise sur la pochette.",
+      "coverAccentSubtext": "Teinter les écrans avec une nuance de la pochette.",
       "listDensity": {
         "title": "Densité des listes",
         "info": "L'espace laissé entre les lignes d'une liste.",
@@ -159,40 +178,40 @@
       },
       "homeSources": "Rayons de l'accueil",
       "homeSourcesServer": "Sur votre serveur",
-      "homeSourcesServerSubtext": "Afficher les rayons aléatoires et les écoutes en cours de votre serveur.",
+      "homeSourcesServerSubtext": "Rangées aléatoires et lecture en cours du serveur.",
       "homeSourcesListenbrainz": "ListenBrainz",
       "homeSourcesListenbrainzSubtext": "Afficher les rayons d'artistes similaires de ListenBrainz.",
       "homeSourcesDeezer": "Deezer",
-      "homeSourcesDeezerSubtext": "Afficher les rayons de découverte Deezer (classements, titres phares, artistes similaires)."
+      "homeSourcesDeezerSubtext": "Charts Deezer, top titres et artistes similaires."
     },
     "lyrics": {
       "title": "Paroles",
-      "order": "Ordre de repli",
+      "sources": "Sources de paroles",
       "serverEmbedded": "Intégrées au serveur",
-      "serverEmbeddedSubtext": "Toujours vérifiées en premier — les paroles que votre serveur possède déjà pour un titre.",
+      "serverEmbeddedSubtext": "Vérifiées en premier — les paroles du serveur.",
       "lrclib": "LRCLIB",
-      "lrclibSubtext": "Recherche de paroles gratuite et anonyme. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'en a pas."
+      "lrclibSubtext": "Recherche de paroles gratuite et anonyme."
     },
     "search": {
       "title": "Recherche",
       "sourcesSection": "Sources de recherche",
-      "explanation": "Quelles sources la portée « Autres sources » de l'écran Recherche peut interroger. Indépendant de l'écran d'accueil — activer les étagères d'une source sur l'accueil ne l'active pas pour la recherche, et inversement.",
+      "explanation": "Sources interrogées par « Autres sources ». Distinct de l'accueil.",
       "deezer": "Deezer",
-      "deezerSubtext": "Inclure les albums et artistes Deezer lors d'une recherche dans Autres sources.",
+      "deezerSubtext": "Rechercher albums et artistes Deezer.",
       "musicbrainz": "MusicBrainz",
-      "musicbrainzSubtext": "Inclure les albums et artistes MusicBrainz lors d'une recherche dans Autres sources."
+      "musicbrainzSubtext": "Rechercher albums et artistes MusicBrainz."
     },
     "metadata": {
       "title": "Métadonnées",
-      "explanation": "Affichage uniquement. Complète les informations sur l'artiste et les pochettes que votre serveur n'a pas — cela ne modifie jamais rien sur votre serveur et n'écrit jamais de tags ni de fichiers. Désactivez une source pour revenir exactement à ce que montre votre serveur.",
+      "explanation": "Complète ce qui manque sur votre serveur. Ne le modifie jamais.",
       "artistInfoSection": "Informations sur l'artiste",
       "artworkSection": "Pochettes",
       "lastfm": "Last.fm",
-      "lastfmSubtext": "Biographie et tags de l'artiste. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de biographie.",
+      "lastfmSubtext": "Bios et tags",
       "deezerArtwork": "Deezer",
-      "deezerArtworkSubtext": "Images d'artiste. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de photo d'artiste.",
+      "deezerArtworkSubtext": "Images d'artiste",
       "coverArtArchive": "Cover Art Archive",
-      "coverArtArchiveSubtext": "Pochettes d'album via l'identifiant MusicBrainz. Désactivé par défaut ; activez-le pour l'utiliser quand votre serveur n'a pas de pochette."
+      "coverArtArchiveSubtext": "Pochettes d'album"
     },
     "library": {
       "title": "Bibliothèque",
@@ -203,11 +222,11 @@
       "localFiles": {
         "title": "Fichiers locaux",
         "import": "Importer des fichiers audio",
-        "description": "Ajoutez de la musique à la bibliothèque privée de Yuzic sur cet appareil."
+        "description": "Ajouter de la musique à la bibliothèque de cet appareil."
       },
       "discovery": {
         "title": "Découverte",
-        "info": "Comment la découverte suggère des artistes et albums de votre bibliothèque.",
+        "info": "Comment Discovery suggère depuis votre bibliothèque.",
         "about": "À propos de la découverte"
       },
       "stats": {
@@ -222,7 +241,7 @@
         "daysAgo_other": "Il y a {{count}} jours",
         "lastSynced": "Dernière synchro",
         "syncOnAppStart": "Synchroniser au démarrage",
-        "syncOnAppStartSubtext": "Synchroniser automatiquement votre bibliothèque à chaque ouverture de l'app"
+        "syncOnAppStartSubtext": "Synchroniser la bibliothèque à chaque ouverture."
       },
       "offlineChanges": {
         "title": "Modifications hors ligne en attente",
@@ -233,20 +252,20 @@
         "retry": "Réessayer",
         "discard": "Ignorer",
         "discardTitle": "Ignorer les modifications hors ligne ?",
-        "discardBody": "Cela supprimera les modifications en attente pour le serveur actuel. Votre bibliothèque locale sera actualisée lors de la prochaine synchronisation."
+        "discardBody": "Annule les changements en attente pour ce serveur. La bibliothèque se met à jour à la prochaine synchro."
       },
       "downloads": {
         "title": "Téléchargements hors ligne",
         "detailsTitle": "Téléchargements hors ligne",
         "moreInfo": "Plus d'infos",
         "clearTitle": "Effacer les téléchargements ?",
-        "clearBody": "Cela supprimera tous les morceaux téléchargés de votre appareil.",
-        "clearBodyForProvider": "Cela supprimera les téléchargements du serveur actuel uniquement.",
-        "clearBodyProviderNamed": "Cela supprimera uniquement les téléchargements de {{provider}}.",
+        "clearBody": "Supprime tous les titres téléchargés de cet appareil.",
+        "clearBodyForProvider": "Supprime les téléchargements du serveur actuel.",
+        "clearBodyProviderNamed": "Supprime les téléchargements de {{provider}}.",
         "clearFailedTitle": "Impossible d'effacer les téléchargements",
         "clearFailedBody": "Une erreur est survenue lors de la suppression des fichiers locaux.",
         "removeTitle": "Supprimer cet élément téléchargé ?",
-        "removeBody": "Cela supprimera les fichiers téléchargés de \"{{title}}\" de votre appareil.",
+        "removeBody": "Supprime les fichiers téléchargés de « {{title}} ».",
         "removeFailedTitle": "Impossible de supprimer le téléchargement",
         "removeFailedBody": "Une erreur est survenue lors de la suppression des fichiers locaux.",
         "provider": {
@@ -286,18 +305,18 @@
           "tracks": "Pistes",
           "playlists": "Listes de lecture"
         },
-        "offlineNote": "Ces morceaux sont stockés localement pour une lecture hors ligne.",
-        "locationNote": "Les téléchargements sont stockés dans l'espace privé de l'application et ne sont pas accessibles depuis le gestionnaire de fichiers de votre appareil. Utilisez cet écran pour les consulter et les supprimer.",
+        "offlineNote": "Stockés localement pour l'écoute hors ligne.",
+        "locationNote": "Dans le stockage privé de l'app, hors du gestionnaire de fichiers. Gérez-les ici.",
         "autoDownloadLabel": "Télécharger automatiquement les nouveaux titres",
-        "autoDownloadSubtext": "Télécharge automatiquement les titres ajoutés à votre bibliothèque pour une écoute hors ligne",
+        "autoDownloadSubtext": "Télécharger auto. les titres ajoutés.",
         "autoDownloadStarted_one": "Téléchargement automatique de {{count}} nouveau titre",
         "autoDownloadStarted_other": "Téléchargement automatique de {{count}} nouveaux titres",
         "wifiOnlyLabel": "Télécharger en WiFi uniquement",
-        "wifiOnlySubtext": "Suspend les téléchargements jusqu'au retour du WiFi. La file reprend automatiquement."
+        "wifiOnlySubtext": "Attendre le WiFi. Reprise automatique."
       },
       "downloadQuality": {
         "title": "Qualité de téléchargement",
-        "caption": "Original télécharge la source sans perte si votre serveur le prend en charge. Les fichiers plus volumineux utilisent plus de stockage.",
+        "caption": "Original sans perte si pris en charge ; fichiers plus lourds.",
         "options": {
           "low": "Faible · 128kbps",
           "medium": "Moyenne · 192kbps",
@@ -314,8 +333,8 @@
         "title": "Égaliseur",
         "reset": "Réinitialiser",
         "presets": "Préréglages",
-        "flatSubtext": "Plat — l’égaliseur est entièrement contourné, sans aucun coût.",
-        "gainSubtext": "Gains jusqu’à {{limit}} dB. S’applique à tout ce que le lecteur produit.",
+        "flatSubtext": "Plat — égaliseur désactivé, aucun coût.",
+        "gainSubtext": "Gains jusqu'à {{limit}} dB sur toute la sortie.",
         "presetFlat": "Plat",
         "presetBass": "Graves",
         "presetTreble": "Aigus",
@@ -325,7 +344,7 @@
       "streamingQuality": {
         "wifi": "Qualité WiFi",
         "cellular": "Qualité cellulaire",
-        "caption": "Original diffuse en audio sans perte si votre serveur le prend en charge. Recommandé uniquement en WiFi.",
+        "caption": "Original sans perte si pris en charge. Idéal en WiFi.",
         "options": {
           "low": "Faible · 128kbps",
           "medium": "Moyenne · 192kbps",
@@ -334,24 +353,24 @@
         }
       },
       "opusCodec": "Codec Opus",
-      "opusCodecSubtext": "Meilleure qualité que le MP3 au même débit. Nettement meilleur aux débits bas.",
+      "opusCodecSubtext": "Meilleur que le MP3 à débit égal.",
       "showSleepTimer": "Minuterie de veille",
       "showSleepTimerSubtext": "Affiche une commande de minuterie de veille dans le lecteur.",
       "showPlaybackSpeed": "Vitesse de lecture",
       "showPlaybackSpeedSubtext": "Affiche une commande de vitesse dans le lecteur.",
       "showJumpButtons": "Boutons de saut",
-      "showJumpButtonsSubtext": "Affiche des boutons de saut avant et arrière de 15 secondes dans le lecteur.",
+      "showJumpButtonsSubtext": "Boutons de saut de 15 s dans le lecteur.",
       "showVolumeSlider": "Contrôle du volume",
-      "showVolumeSliderSubtext": "Affiche un contrôle du volume dans le lecteur.",
+      "showVolumeSliderSubtext": "Curseur de volume dans le lecteur.",
       "autoplay": "Lecture automatique",
-      "autoplaySubtextAudiomuse": "Continue de jouer des titres sonoriquement similaires une fois la file d'attente terminée, grâce à AudioMuse-AI.",
-      "autoplaySubtextNative": "Continue de jouer des titres similaires depuis votre serveur une fois la file d'attente terminée.",
+      "autoplaySubtextAudiomuse": "Continuer avec des titres similaires via AudioMuse-AI.",
+      "autoplaySubtextNative": "Continuer avec des titres similaires du serveur.",
       "resumeLongTracks": "Reprendre les pistes longues",
-      "resumeLongTracksSubtext": "Livres audio, sets DJ, épisodes de podcast — reprenez où vous vous êtes arrêté.",
+      "resumeLongTracksSubtext": "Reprendre livres audio, sets DJ et podcasts.",
       "cacheTitle": "Cache de lecture",
       "clearCache": "Vider le cache de lecture",
       "clearCacheTitle": "Vider le cache de lecture ?",
-      "clearCacheBody": "Les flux conservés sur cet appareil seront téléchargés à nouveau à la prochaine lecture. Vos téléchargements ne sont pas affectés.",
+      "clearCacheBody": "L'audio en cache est re-téléchargé. Téléchargements intacts.",
       "clearCacheConfirm": "Vider",
       "clearCacheDone": "Cache de lecture vidé",
       "audio": "Audio",
@@ -359,9 +378,9 @@
         "label": "Fondu enchaîné",
         "off": "Désactivé",
         "offSubtext": "Les morceaux s’enchaînent sans chevauchement.",
-        "onSubtext": "Chaque morceau se fond dans le suivant sur {{seconds}} secondes. Passer au suivant coupe net.",
+        "onSubtext": "Fondu entre titres sur {{seconds}} s. Les sauts coupent net.",
         "seguesLabel": "Fondre aussi les enchaînements",
-        "seguesSubtext": "Les albums dont les morceaux s’enchaînent sont coupés net à ces jonctions par défaut, pour qu’un mix continu le reste. Activez ceci pour tout fondre."
+        "seguesSubtext": "Les enchaînements d'album restent nets. Activé, ils sont fondus."
       }
     },
     "listenBrainz": {
@@ -371,7 +390,7 @@
       "usernamePlaceholder": "Nom d'utilisateur ListenBrainz",
       "tokenPlaceholder": "Jeton utilisateur ListenBrainz",
       "connectivity": "Connectivité",
-      "helperText": "ListenBrainz est utilisé pour le scrobbling et les mises à jour de lecture en cours. Aucune donnée d'écoute n'est envoyée sans votre permission.",
+      "helperText": "Pour scrobbling et lecture en cours. Rien envoyé sans accord.",
       "disconnect": "Déconnecter",
       "missingCredentials": "Saisissez d'abord le nom d'utilisateur et le jeton.",
       "connectionSuccessful": "Connexion à ListenBrainz réussie.",
@@ -379,11 +398,11 @@
       "connectFailed": "Échec de la connexion à ListenBrainz.",
       "disconnected": "Déconnecté de ListenBrainz.",
       "credentialsTitle": "Identifiants",
-      "credentialsHelper": "Votre nom d'utilisateur et votre jeton depuis listenbrainz.org/profile.",
+      "credentialsHelper": "Identifiant et jeton depuis listenbrainz.org/profile.",
       "scrobble": "Scrobbler",
       "nowPlaying": "En cours de lecture",
       "discovery": "Découverte",
-      "discoveryDescription": "Utilise le graphe public d'artistes similaires de ListenBrainz sur l'accueil et les pages d'artiste. Aucun compte requis — les artistes que vous écoutez sont envoyés à ListenBrainz pour trouver des correspondances."
+      "discoveryDescription": "Artistes similaires sur l'accueil et les pages. Sans compte ; les noms sont envoyés pour la correspondance."
     },
     "downloaders": {
       "title": "Téléchargements",
@@ -420,7 +439,7 @@
         "connectionFailed": "Échec de la connexion à Lidarr",
         "disconnected": "Déconnecté de Lidarr.",
         "credentialsTitle": "Connexion",
-        "credentialsHelper": "L'URL de votre serveur Lidarr et votre clé API. Dans Lidarr : Settings → General.",
+        "credentialsHelper": "URL et clé API Lidarr (Settings → General).",
         "qualityProfileTitle": "Profil de qualité",
         "defaultQualityProfile": "Profil de qualité par défaut"
       },
@@ -429,7 +448,7 @@
         "connectionFailed": "Échec de la connexion à slskd",
         "disconnected": "Déconnecté de slskd.",
         "credentialsTitle": "Connexion",
-        "credentialsHelper": "L'URL de votre serveur slskd et votre clé API. Dans slskd : Options → API Keys.",
+        "credentialsHelper": "URL et clé API slskd (Options → API Keys).",
         "searchPreferencesTitle": "Préférences de recherche",
         "preferredFormat": "Format préféré",
         "formatAuto": "Tout (FLAC préféré)",
@@ -438,40 +457,40 @@
         "minBitrateAny": "Tout",
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "Préférer les slots libres",
-        "preferFreeSlotSubtext": "Choisir les pairs dont le slot est libre plutôt qu'en file. Désactivez pour attraper des raretés même en attendant."
+        "preferFreeSlotSubtext": "Préférer les slots libres. Désactivé, capte les raretés."
       },
       "queueTitle": "File de téléchargement",
       "soulsync": {
         "title": "SoulSync",
         "credentialsTitle": "Connexion",
-        "credentialsHelper": "L’URL de votre serveur SoulSync et sa clé d’API. Générez une clé dans SoulSync sous Settings → API Keys.",
+        "credentialsHelper": "URL et clé API SoulSync (Settings → API Keys).",
         "connectionFailed": "Échec de la connexion à SoulSync",
         "disconnected": "Déconnecté de SoulSync."
       }
     },
     "musicbrainz": {
       "external": "Données externes d'artiste et d'album",
-      "externalDescription": "Complète les pages d'artiste et d'album avec les données MusicBrainz lorsqu'elles ne sont pas dans votre bibliothèque. Aucun compte requis."
+      "externalDescription": "Compléter les pages depuis MusicBrainz. Sans compte."
     },
     "lastfm": {
       "enable": "Données d'artiste et de recommandation",
-      "enableDescription": "Utilise Last.fm pour trouver des artistes similaires et alimenter les recommandations de playlists. Aucun compte requis — les noms d'artistes sont envoyés à Last.fm pour la recherche."
+      "enableDescription": "Artistes similaires et graines de playlist. Sans compte ; les noms sont envoyés."
     },
     "deezer": {
       "discovery": "Découverte",
-      "discoveryDescription": "Classements et recommandations Deezer sur l'écran explorer.",
+      "discoveryDescription": "Charts et recommandations Deezer sur Explorer.",
       "search": "Recherche",
       "searchDescription": "Inclure les résultats Deezer dans la recherche.",
       "external": "Données externes d'artiste et d'album",
-      "externalDescription": "Complète les pages d'artiste et d'album avec les données Deezer lorsqu'elles ne sont pas dans votre bibliothèque.",
+      "externalDescription": "Compléter les pages depuis Deezer.",
       "topTracks": "Titres populaires",
       "topTracksDescription": "Afficher les titres populaires Deezer sur les pages d'artiste.",
       "similarArtists": "Artistes similaires",
       "similarArtistsDescription": "Afficher les artistes similaires Deezer sur les pages d'artiste.",
       "albumRecommendations": "Recommandations",
-      "albumRecommendationsDescription": "Afficher les albums recommandés par Deezer sur les pages d'album.",
+      "albumRecommendationsDescription": "Albums recommandés sur les pages d'album.",
       "samples": "Extraits",
-      "samplesDescription": "Récupérer des extraits de 30 s pour les pages d'album externes.",
+      "samplesDescription": "Extraits de 30 s sur les albums externes.",
       "enableSamplesToPreview": "Activez les extraits dans les paramètres pour les écouter",
       "playlistRecommendations": "Recommandations",
       "playlistRecommendationsDescription": "Afficher les playlists recommandées par Deezer.",
@@ -481,7 +500,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "Connectez-vous à une instance AudioMuse-AI auto-hébergée pointant vers ce serveur pour une Lecture aléatoire intelligente basée sur l'analyse sonore.",
+      "credentialsHelper": "Une instance AudioMuse-AI auto-hébergée pour Smart Shuffle.",
       "serverUrl": "URL du serveur",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "Jeton API",
@@ -489,7 +508,7 @@
       "connectivity": "Connectivité",
       "connectionFailed": "Échec de la connexion à AudioMuse-AI",
       "enable": "Activer AudioMuse-AI",
-      "enableSubtext": "Utiliser AudioMuse-AI pour la Lecture aléatoire intelligente une fois connecté.",
+      "enableSubtext": "Smart Shuffle via AudioMuse-AI si connecté.",
       "disconnect": "Déconnecter",
       "disconnected": "Déconnecté d'AudioMuse-AI."
     },
@@ -508,7 +527,7 @@
       "routeDirect": "Direct depuis Yuzic",
       "throughServer": "Via le serveur",
       "throughServerMarkAsPlayed": "Via le serveur (marquer comme écouté)",
-      "duplicateRiskNote": "Yuzic ne peut pas confirmer que le serveur transmet réellement les scrobbles une fois « Via le serveur » sélectionné. Si le serveur est aussi configuré pour envoyer des scrobbles de son côté, ou qu'une autre application scrobble le même compte, les écoutes peuvent être comptées deux fois."
+      "duplicateRiskNote": "Avec « Via le serveur », les écoutes peuvent compter double si le serveur ou une autre app scrobble aussi."
     },
     "home": {
       "title": "Accueil"
@@ -673,6 +692,9 @@
     "downloads": {
       "title": "Téléchargements"
     },
+    "downloaded": {
+      "title": "Hors ligne"
+    },
     "wants": {
       "title": "Souhaits"
     },
@@ -792,6 +814,7 @@
       "other": "Autres sources"
     },
     "filters": {
+      "scope": "Rechercher dans",
       "title": "Filtres",
       "sources": "Sources",
       "entityTypes": "Inclure",
@@ -1083,8 +1106,8 @@
   },
   "wants": {
     "title": "Souhaits",
-    "empty": "Rien d'enregistré pour l'instant. Ajoutez un titre ou un album que vous souhaitez et il apparaîtra ici.",
-    "manualAdd": "Ajouter aux souhaits"
+    "empty": "Rien d'enregistré pour l'instant.",
+    "searchAction": "Rechercher de la musique"
   },
   "manualAddWant": {
     "title": "Ajouter aux souhaits",
@@ -1358,7 +1381,8 @@
     "settings": {
       "themeColor": "Couleur du thème {{color}}",
       "clearProviderDownloads": "Supprimer tous les téléchargements {{provider}}",
-      "removeDownload": "Supprimer le téléchargement {{title}}"
+      "removeDownload": "Supprimer le téléchargement {{title}}",
+      "reorderSource": "Réorganiser {{name}}"
     },
     "onboarding": {
       "serverOptions": "Options pour {{url}}"
@@ -1382,12 +1406,13 @@
     "library": "Bibliothèque"
   },
   "downloads": {
-    "title": "File d'attente de téléchargement",
+    "title": "Téléchargements",
     "noDownloaders": "Aucun téléchargeur connecté. Ajoutez-en un dans les Réglages.",
     "jobFailed": "Impossible de terminer le téléchargement de « {{title}} ». Il reste en file d'attente et sera réessayé.",
+    "offlineSummary": "{{size}} utilisés · {{available}} libres",
     "section": {
-      "offline": "Hors ligne",
-      "downloaders": "Téléchargeurs"
+      "offline": "Enregistré sur cet appareil",
+      "downloaders": "Transferts du serveur"
     }
   }
 }

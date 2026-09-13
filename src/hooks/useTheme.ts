@@ -44,6 +44,10 @@ export const useTheme = () => {
       destructiveBorder: isDarkMode ? 'rgba(255,69,58,0.35)' : '#ead4d2',
       destructiveOnSurface: isDarkMode ? '#ffb4ad' : '#c7342f',
       warningText: statusColor.warningText,
+      // A step brighter than `card` (#222) in dark so a toast floats clear of
+      // the playing bar / tab bar instead of blending into them; in light it
+      // stays white but leans on its shadow + border for separation.
+      toastSurface: isDarkMode ? '#2f2f31' : '#ffffff',
     }),
     [isDarkMode, themeColor]
   );

@@ -16,7 +16,7 @@ import { MediaImage } from '@/components/MediaImage';
 import ArtistOptions from '@/components/options/ArtistOptions';
 import { Artist, ExternalArtist, Song } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useTracks } from '@/hooks/tracks';
 import { buildCover } from '@/utils/builders/buildCover';
@@ -306,7 +306,7 @@ function LocalActionRow({ artist }: { artist: Artist }) {
     })();
 
     if (!songs.length) {
-      toast.error(t('common.oneSecond'));
+      notify.error(t('common.oneSecond'));
       return;
     }
 

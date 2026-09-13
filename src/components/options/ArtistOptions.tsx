@@ -19,7 +19,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useArtistAlbums } from '@/hooks/artists';
 import { useTranslation } from 'react-i18next';
 import { useDownload } from '@/contexts/DownloadContext';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { renderBackdrop } from '@/components/BottomSheetBackdrop';
 import { useLazyArtistSongs } from './useLazyCollectionDetails';
 import {
@@ -170,7 +170,7 @@ const ArtistOptions = forwardRef<
     try {
       await Promise.all(artistAlbums.map(album => downloadAlbumById(album.id)));
     } catch {
-      toast.error(t('artistOptions.downloadAllFailed'));
+      notify.error(t('artistOptions.downloadAllFailed'));
     } finally {
       setIsDownloadingAll(false);
     }
@@ -182,11 +182,11 @@ const ArtistOptions = forwardRef<
     setIsGeneratingPlaylist(true);
     try {
       const result = await generateForArtist(api, audiomuseConfig, artist, artistSongs, { size: 25 });
-      toast.success(t('artistOptions.toasts.playlistGenerated', { count: result.trackCount }));
+      notify.success(t('artistOptions.toasts.playlistGenerated', { count: result.trackCount }));
       close();
       router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
     } catch {
-      toast.error(t('artistOptions.toasts.playlistGenerationFailed'));
+      notify.error(t('artistOptions.toasts.playlistGenerationFailed'));
     } finally {
       generatePlaylistInFlightRef.current = false;
       setIsGeneratingPlaylist(false);

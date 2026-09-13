@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Heart, ArrowDownCircle, Ellipsis, PlayCircle } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { ExternalSong, Song } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -73,7 +73,7 @@ const ExternalSongRowView: React.FC<{
     if (onPress) {
       onPress();
     } else if (!samplesEnabled) {
-      toast(t('settings.deezer.enableSamplesToPreview'));
+      notify.info(t('settings.deezer.enableSamplesToPreview'));
     }
   }, [onPress, samplesEnabled, t]);
 

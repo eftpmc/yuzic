@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { ChevronLeft, Ellipsis, Shuffle, Play } from 'lucide-react-native'
 import TurboImage from 'react-native-turbo-image'
 import { useSelector } from 'react-redux'
-import { toast } from '@backpackapp-io/react-native-toast'
+import { notify } from '@/components/toast';
 import { useTranslation } from 'react-i18next'
 
 import { AlbumBase, Song } from '@/types'
@@ -115,7 +115,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
     })()
 
     if (!playableSongs.length) {
-      toast.error(t('common.oneSecond'))
+      notify.error(t('common.oneSecond'))
       return
     }
     playSongInCollection(

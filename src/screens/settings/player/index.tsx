@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { getBackend } from '@/features/player/activeBackend';
 import { useDispatch, useSelector } from 'react-redux';
 import { useApi } from '@/api';
@@ -87,9 +87,9 @@ const PlayerSettings: React.FC = () => {
               // actually holding the audio. Called on TrackPlayer directly it
               // would clear rntp's cache while the engine kept its own.
               getBackend().clearCache();
-              toast.success(t('settings.player.clearCacheDone'));
+              notify.success(t('settings.player.clearCacheDone'));
             } catch {
-              toast.error(t('common.error.unexpected'));
+              notify.error(t('common.error.unexpected'));
             }
           },
         },

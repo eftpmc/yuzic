@@ -4,7 +4,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useSelector, useDispatch } from 'react-redux';
 
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
@@ -146,7 +146,7 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
           );
       const successKey = track ? def.trackAddedKey! : def.albumAddedKey;
       const fallback = t('externalAlbum.download.failed');
-      toast[result.success ? 'success' : 'error'](
+      notify[result.success ? 'success' : 'error'](
         result.success
           ? t(successKey)
           : t(downloadErrorKey(def.id, result.code), { defaultValue: fallback })
@@ -176,7 +176,7 @@ const GetReviewSheet: React.FC<Props> = ({ album, track, sheetRef }) => {
         sheetRef.current?.dismiss();
       }
     } catch {
-      toast.error(t('externalAlbum.download.startFailed'));
+      notify.error(t('externalAlbum.download.startFailed'));
     } finally {
       setLoading(false);
     }

@@ -13,7 +13,7 @@ import { ExternalAlbumBase, ExternalSong, Song } from '@/types';
 import { usePlayingState, usePlayingActions } from '@/contexts/PlayingContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectSongPlayCount } from '@/utils/redux/selectors/statsSelectors';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { useStarredSongs, useStarSong, useUnstarSong } from '@/hooks/starred';
@@ -163,7 +163,7 @@ const LibrarySongOptionsSheet = forwardRef<
       try {
         if (isStarred) {
           await unstarSong.mutateAsync(selectedSong.id);
-          toast.success(t(
+          notify.success(t(
             isOffline
               ? 'songOptions.toasts.removedFromFavoritesOffline'
               : 'songOptions.toasts.removedFromFavorites',
@@ -171,7 +171,7 @@ const LibrarySongOptionsSheet = forwardRef<
           ));
         } else {
           await starSong.mutateAsync(selectedSong);
-          toast.success(t(
+          notify.success(t(
             isOffline
               ? 'songOptions.toasts.addedToFavoritesOffline'
               : 'songOptions.toasts.addedToFavorites',
@@ -179,7 +179,7 @@ const LibrarySongOptionsSheet = forwardRef<
           ));
         }
       } catch {
-        toast.error(t('songOptions.toasts.updateFavoritesFailed'));
+        notify.error(t('songOptions.toasts.updateFavoritesFailed'));
       } finally {
         close();
       }
@@ -198,7 +198,7 @@ const LibrarySongOptionsSheet = forwardRef<
               try {
                 await deleteDownloadedTrack(selectedSong.id);
               } catch {
-                toast.error(t('settings.library.downloads.removeFailedBody'));
+                notify.error(t('settings.library.downloads.removeFailedBody'));
               }
             },
           },
@@ -215,26 +215,26 @@ const LibrarySongOptionsSheet = forwardRef<
       try {
         await downloadTrack(selectedSong);
       } catch {
-        toast.error(t('songOptions.toasts.downloadFailed', { title: selectedSong.title }));
+        notify.error(t('songOptions.toasts.downloadFailed', { title: selectedSong.title }));
       }
     };
 
     const handleAddToEndQueue = async () => {
       if (!currentSong) {
-        toast.error(t('songOptions.toasts.nothingPlaying'));
+        notify.error(t('songOptions.toasts.nothingPlaying'));
         return;
       }
 
       if (selectedSong.id === currentSong.id) {
-        toast.error(t('songOptions.toasts.alreadyPlaying', { title: selectedSong.title }));
+        notify.error(t('songOptions.toasts.alreadyPlaying', { title: selectedSong.title }));
         return;
       }
 
       try {
         await addToQueue(selectedSong);
-        toast.success(t('songOptions.toasts.addedToQueue', { title: selectedSong.title }));
+        notify.success(t('songOptions.toasts.addedToQueue', { title: selectedSong.title }));
       } catch {
-        toast.error(t('songOptions.toasts.addToQueueFailed'));
+        notify.error(t('songOptions.toasts.addToQueueFailed'));
       } finally {
         close();
       }
@@ -242,20 +242,20 @@ const LibrarySongOptionsSheet = forwardRef<
 
     const handleAddToQueue = async () => {
       if (!currentSong) {
-        toast.error(t('songOptions.toasts.nothingPlaying'));
+        notify.error(t('songOptions.toasts.nothingPlaying'));
         return;
       }
 
       if (selectedSong.id === currentSong.id) {
-        toast.error(t('songOptions.toasts.alreadyPlaying', { title: selectedSong.title }));
+        notify.error(t('songOptions.toasts.alreadyPlaying', { title: selectedSong.title }));
         return;
       }
 
       try {
         await playNext(selectedSong);
-        toast.success(t('songOptions.toasts.playNext', { title: selectedSong.title }));
+        notify.success(t('songOptions.toasts.playNext', { title: selectedSong.title }));
       } catch {
-        toast.error(t('songOptions.toasts.playNextFailed'));
+        notify.error(t('songOptions.toasts.playNextFailed'));
       } finally {
         close();
       }
@@ -284,7 +284,7 @@ const LibrarySongOptionsSheet = forwardRef<
       try {
         await playSimilar(selectedSong);
       } catch {
-        toast.error(t('songOptions.toasts.instantMixFailed'));
+        notify.error(t('songOptions.toasts.instantMixFailed'));
       } finally {
         instantMixInFlightRef.current = false;
         close();
@@ -297,11 +297,11 @@ const LibrarySongOptionsSheet = forwardRef<
       setIsGeneratingPlaylist(true);
       try {
         const result = await generateSimilarPlaylist(api, audiomuseConfig, selectedSong, { size: 25 });
-        toast.success(t('songOptions.toasts.playlistGenerated', { count: result.trackCount }));
+        notify.success(t('songOptions.toasts.playlistGenerated', { count: result.trackCount }));
         close();
         router.push({ pathname: '/playlistView', params: { id: result.playlistId } });
       } catch {
-        toast.error(t('songOptions.toasts.playlistGenerationFailed'));
+        notify.error(t('songOptions.toasts.playlistGenerationFailed'));
       } finally {
         generatePlaylistInFlightRef.current = false;
         setIsGeneratingPlaylist(false);

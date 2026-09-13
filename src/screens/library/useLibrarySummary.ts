@@ -43,7 +43,7 @@ export const MOSAIC_COVERS = 4
  * smaller and four times over, so it is worth nothing here.
  */
 function hasArt(cover: CoverSource | undefined): cover is CoverSource {
-  return !!cover && cover.kind !== 'none' && cover.kind !== 'letter'
+  return !!cover && cover.kind !== 'none'
 }
 
 function coversOf(items: { cover: CoverSource }[]): CoverSource[] {

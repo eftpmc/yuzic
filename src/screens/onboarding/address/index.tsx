@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { ChevronDown, Lock, LockOpen, Check } from 'lucide-react-native';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { ServerType } from '@/types';
@@ -34,7 +34,7 @@ export default function Address() {
 
     const handleNext = () => {
         if (!host.trim()) {
-            toast.error(t('onboarding.address.enterUrl'));
+            notify.error(t('onboarding.address.enterUrl'));
             return;
         }
         router.push({

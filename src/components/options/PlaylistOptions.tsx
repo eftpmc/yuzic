@@ -8,7 +8,7 @@ import { ListEnd, Play, Shuffle, List, CheckCircle, ArrowDownCircle, Trash2, Pen
 import { useApi } from '@/api';
 import { shareItem } from '@/utils/share';
 import haptics from '@/utils/haptics';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { Playlist, PlaylistBase } from '@/types';
 import { usePlayingActions } from '@/contexts/PlayingContext';
@@ -87,7 +87,7 @@ const PlaylistOptions = forwardRef<
         description: playlist.title,
       });
       if (!created?.url) {
-        toast.error(t('playlistOptions.toasts.shareFailed'));
+        notify.error(t('playlistOptions.toasts.shareFailed'));
         return;
       }
       const shared = await shareItem({
@@ -97,7 +97,7 @@ const PlaylistOptions = forwardRef<
       });
       if (shared) close();
     } catch {
-      toast.error(t('playlistOptions.toasts.shareFailed'));
+      notify.error(t('playlistOptions.toasts.shareFailed'));
     } finally {
       setIsSharing(false);
     }
@@ -162,9 +162,9 @@ const PlaylistOptions = forwardRef<
         if (!trimmed || trimmed === playlist.title) return;
         try {
           await renamePlaylist.mutateAsync({ id: playlist.id, newName: trimmed });
-          toast.success(t('playlistOptions.toasts.renamed'));
+          notify.success(t('playlistOptions.toasts.renamed'));
         } catch {
-          toast.error(t('playlistOptions.toasts.renameFailed'));
+          notify.error(t('playlistOptions.toasts.renameFailed'));
         }
       },
       'plain-text',
@@ -190,9 +190,9 @@ const PlaylistOptions = forwardRef<
               if (hideGoToPlaylist) {
                 navigation.goBack();
               }
-              toast.success(t('playlistOptions.toasts.deleted'));
+              notify.success(t('playlistOptions.toasts.deleted'));
             } catch {
-              toast.error(t('playlistOptions.toasts.deleteFailed'));
+              notify.error(t('playlistOptions.toasts.deleteFailed'));
             }
           },
         },

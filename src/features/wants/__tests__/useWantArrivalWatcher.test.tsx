@@ -14,8 +14,8 @@ const WANT_1_LOCAL_ID = makeLocalId({ kind: 'album', externalSource: 'deezer', e
 const WANT_2_LOCAL_ID = makeLocalId({ kind: 'album', externalSource: 'deezer', externalNativeId: 'w-2' });
 
 const mockToastSuccess = jest.fn();
-jest.mock('@backpackapp-io/react-native-toast', () => ({
-  toast: { success: (...args: unknown[]) => mockToastSuccess(...args) },
+jest.mock('@/components/toast', () => ({
+  notify: { success: (...args: unknown[]) => mockToastSuccess(...args) },
 }));
 
 // Library membership is driven directly through this mock so tests can move

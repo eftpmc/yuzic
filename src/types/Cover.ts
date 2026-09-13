@@ -1,7 +1,6 @@
 export type CoverSource =
   | { kind: 'special'; name: 'heart' }
   | { kind: 'none' }
-  | { kind: 'letter'; name: string }
   | { kind: 'navidrome'; coverArtId: string }
   | { kind: 'jellyfin'; itemId: string; }
   | { kind: 'emby'; itemId: string; tag?: string }

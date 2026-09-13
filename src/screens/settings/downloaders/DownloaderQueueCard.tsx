@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react-native';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import SettingsCard from '../components/SettingsCard';
 import SettingsCardHeader from '../components/SettingsCardHeader';
@@ -79,9 +79,9 @@ function DownloaderQueueCard<T extends { id: string }>({
       setCancellingId(item.id);
       try {
         await cancelQueueItem(config, item);
-        toast.success(t('settings.downloaders.cancelled'));
+        notify.success(t('settings.downloaders.cancelled'));
       } catch {
-        toast.error(t('settings.downloaders.cancelFailed'));
+        notify.error(t('settings.downloaders.cancelFailed'));
       } finally {
         setCancellingId((current) => (current === item.id ? null : current));
       }

@@ -16,7 +16,7 @@ export function stationToSong(station: InternetRadioStation): Song {
     artist: 'Live Radio',
     artistId: '',
     albumId: '',
-    cover: { kind: 'letter', name: station.name },
+    cover: { kind: 'none' },
     duration: '0',
     streamUrl: station.streamUrl,
     contentKind: 'liveStream',

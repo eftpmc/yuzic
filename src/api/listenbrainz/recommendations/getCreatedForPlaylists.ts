@@ -68,7 +68,7 @@ function mapTrack(track: JspfTrack): ExternalSong | null {
     id: mbid ?? `${track.creator}:${track.title}`,
     title: track.title,
     artist: track.creator,
-    cover: { kind: 'letter', name: track.creator },
+    cover: { kind: 'none' },
     duration: track.duration ? String(Math.round(track.duration / 1000)) : '',
     albumId: track.album ?? '',
     externalSource: 'musicbrainz',

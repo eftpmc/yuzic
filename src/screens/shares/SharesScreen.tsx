@@ -3,7 +3,7 @@ import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { CloudOff, Link2, Share2, Trash2 } from 'lucide-react-native';
 
 import { useApi } from '@/api';
@@ -84,7 +84,7 @@ export default function SharesScreen() {
               await api.shares?.remove(share.id);
               await queryClient.invalidateQueries({ queryKey: [QueryKeys.Shares] });
             } catch {
-              toast.error(t('common.error.unexpected'));
+              notify.error(t('common.error.unexpected'));
             }
           },
         },

@@ -39,7 +39,7 @@ async function fetchLastFmSimilarArtists(
     .map(c => ({
       id: c.mbid ?? c.name,
       name: c.name,
-      cover: { kind: 'letter' as const, name: c.name },
+      cover: { kind: 'none' as const },
       subtext: '',
       externalIds: c.mbid ? { mbid: c.mbid } : undefined,
     }))

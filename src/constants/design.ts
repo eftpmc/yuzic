@@ -59,6 +59,7 @@ export const sourceColor = {
   lastfm: '#D51007',
   listenbrainz: '#EB743B',
   musicbrainz: '#BA478F',
+  audiomuse: '#7C3AED',
 } as const;
 
 /**
@@ -453,4 +454,7 @@ export type SemanticThemeColors = {
   destructiveOnSurface: string;
   /** Warning-toned foreground for inline text like unsaved-changes hints. */
   warningText: string;
+  /** Elevated surface for floating transient UI (toasts) that must read as
+   *  distinct from the playing bar / tab bar, which both use `card`. */
+  toastSurface: string;
 };

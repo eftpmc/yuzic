@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import * as lidarr from '@/api/lidarr';
-import type { LidarrQueueRecord, LidarrQualityProfile } from '@/api/lidarr';
+import type { LidarrQualityProfile } from '@/api/lidarr';
 import SettingsCardHeader from '../components/SettingsCardHeader';
 import SettingsSelectCard from '../components/SettingsSelectCard';
 import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
@@ -14,7 +14,6 @@ import {
 } from '@/utils/redux/selectors/downloadersSelectors';
 import { setLidarrDefaultQualityProfileId } from '@/utils/redux/slices/downloadersSlice';
 import DownloaderSettingsScreen from './DownloaderSettingsScreen';
-import { useLidarrRenderItem } from './useLidarrRenderItem';
 
 /**
  * The per-server default quality profile Lidarr applies when it has to
@@ -80,16 +79,10 @@ const QualityProfileCard: React.FC = () => {
 };
 
 const LidarrView: React.FC = () => {
-  const { renderItem, resetExpanded } = useLidarrRenderItem();
-
   return (
-    <DownloaderSettingsScreen<LidarrQueueRecord>
+    <DownloaderSettingsScreen
       id="lidarr"
       testConnection={lidarr.testConnection}
-      fetchQueueWithDiff={lidarr.fetchQueueWithDiff}
-      cancelQueueItem={lidarr.cancelQueueItem}
-      renderItem={renderItem}
-      onDisconnected={resetExpanded}
       extraCards={<QualityProfileCard />}
     />
   );

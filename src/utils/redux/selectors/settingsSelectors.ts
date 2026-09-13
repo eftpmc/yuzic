@@ -109,7 +109,7 @@ export const selectTranslucentDock = (state: RootState): boolean =>
   state.settings.translucentDock ?? false;
 
 export const selectAutoplayEnabled = (state: RootState): boolean =>
-  state.settings.autoplayEnabled ?? false;
+  state.settings.autoplayEnabled ?? true;
 
 export const selectShowSourceHeaders = (state: RootState): boolean =>
   state.settings.showSourceHeaders ?? true;

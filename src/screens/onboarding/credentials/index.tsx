@@ -10,7 +10,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { addServer, setActiveServer } from '@/utils/redux/slices/serversSlice';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { nanoid } from '@reduxjs/toolkit';
 import { ProviderAuth, SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { ServerType, BasicAuth } from '@/types';
@@ -90,7 +90,7 @@ export default function Credentials() {
             return;
         }
         if (phase.status === 'failed') {
-            toast.error(
+            notify.error(
                 phase.reason === 'expired'
                     ? t('onboarding.credentials.codeAuth.expired')
                     : phase.message || t('onboarding.credentials.codeAuth.unavailable')
@@ -105,7 +105,7 @@ export default function Credentials() {
     const handleNext = async () => {
         if (!type || !serverUrl) return;
         if (!localUsername || !localPassword) {
-            toast.error(t('onboarding.credentials.missingCredentials'));
+            notify.error(t('onboarding.credentials.missingCredentials'));
             return;
         }
         const provider = SERVER_PROVIDERS[type];
@@ -114,17 +114,17 @@ export default function Credentials() {
         try {
             const result = await provider.connect(serverUrl, localUsername, localPassword, basicAuth);
             if (!result.success || !result.auth) {
-                toast.error(result.message || t('onboarding.credentials.authFailed'));
+                notify.error(result.message || t('onboarding.credentials.authFailed'));
                 return;
             }
             const pingOk = await provider.ping(serverUrl, localUsername, result.auth, basicAuth);
             if (!pingOk) {
-                toast.error(t('onboarding.credentials.apiNotResponding'));
+                notify.error(t('onboarding.credentials.apiNotResponding'));
                 return;
             }
             saveServer(result.auth);
         } catch {
-            toast.error(t('onboarding.credentials.connectError'));
+            notify.error(t('onboarding.credentials.connectError'));
         } finally {
             setIsTesting(false);
         }

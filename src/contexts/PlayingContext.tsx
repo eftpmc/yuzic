@@ -22,7 +22,7 @@ import shuffleArray from '@/utils/shuffleArray';
 import { useApi } from '@/api';
 import { buildTrackItem } from '@/utils/builders/buildTrackItem';
 import { mediaHeadersForSong } from '@/features/player/mediaHeaders';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useTranslation } from 'react-i18next';
 import { moveSongAfterCurrent, reconcileUnshuffledQueue, QueueSegment, segmentAt, tagSegment, shiftSegmentsAfterInsert } from './playingQueue';
 import { isRepeatLoop } from './repeatPlay';
@@ -715,7 +715,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
       // This track failed again after a retry — URL refresh didn't help, genuine failure.
       if (now - lastPlaybackErrorAtRef.current > 1500) {
         lastPlaybackErrorAtRef.current = now;
-        toast.error(t('common.playbackError'));
+        notify.error(t('common.playbackError'));
       }
 
       removeFailedCurrentTrackRef.current();
@@ -1260,7 +1260,7 @@ export const PlayingProvider: React.FC<{ children: ReactNode }> = ({ children })
         songs,
       };
       await playSongInCollection(song, collection, false);
-      if (others.length > 0) toast.success(t('common.playingSimilar'));
+      if (others.length > 0) notify.success(t('common.playingSimilar'));
     } catch {
       await playSong(song);
     }

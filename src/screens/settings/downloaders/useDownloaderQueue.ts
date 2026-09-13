@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 
 import { useAppActive } from '@/hooks/useAppActive';
 import { usePollWhile } from '@/hooks/usePollWhile';
@@ -83,7 +83,7 @@ export function useDownloaderQueue<T extends { id: string }>(
         setQueue(currentQueue);
         setHasError(false);
         if (finishedItems.length > 0) {
-          toast(translate.current('settings.downloaders.downloadComplete'));
+          notify.info(translate.current('settings.downloaders.downloadComplete'));
         }
       })
       .catch(() => {

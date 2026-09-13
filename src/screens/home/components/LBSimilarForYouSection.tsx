@@ -76,7 +76,7 @@ export default function LBSimilarForYouSection({ sectionKey, artistName, refresh
       return raw.map((a) => ({
         id: a.artistMbid,
         name: a.name,
-        cover: { kind: 'letter' as const, name: a.name },
+        cover: { kind: 'none' as const },
         subtext: a.comment ?? '',
         externalIds: { mbid: a.artistMbid },
       }));

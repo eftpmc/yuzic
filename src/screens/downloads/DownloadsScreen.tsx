@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import SettingsScreen from '../settings/components/SettingsScreen';
 import SettingsCard from '../settings/components/SettingsCard';
-import SettingsCardHeader from '../settings/components/SettingsCardHeader';
 import DownloaderQueueCard from '../settings/downloaders/DownloaderQueueCard';
 import { useLidarrRenderItem } from '../settings/downloaders/useLidarrRenderItem';
 import { useSlskdRenderItem } from '../settings/downloaders/useSlskdRenderItem';
@@ -19,40 +18,31 @@ import * as slskd from '@/api/slskd';
 import * as soulsync from '@/api/soulsync';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, typography } from '@/constants/design';
-import OfflineSection from './OfflineSection';
 
 /**
- * ONE Downloads screen for the whole app: two sections with different
- * destination/execution semantics, per the locked C5 design.
+ * The Downloads screen is **server transfers only** — the live acquisition
+ * queue of every connected downloader (Lidarr, slskd, SoulSync), each showing
+ * every job its queue endpoint reports, including jobs started outside Yuzic.
  *
- * - OFFLINE: what's already saved on this device, from `useDownload()`
- *   (DownloadContext). Extracted into `OfflineSection` so the rendering
- *   lives in one place — this screen and the former standalone
- *   settings-only screen no longer duplicate it.
- * - DOWNLOADERS: server-side acquisition. One card per *connected*
- *   downloader — Lidarr, slskd, and SoulSync (previously omitted here) —
- *   each showing every job its queue endpoint reports, including jobs
- *   started outside Yuzic; downloaders never filter to app-originated
- *   jobs. Live per-downloader counts come from the single shared
- *   `useDownloadersQueue()` poll (mounted once in the home layout); the
- *   per-card `DownloaderQueueCard` still does its own item-level read via
- *   `useDownloaderQueue`, since that hook is the one place providers'
- *   queue payload+cancel wiring already lives — this screen does not spin
- *   up a further, third poll of its own.
+ * On-device saved music does NOT live here: that is the Library's "Downloaded"
+ * view, which is a filter over what you already own. The two were merged onto
+ * one screen once and read as one confusing pile of "downloads"; they are
+ * different things — one is storage you hold, the other is work in flight — so
+ * they live apart. This screen never shows offline storage stats.
  *
- * Reachable from the Home "downloads in progress" banner and from the
- * settings library "Downloads" row (both offline and downloader entry
- * points now land here) and from Library's own "Downloads" row.
+ * Live per-downloader counts come from the single shared `useDownloadersQueue()`
+ * poll (mounted once in the home layout); the per-card `DownloaderQueueCard`
+ * still does its own item-level read via `useDownloaderQueue`, so this screen
+ * does not spin up a further poll of its own.
+ *
+ * Reachable from the Home "downloads in progress" banner and Library's
+ * "Downloads" row.
  */
 const DownloadsScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const states = useDownloaderStates();
   const connected = states.filter((s) => s.isConnected);
-  // Shared live counts — read-only here, just to confirm the section isn't
-  // spinning up its own second poll. The per-item queue data itself still
-  // comes from each DownloaderQueueCard's own `useDownloaderQueue` read,
-  // which is what actually renders the rows and drives cancel.
   useDownloadersQueue();
 
   const { renderItem: lidarrRenderItem } = useLidarrRenderItem();
@@ -61,10 +51,6 @@ const DownloadsScreen: React.FC = () => {
 
   return (
     <SettingsScreen title={t('downloads.title')}>
-      <SettingsCardHeader subtle title={t('downloads.section.offline')} />
-      <OfflineSection />
-
-      <SettingsCardHeader subtle title={t('downloads.section.downloaders')} />
       {connected.length === 0 && (
         <SettingsCard>
           <Text style={[styles.empty, { color: colors.subtext }]}>

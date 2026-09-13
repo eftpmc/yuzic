@@ -3,12 +3,31 @@
     "title": "設定",
     "sections": {
       "general": "一般",
+      "discovery": "ディスカバリー",
       "plugins": "プラグイン",
       "connections": "接続",
       "about": "情報"
     },
     "connections": {
-      "sources": "ライブラリと発見のソース"
+      "sources": "ライブラリと発見のソース",
+      "accounts": "アカウント",
+      "services": "サービスとダウンローダー",
+      "status": {
+        "available": "利用可能",
+        "inUse": "使用中",
+        "connected": "接続済み",
+        "notConnected": "未接続",
+        "ready": "準備完了",
+        "notSetUp": "未設定"
+      },
+      "summary": {
+        "deezer": "ディスカバリーとアートワーク",
+        "musicbrainz": "アーティストとリリース情報",
+        "lastfm": "類似アーティストとおすすめ",
+        "listenbrainz": "スクロブルアカウントとディスカバリー",
+        "audiomuse": "プレイリスト生成",
+        "downloader": "サーバーからのダウンロード"
+      }
     },
     "rows": {
       "server": "サーバー",
@@ -42,7 +61,7 @@
       },
       "fallbackUrls": {
         "title": "フォールバックURL",
-        "subtext": "プライマリURLに接続できないときに試す追加URL（外出時のTailscaleや公開アドレスなど）。",
+        "subtext": "主アドレスに接続できない時に試す予備URL。",
         "placeholder": "https://tailscale-または-ドメイン.example",
         "addAria": "フォールバックURLを追加",
         "removeAria": "{{url}}を削除",
@@ -53,19 +72,19 @@
       },
       "privacyTitle": "プライバシー",
       "queueSync": "デバイス間でキューを同期",
-      "queueSyncDescription": "再生中の内容をサーバーに保存し、別のデバイスで続きから再生できるようにします。",
+      "queueSyncDescription": "複数の端末で再生を引き継ぎます。",
       "nowPlayingShelf": "他に聴いている人を表示",
-      "nowPlayingShelfDescription": "このサーバーの他のユーザーと、そのユーザーが今再生している曲をホームに表示します。",
+      "nowPlayingShelfDescription": "他のユーザーの再生中を並べるホーム行。",
       "clientCertificate": {
         "title": "クライアント証明書",
-        "description": "クライアントの身元確認を求めるサーバー用です。サーバーから発行された PKCS#12 ファイル（.p12 または .pfx）を選択してください。",
+        "description": "クライアント証明書が必要なサーバー用（.p12/.pfx）。",
         "passwordPlaceholder": "証明書のパスワード",
         "choose": "証明書を選択",
         "installed": "証明書を設定済み",
         "remove": "証明書を削除",
-        "rejected": "この証明書を読み込めませんでした。パスワードを確認してもう一度お試しください。",
+        "rejected": "証明書を読めません。パスワードを確認してください。",
         "readFailed": "このファイルを読み込めませんでした。",
-        "unsupported": "このプラットフォームではクライアント証明書にまだ対応していません。"
+        "unsupported": "このプラットフォームではまだ未対応です。"
       }
     },
     "appearance": {
@@ -84,7 +103,7 @@
       },
       "playingBarAction": {
         "title": "再生バーのアクション",
-        "info": "再生バーに表示するアクションを選択",
+        "info": "再生バーに表示する操作。",
         "actions": {
           "none": "なし",
           "skip": "スキップ",
@@ -107,19 +126,19 @@
         "chinese": "中国語"
       },
       "showQualityBadge": "音質バッジを表示",
-      "showQualityBadgeSubtext": "再生画面に音声フォーマットとビットレートを表示します。",
+      "showQualityBadgeSubtext": "プレーヤーに形式とビットレートを表示。",
       "display": "表示",
       "playing": "再生",
       "showSourceHeaders": "ソースヘッダーを表示",
-      "showSourceHeadersSubtext": "外部サービスのセクションタイトルの横にソースバッジを表示します。",
+      "showSourceHeadersSubtext": "セクション見出しに外部ソースのバッジ。",
       "feel": "操作感",
       "haptics": "触覚フィードバック",
-      "hapticsSubtext": "再生・スキップ・お気に入り・長押しなどで軽く振動します。",
+      "hapticsSubtext": "再生・スキップ・長押しで軽く振動。",
       "respectReducedMotion": "視差効果を減らす設定を尊重",
-      "respectReducedMotionSubtext": "システムで視差効果の低減が有効なとき、アニメーションを控えめにします。",
+      "respectReducedMotionSubtext": "システムの要求時にアニメを控えめに。",
       "gridColumns": {
         "label": "グリッドの列数",
-        "subtext": "グリッド表示のアルバム、アーティスト、プレイリストの列数。"
+        "subtext": "グリッド表示の列数。"
       },
       "radiusPreset": {
         "title": "角の丸み",
@@ -138,9 +157,9 @@
         }
       },
       "translucentDock": "半透明のドック",
-      "translucentDockSubtext": "タブバーをページの上に浮かせ、コンテンツがその下をスクロールするようにします。",
+      "translucentDockSubtext": "タブバーをコンテンツの上に浮かせる。",
       "coverAccent": "アートワークから配色",
-      "coverAccentSubtext": "アルバム・アーティスト・プレイヤー画面をカバーから取った色で染めます。",
+      "coverAccentSubtext": "カバーの色で画面を色付け。",
       "listDensity": {
         "title": "リストの間隔",
         "info": "リストの行と行のあいだの間隔です。",
@@ -159,40 +178,40 @@
       },
       "homeSources": "ホームの棚",
       "homeSourcesServer": "サーバー",
-      "homeSourcesServerSubtext": "サーバーのランダムな棚と再生中を表示します。",
+      "homeSourcesServerSubtext": "サーバーのランダム棚と再生中を表示。",
       "homeSourcesListenbrainz": "ListenBrainz",
       "homeSourcesListenbrainzSubtext": "ListenBrainz の類似アーティストの棚を表示します。",
       "homeSourcesDeezer": "Deezer",
-      "homeSourcesDeezerSubtext": "Deezer のディスカバリー棚（チャート、人気曲、類似アーティスト）を表示します。"
+      "homeSourcesDeezerSubtext": "Deezerのチャート・人気曲・類似アーティスト。"
     },
     "lyrics": {
       "title": "歌詞",
-      "order": "フォールバック順序",
+      "sources": "歌詞ソース",
       "serverEmbedded": "サーバー内蔵",
-      "serverEmbeddedSubtext": "常に最初に確認されます — サーバーがすでに持っている曲の歌詞です。",
+      "serverEmbeddedSubtext": "最初に確認 — サーバーの歌詞。",
       "lrclib": "LRCLIB",
-      "lrclibSubtext": "無料・匿名の歌詞検索。デフォルトではオフ。サーバーに歌詞がない場合に使うには有効にしてください。"
+      "lrclibSubtext": "無料・匿名の歌詞検索。"
     },
     "search": {
       "title": "検索",
       "sourcesSection": "検索ソース",
-      "explanation": "検索画面の「その他のソース」スコープが問い合わせるソース。ホームとは独立しています — ホームの棚を有効にしても検索が有効になるわけではなく、その逆も同様です。",
+      "explanation": "「その他のソース」が検索する対象。ホームとは別。",
       "deezer": "Deezer",
-      "deezerSubtext": "「その他のソース」での検索に Deezer のアルバムとアーティストを含めます。",
+      "deezerSubtext": "Deezerのアルバム・アーティストを検索。",
       "musicbrainz": "MusicBrainz",
-      "musicbrainzSubtext": "「その他のソース」での検索に MusicBrainz のアルバムとアーティストを含めます。"
+      "musicbrainzSubtext": "MusicBrainzのアルバム・アーティストを検索。"
     },
     "metadata": {
       "title": "メタデータ",
-      "explanation": "表示のみです。サーバーにないアーティスト情報やアートワークを補完します — サーバー上の何かを変更したり、タグやファイルを書き込んだりすることは一切ありません。ソースをオフにすると、サーバーが表示する内容そのものに戻ります。",
+      "explanation": "サーバーにない情報を補完します。サーバーは変更しません。",
       "artistInfoSection": "アーティスト情報",
       "artworkSection": "アートワーク",
       "lastfm": "Last.fm",
-      "lastfmSubtext": "アーティストの経歴とタグ。デフォルトではオフ。サーバーに経歴がない場合に使うには有効にしてください。",
+      "lastfmSubtext": "経歴とタグ",
       "deezerArtwork": "Deezer",
-      "deezerArtworkSubtext": "アーティスト画像。デフォルトではオフ。サーバーにアーティスト写真がない場合に使うには有効にしてください。",
+      "deezerArtworkSubtext": "アーティスト画像",
       "coverArtArchive": "Cover Art Archive",
-      "coverArtArchiveSubtext": "MusicBrainz IDによるアルバムカバー。デフォルトではオフ。サーバーにカバーがない場合に使うには有効にしてください。"
+      "coverArtArchiveSubtext": "アルバムのジャケット"
     },
     "library": {
       "title": "ライブラリ",
@@ -203,11 +222,11 @@
       "localFiles": {
         "title": "ローカルファイル",
         "import": "オーディオファイルを読み込む",
-        "description": "このデバイス上の Yuzic のプライベートライブラリに音楽を追加します。"
+        "description": "この端末の非公開ライブラリに音楽を追加。"
       },
       "discovery": {
         "title": "ディスカバリー",
-        "info": "ディスカバリーがライブラリからアーティストとアルバムを提案する方法です。",
+        "info": "ライブラリからDiscoveryが提案する方法。",
         "about": "ディスカバリーについて"
       },
       "stats": {
@@ -222,7 +241,7 @@
         "daysAgo_other": "{{count}} 日前",
         "lastSynced": "最終同期",
         "syncOnAppStart": "起動時に同期",
-        "syncOnAppStartSubtext": "アプリを開くたびにライブラリを自動的に同期します"
+        "syncOnAppStartSubtext": "起動ごとにライブラリを同期。"
       },
       "offlineChanges": {
         "title": "保留中のオフライン変更",
@@ -233,20 +252,20 @@
         "retry": "再試行",
         "discard": "破棄",
         "discardTitle": "オフライン変更を破棄しますか？",
-        "discardBody": "現在のサーバーの保留中の変更を削除します。ローカルライブラリは次回同期時に更新されます。"
+        "discardBody": "このサーバーの保留中の変更を破棄します。次回の同期で更新されます。"
       },
       "downloads": {
         "title": "オフラインダウンロード",
         "detailsTitle": "オフラインダウンロード",
         "moreInfo": "詳細を見る",
         "clearTitle": "ダウンロードを削除しますか？",
-        "clearBody": "端末に保存されたダウンロード曲をすべて削除します。",
+        "clearBody": "この端末のダウンロード曲をすべて削除します。",
         "clearBodyForProvider": "現在のサーバーのダウンロードのみ削除します。",
-        "clearBodyProviderNamed": "{{provider}} のダウンロードのみ削除します。",
+        "clearBodyProviderNamed": "{{provider}}のダウンロードのみ削除します。",
         "clearFailedTitle": "ダウンロードを削除できませんでした",
         "clearFailedBody": "ローカルファイルの削除中にエラーが発生しました。",
         "removeTitle": "ダウンロード項目を削除しますか？",
-        "removeBody": "「{{title}}」のダウンロード済みファイルを端末から削除します。",
+        "removeBody": "「{{title}}」のダウンロードを削除します。",
         "removeFailedTitle": "ダウンロードを削除できませんでした",
         "removeFailedBody": "ローカルファイルの削除中にエラーが発生しました。",
         "provider": {
@@ -286,17 +305,17 @@
           "tracks": "トラック",
           "playlists": "プレイリスト"
         },
-        "offlineNote": "これらの曲はオフライン再生のため端末に保存されています。",
-        "locationNote": "ダウンロードはアプリの非公開ストレージに保存されており、端末のファイルマネージャーからは参照できません。表示・削除にはこの画面をご利用ください。",
+        "offlineNote": "オフライン再生用にローカル保存。",
+        "locationNote": "アプリの非公開領域に保存され、ファイル管理からは見えません。ここで管理します。",
         "autoDownloadLabel": "新しい曲を自動ダウンロード",
-        "autoDownloadSubtext": "ライブラリに追加された曲を自動的にダウンロードしてオフラインで再生できるようにします",
+        "autoDownloadSubtext": "追加した曲を自動ダウンロード。",
         "autoDownloadStarted_other": "新しい曲{{count}}件を自動ダウンロード中",
         "wifiOnlyLabel": "WiFi接続時のみダウンロード",
-        "wifiOnlySubtext": "WiFiに接続するまでダウンロードを保留します。キューは自動的に再開されます。"
+        "wifiOnlySubtext": "WiFiを待機。自動で再開します。"
       },
       "downloadQuality": {
         "title": "ダウンロード音質",
-        "caption": "サーバーが対応している場合、オリジナルはロスレス音源をダウンロードします。ファイルサイズが大きいほど多くのストレージを使用します。",
+        "caption": "対応時はロスレス。ファイルは大きくなります。",
         "options": {
           "low": "低 · 128kbps",
           "medium": "中 · 192kbps",
@@ -313,8 +332,8 @@
         "title": "イコライザー",
         "reset": "リセット",
         "presets": "プリセット",
-        "flatSubtext": "フラット — イコライザーは完全にバイパスされ、負荷はありません。",
-        "gainSubtext": "ゲインは最大{{limit}} dBです。プレーヤーの出力すべてに適用されます。",
+        "flatSubtext": "フラット — EQ無効、負荷なし。",
+        "gainSubtext": "全出力に最大{{limit}}dBのゲイン。",
         "presetFlat": "フラット",
         "presetBass": "低音強調",
         "presetTreble": "高音強調",
@@ -324,7 +343,7 @@
       "streamingQuality": {
         "wifi": "WiFi音質",
         "cellular": "モバイル音質",
-        "caption": "サーバーが対応している場合、オリジナルはロスレス音声でストリーミングされます。WiFi専用推奨。",
+        "caption": "対応時はロスレス配信。WiFi推奨。",
         "options": {
           "low": "低 · 128kbps",
           "medium": "中 · 192kbps",
@@ -333,24 +352,24 @@
         }
       },
       "opusCodec": "Opusコーデック",
-      "opusCodecSubtext": "同じビットレートでMP3より高音質。低ビットレートで特に効果的。",
+      "opusCodecSubtext": "同ビットレートでMP3より高音質。",
       "showSleepTimer": "スリープタイマー",
       "showSleepTimerSubtext": "プレイヤーにスリープタイマーを表示します。",
       "showPlaybackSpeed": "再生速度",
       "showPlaybackSpeedSubtext": "プレイヤーに速度調整を表示します。",
       "showJumpButtons": "スキップボタン",
-      "showJumpButtonsSubtext": "プレイヤーに15秒巻き戻し・15秒早送りボタンを表示します。",
+      "showJumpButtonsSubtext": "プレーヤーに15秒スキップボタン。",
       "showVolumeSlider": "音量スライダー",
-      "showVolumeSliderSubtext": "プレイヤー画面にアプリ内の音量スライダーを表示します。",
+      "showVolumeSliderSubtext": "プレーヤーに音量スライダー。",
       "autoplay": "自動再生",
-      "autoplaySubtextAudiomuse": "AudioMuse-AIを使って、キューが終わった後も音響的に似た曲を再生し続けます。",
-      "autoplaySubtextNative": "キューが終わった後も、サーバー内の似た曲を再生し続けます。",
+      "autoplaySubtextAudiomuse": "AudioMuse-AIで類似曲を続けて再生。",
+      "autoplaySubtextNative": "サーバーの類似曲を続けて再生。",
       "resumeLongTracks": "長いトラックを再開",
-      "resumeLongTracksSubtext": "オーディオブック、DJ セット、ポッドキャストのエピソードを続きから再生します。",
+      "resumeLongTracksSubtext": "オーディオブックやDJセット、ポッドキャストを再開。",
       "cacheTitle": "再生キャッシュ",
       "clearCache": "再生キャッシュを削除",
       "clearCacheTitle": "再生キャッシュを削除しますか？",
-      "clearCacheBody": "この端末に保持されたストリーム音声は、次回再生時に再取得されます。ダウンロード済みの曲には影響しません。",
+      "clearCacheBody": "キャッシュ音声は次回再取得。ダウンロードは影響なし。",
       "clearCacheConfirm": "削除",
       "clearCacheDone": "再生キャッシュを削除しました",
       "audio": "オーディオ",
@@ -358,9 +377,9 @@
         "label": "クロスフェード",
         "off": "オフ",
         "offSubtext": "曲は重ならずにそのまま次へ進みます。",
-        "onSubtext": "各曲が{{seconds}}秒かけて次の曲へフェードします。スキップした場合はそのまま切り替わります。",
+        "onSubtext": "曲間を{{seconds}}秒でフェード。スキップは即切替。",
         "seguesLabel": "連続した曲もフェードする",
-        "seguesSubtext": "曲が途切れなくつながるアルバムは、既定ではそのつなぎ目で切り替えるため、連続したミックスはそのまま保たれます。すべてフェードするにはオンにしてください。"
+        "seguesSubtext": "連続再生の繋ぎは即切替のまま。オンで全てフェード。"
       }
     },
     "listenBrainz": {
@@ -370,7 +389,7 @@
       "usernamePlaceholder": "ListenBrainz ユーザー名",
       "tokenPlaceholder": "ListenBrainz ユーザートークン",
       "connectivity": "接続状況",
-      "helperText": "ListenBrainz はスクリブルと再生中情報の更新に使われます。許可なく再生データは送信されません。",
+      "helperText": "スクロブルと再生中に使用。許可なく送信しません。",
       "disconnect": "切断",
       "missingCredentials": "ユーザー名とトークンを入力してください。",
       "connectionSuccessful": "ListenBrainz の接続に成功しました。",
@@ -378,11 +397,11 @@
       "connectFailed": "ListenBrainz に接続できませんでした。",
       "disconnected": "ListenBrainz から切断しました。",
       "credentialsTitle": "認証情報",
-      "credentialsHelper": "listenbrainz.org/profile のユーザー名とユーザートークン。",
+      "credentialsHelper": "listenbrainz.org/profileのユーザー名とトークン。",
       "scrobble": "スクロブル",
       "nowPlaying": "再生中",
       "discovery": "ディスカバリー",
-      "discoveryDescription": "ホームやアーティストページで ListenBrainz の公開類似アーティストデータを使います。アカウント不要 — 照合のため、聴いているアーティスト名が ListenBrainz に送信されます。"
+      "discoveryDescription": "ホームとページに類似アーティスト。アカウント不要。名前を照合に送信。"
     },
     "downloaders": {
       "title": "ダウンローダー",
@@ -419,7 +438,7 @@
         "connectionFailed": "Lidarr の接続に失敗しました",
         "disconnected": "Lidarr から切断しました。",
         "credentialsTitle": "接続",
-        "credentialsHelper": "LidarrサーバーのURLとAPIキー。Lidarrの Settings → General にあります。",
+        "credentialsHelper": "LidarrのURLとAPIキー（Settings → General）。",
         "qualityProfileTitle": "品質プロファイル",
         "defaultQualityProfile": "デフォルトの品質プロファイル"
       },
@@ -428,7 +447,7 @@
         "connectionFailed": "slskd の接続に失敗しました",
         "disconnected": "slskd から切断しました。",
         "credentialsTitle": "接続",
-        "credentialsHelper": "slskdサーバーのURLとAPIキー。slskdの Options → API Keys にあります。",
+        "credentialsHelper": "slskdのURLとAPIキー（Options → API Keys）。",
         "searchPreferencesTitle": "検索の設定",
         "preferredFormat": "優先フォーマット",
         "formatAuto": "どちらでも（FLAC 優先）",
@@ -437,40 +456,40 @@
         "minBitrateAny": "指定なし",
         "minBitrateValue": "{{kbps}} kbps",
         "preferFreeSlot": "空きスロットを優先",
-        "preferFreeSlotSubtext": "アップロード枠が空いているピアを優先します。オフにすると待ってでも希少なリリースを取得します。"
+        "preferFreeSlotSubtext": "空きスロット優先。オフで希少作も取得。"
       },
       "queueTitle": "ダウンロードキュー",
       "soulsync": {
         "title": "SoulSync",
         "credentialsTitle": "接続",
-        "credentialsHelper": "SoulSync サーバーの URL と API キー。SoulSync の Settings → API Keys で生成できます。",
+        "credentialsHelper": "SoulSyncのURLとAPIキー（Settings → API Keys）。",
         "connectionFailed": "SoulSync への接続に失敗しました",
         "disconnected": "SoulSync から切断しました。"
       }
     },
     "musicbrainz": {
       "external": "外部アーティスト・アルバムデータ",
-      "externalDescription": "ライブラリにないアーティストやアルバムのページを MusicBrainz のデータで補完します。アカウント不要。"
+      "externalDescription": "MusicBrainzでページを補完。アカウント不要。"
     },
     "lastfm": {
       "enable": "アーティスト・おすすめデータ",
-      "enableDescription": "Last.fm を使って類似アーティストを探し、プレイリストのおすすめの起点にします。アカウント不要 — 検索のためアーティスト名が Last.fm に送信されます。"
+      "enableDescription": "類似アーティストとプレイリストの種。アカウント不要。名前を送信。"
     },
     "deezer": {
       "discovery": "ディスカバリー",
-      "discoveryDescription": "Deezer のチャートとおすすめを探索画面に表示。",
+      "discoveryDescription": "探索画面にDeezerのチャートと推薦。",
       "search": "検索",
       "searchDescription": "検索に Deezer の結果を含める。",
       "external": "外部アーティスト・アルバムデータ",
-      "externalDescription": "ライブラリにないアーティストやアルバムのページを Deezer のデータで補完します。",
+      "externalDescription": "Deezerでアルバム・アーティストのページを補完。",
       "topTracks": "人気曲",
       "topTracksDescription": "アーティストページに Deezer の人気曲を表示。",
       "similarArtists": "類似アーティスト",
       "similarArtistsDescription": "アーティストページに Deezer の類似アーティストを表示。",
       "albumRecommendations": "おすすめ",
-      "albumRecommendationsDescription": "アルバムページに Deezer のおすすめアルバムを表示。",
+      "albumRecommendationsDescription": "アルバムページに推薦アルバム。",
       "samples": "サンプル",
-      "samplesDescription": "外部アルバムページ用に30秒のプレビューサンプルを取得。",
+      "samplesDescription": "外部アルバムに30秒の試聴。",
       "enableSamplesToPreview": "プレビューを聴くには設定でサンプルを有効にしてください",
       "playlistRecommendations": "おすすめ",
       "playlistRecommendationsDescription": "Deezer のおすすめプレイリストを表示。",
@@ -480,7 +499,7 @@
     },
     "audiomuse": {
       "title": "AudioMuse-AI",
-      "credentialsHelper": "このサーバーに接続されたセルフホストのAudioMuse-AIインスタンスに接続すると、音響解析に基づくスマートシャッフルが利用できます。",
+      "credentialsHelper": "Smart Shuffle用の自己ホスト型AudioMuse-AI。",
       "serverUrl": "サーバーURL",
       "serverUrlPlaceholder": "http://audiomuse:8000",
       "apiToken": "APIトークン",
@@ -488,7 +507,7 @@
       "connectivity": "接続状況",
       "connectionFailed": "AudioMuse-AIへの接続に失敗しました",
       "enable": "AudioMuse-AIを有効にする",
-      "enableSubtext": "接続時にスマートシャッフルにAudioMuse-AIを使用します。",
+      "enableSubtext": "接続時にAudioMuse-AIでSmart Shuffle。",
       "disconnect": "切断",
       "disconnected": "AudioMuse-AIから切断しました。"
     },
@@ -507,7 +526,7 @@
       "routeDirect": "Yuzicから直接",
       "throughServer": "サーバー経由",
       "throughServerMarkAsPlayed": "サーバー経由(再生済みにする)",
-      "duplicateRiskNote": "「サーバー経由」を選択しても、Yuzicはサーバーが実際にスクロブルを転送しているかを確認できません。サーバー側でも独自にスクロブルを送信するよう設定されている場合や、同じアカウントで別のアプリがスクロブルしている場合、再生が二重に記録されることがあります。"
+      "duplicateRiskNote": "「サーバー経由」ではサーバーや他アプリも送ると二重計上の恐れ。"
     },
     "home": {
       "title": "ホーム"
@@ -672,6 +691,9 @@
     "downloads": {
       "title": "ダウンロード"
     },
+    "downloaded": {
+      "title": "オフライン"
+    },
     "wants": {
       "title": "ウォンツ"
     },
@@ -789,6 +811,7 @@
       "other": "その他のソース"
     },
     "filters": {
+      "scope": "検索範囲",
       "title": "フィルター",
       "sources": "ソース",
       "entityTypes": "対象",
@@ -1079,8 +1102,8 @@
   },
   "wants": {
     "title": "ウォンツ",
-    "empty": "まだ何も保存されていません。欲しいトラックやアルバムを追加すると、ここに表示されます。",
-    "manualAdd": "ウォンツに追加"
+    "empty": "まだ何も保存されていません。",
+    "searchAction": "音楽を検索"
   },
   "manualAddWant": {
     "title": "ウォンツに追加",
@@ -1354,7 +1377,8 @@
     "settings": {
       "themeColor": "テーマカラー {{color}}",
       "clearProviderDownloads": "{{provider}}のダウンロードをすべて削除",
-      "removeDownload": "ダウンロード{{title}}を削除"
+      "removeDownload": "ダウンロード{{title}}を削除",
+      "reorderSource": "{{name}}を並べ替え"
     },
     "onboarding": {
       "serverOptions": "{{url}}のオプション"
@@ -1378,12 +1402,13 @@
     "library": "ライブラリ"
   },
   "downloads": {
-    "title": "ダウンロードキュー",
+    "title": "ダウンロード",
     "noDownloaders": "ダウンローダーが接続されていません。設定から追加してください。",
     "jobFailed": "「{{title}}」のダウンロードを完了できませんでした。キューに残り、再試行されます。",
+    "offlineSummary": "{{size}} 使用中 · {{available}} 空き",
     "section": {
-      "offline": "オフライン",
-      "downloaders": "ダウンローダー"
+      "offline": "この端末に保存",
+      "downloaders": "サーバー転送"
     }
   }
 }

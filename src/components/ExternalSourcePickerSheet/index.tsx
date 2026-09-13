@@ -84,7 +84,7 @@ const ExternalSourcePickerSheet = forwardRef<BottomSheetModal, Props>(
                       onPress={() => onSelect(item)}
                     >
                       <MediaImage
-                        cover={item.coverUrl ? { kind: 'url', url: item.coverUrl } : { kind: 'letter', name: label }}
+                        cover={item.coverUrl ? { kind: 'url', url: item.coverUrl } : { kind: 'none' }}
                         size="thumb"
                         style={[styles.cover, { borderRadius: isArtist ? COVER_SIZE / 2 : rad.md }]}
                       />

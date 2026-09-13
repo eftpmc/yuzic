@@ -35,7 +35,7 @@ export function useLBSimilarArtists(
         .map((a) => ({
           id: a.artistMbid,
           name: a.name,
-          cover: { kind: 'letter' as const, name: a.name },
+          cover: { kind: 'none' as const },
           subtext: '',
           externalIds: { mbid: a.artistMbid },
         }));

@@ -4,7 +4,7 @@ import { SkipForward, Heart, Dices, Cast, PlusCircle } from 'lucide-react-native
 import { usePlaying } from '@/contexts/PlayingContext';
 import { useStarSong, useUnstarSong, useStarredSongs } from '@/hooks/starred';
 import { PlayingBarAction } from '@/utils/redux/slices/settingsSlice';
-import { toast } from '@backpackapp-io/react-native-toast';
+import { notify } from '@/components/toast';
 import { useAlbums } from '@/hooks/albums';
 import { useApi } from '@/api';
 import { useIsOffline } from '@/hooks/useIsOffline';
@@ -75,7 +75,7 @@ export function usePlayingBarAction(
           try {
             if (isFavorite) {
               await unstar.mutateAsync(currentSong.id);
-              toast.success(
+              notify.success(
                 t(
                   isOffline
                     ? 'playing.actions.removedFromFavoritesOffline'
@@ -85,7 +85,7 @@ export function usePlayingBarAction(
               );
             } else {
               await star.mutateAsync(currentSong);
-              toast.success(
+              notify.success(
                 t(
                   isOffline
                     ? 'playing.actions.addedToFavoritesOffline'
@@ -95,7 +95,7 @@ export function usePlayingBarAction(
               );
             }
           } catch {
-            toast.error(t('playing.actions.updateFavoritesFailed'));
+            notify.error(t('playing.actions.updateFavoritesFailed'));
           }
         },
       };
@@ -108,7 +108,7 @@ export function usePlayingBarAction(
         onPress: async () => {
           if (!albums.length) return;
           if (isOffline) {
-            toast.error(t('common.offline.notAvailable'));
+            notify.error(t('common.offline.notAvailable'));
             return;
           }
 
@@ -121,9 +121,9 @@ export function usePlayingBarAction(
             if (!album.songs.length) return;
 
             playSongInCollection(album.songs[0], album, true);
-            toast.success(t('playing.actions.randomAlbum', { title: album.title }));
+            notify.success(t('playing.actions.randomAlbum', { title: album.title }));
           } catch {
-            toast.error(t('playing.actions.loadAlbumFailed'));
+            notify.error(t('playing.actions.loadAlbumFailed'));
           }
         },
       };
