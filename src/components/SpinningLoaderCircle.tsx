@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { useEffect } from 'react';
 import { LoaderCircle } from 'lucide-react-native';
 import Animated, {
@@ -19,7 +20,7 @@ export default function SpinningLoaderCircle({ size, color }: Props) {
 
   useEffect(() => {
     rotation.value = withRepeat(
-      withTiming(360, { duration: 900, easing: Easing.linear }),
+      withTiming(360, { duration: motion.indeterminate, easing: Easing.linear }),
       -1,
       false
     );

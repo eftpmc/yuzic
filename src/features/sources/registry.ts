@@ -158,7 +158,7 @@ function releaseGroupToAlbumBase(
 const musicbrainzSource: SourceDefinition = {
   id: 'musicbrainz',
   label: 'MusicBrainz',
-  color: '#BA478F',
+  color: sourceColor.musicbrainz,
   auth: noAuth,
   testConnection: trivialTestConnection,
   // MusicBrainz fills identity/metadata resolution (resolveArtist/

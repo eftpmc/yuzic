@@ -1,3 +1,5 @@
+import { motion } from '@/constants/design';
+import { stateLayer } from '@/constants/design';
 import React, { memo, useCallback, useEffect } from 'react';
 import { fontScaleCap, hitSlopFor, iconSize, spacing, statusColor, typography } from '@/constants/design';
 import { useListDensity } from '@/hooks/useListDensity';
@@ -156,7 +158,7 @@ const SongRow: React.FC<Props> = ({
 
   const heartOpacity = useSharedValue(isFavorite ? 1 : 0);
   useEffect(() => {
-    heartOpacity.value = withTiming(isFavorite ? 1 : 0, { duration: 200 });
+    heartOpacity.value = withTiming(isFavorite ? 1 : 0, { duration: motion.favorite });
   }, [isFavorite, heartOpacity]);
   const heartStyle = useAnimatedStyle(() => ({ opacity: heartOpacity.value }));
 
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
     // with the titles, which is the opposite of what an index is for — it
     // should be findable when looked for and invisible when not.
     ...typography.caption,
-    opacity: 0.6,
+    opacity: stateLayer.pressedOpacity,
     // Fixed width and right-aligned so the titles form a straight edge whether
     // the record has nine tracks or nineteen. Tabular figures keep "11" the
     // same width as "17", which proportional digits do not.

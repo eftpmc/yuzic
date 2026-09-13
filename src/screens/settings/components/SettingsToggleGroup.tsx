@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { memo } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
@@ -34,7 +35,7 @@ const SettingsToggleGroup: React.FC<Props> = ({ items }) => {
               value={item.value}
               onValueChange={item.onValueChange}
               trackColor={{ true: colors.themeColor }}
-              thumbColor="#fff"
+              thumbColor={onDark.text}
             />
           </View>
         ))}

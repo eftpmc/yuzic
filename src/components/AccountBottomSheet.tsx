@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.rowGap,
     marginBottom: spacing.lg,
   },
   headerInfo: {
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   serverMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.tight,
   },
   typeBadge: {
     paddingHorizontal: spacing.tight,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.rowGap,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
   },

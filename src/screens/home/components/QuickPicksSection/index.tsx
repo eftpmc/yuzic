@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SECTION_H_PADDING,
   },
   page: {
-    gap: 2,
+    gap: spacing.xxs,
   },
   rowWrapper: {
     paddingHorizontal: 0,

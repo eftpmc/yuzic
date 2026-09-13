@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { LogOut } from 'lucide-react-native';
@@ -17,7 +18,7 @@ const SettingsDisconnectButton: React.FC<Props> = ({ label, onPress }) => {
 
   return (
     <Touchable style={[styles.button, { backgroundColor: colors.destructive, borderRadius: rad.md }]} onPress={onPress}>
-      <LogOut size={iconSize.row} color="#fff" />
+      <LogOut size={iconSize.row} color={onDark.text} />
       <Text style={styles.label}>{label}</Text>
     </Touchable>
   );
@@ -31,10 +32,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.md,
-    gap: 8,
+    gap: spacing.sm,
   },
   label: {
     ...typography.sheetTitle,
-    color: '#fff',
+    color: onDark.text,
   },
 });

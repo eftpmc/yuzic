@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -162,7 +163,7 @@ export default function Connect() {
                     disabled={isTesting}
                 >
                     {isTesting ? (
-                        <SpinningLoaderCircle size={iconSize.row} color="#000" />
+                        <SpinningLoaderCircle size={iconSize.row} color={onDark.background} />
                     ) : (
                         <Text style={styles.nextButtonText}>{t('common.next')}</Text>
                     )}
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     serverTypeContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 12,
+        gap: spacing.rowGap,
         marginBottom: spacing.xs,
     },
     serverTypeButton: {
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
         marginTop: spacing.tight,
     },
     serverTypeTextSelected: {
-        color: '#000',
+        color: onDark.background,
     },
     buttonContainer: {
         padding: spacing.roomy,
@@ -263,11 +264,11 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     buttonDisabled: {
-        opacity: 0.6,
+        opacity: stateLayer.pressedOpacity,
     },
     nextButtonText: {
         ...typography.sheetTitle,
-        color: '#000',
+        color: onDark.background,
     },
     demoButton: {
         backgroundColor: onDark.border,

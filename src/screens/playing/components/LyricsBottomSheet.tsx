@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { forwardRef, useRef, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -57,7 +58,7 @@ function LyricLine({
   const opacity = useSharedValue(opacityTarget);
 
   useEffect(() => {
-    opacity.value = withTiming(opacityTarget, { duration: 240 });
+    opacity.value = withTiming(opacityTarget, { duration: motion.contentFade });
   }, [opacity, opacityTarget]);
 
   const animatedStyle = useAnimatedStyle(() => ({

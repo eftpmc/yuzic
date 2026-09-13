@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useMemo } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
@@ -67,7 +68,7 @@ const SettingsSourceList: React.FC<Props> = ({ sources, sourceOrder = [], onOrde
             value={item.enabled}
             onValueChange={item.onEnabledChange}
             trackColor={{ true: colors.themeColor }}
-            thumbColor="#fff"
+            thumbColor={onDark.text}
           />
         </View>
       </View>

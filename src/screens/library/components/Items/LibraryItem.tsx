@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -138,6 +139,6 @@ const styles = StyleSheet.create({
     minHeight: typography.caption.lineHeight,
   },
   pressed: {
-    opacity: 0.9,
+    opacity: stateLayer.selectedOpacity,
   },
 });

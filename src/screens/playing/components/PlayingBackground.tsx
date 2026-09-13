@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { useEffect, useRef } from "react";
 import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -44,7 +45,7 @@ const PlayingBackground: React.FC<Props> = ({
     opacity.value = 0;
     opacity.value = withTiming(
       1,
-      { duration: 1200, easing: Easing.out(Easing.cubic) },
+      { duration: motion.backgroundArrival, easing: Easing.out(Easing.cubic) },
       (finished) => {
         if (finished) {
           runOnJS(onFadeComplete)();

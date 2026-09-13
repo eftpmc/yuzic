@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -185,7 +186,7 @@ const GenreHeader: React.FC<Props> = ({ genre, albums, showNavigation = true }) 
               style={[styles.backButton, { borderRadius: rad.pillFor(controlSize.iconCompact) }]}
               onPress={() => navigation.goBack()}
             >
-              <ChevronLeft size={iconSize.header} color="#fff" style={{ marginLeft: -2 }} />
+              <ChevronLeft size={iconSize.header} color={onDark.text} style={{ marginLeft: -2 }} />
             </Touchable>
           </View>
         )}

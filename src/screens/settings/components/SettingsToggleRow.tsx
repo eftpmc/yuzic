@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
@@ -25,7 +26,7 @@ const SettingsToggleRow: React.FC<Props> = ({ label, subtext, value, onValueChan
         value={value}
         onValueChange={onValueChange}
         trackColor={{ true: colors.themeColor }}
-        thumbColor="#fff"
+        thumbColor={onDark.text}
       />
     </View>
   );
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    gap: 16,
+    gap: spacing.page,
   },
   left: { flex: 1 },
   label: { ...typography.rowTitle },

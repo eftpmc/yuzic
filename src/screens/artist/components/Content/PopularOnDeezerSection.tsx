@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingTop: spacing.lg,
     paddingBottom: spacing.controlGap,
     paddingHorizontal: spacing.lg,
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   badgeLetter: {
     ...typography.micro,
     fontWeight: '600',
-    color: '#fff',
+    color: onDark.text,
   },
   sectionTitle: {
     ...typography.navigationTitle,

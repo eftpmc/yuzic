@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React from 'react';
 import { Alert, FlatList, StyleSheet, Text } from 'react-native';
 import Animated, {
@@ -60,7 +61,7 @@ function DownloaderQueueCard<T extends { id: string }>({
   const rotation = useSharedValue(0);
   React.useEffect(() => {
     rotation.value = withRepeat(
-      withTiming(360, { duration: 1000, easing: Easing.linear }),
+      withTiming(360, { duration: motion.progress, easing: Easing.linear }),
       -1,
       false
     );

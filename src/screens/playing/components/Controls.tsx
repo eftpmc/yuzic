@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { useCallback } from 'react';
 import {
   Pressable,
@@ -44,15 +45,15 @@ function PlayPauseButton({ isPlaying, isBuffering, onPress }: { isPlaying: boole
       accessibilityRole="button"
       accessibilityLabel={isPlaying ? t('a11y.player.pause') : t('a11y.player.play')}
       onPress={onPress}
-      onPressIn={() => { if (!reduced) scale.value = withTiming(0.91, { duration: 80 }); }}
-      onPressOut={() => { if (!reduced) scale.value = withTiming(1, { duration: 150 }); }}
+      onPressIn={() => { if (!reduced) scale.value = withTiming(0.91, { duration: motion.pressIn }); }}
+      onPressOut={() => { if (!reduced) scale.value = withTiming(1, { duration: motion.pressOut }); }}
       style={[styles.playButton, { borderRadius: rad.pillFor(controlSize.playerPrimary) }, animStyle]}
     >
       {isBuffering
-        ? <SpinningLoaderCircle size={iconSize.row} color="#000" />
+        ? <SpinningLoaderCircle size={iconSize.row} color={onDark.background} />
         : isPlaying
-          ? <Pause size={iconSize.loader} color="#000" fill="#000" />
-          : <Play size={iconSize.loader} color="#000" fill="#000" />
+          ? <Pause size={iconSize.loader} color={onDark.background} fill={onDark.background} />
+          : <Play size={iconSize.loader} color={onDark.background} fill={onDark.background} />
       }
     </AnimatedPressable>
   );

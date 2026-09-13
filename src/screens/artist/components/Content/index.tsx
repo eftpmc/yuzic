@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useMemo, useState } from 'react'
 import { iconSize, sourceColor, spacing, statusColor, typography } from '@/constants/design'
 import { useRadius } from '@/hooks/useRadius'
@@ -547,7 +548,7 @@ const styles = StyleSheet.create({
   similarTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.controlGap,
   },
@@ -560,7 +561,7 @@ const styles = StyleSheet.create({
   sourceBadgeLetter: {
     ...typography.micro,
     fontWeight: '600',
-    color: '#fff',
+    color: onDark.text,
   },
   similarListContent: {
     paddingHorizontal: spacing.lg,

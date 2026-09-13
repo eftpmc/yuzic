@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
@@ -55,7 +56,7 @@ const SettingsIconSelectCard: React.FC<Props> = ({ title, subtitle, items, selec
                 ]}
               >
                 {React.cloneElement(item.icon, {
-                  color: active ? '#fff' : colors.secondary,
+                  color: active ? onDark.text : colors.secondary,
                 })}
               </Touchable>
             );
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   button: {
     flex: 1,

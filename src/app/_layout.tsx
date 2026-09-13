@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 
@@ -253,7 +254,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    SplashScreen.setOptions({ duration: 1000, fade: true });
+    SplashScreen.setOptions({ duration: motion.progress, fade: true });
   }, []);
 
   useEffect(() => {

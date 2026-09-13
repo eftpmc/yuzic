@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -71,8 +72,8 @@ const styles = StyleSheet.create({
   supported: { ...typography.caption, color: onDark.subtext, textAlign: 'center' },
   actions: { padding: spacing.roomy, gap: spacing.md },
   primary: { backgroundColor: onDark.text, width: '100%', paddingVertical: spacing.lg, alignItems: 'center' },
-  primaryText: { ...typography.sheetTitle, color: '#000' },
+  primaryText: { ...typography.sheetTitle, color: onDark.background },
   secondary: { backgroundColor: onDark.border, width: '100%', paddingVertical: spacing.lg, alignItems: 'center' },
   secondaryText: { ...typography.sheetTitle, color: onDark.text },
-  disabled: { opacity: 0.6 },
+  disabled: { opacity: stateLayer.pressedOpacity },
 });

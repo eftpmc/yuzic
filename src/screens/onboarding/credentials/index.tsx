@@ -1,3 +1,5 @@
+import { fixedColor } from '@/constants/design';
+import { stateLayer } from '@/constants/design';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -273,7 +275,7 @@ export default function Credentials() {
                             disabled={isTesting}
                         >
                             {isTesting
-                                ? <SpinningLoaderCircle size={iconSize.row} color="#000" />
+                                ? <SpinningLoaderCircle size={iconSize.row} color={onDark.background} />
                                 : <Text style={styles.nextButtonText}>{t('common.done')}</Text>
                             }
                         </Touchable>
@@ -331,19 +333,19 @@ const styles = StyleSheet.create({
     warningRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        backgroundColor: '#1c1400',
+        backgroundColor: fixedColor.onboardingWarningSurface,
         borderWidth: 1,
-        borderColor: '#78450a',
+        borderColor: fixedColor.onboardingWarningBorder,
         padding: spacing.controlGap,
         marginBottom: spacing.md,
-        gap: 8,
+        gap: spacing.sm,
     },
     warningText: { ...typography.caption, flex: 1, color: statusColor.warningText },
     // Code sign-in panel
     codeAuthPanel: {
         alignItems: 'center',
         paddingVertical: spacing.xl,
-        gap: 16,
+        gap: spacing.page,
     },
     codeAuthLabel: {
         ...typography.body,
@@ -359,7 +361,7 @@ const styles = StyleSheet.create({
     codeAuthWaiting: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: spacing.sm,
     },
     codeAuthWaitingText: {
         ...typography.rowSubtitle,
@@ -379,8 +381,8 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: spacing.md,
     },
-    nextButtonDisabled: { opacity: 0.6 },
-    nextButtonText: { ...typography.sheetTitle, color: '#000' },
+    nextButtonDisabled: { opacity: stateLayer.pressedOpacity },
+    nextButtonText: { ...typography.sheetTitle, color: onDark.background },
     backButton: {
         backgroundColor: onDark.border,
         paddingVertical: spacing.lg,

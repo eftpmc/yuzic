@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   getButtonDisabled: {
-    opacity: 0.5,
+    opacity: stateLayer.mutedOpacity,
   },
   getButtonLabel: {
     ...typography.rowTitle,

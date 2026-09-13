@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    gap: 16,
+    gap: spacing.page,
   },
   label: {
     ...typography.rowTitle,

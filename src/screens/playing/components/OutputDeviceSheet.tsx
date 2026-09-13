@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   itemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.controlGap,
   },
   itemLabel: {
     ...typography.body,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   searchingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },

@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     },
     nextButtonText: {
         ...typography.sheetTitle,
-        color: '#000',
+        color: onDark.background,
     },
     backButton: {
         backgroundColor: onDark.border,

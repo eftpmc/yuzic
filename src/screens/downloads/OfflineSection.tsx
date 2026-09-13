@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Text, View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   titleLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   title: {
     ...typography.compactRowTitle,
@@ -277,5 +278,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  disabled: { opacity: 0.4 },
+  disabled: { opacity: stateLayer.disabledOpacity },
 });

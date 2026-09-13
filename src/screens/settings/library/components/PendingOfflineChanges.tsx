@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { CloudUpload, RotateCcw, Trash2 } from 'lucide-react-native';
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     marginTop: spacing.controlGap,
   },
   actionButton: {
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.controlGap,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.tight,
   },
   actionText: {
     ...typography.caption,
@@ -158,6 +159,6 @@ const styles = StyleSheet.create({
   badgeText: {
     ...typography.caption,
     fontWeight: '700',
-    color: '#fff',
+    color: onDark.text,
   },
 });

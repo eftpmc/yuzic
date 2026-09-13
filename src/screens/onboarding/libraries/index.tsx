@@ -108,7 +108,7 @@ export default function LibrariesOnboarding() {
           <View style={styles.optionList}>
             <Touchable onPress={selectAll} style={[styles.optionRow, { borderRadius: rad.md }]}>
               <View style={[styles.checkbox, isAll && styles.checkboxSelected]}>
-                {isAll && <Check size={iconSize.badge} color="#000" />}
+                {isAll && <Check size={iconSize.badge} color={onDark.background} />}
               </View>
               <Text style={styles.optionText}>{t('onboarding.libraries.allLibraries')}</Text>
             </Touchable>
@@ -122,7 +122,7 @@ export default function LibrariesOnboarding() {
                   style={[styles.optionRow, { borderRadius: rad.md }]}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                    {selected && <Check size={iconSize.badge} color="#000" />}
+                    {selected && <Check size={iconSize.badge} color={onDark.background} />}
                   </View>
                   <Text style={styles.optionText} numberOfLines={1}>
                     {lib.name}
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxxl,
   },
   optionList: {
-    gap: 8,
+    gap: spacing.sm,
   },
   optionRow: {
     flexDirection: 'row',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: onDark.muted,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    gap: 12,
+    gap: spacing.rowGap,
   },
   checkbox: {
     width: 22,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     marginTop: spacing.xxxl,
     alignItems: 'center' as const,
-    gap: 16,
+    gap: spacing.page,
   },
   errorText: {
     ...typography.body,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     ...typography.sheetTitle,
-    color: '#000',
+    color: onDark.background,
   },
   backButton: {
     backgroundColor: onDark.border,

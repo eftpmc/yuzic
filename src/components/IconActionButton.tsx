@@ -1,3 +1,4 @@
+import { stateLayer } from '@/constants/design';
 import React from 'react';
 import {
   StyleSheet,
@@ -73,6 +74,6 @@ const styles = StyleSheet.create({
     height: controlSize.iconCompact,
   },
   disabled: {
-    opacity: 0.45,
+    opacity: stateLayer.inactiveOpacity,
   },
 });

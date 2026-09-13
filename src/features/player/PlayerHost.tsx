@@ -1,3 +1,5 @@
+import { onDark } from '@/constants/design';
+import { motion } from '@/constants/design';
 import React, { useCallback, useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
@@ -29,7 +31,7 @@ const gradientCache = createAccentCache<[string, string]>(PLAYING_GRADIENT_CACHE
 
 /** What the player fades to with no accent to show — extraction failed, or the
  *  user turned cover tinting off. */
-const NEUTRAL_GRADIENT: [string, string] = ['#121212', '#000'];
+const NEUTRAL_GRADIENT: [string, string] = ['#121212', onDark.background];
 
 /**
  * The full-screen player, and the cover art that travels between it and the
@@ -57,8 +59,8 @@ export default function PlayerHost() {
   const coverAccentEnabled = useSelector(selectCoverAccentEnabled);
   const rad = useRadius();
 
-  const [currentGradient, setCurrentGradient] = useState<[string, string]>(['#000', '#000']);
-  const [nextGradient, setNextGradient] = useState<[string, string]>(['#000', '#000']);
+  const [currentGradient, setCurrentGradient] = useState<[string, string]>([onDark.background, onDark.background]);
+  const [nextGradient, setNextGradient] = useState<[string, string]>([onDark.background, onDark.background]);
 
   // A queue command changes React state asynchronously. Keep the old artwork
   // on screen while it leaves, then place the replacement beyond the opposite
@@ -73,7 +75,7 @@ export default function PlayerHost() {
     coverSwipeX.value = coverSlideOffset(coverSlide.direction, 'entering', width);
     enterCoverSlide(currentSong.id);
     const frame = requestAnimationFrame(() => {
-      coverSwipeX.value = withTiming(0, { duration: 220 }, finished => {
+      coverSwipeX.value = withTiming(0, { duration: motion.swipe }, finished => {
         if (finished) runOnJS(finishCoverSlide)();
       });
     });
@@ -88,7 +90,7 @@ export default function PlayerHost() {
     }
     try {
       const result = await ImageColors.getColors(uri, { fallback: '#121212' });
-      const gradient: [string, string] = [toWashAccent(pickAccent(result, '#121212')), '#000'];
+      const gradient: [string, string] = [toWashAccent(pickAccent(result, '#121212')), onDark.background];
       gradientCache.set(uri, gradient);
       setNextGradient(gradient);
     } catch {

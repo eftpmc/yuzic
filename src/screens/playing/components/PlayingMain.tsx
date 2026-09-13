@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { memo, useCallback, useMemo, useRef } from 'react';
 import {
   View,
@@ -153,7 +154,7 @@ const PlayingMain: React.FC<PlayingMainProps> = ({
           runOnJS(beginCoverSlide)(outcome, currentSongId, currentCover);
           coverSwipeX.value = withTiming(
             outcome === 'next' ? -width : width,
-            { duration: 140 },
+            { duration: motion.quick },
             finished => {
               if (finished) runOnJS(outcome === 'next' ? skipToNext : skipToPrevious)();
             },

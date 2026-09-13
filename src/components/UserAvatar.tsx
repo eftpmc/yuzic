@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useFocusEffect } from 'expo-router';
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   initial: {
-    color: '#fff',
+    color: onDark.text,
     fontWeight: '600',
   },
   image: {

@@ -1,3 +1,4 @@
+import { motion } from '@/constants/design';
 import React, { useCallback, useEffect, memo, useMemo, useRef } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -60,7 +61,7 @@ const ProgressBarStrip = memo(({
 
   useEffect(() => {
     const ratio = effectiveDuration > 0 ? Math.max(0, Math.min(1, position / effectiveDuration)) : 0;
-    displayRatio.value = withTiming(ratio, { duration: 1000, easing: Easing.linear });
+    displayRatio.value = withTiming(ratio, { duration: motion.progress, easing: Easing.linear });
   }, [position, effectiveDuration, displayRatio]);
 
   const fillStyle = useAnimatedStyle(() => ({

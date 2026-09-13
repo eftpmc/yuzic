@@ -1,3 +1,4 @@
+import { onDark } from '@/constants/design';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -527,7 +528,7 @@ const styles = StyleSheet.create({
   sourceBadgeLetter: {
     ...typography.micro,
     fontWeight: '600',
-    color: '#fff',
+    color: onDark.text,
   },
   actionBtn: { padding: spacing.xs },
   loader: { marginVertical: spacing.xl },

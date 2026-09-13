@@ -184,6 +184,8 @@ because both halves of each pair look reasonable in isolation.
   `spacing.scrollClearance`, which is what keeps its last row clear of the
   playing bar; four different numbers were doing that job and the short ones
   didn't.
+- **Spacing gaps**: `gap`, `rowGap`, and `columnGap` use the existing `spacing` scale; near-misses fold to adjacent steps, and ESLint rejects nonzero literals.
+- **Motion and effects**: animation durations use `motion`; shadows/elevation use `shadow`; disabled and pressed opacity uses `stateLayer`. ESLint rejects raw values outside `constants/design`.
 - **Tap targets**: a control may be drawn smaller than `controlSize.minimumTarget`
   — a 34pt toggle beside a 34pt pill is the right drawing — but what the finger
   has to hit never is. `hitSlopFor(size)` makes up the difference; it returns
