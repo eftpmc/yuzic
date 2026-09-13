@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -53,7 +53,6 @@ import { useEnabledSearchSourceIds } from '@/features/sources/useSearchSourcesEn
 import TabHeader from '@/components/TabHeader';
 import { useAccountSheet } from '@/contexts/AccountSheetContext';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useScrollClearance } from '@/hooks/useScrollClearance';
 

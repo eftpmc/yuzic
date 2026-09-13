@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { fontScaleCap, onDark } from '@/constants/design';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useFocusEffect } from 'expo-router';
@@ -7,8 +7,6 @@ import { useSelector } from 'react-redux';
 import { useApi } from '@/api';
 import { selectActiveServerId } from '@/utils/redux/selectors/serversSelectors';
 import { selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
-import { fontScaleCap } from '@/constants/design';
-
 /**
  * The signed-in user's profile picture, or their initial in a coloured disc.
  *

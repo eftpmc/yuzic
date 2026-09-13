@@ -1,10 +1,9 @@
-import { onDark } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import SettingsCard from './SettingsCard';
 import Touchable from '@/components/Touchable';
-import { spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export type IconSelectItem = {

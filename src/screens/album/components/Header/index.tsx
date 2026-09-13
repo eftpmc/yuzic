@@ -1,6 +1,5 @@
-import { onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, statusColor } from '@/constants/design';
 import React, { useCallback, useMemo } from 'react';
-import { iconSize, spacing, statusColor } from '@/constants/design';
 import {
   StyleSheet,
 } from 'react-native';

@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { hitSlopFor, iconSize, radius, spacing, stateLayer, typography } from '@/constants/design';
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,6 @@ import { Ellipsis } from 'lucide-react-native';
 import { MediaImage } from '@/components/MediaImage';
 import { CoverSource } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { hitSlopFor, iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useListDensity } from '@/hooks/useListDensity';
 import Touchable from '@/components/Touchable';

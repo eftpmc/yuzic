@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { iconSize, onDark, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Moon } from 'lucide-react-native';
@@ -13,7 +13,6 @@ import {
   SLEEP_TIMER_INCREMENTS,
 } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { withAlpha } from '@/features/theme/coverAccent';
 

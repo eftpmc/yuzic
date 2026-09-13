@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { iconSize, onDark, spacing, stateLayer, typography } from '@/constants/design';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import { pickAndImportLocalFiles } from '@/api/local/pickAndImport';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useSelector } from 'react-redux';
 import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';

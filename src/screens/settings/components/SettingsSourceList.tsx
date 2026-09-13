@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useMemo } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { Check, GripVertical } from 'lucide-react-native';
 
 import Touchable from '@/components/Touchable';
-import { iconSize, spacing, typography } from '@/constants/design';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 

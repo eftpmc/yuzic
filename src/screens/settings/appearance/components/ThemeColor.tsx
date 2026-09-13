@@ -1,4 +1,4 @@
-import { shadow } from '@/constants/design';
+import { iconSize, radius, shadow, spacing, typography } from '@/constants/design';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider } from 'reanimated-color-picker';
@@ -12,7 +12,6 @@ import SettingsCardHeader from '../../components/SettingsCardHeader';
 import SettingsCard from '../../components/SettingsCard';
 import { THEME_PRESET_COLORS } from '@/constants/settings';
 import Touchable from '@/components/Touchable';
-import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export const ThemeColor: React.FC = () => {

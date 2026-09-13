@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { CloudUpload, RotateCcw, Trash2 } from 'lucide-react-native';
@@ -14,7 +14,6 @@ import {
 } from '@/utils/redux/slices/offlineMutationsSlice';
 import SettingsCard from '../../components/SettingsCard';
 import Touchable from '@/components/Touchable';
-import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function PendingOfflineChanges() {

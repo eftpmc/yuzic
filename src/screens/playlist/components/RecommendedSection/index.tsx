@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, sourceColor, spacing, typography } from '@/constants/design';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -46,7 +46,6 @@ import shuffleArray from '@/utils/shuffleArray';
 import seededShuffle from '@/utils/seededShuffle';
 import SkeletonListRow from '@/components/SkeletonListRow';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 const LOCAL_COUNT = 8;

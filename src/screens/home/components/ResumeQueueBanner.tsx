@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Play, X } from 'lucide-react-native';
@@ -9,8 +9,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { useResumableServerQueue } from '@/hooks/useResumableServerQueue';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
-
 /**
  * Shown at the top of Home when the server has a recent queue that this
  * session hasn't started. One tap resumes; the X dismisses for the session.

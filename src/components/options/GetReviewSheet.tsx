@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { iconSize, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
@@ -39,7 +39,6 @@ import {
   optionSheetStyles,
   useOptionSheetBackground,
 } from './OptionSheetPrimitives';
-import { iconSize, spacing, typography } from '@/constants/design';
 import Touchable from '@/components/Touchable';
 
 interface Props {

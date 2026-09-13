@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { controlSize, hitSlopFor, iconSize, stateLayer } from '@/constants/design';
 import React from 'react';
 import {
   StyleSheet,
@@ -7,7 +7,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { controlSize, hitSlopFor, iconSize } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';

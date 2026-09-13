@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { controlSize, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -39,7 +39,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import DownloadStateIcon from '@/components/DownloadStateIcon';
 import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import Touchable from '@/components/Touchable';
-import { controlSize, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {

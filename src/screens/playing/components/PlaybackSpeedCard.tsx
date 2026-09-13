@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { iconSize, onDark, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Gauge } from 'lucide-react-native';
@@ -14,7 +14,6 @@ import {
   PLAYBACK_SPEED_STEP,
 } from '@/constants/playback';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { withAlpha } from '@/features/theme/coverAccent';
 

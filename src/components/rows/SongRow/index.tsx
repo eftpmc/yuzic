@@ -1,7 +1,5 @@
-import { motion } from '@/constants/design';
-import { stateLayer } from '@/constants/design';
+import { fontScaleCap, hitSlopFor, iconSize, motion, spacing, stateLayer, statusColor, typography } from '@/constants/design';
 import React, { memo, useCallback, useEffect } from 'react';
-import { fontScaleCap, hitSlopFor, iconSize, spacing, statusColor, typography } from '@/constants/design';
 import { useListDensity } from '@/hooks/useListDensity';
 import {
   Text,

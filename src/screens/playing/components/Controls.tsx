@@ -1,4 +1,4 @@
-import { motion } from '@/constants/design';
+import { cappedTypography, controlSize, fontScaleCap, hitSlopFor, iconSize, motion, onDark, spacing, typography } from '@/constants/design';
 import React, { useCallback } from 'react';
 import {
   Pressable,
@@ -20,7 +20,6 @@ import { selectShowJumpButtons } from '@/utils/redux/selectors/settingsSelectors
 import { canJumpWithin } from '@/utils/playback/contentKind';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, controlSize, fontScaleCap, hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import haptics from '@/utils/haptics';

@@ -1,11 +1,10 @@
-import { onDark } from '@/constants/design';
+import { iconSize, onDark, radius, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Check, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { SETTINGS_STATUS_COLORS } from '@/constants/features';
 import Touchable from '@/components/Touchable';
-import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
  type Props = {

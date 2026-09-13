@@ -1,10 +1,9 @@
-import { onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { LogOut } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import Touchable from '@/components/Touchable';
-import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {

@@ -23,7 +23,10 @@ jest.mock('@/utils/redux/slices/listenbrainzSlice', () => ({
   setUsername: jest.fn(), setToken: jest.fn(), setAuthenticated: jest.fn(), disconnect: jest.fn(),
 }));
 jest.mock('@/api/listenbrainz', () => ({ testConnection: jest.fn() }));
-jest.mock('../../components/SettingsScreen', () => ({ children }: any) => <>{children}</>);
+jest.mock('../../components/SettingsScreen', () => {
+  const SettingsScreen = ({ children }: any) => <>{children}</>;
+  return SettingsScreen;
+});
 jest.mock('../../components/SettingsAuthCard', () => () => null);
 jest.mock('../../components/SettingsDisconnectButton', () => () => null);
 

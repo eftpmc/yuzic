@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -10,8 +10,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import { useTheme } from '@/hooks/useTheme';
 import { useRadius } from '@/hooks/useRadius';
 import { useDownloadersQueue } from '@/features/downloaders/DownloadersQueueContext';
-import { iconSize, spacing, typography } from '@/constants/design';
-
 /**
  * Banner that surfaces active downloader queues (Lidarr / slskd) at the top
  * of Home so users see what's in flight without diving into Settings →

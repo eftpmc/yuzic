@@ -1,5 +1,4 @@
-import { onDark } from '@/constants/design';
-import { motion } from '@/constants/design';
+import { motion, onDark, radius } from '@/constants/design';
 import React, { useCallback, useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
@@ -20,7 +19,6 @@ import { buildCover } from '@/utils/builders/buildCover';
 import { selectCoverAccentEnabled } from '@/utils/redux/selectors/settingsSelectors';
 import PlayingScreen from '@/screens/playing';
 import PlayingBackground from '@/screens/playing/components/PlayingBackground';
-import { radius } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 import { coverSlideOffset } from '@/screens/playing/coverTransition';

@@ -1,4 +1,4 @@
-import { fixedColor } from '@/constants/design';
+import { fixedColor, hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import {
   View,
@@ -24,7 +24,6 @@ import { SERVER_PROVIDERS } from '@/utils/servers/registry';
 import { Server } from '@/types';
 import { useTranslation } from 'react-i18next';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { selectOnboardingDiscoveryPrompted } from '@/utils/redux/selectors/settingsSelectors';
 

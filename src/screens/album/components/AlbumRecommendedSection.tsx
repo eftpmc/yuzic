@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { onDark, sourceColor, spacing, typography } from '@/constants/design';
 import React, { useMemo } from 'react'
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -24,7 +24,6 @@ import {
   ALBUM_RECOMMENDATION_RELATED_LIMIT,
   ALBUM_RECOMMENDATION_TARGET_ALBUMS,
 } from '@/constants/album';
-import { sourceColor, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {

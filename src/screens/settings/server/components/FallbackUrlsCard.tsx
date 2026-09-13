@@ -1,4 +1,4 @@
-import { statusColor } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, statusColor, typography } from '@/constants/design';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -8,7 +8,6 @@ import { Plus, X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { updateServer } from '@/utils/redux/slices/serversSlice';
 import { forgetReachable } from '@/utils/servers/urlFailover';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsCardHeader from '../../components/SettingsCardHeader';

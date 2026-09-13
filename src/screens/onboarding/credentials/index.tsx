@@ -1,5 +1,4 @@
-import { fixedColor } from '@/constants/design';
-import { stateLayer } from '@/constants/design';
+import { fixedColor, iconSize, onDark, spacing, stateLayer, statusColor, typography } from '@/constants/design';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -19,7 +18,6 @@ import { ServerType, BasicAuth } from '@/types';
 import { useTranslation } from 'react-i18next';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { iconSize, onDark, spacing, statusColor, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useCodeAuth } from './useCodeAuth';
 

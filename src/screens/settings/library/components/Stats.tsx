@@ -1,4 +1,4 @@
-import { motion } from '@/constants/design';
+import { iconSize, motion } from '@/constants/design';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -13,8 +13,6 @@ import IconActionButton from '@/components/IconActionButton';
 import SettingsCard from '../../components/SettingsCard';
 import SettingsInfoRow from '../../components/SettingsInfoRow';
 import SettingsToggleGroup from '../../components/SettingsToggleGroup';
-import { iconSize } from '@/constants/design';
-
 function formatLastSynced(ts: number | null, t: TFunction, now = Date.now()): string {
   if (ts === null) return t('settings.library.stats.neverSynced');
   const mins = Math.floor((now - ts) / 60000);

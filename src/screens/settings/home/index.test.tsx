@@ -12,13 +12,20 @@ jest.mock('@/hooks/useTheme', () => ({ useTheme: () => ({ colors: { background: 
 jest.mock('@/hooks/useRadius', () => ({ useRadius: () => ({ pill: 999 }) }));
 jest.mock('@/hooks/useScrollClearance', () => ({ useScrollClearance: () => 24 }));
 jest.mock('../components/Header', () => () => null);
-jest.mock('../components/SettingsCard', () => ({ children }: any) => <>{children}</>);
+jest.mock('../components/SettingsCard', () => {
+  const SettingsCard = ({ children }: any) => <>{children}</>;
+  return SettingsCard;
+});
 jest.mock('../components/SettingsDivider', () => () => null);
 jest.mock('../components/SettingsRow', () => {
   const { Text } = require('react-native');
-  return ({ label }: any) => <Text>{label}</Text>;
+  const SettingsRow = ({ label }: any) => <Text>{label}</Text>;
+  return SettingsRow;
 });
-jest.mock('@/components/Touchable', () => ({ children }: any) => <>{children}</>);
+jest.mock('@/components/Touchable', () => {
+  const Touchable = ({ children }: any) => <>{children}</>;
+  return Touchable;
+});
 jest.mock('@/components/UserAvatar', () => () => null);
 
 describe('Settings home', () => {

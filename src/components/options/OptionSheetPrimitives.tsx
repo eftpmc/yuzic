@@ -1,6 +1,5 @@
-import { stateLayer } from '@/constants/design';
+import { iconSize, radius, spacing, stateLayer, typography } from '@/constants/design';
 import React from 'react';
-import { iconSize, radius, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import {
   StyleSheet,

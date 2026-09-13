@@ -1,4 +1,4 @@
-import { motion } from '@/constants/design';
+import { motion, onDark, spacing, typography } from '@/constants/design';
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import {
   View,
@@ -14,7 +14,6 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { LyricsResult } from '@/api/types';
 import Touchable from '@/components/Touchable';
-import { onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type Props = {

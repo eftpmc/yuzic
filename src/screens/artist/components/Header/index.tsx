@@ -1,4 +1,4 @@
-import { onDark } from '@/constants/design';
+import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -40,7 +40,6 @@ import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import DownloadStateIcon from '@/components/DownloadStateIcon';
 import { useCollectionDownloadProgress } from '@/hooks/useCollectionDownloadProgress';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useArtworkEnrichment } from '@/features/metadata/useArtworkEnrichment';
 

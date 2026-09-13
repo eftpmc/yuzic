@@ -1,4 +1,4 @@
-import { motion } from '@/constants/design';
+import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, motion, onDark, radius, spacing } from '@/constants/design';
 import React, { useCallback, useEffect, memo, useMemo, useRef } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -37,8 +37,6 @@ import { usePlayingBarAction } from './actions/usePlayingBarAction';
 import { useSheetRef } from '@/utils/useSheetRef';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
 import Touchable from '@/components/Touchable';
-import { cappedTypography, fontScaleCap, hitSlopFor, iconSize, onDark, radius, spacing } from '@/constants/design';
-
 type Variant = 'ios' | 'android';
 
 type Props = {

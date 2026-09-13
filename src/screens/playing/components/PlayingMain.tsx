@@ -1,4 +1,4 @@
-import { motion } from '@/constants/design';
+import { hitSlopFor, iconSize, motion, onDark, spacing, typography } from '@/constants/design';
 import React, { memo, useCallback, useMemo, useRef } from 'react';
 import {
   View,
@@ -19,7 +19,6 @@ import { usePlayerExpansion } from '@/features/player/PlayerExpansion';
 import { resolveCoverSwipe } from '../coverSwipe';
 import { canStartCoverSlide } from '../coverTransition';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, onDark, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type PlayingMainProps = {

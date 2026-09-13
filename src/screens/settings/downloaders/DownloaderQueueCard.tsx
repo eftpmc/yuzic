@@ -1,4 +1,4 @@
-import { motion } from '@/constants/design';
+import { iconSize, motion, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { Alert, FlatList, StyleSheet, Text } from 'react-native';
 import Animated, {
@@ -20,8 +20,6 @@ import type { DownloaderId } from '@/utils/redux/slices/downloadersSlice';
 import { useDownloaderQueue, type QueueDiff } from './useDownloaderQueue';
 import type { DownloaderConfig } from './useDownloaderConnection';
 import type { RowCancelHelpers } from './DownloaderSettingsScreen';
-import { iconSize, spacing, typography } from '@/constants/design';
-
 type Props<T extends { id: string }> = {
   id: DownloaderId;
   /** Optional card title override — the Downloads screen uses this to show

@@ -1,10 +1,8 @@
-import { onDark } from '@/constants/design';
+import { onDark, radius, spacing, typography } from '@/constants/design';
 import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import RNRestart from 'react-native-restart';
 import Touchable from '@/components/Touchable';
-import { radius, spacing, typography } from '@/constants/design';
-
 interface Props {
   children: ReactNode;
 }

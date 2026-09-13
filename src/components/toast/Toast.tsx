@@ -1,5 +1,4 @@
-import { shadow } from '@/constants/design';
-import { motion } from '@/constants/design';
+import { iconSize, motion, shadow, spacing, typography } from '@/constants/design';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -13,7 +12,6 @@ import { AlertCircle, Check, Info } from 'lucide-react-native';
 
 import Touchable from '@/components/Touchable';
 import SpinningLoaderCircle from '@/components/SpinningLoaderCircle';
-import { iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useTheme } from '@/hooks/useTheme';

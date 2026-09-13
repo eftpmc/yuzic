@@ -1,4 +1,4 @@
-import { shadow } from '@/constants/design';
+import { onDark, shadow, spacing, typography } from '@/constants/design';
 import React, { useState } from 'react';
 import {
     View,
@@ -15,7 +15,6 @@ import { selectActiveServer } from '@/utils/redux/selectors/serversSelectors';
 import { setHasSeenGetStarted } from '@/utils/redux/slices/settingsSlice';
 import { selectHasSeenGetStarted, selectThemeColor } from '@/utils/redux/selectors/settingsSelectors';
 import { useTranslation } from 'react-i18next';
-import { spacing, typography, onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 export default function Home() {

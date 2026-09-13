@@ -1,9 +1,7 @@
-import { onDark } from '@/constants/design';
+import { onDark, spacing, typography } from '@/constants/design';
 import React from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, typography } from '@/constants/design';
-
 type Props = {
   label: string;
   subtext?: string;

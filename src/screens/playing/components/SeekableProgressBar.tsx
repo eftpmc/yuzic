@@ -1,8 +1,7 @@
-import { motion } from '@/constants/design';
+import { motion, onDark } from '@/constants/design';
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, type GestureResponderEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
-import { onDark } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 type SeekableProgressBarProps = {

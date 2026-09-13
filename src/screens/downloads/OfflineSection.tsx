@@ -1,4 +1,4 @@
-import { stateLayer } from '@/constants/design';
+import { hitSlopFor, iconSize, spacing, stateLayer, typography } from '@/constants/design';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Text, View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,6 @@ import { buildDownloadRows } from '@/screens/settings/library/downloadsInfo/buil
 import { Paths } from 'expo-file-system';
 import { formatBytes } from '@/utils/downloads/downloadStore';
 import Touchable from '@/components/Touchable';
-import { hitSlopFor, iconSize, spacing, typography } from '@/constants/design';
 import { useRadius } from '@/hooks/useRadius';
 
 /**
